@@ -1,0 +1,173 @@
+name: snap_fit
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
+  image_picker: ^1.2.0
+  path_provider: ^2.1.5
+  cupertino_icons: ^1.0.8
+  screenshot: ^3.0.0
+  image_gallery_saver_plus: ^4.0.1
+  permission_handler: ^12.0.1
+  photo_manager: ^3.7.1
+  photo_manager_image_provider: ^2.2.0
+  flutter_neumorphic_plus: ^3.5.0
+  sliver_tools: ^0.2.12
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+  flutter_screenutil: ^5.9.3
+  flutter_keyboard_visibility: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.6
+  riverpod_generator: ^3.0.3
+  freezed: ^3.2.3
+  json_serializable: ^6.9.0
+  flutter_lints: ^5.0.0
+
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/cover/
+    - assets/cover/cover1.png
+    - assets/cover/cover2.png
+    - assets/cover/cover3.png
+    - assets/cover/cover4.png
+    - assets/cover/cover5.png
+    - assets/cover/cover6.png
+    - assets/cover/cover7.png
+    - assets/cover/cover8.png
+
+  fonts:
+    - family: HanSans
+      fonts:
+        - asset: assets/fonts/HanSans.ttf
+          weight: 800
+
+    - family: Run
+      fonts:
+        - asset: assets/fonts/RunRegular.ttf
+        - asset: assets/fonts/RunBold.ttf
+          weight: 700
+        - asset: assets/fonts/Run.ttf
+          weight: 900
+
+    - family: Cormorant
+      fonts:
+        - asset: assets/fonts/Cormorant-Regular.ttf
+        - asset: assets/fonts/Cormorant-SemiBold.ttf
+          weight: 800
+
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Regular.ttf
+        - asset: assets/fonts/NotoSansKR-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansKR-Bold.ttf
+          weight: 800
+
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.otf
+        - asset: assets/fonts/Poppins-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.otf
+          weight: 800
+
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
+        - asset: assets/fonts/Raleway-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Raleway-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Raleway-ExtraBold.ttf
+          weight: 800
+
+    - family: Recipekorea
+      fonts:
+        - asset: assets/fonts/Recipekorea.ttf
+
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 800
+
+    - family: SeoulNamsan
+      fonts:
+        - asset: assets/fonts/SeoulNamsanM.ttf
+        - asset: assets/fonts/SeoulNamsanEB.ttf
+          weight: 800
+
+    - family: Yeongwol
+      fonts:
+        - asset: assets/fonts/YeongwolTTF.ttf
+          weight: 800
+
+    - family: Eulyoo
+      fonts:
+        - asset: assets/fonts/Eulyoo1945-Regular.ttf
+        - asset: assets/fonts/Eulyoo1945-SemiBold.ttf
+          weight: 800
+
+    - family: Samlip
+      fonts:
+        - asset: assets/fonts/Samlip-Regular.ttf
+          weight: 800
+
+    - family: Aggravo
+      fonts:
+        - asset: assets/fonts/Aggravo.ttf
+          weight: 800
+
+    - family: Arirang
+      fonts:
+        - asset: assets/fonts/Arirang.ttf
+          weight: 800
+
+    - family: Arirang2
+      fonts:
+        - asset: assets/fonts/Arirang2.ttf
+          weight: 800
+
+    - family: Arirang3
+      fonts:
+        - asset: assets/fonts/Arirang3.ttf
+          weight: 800
+
+    - family: Tenada
+      fonts:
+        - asset: assets/fonts/Tenada.ttf
+          weight: 800
+

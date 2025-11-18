@@ -1,0 +1,15 @@
+import 'layer.dart';
+
+class AlbumPage {
+  final String id;                   // page 고유 ID
+  final List<LayerModel> layers;     // 이미지/텍스트 레이어들
+  final int pageIndex;               // 페이지 순서
+  final bool isCover;                // 표지인지 여부
+
+  AlbumPage({
+    required this.id,
+    required this.layers,
+    required this.pageIndex,
+    this.isCover = false,
+  });
+}
