@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
-import 'package:snap_fit/features/album/domain/entities/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_view_model.dart';
+
+import '../../data/models/cover_size.dart';
+
 
 class AddCoverScreen extends ConsumerStatefulWidget {
   const AddCoverScreen({super.key});

@@ -1,11 +1,13 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../domain/entities/cover_theme.dart';
-import '../../../domain/entities/layer.dart';
+import '../../../../../core/widget/common/grid_overlay_painter.dart';
+import '../../../../../core/widget/common/spine_painter.dart';
+import '../../../data/models/cover_theme.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
-import '../common/grid_overlay_painter.dart';
-import '../common/spine_painter.dart';
+
+import '../../../data/models/layer.dart';
+
 
 typedef BuildImageLayer = Widget Function(LayerModel layer, double maxW, double maxH);
 typedef BuildTextLayer = Widget Function(LayerModel layer);

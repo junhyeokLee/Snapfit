@@ -5,11 +5,11 @@ import 'package:flutter/rendering.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/entities/album.dart';
-import '../../domain/entities/album_page.dart';
-import '../../domain/entities/cover_size.dart';
-import '../../domain/entities/cover_theme.dart';
-import '../../domain/entities/layer.dart';
+import '../../data/models/album.dart';
+import '../../data/models/album_page.dart';
+import '../../data/models/cover_size.dart';
+import '../../data/models/cover_theme.dart';
+import '../../data/models/layer.dart';
 part 'album_view_model.g.dart';
 part 'album_view_model.freezed.dart';
 

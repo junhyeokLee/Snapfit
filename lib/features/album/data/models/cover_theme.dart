@@ -3,53 +3,75 @@ import 'package:flutter/material.dart';
 
 enum CoverTheme {
   classic,
-  architecture,
+  classic2,
   nature1,
   nature2,
-  abstract,
+  nature3,
+  nature4,
+  architecture1,
+  architecture2,
+  abstract1,
   abstract2,
   abstract3,
   abstract4,
-  texture,
-  dark,
+  abstract5,
+  abstract6,
+  texture1,
+  texture2,
 }
 
 extension CoverThemeStyle on CoverTheme {
   String get label {
     switch (this) {
       case CoverTheme.classic: return "classic";
-      case CoverTheme.architecture: return "architecture";
+      case CoverTheme.classic2: return "classic2";
       case CoverTheme.nature1: return "nature1";
       case CoverTheme.nature2: return "nature2";
-      case CoverTheme.abstract: return "abstract";
+      case CoverTheme.nature3: return "nature3";
+      case CoverTheme.nature4: return "nature4";
+      case CoverTheme.architecture1: return "architecture1";
+      case CoverTheme.architecture2: return "architecture2";
+      case CoverTheme.abstract1: return "abstract";
       case CoverTheme.abstract2: return "abstract2";
       case CoverTheme.abstract3: return "abstract3";
       case CoverTheme.abstract4: return "abstract4";
-      case CoverTheme.texture: return "texture";
-      case CoverTheme.dark: return "dark";
+      case CoverTheme.abstract5: return "abstract5";
+      case CoverTheme.abstract6: return "abstract6";
+      case CoverTheme.texture1: return "texture1";
+      case CoverTheme.texture2: return "texture2";
     }
   }
 
   String? get imageAsset {
     switch (this) {
-      case CoverTheme.architecture:
-        return 'assets/cover/cover1.png';
       case CoverTheme.nature1:
-        return 'assets/cover/cover2.png';
+        return 'assets/cover/cover9.png';
+      case CoverTheme.abstract1:
+        return 'assets/cover/cover10.png';
       case CoverTheme.nature2:
-        return 'assets/cover/cover3.png';
-      case CoverTheme.abstract:
-        return 'assets/cover/cover4.png';
+        return 'assets/cover/cover12.png';
+      case CoverTheme.nature3:
+        return 'assets/cover/cover13.png';
+      case CoverTheme.nature4:
+        return 'assets/cover/cover11.png';
+      case CoverTheme.texture1:
+        return 'assets/cover/cover15.png';
       case CoverTheme.abstract2:
-        return 'assets/cover/cover5.png';
-      case CoverTheme.abstract3:
-        return 'assets/cover/cover6.png';
+        return 'assets/cover/cover16.png';
+      case CoverTheme.architecture1:
+        return 'assets/cover/cover1.png';
+      case CoverTheme.architecture2:
+        return 'assets/cover/cover2.png';
       case CoverTheme.abstract4:
+        return 'assets/cover/cover5.png';
+      case CoverTheme.abstract5:
+        return 'assets/cover/cover6.png';
+      case CoverTheme.abstract6:
         return 'assets/cover/cover7.png';
-      case CoverTheme.texture:
+      case CoverTheme.texture2:
         return 'assets/cover/cover8.png';
       case CoverTheme.classic:
-      case CoverTheme.dark:
+      case CoverTheme.classic2:
       default:
         return null;
     }
@@ -60,13 +82,13 @@ extension CoverThemeStyle on CoverTheme {
     switch (this) {
       case CoverTheme.classic:
         return const LinearGradient(
-          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFFFFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
-      case CoverTheme.architecture:
+      case CoverTheme.classic2:
         return const LinearGradient(
-          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          colors: [Color(0xFF232526), Color(0xFF232526)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -84,7 +106,31 @@ extension CoverThemeStyle on CoverTheme {
           end: Alignment.bottomRight,
         );
 
-      case CoverTheme.abstract:
+      case CoverTheme.nature3:
+        return const LinearGradient(
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case CoverTheme.nature4:
+        return const LinearGradient(
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case CoverTheme.architecture1:
+        return const LinearGradient(
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case CoverTheme.architecture2:
+        return const LinearGradient(
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case CoverTheme.abstract1:
         return const LinearGradient(
           colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
           begin: Alignment.topLeft,
@@ -111,14 +157,26 @@ extension CoverThemeStyle on CoverTheme {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
-
-      case CoverTheme.dark:
+      case CoverTheme.abstract5:
         return const LinearGradient(
-          colors: [Color(0xFF232526), Color(0xFF414345)],
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
-      case CoverTheme.texture:
+      case CoverTheme.abstract6:
+        return const LinearGradient(
+          colors: [Color(0xFFEEE8DF), Color(0xFFD6D0C5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+      case CoverTheme.texture1:
+        return const LinearGradient(
+          colors: [Color(0xFFD7D2CC), Color(0xFF304352)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case CoverTheme.texture2:
         return const LinearGradient(
           colors: [Color(0xFFD7D2CC), Color(0xFF304352)],
           begin: Alignment.topLeft,

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import '../../../../features/album/domain/entities/layer.dart';
+import '../../data/models/layer.dart';
 import 'layer_interaction_manager.dart';
 
 /// 이미지/텍스트 레이어의 렌더링과 기본 사이즈 계산 전담

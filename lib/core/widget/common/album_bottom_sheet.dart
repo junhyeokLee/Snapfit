@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
-import '../../viewmodels/album_view_model.dart';
+import '../../../features/album/presentation/viewmodels/album_view_model.dart';
 import 'gallery_thumb_tile.dart';
 
 

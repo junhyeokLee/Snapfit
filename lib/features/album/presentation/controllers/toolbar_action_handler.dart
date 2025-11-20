@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/common/album_bottom_sheet.dart';
+import '../../../../core/widget/common/album_bottom_sheet.dart';
 import '../widgets/editor/edit_cover_theme.dart';
 /// Toolbar 버튼 액션 전담. 기존 EditCover 내부 onAddPhoto / onOpenCoverSelector 그대로.
 class ToolbarActionHandler {

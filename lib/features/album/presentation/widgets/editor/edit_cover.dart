@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/cover_view_model.dart';
-import 'package:snap_fit/features/album/domain/entities/cover_size.dart';
-import 'package:snap_fit/features/album/domain/entities/cover_theme.dart';
-import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_toolbar.dart';
@@ -16,6 +13,9 @@ import 'package:snap_fit/features/album/presentation/controllers/layer_interacti
 import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
 import 'package:snap_fit/features/album/presentation/controllers/edit_cover_state_manager.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover_selector.dart';
+import '../../../data/models/cover_size.dart';
+import '../../../data/models/layer.dart';
+import '../../../data/models/cover_theme.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   const EditCover({super.key});

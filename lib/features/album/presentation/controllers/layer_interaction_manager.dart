@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../features/album/domain/entities/layer.dart';
+import '../../data/models/layer.dart';
 import '../viewmodels/album_view_model.dart';
 
 /// 스타일 레이어 인터랙션 관리자

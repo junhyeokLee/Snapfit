@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../domain/entities/cover_theme.dart';
+import '../../../../../core/widget/common/spine_painter.dart';
+import '../../../data/models/cover_theme.dart';
 import '../../viewmodels/cover_view_model.dart';
-import '../common/spine_painter.dart';
 
 class EditCoverTheme extends ConsumerStatefulWidget {
   const EditCoverTheme({super.key});

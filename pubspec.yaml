@@ -41,6 +41,7 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_screenutil: ^5.9.3
   flutter_keyboard_visibility: ^6.0.0
+  dio: ^5.9.0
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,14 @@ flutter:
     - assets/cover/cover6.png
     - assets/cover/cover7.png
     - assets/cover/cover8.png
+    - assets/cover/cover8.png
+    - assets/cover/cover9.png
+    - assets/cover/cover10.png
+    - assets/cover/cover11.png
+    - assets/cover/cover12.png
+    - assets/cover/cover13.png
+    - assets/cover/cover15.png
+    - assets/cover/cover16.png
 
   fonts:
     - family: HanSans

@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:snap_fit/features/album/presentation/widgets/common/triangle_slider.dart';
-import '../../../domain/entities/layer.dart';
+import 'package:snap_fit/core/widget/common/triangle_slider.dart';
+import '../../../features/album/data/models/layer.dart';
+import '../../../features/album/presentation/widgets/editor/tool_button.dart';
+import '../../../features/album/presentation/widgets/editor/top_bar.dart';
 import 'color_palette_list.dart';
 import 'font_picker_list.dart';
 import 'no_glow.dart';
-import '../editor/tool_button.dart';
-import '../editor/top_bar.dart';
 
 /// 인스타그램 스타일 텍스트 편집 오버레이 (C. 전체 리팩토링)
 /// ----------------------------------------------------------------
