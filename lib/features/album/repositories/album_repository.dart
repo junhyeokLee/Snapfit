@@ -1,5 +1,5 @@
 // lib/features/album/domain/repositories/album_repository.dart
-import '../models/album.dart';
+import '../data/models/album.dart';
 
 /// Domain 레이어에서 사용하는 추상 저장소 인터페이스
 abstract class AlbumRepository {

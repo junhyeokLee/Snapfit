@@ -10,6 +10,9 @@ import '../../data/models/album_page.dart';
 import '../../data/models/cover_size.dart';
 import '../../data/models/cover_theme.dart';
 import '../../data/models/layer.dart';
+import '../../repositories/gallery_repository.dart';
+import '../../repositories/gallery_repositoryImpl.dart';
+import '../../service/album_editor_service.dart';
 part 'album_view_model.g.dart';
 part 'album_view_model.freezed.dart';
 
@@ -37,6 +40,9 @@ abstract class AlbumState with _$AlbumState {
 
 @Riverpod(keepAlive: true)
 class AlbumViewModel extends _$AlbumViewModel {
+  late final AlbumEditorService _service = AlbumEditorService();
+  late final GalleryRepository _gallery = GalleryRepositoryImpl();
+
   final List<AssetEntity> _files = [];
   final List<AssetPathEntity> _albums = [];
   AssetPathEntity? _currentAlbum;
@@ -62,12 +68,7 @@ class AlbumViewModel extends _$AlbumViewModel {
 
     // 초기 표지 페이지 생성
     if (_pages.isEmpty) {
-      _pages.add(AlbumPage(
-        id: 'cover_page',
-        isCover: true,
-        pageIndex: 0,
-        layers: [],
-      ));
+      _pages.add(_service.createPage(index: 0, isCover: true));
     }
 
     return AlbumState(
@@ -82,26 +83,19 @@ class AlbumViewModel extends _$AlbumViewModel {
 
   /// 초기 데이터
   Future<void> fetchInitialData() async {
-    final perm = await PhotoManager.requestPermissionExtend();
-    if (!perm.isAuth) {
+    final ok = await _gallery.requestPermission();
+    if (!ok) {
       state = const AsyncError('갤러리 접근 권한이 필요합니다.', StackTrace.empty);
       return;
     }
-
-    final list = await PhotoManager.getAssetPathList(
-      type: RequestType.image,
-      onlyAll: false,
-    );
-
+    final list = await _gallery.loadAlbums();
     _albums
       ..clear()
       ..addAll(list);
-
     if (_albums.isEmpty) {
       state = const AsyncError('이미지 앨범이 없습니다.', StackTrace.empty);
       return;
     }
-
     await selectAlbum(_albums.first);
   }
 
@@ -119,7 +113,7 @@ class AlbumViewModel extends _$AlbumViewModel {
     if (_loading || !_hasMore || _currentAlbum == null) return;
     _loading = true;
     try {
-      final page = await _currentAlbum!.getAssetListPaged(page: _page, size: _pageSize);
+      final page = await _gallery.loadImagesPaged(_currentAlbum!, _page, _pageSize);
       _files.addAll(page);
       _hasMore = page.length == _pageSize;
       _page++;
@@ -132,16 +126,7 @@ class AlbumViewModel extends _$AlbumViewModel {
   /// 이미지 레이어 추가 (현재 페이지)
   void addImage(AssetEntity asset) {
     final currentPage = _pages[_currentPageIndex];
-    if (currentPage.layers.any((l) => l.type == LayerType.image && l.id == asset.id)) return;
-
-    final newLayer = LayerModel(
-      id: asset.id,
-      type: LayerType.image,
-      position: const Offset(40, 40),
-      asset: asset,
-      // textStyleMode not needed for image
-    );
-    currentPage.layers.add(newLayer);
+    _service.addImageLayer(page: currentPage, asset: asset);
     _emit();
   }
 
@@ -155,79 +140,37 @@ class AlbumViewModel extends _$AlbumViewModel {
         TextAlign textAlign = TextAlign.center,
       }) {
     final currentPage = _pages[_currentPageIndex];
-
-    // 실제 텍스트 사이즈 측정 (멀티라인 포함)
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      maxLines: null,
-    )..layout(maxWidth: canvasSize.width * 1);
-
-    final textSize = tp.size; // 실제 텍스트 크기
-    final center = Offset(
-      (canvasSize.width - textSize.width) / 2,
-      (canvasSize.height - textSize.height) / 2,
-    );
-
-    final newLayer = LayerModel(
-      id: UniqueKey().toString(),
-      type: LayerType.text,
-      position: center, // 텍스트 크기 기반 중앙 정렬
+    _service.addTextLayer(
+      page: currentPage,
       text: text,
-      textStyle: style,
-      textStyleType: mode,
-      bubbleColor: color,
+      style: style,
+      mode: mode,
+      canvasSize: canvasSize,
       textAlign: textAlign,
+      color: color,
     );
-
-    currentPage.layers.add(newLayer);
     _emit();
   }
 
   /// 레이어 업데이트
   void updateLayer(LayerModel updated) {
     final currentPage = _pages[_currentPageIndex];
-    final idx = currentPage.layers.indexWhere((l) => l.id == updated.id);
-    if (idx != -1) {
-      final oldLayer = currentPage.layers[idx];
-      currentPage.layers[idx] = oldLayer.copyWith(
-        text: updated.text ?? oldLayer.text,
-        textStyle: updated.textStyle ?? oldLayer.textStyle,
-        textStyleType: updated.textStyleType ?? oldLayer.textStyleType,
-        bubbleColor: updated.bubbleColor ?? oldLayer.bubbleColor,
-        position: updated.position ?? oldLayer.position,
-        scale: updated.scale ?? oldLayer.scale,
-        rotation: updated.rotation ?? oldLayer.rotation,
-        textAlign: updated.textAlign ?? oldLayer.textAlign,
-      );
-      _emit();
-    }
+    _service.updateLayer(page: currentPage, updated: updated);
+    _emit();
   }
 
   /// 텍스트 스타일 변경
   void updateTextStyle(String id, String styleKey) {
     final currentPage = _pages[_currentPageIndex];
-    final idx = currentPage.layers.indexWhere((l) => l.id == id);
-    if (idx != -1) {
-      final old = currentPage.layers[idx];
-      currentPage.layers[idx] = old.copyWith(
-        textBackground: styleKey,
-      );
-      _emit();
-    }
+    _service.updateTextStyle(page: currentPage, id: id, styleKey: styleKey);
+    _emit();
   }
 
   /// 이미지 프레임 스타일 변경
   void updateImageFrame(String id, String frameKey) {
     final currentPage = _pages[_currentPageIndex];
-    final idx = currentPage.layers.indexWhere((l) => l.id == id);
-    if (idx != -1) {
-      final old = currentPage.layers[idx];
-      currentPage.layers[idx] = old.copyWith(
-        imageBackground: frameKey,
-      );
-      _emit();
-    }
+    _service.updateImageFrame(page: currentPage, id: id, frameKey: frameKey);
+    _emit();
   }
 
   /// 커버 선택 (+ 선택적으로 Variant 지정)
@@ -240,14 +183,7 @@ class AlbumViewModel extends _$AlbumViewModel {
   /// 페이지 추가
   void addPage() {
     final nextIndex = _pages.length;
-    _pages.add(
-      AlbumPage(
-        id: 'page_$nextIndex',
-        isCover: false,
-        pageIndex: nextIndex,
-        layers: [],
-      ),
-    );
+    _pages.add(_service.createPage(index: nextIndex));
     _currentPageIndex = nextIndex;
     _emit();
   }
@@ -263,15 +199,14 @@ class AlbumViewModel extends _$AlbumViewModel {
   /// 마지막 레이어 제거
   void removeLast() {
     final currentPage = _pages[_currentPageIndex];
-    if (currentPage.layers.isNotEmpty) {
-      currentPage.layers.removeLast();
-      _emit();
-    }
+    _service.removeLast(page: currentPage);
+    _emit();
   }
 
   ///  전체 초기화
   void clearAll() {
-    _pages[_currentPageIndex].layers.clear();
+    final currentPage = _pages[_currentPageIndex];
+    _service.clearAll(page: currentPage);
     _emit();
   }
 
@@ -289,11 +224,8 @@ class AlbumViewModel extends _$AlbumViewModel {
   /// 특정 레이어 ID로 삭제 (현재 페이지 기준)
   void removeLayerById(String id) {
     final currentPage = _pages[_currentPageIndex];
-    final idx = currentPage.layers.indexWhere((l) => l.id == id);
-    if (idx != -1) {
-      currentPage.layers.removeAt(idx);
-      _emit();
-    }
+    _service.removeLayerById(page: currentPage, id: id);
+    _emit();
   }
 
   /// 선택 해제 (UI에서만 쓰이는 경우라도 호출 가능하도록 준비)

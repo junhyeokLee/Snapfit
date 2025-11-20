@@ -1,8 +1,8 @@
 // lib/features/album/data/repositories/album_repository_impl.dart
-import '../models/album.dart';
+import '../data/api/album_api.dart';
+import '../data/models/album.dart';
+import '../data/models/album_dto.dart';
 import 'album_repository.dart';
-import '../api/album_api.dart';
-import '../models/album_dto.dart';
 
 /// AlbumRepository의 실제 구현체
 class AlbumRepositoryImpl implements AlbumRepository {

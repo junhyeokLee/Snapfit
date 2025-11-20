@@ -1,6 +1,6 @@
 // lib/features/album/domain/usecases/load_album_usecase.dart
 import '../../data/models/album.dart';
-import '../../data/repositories/album_repository.dart';
+import '../../repositories/album_repository.dart';
 
 /// 앨범 불러오기 유스케이스
 class LoadAlbumUseCase {
