@@ -1,18 +1,17 @@
-import 'album_page.dart';
-import 'cover_size.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class Album {
-  final String albumId;
-  final CoverSize coverSize;
-  final List<AlbumPage> pages;
-  final DateTime createdAt;
-  final String title;
+part 'album.freezed.dart';
+part 'album.g.dart';
 
-  Album({
-    required this.albumId,
-    required this.coverSize,
-    required this.pages,
-    required this.createdAt,
-    required this.title,
-  });
+@freezed
+sealed class Album with _$Album {
+  const factory Album({
+    required String id,
+    required String coverLayersJson,
+    required String coverRatio,
+    required String createdAt,
+    required String updatedAt,
+  }) = _Album;
+
+  factory Album.fromJson(Map<String, dynamic> json) => _$AlbumFromJson(json);
 }

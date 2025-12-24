@@ -44,36 +44,15 @@ class LayerBuilder {
           return const Center(child: CircularProgressIndicator(strokeWidth: 2));
         }
 
-        final coverSize = getCoverSize();
-        final imgW = snapshot.data!.image.width.toDouble();
-        final imgH = snapshot.data!.image.height.toDouble();
-        final imgAspect = imgW / imgH;
-        final coverAspect = coverSize.width / coverSize.height;
-
-        final fillScale = imgAspect > coverAspect
-            ? coverSize.height / imgH
-            : coverSize.width / imgW;
-
-        final baseW = imgW * fillScale;
-        final baseH = imgH * fillScale;
-
-        // 첫 진입시 중앙 배치 초기화
-        final initialPos = Offset(
-          (coverSize.width - baseW) / 2,
-          (coverSize.height - baseH) / 2,
-        );
-        // 내부 인터랙션 맵 초기화는 manager가 담당
-        interaction.setBaseSize(layer.id, Size(baseW, baseH));
-
         return interaction.buildInteractiveLayer(
           layer: layer,
-          baseWidth: baseW,
-          baseHeight: baseH,
+          baseWidth: layer.width,
+          baseHeight: layer.height,
           child: _buildFramedImage(
             layer,
             Image(
               image: AssetEntityImageProvider(layer.asset!),
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
             ),
           ),
         );
@@ -240,15 +219,23 @@ class LayerBuilder {
   Widget buildText(LayerModel layer) {
     if (_isEditing(layer)) return const SizedBox.shrink();
 
+    // ✅ 기본 생성 텍스트 최소 폰트 크기 (너무 작게 생성되는 것 방지)
+    const double minFontSize = 18;
+
+    final TextStyle baseStyle = layer.textStyle ?? const TextStyle(fontSize: 18);
+
+    // ✅ 실제 적용될 스타일 (최소값 보장)
+    final TextStyle effectiveStyle = baseStyle.fontSize != null && baseStyle.fontSize! < minFontSize
+        ? baseStyle.copyWith(fontSize: minFontSize)
+        : baseStyle;
+
     final coverSize = getCoverSize();
-    final textSpan = TextSpan(text: layer.text ?? "", style: layer.textStyle);
+    final textSpan = TextSpan(text: layer.text ?? "", style: effectiveStyle);
     final textPainter = TextPainter(
       text: textSpan,
       textDirection: TextDirection.ltr,
       textAlign: layer.textAlign ?? TextAlign.center,
     )..layout(minWidth: 0, maxWidth: coverSize.width * 0.8);
-
-    // Removed baseWidth and baseHeight calculation here
 
     // ───────────────────────────────────────────────
     // 텍스트 스타일(textStyleType) 우선 적용
@@ -259,36 +246,41 @@ class LayerBuilder {
 
       switch (layer.textBackground) {
         case "tag":
-          styled = _buildTagStyle(layer, textPainter);
+          styled = _buildTagStyle(layer, textPainter, effectiveStyle);
           break;
         case "bubble":
-          styled = _buildBubbleStyle(layer, textPainter);
+          styled = _buildBubbleStyle(layer, textPainter, effectiveStyle);
           break;
         case "note":
-          styled = _buildNoteStyle(layer, textPainter);
+          styled = _buildNoteStyle(layer, textPainter, effectiveStyle);
           break;
         case "calligraphy":
-          styled = _buildCalligraphyStyle(layer, textPainter);
+          styled = _buildCalligraphyStyle(layer, textPainter, effectiveStyle);
           break;
         case "sticker":
-          styled = _buildStickerStyle(layer, textPainter);
+          styled = _buildStickerStyle(layer, textPainter, effectiveStyle);
           break;
         case "tape":
-          styled = _buildTapeStyle(layer, textPainter);
+          styled = _buildTapeStyle(layer, textPainter, effectiveStyle);
           break;
         default:
           styled = Padding(
             padding: const EdgeInsets.all(4),
             child: Text(
               layer.text ?? "",
-              style: layer.textStyle,
+              style: effectiveStyle,
               textAlign: layer.textAlign ?? TextAlign.center,
             ),
           );
           break;
       }
 
-      final realSize = _calculateStyleSize(layer.textBackground!, layer, textPainter);
+      // ✅ style 텍스트도 하단 여유 보정
+      final Size styleSize = _calculateStyleSize(layer.textBackground!, layer, textPainter);
+      final realSize = Size(
+        styleSize.width,
+        styleSize.height + 12,
+      );
       interaction.setBaseSize(layer.id, realSize);
 
       return interaction.buildInteractiveLayer(
@@ -303,15 +295,20 @@ class LayerBuilder {
     Widget content;
 
     content = Padding(
-      padding: const EdgeInsets.all(4),
+      // ✅ descender(y, g 등) 안전 여유 확보
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
       child: Text(
         layer.text ?? "",
-        style: layer.textStyle,
+        style: effectiveStyle,
         textAlign: layer.textAlign ?? TextAlign.center,
       ),
     );
 
-    final realSize = Size(textPainter.size.width + 20, textPainter.size.height + 10);
+    // ✅ 아래 잘림 방지를 위해 baseHeight를 실측보다 크게 확보
+    final realSize = Size(
+      textPainter.size.width + 55,
+      textPainter.size.height + 55,
+    );
     interaction.setBaseSize(layer.id, realSize);
 
     return interaction.buildInteractiveLayer(
@@ -337,8 +334,8 @@ class LayerBuilder {
     return completer.future;
   }
 
-  Widget _buildTagStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 14);
+  Widget _buildTagStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontWeight: FontWeight.w600,
       letterSpacing: 0.3,
@@ -362,8 +359,8 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildBubbleStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 14);
+  Widget _buildBubbleStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontWeight: FontWeight.w500,
       height: 1.2,
@@ -389,8 +386,8 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildNoteStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 13);
+  Widget _buildNoteStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       height: 1.25,
     );
@@ -417,8 +414,8 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildCalligraphyStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 16);
+  Widget _buildCalligraphyStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontStyle: FontStyle.italic,
       fontWeight: FontWeight.w500,
@@ -444,8 +441,8 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildStickerStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 14);
+  Widget _buildStickerStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontWeight: FontWeight.w700,
       letterSpacing: 0.4,
@@ -477,8 +474,8 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildTapeStyle(LayerModel layer, TextPainter painter) {
-    final baseStyle = layer.textStyle ?? const TextStyle(fontSize: 13);
+  Widget _buildTapeStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+    final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontWeight: FontWeight.w500,
     );

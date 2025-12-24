@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
-import '../../../features/album/presentation/viewmodels/album_view_model.dart';
+import '../../../features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'gallery_thumb_tile.dart';
 
 
@@ -85,7 +85,11 @@ class _AlbumSelectionHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 
 /// 📸 공통 사진 선택 바텀시트
-Future<void> showPhotoSelectionSheet(BuildContext context, WidgetRef ref) async {
+Future<void> showPhotoSelectionSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  void Function(AssetEntity asset)? onSelect,
+}) async {
   await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -99,7 +103,7 @@ Future<void> showPhotoSelectionSheet(BuildContext context, WidgetRef ref) async 
         expand: false,
         builder: (context, scrollController) {
           scrollController.addListener(() {
-            final vm = ref.read(albumViewModelProvider.notifier);
+            final vm = ref.read(albumEditorViewModelProvider.notifier);
             if (scrollController.position.pixels >=
                 scrollController.position.maxScrollExtent - 300) {
               vm.loadMore();
@@ -108,13 +112,13 @@ Future<void> showPhotoSelectionSheet(BuildContext context, WidgetRef ref) async 
 
           return Consumer(
             builder: (context, ref, _) {
-              final async = ref.watch(albumViewModelProvider);
+              final async = ref.watch(albumEditorViewModelProvider);
               final st = async.asData?.value;
               if (st == null) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final vm = ref.read(albumViewModelProvider.notifier);
+              final vm = ref.read(albumEditorViewModelProvider.notifier);
 
               return Container(
                 decoration: const BoxDecoration(
@@ -154,7 +158,7 @@ Future<void> showPhotoSelectionSheet(BuildContext context, WidgetRef ref) async 
                             final asset = st.files[i];
                             return GestureDetector(
                               onTap: () {
-                                vm.addImage(asset);
+                                onSelect?.call(asset);
                                 Navigator.pop(context);
                               },
                               child: GalleryThumbTile(
@@ -243,8 +247,8 @@ Future<void> _showAlbumSelectionSheet(
   );
 
   if (selected != null) {
-    final vm = ref.read(albumViewModelProvider.notifier);
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
     await vm.selectAlbum(selected);
-    ref.invalidate(albumViewModelProvider); // ✅ setState 대체
+    ref.invalidate(albumEditorViewModelProvider); // ✅ setState 대체
   }
 }

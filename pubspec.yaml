@@ -42,12 +42,14 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_keyboard_visibility: ^6.0.0
   dio: ^5.9.0
+  retrofit: ^4.9.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^2.4.6
   riverpod_generator: ^3.0.3
+  retrofit_generator: ^10.2.0
   freezed: ^3.2.3
   json_serializable: ^6.9.0
   flutter_lints: ^5.0.0
@@ -179,4 +181,41 @@ flutter:
       fonts:
         - asset: assets/fonts/Tenada.ttf
           weight: 800
+
+    - family: Arita
+      fonts:
+        - asset: assets/fonts/Arita-Bold.ttf
+          weight: 800
+
+    - family: Book
+      fonts:
+        - asset: assets/fonts/Book_Bold.ttf
+          weight: 800
+
+    - family: BookMyungjo
+      fonts:
+        - asset: assets/fonts/BookkMyungjo_Bold.ttf
+          weight: 800
+
+    - family: Doldam
+      fonts:
+        - asset: assets/fonts/Doldam.otf
+          weight: 800
+
+    - family: Maker
+      fonts:
+        - asset: assets/fonts/Maker.ttf
+          weight: 800
+
+    - family: Paece
+      fonts:
+        - asset: assets/fonts/Peace-Bold.ttf
+          weight: 800
+
+    - family: RiaSans
+      fonts:
+        - asset: assets/fonts/RiaSans-Bold.ttf
+          weight: 800
+
+
 

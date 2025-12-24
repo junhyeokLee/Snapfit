@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/cover_view_model.dart';
-import 'package:snap_fit/features/album/presentation/viewmodels/album_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_toolbar.dart';
 import 'package:snap_fit/features/album/presentation/controllers/cover_size_controller.dart';
@@ -16,6 +15,8 @@ import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover_s
 import '../../../data/models/cover_size.dart';
 import '../../../data/models/layer.dart';
 import '../../../data/models/cover_theme.dart';
+import '../../viewmodels/album_editor_view_model.dart';
+import '../../viewmodels/album_view_model.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   const EditCover({super.key});
@@ -54,7 +55,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
     // Album VM 연결 기반 에디터/툴바
     _textEditor = TextEditorManager(
       context,
-      ref.read(albumViewModelProvider.notifier),
+      ref.read(albumEditorViewModelProvider.notifier),
     );
     _toolbar = ToolbarActionHandler(context, ref);
 
@@ -84,10 +85,27 @@ class _EditCoverState extends ConsumerState<EditCover> {
     Future.microtask(() => setState(() {})); // 첫 frame 안정화
   }
 
+  void _onCreateAlbum() {
+    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
+    final albumVm = ref.read(albumViewModelProvider.notifier);
+
+    // 1. 현재 커버 레이어 상태를 JSON으로 변환
+    final coverLayersJson = editorVm.exportCoverLayersJson(_coverSize);
+
+    // 2. 커버 비율 (현재 선택된 커버)
+    final coverRatio = _selectedCover.ratio;
+
+    // 3. 서버에 앨범 생성 요청
+    albumVm.createAlbum(
+      coverLayersJson: coverLayersJson,
+      coverRatio: coverRatio,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final albumSt = ref.watch(albumViewModelProvider).asData?.value;
-    final albumVm = ref.read(albumViewModelProvider.notifier);
+    final albumSt = ref.watch(albumEditorViewModelProvider).asData?.value;
+    final albumVm = ref.read(albumEditorViewModelProvider.notifier);
     final coverSt = ref.watch(coverViewModelProvider).asData?.value;
     final coverVm = ref.read(coverViewModelProvider.notifier);
     final layers = albumSt?.layers ?? [];
@@ -237,7 +255,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
                                               });
                                             });
                                       },
-                                      buildImage: (layer, _, __) =>
+                                      buildImage: (layer) =>
                                           _layerBuilder.buildImage(layer),
                                       buildText: (layer) =>
                                           _layerBuilder.buildText(layer),
@@ -386,7 +404,12 @@ class _EditCoverState extends ConsumerState<EditCover> {
                                   }
                                 });
                               },
-                              onAddPhoto: _toolbar.addPhoto,
+                              onAddPhoto: () {
+                                final size = _interaction.getCoverSize();
+                                if (size.width > 0 && size.height > 0) {
+                                  _toolbar.addPhoto(size);
+                                }
+                              },
                               onOpenCoverSelector: () async {
                                 setState(() => _state.setThemeOpen(true));
                                 await _toolbar.openCoverTheme();
@@ -405,12 +428,15 @@ class _EditCoverState extends ConsumerState<EditCover> {
               Positioned(
                 top: kToolbarHeight + MediaQuery.of(context).padding.top,
                 right: 16,
-                child: const Text(
-                  '생성',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
+                child: GestureDetector(
+                  onTap: _onCreateAlbum,
+                  child: const Text(
+                    '생성',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
                   ),
                 ),
               ),
@@ -427,7 +453,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
         final id = _interaction.selectedLayerId;
         if (id == null) return;
 
-        final albumVm = ref.read(albumViewModelProvider.notifier);
+        final albumVm = ref.read(albumEditorViewModelProvider.notifier);
         albumVm.updateImageFrame(id, key);
 
         setState(() {});
@@ -457,7 +483,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
         final id = _interaction.selectedLayerId;
         if (id == null) return;
 
-        final albumVm = ref.read(albumViewModelProvider.notifier);
+        final albumVm = ref.read(albumEditorViewModelProvider.notifier);
         albumVm.updateTextStyle(id, key);
 
         setState(() {});

@@ -1,38 +1,36 @@
-// lib/core/network/dio_client.dart
 import 'package:dio/dio.dart';
 
-/// 전역에서 사용하는 Dio 래퍼
+/// Retrofit 전용 Dio Factory
+/// - HTTP 메서드 래핑 금지
+/// - Dio 설정 + Interceptor만 담당
 class DioClient {
-  final Dio _dio;
-
-  DioClient({
-    Dio? dio,
-    String baseUrl = 'https://api.snapfit.app', // 나중에 실제 주소로 교체
-  }) : _dio = dio ?? Dio(BaseOptions(baseUrl: baseUrl));
-
-  /// 공통 GET
-  Future<Response<T>> get<T>(
-      String path, {
-        Map<String, dynamic>? queryParameters,
-      }) {
-    return _dio.get<T>(
-      path,
-      queryParameters: queryParameters,
+  static Dio create({
+    required String baseUrl,
+  }) {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+        headers: const {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
     );
-  }
 
-  /// 공통 POST
-  Future<Response<T>> post<T>(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-      }) {
-    return _dio.post<T>(
-      path,
-      data: data,
-      queryParameters: queryParameters,
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // TODO: JWT 적용 시 여기서 Authorization 헤더 추가
+          handler.next(options);
+        },
+        onError: (e, handler) {
+          handler.next(e);
+        },
+      ),
     );
-  }
 
-  Dio get raw => _dio;
+    return dio;
+  }
 }

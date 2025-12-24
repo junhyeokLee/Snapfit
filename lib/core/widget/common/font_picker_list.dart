@@ -8,10 +8,13 @@ class FontPickerList extends StatefulWidget {
   final List<String> families;
   final String current;
   final ValueChanged<String> onPick;
-  const FontPickerList({super.key, 
+  final ScrollController? controller;
+  const FontPickerList({
+    super.key,
     required this.families,
     required this.current,
     required this.onPick,
+    this.controller,
   });
 
   @override
@@ -19,13 +22,11 @@ class FontPickerList extends StatefulWidget {
 }
 
 class FontPickerListState extends State<FontPickerList> {
-  late final ScrollController _scrollController;
   late List<GlobalKey> _itemKeys;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
     _itemKeys = List<GlobalKey>.generate(widget.families.length, (_) => GlobalKey());
   }
 
@@ -37,11 +38,7 @@ class FontPickerListState extends State<FontPickerList> {
     }
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  // No dispose() needed
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +47,7 @@ class FontPickerListState extends State<FontPickerList> {
       child: ScrollConfiguration(
         behavior: const NoGlow(),
         child: ListView.separated(
-          controller: _scrollController,
+          controller: widget.controller,
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           physics: const BouncingScrollPhysics(),
@@ -65,6 +62,7 @@ class FontPickerListState extends State<FontPickerList> {
                 onTap: () {
                   widget.onPick(fam);
                   // 탭한 아이템을 뷰포트 중앙으로 스크롤 (해상도 무관)
+                  if (widget.controller == null) return;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (!mounted) return;
                     final key = _itemKeys[i];
@@ -75,11 +73,11 @@ class FontPickerListState extends State<FontPickerList> {
                     final itemPos = box.localToGlobal(Offset.zero);
                     final itemWidth = box.size.width;
                     final screenWidth = MediaQuery.of(context).size.width;
-                    final target = _scrollController.offset + (itemPos.dx + itemWidth / 2) - (screenWidth / 2);
-                    final minOffset = _scrollController.position.minScrollExtent;
-                    final maxOffset = _scrollController.position.maxScrollExtent;
+                    final target = widget.controller!.offset + (itemPos.dx + itemWidth / 2) - (screenWidth / 2);
+                    final minOffset = widget.controller!.position.minScrollExtent;
+                    final maxOffset = widget.controller!.position.maxScrollExtent;
                     final clamped = target.clamp(minOffset, maxOffset);
-                    _scrollController.animateTo(
+                    widget.controller!.animateTo(
                       clamped,
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeOut,

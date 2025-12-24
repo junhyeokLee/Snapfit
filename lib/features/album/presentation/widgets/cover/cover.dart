@@ -1,15 +1,12 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../../../../core/widget/common/grid_overlay_painter.dart';
 import '../../../../../core/widget/common/spine_painter.dart';
 import '../../../data/models/cover_theme.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-
 import '../../../data/models/layer.dart';
 
 
-typedef BuildImageLayer = Widget Function(LayerModel layer, double maxW, double maxH);
+typedef BuildImageLayer = Widget Function(LayerModel layer);
 typedef BuildTextLayer = Widget Function(LayerModel layer);
 typedef SortedByZ = List<LayerModel> Function(List<LayerModel> layers);
 typedef CoverSizeChanged = void Function(Size size);
@@ -24,6 +21,7 @@ class CoverLayout extends StatelessWidget {
   final BuildTextLayer buildText;
   final SortedByZ sortedByZ;
   final CoverTheme theme;
+
 
   const CoverLayout({
     super.key,
@@ -89,11 +87,11 @@ class CoverLayout extends StatelessWidget {
                                 children: [
                                   _CoverBackground(leftSpine: leftSpine, theme: theme),
                                   ...sortedByZ(layers).map((layer) {
-                                    if (layer.type == null) return const SizedBox();
-                                    if (layer.type.toString().contains('image')) {
-                                      return buildImage(layer, maxW, maxH);
-                                    } else {
-                                      return buildText(layer);
+                                    switch (layer.type) {
+                                      case LayerType.image:
+                                        return buildImage(layer);
+                                      case LayerType.text:
+                                        return buildText(layer);
                                     }
                                   }),
                                   Align(

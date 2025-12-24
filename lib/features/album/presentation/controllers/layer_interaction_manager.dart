@@ -1,11 +1,14 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../data/models/layer.dart';
 import '../viewmodels/album_view_model.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 
 /// 스타일 레이어 인터랙션 관리자
 /// 이미지/텍스트 레이어의 드래그, 회전, 확대/축소를 처리.
@@ -80,6 +83,11 @@ class LayerInteractionManager {
 
   // ==================== Getters / Setters ====================
 
+  /// 외부(export용) zIndex 조회
+  int getZIndex(String layerId) {
+    return _z[layerId] ?? 0;
+  }
+
   String? get selectedLayerId => _selectedLayerId;
 
   /// 편집 모드 설정 (텍스트 레이어 전용)
@@ -130,7 +138,7 @@ class LayerInteractionManager {
     if (id == null) return;
 
     // ViewModel에서 레이어 제거
-    ref.read(albumViewModelProvider.notifier).removeLayerById(id);
+    ref.read(albumEditorViewModelProvider.notifier).removeLayerById(id);
 
     // 로컬 상태 정리
     setState(() {
@@ -153,7 +161,6 @@ class LayerInteractionManager {
     required double baseHeight,
     required Widget child,
   }) {
-    // 레이어 상태 초기화 (최초 1회만 실행)
     _pos.putIfAbsent(layer.id, () => layer.position);
     _scale.putIfAbsent(layer.id, () => layer.scale);
     _rot.putIfAbsent(layer.id, () => layer.rotation);
@@ -180,23 +187,28 @@ class LayerInteractionManager {
                 children: [
                   SizedBox(
                     width: baseWidth,
-                    height: baseHeight,
+                    height: layer.type == LayerType.text ? null : baseHeight,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent, // 빈 공간도 터치 감지
-                      onTap: () => _handleTap(layer),
+                      onTap: () {
+                        _handleTap(layer);
+                      },
                       onScaleStart: (d) => _handleScaleStart(layer, d),
                       onScaleUpdate: (d) => _handleScaleUpdate(layer, d, baseWidth, baseHeight),
                       onScaleEnd: (d) => _handleScaleEnd(layer, d),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 100),
                         curve: Curves.easeOut,
-                        decoration: BoxDecoration(
-                          // 선택 시 흰색 테두리 표시
-                          border: isSelected && !isEditing
-                              ? Border.all(color: Colors.white, width: 2.5)
-                              : null,
-                        ),
-                        child: ClipRRect(child: child),
+                        // BoxDecoration의 border는 내부 영역을 잠식하여 콘텐츠가 잘릴 수 있으므로
+                        // foregroundDecoration을 사용해 테두리를 레이아웃 외곽에 그리도록 처리
+                        foregroundDecoration: isSelected && !isEditing
+                            ? BoxDecoration(
+                                border: Border.all(color: Colors.white, width: 1),
+                              )
+                            : null,
+                        child: layer.type == LayerType.text
+                            ? child
+                            : ClipRRect(child: child),
                       ),
                     ),
                   ),
@@ -315,9 +327,10 @@ class LayerInteractionManager {
     final baseSize = Size(baseWidth, baseHeight);
 
     // ==================== 스케일 처리 ====================
-    // 스케일 변화 속도 완화 (확대/축소 속도 70% 감소)
+    // ✅ 텍스트 스케일 반응 상향 (더 빠르게 커지고 작아짐)
     final rawScale = details.scale;
-    final slowedScaleDelta = (rawScale - 1.0) * 0.50 + 1.0; // 30%만 반영
+    // 기존 0.50 → 0.85로 상향 (체감 크기 변화 증가)
+    final slowedScaleDelta = (rawScale - 1.0) * 0.85 + 1.0;
     double targetScale = gestureState.initialScale * slowedScaleDelta;
 
     // 범위 초과 시 저항 적용 (고무줄 효과)
@@ -370,25 +383,7 @@ class LayerInteractionManager {
     }
 
     // 텍스트 레이어 드래그 감도 조정 및 실제 크기 보정
-    if (layer.type == LayerType.text) {
-      // 텍스트 실제 크기 계산
-      final text = layer.text ?? '';
-      final textStyle = layer.textStyle ?? const TextStyle(fontSize: 20);
-      final textPainter = TextPainter(
-        text: TextSpan(text: text, style: textStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      // 실제 텍스트 크기로 baseSize 보정
-      _refBaseSize[layer.id] = Size(textPainter.width, textPainter.height);
-
-      // 이미지와 동일한 드래그 감도 보정 적용
-      final currentScale = gestureState.initialScale * details.scale;
-      if (currentScale > 0) {
-        final normalized = math.pow(currentScale, 0.55);
-        rawDelta = rawDelta * normalized.toDouble();
-      }
-    }
+    // (baseSize 재계산 코드 삭제됨)
 
     // 회전된 레이어의 로컬 좌표계로 변환
     // (레이어가 회전되어 있어도 드래그 방향이 자연스럽게 느껴지도록)
@@ -634,6 +629,21 @@ class LayerInteractionManager {
   double _lerpAngle(double a, double b, double t) {
     return a + _angleDifference(b, a) * t;
   }
+}
+
+/// Provider 전달용 파라미터 객체
+class LayerInteractionManagerArgs {
+  final GlobalKey coverKey;
+  final void Function(void Function()) setState;
+  final Size Function() getCoverSize;
+  final void Function(LayerModel layer) onEditText;
+
+  LayerInteractionManagerArgs({
+    required this.coverKey,
+    required this.setState,
+    required this.getCoverSize,
+    required this.onEditText,
+  });
 }
 
 // ==================== 내부 클래스 ====================

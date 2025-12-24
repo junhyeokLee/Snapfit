@@ -1,25 +1,25 @@
 // lib/features/album/data/api/album_api.dart
 import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
+import 'package:retrofit/retrofit.dart';
+import '../dto/request/create_album_request.dart';
+import '../models/album.dart';
 import '../models/album_dto.dart';
 
-/// 앨범 관련 API 호출 전담
-class AlbumApi {
-  final DioClient _client;
+part 'album_api.g.dart';
 
-  AlbumApi(this._client);
+@RestApi()
+abstract class AlbumApi {
+  factory AlbumApi(Dio dio) = _AlbumApi;
+
+  /// 앨범 생성
+  @POST('/albums')
+  Future<Album> createAlbum(
+      @Body() CreateAlbumRequest request,
+      );
 
   /// 앨범 상세 조회
-  Future<AlbumDto> fetchAlbum(String albumId) async {
-    final Response res = await _client.get('/albums/$albumId');
-    return AlbumDto.fromJson(res.data as Map<String, dynamic>);
-  }
-
-  /// 앨범 저장/업데이트
-  Future<void> saveAlbum(AlbumDto dto) async {
-    await _client.post(
-      '/albums/${dto.id}',
-      data: dto.toJson(),
-    );
-  }
+  @GET('/albums/{albumId}')
+  Future<Album> fetchAlbum(
+      @Path('albumId') String albumId,
+      );
 }

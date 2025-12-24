@@ -8,10 +8,12 @@ class ColorPaletteList extends StatelessWidget {
   final List<Color> colors;
   final Color current;
   final ValueChanged<Color> onPick;
-  const ColorPaletteList({super.key, 
+  final ScrollController? controller;
+  const ColorPaletteList({super.key,
     required this.colors,
     required this.current,
     required this.onPick,
+    this.controller
   });
 
   @override
@@ -21,6 +23,7 @@ class ColorPaletteList extends StatelessWidget {
       child: ScrollConfiguration(
         behavior: const NoGlow(),
         child: ListView.separated(
+          controller: controller,
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),

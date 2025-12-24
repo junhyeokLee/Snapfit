@@ -25,12 +25,12 @@ $CoverStateCopyWith<CoverState> get copyWith => _$CoverStateCopyWithImpl<CoverSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoverState&&const DeepCollectionEquality().equals(other.selectedCover, selectedCover)&&const DeepCollectionEquality().equals(other.selectedTheme, selectedTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoverState&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(selectedCover),const DeepCollectionEquality().hash(selectedTheme));
+int get hashCode => Object.hash(runtimeType,selectedCover,selectedTheme);
 
 @override
 String toString() {
@@ -62,10 +62,10 @@ class _$CoverStateCopyWithImpl<$Res>
 
 /// Create a copy of CoverState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? selectedCover = freezed,Object? selectedTheme = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? selectedCover = null,Object? selectedTheme = null,}) {
   return _then(_self.copyWith(
-selectedCover: freezed == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
-as CoverSize,selectedTheme: freezed == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
+selectedCover: null == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
+as CoverSize,selectedTheme: null == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
 as CoverTheme,
   ));
 }
@@ -223,12 +223,12 @@ _$CoverStateCopyWith<_CoverState> get copyWith => __$CoverStateCopyWithImpl<_Cov
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoverState&&const DeepCollectionEquality().equals(other.selectedCover, selectedCover)&&const DeepCollectionEquality().equals(other.selectedTheme, selectedTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoverState&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(selectedCover),const DeepCollectionEquality().hash(selectedTheme));
+int get hashCode => Object.hash(runtimeType,selectedCover,selectedTheme);
 
 @override
 String toString() {
@@ -260,10 +260,10 @@ class __$CoverStateCopyWithImpl<$Res>
 
 /// Create a copy of CoverState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? selectedCover = freezed,Object? selectedTheme = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? selectedCover = null,Object? selectedTheme = null,}) {
   return _then(_CoverState(
-selectedCover: freezed == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
-as CoverSize,selectedTheme: freezed == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
+selectedCover: null == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
+as CoverSize,selectedTheme: null == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
 as CoverTheme,
   ));
 }

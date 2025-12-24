@@ -45,6 +45,9 @@ class EditTextOverlay extends StatefulWidget {
 }
 
 class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingObserver {
+  // ScrollControllers for font and color pickers
+  final ScrollController _fontScroll = ScrollController();
+  final ScrollController _colorScroll = ScrollController();
   bool _keyboardWasVisible = true;
   bool _initialOpenHandled = false;
   late final TextEditingController _controller;
@@ -62,6 +65,13 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
 
   // 폰트 패밀리 (pubspec.yaml 등록 필요)
   final List<String> _fontFamilies = const [
+    'Book',
+    'BookMyungjo',
+    'Doldam',
+    'Maker',
+    'Arita',
+    'Peace',
+    'RiaSans',
     'NotoSans',
     'Aggravo',
     'Eulyoo',
@@ -109,6 +119,37 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focus.requestFocus();
+      // Scroll font list to current font
+      final idx = _fontFamilies.indexOf(_currentFont);
+      if (idx >= 0 && _fontScroll.hasClients) {
+        _fontScroll.jumpTo(idx * 56.0);
+      }
+      // Scroll color list to current color
+      // ColorPaletteList colors (must match below)
+      final List<Color> colorList = const [
+        Colors.white, Colors.grey, Colors.black, Colors.red, Colors.pink, Colors.purple,
+        Colors.deepPurple, Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
+        Colors.teal, Colors.green, Colors.lightGreen, Colors.lime, Colors.yellow,
+        Colors.amber, Colors.orange, Colors.deepOrange, Colors.brown, Colors.blueGrey,
+        Color(0xFFFF5722), Color(0xFFE91E63), Color(0xFF9C27B0),
+        Color(0xFF3F51B5), Color(0xFF03A9F4), Color(0xFF00BCD4),
+        Color(0xFF4CAF50), Color(0xFFFFEB3B), Color(0xFFFF9800),
+        Color(0xFF795548), Color(0xFF607D8B), Color(0xFFB2FF59),
+        Color(0xFFFF8A80), Color(0xFFEA80FC), Color(0xFF8C9EFF),
+        Color(0xFF80D8FF), Color(0xFF84FFFF), Color(0xFFA7FFEB),
+        Color(0xFFCCFF90), Color(0xFFFFFF8D), Color(0xFFFFE57F),
+        Color(0xFFD7CCC8), Color(0xFFBCAAA4),
+        Color(0xFFFFC1CC), Color(0xFFB5EAEA), Color(0xFFEDF6E5), Color(0xFFFCECDD),
+        Color(0xFFF9F3DF), Color(0xFFFFABAB), Color(0xFFB5FFD9), Color(0xFFC3FBD8),
+        Color(0xFFDEFCFC), Color(0xFFFFD6E8), Color(0xFFCAFFD0), Color(0xFFE3EFFF),
+        Color(0xFFFFF3B0), Color(0xFFFFD4A1), Color(0xFFA9DAFF), Color(0xFFE0BBE4),
+        Color(0xFF957DAD), Color(0xFFD291BC),
+      ];
+      final color = _style.color ?? Colors.white;
+      final cidx = colorList.indexWhere((c) => c.value == color.value);
+      if (cidx >= 0 && _colorScroll.hasClients) {
+        _colorScroll.jumpTo(cidx * 40.0);
+      }
     });
 
     WidgetsBinding.instance.addObserver(this);
@@ -284,6 +325,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
         return FontPickerList(
           families: _fontFamilies,
           current: _currentFont,
+          controller: _fontScroll,
           onPick: (fam) {
             _changeFont(fam);
           },
@@ -312,6 +354,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
             Color(0xFF957DAD), Color(0xFFD291BC),
           ],
           current: _style.color ?? Colors.white,
+          controller: _colorScroll,
           onPick: (color) {
             _changeTextColor(color);
           },

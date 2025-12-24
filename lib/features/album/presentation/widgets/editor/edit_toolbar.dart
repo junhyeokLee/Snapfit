@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../data/models/layer.dart';
-import '../../viewmodels/album_view_model.dart';
+import '../../viewmodels/album_editor_view_model.dart';
 
 class EditToolbar extends StatelessWidget {
-  final AlbumViewModel vm;
+  final AlbumEditorViewModel vm;
   final LayerModel? selected;
   final VoidCallback onAddText;
   final VoidCallback onAddPhoto;

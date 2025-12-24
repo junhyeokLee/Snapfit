@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 /// 하나의 레이어(이미지 or 텍스트)를 정의하는 데이터 모델
-enum LayerType { image, text }
+// enum LayerType { image, text }
+enum LayerType {
+  image,        // 기존 사용자 이미지 레이어
+  text,         // 기존 사용자 텍스트 레이어
+}
 
 enum TextStyleType {
   none,            // 기본
@@ -26,7 +30,6 @@ class LayerModel {
   final double height;  // 레이어 기본 높이
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
   final String? imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
-
 
   LayerModel({
     required this.id,
@@ -62,6 +65,8 @@ class LayerModel {
     double? height,
     String? textBackground,
     String? imageBackground,
+    bool? locked,
+    bool? editable,
   }) {
     return LayerModel(
       id: id ?? this.id,

@@ -49,11 +49,39 @@ class AlbumEditorService {
   }
 
   /// 이미지 레이어 생성 (단일 레이어 인스턴스만 생성)
-  LayerModel createImageLayer(AssetEntity asset) {
+  Future<LayerModel> createImageLayer({
+    required AssetEntity asset,
+    required Size canvasSize,
+  }) async {
+    final w = asset.width.toDouble();
+    final h = asset.height.toDouble();
+    final aspect = w / h;
+
+    final maxW = canvasSize.width * 0.8;
+    final maxH = canvasSize.height * 0.8;
+
+    double width;
+    double height;
+
+    if (aspect >= maxW / maxH) {
+      width = maxW;
+      height = width / aspect;
+    } else {
+      height = maxH;
+      width = height * aspect;
+    }
+
+    final pos = Offset(
+      (canvasSize.width - width) / 2,
+      (canvasSize.height - height) / 2,
+    );
+
     return LayerModel(
       id: asset.id,
       type: LayerType.image,
-      position: const Offset(40, 40),
+      position: pos,
+      width: width,
+      height: height,
       asset: asset,
     );
   }
@@ -66,24 +94,42 @@ class AlbumEditorService {
     required Size canvasSize,
     TextAlign textAlign = TextAlign.center,
     Color? color,
+    double? initialWidth,
+    double? initialHeight,
   }) {
-    // 실제 텍스트 사이즈 측정 (멀티라인 포함)
+    // ✅ layer_builder와 정확히 동일한 렌더 기준 (+55 padding)
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
       maxLines: null,
-    )..layout(maxWidth: canvasSize.width);
+    )..layout(); // ✅ maxWidth 제거 → 텍스트 길이에 따라 width / height 자동 증가
 
-    final size = tp.size;
-    final center = Offset(
-      (canvasSize.width - size.width) / 2,
-      (canvasSize.height - size.height) / 2,
+    final double safeWidth = initialWidth ?? (tp.width + 55);
+
+    // ✅ TextPainter 전체 높이를 그대로 사용 (모든 줄/줄간 간격 포함)
+    // flutter LineMetrics에는 leading 프로퍼티가 없으므로 computeLineMetrics로 직접 합산할 필요 없이
+    // tp.height로 전체 텍스트 높이를 사용하는 것이 가장 안전합니다.
+    final double verticalPadding = 80; // 위/아래 여유 공간
+    final double safeHeight = initialHeight ?? (tp.height + verticalPadding);
+
+    // ✅ 텍스트 실폭 기준 중앙 정렬 보정
+    final double textWidth = tp.width - 4;
+
+    // safeWidth 안에서 실제 텍스트가 차지하지 않는 좌우 여백의 절반
+    final double textBiasX = (safeWidth - textWidth) / 2;
+
+    // 커버 중앙에 '텍스트 자체의 중심'이 오도록 보정
+    final pos = Offset(
+      ((canvasSize.width - safeWidth) / 2) - textBiasX,
+      (canvasSize.height - safeHeight) / 2,
     );
 
     return LayerModel(
       id: UniqueKey().toString(),
       type: LayerType.text,
-      position: center,
+      position: pos,
+      width: safeWidth,
+      height: safeHeight,
       text: text,
       textStyle: style,
       textStyleType: mode,
@@ -95,17 +141,26 @@ class AlbumEditorService {
   /// 페이지에 이미지 레이어 추가
   ///
   /// 같은 asset.id 를 가진 이미지 레이어가 이미 있으면 추가하지 않는다.
-  AlbumPage addImageLayer({
+  Future<AlbumPage> addImageLayer({
     required AlbumPage page,
     required AssetEntity asset,
-  }) {
+    required Size canvasSize,
+  }) async {
+
+    // 같은 이미지 이미 있으면 패스
     if (page.layers.any(
-      (l) => l.type == LayerType.image && l.id == asset.id,
+          (l) => l.type == LayerType.image && l.id == asset.id,
     )) {
       return page;
     }
 
-    final newLayer = createImageLayer(asset);
+    LayerModel newLayer;
+
+    newLayer = await createImageLayer(
+      asset: asset,
+      canvasSize: canvasSize,
+    );
+
     page.layers.add(newLayer);
     return page;
   }
@@ -119,6 +174,8 @@ class AlbumEditorService {
     required Size canvasSize,
     TextAlign textAlign = TextAlign.center,
     Color? color,
+    double? initialWidth,
+    double? initialHeight,
   }) {
     final newLayer = createTextLayer(
       text: text,
@@ -127,6 +184,8 @@ class AlbumEditorService {
       canvasSize: canvasSize,
       textAlign: textAlign,
       color: color,
+      initialWidth: initialWidth,
+      initialHeight: initialHeight,
     );
     page.layers.add(newLayer);
     return page;

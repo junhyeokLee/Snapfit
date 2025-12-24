@@ -4,6 +4,7 @@ import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.d
 import 'package:snap_fit/features/album/presentation/viewmodels/album_view_model.dart';
 
 import '../../data/models/cover_size.dart';
+import '../viewmodels/album_editor_view_model.dart';
 
 
 class AddCoverScreen extends ConsumerStatefulWidget {
@@ -23,7 +24,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     super.initState();
     _gridController = ScrollController()
       ..addListener(() {
-        final vm = ref.read(albumViewModelProvider.notifier);
+        final vm = ref.read(albumEditorViewModelProvider.notifier);
         if (_gridController.position.pixels >=
             _gridController.position.maxScrollExtent - 300) {
           vm.loadMore();
@@ -37,8 +38,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     //  이미 초기화된 경우 재호출 안 함
     Future.microtask(() {
       if (!_initialized) {
-        ref.read(albumViewModelProvider.notifier).fetchInitialData();
-        ref.read(albumViewModelProvider.notifier).selectCover(_selectedCover);
+        ref.read(albumEditorViewModelProvider.notifier).fetchInitialData();
+        ref.read(albumEditorViewModelProvider.notifier).selectCover(_selectedCover);
         _initialized = true;
       }
     });
@@ -64,8 +65,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(albumViewModelProvider);
-    final vm = ref.read(albumViewModelProvider.notifier);
+    final async = ref.watch(albumEditorViewModelProvider);
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
     final st = async.asData?.value;
 
     return LayoutBuilder(
