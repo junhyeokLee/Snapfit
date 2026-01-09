@@ -1,5 +1,5 @@
 import 'dart:ui';
-import '../models/layer.dart';
+import 'layer.dart';
 
 class LayerExportMapper {
   static Map<String, dynamic> toJson(

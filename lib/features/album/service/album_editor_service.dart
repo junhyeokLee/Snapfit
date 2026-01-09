@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../data/models/album_page.dart';
-import '../data/models/layer.dart';
+import '../domain/entities/album_page.dart';
+import '../domain/entities/layer.dart';
 
 /// 앨범 편집 + 갤러리 로딩 도메인 서비스
 ///

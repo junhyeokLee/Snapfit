@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../data/models/layer.dart';
+import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 
 class EditToolbar extends StatelessWidget {

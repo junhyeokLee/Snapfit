@@ -1,7 +1,7 @@
-import '../data/api/album_api.dart';
-import '../data/dto/request/create_album_request.dart';
-import '../data/models/album.dart';
-import 'album_repository.dart';
+import '../../domain/repositories/album_repository.dart';
+import '../api/album_api.dart';
+import '../dto/request/create_album_request.dart';
+import '../../domain/entities/album.dart';
 
 class AlbumRepositoryImpl implements AlbumRepository {
   final AlbumApi api;

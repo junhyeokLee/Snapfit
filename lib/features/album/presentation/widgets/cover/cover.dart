@@ -1,9 +1,10 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/widget/common/grid_overlay_painter.dart';
-import '../../../../../core/widget/common/spine_painter.dart';
-import '../../../data/models/cover_theme.dart';
+import '../../../../../shared/widgets/grid_overlay_painter.dart';
+import '../../../../../shared/widgets/spine_painter.dart';
+import '../../../../../core/constatns/cover_theme.dart';
 import 'package:flutter/material.dart';
-import '../../../data/models/layer.dart';
+
+import '../../../domain/entities/layer.dart';
 
 
 typedef BuildImageLayer = Widget Function(LayerModel layer);

@@ -1,7 +1,7 @@
 // Widgets/edit_cover_selector.dart
 import 'package:flutter/material.dart';
 
-import '../../../data/models/cover_size.dart';
+import '../../../../../core/constatns/cover_size.dart';
 
 /// 상단 커버 사이즈 선택 UI 전담
 class CoverSelectorWidget extends StatelessWidget {

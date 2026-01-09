@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
-import '../../data/models/layer.dart';
+import '../../domain/entities/layer.dart';
 import '../viewmodels/album_view_model.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

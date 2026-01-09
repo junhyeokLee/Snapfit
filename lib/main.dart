@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:snap_fit/features/album/presentation/screens/add_cover_screen.dart';
+
+import 'features/album/presentation/views/add_cover_screen.dart';
 
 void main() {
   runApp(

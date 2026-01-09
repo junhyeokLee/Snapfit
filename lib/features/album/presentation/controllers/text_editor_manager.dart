@@ -1,7 +1,6 @@
-// lib/screen/widget/EditCoverWidget/Controllers/text_editor_manager.dart
 import 'package:flutter/material.dart';
-import '../../../../core/widget/common/edit_text_overlay.dart';
-import '../../data/models/layer.dart';
+import '../../../../shared/widgets/edit_text_overlay.dart';
+import '../../domain/entities/layer.dart';
 import '../viewmodels/album_editor_view_model.dart';
 
 /// 기존 _openTextEditor(layer) 로직 1:1 래핑. 동작 동일.

@@ -1,5 +1,5 @@
 import 'package:photo_manager/photo_manager.dart';
-import 'gallery_repository.dart';
+import '../../domain/repositories/gallery_repository.dart';
 
 class GalleryRepositoryImpl implements GalleryRepository {
   @override

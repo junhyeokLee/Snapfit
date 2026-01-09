@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/api/album_provider.dart';
 import '../../data/dto/request/create_album_request.dart';
-import '../../data/models/album.dart';
+import '../../domain/entities/album.dart';
 // TODO: albumApiProvider 가 선언된 파일을 올바른 경로로 import 하세요.
 // 예) import '../../data/api/album_api_provider.dart';
 

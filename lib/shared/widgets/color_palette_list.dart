@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'no_glow.dart';
 
+
 /// 색상 팔레트 리스트 (옵션 영역)
 class ColorPaletteList extends StatelessWidget {
   final List<Color> colors;

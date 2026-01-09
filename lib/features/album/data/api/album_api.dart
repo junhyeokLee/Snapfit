@@ -1,9 +1,7 @@
-// lib/features/album/data/api/album_api.dart
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import '../dto/request/create_album_request.dart';
-import '../models/album.dart';
-import '../models/album_dto.dart';
+import '../../domain/entities/album.dart';
 
 part 'album_api.g.dart';
 

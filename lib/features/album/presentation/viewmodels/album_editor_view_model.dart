@@ -1,18 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../data/models/album_page.dart';
-import '../../data/models/cover_size.dart';
-import '../../data/models/cover_theme.dart';
-import '../../data/models/layer.dart';
-import '../../data/models/layer_export_mapper.dart';
-import '../../repositories/gallery_repository.dart';
-import '../../repositories/gallery_repositoryImpl.dart';
+import '../../domain/entities/album_page.dart';
+import '../../../../core/constatns/cover_size.dart';
+import '../../../../core/constatns/cover_theme.dart';
+import '../../domain/entities/layer.dart';
+import '../../domain/entities/layer_export_mapper.dart';
+import '../../data/repositories/gallery_repositoryImpl.dart';
 import '../../service/album_editor_service.dart';
 import '../controllers/layer_interaction_manager.dart';
 
@@ -46,7 +44,7 @@ abstract class AlbumEditorState with _$AlbumEditorState {
 @Riverpod(keepAlive: true)
 class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   late final AlbumEditorService _service = AlbumEditorService();
-  late final GalleryRepository _gallery = GalleryRepositoryImpl();
+  late final GalleryRepositoryImpl _gallery = GalleryRepositoryImpl();
 
   final List<AssetEntity> _files = [];
   final List<AssetPathEntity> _albums = [];

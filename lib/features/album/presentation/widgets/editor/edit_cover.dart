@@ -12,9 +12,9 @@ import 'package:snap_fit/features/album/presentation/controllers/layer_interacti
 import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
 import 'package:snap_fit/features/album/presentation/controllers/edit_cover_state_manager.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover_selector.dart';
-import '../../../data/models/cover_size.dart';
-import '../../../data/models/layer.dart';
-import '../../../data/models/cover_theme.dart';
+import '../../../../../core/constatns/cover_size.dart';
+import '../../../../../core/constatns/cover_theme.dart';
+import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
 

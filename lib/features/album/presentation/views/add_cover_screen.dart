@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
-import 'package:snap_fit/features/album/presentation/viewmodels/album_view_model.dart';
 
-import '../../data/models/cover_size.dart';
+import '../../../../core/constatns/cover_size.dart';
 import '../viewmodels/album_editor_view_model.dart';
 
 
