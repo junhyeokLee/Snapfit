@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:snap_fit/features/album/presentation/screens/page_editor_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/page_editor_screen.dart';
 import '../viewmodels/album_editor_view_model.dart';
 
 class AlbumSpreadScreen extends ConsumerWidget {
