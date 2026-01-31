@@ -7,17 +7,29 @@ part of 'album.dart';
 // **************************************************************************
 
 _Album _$AlbumFromJson(Map<String, dynamic> json) => _Album(
-  id: json['id'] as String,
-  coverLayersJson: json['coverLayersJson'] as String,
-  coverRatio: json['coverRatio'] as String,
-  createdAt: json['createdAt'] as String,
-  updatedAt: json['updatedAt'] as String,
+  id: (json['albumId'] as num?)?.toInt() ?? 0,
+  coverLayersJson: json['coverLayersJson'] as String? ?? '',
+  ratio: json['ratio'] as String? ?? '',
+  coverImageUrl: json['coverImageUrl'] as String?,
+  coverThumbnailUrl: json['coverThumbnailUrl'] as String?,
+  coverOriginalUrl: json['coverOriginalUrl'] as String?,
+  coverPreviewUrl: json['coverPreviewUrl'] as String?,
+  coverTheme: json['coverTheme'] as String?,
+  totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
+  createdAt: json['createdAt'] as String? ?? '',
+  updatedAt: json['updatedAt'] as String? ?? '',
 );
 
 Map<String, dynamic> _$AlbumToJson(_Album instance) => <String, dynamic>{
-  'id': instance.id,
+  'albumId': instance.id,
   'coverLayersJson': instance.coverLayersJson,
-  'coverRatio': instance.coverRatio,
+  'ratio': instance.ratio,
+  'coverImageUrl': instance.coverImageUrl,
+  'coverThumbnailUrl': instance.coverThumbnailUrl,
+  'coverOriginalUrl': instance.coverOriginalUrl,
+  'coverPreviewUrl': instance.coverPreviewUrl,
+  'coverTheme': instance.coverTheme,
+  'totalPages': instance.totalPages,
   'createdAt': instance.createdAt,
   'updatedAt': instance.updatedAt,
 };

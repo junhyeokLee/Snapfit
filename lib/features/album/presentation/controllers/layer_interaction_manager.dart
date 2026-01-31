@@ -1,14 +1,9 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../domain/entities/layer.dart';
-import '../viewmodels/album_view_model.dart';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
 
 /// 스타일 레이어 인터랙션 관리자
 /// 이미지/텍스트 레이어의 드래그, 회전, 확대/축소를 처리.
@@ -18,6 +13,8 @@ class LayerInteractionManager {
   final void Function(void Function()) setState; // UI 업데이트 함수
   final Size Function() getCoverSize; // 커버 크기 getter
   final void Function(LayerModel layer) onEditText; // 텍스트 편집 콜백
+  /// 이미지 플레이스홀더(사진 없음) 탭 시 콜백 – 페이지 편집에서 바로 갤러리 진입용
+  final void Function(LayerModel layer)? onTapPlaceholder;
 
   // ==================== 레이어 상태 저장소 ====================
   final Map<String, Offset> _pos = {}; // 레이어 위치 (좌상단 기준)
@@ -79,6 +76,7 @@ class LayerInteractionManager {
     required this.setState,
     required this.getCoverSize,
     required this.onEditText,
+    this.onTapPlaceholder,
   });
 
   // ==================== Getters / Setters ====================
@@ -163,7 +161,8 @@ class LayerInteractionManager {
   }) {
     _pos.putIfAbsent(layer.id, () => layer.position);
     _scale.putIfAbsent(layer.id, () => layer.scale);
-    _rot.putIfAbsent(layer.id, () => layer.rotation);
+    // VM/템플릿은 도(degree), Transform.rotate는 라디안 사용
+    _rot.putIfAbsent(layer.id, () => layer.rotation * math.pi / 180);
     _z.putIfAbsent(layer.id, () => ++_zCounter);
     _refBaseSize.putIfAbsent(layer.id, () => Size(baseWidth, baseHeight));
 
@@ -275,6 +274,15 @@ class LayerInteractionManager {
 
   /// 탭 이벤트 처리
   void _handleTap(LayerModel layer) {
+    // 이미지 플레이스홀더(사진 없음) 탭 시 바로 갤러리 진입 (페이지 편집용)
+    final isImagePlaceholder = layer.type == LayerType.image &&
+        layer.asset == null &&
+        (layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl) == null;
+    if (isImagePlaceholder && onTapPlaceholder != null) {
+      onTapPlaceholder!(layer);
+      return;
+    }
+
     if (_selectedLayerId != layer.id) {
       setState(() {
         _selectedLayerId = layer.id;
@@ -517,11 +525,14 @@ class LayerInteractionManager {
   }
 
   /// 제스처 종료 이벤트 처리 (손가락을 뗀 순간)
+// lib/features/album/presentation/controllers/layer_interaction_manager.dart
+
+  /// 제스처 종료 이벤트 처리
   void _handleScaleEnd(LayerModel layer, ScaleEndDetails details) {
     final scale = _scale[layer.id]!;
     final rotation = _rot[layer.id]!;
 
-    // 회전 스냅: 가장 가까운 각도로 부드럽게 회전
+    // 1. 회전 및 스케일 스냅 처리 (기존 로직 유지)
     double? targetRot;
     double minDiff = double.infinity;
     for (final angle in _snapAngles) {
@@ -531,23 +542,27 @@ class LayerInteractionManager {
         targetRot = angle;
       }
     }
-    // 충분히 가까우면 애니메이션으로 스냅
     if (minDiff < _angleSnapThreshold * 0.5) {
       _animateRotation(layer.id, targetRot!);
     }
-
-    // 스케일 스냅: 범위를 벗어난 경우 범위 내로 복귀
     if (scale < _minScale || scale > _maxScale) {
       _animateScale(layer.id, scale.clamp(_minScale, _maxScale));
     }
+
+    // 변경된 로컬 상태를 ViewModel의 전역 상태로 업데이트 (rotation은 도로 저장)
+    final updatedLayer = layer.copyWith(
+      position: _pos[layer.id],
+      scale: _scale[layer.id],
+      rotation: _rot[layer.id]! * 180 / math.pi,
+    );
+    ref.read(albumEditorViewModelProvider.notifier).updateLayer(updatedLayer);
+
     // 가이드라인 숨김
     setState(() {
       _showVerticalGuide = false;
       _showHorizontalGuide = false;
       _showDiagonalGuide = false;
     });
-
-    // 제스처 상태 정리
     _gestureStates.remove(layer.id);
   }
 

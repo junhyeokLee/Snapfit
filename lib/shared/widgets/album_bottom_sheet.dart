@@ -85,12 +85,14 @@ class _AlbumSelectionHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 
 /// 📸 공통 사진 선택 바텀시트
-Future<void> showPhotoSelectionSheet(
+/// 사진 선택 시 시트를 닫고 [AssetEntity]를 반환. 취소 시 null.
+/// [onSelect]가 있으면 선택 시 호출한 뒤 pop(선택한 사진 반환).
+Future<AssetEntity?> showPhotoSelectionSheet(
   BuildContext context,
   WidgetRef ref, {
   void Function(AssetEntity asset)? onSelect,
 }) async {
-  await showModalBottomSheet(
+  final result = await showModalBottomSheet<AssetEntity>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -159,7 +161,7 @@ Future<void> showPhotoSelectionSheet(
                             return GestureDetector(
                               onTap: () {
                                 onSelect?.call(asset);
-                                Navigator.pop(context);
+                                Navigator.pop(context, asset);
                               },
                               child: GalleryThumbTile(
                                 key: ValueKey(asset.id),
@@ -192,6 +194,7 @@ Future<void> showPhotoSelectionSheet(
       );
     },
   );
+  return result;
 }
 
 

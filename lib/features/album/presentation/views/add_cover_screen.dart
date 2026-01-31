@@ -2,12 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 
-import '../../../../core/constatns/cover_size.dart';
+import '../../../../core/constants/cover_size.dart';
+import '../../domain/entities/album.dart';
 import '../viewmodels/album_editor_view_model.dart';
+import '../viewmodels/cover_view_model.dart';
 
 
+/// 커버 편집 화면 (앨범 생성/편집 공통)
+/// - editAlbum == null: 앨범 생성 모드 (새 커버 만들기)
+/// - editAlbum != null: 앨범 편집 모드 (기존 커버 수정)
+/// 
+/// 참고: 앨범 내부 페이지 편집은 AlbumSpreadScreen 사용
 class AddCoverScreen extends ConsumerStatefulWidget {
-  const AddCoverScreen({super.key});
+  /// 편집 모드: 홈에서 앨범 선택 후 이 화면으로 올 때 전달 (이미 prepareAlbumForEdit 호출됨)
+  final Album? editAlbum;
+
+  const AddCoverScreen({super.key, this.editAlbum});
 
   @override
   ConsumerState<AddCoverScreen> createState() => _AddCoverScreenState();
@@ -29,16 +39,25 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           vm.loadMore();
         }
       });
-    // 기본 선택 세로형(6x8) 설정
     _selectedCover = coverSizes.firstWhere(
       (s) => s.name == '세로형',
       orElse: () => coverSizes.first,
     );
-    //  이미 초기화된 경우 재호출 안 함
     Future.microtask(() {
       if (!_initialized) {
-        ref.read(albumEditorViewModelProvider.notifier).fetchInitialData();
-        ref.read(albumEditorViewModelProvider.notifier).selectCover(_selectedCover);
+        if (widget.editAlbum == null) {
+          // + 버튼(신규 생성) 진입: 빈 레이아웃으로 시작 (기존 데이터/갤러리 불러오기 X)
+          ref
+              .read(albumEditorViewModelProvider.notifier)
+              .resetForCreate(initialCover: _selectedCover);
+        } else {
+          // 편집 모드: 에디터에 이미 로드됨 → 커버 VM만 동기화
+          final editorSt = ref.read(albumEditorViewModelProvider).asData?.value;
+          if (editorSt != null) {
+            ref.read(coverViewModelProvider.notifier).selectCover(editorSt.selectedCover);
+            ref.read(coverViewModelProvider.notifier).updateTheme(editorSt.selectedTheme);
+          }
+        }
         _initialized = true;
       }
     });
@@ -89,10 +108,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                 ),
               ),
 
-              child: const Stack(
+              child: Stack(
                 children: [
                   Positioned.fill(
-                    child: EditCover(),  // 완전 고정
+                    child: EditCover(editAlbum: widget.editAlbum),
                   ),
                 ],
               ),

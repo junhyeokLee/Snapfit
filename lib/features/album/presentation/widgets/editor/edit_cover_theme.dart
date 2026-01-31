@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../shared/widgets/spine_painter.dart';
-import '../../../../../core/constatns/cover_theme.dart';
+import '../../../../../core/constants/cover_theme.dart';
+import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 
 class EditCoverTheme extends ConsumerStatefulWidget {
@@ -61,14 +62,21 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
   Widget build(BuildContext context) {
     final vm = ref.read(coverViewModelProvider.notifier);
     final st = ref.watch(coverViewModelProvider).asData?.value;
+    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
+    final editorSt = ref.watch(albumEditorViewModelProvider).asData?.value;
 
-    if (st == null) {
+    if (editorSt == null) {
       return const Center(child: CircularProgressIndicator());
     }
+    // if (st == null) {
+    //   return const Center(child: CircularProgressIndicator());
+    // }
 
-    final selectedTheme = st.selectedTheme;
+    // final selectedTheme = st.selectedTheme;
 
-    final aspect = st.selectedCover.ratio; // 선택된 커버 비율
+    // final aspect = st.selectedCover.ratio; // 선택된 커버 비율
+    final selectedTheme = editorSt.selectedTheme; // ✅ editorState의 테마 사용
+    final aspect = editorSt.selectedCover.ratio;
     double previewBaseHeight = 0.0;
     double previewBaseWidth = 0.0;
 
@@ -128,6 +136,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                       return GestureDetector(
                         onTap: () {
                           vm.updateTheme(theme);
+                          editorVm.updateTheme(theme);
                           _scrollToSelected(index, previewBaseWidth);
                         },
                         child: AnimatedScale(

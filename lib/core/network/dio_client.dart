@@ -22,10 +22,23 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // TODO: JWT 적용 시 여기서 Authorization 헤더 추가
+          assert(() {
+            // ignore: avoid_print
+            print('[Dio] ${options.method} ${options.uri}');
+            return true;
+          }());
           handler.next(options);
         },
         onError: (e, handler) {
+          assert(() {
+            // ignore: avoid_print
+            print('[Dio] Error: ${e.type} ${e.message}');
+            if (e.type == DioExceptionType.connectionError) {
+              // ignore: avoid_print
+              print('[Dio] Connection refused(111) 체크: 1) 백엔드 0.0.0.0:8080 리스닝 2) PC·폰 같은 Wi‑Fi 3) dio_provider baseUrl = PC LAN IP');
+            }
+            return true;
+          }());
           handler.next(e);
         },
       ),

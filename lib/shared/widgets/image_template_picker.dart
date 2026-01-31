@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/constants/image_templates.dart';
+
+/// 이미지 슬롯 템플릿 선택 바텀시트 (정사각형, 4:3 등 - 사진이 짤리지 않게 contain)
+class ImageTemplatePicker extends StatelessWidget {
+  final String? selectedKey;
+  final ValueChanged<String> onSelect;
+
+  const ImageTemplatePicker({
+    super.key,
+    required this.selectedKey,
+    required this.onSelect,
+  });
+
+  static Future<String?> show(
+    BuildContext context, {
+    required String? currentKey,
+  }) {
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ImageTemplatePicker(
+        selectedKey: currentKey,
+        onSelect: (key) => Navigator.pop(ctx, key),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF9893a9),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20.r,
+            offset: Offset(0, -4.h),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Container(
+              width: 48.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              '사진 크기(템플릿)',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 8.h, bottom: 24.h),
+              child: Text(
+                '선택한 비율로 슬롯이 만들어지고, 사진이 그 안에 꽉 차게 들어갑니다.',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 13.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 24.h),
+              child: Wrap(
+                spacing: 10.w,
+                runSpacing: 10.h,
+                children: imageTemplates.map((t) {
+                  final isSelected = (selectedKey ?? 'free') == t.key;
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => onSelect(t.key),
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.white.withOpacity(0.95)
+                              : Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.4),
+                            width: isSelected ? 2.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          t.label,
+                          style: TextStyle(
+                            color: isSelected ? Colors.black87 : Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

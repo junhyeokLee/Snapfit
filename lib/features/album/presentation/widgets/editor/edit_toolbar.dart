@@ -9,6 +9,8 @@ class EditToolbar extends StatelessWidget {
   final VoidCallback onAddText;
   final VoidCallback onAddPhoto;
   final VoidCallback onOpenCoverSelector;
+  /// 첫 번째 버튼 라벨 (커버 에디터: "커버", 페이지 에디터: "템플릿")
+  final String coverLabel;
 
   const EditToolbar({
     super.key,
@@ -17,6 +19,7 @@ class EditToolbar extends StatelessWidget {
     required this.onAddText,
     required this.onAddPhoto,
     required this.onOpenCoverSelector,
+    this.coverLabel = '커버',
   });
 
   @override
@@ -27,7 +30,7 @@ class EditToolbar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _toolbarButton(Icons.book_outlined, "커버", onOpenCoverSelector),
+          _toolbarButton(Icons.book_outlined, coverLabel, onOpenCoverSelector),
           _toolbarButton(Icons.text_fields, "텍스트", onAddText),
           _toolbarButton(Icons.photo, "오버레이", onAddPhoto),
         ],
@@ -38,12 +41,15 @@ class EditToolbar extends StatelessWidget {
   Widget _toolbarButton(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 30.sp, color: Colors.white),
-          Text(label, style: TextStyle(fontSize: 10.sp, color: Colors.white)),
-        ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 30.sp, color: Colors.white),
+            Text(label, style: TextStyle(fontSize: 10.sp, color: Colors.white)),
+          ],
+        ),
       ),
     );
   }

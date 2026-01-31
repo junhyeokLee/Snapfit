@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import '../../../../shared/snapfit_image.dart';
 import '../../domain/entities/layer.dart';
 import 'layer_interaction_manager.dart';
 
@@ -32,39 +33,92 @@ class LayerBuilder {
     }
   }
 
+  /// 템플릿 적용 시 템플릿 비율 슬롯에 사진이 꽉 차게 cover, 자유 비율이면 cover
+  static BoxFit _imageFitForLayer(LayerModel layer) {
+    // 템플릿이 있든 없든 모두 cover로 꽉 차게 표시
+    return BoxFit.cover;
+  }
+
   /// 이미지 레이어 빌드
   Widget buildImage(LayerModel layer) {
     // 편집 중인 레이어면 숨김
     if (_isEditing(layer)) return const SizedBox.shrink();
 
-    return FutureBuilder<ImageInfo>(
-      future: _getImageInfo(layer),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-        }
+    final fit = _imageFitForLayer(layer);
 
-        return interaction.buildInteractiveLayer(
-          layer: layer,
-          baseWidth: layer.width,
-          baseHeight: layer.height,
-          child: _buildFramedImage(
-            layer,
-            Image(
-              image: AssetEntityImageProvider(layer.asset!),
-              fit: BoxFit.cover,
-            ),
+    if (layer.asset != null) {
+      // 아직 업로드 전: 로컬 AssetEntity로 표시
+      return interaction.buildInteractiveLayer(
+        layer: layer,
+        baseWidth: layer.width,
+        baseHeight: layer.height,
+        child: _buildFramedImage(
+          layer,
+          Image(
+            image: AssetEntityImageProvider(layer.asset!),
+            fit: fit,
+            filterQuality: FilterQuality.medium,
           ),
-        );
-      },
+        ),
+      );
+    }
+
+    final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+    if (url == null || url.isEmpty) {
+      return interaction.buildInteractiveLayer(
+        layer: layer,
+        baseWidth: layer.width,
+        baseHeight: layer.height,
+        child: _buildImagePlaceholder(layer),
+      );
+    }
+
+    return interaction.buildInteractiveLayer(
+      layer: layer,
+      baseWidth: layer.width,
+      baseHeight: layer.height,
+      child: _buildFramedImage(
+        layer,
+        SnapfitImage(urlOrGs: url, fit: fit),
+      ),
     );
+  }
+
+  /// 빈 이미지 슬롯(플레이스홀더) – 템플릿 적용 후 사진을 넣을 자리
+  Widget _buildImagePlaceholder(LayerModel layer) {
+    final placeholder = Container(
+      width: layer.width,
+      height: layer.height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade400, width: 1.5, style: BorderStyle.solid),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_a_photo, size: 28, color: Colors.grey.shade500),
+            const SizedBox(height: 4),
+            Text("사진 추가", style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          ],
+        ),
+      ),
+    );
+    return _buildFramedImage(layer, placeholder);
   }
 
   /// 이미지 프레임 적용 스위치
   Widget _buildFramedImage(LayerModel layer, Widget image) {
     switch (layer.imageBackground) {
+      case "round":
+        return _frameRound(image);
       case "polaroid":
         return _framePolaroid(image);
+      case "polaroidClassic":
+        return _framePolaroidClassic(image);
+      case "polaroidWide":
+        return _framePolaroidWide(image);
       case "softGlow":
         return _frameSoftGlow(image);
       case "sticker":
@@ -78,6 +132,13 @@ class LayerBuilder {
       default:
         return image;
     }
+  }
+
+  Widget _frameRound(Widget image) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: image,
+    );
   }
 
   Widget _framePolaroid(Widget image) {
@@ -100,6 +161,58 @@ class LayerBuilder {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
+        child: image,
+      ),
+    );
+  }
+
+  /// 폴라로이드 클래식: 더 두꺼운 하단 여백, 크림색 톤
+  Widget _framePolaroidClassic(Widget image) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 36),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEF5),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE8E4D8),
+          width: 1.4,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: image,
+      ),
+    );
+  }
+
+  /// 폴라로이드 와이드: 얇은 테두리, 넓은 비율
+  Widget _framePolaroidWide(Widget image) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 10, 6, 22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.35),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
         child: image,
       ),
     );
@@ -325,14 +438,7 @@ class LayerBuilder {
         : false; // 현재 편집 중 레이어 숨김은 interaction에서 editing id로 제어 가능
   }
 
-  Future<ImageInfo> _getImageInfo(LayerModel layer) async {
-    final provider = AssetEntityImageProvider(layer.asset!);
-    final completer = Completer<ImageInfo>();
-    provider.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((info, _) => completer.complete(info)),
-    );
-    return completer.future;
-  }
+  // ImageInfo 프리패치가 필요해지면 여기에 precacheImage 등을 추가한다.
 
   Widget _buildTagStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
     final baseStyle = effectiveStyle;

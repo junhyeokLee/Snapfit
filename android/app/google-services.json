@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "360727043538",
+    "project_id": "snapfit-c719d",
+    "storage_bucket": "snapfit-c719d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360727043538:android:b8219efd5d02b20a01bc0b",
+        "android_client_info": {
+          "package_name": "com.devsheep.snap_fit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEu-4KDmrDgY8nZgsqZ6J60FnWvnosrCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

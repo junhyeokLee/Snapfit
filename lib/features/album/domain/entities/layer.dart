@@ -30,6 +30,12 @@ class LayerModel {
   final double height;  // 레이어 기본 높이
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
   final String? imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
+  final String? imageTemplate; // 이미지 슬롯 템플릿 ("free", "1:1", "4:3", ...) - null/ free면 원본 비율, 지정 시 contain으로 짤리지 않게
+  /// 하위 호환용 preview URL (기존 스키마)
+  final String? imageUrl;
+  /// 운영급: 원본/미리보기 URL
+  final String? originalUrl;
+  final String? previewUrl;
 
   LayerModel({
     required this.id,
@@ -47,6 +53,10 @@ class LayerModel {
     this.height = 120,  // 기본값
     this.textBackground,
     this.imageBackground,
+    this.imageTemplate,
+    this.imageUrl,
+    this.originalUrl,
+    this.previewUrl,
   });
 
   LayerModel copyWith({
@@ -65,8 +75,12 @@ class LayerModel {
     double? height,
     String? textBackground,
     String? imageBackground,
+    String? imageTemplate,
     bool? locked,
     bool? editable,
+    String? imageUrl,
+    String? originalUrl,
+    String? previewUrl,
   }) {
     return LayerModel(
       id: id ?? this.id,
@@ -84,6 +98,10 @@ class LayerModel {
       height: height ?? this.height,
       textBackground: textBackground ?? this.textBackground,
       imageBackground: imageBackground ?? this.imageBackground,
+      imageTemplate: imageTemplate ?? this.imageTemplate,
+      imageUrl: imageUrl ?? this.imageUrl,
+      originalUrl: originalUrl ?? this.originalUrl,
+      previewUrl: previewUrl ?? this.previewUrl,
     );
   }
 }

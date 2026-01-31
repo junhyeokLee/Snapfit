@@ -29,7 +29,7 @@ class _AlbumApi implements AlbumApi {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/albums',
+            '/api/albums',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -47,16 +47,16 @@ class _AlbumApi implements AlbumApi {
   }
 
   @override
-  Future<Album> fetchAlbum(String albumId) async {
+  Future<Album> fetchAlbum(String albumId, String userId) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'userId': userId};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<Album>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/albums/${albumId}',
+            '/api/albums/${albumId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -71,6 +71,85 @@ class _AlbumApi implements AlbumApi {
       rethrow;
     }
     return _value;
+  }
+
+  @override
+  Future<List<Album>> fetchMyAlbums(String userId) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'userId': userId};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<Album>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/albums',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<Album> _value;
+    try {
+      _value = _result.data!
+          .map((dynamic i) => Album.fromJson(i as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<Album> updateAlbum(
+    int albumId,
+    CreateAlbumRequest request,
+    String userId,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'userId': userId};
+    final _headers = <String, dynamic>{};
+    final _data = request;
+    final _options = _setStreamType<Album>(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/albums/${albumId}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Album _value;
+    try {
+      _value = Album.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<void> deleteAlbum(int albumId, String userId) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'userId': userId};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<void>(
+      Options(method: 'DELETE', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/albums/${albumId}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    await _dio.fetch<void>(_options);
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

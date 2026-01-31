@@ -4,8 +4,8 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/constatns/cover_size.dart';
-import '../../../../core/constatns/cover_theme.dart';
+import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/cover_theme.dart';
 
 part 'cover_view_model.g.dart';
 part 'cover_view_model.freezed.dart';

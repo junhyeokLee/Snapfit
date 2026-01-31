@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../../../core/constants/image_templates.dart';
+import '../../../core/constants/page_templates.dart';
 import '../domain/entities/album_page.dart';
 import '../domain/entities/layer.dart';
 
@@ -48,27 +50,92 @@ class AlbumEditorService {
     );
   }
 
+  /// 템플릿으로 페이지 생성 (스크랩북 스타일 레이아웃)
+  /// [canvasSize]: 페이지 캔버스 크기 (비율 슬롯을 픽셀 좌표로 변환할 때 사용)
+  AlbumPage createPageFromTemplate({
+    required PageTemplate template,
+    required int index,
+    required Size canvasSize,
+  }) {
+    final page = createPage(index: index, isCover: false);
+    final w = canvasSize.width;
+    final h = canvasSize.height;
+
+    for (final slot in template.slots) {
+      final pos = Offset(slot.left * w, slot.top * h);
+      final slotW = slot.width * w;
+      final slotH = slot.height * h;
+      final id = '${template.id}_slot_${page.layers.length}_${UniqueKey()}';
+
+      if (slot.type == 'image') {
+        page.layers.add(LayerModel(
+          id: id,
+          type: LayerType.image,
+          position: pos,
+          width: slotW,
+          height: slotH,
+          rotation: slot.rotation,
+          imageBackground: slot.imageBackground,
+          imageTemplate: slot.imageTemplate ?? 'free',
+          asset: null,
+        ));
+      } else if (slot.type == 'text') {
+        page.layers.add(LayerModel(
+          id: id,
+          type: LayerType.text,
+          position: pos,
+          width: slotW,
+          height: slotH,
+          rotation: slot.rotation,
+          text: slot.defaultText ?? '',
+          textStyle: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+          textStyleType: TextStyleType.none,
+          textBackground: slot.textBackground,
+        ));
+      }
+    }
+    return page;
+  }
+
   /// 이미지 레이어 생성 (단일 레이어 인스턴스만 생성)
+  /// [templateKey]: "free" 또는 null이면 원본 사진 비율, "1:1", "4:3" 등이면 해당 비율로 슬롯 생성(사진은 contain으로 짤리지 않게)
   Future<LayerModel> createImageLayer({
     required AssetEntity asset,
     required Size canvasSize,
+    String? templateKey,
   }) async {
-    final w = asset.width.toDouble();
-    final h = asset.height.toDouble();
-    final aspect = w / h;
-
     final maxW = canvasSize.width * 0.8;
     final maxH = canvasSize.height * 0.8;
 
+    final slotAspect = aspectForTemplateKey(templateKey);
     double width;
     double height;
 
-    if (aspect >= maxW / maxH) {
-      width = maxW;
-      height = width / aspect;
+    if (slotAspect == null) {
+      // 자유: 원본 사진 비율 유지
+      final w = asset.width.toDouble();
+      final h = asset.height.toDouble();
+      final aspect = w / h;
+      if (aspect >= maxW / maxH) {
+        width = maxW;
+        height = width / aspect;
+      } else {
+        height = maxH;
+        width = height * aspect;
+      }
     } else {
-      height = maxH;
-      width = height * aspect;
+      // 템플릿 비율로 슬롯 크기 결정 (캔버스 80% 안에 들어가게)
+      if (slotAspect >= maxW / maxH) {
+        width = maxW;
+        height = width / slotAspect;
+      } else {
+        height = maxH;
+        width = height * slotAspect;
+      }
     }
 
     final pos = Offset(
@@ -83,6 +150,7 @@ class AlbumEditorService {
       width: width,
       height: height,
       asset: asset,
+      imageTemplate: templateKey ?? 'free',
     );
   }
 
@@ -141,10 +209,12 @@ class AlbumEditorService {
   /// 페이지에 이미지 레이어 추가
   ///
   /// 같은 asset.id 를 가진 이미지 레이어가 이미 있으면 추가하지 않는다.
+  /// [templateKey]: null/"free"면 원본 비율, "1:1", "4:3" 등이면 해당 템플릿 비율로 슬롯 생성(사진 contain)
   Future<AlbumPage> addImageLayer({
     required AlbumPage page,
     required AssetEntity asset,
     required Size canvasSize,
+    String? templateKey,
   }) async {
 
     // 같은 이미지 이미 있으면 패스
@@ -154,11 +224,10 @@ class AlbumEditorService {
       return page;
     }
 
-    LayerModel newLayer;
-
-    newLayer = await createImageLayer(
+    final newLayer = await createImageLayer(
       asset: asset,
       canvasSize: canvasSize,
+      templateKey: templateKey,
     );
 
     page.layers.add(newLayer);

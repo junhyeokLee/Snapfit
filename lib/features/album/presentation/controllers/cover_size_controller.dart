@@ -1,4 +1,4 @@
-import '../../../../core/constatns/cover_size.dart';
+import '../../../../core/constants/cover_size.dart';
 
 /// 레이아웃 계산만 담당. 기존 getCoverTop/getCoverSidePadding 그대로 이식.
 class CoverSizeController {

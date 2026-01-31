@@ -31,7 +31,7 @@ extension CoverThemeStyle on CoverTheme {
       case CoverTheme.nature4: return "nature4";
       case CoverTheme.architecture1: return "architecture1";
       case CoverTheme.architecture2: return "architecture2";
-      case CoverTheme.abstract1: return "abstract";
+      case CoverTheme.abstract1: return "abstract1";
       case CoverTheme.abstract2: return "abstract2";
       case CoverTheme.abstract3: return "abstract3";
       case CoverTheme.abstract4: return "abstract4";

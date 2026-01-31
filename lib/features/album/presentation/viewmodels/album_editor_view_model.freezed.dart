@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AlbumEditorState {
 
- List<AssetEntity> get files; List<AssetPathEntity> get albums; AssetPathEntity? get currentAlbum; List<LayerModel> get layers; CoverSize get selectedCover; CoverTheme get selectedTheme;
+ List<AssetEntity> get files; List<AssetPathEntity> get albums; AssetPathEntity? get currentAlbum;/// 현재 페이지의 레이어들(UI가 바로 그릴 데이터)
+ List<LayerModel> get layers; CoverSize get selectedCover; CoverTheme get selectedTheme;/// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
+ Size? get coverCanvasSize;
 /// Create a copy of AlbumEditorState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $AlbumEditorStateCopyWith<AlbumEditorState> get copyWith => _$AlbumEditorStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AlbumEditorState&&const DeepCollectionEquality().equals(other.files, files)&&const DeepCollectionEquality().equals(other.albums, albums)&&(identical(other.currentAlbum, currentAlbum) || other.currentAlbum == currentAlbum)&&const DeepCollectionEquality().equals(other.layers, layers)&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AlbumEditorState&&const DeepCollectionEquality().equals(other.files, files)&&const DeepCollectionEquality().equals(other.albums, albums)&&(identical(other.currentAlbum, currentAlbum) || other.currentAlbum == currentAlbum)&&const DeepCollectionEquality().equals(other.layers, layers)&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&(identical(other.coverCanvasSize, coverCanvasSize) || other.coverCanvasSize == coverCanvasSize));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(files),const DeepCollectionEquality().hash(albums),currentAlbum,const DeepCollectionEquality().hash(layers),selectedCover,selectedTheme);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(files),const DeepCollectionEquality().hash(albums),currentAlbum,const DeepCollectionEquality().hash(layers),selectedCover,selectedTheme,coverCanvasSize);
 
 @override
 String toString() {
-  return 'AlbumEditorState(files: $files, albums: $albums, currentAlbum: $currentAlbum, layers: $layers, selectedCover: $selectedCover, selectedTheme: $selectedTheme)';
+  return 'AlbumEditorState(files: $files, albums: $albums, currentAlbum: $currentAlbum, layers: $layers, selectedCover: $selectedCover, selectedTheme: $selectedTheme, coverCanvasSize: $coverCanvasSize)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $AlbumEditorStateCopyWith<$Res>  {
   factory $AlbumEditorStateCopyWith(AlbumEditorState value, $Res Function(AlbumEditorState) _then) = _$AlbumEditorStateCopyWithImpl;
 @useResult
 $Res call({
- List<AssetEntity> files, List<AssetPathEntity> albums, AssetPathEntity? currentAlbum, List<LayerModel> layers, CoverSize selectedCover, CoverTheme selectedTheme
+ List<AssetEntity> files, List<AssetPathEntity> albums, AssetPathEntity? currentAlbum, List<LayerModel> layers, CoverSize selectedCover, CoverTheme selectedTheme, Size? coverCanvasSize
 });
 
 
@@ -62,7 +64,7 @@ class _$AlbumEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of AlbumEditorState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? files = null,Object? albums = null,Object? currentAlbum = freezed,Object? layers = null,Object? selectedCover = null,Object? selectedTheme = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? files = null,Object? albums = null,Object? currentAlbum = freezed,Object? layers = null,Object? selectedCover = null,Object? selectedTheme = null,Object? coverCanvasSize = freezed,}) {
   return _then(_self.copyWith(
 files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
 as List<AssetEntity>,albums: null == albums ? _self.albums : albums // ignore: cast_nullable_to_non_nullable
@@ -70,7 +72,8 @@ as List<AssetPathEntity>,currentAlbum: freezed == currentAlbum ? _self.currentAl
 as AssetPathEntity?,layers: null == layers ? _self.layers : layers // ignore: cast_nullable_to_non_nullable
 as List<LayerModel>,selectedCover: null == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
 as CoverSize,selectedTheme: null == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
-as CoverTheme,
+as CoverTheme,coverCanvasSize: freezed == coverCanvasSize ? _self.coverCanvasSize : coverCanvasSize // ignore: cast_nullable_to_non_nullable
+as Size?,
   ));
 }
 
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme,  Size? coverCanvasSize)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AlbumEditorState() when $default != null:
-return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme);case _:
+return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme,_that.coverCanvasSize);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.s
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme,  Size? coverCanvasSize)  $default,) {final _that = this;
 switch (_that) {
 case _AlbumEditorState():
-return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme);case _:
+return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme,_that.coverCanvasSize);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.s
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AssetEntity> files,  List<AssetPathEntity> albums,  AssetPathEntity? currentAlbum,  List<LayerModel> layers,  CoverSize selectedCover,  CoverTheme selectedTheme,  Size? coverCanvasSize)?  $default,) {final _that = this;
 switch (_that) {
 case _AlbumEditorState() when $default != null:
-return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme);case _:
+return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.selectedCover,_that.selectedTheme,_that.coverCanvasSize);case _:
   return null;
 
 }
@@ -211,7 +214,7 @@ return $default(_that.files,_that.albums,_that.currentAlbum,_that.layers,_that.s
 
 
 class _AlbumEditorState implements AlbumEditorState {
-  const _AlbumEditorState({final  List<AssetEntity> files = const [], final  List<AssetPathEntity> albums = const [], this.currentAlbum, final  List<LayerModel> layers = const [], this.selectedCover = const CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)), this.selectedTheme = CoverTheme.classic}): _files = files,_albums = albums,_layers = layers;
+  const _AlbumEditorState({final  List<AssetEntity> files = const [], final  List<AssetPathEntity> albums = const [], this.currentAlbum, final  List<LayerModel> layers = const [], this.selectedCover = const CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)), this.selectedTheme = CoverTheme.classic, this.coverCanvasSize}): _files = files,_albums = albums,_layers = layers;
   
 
  final  List<AssetEntity> _files;
@@ -229,7 +232,9 @@ class _AlbumEditorState implements AlbumEditorState {
 }
 
 @override final  AssetPathEntity? currentAlbum;
+/// 현재 페이지의 레이어들(UI가 바로 그릴 데이터)
  final  List<LayerModel> _layers;
+/// 현재 페이지의 레이어들(UI가 바로 그릴 데이터)
 @override@JsonKey() List<LayerModel> get layers {
   if (_layers is EqualUnmodifiableListView) return _layers;
   // ignore: implicit_dynamic_type
@@ -238,6 +243,8 @@ class _AlbumEditorState implements AlbumEditorState {
 
 @override@JsonKey() final  CoverSize selectedCover;
 @override@JsonKey() final  CoverTheme selectedTheme;
+/// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
+@override final  Size? coverCanvasSize;
 
 /// Create a copy of AlbumEditorState
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +256,16 @@ _$AlbumEditorStateCopyWith<_AlbumEditorState> get copyWith => __$AlbumEditorStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AlbumEditorState&&const DeepCollectionEquality().equals(other._files, _files)&&const DeepCollectionEquality().equals(other._albums, _albums)&&(identical(other.currentAlbum, currentAlbum) || other.currentAlbum == currentAlbum)&&const DeepCollectionEquality().equals(other._layers, _layers)&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AlbumEditorState&&const DeepCollectionEquality().equals(other._files, _files)&&const DeepCollectionEquality().equals(other._albums, _albums)&&(identical(other.currentAlbum, currentAlbum) || other.currentAlbum == currentAlbum)&&const DeepCollectionEquality().equals(other._layers, _layers)&&(identical(other.selectedCover, selectedCover) || other.selectedCover == selectedCover)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&(identical(other.coverCanvasSize, coverCanvasSize) || other.coverCanvasSize == coverCanvasSize));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_files),const DeepCollectionEquality().hash(_albums),currentAlbum,const DeepCollectionEquality().hash(_layers),selectedCover,selectedTheme);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_files),const DeepCollectionEquality().hash(_albums),currentAlbum,const DeepCollectionEquality().hash(_layers),selectedCover,selectedTheme,coverCanvasSize);
 
 @override
 String toString() {
-  return 'AlbumEditorState(files: $files, albums: $albums, currentAlbum: $currentAlbum, layers: $layers, selectedCover: $selectedCover, selectedTheme: $selectedTheme)';
+  return 'AlbumEditorState(files: $files, albums: $albums, currentAlbum: $currentAlbum, layers: $layers, selectedCover: $selectedCover, selectedTheme: $selectedTheme, coverCanvasSize: $coverCanvasSize)';
 }
 
 
@@ -269,7 +276,7 @@ abstract mixin class _$AlbumEditorStateCopyWith<$Res> implements $AlbumEditorSta
   factory _$AlbumEditorStateCopyWith(_AlbumEditorState value, $Res Function(_AlbumEditorState) _then) = __$AlbumEditorStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<AssetEntity> files, List<AssetPathEntity> albums, AssetPathEntity? currentAlbum, List<LayerModel> layers, CoverSize selectedCover, CoverTheme selectedTheme
+ List<AssetEntity> files, List<AssetPathEntity> albums, AssetPathEntity? currentAlbum, List<LayerModel> layers, CoverSize selectedCover, CoverTheme selectedTheme, Size? coverCanvasSize
 });
 
 
@@ -286,7 +293,7 @@ class __$AlbumEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of AlbumEditorState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? files = null,Object? albums = null,Object? currentAlbum = freezed,Object? layers = null,Object? selectedCover = null,Object? selectedTheme = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? files = null,Object? albums = null,Object? currentAlbum = freezed,Object? layers = null,Object? selectedCover = null,Object? selectedTheme = null,Object? coverCanvasSize = freezed,}) {
   return _then(_AlbumEditorState(
 files: null == files ? _self._files : files // ignore: cast_nullable_to_non_nullable
 as List<AssetEntity>,albums: null == albums ? _self._albums : albums // ignore: cast_nullable_to_non_nullable
@@ -294,7 +301,8 @@ as List<AssetPathEntity>,currentAlbum: freezed == currentAlbum ? _self.currentAl
 as AssetPathEntity?,layers: null == layers ? _self._layers : layers // ignore: cast_nullable_to_non_nullable
 as List<LayerModel>,selectedCover: null == selectedCover ? _self.selectedCover : selectedCover // ignore: cast_nullable_to_non_nullable
 as CoverSize,selectedTheme: null == selectedTheme ? _self.selectedTheme : selectedTheme // ignore: cast_nullable_to_non_nullable
-as CoverTheme,
+as CoverTheme,coverCanvasSize: freezed == coverCanvasSize ? _self.coverCanvasSize : coverCanvasSize // ignore: cast_nullable_to_non_nullable
+as Size?,
   ));
 }
 
