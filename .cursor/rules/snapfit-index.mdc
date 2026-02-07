@@ -1,0 +1,22 @@
+---
+description: SnapFit rules hub - all rules are in .cursor/rules/
+alwaysApply: true
+---
+
+# SnapFit — Rules Hub
+
+> **모든 규칙은 `.cursor/rules/` 에 한 곳에 모여 있습니다.**
+
+## 규칙 인덱스
+
+| 파일 | 적용 시점 | 내용 |
+|------|-----------|------|
+| snapfit-index.mdc | 항상 | 이 파일 (허브) |
+| snapfit-requirements.mdc | 항상 | 비즈니스 요구사항, 데이터 모델 (What/Why) |
+| snapfit-technical.mdc | 항상 | 아키텍처, Riverpod, Retrofit (How) |
+| create-rule.mdc | `.cursor/rules/**/*.mdc` 편집 시 | 규칙 생성 가이드 |
+| flutter-ui-standards.mdc | `lib/**/*.dart` 편집 시 | 컬러, 반응형, 애니메이션 |
+
+## 필수 원칙
+- 코드 변경 시 요구사항·플로우·데이터 모델을 먼저 확인한다.
+- 한국어로 응답한다.

@@ -1,0 +1,50 @@
+---
+description: SnapFit business requirements, data model, flows (What/Why)
+alwaysApply: true
+---
+
+# SnapFit Business Requirements (What/Why)
+
+> Stack: Flutter(Riverpod+Dio/Retrofit+MVVM), Spring Boot+JWT, MariaDB, S3, (opt) Redis, Queue/Worker
+
+## Problem
+1. Mobile album editing is slow; repetitive crop/align work causes drop-off.
+2. Quality depends on user skill; low conversion.
+3. Split edit→order→payment→shipping flow increases pre-payment drop-off.
+4. Users want shared editing; most services lack collaboration + audit trail.
+
+## Solution (Value)
+- Template auto-complete + layer editing (text/sticker/frame) → fast, high-quality output.
+- One-stop edit→order→payment→shipping flow.
+- Invite-based collaboration + audit log (who/when/what).
+- Freeze (snapshot) before order → consistency, fewer disputes.
+
+## Flows
+**Solo**: Create → Pick photos → Template → Layer edit → Preview → Spec → Payment → Shipping.
+**Collaboration**: Owner creates → Invite → Accept → Edit + Audit log → Owner Freeze → Payment → Shipping.
+
+## Data Model (Essential)
+- **User**: id, email/phone, name, createdAt
+- **Album**: id, ownerId, title, coverConfig(JSON), spec(size,pages), status(DRAFT/FROZEN/ORDERED)
+- **AlbumMember**: albumId, userId, role(OWNER/EDITOR/VIEWER), invitedBy, status(PENDING/ACCEPTED)
+- **Page**: id, albumId, pageIndex, templateId, backgroundConfig(JSON)
+- **Layer**: id, pageId, type(IMAGE/TEXT/STICKER/FRAME), zIndex, transform, style(JSON), assetRef
+- **Asset**: id, ownerId, kind(ORIGINAL/THUMB/PREVIEW), s3Key, width, height
+- **EditLog**: id, albumId, actorId, actionType, targetType, targetId, diff(JSON), createdAt
+- **Snapshot**: id, albumId, version, frozenAt, frozenBy, snapshotDataKey(S3), previewPdfKey(S3)
+- **Order**: id, albumId, snapshotId, buyerId, amount, status, shippingInfo, trackingNo, courier
+
+## API (Minimum)
+- POST /auth/login, /auth/refresh | POST /albums, GET /albums/{id}
+- POST /albums/{id}/invite, /albums/{id}/invite/accept | GET /albums/{id}/members
+- PUT /pages/{id}, PUT /layers/{id}, POST /assets/presign
+- GET /albums/{id}/logs | POST /albums/{id}/freeze | POST /orders, GET /orders/{id}/tracking
+
+## Collaboration Rules
+- MVP: **Page Lock** (TTL 2–5min, heartbeat). Commit → EditLog per save.
+- **Freeze**: Album → FROZEN, snapshot created. Order MUST reference snapshotId.
+
+## MUST Do
+- Check requirements/flow/data model first before code changes.
+- Collaboration MVP: Page Lock + Audit Log + Freeze snapshot.
+- Order MUST reference snapshotId. Design for future WebSocket expansion.

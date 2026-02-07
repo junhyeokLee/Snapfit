@@ -1,0 +1,74 @@
+---
+description: Flutter UI standards for color, responsive design, and animation
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# Flutter UI Standards (Color, Responsive, Animation)
+
+## Color
+
+### MUST Do
+
+1. **Use hex format for brand/theme colors** — `Color(0xFFRRGGBB)` (opaque). Example: `Color(0xFF7d7a97)`.
+2. **Centralize palette colors** — Define in `core/constants/` or theme; reference from `CoverTheme`, `SnapFitGradientBackground`, etc.
+3. **Use semantic opacity** — `Colors.white.withOpacity(0.08)` for overlays; avoid raw `Colors.grey[400]` without context.
+4. **Prefer `Theme.of(context)` when available** — Use theme colors for primary/secondary/text when Material theme is set.
+
+### MUST NOT Do
+
+1. **Do NOT** hardcode colors scattered in widgets — Extract to constants or theme.
+2. **Do NOT** use `Color(0x00RRGGBB)` (fully transparent) for visible UI — Use `Colors.transparent` explicitly if needed.
+3. **Do NOT** mix `Colors.grey[600]` and `Colors.grey.shade600` inconsistently — Pick one style per file.
+
+---
+
+## Responsive Design
+
+### MUST Do
+
+1. **Use ScreenUtil** — App uses `ScreenUtilInit(designSize: Size(390, 844), minTextAdapt: true, splitScreenMode: true)`.
+2. **Use `.w`, `.h`, `.sp`** — For layout: `24.w`, `100.h`; for text: `14.sp`, `16.sp`.
+3. **Use `MediaQuery.sizeOf(context)`** — For full-screen layout or when you need raw pixel size.
+4. **Use `LayoutBuilder`** — When layout depends on parent constraints (e.g. cover card aspect ratio).
+5. **Base layout on design size** — 390×844 is the reference; scale proportionally.
+
+### MUST NOT Do
+
+1. **Do NOT** use raw pixel values (e.g. `SizedBox(width: 24)`) — Use `24.w` for consistency.
+2. **Do NOT** use fixed `fontSize` without `.sp` — Use `14.sp`, not `fontSize: 14`.
+3. **Do NOT** ignore fold/split screens — `splitScreenMode: true` is set; avoid assuming full screen.
+4. **Do NOT** mix `MediaQuery.of(context).size` and `MediaQuery.sizeOf(context)` — Prefer `MediaQuery.sizeOf(context)` (null-safe).
+
+---
+
+## Animation
+
+### MUST Do
+
+1. **Prefer implicit animations first** — Use `AnimatedOpacity`, `AnimatedContainer`, `AnimatedScale`, `AnimatedPositioned`, `AnimatedSlide` when property changes drive the effect.
+2. **Use `AnimationController` only when needed** — E.g. tap feedback, page transitions, custom sequences. Use `SingleTickerProviderStateMixin` (or `TickerProviderStateMixin` for multiple).
+3. **Dispose `AnimationController`** — Always call `_controller.dispose()` in `dispose()`.
+4. **Use `CurvedAnimation`** — Wrap Tween with `CurvedAnimation(parent: controller, curve: Curves.easeOut)` or `Curves.easeOutCubic`.
+5. **Use consistent durations** — Short feedback: 200–300ms; transitions: 300–450ms; heavy transitions: 450–600ms.
+6. **Use `TweenAnimationBuilder`** — For one-off, stateless animations (e.g. dialog entrance).
+
+### MUST NOT Do
+
+1. **Do NOT** forget `vsync: this` — `AnimationController(vsync: this, duration: ...)` is required.
+2. **Do NOT** use raw `Tween.animate(controller)` without `CurvedAnimation` — Smooth curves improve perceived quality.
+3. **Do NOT** animate without disposing — Memory leaks; always dispose in `dispose()`.
+4. **Do NOT** use very long durations (>800ms) for simple UI feedback — Feels sluggish.
+5. **Do NOT** mix `AnimationController` and implicit animations for the same effect — Choose one approach.
+
+---
+
+## Quick Reference
+
+| Concern | Use | Avoid |
+|---------|-----|-------|
+| Color | `Color(0xFF...)`, theme, `.withOpacity()` | Scattered hardcoded colors |
+| Size | `24.w`, `100.h`, `14.sp` | Raw `24`, `14` |
+| Layout | `MediaQuery.sizeOf(context)`, `LayoutBuilder` | Fixed dimensions |
+| Simple animation | `AnimatedContainer`, `AnimatedOpacity` | Unnecessary `AnimationController` |
+| Custom animation | `AnimationController` + `CurvedAnimation` | Raw Tween, no dispose |

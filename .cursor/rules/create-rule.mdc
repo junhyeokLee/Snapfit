@@ -1,0 +1,91 @@
+---
+description: Create Cursor rules in .cursor/rules/ with proper structure and frontmatter
+globs: .cursor/rules/**/*.mdc
+alwaysApply: false
+---
+
+# Creating Cursor Rules
+
+## Purpose
+
+Create rules in `.cursor/rules/` to give the AI consistent, project-specific context.
+
+---
+
+## MUST Do
+
+1. **Use `.mdc` files** — Store rules in `.cursor/rules/` with YAML frontmatter.
+2. **Set frontmatter correctly**:
+   - `description`: Short summary (shown in rule picker)
+   - `globs`: File pattern for file-specific rules (e.g. `**/*.ts`)
+   - `alwaysApply: true` — Only when the rule must apply to every conversation
+3. **One rule, one concern** — Split large rules into smaller, focused rules.
+4. **Keep rules short** — Under 50 lines per rule; under 500 lines total.
+5. **Provide concrete examples** — Include both ❌ BAD and ✅ GOOD patterns.
+6. **Specify file patterns** — When a rule is file-specific, always set `globs` (e.g. `**/*.dart`, `backend/**/*.py`).
+
+---
+
+## MUST NOT Do
+
+1. **Do NOT** combine unrelated topics in one rule.
+2. **Do NOT** write vague instructions — Be specific and actionable.
+3. **Do NOT** omit `globs` when the rule targets specific file types.
+4. **Do NOT** exceed 500 lines in a single rule file.
+5. **Do NOT** use `alwaysApply: true` for file-type-specific rules — Use `globs` instead.
+
+---
+
+## Frontmatter Template
+
+```yaml
+---
+description: Brief description (shown in rule picker)
+globs: **/*.ts          # Omit for global rules; required for file-specific
+alwaysApply: false      # true = applies to every session
+---
+```
+
+---
+
+## Scope Matrix
+
+| Scope | `globs` | `alwaysApply` |
+|-------|---------|---------------|
+| Global (always on) | — | `true` |
+| File-specific | `**/*.ts` | `false` |
+
+---
+
+## Example: File-Specific Rule
+
+```markdown
+---
+description: TypeScript error handling standards
+globs: **/*.ts
+alwaysApply: false
+---
+
+# Error Handling
+
+// ❌ BAD
+try { await fetchData(); } catch (e) {}
+
+// ✅ GOOD
+try {
+  await fetchData();
+} catch (e) {
+  logger.error('Failed to fetch', { error: e });
+  throw new DataFetchError('Unable to retrieve data', { cause: e });
+}
+```
+
+---
+
+## Pre-Save Checklist
+
+- [ ] File is `.mdc` in `.cursor/rules/`
+- [ ] Frontmatter is valid YAML
+- [ ] Content is under 500 lines
+- [ ] Includes concrete BAD/GOOD examples
+- [ ] MUST / MUST NOT sections are explicit

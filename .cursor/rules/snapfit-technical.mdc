@@ -1,0 +1,75 @@
+---
+description: SnapFit technical rules (MVVM, Riverpod, Retrofit, security) - How to implement
+alwaysApply: true
+---
+
+# SnapFit Technical Rules (How)
+
+## 1. Architecture (MVVM + Riverpod)
+
+### MUST Do
+- Separate View and ViewModel; never mix UI and logic.
+- Use Riverpod `AsyncNotifier` or `Notifier` for state.
+- View = `ConsumerWidget` or `ConsumerStatefulWidget`.
+- Use `ref.watch` for UI, `ref.listen` for side effects (Snackbar, Navigator).
+
+### MUST NOT Do
+- Do NOT use `setState` for business logic.
+- Do NOT put Navigator/ScaffoldMessenger in build(); use `ref.listen`.
+- Do NOT forget `mounted` check before Navigator/ScaffoldMessenger.
+
+### ref.listen Example
+```dart
+ref.listen<AsyncValue<Album?>>(albumViewModelProvider, (previous, next) {
+  next.when(
+    data: (album) {
+      if (album != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('저장되었습니다.')));
+        Navigator.pop(context);
+      }
+    },
+    error: (err, st) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(...); },
+    loading: () {},
+  );
+});
+```
+
+---
+
+## 2. Networking & Data (Retrofit + Dio + Freezed)
+
+### MUST Do
+- Define all APIs in Retrofit interfaces.
+- Use Dio with Interceptors for JWT and error logging.
+- Make DTOs and State immutable with `freezed`.
+
+### MUST NOT Do
+- Do NOT use raw HTTP calls; use Retrofit.
+- Do NOT make DTOs mutable.
+
+---
+
+## 3. Security & Storage
+- JWT, user credentials → `flutter_secure_storage` only.
+- No hardcoded secrets; use `.env`.
+- No tokens in logs.
+
+---
+
+## 4. BuildRunner
+When modifying `@freezed`, `@JsonSerializable`, `@RestApi`, `@Riverpod`:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+---
+
+## 5. API Sync (Spring Boot ↔ Flutter)
+- Java `Long` → Dart `int` | `LocalDateTime` → `String` (ISO 8601)
+- `@JsonProperty("x")` → `@JsonKey(name: 'x')`
+- Retrofit: `@Path`, `@Query`, `@Body`
+
+---
+
+## 6. Response
+- Always respond in Korean (한국어).
