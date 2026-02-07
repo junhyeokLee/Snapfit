@@ -120,8 +120,6 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final vm = ref.read(albumEditorViewModelProvider.notifier);
-
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,

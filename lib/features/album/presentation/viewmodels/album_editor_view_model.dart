@@ -624,6 +624,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
+  /// 마지막 페이지(내지) 제거 – 저장 없이 뒤로갈 때 사용
+  void removeLastPage() {
+    if (_pages.length <= 1) return; // 커버만 있으면 제거 안 함
+    _pages.removeLast();
+    _currentPageIndex = (_pages.length - 1).clamp(0, _pages.length - 1);
+    _emit();
+  }
+
   /// 전체 초기화
   void clearAll() {
     final currentPage = _pages[_currentPageIndex];

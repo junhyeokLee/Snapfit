@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// 페이지 템플릿 내 하나의 슬롯(이미지/텍스트) 정의
 /// 좌표는 캔버스 대비 비율(0.0~1.0)로 정의
 class PageTemplateSlot {

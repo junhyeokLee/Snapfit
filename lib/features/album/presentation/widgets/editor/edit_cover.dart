@@ -24,7 +24,7 @@ import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
-import '../../views/album_spread_screen.dart';
+import '../../views/album_reader_screen.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 열었을 때 전달 (저장 성공 시 홈으로 pop)
@@ -86,7 +86,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
     // Cover VM + Album VM과 동기화 (앨범 생성 시 선택한 커버 사이즈 유지)
     Future.microtask(() {
       if (!_state.initialized) {
-        final editorCover = ref.read(albumEditorViewModelProvider).asData?.value?.selectedCover;
+        final editorCover = ref.read(albumEditorViewModelProvider).asData?.value.selectedCover;
         if (editorCover != null) {
           _selectedCover = editorCover;
           ref.read(coverViewModelProvider.notifier).selectCover(editorCover);
@@ -228,7 +228,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
               );
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AlbumSpreadScreen()),
+                MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
               );
             }
           }

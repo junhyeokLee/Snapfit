@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../shared/widgets/snapfit_gradient_background.dart';
 import '../../domain/entities/album.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/cover_view_model.dart';
@@ -69,23 +70,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     super.dispose();
   }
 
-  IconData _iconForCover(CoverSize s) {
-    final ratio = s.ratio;
-    if (ratio > 1) {
-      return Icons.crop_landscape;
-    } else if (ratio < 1) {
-      return Icons.crop_portrait;
-    } else {
-      return Icons.crop_square;
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(albumEditorViewModelProvider);
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-    final st = async.asData?.value;
+    ref.watch(albumEditorViewModelProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -99,15 +86,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: Colors.transparent,
-            body: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF7d7a97), Color(0xFF9893a9)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-
+            body: SnapFitGradientBackground(
               child: Stack(
                 children: [
                   Positioned.fill(

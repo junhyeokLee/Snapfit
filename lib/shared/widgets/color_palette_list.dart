@@ -37,7 +37,6 @@ class ColorPaletteList extends StatelessWidget {
   }
 
   Widget _colorDot(Color color, Color current, ValueChanged<Color> onTap) {
-    final sel = current.value == color.value;
     return GestureDetector(
       onTap: () => onTap(color),
       child: Container(

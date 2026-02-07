@@ -271,12 +271,12 @@ class AlbumEditorService {
     final oldLayer = page.layers[idx];
     page.layers[idx] = oldLayer.copyWith(
       text: updated.text ?? oldLayer.text,
-      textStyle: updated.textStyle ?? oldLayer.textStyle,
-      textStyleType: updated.textStyleType ?? oldLayer.textStyleType,
-      bubbleColor: updated.bubbleColor ?? oldLayer.bubbleColor,
-      position: updated.position ?? oldLayer.position,
-      scale: updated.scale ?? oldLayer.scale,
-      rotation: updated.rotation ?? oldLayer.rotation,
+      textStyle: updated.textStyle,
+      textStyleType: updated.textStyleType,
+      bubbleColor: updated.bubbleColor,
+      position: updated.position,
+      scale: updated.scale,
+      rotation: updated.rotation,
       textAlign: updated.textAlign ?? oldLayer.textAlign,
     );
     return page;

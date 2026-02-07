@@ -33,7 +33,7 @@ final class CoverViewModelProvider
   CoverViewModel create() => CoverViewModel();
 }
 
-String _$coverViewModelHash() => r'ddd5b1a946a1525cf71efef5c951c572d91c9f8d';
+String _$coverViewModelHash() => r'55f1d091aea4aee906fa3d952f5e1abe51e69b47';
 
 abstract class _$CoverViewModel extends $AsyncNotifier<CoverState> {
   FutureOr<CoverState> build();

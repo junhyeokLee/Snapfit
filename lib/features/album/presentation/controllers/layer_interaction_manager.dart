@@ -16,6 +16,9 @@ class LayerInteractionManager {
   /// 이미지 플레이스홀더(사진 없음) 탭 시 콜백 – 페이지 편집에서 바로 갤러리 진입용
   final void Function(LayerModel layer)? onTapPlaceholder;
 
+  /// 읽기 전용 미리보기 모드 (제스처 없음, 레이어만 표시)
+  final bool _isPreviewMode;
+
   // ==================== 레이어 상태 저장소 ====================
   final Map<String, Offset> _pos = {}; // 레이어 위치 (좌상단 기준)
   final Map<String, double> _scale = {}; // 레이어 배율 (1.0 = 원본 크기)
@@ -77,7 +80,24 @@ class LayerInteractionManager {
     required this.getCoverSize,
     required this.onEditText,
     this.onTapPlaceholder,
-  });
+    bool isPreviewMode = false,
+  }) : _isPreviewMode = isPreviewMode;
+
+  /// 읽기 전용 미리보기용 (앨범 보기, 커버 카드 등) – 제스처 없이 레이어만 표시
+  static LayerInteractionManager preview(
+    WidgetRef ref,
+    Size Function() getCoverSize,
+  ) {
+    return LayerInteractionManager(
+      ref: ref,
+      coverKey: GlobalKey(),
+      setState: (_) {},
+      getCoverSize: getCoverSize,
+      onEditText: (_) {},
+      onTapPlaceholder: null,
+      isPreviewMode: true,
+    );
+  }
 
   // ==================== Getters / Setters ====================
 
@@ -165,6 +185,24 @@ class LayerInteractionManager {
     _rot.putIfAbsent(layer.id, () => layer.rotation * math.pi / 180);
     _z.putIfAbsent(layer.id, () => ++_zCounter);
     _refBaseSize.putIfAbsent(layer.id, () => Size(baseWidth, baseHeight));
+
+    if (_isPreviewMode) {
+      return Positioned(
+        left: _pos[layer.id]!.dx,
+        top: _pos[layer.id]!.dy,
+        child: Transform.rotate(
+          angle: _rot[layer.id]!,
+          child: Transform.scale(
+            scale: _scale[layer.id]!,
+            child: SizedBox(
+              width: baseWidth,
+              height: layer.type == LayerType.text ? null : baseHeight,
+              child: layer.type == LayerType.text ? child : ClipRRect(child: child),
+            ),
+          ),
+        ),
+      );
+    }
 
     final coverSize = getCoverSize();
     final isSelected = _selectedLayerId == layer.id; // 선택 여부

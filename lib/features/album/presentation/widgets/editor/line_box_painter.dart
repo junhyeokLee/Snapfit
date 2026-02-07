@@ -20,7 +20,6 @@ class LineBoxPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (boxColor == null || text.isEmpty) return;
-    const double lineVerticalGap = 6.0; // <- 여기를 늘리면 줄 간격 넓어짐
 
     // TextPainter로 실제 줄 나눔과 각 줄 fragment box 추출
     final tp = TextPainter(

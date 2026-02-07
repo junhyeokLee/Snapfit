@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -28,8 +27,6 @@ abstract class CoverState with _$CoverState {
 
 @Riverpod(keepAlive: true)
 class CoverViewModel extends _$CoverViewModel {
-  final List<AssetEntity> _files = [];
-  final List<AssetPathEntity> _albums = [];
   CoverSize _cover = coverSizes.first;
   CoverTheme _selectedTheme = CoverTheme.classic;
 

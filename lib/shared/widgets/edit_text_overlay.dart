@@ -225,13 +225,11 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
       }(),
     );
 
-    Color? bubbleColor;
-    bubbleColor = null;
     widget.onSubmit(
       text,
       newStyle,
       _textStyleType,
-      bubbleColor,
+      _bubbleColor,
       _align,
     );
   }
@@ -275,8 +273,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
           _textStyleType = TextStyleType.textInner;
           break;
         case TextStyleType.textInner:
-          default:
-        _textStyleType = TextStyleType.none;
+          _textStyleType = TextStyleType.none;
           break;
       }
       _panelMode = EditPanelMode.none;
@@ -461,10 +458,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
           builder: (context, isKeyboardVisible) {
             return LayoutBuilder(
               builder: (context, constraints) {
-                final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
                 // 1) 원본 EditableText + 모드별 스타일링
-                final baseTextColor = _style.color ?? Colors.white;
                 // final bgColor = baseTextColor;
 
                 // 외곽선(스트로크 모사)

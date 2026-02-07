@@ -35,7 +35,7 @@ class TextEditorManager {
                   vm.updateLayer(
                     layer.copyWith(
                       text: newText,
-                      textStyle: (newStyle ?? safeStyle),
+                      textStyle: newStyle,
                       textStyleType: mode,
                       bubbleColor: color,
                       textAlign: align,
@@ -110,7 +110,7 @@ class TextEditorManager {
                   vm.updateLayer(
                     layer.copyWith(
                       text: newText,
-                      textStyle: (newStyle ?? safeStyle),
+                      textStyle: newStyle,
                       textStyleType: mode,
                       bubbleColor: color,
                       textAlign: align,

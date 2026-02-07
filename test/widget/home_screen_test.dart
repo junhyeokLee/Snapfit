@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
-import 'package:snap_fit/features/album/domain/entities/album.dart';
 
 import '../helpers/fake_album.dart';
 import '../helpers/mock_repositories.dart';

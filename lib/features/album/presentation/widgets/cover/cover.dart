@@ -189,7 +189,6 @@ class _AnimatedCoverContainer extends StatefulWidget {
 }
 
 class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {
-  CoverTheme? _prevTheme;
   bool _animating = false;
 
   @override
@@ -197,7 +196,6 @@ class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.theme != widget.theme) {
       setState(() {
-        _prevTheme = oldWidget.theme;
         _animating = true;
       });
       // Reset animating after animation duration
