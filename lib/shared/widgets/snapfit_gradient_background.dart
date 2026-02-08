@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// SnapFit 앱 공통 그라데이션 배경 (보라-회색 계열)
+import '../../core/constants/snapfit_colors.dart';
+
+/// SnapFit 공통 그라데이션 배경
 class SnapFitGradientBackground extends StatelessWidget {
   final Widget child;
 
@@ -14,7 +16,7 @@ class SnapFitGradientBackground extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF7d7a97), Color(0xFF9893a9)],
+          colors: SnapFitColors.editorGradient,
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),

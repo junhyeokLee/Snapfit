@@ -41,7 +41,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         }
       });
     _selectedCover = coverSizes.firstWhere(
-      (s) => s.name == '세로형',
+      (s) => s.name == '정사각형',
       orElse: () => coverSizes.first,
     );
     Future.microtask(() {
@@ -85,8 +85,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           data: fixedMediaQuery,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.transparent,
-            body: SnapFitGradientBackground(
+            backgroundColor: Colors.black,
+            body: Container(
+              color: Colors.black,
               child: Stack(
                 children: [
                   Positioned.fill(

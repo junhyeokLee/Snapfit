@@ -12,15 +12,7 @@
           "package_name": "com.devsheep.snap_fit"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "991239566838-m136b1t3dai6sj5c04k0k6geboqtluiq.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_client_info": {
-            "package_name": "com.devsheep.snap_fit"
-          }
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyCEu-4KDmrDgY8nZgsqZ6J60FnWvnosrCQ"

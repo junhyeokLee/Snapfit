@@ -18,6 +18,7 @@ import 'package:snap_fit/features/album/presentation/controllers/edit_cover_stat
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover_selector.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/image_frame_style_picker.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
@@ -61,7 +62,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
     _state = EditCoverStateManager();
     _layout = CoverSizeController();
     _selectedCover = coverSizes.firstWhere(
-      (s) => s.name == '세로형',
+      (s) => s.name == '정사각형',
       orElse: () => coverSizes.first,
     );
 
@@ -200,7 +201,11 @@ class _EditCoverState extends ConsumerState<EditCover> {
     final coverSt = ref.watch(coverViewModelProvider).asData?.value;
     final coverVm = ref.read(coverViewModelProvider.notifier);
     final layers = albumSt?.layers ?? [];
-    final selectedCover = coverSt?.selectedCover ?? coverSizes.first;
+    final selectedCover = coverSt?.selectedCover ??
+        coverSizes.firstWhere(
+          (s) => s.name == '정사각형',
+          orElse: () => coverSizes.first,
+        );
     final aspect = selectedCover.ratio;
     final selectedTheme = coverSt?.selectedTheme ?? CoverTheme.classic;
     // 저장/생성 진행 표시: 로컬 플래그만 사용 (전역 VM 로딩에 의해 무한 로딩 방지)
@@ -228,7 +233,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
               );
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
+                MaterialPageRoute(builder: (_) => AlbumReaderScreen()),
               );
             }
           }
@@ -514,7 +519,13 @@ class _EditCoverState extends ConsumerState<EditCover> {
                       top: false,
                       child: Padding(
                         padding: EdgeInsets.only(bottom: 12.h),
-                        child: Builder(
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 20.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(18.r),
+                          ),
+                          child: Builder(
                           builder: (context) {
                             LayerModel? selected;
                             final selectedId = _interaction.selectedLayerId;
@@ -564,6 +575,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
                               },
                             );
                           },
+                        ),
                         ),
                       ),
                     ),

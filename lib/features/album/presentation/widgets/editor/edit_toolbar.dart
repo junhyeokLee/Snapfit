@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 
@@ -30,7 +31,7 @@ class EditToolbar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _toolbarButton(Icons.book_outlined, coverLabel, onOpenCoverSelector),
+          _toolbarButton(Icons.menu_book_outlined, coverLabel, onOpenCoverSelector),
           _toolbarButton(Icons.text_fields, "텍스트", onAddText),
           _toolbarButton(Icons.photo, "오버레이", onAddPhoto),
         ],
@@ -46,8 +47,14 @@ class EditToolbar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 30.sp, color: Colors.white),
-            Text(label, style: TextStyle(fontSize: 10.sp, color: Colors.white)),
+            Icon(icon, size: 26.sp, color: SnapFitColors.accent),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: SnapFitColors.textPrimary.withOpacity(0.85),
+              ),
+            ),
           ],
         ),
       ),

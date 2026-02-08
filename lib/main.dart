@@ -2,9 +2,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 
+import 'config/env.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
-import 'features/album/presentation/views/home_screen.dart';
+import 'features/auth/presentation/views/auth_gate.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -14,6 +16,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  if (Env.kakaoNativeAppKey.isNotEmpty) {
+    KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
+  }
 
   runApp(
     ProviderScope(
@@ -38,7 +44,7 @@ class MoaEditorApp extends StatelessWidget {
       title: 'SnapFit',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
-      home: const HomeScreen(),
+      home: const AuthGate(),
       routes: {
         '/add_cover': (context) => const AddCoverScreen(),
       },

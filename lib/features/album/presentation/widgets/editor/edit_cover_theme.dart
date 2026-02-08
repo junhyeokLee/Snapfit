@@ -61,6 +61,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.read(coverViewModelProvider.notifier);
+    final st = ref.watch(coverViewModelProvider).asData?.value;
     final editorVm = ref.read(albumEditorViewModelProvider.notifier);
     final editorSt = ref.watch(albumEditorViewModelProvider).asData?.value;
 

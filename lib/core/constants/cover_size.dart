@@ -20,14 +20,14 @@ const List<CoverSize> coverSizes = [
     realSize: Size(14.5, 19.4),
   ),
   CoverSize(
-    name: '가로형',
-    ratio: 8 / 6,
-    realSize: Size(19.4, 14.5),
-  ),
-  CoverSize(
     name: '정사각형',
     ratio: 8 / 8,
     realSize: Size(20, 20),
+  ),
+  CoverSize(
+    name: '가로형',
+    ratio: 8 / 6,
+    realSize: Size(19.4, 14.5),
   ),
 ];
 

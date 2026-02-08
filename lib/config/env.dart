@@ -12,4 +12,18 @@ class Env {
     'BASE_URL',
     defaultValue: 'http://54.253.3.176:8080',
   );
+
+  /// Kakao Native App Key
+  /// - --dart-define=KAKAO_NATIVE_APP_KEY=...
+  static const String kakaoNativeAppKey = String.fromEnvironment(
+    'KAKAO_NATIVE_APP_KEY',
+    defaultValue: '34ecdf62d2b450c00c1d525d0cffa4df',
+  );
+
+  /// Google Web Client ID (serverClientId)
+  /// - --dart-define=GOOGLE_WEB_CLIENT_ID=...
+  static const String googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com',
+  );
 }

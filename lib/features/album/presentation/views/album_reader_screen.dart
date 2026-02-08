@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../shared/widgets/snapfit_gradient_background.dart';
+import '../../domain/entities/album_page.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -14,7 +16,6 @@ import '../widgets/reader/album_reader_peek_card.dart';
 import '../widgets/reader/album_reader_thumbnail_strip.dart';
 import '../widgets/reader/slow_page_physics.dart';
 
-/// 읽기 전용: 앨범 페이지를 크게 보는 화면
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   const AlbumReaderScreen({super.key});
 
@@ -24,11 +25,16 @@ class AlbumReaderScreen extends ConsumerStatefulWidget {
 
 class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
   late final PageController _pageController;
+  late final LayerInteractionManager _previewInteraction;
+  late final LayerBuilder _previewBuilder;
+  Size _baseCanvasSize = const Size(300, 400);
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.97);
+    _pageController = PageController();
+    _previewInteraction = LayerInteractionManager.preview(ref, () => _baseCanvasSize);
+    _previewBuilder = LayerBuilder(_previewInteraction, () => _baseCanvasSize);
   }
 
   @override
@@ -40,165 +46,104 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final asyncState = ref.watch(albumEditorViewModelProvider);
-    final state = asyncState.value;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final state = asyncState.value;
 
     if (state == null) {
       return const Scaffold(
+        backgroundColor: SnapFitColors.background,
         body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
 
-    if (state.coverCanvasSize == null) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        final baseSize = coverCanvasBaseSize(state.selectedCover);
-        vm.loadPendingEditAlbumIfNeeded(baseSize);
-      });
-    }
+    final pages = vm.pages.where((p) => !p.isCover).toList(growable: false);
+    final pageCount = pages.isEmpty ? 1 : pages.length;
+    final coverCanvas = state.coverCanvasSize;
+    _baseCanvasSize = coverCanvas ?? coverCanvasBaseSize(state.selectedCover);
+    final ratio = _baseCanvasSize.width / _baseCanvasSize.height;
 
-    final pages = vm.pages.where((p) => !p.isCover).toList();
-    final baseCanvasSize = coverCanvasBaseSize(state.selectedCover);
-    final pageRatio = baseCanvasSize.width / baseCanvasSize.height;
-
-    final previewInteraction = LayerInteractionManager.preview(
-      ref,
-      () => baseCanvasSize,
-    );
-    final previewBuilder = LayerBuilder(previewInteraction, () => baseCanvasSize);
+    final screenH = MediaQuery.sizeOf(context).height;
+    final pageH = (screenH * 0.58).clamp(260.0, 520.0);
+    final pageW = pageH * ratio;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF7d7a97),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "앨범 보기",
-          style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final pageSize = calculatePagePreviewSize(
-                  screen: MediaQuery.sizeOf(context),
-                  constraints: constraints,
-                  pageRatio: pageRatio,
-                  maxHeightFactor: kPageReaderPreviewMaxHeightFactor,
-                );
-                final targetW = pageSize.width;
-                final targetH = pageSize.height;
-
-                return pages.isEmpty
+      backgroundColor: SnapFitColors.background,
+      body: SnapFitGradientBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: pages.isEmpty
                     ? AlbumReaderEmptyState(
-                        isLoading: state.coverCanvasSize == null,
-                        baseCanvasSize: baseCanvasSize,
+                        isLoading: asyncState.isLoading,
+                        baseCanvasSize: _baseCanvasSize,
                       )
-                    : PageView.builder(
-                        controller: _pageController,
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        physics: const SlowPagePhysics(),
-                        itemCount: pages.length,
-                        itemBuilder: (context, index) {
-                          final page = pages[index];
-                          final prevPage = (index - 1 >= 0) ? pages[index - 1] : null;
-                          final nextPage = (index + 1 < pages.length) ? pages[index + 1] : null;
-                          return AnimatedBuilder(
-                            animation: _pageController,
-                            builder: (context, child) {
-                              final current = _pageController.hasClients
-                                  ? (_pageController.page ?? index.toDouble())
-                                  : index.toDouble();
-                              final delta = (current - index).clamp(-1.0, 1.0);
-                              final eased = Curves.easeOutCubic.transform(delta.abs()) * delta.sign;
-                              final tilt = 0.14 * eased;
-                              final alignment =
-                                  delta >= 0 ? Alignment.centerLeft : Alignment.centerRight;
-
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            left: 12.w,
+                            child: AlbumReaderPeekCard(
+                              layers: pages.first.layers,
+                              targetW: pageW * 0.38,
+                              targetH: pageH * 0.38,
+                              previewBuilder: _previewBuilder,
+                              baseCanvasSize: _baseCanvasSize,
+                            ),
+                          ),
+                          Positioned(
+                            right: 12.w,
+                            child: AlbumReaderPeekCard(
+                              layers: pages.last.layers,
+                              targetW: pageW * 0.38,
+                              targetH: pageH * 0.38,
+                              previewBuilder: _previewBuilder,
+                              baseCanvasSize: _baseCanvasSize,
+                            ),
+                          ),
+                          PageView.builder(
+                            controller: _pageController,
+                            physics: const SlowPagePhysics(),
+                            itemCount: pageCount,
+                            itemBuilder: (context, index) {
+                              final page = pages[index];
+                              final delta = (_pageController.hasClients
+                                      ? (_pageController.page ?? index) - index
+                                      : 0.0)
+                                  .clamp(-1.0, 1.0)
+                                  .toDouble();
                               return Center(
-                                child: Transform(
-                                  alignment: alignment,
-                                  transform: Matrix4.identity()
-                                    ..setEntry(3, 2, 0.02)
-                                    ..rotateY(tilt),
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    alignment: Alignment.center,
-                                    children: [
-                                      if (prevPage != null)
-                                        Positioned(
-                                          left: -targetW * 0.18,
-                                          child: SizedBox(
-                                            width: targetW * 0.32,
-                                            height: targetH,
-                                            child: Opacity(
-                                              opacity: 0.65,
-                                              child: AlbumReaderPeekCard(
-                                                layers: prevPage.layers,
-                                                targetW: targetW * 0.32,
-                                                targetH: targetH,
-                                                previewBuilder: previewBuilder,
-                                                baseCanvasSize: baseCanvasSize,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      if (nextPage != null)
-                                        Positioned(
-                                          right: -targetW * 0.18,
-                                          child: SizedBox(
-                                            width: targetW * 0.32,
-                                            height: targetH,
-                                            child: Opacity(
-                                              opacity: 0.65,
-                                              child: AlbumReaderPeekCard(
-                                                layers: nextPage.layers,
-                                                targetW: targetW * 0.32,
-                                                targetH: targetH,
-                                                previewBuilder: previewBuilder,
-                                                baseCanvasSize: baseCanvasSize,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      AlbumReaderPageCard(
-                                        layers: page.layers,
-                                        targetW: targetW,
-                                        targetH: targetH,
-                                        previewBuilder: previewBuilder,
-                                        baseCanvasSize: baseCanvasSize,
-                                        delta: delta,
-                                      ),
-                                    ],
-                                  ),
+                                child: AlbumReaderPageCard(
+                                  layers: page.layers,
+                                  targetW: pageW,
+                                  targetH: pageH,
+                                  previewBuilder: _previewBuilder,
+                                  baseCanvasSize: _baseCanvasSize,
+                                  delta: delta,
                                 ),
                               );
                             },
-                          );
-                        },
-                      );
-              },
-            ),
+                          ),
+                        ],
+                      ),
+              ),
+              if (pages.isNotEmpty) ...[
+                AlbumReaderFooter(
+                  pageController: _pageController,
+                  totalPages: pages.length,
+                ),
+                AlbumReaderThumbnailStrip(
+                  pages: pages,
+                  pageController: _pageController,
+                  previewBuilder: _previewBuilder,
+                  baseCanvasSize: _baseCanvasSize,
+                  height: 70.h,
+                ),
+                SizedBox(height: 10.h),
+              ],
+            ],
           ),
-          if (pages.isNotEmpty)
-            AlbumReaderFooter(
-              pageController: _pageController,
-              totalPages: pages.length,
-            ),
-          AlbumReaderThumbnailStrip(
-            pages: pages,
-            pageController: _pageController,
-            previewBuilder: previewBuilder,
-            baseCanvasSize: baseCanvasSize,
-            height: 70.h,
-          ),
-        ],
+        ),
       ),
     );
   }
