@@ -7,6 +7,7 @@ import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'config/env.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
 import 'features/auth/presentation/views/auth_gate.dart';
+import 'features/splash/presentation/views/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -26,7 +27,7 @@ void main() async {
       child: ScreenUtilInit(
         designSize: const Size(390, 844),
         minTextAdapt: true, // 글자 크기 자동 조정
-        splitScreenMode: true, // 분할 화면 대응 (Fold, Split 등)
+        splitScreenMode: true, // 분할 화면 대응 (Fold,ㄹ Split 등)
         builder: (context, child) {
           return const MoaEditorApp();
         },
@@ -44,7 +45,7 @@ class MoaEditorApp extends StatelessWidget {
       title: 'SnapFit',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
-      home: const AuthGate(),
+      home: const SplashScreen(),
       routes: {
         '/add_cover': (context) => const AddCoverScreen(),
       },

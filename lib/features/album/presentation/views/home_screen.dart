@@ -34,6 +34,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
+  int _bottomNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -64,54 +65,106 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: SnapFitColors.background,
-      body: Container(
-        color: Colors.black,
-        child: SafeArea(
+      bottomNavigationBar: _HomeBottomNavigationBar(
+        currentIndex: _bottomNavIndex,
+        onTap: (index) {
+          setState(() => _bottomNavIndex = index);
+        },
+        onCreate: handleCreateAlbum,
+      ),
+      body: _buildBottomNavBody(
+        context,
+        Container(
+          color: Colors.black,
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 8.h),
+                  child: _HomeHeader(
+                    onSearch: () {},
+                    onNotification: () {},
+                    onLogout: handleLogout,
+                    userInfo: authAsync.value,
+                    isLoading: authAsync.isLoading,
+                  ),
+                ),
+                Expanded(
+                  child: albumsAsync.when(
+                    data: (albums) {
+                      final sorted = List<Album>.from(albums)
+                        ..sort((a, b) => (b.createdAt).compareTo(a.createdAt));
+                      return sorted.isEmpty
+                          ? _buildEmptyState(context)
+                          : _AlbumListView(
+                              albums: sorted,
+                              selectedIndex: _selectedIndex,
+                              onSelect: (index) {
+                                setState(() => _selectedIndex = index);
+                              },
+                              onOpen: (album, index) async {
+                                setState(() => _selectedIndex = index);
+                                await _openAlbum(context, ref, album);
+                              },
+                              onEdit: (album) => _onEditSelected(context, album),
+                              onDelete: (album) => _onDeleteSelected(context, album),
+                            );
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(color: SnapFitColors.textPrimary),
+                    ),
+                    error: (err, stack) => _buildErrorState(context, err),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBody(BuildContext context, Widget homeBody) {
+    switch (_bottomNavIndex) {
+      case 0:
+      case 1:
+        return homeBody;
+      case 3:
+        return _buildBottomNavPlaceholder(context, "알림");
+      case 4:
+        return _buildBottomNavPlaceholder(context, "마이");
+      default:
+        return homeBody;
+    }
+  }
+
+  Widget _buildBottomNavPlaceholder(BuildContext context, String label) {
+    return Container(
+      color: Colors.black,
+      child: SafeArea(
+        child: Center(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 8.h),
-                child: _HomeHeader(
-                  onSearch: () {},
-                  onNotification: () {},
-                  onLogout: handleLogout,
-                  userInfo: authAsync.value,
-                  isLoading: authAsync.isLoading,
+              Icon(Icons.hourglass_empty, size: 40.sp, color: SnapFitColors.textMuted),
+              SizedBox(height: 12.h),
+              Text(
+                "$label 준비중이에요",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: SnapFitColors.textPrimary.withOpacity(0.85),
                 ),
               ),
-              Expanded(
-                child: albumsAsync.when(
-                  data: (albums) {
-                    final sorted = List<Album>.from(albums)
-                      ..sort((a, b) => (b.createdAt).compareTo(a.createdAt));
-                    return sorted.isEmpty
-                        ? _buildEmptyState(context)
-                        : _AlbumListView(
-                            albums: sorted,
-                            selectedIndex: _selectedIndex,
-                            onSelect: (index) {
-                              setState(() => _selectedIndex = index);
-                            },
-                            onOpen: (album, index) async {
-                              setState(() => _selectedIndex = index);
-                              await _openAlbum(context, ref, album);
-                            },
-                            onEdit: (album) => _onEditSelected(context, album),
-                            onDelete: (album) => _onDeleteSelected(context, album),
-                          );
-                  },
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: SnapFitColors.textPrimary),
-                  ),
-                  error: (err, stack) => _buildErrorState(context, err),
-                ),
+              SizedBox(height: 6.h),
+              Text(
+                "조금만 기다려 주세요",
+                style: TextStyle(fontSize: 12.sp, color: SnapFitColors.textMuted),
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: _CreateAlbumFab(onPressed: handleCreateAlbum),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -323,6 +376,157 @@ class _AuthStatusChip extends StatelessWidget {
 }
 
 /// 홈 화면 앨범 리스트 뷰
+/// 홈 하단 바텀 네비게이션
+class _HomeBottomNavigationBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final VoidCallback onCreate;
+
+  const _HomeBottomNavigationBar({
+    required this.currentIndex,
+    required this.onTap,
+    required this.onCreate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+        decoration: BoxDecoration(
+          color: SnapFitColors.backgroundDark,
+          border: Border(
+            top: BorderSide(color: SnapFitColors.overlayLight),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _BottomNavItem(
+                icon: Icons.home_rounded,
+                label: '홈',
+                isSelected: currentIndex == 0,
+                onTap: () => onTap(0),
+              ),
+            ),
+            Expanded(
+              child: _BottomNavItem(
+                icon: Icons.photo_album_rounded,
+                label: '커넥트',
+                isSelected: currentIndex == 1,
+                onTap: () => onTap(1),
+              ),
+            ),
+            SizedBox(width: 6.w),
+            _CreateNavButton(onTap: onCreate),
+            SizedBox(width: 6.w),
+            Expanded(
+              child: _BottomNavItem(
+                icon: Icons.people_alt_rounded,
+                label: '알림',
+                isSelected: currentIndex == 3,
+                onTap: () => onTap(3),
+              ),
+            ),
+            Expanded(
+              child: _BottomNavItem(
+                icon: Icons.person_rounded,
+                label: '마이',
+                isSelected: currentIndex == 4,
+                onTap: () => onTap(4),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 바텀 네비게이션 아이템
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? SnapFitColors.accent : SnapFitColors.textMuted;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 22.sp, color: color),
+              SizedBox(height: 4.h),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 바텀 네비게이션 중앙 액션 버튼
+class _CreateNavButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _CreateNavButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(32.r),
+        child: Container(
+          width: 52.w,
+          height: 52.w,
+          decoration: BoxDecoration(
+            color: SnapFitColors.accent,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 12.r,
+                offset: Offset(0, 6.h),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.add,
+            size: 28.sp,
+            color: SnapFitColors.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AlbumListView extends StatelessWidget {
   final List<Album> albums;
   final int selectedIndex;
