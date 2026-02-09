@@ -82,7 +82,10 @@ class CoverLayout extends StatelessWidget {
                           child: LayoutBuilder(
                             builder: (context, coverCts) {
                               final coverSize = coverCts.biggest;
-                              onCoverSizeChanged(coverSize);
+                              // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                onCoverSizeChanged(coverSize);
+                              });
                               return Stack(
                                 fit: StackFit.expand,
                                 children: [

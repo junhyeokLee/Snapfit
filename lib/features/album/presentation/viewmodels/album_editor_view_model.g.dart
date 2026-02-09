@@ -34,7 +34,7 @@ final class AlbumEditorViewModelProvider
 }
 
 String _$albumEditorViewModelHash() =>
-    r'ac19f410a4acca1008a4d952f6ed4a3c94aeb21a';
+    r'b7056e4eeccf276d6436971f89436e7e530705e2';
 
 abstract class _$AlbumEditorViewModel extends $AsyncNotifier<AlbumEditorState> {
   FutureOr<AlbumEditorState> build();

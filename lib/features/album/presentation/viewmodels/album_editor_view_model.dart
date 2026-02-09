@@ -43,7 +43,7 @@ abstract class AlbumEditorState with _$AlbumEditorState {
     )
     CoverSize selectedCover,
 
-    @Default(CoverTheme.abstract3) CoverTheme selectedTheme,
+    @Default(CoverTheme.classic) CoverTheme selectedTheme,
 
     /// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
     Size? coverCanvasSize,
@@ -62,7 +62,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   AssetPathEntity? _currentAlbum;
 
   CoverSize _cover = coverSizes.first;
-  CoverTheme _selectedTheme = CoverTheme.abstract3;
+  CoverTheme _selectedTheme = CoverTheme.classic;
 
   // 페이지 구조
   final List<AlbumPage> _pages = [];
@@ -119,7 +119,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       (s) => s.name == '세로형',
       orElse: () => coverSizes.first,
     );
-    _selectedTheme = initialTheme ?? CoverTheme.abstract3;
+    _selectedTheme = initialTheme ?? CoverTheme.classic;
 
     _pages.clear();
     _pages.add(_service.createPage(index: 0, isCover: true));
@@ -208,11 +208,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         final normalized = themeStr == 'abstract' ? 'abstract1' : themeStr;
         final theme = CoverTheme.values.firstWhere((t) => t.label == normalized);
         _selectedTheme = theme;
-        ref.read(coverViewModelProvider.notifier).updateTheme(theme);
       } catch (_) {
         // 알 수 없는 테마 문자열이면 기본값 유지
       }
     }
+
+    // coverViewModelProvider에 커버 사이즈와 테마 동기화
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
+    ref.read(coverViewModelProvider.notifier).updateTheme(_selectedTheme);
 
     // 레이어 JSON은 실제 canvasSize가 정해진 다음에 복원
     _pendingCoverLayersJson =
@@ -228,7 +231,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     // coverCanvasSize 도 초기화해서, 다음 화면(커버/스프레드)에서
     // loadPendingEditAlbumIfNeeded 가 새 앨범 기준으로 다시 한 번만 동작하도록 한다.
     final prev = state.value ?? const AlbumEditorState();
-    state = AsyncData(prev.copyWith(coverCanvasSize: null));
+    state = AsyncData(prev.copyWith(
+      coverCanvasSize: null,
+      selectedCover: _cover,
+      selectedTheme: _selectedTheme,
+    ));
 
     // 커버 사이즈/테마만 먼저 반영(선택기/레이아웃 동기화)
     _emit();
@@ -624,14 +631,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
-  /// 마지막 페이지(내지) 제거 – 저장 없이 뒤로갈 때 사용
-  void removeLastPage() {
-    if (_pages.length <= 1) return; // 커버만 있으면 제거 안 함
-    _pages.removeLast();
-    _currentPageIndex = (_pages.length - 1).clamp(0, _pages.length - 1);
-    _emit();
-  }
-
   /// 전체 초기화
   void clearAll() {
     final currentPage = _pages[_currentPageIndex];
@@ -649,6 +648,26 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 선택 해제(뷰 단 관리여도 호출 가능하도록)
   void clearSelectedLayer() {
     _emit();
+  }
+
+  /// 커버 페이지가 항상 존재하도록 보장
+  void ensureCoverPage() {
+    if (_pages.isEmpty || !_pages.first.isCover) {
+      _pages.insert(0, _service.createPage(index: 0, isCover: true));
+      _currentPageIndex = 0;
+      _emit();
+    }
+  }
+
+  /// 마지막 페이지 제거 (커버 페이지는 제외)
+  void removeLastPage() {
+    if (_pages.length > 1) {
+      _pages.removeLast();
+      if (_currentPageIndex >= _pages.length) {
+        _currentPageIndex = _pages.length - 1;
+      }
+      _emit();
+    }
   }
 
   /// 커버 테마 변경

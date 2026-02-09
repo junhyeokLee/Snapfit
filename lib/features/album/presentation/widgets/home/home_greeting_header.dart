@@ -1,0 +1,48 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../auth/data/dto/auth_response.dart';
+
+/// 홈 화면 인사말 헤더
+class HomeGreetingHeader extends StatelessWidget {
+  final UserInfo? userInfo;
+
+  const HomeGreetingHeader({super.key, required this.userInfo});
+
+  @override
+  Widget build(BuildContext context) {
+    final rawName = userInfo?.name ?? '';
+    final email = userInfo?.email ?? '';
+    final provider = (userInfo?.provider ?? '').toUpperCase();
+    final isPlaceholder = rawName.isEmpty ||
+        rawName == provider ||
+        rawName.endsWith('_USER') ||
+        rawName.contains(provider);
+    final emailName = email.contains('@') ? email.split('@').first : email;
+    final name = !isPlaceholder && rawName.isNotEmpty
+        ? rawName
+        : (emailName.isNotEmpty ? emailName : '사용자');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '안녕하세요, $name',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textMutedOf(context),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          '당신의 추억이 기다리고 있어요.',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -1,0 +1,115 @@
+---
+description: 화면 위젯을 컴포넌트 단위로 분리하는 규칙
+globs: lib/**/*_screen.dart
+alwaysApply: false
+---
+
+# 위젯 컴포넌트 분리 규칙
+
+## MUST Do
+
+1. **화면 파일은 최소한의 구조만 유지**
+   - Screen 파일은 `ConsumerWidget`/`ConsumerStatefulWidget`만 포함
+   - 모든 위젯은 `widgets/{screen_name}/` 폴더로 분리
+   - 예: `home_screen.dart` → `widgets/home/` 폴더
+
+2. **위젯 분리 기준**
+   - Private 위젯 (`_`로 시작)은 모두 분리
+   - 50줄 이상의 위젯은 무조건 분리
+   - 재사용 가능한 위젯은 분리
+   - 복잡한 로직을 가진 위젯은 분리
+
+3. **파일 네이밍 규칙**
+   - 파일명: `{screen_name}_{widget_name}.dart` (소문자, 언더스코어)
+   - 클래스명: `{ScreenName}{WidgetName}` (PascalCase, private 제거)
+   - 예: `home_bottom_navigation_bar.dart` → `HomeBottomNavigationBar`
+
+4. **폴더 구조**
+   ```
+   lib/features/{feature}/presentation/
+   ├── views/
+   │   └── {screen}_screen.dart
+   └── widgets/
+       └── {screen_name}/
+           ├── {screen_name}_{widget1}.dart
+           ├── {screen_name}_{widget2}.dart
+           └── ...
+   ```
+
+5. **Import 경로**
+   - Screen에서 위젯 import: `import '../widgets/{screen_name}/{screen_name}_{widget}.dart';`
+   - 위젯 간 import: 상대 경로 사용
+
+## MUST NOT Do
+
+1. **Do NOT** 화면 파일에 private 위젯을 남기지 않기
+2. **Do NOT** 하나의 파일에 여러 위젯을 무분별하게 묶지 않기 (관련 위젯만 그룹화)
+3. **Do NOT** 너무 작은 위젯(10줄 미만)을 과도하게 분리하지 않기 (단, 재사용 가능하면 분리)
+
+## 예시
+
+### ❌ BAD: 화면 파일에 모든 위젯 포함
+```dart
+// home_screen.dart (2460줄)
+class HomeScreen extends ConsumerStatefulWidget {
+  // ...
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // ...
+}
+
+class _HomeBottomNavigationBar extends StatelessWidget {
+  // 100줄...
+}
+
+class _FeaturedAlbumCard extends StatelessWidget {
+  // 150줄...
+}
+
+class _GridAlbumCard extends StatelessWidget {
+  // 200줄...
+}
+// ... 20개 이상의 위젯들
+```
+
+### ✅ GOOD: 위젯을 컴포넌트로 분리
+```dart
+// home_screen.dart (200줄)
+import '../widgets/home/home_bottom_navigation_bar.dart';
+import '../widgets/home/home_album_list_view.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  // ...
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: HomeAlbumListView(...),
+      bottomNavigationBar: HomeBottomNavigationBar(...),
+    );
+  }
+}
+```
+
+```dart
+// widgets/home/home_bottom_navigation_bar.dart
+class HomeBottomNavigationBar extends StatelessWidget {
+  // ...
+}
+```
+
+```dart
+// widgets/home/home_album_list_view.dart
+class HomeAlbumListView extends StatelessWidget {
+  // ...
+}
+```
+
+## 적용 대상
+
+- `*_screen.dart` 파일들
+- 특히 500줄 이상의 큰 화면 파일
+- Private 위젯이 3개 이상인 화면 파일

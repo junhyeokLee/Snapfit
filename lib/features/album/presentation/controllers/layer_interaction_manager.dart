@@ -139,6 +139,13 @@ class LayerInteractionManager {
     return l;
   }
 
+  /// 레이어 선택
+  void setSelectedLayer(String layerId) {
+    setState(() {
+      _selectedLayerId = layerId;
+    });
+  }
+
   /// 선택 해제 및 가이드라인 숨김
   void clearSelection() {
     setState(() {

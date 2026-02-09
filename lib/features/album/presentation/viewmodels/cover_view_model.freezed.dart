@@ -207,7 +207,7 @@ return $default(_that.selectedCover,_that.selectedTheme);case _:
 
 
 class _CoverState implements CoverState {
-  const _CoverState({this.selectedCover = const CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)), this.selectedTheme = CoverTheme.classic});
+  const _CoverState({this.selectedCover = const CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)), this.selectedTheme = CoverTheme.abstract3});
   
 
 @override@JsonKey() final  CoverSize selectedCover;

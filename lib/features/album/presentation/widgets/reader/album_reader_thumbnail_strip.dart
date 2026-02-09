@@ -12,7 +12,7 @@ import 'album_reader_page_content.dart';
 /// 앨범 보기 화면: 하단 썸네일 스트립 + 페이지 추가 버튼
 class AlbumReaderThumbnailStrip extends ConsumerWidget {
   final List<AlbumPage> pages;
-  final PageController pageController;
+  final PageController? pageController;
   final LayerBuilder previewBuilder;
   final Size baseCanvasSize;
   final double height;
@@ -20,7 +20,7 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
   const AlbumReaderThumbnailStrip({
     super.key,
     required this.pages,
-    required this.pageController,
+    this.pageController,
     required this.previewBuilder,
     required this.baseCanvasSize,
     this.height = 70,
@@ -32,29 +32,30 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     final thumbW = height * ratio;
     return SizedBox(
       height: height + 12.h,
-      child: AnimatedBuilder(
-        animation: pageController,
-        builder: (context, _) {
-          final page = pageController.hasClients ? (pageController.page ?? 0) : 0;
-          final current = page.round().clamp(0, (pages.length - 1).clamp(0, pages.length));
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-            itemCount: pages.length + 1,
-            itemBuilder: (context, index) {
-              if (index == pages.length) {
-                return _AddPageThumb(
-                  width: thumbW,
-                  height: height,
-                  onTap: () => _showAddPage(context, ref),
-                );
-              }
-              final pageLayers = pages[index].layers;
-              final isSelected = index == current;
-              return GestureDetector(
-                onTap: () {
-                  pageController.animateToPage(
-                    index,
+      child: pageController != null
+          ? AnimatedBuilder(
+              animation: pageController!,
+              builder: (context, _) {
+                final page = pageController!.hasClients ? (pageController!.page ?? 0) : 0;
+                final current = page.round().clamp(0, (pages.length - 1).clamp(0, pages.length));
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                  itemCount: pages.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == pages.length) {
+                      return _AddPageThumb(
+                        width: thumbW,
+                        height: height,
+                        onTap: () => _showAddPage(context, ref),
+                      );
+                    }
+                    final pageLayers = pages[index].layers;
+                    final isSelected = index == current;
+                    return GestureDetector(
+                      onTap: () {
+                        pageController!.animateToPage(
+                          index,
                     duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
                   );
@@ -85,8 +86,36 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
               );
             },
           );
-        },
-      ),
+              },
+            )
+          : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+              itemCount: pages.length,
+              itemBuilder: (context, index) {
+                final pageLayers = pages[index].layers;
+                return Container(
+                  width: thumbW,
+                  height: height,
+                  margin: EdgeInsets.only(right: 8.w),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6.r),
+                    border: Border.all(color: Colors.white24, width: 1),
+                    color: Colors.white,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5.r),
+                    child: AlbumReaderPageContent(
+                      layers: pageLayers,
+                      targetW: thumbW,
+                      targetH: height,
+                      previewBuilder: previewBuilder,
+                      baseCanvasSize: baseCanvasSize,
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 

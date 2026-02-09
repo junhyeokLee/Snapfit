@@ -31,7 +31,18 @@ class EditCover extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 열었을 때 전달 (저장 성공 시 홈으로 pop)
   final Album? editAlbum;
 
-  const EditCover({super.key, this.editAlbum});
+  /// 앨범 생성 플로우에서 사용되는지 여부 (생성 후 페이지 편집 화면으로 이동)
+  final bool isFromCreateFlow;
+
+  /// 앨범 생성 완료 콜백 (플로우에서 사용)
+  final Function(int albumId)? onAlbumCreated;
+
+  const EditCover({
+    super.key,
+    this.editAlbum,
+    this.isFromCreateFlow = false,
+    this.onAlbumCreated,
+  });
 
   @override
   ConsumerState<EditCover> createState() => _EditCoverState();
@@ -201,13 +212,22 @@ class _EditCoverState extends ConsumerState<EditCover> {
     final coverSt = ref.watch(coverViewModelProvider).asData?.value;
     final coverVm = ref.read(coverViewModelProvider.notifier);
     final layers = albumSt?.layers ?? [];
-    final selectedCover = coverSt?.selectedCover ??
-        coverSizes.firstWhere(
-          (s) => s.name == '정사각형',
-          orElse: () => coverSizes.first,
-        );
+    
+    // 커버 사이즈 우선순위: 편집 모드에서는 albumSt (서버 데이터) 우선, 생성 모드에서는 coverSt 우선
+    final selectedCover = widget.editAlbum != null
+        ? (albumSt?.selectedCover ?? coverSt?.selectedCover ?? _selectedCover)
+        : (coverSt?.selectedCover ?? albumSt?.selectedCover ?? _selectedCover);
     final aspect = selectedCover.ratio;
-    final selectedTheme = coverSt?.selectedTheme ?? CoverTheme.classic;
+    
+    // 테마도 동일한 우선순위 적용
+    final selectedTheme = widget.editAlbum != null
+        ? (albumSt?.selectedTheme ?? coverSt?.selectedTheme ?? CoverTheme.classic)
+        : (coverSt?.selectedTheme ?? albumSt?.selectedTheme ?? CoverTheme.classic);
+    
+    // _selectedCover 동기화
+    if (_selectedCover != selectedCover) {
+      _selectedCover = selectedCover;
+    }
     // 저장/생성 진행 표시: 로컬 플래그만 사용 (전역 VM 로딩에 의해 무한 로딩 방지)
     final isCreating = _isSaving;
 
@@ -219,7 +239,22 @@ class _EditCoverState extends ConsumerState<EditCover> {
             // 요구사항:
             // - + 버튼으로 들어온 신규 생성: 상단은 '완료' (완료 시 홈으로)
             // - 커버 탭/편집으로 들어온 기존 앨범: 상단은 '다음' (다음으로 페이지 편집으로)
-            if (widget.editAlbum == null) {
+            // - 앨범 생성 플로우에서 들어온 경우: 생성 완료 후 콜백 호출 (Step 3로 이동)
+            if (widget.isFromCreateFlow) {
+              // 앨범 생성 플로우: 생성 완료 후 콜백 호출
+              if (widget.onAlbumCreated != null && album.id != null) {
+                widget.onAlbumCreated!(album.id!);
+              } else {
+                // 콜백이 없으면 기본 동작 (페이지 편집 화면으로 이동)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('앨범이 성공적으로 생성되었습니다!')),
+                );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => AlbumReaderScreen()),
+                );
+              }
+            } else if (widget.editAlbum == null) {
               // 신규 생성(+ 진입): 생성 완료 후 홈으로 복귀 + 목록 갱신
               ref.read(homeViewModelProvider.notifier).refresh();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -271,13 +306,14 @@ class _EditCoverState extends ConsumerState<EditCover> {
           final selectorHeight = kToolbarHeight;
 
           // 커버 가로 패딩 (좌우 여백은 기존 로직 유지)
-          final coverSide = _layout.getCoverSidePadding(_selectedCover);
+          final coverSide = _layout.getCoverSidePadding(selectedCover);
 
           // 커버를 화면 전체 기준 정중앙에 배치
           double coverTop;
           if (_coverSize == Size.zero) {
-            // 초기 렌더링 - 화면 중앙 가정
-            final estimatedCoverHeight = totalH * 0.5;
+            // 초기 렌더링 - selectedCover의 비율을 사용하여 높이 추정
+            final availableWidth = constraints.maxWidth - (coverSide * 2);
+            final estimatedCoverHeight = availableWidth / selectedCover.ratio;
             coverTop = (totalH - estimatedCoverHeight) / 2;
           } else {
             // 화면 전체 기준 정중앙
@@ -357,7 +393,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
                                 height: selectorHeight,
                                 child: CoverSelectorWidget(
                                   sizes: coverSizes,
-                                  selected: _selectedCover,
+                                  selected: selectedCover,
                                   iconForCover: _iconForCover,
                                   height: selectorHeight,
                                   onSelect: (s) {

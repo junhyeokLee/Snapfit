@@ -20,16 +20,16 @@ class _AlbumMemberApi implements AlbumMemberApi {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<AlbumMemberResponse> invite(
+  Future<InviteLinkResponse> invite(
     int albumId,
-    Map<String, dynamic> body,
+    String userId,
+    InviteAlbumRequest request,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'userId': userId};
     final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(body);
-    final _options = _setStreamType<AlbumMemberResponse>(
+    final _data = request;
+    final _options = _setStreamType<InviteLinkResponse>(
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -40,9 +40,9 @@ class _AlbumMemberApi implements AlbumMemberApi {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AlbumMemberResponse _value;
+    late InviteLinkResponse _value;
     try {
-      _value = AlbumMemberResponse.fromJson(_result.data!);
+      _value = InviteLinkResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, _result);
       rethrow;
@@ -51,57 +51,55 @@ class _AlbumMemberApi implements AlbumMemberApi {
   }
 
   @override
-  Future<List<AlbumMemberResponse>> getMembers(int albumId) async {
+  Future<InviteInfoResponse> getInviteInfo(String token) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<AlbumMemberResponse>>(
+    final _options = _setStreamType<InviteInfoResponse>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/albums/${albumId}/members',
-            queryParameters: queryParameters,
-            data: _data,
-          )
-          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-    );
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<AlbumMemberResponse> _value;
-    try {
-      _value = _result.data!
-          .map(
-            (dynamic i) =>
-                AlbumMemberResponse.fromJson(i as Map<String, dynamic>),
-          )
-          .toList();
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, _result);
-      rethrow;
-    }
-    return _value;
-  }
-
-  @override
-  Future<AlbumMemberResponse> acceptInvite(int albumId) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<AlbumMemberResponse>(
-      Options(method: 'POST', headers: _headers, extra: _extra)
-          .compose(
-            _dio.options,
-            '/api/albums/${albumId}/members/accept',
+            '/api/invites/${token}',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AlbumMemberResponse _value;
+    late InviteInfoResponse _value;
     try {
-      _value = AlbumMemberResponse.fromJson(_result.data!);
+      _value = InviteInfoResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<InviteAcceptResponse> acceptInvite(
+    String token,
+    AcceptInviteRequest request,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = request;
+    final _options = _setStreamType<InviteAcceptResponse>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/invites/${token}/accept',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late InviteAcceptResponse _value;
+    try {
+      _value = InviteAcceptResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, _result);
       rethrow;
