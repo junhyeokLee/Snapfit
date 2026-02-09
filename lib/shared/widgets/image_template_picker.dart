@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/image_templates.dart';
+import '../../core/constants/snapfit_colors.dart';
 
 /// 이미지 슬롯 템플릿 선택 바텀시트 (정사각형, 4:3 등 - 사진이 짤리지 않게 contain)
 class ImageTemplatePicker extends StatelessWidget {
@@ -32,11 +33,13 @@ class ImageTemplatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF9893a9),
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: SnapFitColors.isDark(context)
+                ? SnapFitColors.accentLight.withOpacity(0.25)
+                : Colors.black.withOpacity(0.18),
             blurRadius: 20.r,
             offset: Offset(0, -4.h),
           ),
@@ -52,7 +55,7 @@ class ImageTemplatePicker extends StatelessWidget {
               width: 48.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
+                color: SnapFitColors.overlayMediumOf(context),
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -60,7 +63,7 @@ class ImageTemplatePicker extends StatelessWidget {
             Text(
               '사진 크기(템플릿)',
               style: TextStyle(
-                color: Colors.white,
+                color: SnapFitColors.textPrimaryOf(context),
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -70,7 +73,7 @@ class ImageTemplatePicker extends StatelessWidget {
               child: Text(
                 '선택한 비율로 슬롯이 만들어지고, 사진이 그 안에 꽉 차게 들어갑니다.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: SnapFitColors.textSecondaryOf(context),
                   fontSize: 13.sp,
                 ),
                 textAlign: TextAlign.center,
@@ -92,18 +95,22 @@ class ImageTemplatePicker extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.white.withOpacity(0.95)
-                              : Colors.white.withOpacity(0.2),
+                              ? SnapFitColors.surfaceOf(context).withOpacity(0.95)
+                              : SnapFitColors.overlayLightOf(context),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
-                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.4),
+                            color: isSelected
+                                ? SnapFitColors.textPrimaryOf(context)
+                                : SnapFitColors.overlayStrongOf(context),
                             width: isSelected ? 2.5 : 1,
                           ),
                         ),
                         child: Text(
                           t.label,
                           style: TextStyle(
-                            color: isSelected ? Colors.black87 : Colors.white,
+                            color: isSelected
+                                ? SnapFitColors.textPrimaryOf(context)
+                                : SnapFitColors.textSecondaryOf(context),
                             fontSize: 14.sp,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                           ),

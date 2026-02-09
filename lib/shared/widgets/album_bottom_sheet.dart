@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../../core/constants/snapfit_colors.dart';
 import '../../features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'gallery_thumb_tile.dart';
 
@@ -19,9 +20,9 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       alignment: Alignment.centerLeft,
@@ -37,14 +38,17 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
               children: [
                 Text(
                   current != null ? (current!.name == 'Recent' ? '최근' : current!.name) : '최근',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+                    color: SnapFitColors.textPrimaryOf(context),
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
               ],
             ),
           ],
@@ -117,13 +121,17 @@ Future<AssetEntity?> showPhotoSelectionSheet(
               final async = ref.watch(albumEditorViewModelProvider);
               final st = async.asData?.value;
               if (st == null) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: SnapFitColors.textPrimaryOf(context),
+                  ),
+                );
               }
 
               return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.surfaceOf(context),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 child: CustomScrollView(
                   controller: scrollController,
@@ -175,12 +183,15 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                     // ✅ 로딩 인디케이터
                     SliverToBoxAdapter(
                       child: async.isLoading
-                          ? const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
+                          ? Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: SnapFitColors.textPrimaryOf(context),
+                                ),
+                              ),
+                            )
                           : const SizedBox.shrink(),
                     ),
                   ],
@@ -230,7 +241,9 @@ Future<void> _showAlbumSelectionSheet(
                     title: Text(
                       a.name == 'Recent' ? '최근' : a.name,
                       style: TextStyle(
-                        color: isCurr ? Colors.blueAccent : Colors.black87,
+                        color: isCurr
+                            ? SnapFitColors.accentLight
+                            : SnapFitColors.textPrimaryOf(context),
                         fontWeight:
                         isCurr ? FontWeight.bold : FontWeight.normal,
                       ),

@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/page_templates.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 
 /// 페이지 템플릿 선택 바텀시트 (스크랩북 스타일)
 class PageTemplatePicker extends StatelessWidget {
@@ -40,11 +41,13 @@ class PageTemplatePicker extends StatelessWidget {
         child: Container(
           constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
           decoration: BoxDecoration(
-            color: const Color(0xFF9893a9).withOpacity(0.95),
+            color: SnapFitColors.surfaceOf(context).withOpacity(0.95),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: SnapFitColors.isDark(context)
+                    ? SnapFitColors.accentLight.withOpacity(0.25)
+                    : Colors.black.withOpacity(0.18),
                 blurRadius: 20.r,
                 offset: Offset(0, -4.h),
               ),
@@ -60,7 +63,7 @@ class PageTemplatePicker extends StatelessWidget {
                   width: 48.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
+                    color: SnapFitColors.overlayMediumOf(context),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
@@ -69,7 +72,7 @@ class PageTemplatePicker extends StatelessWidget {
                   child: Text(
                     '페이지 템플릿',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: SnapFitColors.textPrimaryOf(context),
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -119,11 +122,15 @@ class TemplatePreviewCanvas extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.4),
+          color: SnapFitColors.overlayLightOf(context),
           borderRadius: BorderRadius.circular(6.r),
-          border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+          border: Border.all(color: SnapFitColors.overlayStrongOf(context), width: 1),
         ),
-        child: Icon(Icons.add_photo_alternate_outlined, size: 28.sp, color: Colors.white70),
+        child: Icon(
+          Icons.add_photo_alternate_outlined,
+          size: 28.sp,
+          color: SnapFitColors.textSecondaryOf(context),
+        ),
       );
     }
 
@@ -131,7 +138,7 @@ class TemplatePreviewCanvas extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: SnapFitColors.pureWhite.withOpacity(0.95),
         borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
@@ -229,9 +236,9 @@ class _TemplateCard extends StatelessWidget {
           width: 100.w,
           padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: SnapFitColors.overlayLightOf(context),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
+            border: Border.all(color: SnapFitColors.overlayStrongOf(context), width: 1),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -248,7 +255,7 @@ class _TemplateCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: SnapFitColors.textPrimaryOf(context),
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),

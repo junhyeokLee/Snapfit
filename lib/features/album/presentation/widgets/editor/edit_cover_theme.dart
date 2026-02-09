@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../shared/widgets/spine_painter.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 
@@ -112,7 +113,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
               width: 48.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: SnapFitColors.overlayMediumOf(context),
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -217,7 +218,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                                         child: Text(
                                           theme.label,
                                           style: TextStyle(
-                                            color: Colors.white,
+                                            color: SnapFitColors.textPrimaryOf(context),
                                             fontSize: 10.sp,
                                             fontWeight: FontWeight.bold,
                                           ),

@@ -12,9 +12,10 @@ import '../../../../shared/snapfit_image.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/cover_theme.dart';
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../shared/widgets/snapfit_gradient_background.dart';
+import '../../../../shared/widgets/snapfit_primary_gradient_background.dart';
 import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../../profile/presentation/views/my_page_screen.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../../domain/entities/layer_export_mapper.dart';
@@ -46,14 +47,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         await ref.read(homeViewModelProvider.notifier).refresh();
       }
     }
-
-    Future<void> handleLogout() async {
-      await ref.read(authViewModelProvider.notifier).logout();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃되었습니다.')),
-      );
-    }
-
     final albums = albumsAsync.asData?.value;
     final sortedAlbums = albums == null
         ? null
@@ -64,7 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : sortedAlbums[_selectedIndex.clamp(0, sortedAlbums.length - 1)];
 
     return Scaffold(
-      backgroundColor: SnapFitColors.background,
+      backgroundColor: SnapFitColors.backgroundOf(context),
       bottomNavigationBar: _HomeBottomNavigationBar(
         currentIndex: _bottomNavIndex,
         onTap: (index) {
@@ -75,18 +68,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: _buildBottomNavBody(
         context,
         Container(
-          color: Colors.black,
+          color: SnapFitColors.backgroundOf(context),
           child: SafeArea(
             child: Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 8.h),
+                Container(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.backgroundOf(context),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: SnapFitColors.overlayLightOf(context),
+                      ),
+                    ),
+                  ),
                   child: _HomeHeader(
                     onSearch: () {},
                     onNotification: () {},
-                    onLogout: handleLogout,
-                    userInfo: authAsync.value,
-                    isLoading: authAsync.isLoading,
                   ),
                 ),
                 Expanded(
@@ -94,24 +92,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     data: (albums) {
                       final sorted = List<Album>.from(albums)
                         ..sort((a, b) => (b.createdAt).compareTo(a.createdAt));
-                      return sorted.isEmpty
-                          ? _buildEmptyState(context)
-                          : _AlbumListView(
-                              albums: sorted,
-                              selectedIndex: _selectedIndex,
-                              onSelect: (index) {
-                                setState(() => _selectedIndex = index);
-                              },
-                              onOpen: (album, index) async {
-                                setState(() => _selectedIndex = index);
-                                await _openAlbum(context, ref, album);
-                              },
-                              onEdit: (album) => _onEditSelected(context, album),
-                              onDelete: (album) => _onDeleteSelected(context, album),
-                            );
+                      return _AlbumListView(
+                        albums: sorted,
+                        selectedIndex: _selectedIndex,
+                        userInfo: authAsync.value,
+                        emptyState: const _HomeEmptyState(),
+                        onSelect: (index) {
+                          setState(() => _selectedIndex = index);
+                        },
+                        onOpen: (album, index) async {
+                          setState(() => _selectedIndex = index);
+                          await _openAlbum(context, ref, album);
+                        },
+                      );
                     },
                     loading: () => const Center(
-                      child: CircularProgressIndicator(color: SnapFitColors.textPrimary),
+                      child: CircularProgressIndicator(color: SnapFitColors.accentLight),
                     ),
                     error: (err, stack) => _buildErrorState(context, err),
                   ),
@@ -129,10 +125,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 0:
       case 1:
         return homeBody;
-      case 3:
+      case 2:
         return _buildBottomNavPlaceholder(context, "알림");
-      case 4:
-        return _buildBottomNavPlaceholder(context, "마이");
+      case 3:
+        return const MyPageScreen();
       default:
         return homeBody;
     }
@@ -140,26 +136,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildBottomNavPlaceholder(BuildContext context, String label) {
     return Container(
-      color: Colors.black,
+      color: SnapFitColors.backgroundOf(context),
       child: SafeArea(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.hourglass_empty, size: 40.sp, color: SnapFitColors.textMuted),
+              Icon(
+                Icons.hourglass_empty,
+                size: 40.sp,
+                color: SnapFitColors.textMutedOf(context),
+              ),
               SizedBox(height: 12.h),
               Text(
                 "$label 준비중이에요",
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: SnapFitColors.textPrimary.withOpacity(0.85),
+                  color: SnapFitColors.textPrimaryOf(context).withOpacity(0.85),
                 ),
               ),
               SizedBox(height: 6.h),
               Text(
                 "조금만 기다려 주세요",
-                style: TextStyle(fontSize: 12.sp, color: SnapFitColors.textMuted),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
               ),
             ],
           ),
@@ -292,39 +295,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 class _HomeHeader extends StatelessWidget {
   final VoidCallback onSearch;
   final VoidCallback onNotification;
-  final VoidCallback onLogout;
-  final UserInfo? userInfo;
-  final bool isLoading;
 
   const _HomeHeader({
     required this.onSearch,
     required this.onNotification,
-    required this.onLogout,
-    required this.userInfo,
-    required this.isLoading,
   });
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = isLoading
-        ? '로그인 확인중'
-        : userInfo == null
-            ? '로그인 필요'
-            : '${userInfo!.provider.toUpperCase()} 로그인';
     return Row(
       children: [
         Row(
           children: [
-            Text(
-              '나의 앨범',
-              style: TextStyle(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w700,
-                color: SnapFitColors.textPrimary,
+            Container(
+              width: 28.w,
+              height: 28.w,
+              decoration: BoxDecoration(
+                color: SnapFitColors.accent.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                Icons.photo_album_outlined,
+                size: 18.sp,
+                color: SnapFitColors.accentLight,
               ),
             ),
             SizedBox(width: 10.w),
-            _AuthStatusChip(label: statusLabel, isActive: userInfo != null),
+            Text(
+              'SnapFit',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textPrimaryOf(context),
+              ),
+            ),
           ],
         ),
         const Spacer(),
@@ -332,43 +336,73 @@ class _HomeHeader extends StatelessWidget {
         SizedBox(width: 10.w),
         _RoundIconButton(icon: Icons.notifications_none, onTap: onNotification),
         SizedBox(width: 10.w),
-        _RoundIconButton(icon: Icons.logout, onTap: onLogout),
+        _AvatarDot(),
       ],
     );
   }
 }
 
-/// 로그인 상태 표시
-class _AuthStatusChip extends StatelessWidget {
-  final String label;
-  final bool isActive;
+class _GreetingHeader extends StatelessWidget {
+  final UserInfo? userInfo;
 
-  const _AuthStatusChip({
-    required this.label,
-    required this.isActive,
-  });
+  const _GreetingHeader({required this.userInfo});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: isActive
-            ? SnapFitColors.accent.withOpacity(0.18)
-            : SnapFitColors.overlayMedium,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: isActive
-              ? SnapFitColors.accent.withOpacity(0.6)
-              : SnapFitColors.overlayStrong,
+    final rawName = userInfo?.name ?? '';
+    final email = userInfo?.email ?? '';
+    final provider = (userInfo?.provider ?? '').toUpperCase();
+    final isPlaceholder = rawName.isEmpty ||
+        rawName == provider ||
+        rawName.endsWith('_USER') ||
+        rawName.contains(provider);
+    final emailName = email.contains('@') ? email.split('@').first : email;
+    final name = !isPlaceholder && rawName.isNotEmpty
+        ? rawName
+        : (emailName.isNotEmpty ? emailName : '사용자');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '안녕하세요, $name',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textMutedOf(context),
+          ),
         ),
+        SizedBox(height: 4.h),
+        Text(
+          '당신의 추억이 기다리고 있어요.',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AvatarDot extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28.w,
+      height: 28.w,
+      decoration: BoxDecoration(
+        color: SnapFitColors.overlayLightOf(context),
+        shape: BoxShape.circle,
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w600,
-          color: isActive ? SnapFitColors.accentLight : SnapFitColors.textMuted,
+      child: Center(
+        child: Text(
+          'A',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w700,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
         ),
       ),
     );
@@ -395,9 +429,15 @@ class _HomeBottomNavigationBar extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
         decoration: BoxDecoration(
-          color: SnapFitColors.backgroundDark,
+          color: SnapFitColors.isDark(context)
+              ? SnapFitColors.surfaceOf(context)
+              : SnapFitColors.pureWhite,
           border: Border(
-            top: BorderSide(color: SnapFitColors.overlayLight),
+            top: BorderSide(
+              color: SnapFitColors.isDark(context)
+                  ? SnapFitColors.overlayLightOf(context)
+                  : SnapFitColors.overlayStrongOf(context),
+            ),
           ),
         ),
         child: Row(
@@ -425,19 +465,70 @@ class _HomeBottomNavigationBar extends StatelessWidget {
               child: _BottomNavItem(
                 icon: Icons.people_alt_rounded,
                 label: '알림',
-                isSelected: currentIndex == 3,
-                onTap: () => onTap(3),
+                isSelected: currentIndex == 2,
+                onTap: () => onTap(2),
               ),
             ),
             Expanded(
               child: _BottomNavItem(
                 icon: Icons.person_rounded,
                 label: '마이',
-                isSelected: currentIndex == 4,
-                onTap: () => onTap(4),
+                isSelected: currentIndex == 3,
+                onTap: () => onTap(3),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 바텀 네비게이션 중앙 액션 버튼
+class _CreateNavButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _CreateNavButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(32.r),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.28),
+                blurRadius: 12.r,
+                offset: Offset(0, 6.h),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              customBorder: const CircleBorder(),
+              child: SnapFitPrimaryGradientBackground(
+                borderRadius: BorderRadius.circular(999),
+                child: SizedBox(
+                  width: 52.w,
+                  height: 52.w,
+                  child: Icon(
+                    Icons.add,
+                    size: 28.sp,
+                    color: SnapFitColors.pureWhite,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -460,7 +551,12 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? SnapFitColors.accent : SnapFitColors.textMuted;
+    final isDark = SnapFitColors.isDark(context);
+    final color = isSelected
+        ? SnapFitColors.accent
+        : (isDark
+            ? SnapFitColors.textMutedOf(context)
+            : SnapFitColors.deepCharcoal.withOpacity(0.7));
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -489,193 +585,300 @@ class _BottomNavItem extends StatelessWidget {
   }
 }
 
-/// 바텀 네비게이션 중앙 액션 버튼
-class _CreateNavButton extends StatelessWidget {
-  final VoidCallback onTap;
 
-  const _CreateNavButton({required this.onTap});
+class _AlbumListView extends StatelessWidget {
+  final List<Album> albums;
+  final int selectedIndex;
+  final UserInfo? userInfo;
+  final Widget emptyState;
+  final ValueChanged<int> onSelect;
+  final Future<void> Function(Album album, int index) onOpen;
+
+  const _AlbumListView({
+    required this.albums,
+    required this.selectedIndex,
+    required this.userInfo,
+    required this.emptyState,
+    required this.onSelect,
+    required this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(32.r),
-        child: Container(
-          width: 52.w,
-          height: 52.w,
-          decoration: BoxDecoration(
-            color: SnapFitColors.accent,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.35),
-                blurRadius: 12.r,
-                offset: Offset(0, 6.h),
-              ),
-            ],
+    final featured = albums.isNotEmpty ? albums.first : null;
+    final rest = albums.length > 1 ? albums.sublist(1) : const <Album>[];
+    return ListView(
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 160.h),
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: _GreetingHeader(userInfo: userInfo),
+        ),
+        if (albums.isEmpty) ...[
+          SizedBox(height: 12.h),
+          emptyState,
+        ],
+        if (featured != null) ...[
+          _FeaturedAlbumCard(
+            album: featured,
+            onTap: () async {
+              final index = albums.indexOf(featured);
+              onSelect(index);
+              await onOpen(featured, index);
+            },
           ),
-          child: Icon(
-            Icons.add,
-            size: 28.sp,
-            color: SnapFitColors.textPrimary,
+          SizedBox(height: 16.h),
+        ],
+        if (rest.isNotEmpty)
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: rest.length,
+            clipBehavior: Clip.none,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16.h,
+              crossAxisSpacing: 14.w,
+              childAspectRatio: 0.6,
+            ),
+            itemBuilder: (context, i) {
+              final album = rest[i];
+              final index = i + 1;
+              return _GridAlbumCard(
+                album: album,
+                onTap: () async {
+                  onSelect(index);
+                  await onOpen(album, index);
+                },
+              );
+            },
           ),
+      ],
+    );
+  }
+}
+
+class _HomeEmptyState extends StatelessWidget {
+  const _HomeEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        '앨범이 비어있습니다.',
+        style: TextStyle(
+          fontSize: 18.sp,
+          color: SnapFitColors.textPrimaryOf(context).withOpacity(0.9),
         ),
       ),
     );
   }
 }
 
-class _AlbumListView extends StatelessWidget {
-  final List<Album> albums;
-  final int selectedIndex;
-  final ValueChanged<int> onSelect;
-  final Future<void> Function(Album album, int index) onOpen;
-  final Future<void> Function(Album album) onEdit;
-  final Future<void> Function(Album album) onDelete;
-
-  const _AlbumListView({
-    required this.albums,
-    required this.selectedIndex,
-    required this.onSelect,
-    required this.onOpen,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 120.h),
-      itemCount: albums.length,
-      separatorBuilder: (_, __) => SizedBox(height: 14.h),
-      itemBuilder: (context, index) {
-        final album = albums[index];
-        return _AlbumListCard(
-          album: album,
-          isSelected: index == selectedIndex,
-          onTap: () async {
-            onSelect(index);
-            await onOpen(album, index);
-          },
-          onEdit: () => onEdit(album),
-          onDelete: () => onDelete(album),
-        );
-      },
-    );
-  }
-}
-
-/// 홈 화면 앨범 카드 (리스트형)
-class _AlbumListCard extends StatelessWidget {
+class _FeaturedAlbumCard extends StatelessWidget {
   final Album album;
-  final bool isSelected;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
 
-  const _AlbumListCard({
+  const _FeaturedAlbumCard({
     required this.album,
-    required this.isSelected,
     required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final coverUrl = album.coverThumbnailUrl ??
-        album.coverPreviewUrl ??
-        album.coverImageUrl;
     final created = _formatDate(album.createdAt);
-    final pagesText = '${album.totalPages} pages';
-    final ratio = _parseCoverRatio(album.ratio);
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18.r),
       child: Container(
-        padding: EdgeInsets.fromLTRB(18.w, 22.h, 18.w, 34.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: SnapFitColors.isDark(context)
+              ? SnapFitColors.surfaceOf(context)
+              : SnapFitColors.pureWhite,
           borderRadius: BorderRadius.circular(18.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.18),
-              blurRadius: 16.r,
-              offset: Offset(0, 8.h),
-            ),
-          ],
         ),
-        child: Stack(
+        child: Row(
           children: [
-            Row(
-              children: [
-                _AlbumCoverThumbnail(
-                  album: album,
-                  height: 138.h,
-                ),
-                SizedBox(width: 18.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StatusChip(
+                    label: 'LIVE EDITING',
+                    background: SnapFitColors.accent.withOpacity(0.16),
+                    foreground: SnapFitColors.accentLight,
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    album.coverTheme?.isNotEmpty == true
+                        ? album.coverTheme!
+                        : '앨범',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: SnapFitColors.textPrimaryOf(context),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    '$created 업데이트',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: SnapFitColors.textMutedOf(context),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  _CollaboratorSummary(
+                    count: 12,
+                    textColor: SnapFitColors.textMutedOf(context),
+                  ),
+                  SizedBox(height: 12.h),
+                  SnapFitPrimaryGradientBackground(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 8.h,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: Text(
-                              album.coverTheme?.isNotEmpty == true
-                                  ? album.coverTheme!
-                                  : '앨범',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w700,
-                                color: SnapFitColors.textPrimary,
-                              ),
+                          Text(
+                            '편집 계속하기',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                              color: SnapFitColors.pureWhite,
                             ),
                           ),
-                          _RoleChip(label: 'OWNER'),
+                          SizedBox(width: 6.w),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 14.sp,
+                            color: SnapFitColors.pureWhite,
+                          ),
                         ],
                       ),
-                      SizedBox(height: 6.h),
-                      Text(
-                        '$created · $pagesText',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: SnapFitColors.textMuted,
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                      _CollaboratorDots(),
-                      SizedBox(height: 26.h),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              right: 0,
-              bottom: 2.h,
-              child: Row(
-                children: [
-                  _CardIconButton(
-                    icon: Icons.edit,
-                    onTap: onEdit,
-                    background: SnapFitColors.accent.withOpacity(0.2),
-                    iconColor: SnapFitColors.accentLight,
-                  ),
-                  SizedBox(width: 8.w),
-                  _CardIconButton(
-                    icon: Icons.delete_outline,
-                    onTap: onDelete,
-                    background: const Color(0xFFE53935).withOpacity(0.18),
-                    iconColor: const Color(0xFFE53935),
+                    ),
                   ),
                 ],
               ),
+            ),
+            SizedBox(width: 12.w),
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: _AlbumCoverThumbnail(
+                album: album,
+                height: 96.h,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GridAlbumCard extends StatelessWidget {
+  final Album album;
+  final VoidCallback onTap;
+
+  const _GridAlbumCard({
+    required this.album,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    final coverUrl =
+        album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl;
+    final hasCoverUrl = coverUrl?.isNotEmpty == true;
+    final hasLayers = album.coverLayersJson.isNotEmpty;
+    final hasTheme = album.coverTheme?.isNotEmpty == true;
+    final showDraft = !(hasCoverUrl || hasLayers || hasTheme);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color:
+              isDark ? SnapFitColors.surfaceOf(context) : SnapFitColors.pureWhite,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showDraft) ...[
+              _StatusChip(
+                label: 'DRAFT',
+                background: isDark
+                    ? SnapFitColors.overlayLightOf(context)
+                    : const Color(0xFFF2F2F2),
+                foreground: isDark
+                    ? SnapFitColors.textPrimaryOf(context)
+                    : SnapFitColors.deepCharcoal,
+              ),
+              SizedBox(height: 10.h),
+            ],
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final ratio = _parseCoverRatio(album.ratio);
+                  final maxHeight = constraints.maxHeight;
+                  final height = ratio > 1
+                      ? maxHeight * 0.82
+                      : maxHeight * 0.7;
+                  return Align(
+                    alignment: Alignment.center,
+                    child: _AlbumCoverThumbnail(
+                      album: album,
+                      height: height,
+                      maxWidth: constraints.maxWidth,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                album.coverTheme?.isNotEmpty == true ? album.coverTheme! : '앨범',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? SnapFitColors.textPrimaryOf(context)
+                      : SnapFitColors.deepCharcoal,
+                ),
+              ),
+            ),
+            SizedBox(height: 1.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.groups_2_outlined,
+                  size: 14.sp,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  '공동작업자 12명',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: SnapFitColors.textMutedOf(context),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -688,22 +891,38 @@ class _AlbumListCard extends StatelessWidget {
 class _AlbumCoverThumbnail extends StatelessWidget {
   final Album album;
   final double height;
+  final double? maxWidth;
+  final bool showShadow;
 
   const _AlbumCoverThumbnail({
     required this.album,
     required this.height,
+    this.maxWidth,
+    this.showShadow = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final ratio = _parseCoverRatio(album.ratio);
-    double width = height * ratio;
-    double scaledHeight = height;
-    final maxWidth = ratio > 1 ? 140.w : 150.w;
-    if (width > maxWidth) {
-      final scale = maxWidth / width;
-      width = maxWidth;
-      scaledHeight = height * scale;
+    double width;
+    double scaledHeight;
+    final resolvedMaxWidth = maxWidth ?? (ratio > 1 ? 140.w : 150.w);
+    if (ratio >= 1) {
+      width = resolvedMaxWidth;
+      scaledHeight = width / ratio;
+      if (scaledHeight > height) {
+        final scale = height / scaledHeight;
+        scaledHeight = height;
+        width = width * scale;
+      }
+    } else {
+      scaledHeight = height;
+      width = scaledHeight * ratio;
+      if (width > resolvedMaxWidth) {
+        final scale = resolvedMaxWidth / width;
+        width = resolvedMaxWidth;
+        scaledHeight = scaledHeight * scale;
+      }
     }
     final shadowScale = (scaledHeight / 280).clamp(0.35, 0.7);
     final theme = _resolveCoverTheme(album.coverTheme);
@@ -719,6 +938,7 @@ class _AlbumCoverThumbnail extends StatelessWidget {
         width: width,
         height: scaledHeight,
         shadowScale: shadowScale,
+        showShadow: showShadow,
         child: CoverLayout(
           aspect: ratio,
           layers: layers,
@@ -742,6 +962,7 @@ class _AlbumCoverThumbnail extends StatelessWidget {
       width: width,
       height: scaledHeight,
       shadowScale: shadowScale,
+      showShadow: showShadow,
       child: hasUrl
           ? SnapfitImage(
               urlOrGs: imageUrl!,
@@ -764,12 +985,14 @@ class _CoverFrame extends StatelessWidget {
   final double width;
   final double height;
   final double shadowScale;
+  final bool showShadow;
   final Widget child;
 
   const _CoverFrame({
     required this.width,
     required this.height,
     required this.shadowScale,
+    required this.showShadow,
     required this.child,
   });
 
@@ -778,15 +1001,17 @@ class _CoverFrame extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 18.h),
+      padding: EdgeInsets.zero,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: _coverRadius,
-          boxShadow: _FocusWrap.coverStyleShadowForScale(shadowScale, 0),
+          boxShadow: showShadow
+              ? _FocusWrap.coverStyleShadowForScale(shadowScale, 0.7)
+              : null,
         ),
         child: ClipRRect(
           borderRadius: _coverRadius,
@@ -798,27 +1023,105 @@ class _CoverFrame extends StatelessWidget {
 }
 
 /// 역할 배지
-class _RoleChip extends StatelessWidget {
+class _StatusChip extends StatelessWidget {
   final String label;
+  final Color background;
+  final Color foreground;
 
-  const _RoleChip({required this.label});
+  const _StatusChip({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: SnapFitColors.accent.withOpacity(0.16),
+        color: background,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: SnapFitColors.accent.withOpacity(0.5)),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontSize: 10.sp,
           fontWeight: FontWeight.w700,
-          color: SnapFitColors.accentLight,
+          letterSpacing: 0.2,
+          color: foreground,
         ),
+      ),
+    );
+  }
+}
+
+/// 협업자 요약 표시
+class _CollaboratorSummary extends StatelessWidget {
+  final int count;
+  final Color textColor;
+
+  const _CollaboratorSummary({
+    required this.count,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _AvatarStack(borderColor: SnapFitColors.backgroundOf(context)),
+        SizedBox(width: 8.w),
+        Text(
+          '공동작업자 $count명',
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AvatarStack extends StatelessWidget {
+  final Color borderColor;
+
+  const _AvatarStack({required this.borderColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 46.w,
+      height: 20.w,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            child: _Dot(
+              color: SnapFitColors.accent.withOpacity(0.6),
+              borderColor: borderColor,
+              size: 18.w,
+            ),
+          ),
+          Positioned(
+            left: 12.w,
+            child: _Dot(
+              color: SnapFitColors.accentLight.withOpacity(0.6),
+              borderColor: borderColor,
+              size: 18.w,
+            ),
+          ),
+          Positioned(
+            left: 24.w,
+            child: _PlusDot(
+              label: '+3',
+              borderColor: borderColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -832,13 +1135,25 @@ class _CollaboratorDots extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _Dot(color: SnapFitColors.textMuted.withOpacity(0.7)),
+        _Dot(
+          color: SnapFitColors.textMuted.withOpacity(0.7),
+          borderColor: SnapFitColors.backgroundOf(context),
+          size: 14.w,
+        ),
         SizedBox(width: 6.w),
-        _Dot(color: SnapFitColors.textMuted.withOpacity(0.7)),
+        _Dot(
+          color: SnapFitColors.textMuted.withOpacity(0.7),
+          borderColor: SnapFitColors.backgroundOf(context),
+          size: 14.w,
+        ),
         SizedBox(width: 6.w),
-        _Dot(color: SnapFitColors.textMuted.withOpacity(0.7)),
+        _Dot(
+          color: SnapFitColors.textMuted.withOpacity(0.7),
+          borderColor: SnapFitColors.backgroundOf(context),
+          size: 14.w,
+        ),
         SizedBox(width: 8.w),
-        _PlusDot(label: '+3'),
+        _PlusDot(label: '+3', borderColor: SnapFitColors.backgroundOf(context)),
       ],
     );
   }
@@ -846,17 +1161,24 @@ class _CollaboratorDots extends StatelessWidget {
 
 class _Dot extends StatelessWidget {
   final Color color;
+  final Color borderColor;
+  final double size;
 
-  const _Dot({required this.color});
+  const _Dot({
+    required this.color,
+    required this.borderColor,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 14.w,
-      height: 14.w,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
+        border: Border.all(color: borderColor, width: 2.w),
       ),
     );
   }
@@ -864,8 +1186,12 @@ class _Dot extends StatelessWidget {
 
 class _PlusDot extends StatelessWidget {
   final String label;
+  final Color borderColor;
 
-  const _PlusDot({required this.label});
+  const _PlusDot({
+    required this.label,
+    required this.borderColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -876,6 +1202,7 @@ class _PlusDot extends StatelessWidget {
       decoration: BoxDecoration(
         color: SnapFitColors.accent,
         shape: BoxShape.circle,
+        border: Border.all(color: borderColor, width: 2.w),
       ),
       child: Text(
         label,
@@ -887,6 +1214,19 @@ class _PlusDot extends StatelessWidget {
       ),
     );
   }
+}
+
+List<BoxShadow> _homeCardShadow(BuildContext context) {
+  final isDark = SnapFitColors.isDark(context);
+  return [
+    BoxShadow(
+      color: isDark
+          ? SnapFitColors.accent.withOpacity(0.22)
+          : Colors.black.withOpacity(0.08),
+      blurRadius: isDark ? 20.r : 28.r,
+      offset: Offset(0, isDark ? 10.h : 16.h),
+    ),
+  ];
 }
 
 /// 홈 화면 우측 하단 새 앨범 버튼
@@ -1005,7 +1345,7 @@ double _parseCoverRatio(String raw) {
 }
 
 CoverTheme _resolveCoverTheme(String? label) {
-  if (label == null || label.isEmpty) return CoverTheme.classic;
+  if (label == null || label.isEmpty) return CoverTheme.abstract3;
   final normalized = label.trim().toLowerCase();
   for (final theme in CoverTheme.values) {
     if (theme.label.toLowerCase() == normalized) {
@@ -1072,8 +1412,8 @@ Future<void> _openAlbum(BuildContext context, WidgetRef ref, Album album) async 
   );
 }
 const _coverRadius = BorderRadius.only(
-  topRight: Radius.circular(12),
-  bottomRight: Radius.circular(12),
+  topRight: Radius.circular(2),
+  bottomRight: Radius.circular(2),
   bottomLeft: Radius.zero,
 );
 

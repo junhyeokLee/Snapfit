@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/layer.dart';
+import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 import '../controllers/text_editor_manager.dart';
@@ -98,19 +99,28 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     final panelVisible = selectedLayer != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF7d7a97),
+      backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: SnapFitColors.textPrimaryOf(context)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text("페이지 편집", style: TextStyle(color: Colors.white, fontSize: 16.sp)),
+        title: Text(
+          "페이지 편집",
+          style: TextStyle(color: SnapFitColors.textPrimaryOf(context), fontSize: 16.sp),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("저장", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(
+              "저장",
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           )
         ],
       ),
@@ -180,7 +190,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   ) {
     final isText = selected.type == LayerType.text;
     return Material(
-      color: const Color(0xFF7d7a97).withOpacity(0.92),
+      color: SnapFitColors.surfaceOf(context).withOpacity(0.92),
       borderRadius: BorderRadius.circular(16.r),
       elevation: 4,
       child: Container(
@@ -229,7 +239,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     margin: EdgeInsets.only(right: 8.w),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.white.withOpacity(0.4), Colors.white.withOpacity(0.2)],
+                        colors: [
+                          SnapFitColors.overlayMediumOf(context),
+                          SnapFitColors.overlayLightOf(context),
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -238,9 +251,20 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.photo_size_select_large, size: 20.sp, color: Colors.white),
+                        Icon(
+                          Icons.photo_size_select_large,
+                          size: 20.sp,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
                         SizedBox(width: 4.w),
-                        Text("프레임", style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                        Text(
+                          "프레임",
+                          style: TextStyle(
+                            color: SnapFitColors.textPrimaryOf(context),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -254,15 +278,26 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     margin: EdgeInsets.only(right: 8.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
+                      color: SnapFitColors.overlayMediumOf(context),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.add_a_photo, size: 20.sp, color: Colors.white),
+                        Icon(
+                          Icons.add_a_photo,
+                          size: 20.sp,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
                         SizedBox(width: 4.w),
-                        Text("사진 추가", style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                        Text(
+                          "사진 추가",
+                          style: TextStyle(
+                            color: SnapFitColors.textPrimaryOf(context),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -309,10 +344,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.2),
+            color: isSelected
+                ? SnapFitColors.overlayStrongOf(context)
+                : SnapFitColors.overlayLightOf(context),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Text(label, style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500)),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 11.sp,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
         ),
       ),
     );
@@ -332,9 +376,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       width: canvasW,
       height: canvasH,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SnapFitColors.pureWhite,
         borderRadius: BorderRadius.circular(8.r),
-        boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 20)],
+        boxShadow: [
+          BoxShadow(
+            color: SnapFitColors.isDark(context)
+                ? SnapFitColors.accentLight.withOpacity(0.2)
+                : Colors.black45,
+            blurRadius: 20,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.r),
@@ -348,12 +399,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.dashboard_customize_outlined, size: 48.sp, color: Colors.grey.shade400),
+                    Icon(
+                      Icons.dashboard_customize_outlined,
+                      size: 48.sp,
+                      color: SnapFitColors.deepCharcoal.withOpacity(0.35),
+                    ),
                     SizedBox(height: 8.h),
                     Text(
                       "템플릿을 선택하거나\n사진/텍스트를 추가하세요",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
+                      style: TextStyle(
+                        color: SnapFitColors.deepCharcoal.withOpacity(0.6),
+                        fontSize: 14.sp,
+                      ),
                     ),
                   ],
                 ),
@@ -362,7 +420,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                Container(color: Colors.white),
+                Container(color: SnapFitColors.pureWhite),
                 ..._interaction.sortByZ(layers).map((layer) {
                   if (layer.type == LayerType.image) {
                     return _layerBuilder.buildImage(layer);

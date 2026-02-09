@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:snap_fit/shared/widgets/triangle_slider.dart';
+import '../../core/constants/snapfit_colors.dart';
 import '../../features/album/domain/entities/layer.dart';
 import '../../features/album/presentation/widgets/editor/tool_button.dart';
 import '../../features/album/presentation/widgets/editor/top_bar.dart';
@@ -378,7 +379,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
     return SafeArea(
       top: false,
       child: Container(
-        color: Colors.black.withOpacity(0.28),
+        color: SnapFitColors.overlayStrongOf(context),
         padding: EdgeInsets.symmetric(vertical: 8.h),
         child: SizedBox(
           height: 48.h,
@@ -517,7 +518,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
                             textAlign: _align,
                             keyboardType: TextInputType.multiline,
                             style: effectiveStyle,
-                            cursorColor: Colors.white,
+                            cursorColor: SnapFitColors.textPrimaryOf(context),
                             backgroundCursorColor: Colors.transparent,
                           ),
                         ),

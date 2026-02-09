@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 
 import 'config/env.dart';
+import 'core/theme/snapfit_theme.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
 import 'features/auth/presentation/views/auth_gate.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
@@ -36,15 +38,18 @@ void main() async {
   );
 }
 
-class MoaEditorApp extends StatelessWidget {
+class MoaEditorApp extends ConsumerWidget {
   const MoaEditorApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeControllerProvider);
     return MaterialApp(
       title: 'SnapFit',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
+      theme: SnapFitTheme.light(),
+      darkTheme: SnapFitTheme.dark(),
+      themeMode: themeMode,
       home: const SplashScreen(),
       routes: {
         '/add_cover': (context) => const AddCoverScreen(),

@@ -43,7 +43,7 @@ abstract class AlbumEditorState with _$AlbumEditorState {
     )
     CoverSize selectedCover,
 
-    @Default(CoverTheme.classic) CoverTheme selectedTheme,
+    @Default(CoverTheme.abstract3) CoverTheme selectedTheme,
 
     /// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
     Size? coverCanvasSize,
@@ -62,7 +62,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   AssetPathEntity? _currentAlbum;
 
   CoverSize _cover = coverSizes.first;
-  CoverTheme _selectedTheme = CoverTheme.classic;
+  CoverTheme _selectedTheme = CoverTheme.abstract3;
 
   // 페이지 구조
   final List<AlbumPage> _pages = [];
@@ -119,7 +119,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       (s) => s.name == '세로형',
       orElse: () => coverSizes.first,
     );
-    _selectedTheme = initialTheme ?? CoverTheme.classic;
+    _selectedTheme = initialTheme ?? CoverTheme.abstract3;
 
     _pages.clear();
     _pages.add(_service.createPage(index: 0, isCover: true));

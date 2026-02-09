@@ -50,9 +50,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
     final state = asyncState.value;
 
     if (state == null) {
-      return const Scaffold(
-        backgroundColor: SnapFitColors.background,
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      return Scaffold(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
       );
     }
 
@@ -67,7 +71,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
     final pageW = pageH * ratio;
 
     return Scaffold(
-      backgroundColor: SnapFitColors.background,
+      backgroundColor: SnapFitColors.backgroundOf(context),
       body: SnapFitGradientBackground(
         child: SafeArea(
           child: Column(

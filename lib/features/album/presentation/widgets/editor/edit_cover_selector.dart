@@ -42,13 +42,13 @@ class CoverSelectorWidget extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: isSelected
                       ? SnapFitColors.accent
-                      : Colors.white.withOpacity(0.12),
+                      : SnapFitColors.overlayMediumOf(context),
                 ),
                 child: Icon(
                   iconForCover(s),
                   color: isSelected
-                      ? Colors.white
-                      : SnapFitColors.textPrimary.withOpacity(0.7),
+                      ? SnapFitColors.pureWhite
+                      : SnapFitColors.textPrimaryOf(context).withOpacity(0.7),
                   size: 22.sp,
                 ),
               ),

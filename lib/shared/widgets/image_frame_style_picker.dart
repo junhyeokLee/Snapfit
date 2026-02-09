@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../core/constants/snapfit_colors.dart';
 /// 이미지 프레임 스타일 정의
 class ImageFrameStyle {
   final String key;
@@ -58,11 +59,13 @@ class ImageFrameStylePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF9893a9),
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: SnapFitColors.isDark(context)
+                ? SnapFitColors.accentLight.withOpacity(0.25)
+                : Colors.black.withOpacity(0.18),
             blurRadius: 20.r,
             offset: Offset(0, -4.h),
           ),
@@ -79,7 +82,7 @@ class ImageFrameStylePicker extends StatelessWidget {
               width: 48.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
+                color: SnapFitColors.overlayMediumOf(context),
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -88,7 +91,7 @@ class ImageFrameStylePicker extends StatelessWidget {
             Text(
               '사진 스타일',
               style: TextStyle(
-                color: Colors.white,
+                color: SnapFitColors.textPrimaryOf(context),
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -153,17 +156,21 @@ class _FrameStyleItem extends StatelessWidget {
         padding: EdgeInsets.all(6.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.white.withOpacity(0.95)
-              : Colors.white.withOpacity(0.2),
+              ? SnapFitColors.surfaceOf(context).withOpacity(0.95)
+              : SnapFitColors.overlayLightOf(context),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.4),
+            color: isSelected
+                ? SnapFitColors.textPrimaryOf(context)
+                : SnapFitColors.overlayStrongOf(context),
             width: isSelected ? 2.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: SnapFitColors.isDark(context)
+                        ? SnapFitColors.accentLight.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.2),
                     blurRadius: 12.r,
                     offset: Offset(0, 4.h),
                   ),
@@ -183,7 +190,9 @@ class _FrameStyleItem extends StatelessWidget {
             Text(
               style.label,
               style: TextStyle(
-                color: isSelected ? Colors.black87 : Colors.white,
+                color: isSelected
+                    ? SnapFitColors.textPrimaryOf(context)
+                    : SnapFitColors.textSecondaryOf(context),
                 fontSize: 11.sp,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),

@@ -13,14 +13,19 @@ class SnapFitGradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: SnapFitColors.editorGradient,
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: isDark
+          ? BoxDecoration(
+              gradient: LinearGradient(
+                colors: SnapFitColors.editorGradientOf(context),
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            )
+          : BoxDecoration(
+              color: SnapFitColors.backgroundOf(context),
+            ),
       child: child,
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/snapfit_gradient_background.dart';
 import '../../domain/entities/album.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -85,9 +86,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           data: fixedMediaQuery,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.black,
+            backgroundColor: SnapFitColors.backgroundOf(context),
             body: Container(
-              color: Colors.black,
+              color: SnapFitColors.backgroundOf(context),
               child: Stack(
                 children: [
                   Positioned.fill(

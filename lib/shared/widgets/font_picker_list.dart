@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
 
 
@@ -91,17 +92,23 @@ class FontPickerListState extends State<FontPickerList> {
                   transform: sel ? Matrix4.translationValues(0, -6.h, 0) : Matrix4.identity(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
-                    color: sel ? Colors.white : Colors.white.withOpacity(0.08),
+                    color: sel
+                        ? SnapFitColors.surfaceOf(context)
+                        : SnapFitColors.overlayLightOf(context),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: sel ? Colors.white : Colors.white24,
+                      color: sel
+                          ? SnapFitColors.textPrimaryOf(context)
+                          : SnapFitColors.overlayStrongOf(context),
                       width: sel ? 1.5 : 1.0,
                     ),
                   ),
                   child: Text(
                     fam,
                     style: TextStyle(
-                      color: sel ? Colors.black : Colors.white,
+                      color: sel
+                          ? SnapFitColors.textPrimaryOf(context)
+                          : SnapFitColors.textSecondaryOf(context),
                       fontSize: 12.sp,
                       fontFamily: fam,
                     ),

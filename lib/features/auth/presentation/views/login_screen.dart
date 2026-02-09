@@ -49,7 +49,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SnapFitColors.background,
+      backgroundColor: SnapFitColors.backgroundOf(context),
       body: SnapFitGradientBackground(
         child: SafeArea(
           child: Center(
@@ -63,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(
                       fontSize: 28.sp,
                       fontWeight: FontWeight.w800,
-                      color: SnapFitColors.textPrimary,
+                      color: SnapFitColors.textPrimaryOf(context),
                     ),
                   ),
                   SizedBox(height: 12.h),
@@ -71,7 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     '로그인 후 앨범을 확인하세요',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: SnapFitColors.textSecondary,
+                      color: SnapFitColors.textSecondaryOf(context),
                     ),
                   ),
                   SizedBox(height: 28.h),

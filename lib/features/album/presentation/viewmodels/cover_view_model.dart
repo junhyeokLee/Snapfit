@@ -21,14 +21,14 @@ abstract class CoverState with _$CoverState {
     )
     CoverSize selectedCover,
 
-    @Default(CoverTheme.classic) CoverTheme selectedTheme,
+    @Default(CoverTheme.abstract3) CoverTheme selectedTheme,
   }) = _CoverState;
 }
 
 @Riverpod(keepAlive: true)
 class CoverViewModel extends _$CoverViewModel {
   CoverSize _cover = coverSizes.first;
-  CoverTheme _selectedTheme = CoverTheme.classic;
+  CoverTheme _selectedTheme = CoverTheme.abstract3;
 
   // ===== Selected getters =====
   CoverSize get selectedCover => _cover;

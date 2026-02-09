@@ -15,9 +15,9 @@ class TriangleSlider extends StatefulWidget {
   /// 슬라이더 감도(곡선 지수). 1.0=선형, 값이 커질수록 초반 미세/후반 급격.
   final double responseExponent;
 
-  final Color trackColor;
-  final Color triangleColor;
-  final Color thumbColor;
+  final Color? trackColor;
+  final Color? triangleColor;
+  final Color? thumbColor;
 
   const TriangleSlider({
     super.key,
@@ -26,9 +26,9 @@ class TriangleSlider extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.height = 150,
-    this.trackColor = const Color(0x66FFFFFF),
-    this.triangleColor = const Color(0x22FFFFFF),
-    this.thumbColor = Colors.white,
+    this.trackColor,
+    this.triangleColor,
+    this.thumbColor,
     this.responseExponent = 1.6,
   });
 
@@ -95,6 +95,10 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultTrack = isDark ? const Color(0x66FFFFFF) : const Color(0x66121212);
+    final defaultTriangle = isDark ? const Color(0x22FFFFFF) : const Color(0x22121212);
+    final defaultThumb = isDark ? Colors.white : const Color(0xFF121212);
     return SizedBox(
       height: widget.height,
       width: 48,
@@ -131,9 +135,9 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
                 thumbY: _thumbY ?? _valueToOffset(widget.value),
                 isDragging: _isDragging,
                 triangleOpacity: _triangleOpacity.value,
-                trackColor: widget.trackColor,
-                triangleColor: widget.triangleColor,
-                thumbColor: widget.thumbColor,
+                trackColor: widget.trackColor ?? defaultTrack,
+                triangleColor: widget.triangleColor ?? defaultTriangle,
+                thumbColor: widget.thumbColor ?? defaultThumb,
               ),
             );
           },

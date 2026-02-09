@@ -522,7 +522,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 20.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: SnapFitColors.overlayLightOf(context),
                             borderRadius: BorderRadius.circular(18.r),
                           ),
                           child: Builder(
@@ -591,7 +591,9 @@ class _EditCoverState extends ConsumerState<EditCover> {
                     // 요구사항: + 진입은 '완료', 커버탭/편집 진입은 '다음'
                     widget.editAlbum == null ? '완료' : '다음',
                     style: TextStyle(
-                      color: isCreating ? Colors.white70 : Colors.white,
+                      color: isCreating
+                          ? SnapFitColors.textSecondaryOf(context)
+                          : SnapFitColors.textPrimaryOf(context),
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
                     ),
@@ -601,9 +603,11 @@ class _EditCoverState extends ConsumerState<EditCover> {
               // 저장 중 전체 화면 로딩 오버레이
               if (isCreating)
                 Container(
-                  color: Colors.black45,
-                  child: const Center(
-                    child: CircularProgressIndicator(color: Colors.white),
+                  color: SnapFitColors.overlayStrongOf(context),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: SnapFitColors.textPrimaryOf(context),
+                    ),
                   ),
                 ),
             ],
@@ -640,8 +644,8 @@ class _EditCoverState extends ConsumerState<EditCover> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.95),
-              Colors.white.withOpacity(0.85),
+              SnapFitColors.surfaceOf(context).withOpacity(0.95),
+              SnapFitColors.surfaceOf(context).withOpacity(0.85),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -689,13 +693,13 @@ class _EditCoverState extends ConsumerState<EditCover> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: SnapFitColors.surfaceOf(context).withOpacity(0.9),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: SnapFitColors.textPrimaryOf(context),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),

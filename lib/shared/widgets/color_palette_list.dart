@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
 
 
@@ -28,7 +29,7 @@ class ColorPaletteList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          itemBuilder: (_, i) => _colorDot(colors[i], current, onPick),
+          itemBuilder: (context, i) => _colorDot(context, colors[i], current, onPick),
           separatorBuilder: (_, __) => SizedBox(width: 12.w),
           itemCount: colors.length,
         ),
@@ -36,7 +37,12 @@ class ColorPaletteList extends StatelessWidget {
     );
   }
 
-  Widget _colorDot(Color color, Color current, ValueChanged<Color> onTap) {
+  Widget _colorDot(
+    BuildContext context,
+    Color color,
+    Color current,
+    ValueChanged<Color> onTap,
+  ) {
     return GestureDetector(
       onTap: () => onTap(color),
       child: Container(
@@ -45,7 +51,10 @@ class ColorPaletteList extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          border: Border.all(color: Colors.white, width: 1),
+          border: Border.all(
+            color: SnapFitColors.textPrimaryOf(context).withOpacity(0.8),
+            width: 1,
+          ),
         ),
       ),
     );

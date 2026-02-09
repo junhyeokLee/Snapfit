@@ -31,15 +31,20 @@ class EditToolbar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _toolbarButton(Icons.menu_book_outlined, coverLabel, onOpenCoverSelector),
-          _toolbarButton(Icons.text_fields, "텍스트", onAddText),
-          _toolbarButton(Icons.photo, "오버레이", onAddPhoto),
+          _toolbarButton(context, Icons.menu_book_outlined, coverLabel, onOpenCoverSelector),
+          _toolbarButton(context, Icons.text_fields, "텍스트", onAddText),
+          _toolbarButton(context, Icons.photo, "오버레이", onAddPhoto),
         ],
       ),
     );
   }
 
-  Widget _toolbarButton(IconData icon, String label, VoidCallback onTap) {
+  Widget _toolbarButton(
+    BuildContext context,
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: FittedBox(
@@ -52,7 +57,7 @@ class EditToolbar extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 10.sp,
-                color: SnapFitColors.textPrimary.withOpacity(0.85),
+                color: SnapFitColors.textPrimaryOf(context).withOpacity(0.85),
               ),
             ),
           ],
