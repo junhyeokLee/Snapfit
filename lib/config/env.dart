@@ -10,7 +10,7 @@ class Env {
   /// 기본값은 배포 서버(EC2)로 설정.
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://54.253.3.176:8080',
+    defaultValue: 'http://54.253.3.176', // Nginx Reverse Proxy (Port 80)
   );
 
   /// Kakao Native App Key

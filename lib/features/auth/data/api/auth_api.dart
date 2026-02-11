@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
+import 'dart:io';
 
 import '../dto/auth_response.dart';
 
@@ -25,9 +26,10 @@ abstract class AuthApi {
   );
 
   /// 프로필 수정 (프로필 이미지 URL 등). Authorization: Bearer {token} 필요. POST 사용(서버가 PATCH/POST 둘 다 지원).
+  @MultiPart()
   @POST('/api/auth/profile')
-  Future<UserInfo> updateProfile(
-    @Body() Map<String, dynamic> body,
-    @Header('Authorization') String authorization,
-  );
+  Future<UserInfo> updateProfile({
+    @Part(name: "name") String? name,
+    @Part(name: "profileImage") File? profileImage,
+  });
 }

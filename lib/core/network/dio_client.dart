@@ -25,6 +25,8 @@ class DioClient {
           assert(() {
             // ignore: avoid_print
             print('[Dio] ${options.method} ${options.uri}');
+            print('[Dio] Headers: ${options.headers}');
+            print('[Dio] Body: ${options.data}');
             return true;
           }());
           handler.next(options);

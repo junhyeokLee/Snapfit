@@ -104,18 +104,33 @@ class _AuthApi implements AuthApi {
   }
 
   @override
-  Future<UserInfo> updateProfile(
-    Map<String, dynamic> body,
-    String authorization,
-  ) async {
+  Future<UserInfo> updateProfile({String? name, File? profileImage}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'Authorization': authorization};
-    _headers.removeWhere((k, v) => v == null);
-    final _data = <String, dynamic>{};
-    _data.addAll(body);
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    final _data = FormData();
+    if (name != null) {
+      _data.fields.add(MapEntry('name', name));
+    }
+    if (profileImage != null) {
+      _data.files.add(
+        MapEntry(
+          'profileImage',
+          MultipartFile.fromFileSync(
+            profileImage.path,
+            filename: profileImage.path.split(Platform.pathSeparator).last,
+          ),
+        ),
+      );
+    }
     final _options = _setStreamType<UserInfo>(
-      Options(method: 'POST', headers: _headers, extra: _extra)
+      Options(
+            method: 'POST',
+            headers: _headers,
+            extra: _extra,
+            contentType: 'multipart/form-data',
+          )
           .compose(
             _dio.options,
             '/api/auth/profile',

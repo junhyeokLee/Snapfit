@@ -545,10 +545,6 @@ class MyPageScreen extends ConsumerWidget {
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset == null || !context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('프로필 사진 업로드 중...')),
-    );
-
     final file = await asset.file;
     if (file == null || !context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -557,19 +553,13 @@ class MyPageScreen extends ConsumerWidget {
       return;
     }
 
-    final storage = ref.read(storageServiceProvider);
-    final url = await storage.uploadProfileImage(file, userId);
-
-    if (!context.mounted) return;
-    if (url == null || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('업로드에 실패했습니다. 다시 시도해 주세요.')),
-      );
-      return;
-    }
-
     try {
-      await ref.read(authViewModelProvider.notifier).updateProfileImage(url);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('프로필 사진 업로드 중...')),
+      );
+
+      await ref.read(authViewModelProvider.notifier).updateProfileImage(file);
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('프로필 사진이 저장되었습니다.')),

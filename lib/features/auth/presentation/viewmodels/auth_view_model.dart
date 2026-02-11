@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,17 +48,12 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
   }
 
-  /// 프로필 이미지 URL을 서버에 저장하고 로컬 유저 정보 갱신
-  Future<void> updateProfileImage(String profileImageUrl) async {
-    final token = await ref.read(tokenStorageProvider).getAccessToken();
-    if (token == null || token.isEmpty) {
-      throw Exception('로그인이 필요합니다.');
-    }
+  /// 프로필 이미지를 서버에 업로드하고 로컬 유저 정보 갱신
+  Future<void> updateProfileImage(File image) async {
     final api = ref.read(authApiProvider);
     try {
       final userInfo = await api.updateProfile(
-        {'profileImageUrl': profileImageUrl},
-        'Bearer $token',
+        profileImage: image,
       );
       await ref.read(tokenStorageProvider).saveUserInfo(userInfo);
       state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
