@@ -62,6 +62,15 @@ class TokenStorage {
     );
   }
 
+  /// 서버에서 받은 유저 정보로 로컬 프로필만 갱신 (토큰은 유지)
+  Future<void> saveUserInfo(UserInfo user) async {
+    await _storage.write(key: _keyUserId, value: user.id.toString());
+    await _storage.write(key: _keyUserEmail, value: user.email);
+    await _storage.write(key: _keyUserName, value: user.name);
+    await _storage.write(key: _keyUserProfile, value: user.profileImageUrl);
+    await _storage.write(key: _keyProvider, value: user.provider);
+  }
+
   Future<void> clear() async {
     await _storage.delete(key: _keyAccessToken);
     await _storage.delete(key: _keyRefreshToken);

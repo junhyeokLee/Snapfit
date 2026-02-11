@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../controllers/text_editor_manager.dart';
@@ -32,8 +33,14 @@ class AlbumReaderToolbar extends StatelessWidget {
     required this.onStateChanged,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('AlbumReaderToolbar', '앨범 리더 툴바 · 텍스트/사진/레이어 순서');
+    }
     return Container(
       height: 56.h,
       padding: EdgeInsets.symmetric(horizontal: 12.w),

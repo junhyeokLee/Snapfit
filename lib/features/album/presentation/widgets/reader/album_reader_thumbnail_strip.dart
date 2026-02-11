@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
 import '../editor/page_template_picker.dart';
@@ -26,8 +27,14 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     this.height = 70,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('AlbumReaderThumbnailStrip', '앨범 리더 썸네일 스트립 · 페이지 추가');
+    }
     final ratio = baseCanvasSize.width / baseCanvasSize.height;
     final thumbW = height * ratio;
     return SizedBox(

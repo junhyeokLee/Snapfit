@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
 import '../../../../../shared/snapfit_image.dart';
@@ -88,4 +89,40 @@ Widget buildStaticText(LayerModel layer) {
     style: layer.textStyle,
     textAlign: layer.textAlign,
   );
+}
+
+/// 홈 화면용 앨범 상태 헬퍼
+///
+/// - Draft: 커버/레이어/테마가 전혀 없는 "빈" 앨범이거나 id == 0 인 경우
+/// - Live Editing: 목표 페이지(targetPages)를 아직 채우지 못한 경우
+/// - Completed: targetPages를 모두 채운 경우 (totalPages >= targetPages)
+bool isDraftAlbum(Album album) {
+  final hasCoverUrl = (album.coverThumbnailUrl ??
+              album.coverPreviewUrl ??
+              album.coverImageUrl)
+          ?.isNotEmpty ==
+      true;
+  final hasLayers = album.coverLayersJson.isNotEmpty;
+  final hasTheme = album.coverTheme?.isNotEmpty == true;
+
+  final hasVisual = hasCoverUrl || hasLayers || hasTheme;
+
+  // 서버에 실제로 저장되지 않았거나, 커버 정보가 전혀 없는 경우만 Draft로 간주
+  if (album.id == 0) return true;
+  return !hasVisual;
+}
+
+bool isLiveEditingAlbum(Album album) {
+  if (isDraftAlbum(album)) return false;
+  if (album.targetPages <= 0) {
+    // 목표 페이지 미설정: 진행 중으로 간주
+    return true;
+  }
+  return album.totalPages < album.targetPages;
+}
+
+bool isCompletedAlbum(Album album) {
+  if (isDraftAlbum(album)) return false;
+  if (album.targetPages <= 0) return false;
+  return album.totalPages >= album.targetPages;
 }

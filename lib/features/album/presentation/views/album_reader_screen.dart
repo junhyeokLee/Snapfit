@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/constants/cover_theme.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/entities/album_page.dart';
@@ -44,6 +45,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
   @override
   void initState() {
     super.initState();
+    ScreenLogger.enter('AlbumReaderScreen', '앨범 뷰어 · 커버/내지 스프레드 · 페이지 편집 진입');
     _pageController = PageController();
     _coverKey = GlobalKey();
     _interaction = LayerInteractionManager(

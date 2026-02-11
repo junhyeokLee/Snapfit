@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/screen_logger.dart';
 import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../auth/presentation/views/auth_gate.dart';
@@ -24,6 +25,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    ScreenLogger.enter('SplashScreen', '앱 초기 로딩 · 인증 상태 확인 후 Login/Home 분기');
     _startedAt = DateTime.now();
 
     _authSub = ref.listenManual<AsyncValue<UserInfo?>>(authViewModelProvider,

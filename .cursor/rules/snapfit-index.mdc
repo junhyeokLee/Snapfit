@@ -14,8 +14,12 @@ alwaysApply: true
 | snapfit-index.mdc | 항상 | 이 파일 (허브) |
 | snapfit-requirements.mdc | 항상 | 비즈니스 요구사항, 데이터 모델 (What/Why) |
 | snapfit-technical.mdc | 항상 | 아키텍처, Riverpod, Retrofit (How) |
+| snapfit-screen-logging.mdc | `lib/features/**/presentation/**/*.dart` 편집 시 | 스크린/위젯 진입 로그 (ScreenLogger) |
 | create-rule.mdc | `.cursor/rules/**/*.mdc` 편집 시 | 규칙 생성 가이드 |
 | flutter-ui-standards.mdc | `lib/**/*.dart` 편집 시 | 컬러, 반응형, 애니메이션 |
+| snapfit-design-colors.mdc | `lib/**/*.dart` 편집 시 | 브랜드 컬러/그라데이션 가이드 |
+| snapfit-design-typography.mdc | `lib/**/*.dart` 편집 시 | 타이포그래피 스케일 가이드 |
+| snapfit-design-components.mdc | `lib/**/*.dart` 편집 시 | 버튼/인풋 컴포넌트 가이드 |
 
 ## 필수 원칙
 - 코드 변경 시 요구사항·플로우·데이터 모델을 먼저 확인한다.

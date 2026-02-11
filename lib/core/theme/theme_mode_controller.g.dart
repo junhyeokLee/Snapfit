@@ -8,15 +8,15 @@ part of 'theme_mode_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 앱 테마 모드 상태 관리 (기본: 라이트)
+/// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
 
 @ProviderFor(ThemeModeController)
 const themeModeControllerProvider = ThemeModeControllerProvider._();
 
-/// 앱 테마 모드 상태 관리 (기본: 라이트)
+/// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
 final class ThemeModeControllerProvider
     extends $NotifierProvider<ThemeModeController, ThemeMode> {
-  /// 앱 테마 모드 상태 관리 (기본: 라이트)
+  /// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
   const ThemeModeControllerProvider._()
     : super(
         from: null,
@@ -45,9 +45,9 @@ final class ThemeModeControllerProvider
 }
 
 String _$themeModeControllerHash() =>
-    r'8f3a43b53541679f6af69b5f3fdc29ea379b2973';
+    r'495f06ba757fc2f480c890625be37aada4009ee9';
 
-/// 앱 테마 모드 상태 관리 (기본: 라이트)
+/// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
 
 abstract class _$ThemeModeController extends $Notifier<ThemeMode> {
   ThemeMode build();

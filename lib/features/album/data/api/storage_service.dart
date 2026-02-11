@@ -26,6 +26,29 @@ class UploadedUrls {
 class StorageService {
   final _storage = FirebaseStorage.instance;
 
+  /// 프로필 사진 업로드 — 리사이즈(512px, 품질 85) 후 Firebase 업로드 → 다운로드 URL 반환
+  Future<String?> uploadProfileImage(File file, String userId) async {
+    try {
+      final bytes = await file.readAsBytes();
+      final resized = await _resizeImageBytesToJpeg(
+        bytes,
+        maxDimension: 512,
+        quality: 85,
+      );
+      final ts = DateTime.now().microsecondsSinceEpoch;
+      final ref = _storage.ref().child('profiles/${userId}_$ts.jpg');
+      await ref.putData(
+        resized,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      return await ref.getDownloadURL();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Profile upload error: $e');
+      return null;
+    }
+  }
+
   /// 운영급: 원본(프린트용) + 미리보기(앱용) URL 업로드
   /// - 하위 호환을 위해 호출부가 previewUrl을 imageUrl로 미러링해도 됨
   Future<UploadedUrls> uploadImageVariants(

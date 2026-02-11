@@ -71,5 +71,10 @@ dart run build_runner build --delete-conflicting-outputs
 
 ---
 
-## 6. Response
+## 6. Screen & Widget Logging
+- **새 스크린/주요 위젯 추가 시** `ScreenLogger.enter()` / `ScreenLogger.widget()` 로 진입 설명 로그 1회 출력 (상세: `snapfit-screen-logging.mdc`).
+
+---
+
+## 7. Response
 - Always respond in Korean (한국어).

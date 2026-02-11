@@ -16,6 +16,7 @@ _Album _$AlbumFromJson(Map<String, dynamic> json) => _Album(
   coverPreviewUrl: json['coverPreviewUrl'] as String?,
   coverTheme: json['coverTheme'] as String?,
   totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
+  targetPages: (json['targetPages'] as num?)?.toInt() ?? 0,
   createdAt: json['createdAt'] as String? ?? '',
   updatedAt: json['updatedAt'] as String? ?? '',
 );
@@ -30,6 +31,7 @@ Map<String, dynamic> _$AlbumToJson(_Album instance) => <String, dynamic>{
   'coverPreviewUrl': instance.coverPreviewUrl,
   'coverTheme': instance.coverTheme,
   'totalPages': instance.totalPages,
+  'targetPages': instance.targetPages,
   'createdAt': instance.createdAt,
   'updatedAt': instance.updatedAt,
 };

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
-import 'dart:ui' as ui;
+import '../../../../../core/utils/screen_logger.dart';
+import '../../../../../shared/widgets/snapfit_primary_action_button.dart';
 
 /// 스텝1: 제목, 커버 사이즈 선택, 페이지 수 선택
 class AlbumCreateStep1 extends StatefulWidget {
@@ -35,6 +36,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   @override
   void initState() {
     super.initState();
+    ScreenLogger.widget('AlbumCreateStep1', '앨범 생성 Step 1 · 제목/커버/페이지 수 입력');
     _titleController = TextEditingController(text: widget.albumTitle);
   }
 
@@ -59,21 +61,11 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // STEP 표시
-          Text(
-            'STEP 01/04',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.accent,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          // 메인 타이틀
+          // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
           Text(
             '새로운 추억의 정보를 입력해 주세요',
             style: TextStyle(
-              fontSize: 24.sp,
+              fontSize: 21.sp,
               fontWeight: FontWeight.w800,
               color: SnapFitColors.textPrimaryOf(context),
             ),
@@ -81,54 +73,92 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           SizedBox(height: 40.h),
           // 앨범 제목
           Text(
-            '앨범제목',
+            '앨범 제목',
             style: TextStyle(
               fontSize: 14.sp,
               color: SnapFitColors.textMutedOf(context),
             ),
           ),
           SizedBox(height: 8.h),
-          TextField(
-            controller: _titleController,
-            onChanged: widget.onTitleChanged,
-            decoration: InputDecoration(
-              hintText: '우리 가족의 제주 여행',
-              hintStyle: TextStyle(
-                color: SnapFitColors.textMutedOf(context),
+          // 그라데이션 테두리 + 카드형 텍스트 에디터
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: SnapFitColors.primaryGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
-                  width: 1,
+              borderRadius: BorderRadius.circular(18.r),
+            ),
+            child: Container(
+              margin: EdgeInsets.all(1.5.w),
+              decoration: BoxDecoration(
+                color: SnapFitColors.surfaceOf(context),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: TextField(
+                controller: _titleController,
+                onChanged: (value) {
+                  widget.onTitleChanged(value);
+                },
+                decoration: InputDecoration(
+                  hintText: '예: 우리 가족의 제주 여행',
+                  hintStyle: TextStyle(
+                    // 예시 텍스트는 아주 연하게
+                    color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
+                  ),
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.auto_awesome_rounded,
+                    color: SnapFitColors.accentLight,
+                    size: 20.sp,
+                  ),
+                  suffixIcon: Icon(
+                    Icons.edit_outlined,
+                    color: SnapFitColors.textMutedOf(context),
+                    size: 18.sp,
+                  ),
+                  counterText: '',
                 ),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
-                  width: 1,
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
                 ),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: SnapFitColors.accent,
-                  width: 2,
-                ),
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 0,
-                vertical: 12.h,
-              ),
-              suffixIcon: Icon(
-                Icons.edit_outlined,
-                color: SnapFitColors.accent,
-                size: 20.sp,
+                maxLength: 50,
               ),
             ),
-            style: TextStyle(
-              color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 16.sp,
-            ),
-            maxLength: 50,
+          ),
+          SizedBox(height: 6.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '나중에도 언제든지 수정할 수 있어요.',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
+              ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _titleController,
+                builder: (context, value, _) {
+                  return Text(
+                    '${value.text.length}/50',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: SnapFitColors.textMutedOf(context),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           SizedBox(height: 40.h),
           // 사이즈 선택
@@ -153,35 +183,18 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           SizedBox(height: 16.h),
           _buildPageCountSelector(context),
           SizedBox(height: 40.h),
-          // 다음 버튼
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: widget.albumTitle.isNotEmpty && widget.selectedCover != null ? widget.onNext : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: SnapFitColors.accent,
-                foregroundColor: SnapFitColors.pureWhite,
-                padding: EdgeInsets.symmetric(vertical: 18.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '앨범 생성하기',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Icon(Icons.arrow_forward, size: 20.sp),
-                ],
-              ),
-            ),
+          // 다음 버튼 (제목/사이즈 상태에 따라 활성화)
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _titleController,
+            builder: (context, value, _) {
+              final canProceed =
+                  value.text.isNotEmpty && widget.selectedCover != null;
+              return SnapFitPrimaryActionButton(
+                label: '앨범 생성하기',
+                onPressed: canProceed ? widget.onNext : null,
+                icon: Icons.arrow_forward,
+              );
+            },
           ),
         ],
       ),
@@ -189,17 +202,27 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   }
 
   Widget _buildSizeSelector(BuildContext context) {
-    // 세로 정사각형과 가로 정사각형 옵션
+    // 기획 기준: 가로 / 정사각형 / 세로
+    final horizontal =
+        coverSizes.firstWhere((s) => s.name == '가로형', orElse: () => coverSizes[2]);
+    final square =
+        coverSizes.firstWhere((s) => s.name == '정사각형', orElse: () => coverSizes[1]);
+    final vertical =
+        coverSizes.firstWhere((s) => s.name == '세로형', orElse: () => coverSizes[0]);
+
+    // 가로형, 정사각형, 세로형 옵션
     final sizeOptions = [
       {
-        'name': '세로 정사각형',
-        'cover': CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)),
-        'iconRotation': 0.0, // 세로형
+        'name': '가로형',
+        'cover': horizontal,
       },
       {
-        'name': '가로 정사각형',
-        'cover': CoverSize(name: '가로형', ratio: 8 / 6, realSize: Size(19.4, 14.5)),
-        'iconRotation': 1.5708, // 90도 회전 (가로형)
+        'name': '정사각형',
+        'cover': square,
+      },
+      {
+        'name': '세로형',
+        'cover': vertical,
       },
     ];
 
@@ -216,7 +239,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               widget.onCoverSelected(cover);
             },
             child: Container(
-              margin: EdgeInsets.only(right: index == 0 ? 12.w : 0),
+              margin: EdgeInsets.only(right: index != sizeOptions.length - 1 ? 12.w : 0),
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: isSelected
@@ -233,44 +256,14 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 겹쳐진 사각형 아이콘 (이미지와 동일하게)
+                  // 사이즈 비율 미리보기 (가로/정사각형/세로형)
                   SizedBox(
                     width: 80.w,
                     height: 80.w,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // 뒷면 사각형
-                        Transform.rotate(
-                          angle: (option['iconRotation'] as double) + 0.1,
-                          child: Container(
-                            width: 60.w,
-                            height: 60.w,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: SnapFitColors.textPrimaryOf(context).withOpacity(0.3),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(4.r),
-                            ),
-                          ),
-                        ),
-                        // 앞면 사각형
-                        Transform.rotate(
-                          angle: (option['iconRotation'] as double) - 0.1,
-                          child: Container(
-                            width: 60.w,
-                            height: 60.w,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: SnapFitColors.textPrimaryOf(context).withOpacity(0.3),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(4.r),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _SizePreviewFrame(
+                      cover: cover,
+                      color: SnapFitColors.textPrimaryOf(context)
+                          .withOpacity(0.35),
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -354,7 +347,68 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
             ),
           ],
         ),
+        SizedBox(height: 10.h),
+        Row(
+          children: [
+            Text(
+              '나중에도 언제든지 수정할 수 있어요.',
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: SnapFitColors.textMutedOf(context),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 }
+
+/// 사이즈 카드 내부에 사용하는 비율 미리보기 프레임
+class _SizePreviewFrame extends StatelessWidget {
+  final CoverSize cover;
+  final Color color;
+
+  const _SizePreviewFrame({
+    required this.cover,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = cover.realSize.width / cover.realSize.height;
+    // 모든 타입의 최대 변 길이는 동일하게 맞추고,
+    // 정사각형보다 크지 않게 스케일링
+    const double maxSide = 60;
+    double width;
+    double height;
+    if (ratio >= 1) {
+      // 가로형: 가로가 최대, 세로는 비율에 맞게 축소
+      width = maxSide;
+      height = maxSide / ratio;
+    } else {
+      // 세로형: 세로가 최대, 가로는 비율에 맞게 축소
+      height = maxSide;
+      width = maxSide * ratio;
+    }
+
+    return SizedBox(
+      width: maxSide,
+      height: maxSide,
+      child: Center(
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6.r),
+            border: Border.all(
+              color: color,
+              width: 2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

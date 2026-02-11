@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/snapfit_primary_action_button.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 
 /// 스텝3: 앨범 생성 후 페이지 편집 화면으로 이동
@@ -80,39 +81,11 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
         children: [
           SizedBox(height: 40.h),
           // 앨범 편집 시작하기 버튼
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isCreating ? null : _createAlbum,
-              icon: _isCreating
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          SnapFitColors.pureWhite,
-                        ),
-                      ),
-                    )
-                  : Icon(Icons.rocket_launch, size: 20.sp),
-              label: Text(
-                _isCreating ? '앨범 생성 중...' : '앨범 편집 시작하기',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: SnapFitColors.accent,
-                foregroundColor: SnapFitColors.pureWhite,
-                padding: EdgeInsets.symmetric(vertical: 18.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-            ),
+          SnapFitPrimaryActionButton(
+            label: _isCreating ? '앨범 생성 중...' : '앨범 편집 시작하기',
+            onPressed: _isCreating ? null : _createAlbum,
+            isLoading: _isCreating,
+            icon: _isCreating ? null : Icons.rocket_launch,
           ),
           SizedBox(height: 16.h),
           // 이전 버튼

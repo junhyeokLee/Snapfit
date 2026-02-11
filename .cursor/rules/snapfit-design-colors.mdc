@@ -1,0 +1,32 @@
+---
+description: SnapFit 디자인 시스템 - 브랜드 컬러/그라데이션 규칙
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# SnapFit Design System — Colors
+
+## MUST Do
+
+- **브랜드 컬러는 `SnapFitColors`에만 정의**하고 위젯에서는 참조만 한다.
+- **Primary Gradient는 고정 스펙**을 사용한다.
+  - Start: `#13C8EC`
+  - End: `#8B5CF6`
+- **배경은 DeepCharcoal/White 기반**으로 구성한다.
+  - DeepCharcoal: `#121212`
+  - PureWhite: `#FFFFFF`
+
+## MUST NOT Do
+
+- **Do NOT** 위젯에 `Color(0xFF...)`를 산발적으로 하드코딩한다.
+- **Do NOT** “임의의 회색”을 텍스트/보더에 사용한다. (반드시 `SnapFitColors.*Of(context)` 또는 테마의 `colorScheme` 사용)
+
+## Example
+
+```dart
+// ❌ BAD: 위젯에 컬러 하드코딩
+Container(color: const Color(0xFF13C8EC));
+
+// ✅ GOOD: 중앙 팔레트 참조
+Container(color: SnapFitColors.primaryGradientStart);
+```

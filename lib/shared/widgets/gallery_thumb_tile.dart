@@ -2,13 +2,22 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../../core/constants/snapfit_colors.dart';
 import 'grid_guideline_painter.dart';
 
-// 사진첩 디자인
+/// 사진첩 썸네일 타일.
+/// [simpleMode] true: 바텀시트 그리드용 (1:1, 체크만). false: 편집용 (6:8, 줌·가이드).
 class GalleryThumbTile extends StatefulWidget {
   final AssetEntity asset;
   final bool isSelected;
-  const GalleryThumbTile({super.key, required this.asset, required this.isSelected});
+  final bool simpleMode;
+
+  const GalleryThumbTile({
+    super.key,
+    required this.asset,
+    required this.isSelected,
+    this.simpleMode = false,
+  });
 
   @override
   State<GalleryThumbTile> createState() => GalleryThumbTileState();
@@ -76,7 +85,49 @@ class GalleryThumbTileState extends State<GalleryThumbTile> with AutomaticKeepAl
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // Using a 6:8 aspect ratio for the thumbnail preview to reflect book size
+    if (widget.simpleMode) {
+      return AspectRatio(
+        aspectRatio: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _thumbData == null
+                  ? Container(
+                      color: SnapFitColors.surfaceOf(context),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: SnapFitColors.textMutedOf(context),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Image.memory(
+                      _thumbData!,
+                      fit: BoxFit.cover,
+                      gaplessPlayback: true,
+                    ),
+              if (widget.isSelected)
+                Container(
+                  color: Colors.black.withOpacity(0.35),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.check_circle,
+                    color: SnapFitColors.accent,
+                    size: 28,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+    // 편집용: 6:8 비율, 줌·가이드라인
     return GestureDetector(
       onScaleStart: _onScaleStart,
       onScaleUpdate: _onScaleUpdate,
@@ -95,10 +146,10 @@ class GalleryThumbTileState extends State<GalleryThumbTile> with AutomaticKeepAl
                 child: _thumbData == null
                     ? Container(color: Colors.black26)
                     : Image.memory(
-                  _thumbData!,
-                  fit: BoxFit.cover,
-                  gaplessPlayback: true,
-                ),
+                        _thumbData!,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                      ),
               ),
               AnimatedOpacity(
                 opacity: _interacting ? 1.0 : 0.0,
@@ -114,7 +165,11 @@ class GalleryThumbTileState extends State<GalleryThumbTile> with AutomaticKeepAl
                 Container(
                   color: Colors.black.withOpacity(0.3),
                   alignment: Alignment.center,
-                  child: const Icon(Icons.check_circle, color: Colors.blueAccent),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: SnapFitColors.accent,
+                    size: 28,
+                  ),
                 ),
             ],
           ),

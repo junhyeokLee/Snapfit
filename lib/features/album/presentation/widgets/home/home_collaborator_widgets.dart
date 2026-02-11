@@ -15,10 +15,16 @@ class HomeCollaboratorSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (count <= 0) {
+      return const SizedBox.shrink();
+    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        HomeAvatarStack(borderColor: SnapFitColors.backgroundOf(context)),
+        HomeAvatarStack(
+          borderColor: SnapFitColors.backgroundOf(context),
+          count: count,
+        ),
         SizedBox(width: 8.w),
         Text(
           '공동작업자 $count명',
@@ -36,11 +42,62 @@ class HomeCollaboratorSummary extends StatelessWidget {
 /// 협업자 아바타 스택
 class HomeAvatarStack extends StatelessWidget {
   final Color borderColor;
+  final int count;
 
-  const HomeAvatarStack({super.key, required this.borderColor});
+  const HomeAvatarStack({
+    super.key,
+    required this.borderColor,
+    required this.count,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (count <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    if (count == 1) {
+      return SizedBox(
+        width: 20.w,
+        height: 20.w,
+        child: HomeCollaboratorDot(
+          color: SnapFitColors.accent.withOpacity(0.8),
+          borderColor: borderColor,
+          size: 18.w,
+        ),
+      );
+    }
+
+    if (count == 2) {
+      return SizedBox(
+        width: 32.w,
+        height: 20.w,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: 0,
+              child: HomeCollaboratorDot(
+                color: SnapFitColors.accent.withOpacity(0.8),
+                borderColor: borderColor,
+                size: 18.w,
+              ),
+            ),
+            Positioned(
+              left: 12.w,
+              child: HomeCollaboratorDot(
+                color: SnapFitColors.accentLight.withOpacity(0.8),
+                borderColor: borderColor,
+                size: 18.w,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 3명 이상: 2개의 점 + "+N"
+    final extra = count - 2;
     return SizedBox(
       width: 46.w,
       height: 20.w,
@@ -66,7 +123,7 @@ class HomeAvatarStack extends StatelessWidget {
           Positioned(
             left: 24.w,
             child: HomePlusDot(
-              label: '+3',
+              label: '+$extra',
               borderColor: borderColor,
             ),
           ),

@@ -11,6 +11,8 @@ sealed class CreateAlbumRequest with _$CreateAlbumRequest {
     // ignore: invalid_annotation_target
     @JsonKey(name: 'userId') @Default('') String userId,
     required String ratio,
+    /// 목표 페이지 수 (완성 기준)
+    @Default(0) int targetPages,
     required String coverLayersJson,
     required String coverImageUrl,
     required String coverThumbnailUrl,

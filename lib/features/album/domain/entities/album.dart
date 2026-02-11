@@ -21,6 +21,8 @@ sealed class Album with _$Album {
     /// 커버 테마 (예: classic, nature1) - 서버에서 저장/반환 시 편집 화면에서 복원
     String? coverTheme,
     @Default(0) int totalPages,
+    /// 목표 페이지 수 (완성 기준)
+    @Default(0) int targetPages,
     @Default('') String createdAt,
     @Default('') String updatedAt,
   }) = _Album;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../../auth/data/dto/auth_response.dart';
 
 /// 홈 화면 인사말 헤더
@@ -9,8 +10,14 @@ class HomeGreetingHeader extends StatelessWidget {
 
   const HomeGreetingHeader({super.key, required this.userInfo});
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('HomeGreetingHeader', '홈 인사말 · 사용자명/추억 문구');
+    }
     final rawName = userInfo?.name ?? '';
     final email = userInfo?.email ?? '';
     final provider = (userInfo?.provider ?? '').toUpperCase();

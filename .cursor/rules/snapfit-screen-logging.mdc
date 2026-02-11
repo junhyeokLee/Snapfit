@@ -1,0 +1,69 @@
+---
+description: SnapFit 스크린/위젯 진입 로그 — 새 화면·위젯 추가 시 ScreenLogger 사용
+globs: lib/features/**/presentation/**/*.dart
+alwaysApply: false
+---
+
+# SnapFit Screen & Widget Logging
+
+> 모든 화면 진입 시, 그리고 **분리된 위젯** 포함 주요 위젯 마운트 시 설명 로그를 남겨 디버깅·흐름 파악을 쉽게 한다.
+
+## MUST Do
+
+1. **새 스크린 추가 시** — `initState()`에서 **1회만** `ScreenLogger.enter()` 호출
+   - 위치: `lib/core/utils/screen_logger.dart`
+   - 인자: `(스크린 클래스명, 한글 설명)`
+2. **분리된 위젯·주요 위젯 추가 시** — 마운트 시 **1회만** `ScreenLogger.widget()` 호출
+   - `widgets/{screen_name}/` 아래에 분리된 위젯(예: `HomeGreetingHeader`, `HomeFeaturedAlbumCard`, `AlbumReaderFooter`)도 **반드시** 로그 추가
+   - `StatefulWidget`: `initState()` 또는 `didChangeDependencies` + 플래그로 1회만
+   - `StatelessWidget` / `ConsumerWidget`: `build` 내 `static bool _logged` + 1회만 호출
+3. **설명은 한글로, 역할이 드러나게** 작성 (예: "홈 인사말 · 사용자명/추억 문구", "앨범 리더 썸네일 스트립 · 페이지 추가")
+
+## MUST NOT Do
+
+- Do NOT `print()` 또는 `debugPrint()` 직접 사용해 스크린 진입 표시 — `ScreenLogger`만 사용
+- Do NOT 로그를 매 빌드마다 반복 호출 — 1회만 (플래그 사용)
+
+## Example
+
+```dart
+// ✅ GOOD: 스크린 (initState)
+@override
+void initState() {
+  super.initState();
+  ScreenLogger.enter('AlbumCreateFlowScreen', '앨범 생성 플로우 Step 1~4 (정보 입력 → 커버 편집 → 친구 초대 → 페이지 편집)');
+  // ...
+}
+
+// ✅ GOOD: 위젯 1회 로그 (didChangeDependencies + 플래그)
+if (!_didLogWidget) {
+  _didLogWidget = true;
+  ScreenLogger.widget('EditCover', widget.isFromCreateFlow ? '커버 편집 (플로우 Step 2)' : '기존 앨범 커버 편집');
+}
+
+// ✅ GOOD: Stateless 스크린 (build 내 1회)
+static bool _logged = false;
+Widget build(BuildContext context, WidgetRef ref) {
+  if (!_logged) {
+    _logged = true;
+    ScreenLogger.enter('MyPageScreen', '마이 · 테마 설정(라이트/다크) · 로그아웃');
+  }
+  // ...
+}
+
+// ✅ GOOD: 분리된 위젯 (Stateless, build 내 1회)
+static bool _logged = false;
+Widget build(BuildContext context) {
+  if (!_logged) {
+    _logged = true;
+    ScreenLogger.widget('HomeGreetingHeader', '홈 인사말 · 사용자명/추억 문구');
+  }
+  return Column(...);
+}
+```
+
+## Reference
+
+- 로거 정의: `lib/core/utils/screen_logger.dart`
+- 태그: `[SnapFit:Screen]` — 로그 필터에 이 문자열로 검색하면 진입 로그만 모아서 볼 수 있음
+- 디버그 빌드에서만 출력 (`kDebugMode`)

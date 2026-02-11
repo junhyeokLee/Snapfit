@@ -67,6 +67,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   mocktail: ^1.0.4
   flutter_native_splash: ^2.4.6
+  flutter_launcher_icons: ^0.14.1
 
 
 flutter:
@@ -90,6 +91,8 @@ flutter:
     - assets/cover/cover13.png
     - assets/cover/cover15.png
     - assets/cover/cover16.png
+    - assets/snapfit_logo.png
+    - assets/snapfit_logo2.png
     - assets/splash.png
 
 
@@ -235,12 +238,19 @@ flutter:
 
 flutter_native_splash:
   color: "#101F22"
-  background_image: assets/splash.png
+  # 앱 시작 시 가운데 라운드 처리된 SnapFit 로고 노출
+  image: assets/snapfit_logo.png
   android_gravity: fill
   ios_content_mode: scaleToFill
   web_image_mode: stretch
   android_12:
     color: "#101F22"
-    image: assets/splash.png
+    image: assets/snapfit_logo.png
     icon_background_color: "#101F22"
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  # 런처 아이콘도 snapfit_logo 하나만 사용
+  image_path: "assets/snapfit_logo.png"
+  adaptive_icon_background: "#101F22"

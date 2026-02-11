@@ -10,6 +10,7 @@ _CreateAlbumRequest _$CreateAlbumRequestFromJson(Map<String, dynamic> json) =>
     _CreateAlbumRequest(
       userId: json['userId'] as String? ?? '',
       ratio: json['ratio'] as String,
+      targetPages: (json['targetPages'] as num?)?.toInt() ?? 0,
       coverLayersJson: json['coverLayersJson'] as String,
       coverImageUrl: json['coverImageUrl'] as String,
       coverThumbnailUrl: json['coverThumbnailUrl'] as String,
@@ -22,6 +23,7 @@ Map<String, dynamic> _$CreateAlbumRequestToJson(_CreateAlbumRequest instance) =>
     <String, dynamic>{
       'userId': instance.userId,
       'ratio': instance.ratio,
+      'targetPages': instance.targetPages,
       'coverLayersJson': instance.coverLayersJson,
       'coverImageUrl': instance.coverImageUrl,
       'coverThumbnailUrl': instance.coverThumbnailUrl,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import 'home_icon_buttons.dart';
 import 'home_avatar_dot.dart';
 
@@ -15,23 +16,26 @@ class HomeHeader extends StatelessWidget {
     required this.onNotification,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('HomeHeader', '홈 상단 헤더 · 로고/검색/알림');
+    }
     return Row(
       children: [
         Row(
           children: [
-            Container(
-              width: 28.w,
-              height: 28.w,
-              decoration: BoxDecoration(
-                color: SnapFitColors.accent.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                Icons.photo_album_outlined,
-                size: 18.sp,
-                color: SnapFitColors.accentLight,
+            // 앱 로고
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.r),
+              child: Image.asset(
+                'assets/snapfit_logo.png',
+                width: 28.w,
+                height: 28.w,
+                fit: BoxFit.cover,
               ),
             ),
             SizedBox(width: 10.w),

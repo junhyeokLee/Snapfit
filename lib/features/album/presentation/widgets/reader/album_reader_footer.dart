@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../core/utils/screen_logger.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../views/page_editor_screen.dart';
 
@@ -16,8 +17,14 @@ class AlbumReaderFooter extends ConsumerWidget {
     required this.totalPages,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('AlbumReaderFooter', '앨범 리더 푸터 · 페이지 번호/편집 버튼');
+    }
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
       child: Row(

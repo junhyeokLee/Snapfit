@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/layer.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 import '../controllers/text_editor_manager.dart';
@@ -36,6 +37,12 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   @override
   void initState() {
     super.initState();
+    ScreenLogger.enter(
+      'PageEditorScreen',
+      widget.initialPageIndex != null
+          ? '내지 페이지 편집 (페이지 ${widget.initialPageIndex})'
+          : '내지 페이지 편집 · 템플릿/레이어/스타일',
+    );
     _interaction = LayerInteractionManager(
       ref: ref,
       coverKey: _canvasKey,

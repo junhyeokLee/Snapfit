@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide AuthApi;
@@ -44,6 +45,30 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
+  /// 프로필 이미지 URL을 서버에 저장하고 로컬 유저 정보 갱신
+  Future<void> updateProfileImage(String profileImageUrl) async {
+    final token = await ref.read(tokenStorageProvider).getAccessToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('로그인이 필요합니다.');
+    }
+    final api = ref.read(authApiProvider);
+    try {
+      final userInfo = await api.updateProfile(
+        {'profileImageUrl': profileImageUrl},
+        'Bearer $token',
+      );
+      await ref.read(tokenStorageProvider).saveUserInfo(userInfo);
+      state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw Exception(
+          '서버에 프로필 저장 기능이 없습니다. 백엔드를 최신 버전으로 배포한 뒤 다시 시도해 주세요.',
+        );
+      }
+      rethrow;
+    }
   }
 
   Future<void> logout() async {

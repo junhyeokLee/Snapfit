@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import 'home_empty_state.dart';
 
 /// 에러 상태 빌드
@@ -10,8 +11,14 @@ class HomeErrorState extends StatelessWidget {
 
   const HomeErrorState({super.key, required this.error});
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('HomeErrorState', '홈 에러 상태 · 연결 실패 등');
+    }
     final isTimeout = error is DioException &&
         (error as DioException).type == DioExceptionType.connectionTimeout;
     if (isTimeout) {

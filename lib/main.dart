@@ -38,11 +38,24 @@ void main() async {
   );
 }
 
-class MoaEditorApp extends ConsumerWidget {
+class MoaEditorApp extends ConsumerStatefulWidget {
   const MoaEditorApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MoaEditorApp> createState() => _MoaEditorAppState();
+}
+
+class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(themeModeControllerProvider.notifier).loadFromStorage();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeControllerProvider);
     return MaterialApp(
       title: 'SnapFit',

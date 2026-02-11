@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../../../shared/widgets/snapfit_primary_gradient_background.dart';
 
 /// 홈 화면 하단 네비게이션 바
@@ -16,8 +17,14 @@ class HomeBottomNavigationBar extends StatelessWidget {
     required this.onCreate,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범만들기');
+    }
     return SafeArea(
       top: false,
       child: Container(
@@ -147,7 +154,7 @@ class _BottomNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     final color = isSelected
-        ? (isDark ? SnapFitColors.accent : SnapFitColors.accentLight)
+        ? (isDark ? SnapFitColors.accent : SnapFitColors.accent)
         : (isDark
             ? SnapFitColors.textMutedOf(context)
             : SnapFitColors.deepCharcoal.withOpacity(0.7));

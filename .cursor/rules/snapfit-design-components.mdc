@@ -1,0 +1,50 @@
+---
+description: SnapFit 디자인 시스템 - 버튼/인풋 컴포넌트 규칙
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# SnapFit Design System — Components
+
+## Buttons
+
+- **Primary Action**
+  - 배경: Primary Gradient (`#13C8EC -> #8B5CF6`)
+  - 텍스트: White
+  - 라운드: 14
+- **Secondary**
+  - 배경: Surface(Dark) 계열
+  - 텍스트: Cyan 계열 강조
+- **Outlined**
+  - 배경: Transparent
+  - 보더: Overlay(약한 선)
+  - 텍스트: 기본 텍스트 컬러
+
+## Input Fields
+
+- 배경: Surface(Dark) 계열
+- 라운드: 14
+- 힌트: Muted 텍스트
+- 포커스: 브랜드 컬러(또는 Primary Gradient start 톤)로 강조
+
+## MUST Do
+
+- 버튼/인풋은 **테마(`ThemeData`)** 또는 공통 위젯(`SnapFit*`)으로 통일한다.
+
+## MUST NOT Do
+
+- **Do NOT** `ElevatedButton.styleFrom(...)`을 화면마다 복붙한다. (공통화)
+
+## Example
+
+```dart
+// ❌ BAD
+ElevatedButton(
+  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+  onPressed: () {},
+  child: const Text('확인'),
+);
+
+// ✅ GOOD
+SnapFitPrimaryActionButton(label: '확인', onPressed: () {});
+```

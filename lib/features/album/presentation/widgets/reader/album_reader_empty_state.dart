@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../../../shared/widgets/snapfit_primary_gradient_background.dart';
 import '../editor/page_template_picker.dart';
 import '../../viewmodels/album_editor_view_model.dart';
@@ -19,8 +20,14 @@ class AlbumReaderEmptyState extends ConsumerWidget {
     required this.baseCanvasSize,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('AlbumReaderEmptyState', '앨범 리더 빈 상태 · 페이지 추가 유도');
+    }
     if (isLoading) {
       return Center(
         child: CircularProgressIndicator(

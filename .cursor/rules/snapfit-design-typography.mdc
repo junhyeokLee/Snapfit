@@ -1,0 +1,37 @@
+---
+description: SnapFit 디자인 시스템 - 타이포그래피(Plus Jakarta Sans) 규칙
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# SnapFit Design System — Typography
+
+## Font Family
+
+- **Primary**: Plus Jakarta Sans
+
+## Type Scale (px)
+
+- **H1**: 32 / ExtraBold / Tracking -0.02em
+- **H2**: 24 / Bold / Tracking -0.015em
+- **Body**: 16 / Regular / Line-height 1.6
+- **Caption**: 12 / Medium / Letter spacing 0.05em
+
+## MUST Do
+
+- 텍스트는 **`Theme.of(context).textTheme` 또는 `SnapFitTypography`**를 우선 사용한다.
+- 숫자 크기 지정이 필요한 경우 **ScreenUtil 사용 시 `.sp`**를 사용한다.
+
+## MUST NOT Do
+
+- **Do NOT** 화면마다 서로 다른 폰트/웨이트/트래킹을 임의로 만든다.
+
+## Example
+
+```dart
+// ❌ BAD
+Text('제목', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900));
+
+// ✅ GOOD
+Text('제목', style: Theme.of(context).textTheme.headlineLarge);
+```

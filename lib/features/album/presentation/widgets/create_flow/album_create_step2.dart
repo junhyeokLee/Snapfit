@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../data/api/album_provider.dart';
 import '../../../service/album_invite_service.dart';
 
@@ -44,6 +45,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   @override
   void initState() {
     super.initState();
+    ScreenLogger.widget('AlbumCreateStep2', '앨범 생성 Step 3 · 친구 초대/딥링크');
     _allowEditing = widget.allowEditing;
     // 앨범 ID는 부모에서 전달받음
     _albumId = widget.albumId;
@@ -74,15 +76,6 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // STEP 표시
-          Text(
-            'STEP 03/04',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.accent,
-            ),
-          ),
           SizedBox(height: 16.h),
           // 메인 타이틀
           Text(

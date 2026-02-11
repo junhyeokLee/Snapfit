@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
 import '../../../domain/entities/album.dart';
 import 'home_status_chip.dart';
 import 'home_album_cover_thumbnail.dart';
@@ -17,8 +18,14 @@ class HomeGridAlbumCard extends StatelessWidget {
     required this.onTap,
   });
 
+  static bool _logged = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_logged) {
+      _logged = true;
+      ScreenLogger.widget('HomeGridAlbumCard', '그리드 앨범 카드 · 커버/제목/상태');
+    }
     final isDark = SnapFitColors.isDark(context);
     final coverUrl =
         album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl;
@@ -81,24 +88,6 @@ class HomeGridAlbumCard extends StatelessWidget {
                     ? SnapFitColors.textPrimaryOf(context)
                     : SnapFitColors.deepCharcoal,
               ),
-            ),
-            SizedBox(height: 2.h),
-            Row(
-              children: [
-                Icon(
-                  Icons.groups_2_outlined,
-                  size: 14.sp,
-                  color: SnapFitColors.textMutedOf(context),
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  '공동작업자 12명',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: SnapFitColors.textMutedOf(context),
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/snapfit_gradient_background.dart';
+import '../../../../shared/widgets/snapfit_primary_action_button.dart';
 import '../viewmodels/auth_view_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -15,6 +17,12 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ScreenLogger.enter('LoginScreen', '카카오/구글 로그인 진입 화면');
+  }
 
   Future<void> _loginWithKakao() async {
     if (_loading) return;
@@ -75,18 +83,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 28.h),
-                  _LoginButton(
+                  SnapFitPrimaryActionButton(
                     label: '카카오로 시작',
-                    color: const Color(0xFFFEE500),
-                    textColor: Colors.black87,
                     onPressed: _loading ? null : _loginWithKakao,
                   ),
                   SizedBox(height: 12.h),
-                  _LoginButton(
-                    label: '구글로 시작',
-                    color: Colors.white,
-                    textColor: Colors.black87,
-                    onPressed: _loading ? null : _loginWithGoogle,
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52.h,
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _loginWithGoogle,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        disabledBackgroundColor: Colors.white.withOpacity(0.6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                      child: Text(
+                        '구글로 시작',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
                   if (_loading) ...[
                     SizedBox(height: 18.h),
@@ -97,46 +119,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final Color textColor;
-  final VoidCallback? onPressed;
-
-  const _LoginButton({
-    required this.label,
-    required this.color,
-    required this.textColor,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52.h,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: textColor,
-          disabledBackgroundColor: color.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
