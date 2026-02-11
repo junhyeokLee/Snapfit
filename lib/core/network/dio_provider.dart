@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:snap_fit/config/env.dart';
+import 'package:snap_fit/core/interceptors/network_checker_interceptor.dart';
+import 'package:snap_fit/core/interceptors/retry_interceptor.dart';
+import 'package:snap_fit/core/interceptors/safe_logger_interceptor.dart';
 import '../../features/auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider 위치에 따라 수정 필요
 import 'dio_client.dart';
 import 'auth_interceptor.dart'; // 1단계에서 만든 파일
@@ -16,9 +19,14 @@ Dio dio(Ref ref) {
   final dio = DioClient.create(
     baseUrl: Env.baseUrl,
   );
-
   // 3. 인터셉터 추가
-  dio.interceptors.add(AuthInterceptor(tokenStorage, dio));
+  // dio.interceptors.add(AuthInterceptor(tokenStorage, dio));
+  dio.interceptors.addAll([
+    AuthInterceptor(tokenStorage, dio),
+    SafeLoggerInterceptor(),
+    NetworkCheckerInterceptor(),
+    RetryInterceptor(dio: dio),
+  ]);
 
   return dio;
 }

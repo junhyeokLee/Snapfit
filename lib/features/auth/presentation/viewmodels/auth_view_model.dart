@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide AuthApi;
 
 import '../../../../config/env.dart';
-import '../../../../core/auth/token_storage.dart';
+import '../../../../core/interceptors/token_storage.dart';
 import '../../../../core/network/dio_provider.dart';
 import '../../data/api/auth_api.dart';
 import '../../data/dto/auth_response.dart';

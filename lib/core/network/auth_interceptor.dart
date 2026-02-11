@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../auth/token_storage.dart';
+import '../interceptors/token_storage.dart';
 import '../../config/env.dart';
 
 class AuthInterceptor extends Interceptor {

@@ -4,7 +4,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide AuthApi
 import 'dart:async';
 
 import '../../../config/env.dart';
-import '../../../core/auth/token_storage.dart';
+import '../../../core/interceptors/token_storage.dart';
 import '../data/api/auth_api.dart' as backend;
 import '../data/dto/auth_response.dart';
 

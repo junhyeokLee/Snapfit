@@ -54,7 +54,9 @@ dependencies:
   google_sign_in: ^7.2.0
   kakao_flutter_sdk_user: ^1.10.0
   kakao_flutter_sdk_share: ^1.10.0
+  connectivity_plus: ^6.1.0 # 네트워크 연결 상태를 위한 connectivity_plus
   url_launcher: ^6.3.1
+
 
 dev_dependencies:
   flutter_test:

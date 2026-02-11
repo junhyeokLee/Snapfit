@@ -33,7 +33,7 @@ class HomeGreetingHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '안녕하세요, $name',
+          '안녕하세요, $name 님',
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
