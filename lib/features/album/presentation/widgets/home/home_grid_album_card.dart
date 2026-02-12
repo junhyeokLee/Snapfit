@@ -11,11 +11,17 @@ import 'home_album_helpers.dart';
 class HomeGridAlbumCard extends StatelessWidget {
   final Album album;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final bool isEditMode;
+  final VoidCallback? onDelete;
 
   const HomeGridAlbumCard({
     super.key,
     required this.album,
     required this.onTap,
+    this.onLongPress,
+    this.isEditMode = false,
+    this.onDelete,
   });
 
   static bool _logged = false;
@@ -33,8 +39,10 @@ class HomeGridAlbumCard extends StatelessWidget {
     final hasLayers = album.coverLayersJson.isNotEmpty;
     final hasTheme = album.coverTheme?.isNotEmpty == true;
     final showDraft = !(hasCoverUrl || hasLayers || hasTheme);
-    return InkWell(
-      onTap: onTap,
+
+    final cardContent = InkWell(
+      onTap: isEditMode ? null : onTap, // 편집 모드일 때 클릭 방지
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(12.r),
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -78,7 +86,7 @@ class HomeGridAlbumCard extends StatelessWidget {
               ),
             ),
             Text(
-              album.coverTheme?.isNotEmpty == true ? album.coverTheme! : '앨범',
+              album.title.isNotEmpty ? album.title : '앨범',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -92,6 +100,46 @@ class HomeGridAlbumCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (!isEditMode) return cardContent;
+
+    // 편집 모드: 겹쳐서 X 버튼 표시
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Opacity(
+          opacity: 0.9, // 살짝 흐리게
+          child: cardContent,
+        ),
+        Positioned(
+          top: -6.h,
+          right: -6.w,
+          child: GestureDetector(
+            onTap: onDelete,
+            child: Container(
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53935), // Red
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2.w),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4.r,
+                    offset: Offset(0, 2.h),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16.sp,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

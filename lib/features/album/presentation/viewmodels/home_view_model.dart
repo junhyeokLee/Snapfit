@@ -38,4 +38,36 @@ class HomeViewModel extends _$HomeViewModel {
       rethrow;
     }
   }
+
+  Future<void> reorder(int oldIndex, int newIndex) async {
+    final prev = state.asData?.value;
+    if (prev == null) return;
+
+    final items = List<Album>.from(prev);
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = items.removeAt(oldIndex);
+    items.insert(newIndex, item);
+
+    // 낙관적 업데이트: orders 필드도 갱신
+    final updatedItems = items.asMap().entries.map((entry) {
+      final index = entry.key;
+      final album = entry.value;
+      return album.copyWith(orders: index);
+    }).toList();
+
+    state = AsyncData(updatedItems);
+
+    final repository = ref.read(albumRepositoryProvider);
+    try {
+      // 순서가 변경된 전체 ID 리스트 전송
+      final ids = updatedItems.map((e) => e.id).toList();
+      await repository.reorderAlbums(ids);
+    } catch (_) {
+      // 실패 시 원복
+      state = AsyncData(prev);
+      rethrow;
+    }
+  }
 }

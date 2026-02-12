@@ -48,49 +48,50 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final totalH = constraints.maxHeight;
-        final coverTop = _coverSize == Size.zero
-            ? (totalH * 0.5) - (totalH * 0.25)
-            : (totalH - _coverSize.height) / 2;
-
+        final canvasHeight = constraints.maxHeight;
+        
+        // EditCover와 동일한 coverTop 계산 로직
+        // 수동 계산 대신 Center 위젯 사용으로 정확도 향상
         return Stack(
+          clipBehavior: Clip.none,
           children: [
-            Positioned(
-              top: coverTop,
-              left: widget.coverSide,
-              right: widget.coverSide,
-              child: RepaintBoundary(
-                key: widget.coverKey,
-                child: CoverLayout(
-                  aspect: aspect,
-                  layers: widget.interaction.sortByZ(widget.coverPage.layers),
-                  isInteracting: true,
-                  leftSpine: 14.0,
-                  onCoverSizeChanged: (size) {
-                    if (size == Size.zero) return;
-                    if (_coverSize != size && mounted) {
-                      // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted && _coverSize != size) {
-                          setState(() {
-                            _coverSize = size;
-                            widget.onBaseCanvasSizeChanged(size);
-                          });
-                          final vm = ref.read(albumEditorViewModelProvider.notifier);
-                          vm.setCoverCanvasSize(size);
-                          if (!_hasLoadedLayers) {
-                            vm.loadPendingEditAlbumIfNeeded(size);
-                            setState(() => _hasLoadedLayers = true);
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: widget.coverSide),
+                child: RepaintBoundary(
+                  key: widget.coverKey,
+                  child: CoverLayout(
+                    aspect: aspect,
+                    layers: widget.interaction.sortByZ(widget.coverPage.layers),
+                    isInteracting: true,
+                    leftSpine: 14.0,
+                    onCoverSizeChanged: (size) {
+                      if (size == Size.zero) return;
+                      if (_coverSize != size && mounted) {
+                        // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && _coverSize != size) {
+                            print('[AlbumReaderCoverEditor] Cover Size Changed: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
+                            setState(() {
+                              _coverSize = size;
+                              widget.onBaseCanvasSizeChanged(size);
+                            });
+                            final vm = ref.read(albumEditorViewModelProvider.notifier);
+                            vm.setCoverCanvasSize(size);
+                            if (!_hasLoadedLayers) {
+                              vm.loadPendingEditAlbumIfNeeded(size);
+                              setState(() => _hasLoadedLayers = true);
+                            }
                           }
-                        }
-                      });
-                    }
-                    widget.onCoverSizeChanged(size);
-                  },
-                  buildImage: (layer) => widget.layerBuilder.buildImage(layer),
-                  buildText: (layer) => widget.layerBuilder.buildText(layer),
-                  sortedByZ: widget.interaction.sortByZ,
-                  theme: widget.coverTheme,
+                        });
+                      }
+                      widget.onCoverSizeChanged(size);
+                    },
+                    buildImage: (layer) => widget.layerBuilder.buildImage(layer),
+                    buildText: (layer) => widget.layerBuilder.buildText(layer),
+                    sortedByZ: widget.interaction.sortByZ,
+                    theme: widget.coverTheme,
+                  ),
                 ),
               ),
             ),

@@ -18,7 +18,8 @@ mixin _$CreateAlbumRequest {
 /// 서버 식별자 (로그인 없이도 설치 단위로 고정)
 /// - Repository에서 자동 주입하므로 호출부에서는 비워둬도 됨
 // ignore: invalid_annotation_target
-@JsonKey(name: 'userId') String get userId; String get ratio;/// 목표 페이지 수 (완성 기준)
+@JsonKey(name: 'userId') String get userId; String get ratio;/// 앨범 제목
+ String get title;/// 목표 페이지 수 (완성 기준)
  int get targetPages; String get coverLayersJson; String get coverImageUrl; String get coverThumbnailUrl;/// 운영급: 커버 원본/미리보기 URL (하위 호환: 없으면 coverImageUrl을 preview로 간주)
  String? get coverOriginalUrl; String? get coverPreviewUrl; String get coverTheme;
 /// Create a copy of CreateAlbumRequest
@@ -33,16 +34,16 @@ $CreateAlbumRequestCopyWith<CreateAlbumRequest> get copyWith => _$CreateAlbumReq
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateAlbumRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.targetPages, targetPages) || other.targetPages == targetPages)&&(identical(other.coverLayersJson, coverLayersJson) || other.coverLayersJson == coverLayersJson)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.coverThumbnailUrl, coverThumbnailUrl) || other.coverThumbnailUrl == coverThumbnailUrl)&&(identical(other.coverOriginalUrl, coverOriginalUrl) || other.coverOriginalUrl == coverOriginalUrl)&&(identical(other.coverPreviewUrl, coverPreviewUrl) || other.coverPreviewUrl == coverPreviewUrl)&&(identical(other.coverTheme, coverTheme) || other.coverTheme == coverTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateAlbumRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.title, title) || other.title == title)&&(identical(other.targetPages, targetPages) || other.targetPages == targetPages)&&(identical(other.coverLayersJson, coverLayersJson) || other.coverLayersJson == coverLayersJson)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.coverThumbnailUrl, coverThumbnailUrl) || other.coverThumbnailUrl == coverThumbnailUrl)&&(identical(other.coverOriginalUrl, coverOriginalUrl) || other.coverOriginalUrl == coverOriginalUrl)&&(identical(other.coverPreviewUrl, coverPreviewUrl) || other.coverPreviewUrl == coverPreviewUrl)&&(identical(other.coverTheme, coverTheme) || other.coverTheme == coverTheme));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,ratio,targetPages,coverLayersJson,coverImageUrl,coverThumbnailUrl,coverOriginalUrl,coverPreviewUrl,coverTheme);
+int get hashCode => Object.hash(runtimeType,userId,ratio,title,targetPages,coverLayersJson,coverImageUrl,coverThumbnailUrl,coverOriginalUrl,coverPreviewUrl,coverTheme);
 
 @override
 String toString() {
-  return 'CreateAlbumRequest(userId: $userId, ratio: $ratio, targetPages: $targetPages, coverLayersJson: $coverLayersJson, coverImageUrl: $coverImageUrl, coverThumbnailUrl: $coverThumbnailUrl, coverOriginalUrl: $coverOriginalUrl, coverPreviewUrl: $coverPreviewUrl, coverTheme: $coverTheme)';
+  return 'CreateAlbumRequest(userId: $userId, ratio: $ratio, title: $title, targetPages: $targetPages, coverLayersJson: $coverLayersJson, coverImageUrl: $coverImageUrl, coverThumbnailUrl: $coverThumbnailUrl, coverOriginalUrl: $coverOriginalUrl, coverPreviewUrl: $coverPreviewUrl, coverTheme: $coverTheme)';
 }
 
 
@@ -53,7 +54,7 @@ abstract mixin class $CreateAlbumRequestCopyWith<$Res>  {
   factory $CreateAlbumRequestCopyWith(CreateAlbumRequest value, $Res Function(CreateAlbumRequest) _then) = _$CreateAlbumRequestCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'userId') String userId, String ratio, int targetPages, String coverLayersJson, String coverImageUrl, String coverThumbnailUrl, String? coverOriginalUrl, String? coverPreviewUrl, String coverTheme
+@JsonKey(name: 'userId') String userId, String ratio, String title, int targetPages, String coverLayersJson, String coverImageUrl, String coverThumbnailUrl, String? coverOriginalUrl, String? coverPreviewUrl, String coverTheme
 });
 
 
@@ -70,10 +71,11 @@ class _$CreateAlbumRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateAlbumRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? ratio = null,Object? targetPages = null,Object? coverLayersJson = null,Object? coverImageUrl = null,Object? coverThumbnailUrl = null,Object? coverOriginalUrl = freezed,Object? coverPreviewUrl = freezed,Object? coverTheme = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? ratio = null,Object? title = null,Object? targetPages = null,Object? coverLayersJson = null,Object? coverImageUrl = null,Object? coverThumbnailUrl = null,Object? coverOriginalUrl = freezed,Object? coverPreviewUrl = freezed,Object? coverTheme = null,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,ratio: null == ratio ? _self.ratio : ratio // ignore: cast_nullable_to_non_nullable
+as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,targetPages: null == targetPages ? _self.targetPages : targetPages // ignore: cast_nullable_to_non_nullable
 as int,coverLayersJson: null == coverLayersJson ? _self.coverLayersJson : coverLayersJson // ignore: cast_nullable_to_non_nullable
 as String,coverImageUrl: null == coverImageUrl ? _self.coverImageUrl : coverImageUrl // ignore: cast_nullable_to_non_nullable
@@ -163,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'userId')  String userId,  String ratio,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'userId')  String userId,  String ratio,  String title,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CreateAlbumRequest() when $default != null:
-return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);case _:
+return $default(_that.userId,_that.ratio,_that.title,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);case _:
   return orElse();
 
 }
@@ -184,10 +186,10 @@ return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'userId')  String userId,  String ratio,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'userId')  String userId,  String ratio,  String title,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)  $default,) {final _that = this;
 switch (_that) {
 case _CreateAlbumRequest():
-return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);}
+return $default(_that.userId,_that.ratio,_that.title,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -201,10 +203,10 @@ return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'userId')  String userId,  String ratio,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'userId')  String userId,  String ratio,  String title,  int targetPages,  String coverLayersJson,  String coverImageUrl,  String coverThumbnailUrl,  String? coverOriginalUrl,  String? coverPreviewUrl,  String coverTheme)?  $default,) {final _that = this;
 switch (_that) {
 case _CreateAlbumRequest() when $default != null:
-return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);case _:
+return $default(_that.userId,_that.ratio,_that.title,_that.targetPages,_that.coverLayersJson,_that.coverImageUrl,_that.coverThumbnailUrl,_that.coverOriginalUrl,_that.coverPreviewUrl,_that.coverTheme);case _:
   return null;
 
 }
@@ -216,7 +218,7 @@ return $default(_that.userId,_that.ratio,_that.targetPages,_that.coverLayersJson
 @JsonSerializable()
 
 class _CreateAlbumRequest implements CreateAlbumRequest {
-  const _CreateAlbumRequest({@JsonKey(name: 'userId') this.userId = '', required this.ratio, this.targetPages = 0, required this.coverLayersJson, required this.coverImageUrl, required this.coverThumbnailUrl, this.coverOriginalUrl, this.coverPreviewUrl, this.coverTheme = ''});
+  const _CreateAlbumRequest({@JsonKey(name: 'userId') this.userId = '', required this.ratio, this.title = '', this.targetPages = 0, required this.coverLayersJson, required this.coverImageUrl, required this.coverThumbnailUrl, this.coverOriginalUrl, this.coverPreviewUrl, this.coverTheme = ''});
   factory _CreateAlbumRequest.fromJson(Map<String, dynamic> json) => _$CreateAlbumRequestFromJson(json);
 
 /// 서버 식별자 (로그인 없이도 설치 단위로 고정)
@@ -224,6 +226,8 @@ class _CreateAlbumRequest implements CreateAlbumRequest {
 // ignore: invalid_annotation_target
 @override@JsonKey(name: 'userId') final  String userId;
 @override final  String ratio;
+/// 앨범 제목
+@override@JsonKey() final  String title;
 /// 목표 페이지 수 (완성 기준)
 @override@JsonKey() final  int targetPages;
 @override final  String coverLayersJson;
@@ -247,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateAlbumRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.targetPages, targetPages) || other.targetPages == targetPages)&&(identical(other.coverLayersJson, coverLayersJson) || other.coverLayersJson == coverLayersJson)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.coverThumbnailUrl, coverThumbnailUrl) || other.coverThumbnailUrl == coverThumbnailUrl)&&(identical(other.coverOriginalUrl, coverOriginalUrl) || other.coverOriginalUrl == coverOriginalUrl)&&(identical(other.coverPreviewUrl, coverPreviewUrl) || other.coverPreviewUrl == coverPreviewUrl)&&(identical(other.coverTheme, coverTheme) || other.coverTheme == coverTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateAlbumRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.title, title) || other.title == title)&&(identical(other.targetPages, targetPages) || other.targetPages == targetPages)&&(identical(other.coverLayersJson, coverLayersJson) || other.coverLayersJson == coverLayersJson)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.coverThumbnailUrl, coverThumbnailUrl) || other.coverThumbnailUrl == coverThumbnailUrl)&&(identical(other.coverOriginalUrl, coverOriginalUrl) || other.coverOriginalUrl == coverOriginalUrl)&&(identical(other.coverPreviewUrl, coverPreviewUrl) || other.coverPreviewUrl == coverPreviewUrl)&&(identical(other.coverTheme, coverTheme) || other.coverTheme == coverTheme));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,ratio,targetPages,coverLayersJson,coverImageUrl,coverThumbnailUrl,coverOriginalUrl,coverPreviewUrl,coverTheme);
+int get hashCode => Object.hash(runtimeType,userId,ratio,title,targetPages,coverLayersJson,coverImageUrl,coverThumbnailUrl,coverOriginalUrl,coverPreviewUrl,coverTheme);
 
 @override
 String toString() {
-  return 'CreateAlbumRequest(userId: $userId, ratio: $ratio, targetPages: $targetPages, coverLayersJson: $coverLayersJson, coverImageUrl: $coverImageUrl, coverThumbnailUrl: $coverThumbnailUrl, coverOriginalUrl: $coverOriginalUrl, coverPreviewUrl: $coverPreviewUrl, coverTheme: $coverTheme)';
+  return 'CreateAlbumRequest(userId: $userId, ratio: $ratio, title: $title, targetPages: $targetPages, coverLayersJson: $coverLayersJson, coverImageUrl: $coverImageUrl, coverThumbnailUrl: $coverThumbnailUrl, coverOriginalUrl: $coverOriginalUrl, coverPreviewUrl: $coverPreviewUrl, coverTheme: $coverTheme)';
 }
 
 
@@ -267,7 +271,7 @@ abstract mixin class _$CreateAlbumRequestCopyWith<$Res> implements $CreateAlbumR
   factory _$CreateAlbumRequestCopyWith(_CreateAlbumRequest value, $Res Function(_CreateAlbumRequest) _then) = __$CreateAlbumRequestCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'userId') String userId, String ratio, int targetPages, String coverLayersJson, String coverImageUrl, String coverThumbnailUrl, String? coverOriginalUrl, String? coverPreviewUrl, String coverTheme
+@JsonKey(name: 'userId') String userId, String ratio, String title, int targetPages, String coverLayersJson, String coverImageUrl, String coverThumbnailUrl, String? coverOriginalUrl, String? coverPreviewUrl, String coverTheme
 });
 
 
@@ -284,10 +288,11 @@ class __$CreateAlbumRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateAlbumRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? ratio = null,Object? targetPages = null,Object? coverLayersJson = null,Object? coverImageUrl = null,Object? coverThumbnailUrl = null,Object? coverOriginalUrl = freezed,Object? coverPreviewUrl = freezed,Object? coverTheme = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? ratio = null,Object? title = null,Object? targetPages = null,Object? coverLayersJson = null,Object? coverImageUrl = null,Object? coverThumbnailUrl = null,Object? coverOriginalUrl = freezed,Object? coverPreviewUrl = freezed,Object? coverTheme = null,}) {
   return _then(_CreateAlbumRequest(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,ratio: null == ratio ? _self.ratio : ratio // ignore: cast_nullable_to_non_nullable
+as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,targetPages: null == targetPages ? _self.targetPages : targetPages // ignore: cast_nullable_to_non_nullable
 as int,coverLayersJson: null == coverLayersJson ? _self.coverLayersJson : coverLayersJson // ignore: cast_nullable_to_non_nullable
 as String,coverImageUrl: null == coverImageUrl ? _self.coverImageUrl : coverImageUrl // ignore: cast_nullable_to_non_nullable

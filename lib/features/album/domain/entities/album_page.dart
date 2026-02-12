@@ -12,4 +12,18 @@ class AlbumPage {
     required this.pageIndex,
     this.isCover = false,
   });
+
+  AlbumPage copyWith({
+    String? id,
+    List<LayerModel>? layers,
+    int? pageIndex,
+    bool? isCover,
+  }) {
+    return AlbumPage(
+      id: id ?? this.id,
+      layers: layers ?? this.layers,
+      pageIndex: pageIndex ?? this.pageIndex,
+      isCover: isCover ?? this.isCover,
+    );
+  }
 }

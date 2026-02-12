@@ -18,6 +18,7 @@ class AlbumViewModel extends _$AlbumViewModel {
   Future<void> createAlbum({
     required String coverLayersJson,
     required String ratio,
+    String title = '', // 앨범 제목
     required String coverImageUrl,
     required String coverThumbnailUrl,
     String? coverOriginalUrl,
@@ -31,6 +32,7 @@ class AlbumViewModel extends _$AlbumViewModel {
       final album = await repository.createAlbum(
         CreateAlbumRequest(
           ratio: ratio,
+          title: title, // 앨범 제목 전달
           coverLayersJson: coverLayersJson,
           coverImageUrl: coverImageUrl,
           coverThumbnailUrl: coverThumbnailUrl,
@@ -49,6 +51,7 @@ class AlbumViewModel extends _$AlbumViewModel {
     required int albumId,
     required String coverLayersJson,
     required String ratio,
+    String title = '', // 앨범 제목
     required String coverImageUrl,
     required String coverThumbnailUrl,
     String? coverOriginalUrl,
@@ -63,6 +66,7 @@ class AlbumViewModel extends _$AlbumViewModel {
         albumId,
         CreateAlbumRequest(
           ratio: ratio,
+          title: title, // 앨범 제목 전달
           coverLayersJson: coverLayersJson,
           coverImageUrl: coverImageUrl,
           coverThumbnailUrl: coverThumbnailUrl,

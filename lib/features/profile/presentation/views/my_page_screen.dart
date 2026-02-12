@@ -102,30 +102,63 @@ class MyPageScreen extends ConsumerWidget {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              width: 72.w,
-              height: 72.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: SnapFitColors.accent, width: 2),
-                color: SnapFitColors.surfaceOf(context),
-              ),
-              child: ClipOval(
-                child: profileUrl != null && profileUrl.isNotEmpty
-                    ? Image.network(
-                        profileUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
+            GestureDetector(
+              onTap: () {
+                if (profileUrl != null && profileUrl.isNotEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      insetPadding: EdgeInsets.zero,
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          InteractiveViewer(
+                            child: Image.network(
+                              profileUrl,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(16.w),
+                            child: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.white),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                width: 72.w,
+                height: 72.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: SnapFitColors.accent, width: 2),
+                  color: SnapFitColors.surfaceOf(context),
+                ),
+                child: ClipOval(
+                  child: profileUrl != null && profileUrl.isNotEmpty
+                      ? Image.network(
+                          profileUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person,
+                            size: 36.sp,
+                            color: subColor,
+                          ),
+                        )
+                      : Icon(
                           Icons.person,
                           size: 36.sp,
                           color: subColor,
                         ),
-                      )
-                    : Icon(
-                        Icons.person,
-                        size: 36.sp,
-                        color: subColor,
-                      ),
+                ),
               ),
             ),
             Positioned(

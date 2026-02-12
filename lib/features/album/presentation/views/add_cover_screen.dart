@@ -31,6 +31,9 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 앨범 생성 플로우에서 선택된 커버 사이즈
   final CoverSize? initialCoverSize;
 
+  /// 앨범 제목 (생성 플로우에서 사용)
+  final String? albumTitle;
+
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
 
@@ -43,6 +46,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.albumId,
     this.isFromCreateFlow = false,
     this.initialCoverSize,
+    this.albumTitle,
     this.onAlbumCreated,
     this.onRegisterCompleteAction,
   });
@@ -165,6 +169,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                     child: EditCover(
                       editAlbum: widget.editAlbum,
                       isFromCreateFlow: widget.isFromCreateFlow,
+                      albumTitle: widget.albumTitle, // 앨범 제목 전달
                       onAlbumCreated: widget.onAlbumCreated,
                       onRegisterCompleteAction: widget.onRegisterCompleteAction,
                       initialCoverSize: _selectedCover,

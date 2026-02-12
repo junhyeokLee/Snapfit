@@ -44,6 +44,9 @@ class EditCover extends ConsumerStatefulWidget {
   /// 앨범 생성 플로우에서 넘어온 초기 커버 사이즈
   final CoverSize? initialCoverSize;
 
+  /// 앨범 제목 (생성 플로우에서 사용)
+  final String? albumTitle;
+
   const EditCover({
     super.key,
     this.editAlbum,
@@ -51,6 +54,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.onAlbumCreated,
     this.onRegisterCompleteAction,
     this.initialCoverSize,
+    this.albumTitle,
   });
 
   @override
@@ -225,6 +229,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
       await editorVm.saveAlbumToBackend(
         _coverSize,
         coverImageBytes: coverBytes,
+        title: widget.albumTitle,
       );
     } finally {
       if (mounted) {

@@ -17,6 +17,9 @@ class HomeAlbumListView extends StatelessWidget {
   final Widget emptyState;
   final ValueChanged<int> onSelect;
   final Future<void> Function(Album album, int index) onOpen;
+  final bool isEditMode;
+  final Function(int oldIndex, int newIndex)? onReorder;
+  final Future<void> Function(Album album)? onDelete;
 
   const HomeAlbumListView({
     super.key,
@@ -26,6 +29,9 @@ class HomeAlbumListView extends StatelessWidget {
     required this.emptyState,
     required this.onSelect,
     required this.onOpen,
+    this.isEditMode = false,
+    this.onReorder,
+    this.onDelete,
   });
 
   static bool _logged = false;
@@ -38,6 +44,37 @@ class HomeAlbumListView extends StatelessWidget {
     }
     // Draft는 홈 리스트에서 제외
     final visibleAlbums = albums.where((a) => !isDraftAlbum(a)).toList();
+
+    // 편집 모드: 순서 변경 가능한 리스트 뷰
+    if (isEditMode) {
+      return ReorderableListView.builder(
+        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 160.h),
+        itemCount: visibleAlbums.length,
+        onReorder: (oldIndex, newIndex) {
+          if (onReorder != null) {
+            onReorder!(oldIndex, newIndex);
+          }
+        },
+        itemBuilder: (context, index) {
+          final album = visibleAlbums[index];
+          // ReorderableListView에서는 Key가 필수
+          return Padding(
+            key: ValueKey(album.id),
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: HomeFeaturedAlbumCard(
+              album: album,
+              isEditMode: true,
+              onTap: () {},
+              onDelete: () async {
+                if (onDelete != null) {
+                  await onDelete!(album);
+                }
+              },
+            ),
+          );
+        },
+      );
+    }
 
     final liveEditingAlbums =
         visibleAlbums.where((a) => isLiveEditingAlbum(a)).toList();
@@ -68,6 +105,7 @@ class HomeAlbumListView extends StatelessWidget {
                   onSelect(index);
                   await onOpen(album, index);
                 },
+                isEditMode: isEditMode,
               ),
             );
           }),
@@ -95,6 +133,7 @@ class HomeAlbumListView extends StatelessWidget {
                   onSelect(index);
                   await onOpen(album, index);
                 },
+                isEditMode: isEditMode,
               );
             },
           ),

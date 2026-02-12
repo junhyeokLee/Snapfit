@@ -33,7 +33,7 @@ final class AlbumViewModelProvider
   AlbumViewModel create() => AlbumViewModel();
 }
 
-String _$albumViewModelHash() => r'4712a0fc5b962407f23b6453cd3eab15590c3cc6';
+String _$albumViewModelHash() => r'be762dbb1b0fbaa188f7b67db2c23052f36b71ef';
 
 abstract class _$AlbumViewModel extends $AsyncNotifier<Album?> {
   FutureOr<Album?> build();

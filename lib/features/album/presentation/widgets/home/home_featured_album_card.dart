@@ -13,11 +13,17 @@ import 'home_album_helpers.dart';
 class HomeFeaturedAlbumCard extends StatelessWidget {
   final Album album;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final bool isEditMode;
+  final VoidCallback? onDelete;
 
   const HomeFeaturedAlbumCard({
     super.key,
     required this.album,
     required this.onTap,
+    this.onLongPress,
+    this.isEditMode = false,
+    this.onDelete,
   });
 
   static bool _logged = false;
@@ -33,8 +39,10 @@ class HomeFeaturedAlbumCard extends StatelessWidget {
     final progressText = hasTarget
         ? '${album.totalPages}/${album.targetPages} 페이지 진행 중'
         : '${album.totalPages} 페이지 진행 중';
-    return InkWell(
-      onTap: onTap,
+    
+    final cardContent = InkWell(
+      onTap: isEditMode ? null : onTap, // 편집 모드일 때 클릭 방지
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(18.r),
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -81,18 +89,17 @@ class HomeFeaturedAlbumCard extends StatelessWidget {
                   ),
                   SizedBox(height: 10.h),
                   Text(
-                    album.coverTheme?.isNotEmpty == true
-                        ? album.coverTheme!
-                        : '앨범',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: SnapFitColors.textPrimaryOf(context),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
+                album.title.isNotEmpty ? album.title : '제목없음',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: SnapFitColors.isDark(context)
+                      ? SnapFitColors.textPrimaryOf(context)
+                      : SnapFitColors.deepCharcoal,
+                ),
+              ),    SizedBox(height: 6.h),
                   Text(
                     '$created 업데이트',
                     style: TextStyle(
@@ -128,7 +135,7 @@ class HomeFeaturedAlbumCard extends StatelessWidget {
                         ),
                         backgroundColor: SnapFitColors.accentLight,
                       ),
-                      onPressed: onTap,
+                      onPressed: isEditMode ? null : onTap,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -174,6 +181,46 @@ class HomeFeaturedAlbumCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (!isEditMode) return cardContent;
+    
+    // 편집 모드: 겹쳐서 X 버튼 표시
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Opacity(
+          opacity: 0.9,
+          child: cardContent,
+        ),
+        Positioned(
+          top: -6.h,
+          right: -6.w,
+          child: GestureDetector(
+            onTap: onDelete,
+            child: Container(
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53935), // Red
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2.w),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4.r,
+                    offset: Offset(0, 2.h),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16.sp,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

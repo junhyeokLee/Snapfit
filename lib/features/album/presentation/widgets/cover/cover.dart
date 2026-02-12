@@ -48,15 +48,9 @@ class CoverLayout extends StatelessWidget {
           final maxH = constraints.maxHeight < constraints.maxWidth
               ? constraints.maxHeight
               : constraints.maxWidth;
-          // scale 계산 추가
-          double scale = 1.0;
-          if (aspect < 1) { // 세로형
-            scale = 1.04;
-          } else if (aspect > 1) { // 가로형
-            scale = 1.04;
-          } else { // 정사각형
-            scale = 1.04;
-          }
+          // scale 계산
+          double scale = 1.04;
+          
           return Transform.scale(
             scale: scale,
             child: ConstrainedBox(
@@ -84,6 +78,7 @@ class CoverLayout extends StatelessWidget {
                               final coverSize = coverCts.biggest;
                               // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
                               WidgetsBinding.instance.addPostFrameCallback((_) {
+                                print('[CoverLayout] Canvas Size: ${coverSize.width.toStringAsFixed(1)} x ${coverSize.height.toStringAsFixed(1)}');
                                 onCoverSizeChanged(coverSize);
                               });
                               return Stack(

@@ -23,6 +23,7 @@ import '../widgets/reader/slow_page_physics.dart';
 import '../widgets/reader/album_reader_cover_editor.dart';
 import '../widgets/reader/album_reader_inner_page_view.dart';
 import '../widgets/reader/album_reader_toolbar.dart';
+import '../viewmodels/home_view_model.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   const AlbumReaderScreen({super.key});
@@ -84,6 +85,49 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
       );
     }
 
+    // 백그라운드 생성 중(업로드 중)일 때 로딩 화면 표시
+    if (state.isCreatingInBackground) {
+      return Scaffold(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, 
+              color: SnapFitColors.textPrimaryOf(context), size: 18.sp),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: SnapFitColors.accent,
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                '앨범을 생성하고 있습니다...',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '잠시만 기다려주세요',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     // coverCanvasSize는 CoverLayout의 onCoverSizeChanged에서 실제 렌더링 크기로 설정됨
     final coverCanvas = state.coverCanvasSize;
     if (coverCanvas != null && coverCanvas != Size.zero) {
@@ -127,188 +171,172 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close, color: SnapFitColors.textPrimaryOf(context)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "스냅핏 레이어 편집",
-          style: TextStyle(
-            color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          // 프로필 아이콘들 (임시)
-          Padding(
-            padding: EdgeInsets.only(right: 8.w),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 28.w,
-                  height: 28.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.overlayLightOf(context),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                SizedBox(width: 4.w),
-                Container(
-                  width: 28.w,
-                  height: 28.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.overlayLightOf(context),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                SizedBox(width: 4.w),
-                Container(
-                  width: 28.w,
-                  height: 28.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.accent.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '+2',
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700,
-                        color: SnapFitColors.accent,
-                      ),
+      body: Stack(
+        children: [
+          // 메인 컬럼: 탑바 + 캔버스 (EditCover와 동일한 구조)
+          Column(
+            children: [
+              // 탑바 - EditCover와 동일한 구조
+              Container(
+                color: SnapFitColors.backgroundOf(context),
+                child: SafeArea(
+                  bottom: false,
+                  child: SizedBox(
+                    height: kToolbarHeight,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.close, color: SnapFitColors.textPrimaryOf(context)),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              final vm = ref.read(albumEditorViewModelProvider.notifier);
+                              await vm.saveFullAlbum();
+                              if (mounted) {
+                                // 홈 화면 갱신
+                                ref.read(homeViewModelProvider.notifier).refresh();
+                                
+                                // 홈 화면으로 이동 (모든 스택 제거)
+                                Navigator.popUntil(context, (route) => route.isFirst);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('앨범이 저장되었습니다!')),
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('저장 실패: $e')),
+                                );
+                              }
+                            }
+                          },
+                          child: Text(
+                            "완료",
+                            style: TextStyle(
+                              color: SnapFitColors.textPrimaryOf(context),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                SizedBox(width: 12.w),
+              ),
+              // 중앙 캔버스 영역 - EditCover와 동일한 Expanded 구조 (하단 위젯 없음!)
+              Expanded(
+                child: hasInnerPages
+                    ? AlbumReaderInnerPageView(
+                        pages: pages,
+                        selectedCover: selectedCover,
+                        coverTheme: coverTheme,
+                        pageController: _pageController,
+                        interaction: _interaction,
+                        layerBuilder: _layerBuilder,
+                        canvasKey: _coverKey,
+                        onCanvasSizeChanged: (size) {
+                          _baseCanvasSize = size;
+                        },
+                        onPageChanged: (index) {
+                          final vm = ref.read(albumEditorViewModelProvider.notifier);
+                          vm.goToPage(index + 1); // 내지 페이지는 1부터 시작
+                        },
+                        onStateChanged: () {
+                          if (mounted) setState(() {});
+                        },
+                      )
+                    : (coverPage != null
+                        ? AlbumReaderCoverEditor(
+                            coverPage: coverPage,
+                            selectedCover: selectedCover,
+                            coverTheme: coverTheme,
+                            coverSide: coverSide,
+                            interaction: _interaction,
+                            layerBuilder: _layerBuilder,
+                            coverKey: _coverKey,
+                            onCoverSizeChanged: (size) {
+                              _coverSize = size;
+                            },
+                            onBaseCanvasSizeChanged: (size) {
+                              _baseCanvasSize = size;
+                            },
+                          )
+                        : (asyncState.isLoading
+                            ? Center(
+                                child: CircularProgressIndicator(
+                                  color: SnapFitColors.textSecondaryOf(context),
+                                ),
+                              )
+                            : const AlbumReaderEmptyState(
+                                isLoading: false,
+                                baseCanvasSize: Size(300, 400),
+                              ))),
+              ),
+            ],
+          ),
+          // 하단 툴바들 - Stack 오버레이로 배치 (Expanded 높이에 영향 없음)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 레이어 순서 리스트 (토글 가능)
+                if (_showLayerOrderList)
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.35,
+                    child: LayerOrderList(
+                      layers: _interaction.sortByZ(layers),
+                      selectedLayerId: selectedLayerId,
+                      onLayerSelected: (id) {
+                        final layer = layers.firstWhere((l) => l.id == id);
+                        _interaction.setSelectedLayer(layer.id);
+                        setState(() {});
+                      },
+                      onLayerReordered: (newIndex) {
+                        setState(() {});
+                      },
+                      onLayerVisibilityToggled: (id) {
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                // 하단 썸네일 스트립
+                AlbumReaderThumbnailStrip(
+                  pages: pages,
+                  pageController: hasInnerPages ? _pageController : null,
+                  previewBuilder: _layerBuilder,
+                  baseCanvasSize: _baseCanvasSize,
+                  height: 70.h,
+                ),
+                // 편집 툴바
+                AlbumReaderToolbar(
+                  vm: vm,
+                  selectedLayer: selectedLayer,
+                  layers: layers,
+                  interaction: _interaction,
+                  baseCanvasSize: _baseCanvasSize,
+                  showLayerOrderList: _showLayerOrderList,
+                  onLayerOrderListToggled: (show) {
+                    setState(() {
+                      _showLayerOrderList = show;
+                    });
+                  },
+                  onStateChanged: () {
+                    if (mounted) setState(() {});
+                  },
+                ),
               ],
             ),
           ),
-          TextButton(
-            onPressed: () {
-              // 저장 후 닫기
-              Navigator.pop(context, true);
-            },
-            child: Text(
-              "완료",
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(context),
-                fontWeight: FontWeight.w700,
-                fontSize: 16.sp,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 중앙 캔버스 영역
-          Expanded(
-            child: hasInnerPages
-                ? AlbumReaderInnerPageView(
-                    pages: pages,
-                    selectedCover: selectedCover,
-                    coverTheme: coverTheme,
-                    pageController: _pageController,
-                    interaction: _interaction,
-                    layerBuilder: _layerBuilder,
-                    canvasKey: _coverKey,
-                    onCanvasSizeChanged: (size) {
-                      _baseCanvasSize = size;
-                    },
-                    onPageChanged: (index) {
-                      final vm = ref.read(albumEditorViewModelProvider.notifier);
-                      vm.goToPage(index + 1); // 내지 페이지는 1부터 시작
-                    },
-                    onStateChanged: () {
-                      if (mounted) setState(() {});
-                    },
-                  )
-                : (coverPage != null
-                    ? AlbumReaderCoverEditor(
-                        coverPage: coverPage,
-                        selectedCover: selectedCover,
-                        coverTheme: coverTheme,
-                        coverSide: coverSide,
-                        interaction: _interaction,
-                        layerBuilder: _layerBuilder,
-                        coverKey: _coverKey,
-                        onCoverSizeChanged: (size) {
-                          _coverSize = size;
-                        },
-                        onBaseCanvasSizeChanged: (size) {
-                          _baseCanvasSize = size;
-                        },
-                      )
-                    : (asyncState.isLoading
-                        ? Center(
-                            child: CircularProgressIndicator(
-                              color: SnapFitColors.textSecondaryOf(context),
-                            ),
-                          )
-                        : const AlbumReaderEmptyState(
-                            isLoading: false,
-                            baseCanvasSize: Size(300, 400),
-                          ))),
-          ),
-          // 편집 툴바
-          AlbumReaderToolbar(
-            vm: vm,
-            selectedLayer: selectedLayer,
-            layers: layers,
-            interaction: _interaction,
-            baseCanvasSize: _baseCanvasSize,
-            showLayerOrderList: _showLayerOrderList,
-            onLayerOrderListToggled: (show) {
-              setState(() {
-                _showLayerOrderList = show;
-              });
-            },
-            onStateChanged: () {
-              if (mounted) setState(() {});
-            },
-          ),
-          // 레이어 순서 리스트 (토글 가능)
-          if (_showLayerOrderList)
-            Container(
-              height: MediaQuery.of(context).size.height * 0.35,
-              child: LayerOrderList(
-                layers: _interaction.sortByZ(layers),
-                selectedLayerId: selectedLayerId,
-                onLayerSelected: (id) {
-                  final layer = layers.firstWhere((l) => l.id == id);
-                  _interaction.setSelectedLayer(layer.id);
-                  setState(() {});
-                },
-                onLayerReordered: (newIndex) {
-                  // TODO: 레이어 순서 변경 구현
-                  setState(() {});
-                },
-                onLayerVisibilityToggled: (id) {
-                  // TODO: LayerModel에 visible 필드 추가 후 구현
-                  // final layer = layers.firstWhere((l) => l.id == id);
-                  // vm.updateLayer(layer.copyWith(visible: !(layer.visible ?? true)));
-                  setState(() {});
-                },
-              ),
-            ),
-          // 하단 썸네일 스트립
-          AlbumReaderThumbnailStrip(
-            pages: pages,
-            pageController: hasInnerPages ? _pageController : null,
-            previewBuilder: _layerBuilder,
-            baseCanvasSize: _baseCanvasSize,
-            height: 70.h,
-          ),
-          SizedBox(height: 10.h),
         ],
       ),
     );
   }
-
 }

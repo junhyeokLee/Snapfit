@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../domain/entities/album.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -100,7 +101,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             Padding(
               padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
               child: Text(
-                'STEP ${(_currentStep + 1).toString().padLeft(2, '0')}/04',
+                'STEP ${(_currentStep + 1).toString().padLeft(2, '0')}/03',
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
@@ -144,6 +145,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         return AddCoverScreen(
           isFromCreateFlow: true,
           initialCoverSize: _selectedCover,
+          albumTitle: _albumTitle, // 앨범 제목 전달
           onRegisterCompleteAction: (callback) {
             setState(() {
               _onCompletePressed = callback;
@@ -158,7 +160,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           },
         );
       case 2:
-        // Step 3: 친구 초대
+        // Step 3: 친구 초대 (마지막 단계)
         if (_createdAlbumId == null) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -170,33 +172,34 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           albumId: _createdAlbumId,
           onAllowEditingChanged: (value) => setState(() => _allowEditing = value),
           onNext: () async {
-            // Step 4로 이동 전에 앨범 로드
+            // 마지막 단계 완료 -> 편집 화면(Reader)으로 이동
             if (_createdAlbumId != null) {
-              try {
-                final albumRepository = ref.read(albumRepositoryProvider);
-                final album = await albumRepository.fetchAlbum(_createdAlbumId.toString());
-                await ref.read(albumEditorViewModelProvider.notifier).prepareAlbumForEdit(album);
-                
-                if (mounted) {
-                  setState(() => _currentStep = 3);
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('앨범 로드 실패: $e')),
-                  );
-                }
+              // 앨범이 아직 생성 중일 수 있으므로 ID만으로 더미 Album 생성
+              final dummyAlbum = Album(
+                id: _createdAlbumId!,
+                ratio: _selectedCover!.ratio.toString(),
+              );
+              
+              // 백그라운드에서 폴링 시작 (상태 설정 대기)
+              await ref.read(albumEditorViewModelProvider.notifier).prepareAlbumForEdit(
+                dummyAlbum,
+                waitForCreation: true, // 앨범 생성 완료 대기
+              );
+              
+              // 상태 업데이트가 UI에 반영되도록 약간의 지연
+              await Future.delayed(const Duration(milliseconds: 100));
+              
+              if (mounted) {
+                 // 즉시 편집 화면으로 이동 (로딩 화면 표시됨)
+                 Navigator.pushReplacement(
+                   context,
+                   MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
+                 );
               }
             }
           },
           onBack: () => setState(() => _currentStep = 1),
         );
-      case 3:
-        // Step 4: 페이지 편집 화면
-        if (_createdAlbumId == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return const AlbumReaderScreen();
       default:
         return const SizedBox.shrink();
     }

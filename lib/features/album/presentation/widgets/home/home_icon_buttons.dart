@@ -6,11 +6,13 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class HomeRoundIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
+  final bool isActive;
 
   const HomeRoundIconButton({
     super.key,
     required this.icon,
     required this.onTap,
+    this.isActive = false,
   });
 
   @override
@@ -22,10 +24,18 @@ class HomeRoundIconButton extends StatelessWidget {
         width: 36.w,
         height: 36.w,
         decoration: BoxDecoration(
-          color: SnapFitColors.overlayLight,
+          color: isActive
+              ? SnapFitColors.accent
+              : SnapFitColors.overlayLightOf(context),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 18.sp, color: SnapFitColors.textPrimary),
+        child: Icon(
+          icon,
+          size: 18.sp,
+          color: isActive
+              ? Colors.white
+              : SnapFitColors.textPrimaryOf(context),
+        ),
       ),
     );
   }

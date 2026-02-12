@@ -42,4 +42,11 @@ abstract class AlbumApi {
     @Path('albumId') int albumId,
     @Query('userId') String userId,
   );
+
+  /// 앨범 순서 변경
+  @PATCH('/api/albums/reorder')
+  Future<void> reorderAlbums(
+    @Body() Map<String, dynamic> body,
+    @Query('userId') String userId,
+  );
 }

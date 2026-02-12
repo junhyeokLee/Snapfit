@@ -42,4 +42,10 @@ class AlbumRepositoryImpl implements AlbumRepository {
     final userId = await userIdService.getOrCreate();
     await api.deleteAlbum(albumId, userId);
   }
+
+  @override
+  Future<void> reorderAlbums(List<int> albumIds) async {
+    final userId = await userIdService.getOrCreate();
+    await api.reorderAlbums({'albumIds': albumIds}, userId);
+  }
 }

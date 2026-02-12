@@ -47,6 +47,9 @@ abstract class AlbumEditorState with _$AlbumEditorState {
 
     /// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
     Size? coverCanvasSize,
+
+    /// 백그라운드에서 앨범 생성(업로드) 중인지 여부
+    @Default(false) bool isCreatingInBackground,
   }) = _AlbumEditorState;
 }
 
@@ -74,6 +77,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 편집 진입 시 앨범의 커버 이미지 URL (saveFullAlbum 시 updateAlbum에 전달)
   String? _initialCoverImageUrl;
   String? _initialCoverThumbnailUrl;
+  String? _initialAlbumTitle; // 편집 진입 시 앨범 제목
 
   static const _pageSize = 80;
   int _page = 0;
@@ -114,6 +118,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _pendingCoverLayersJson = null;
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
+    _initialAlbumTitle = null;
 
     _cover = initialCover ?? coverSizes.firstWhere(
       (s) => s.name == '세로형',
@@ -181,9 +186,142 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 홈에서 선택한 앨범을 "편집 준비" 상태로 세팅
   /// - 실제 레이어 복원은 EditCover에서 실제 커버 캔버스 크기(_coverSize)가 잡힌 뒤 수행해야
   ///   위치/스케일이 정확히 맞는다.
-  Future<void> prepareAlbumForEdit(Album album) async {
+  /// - waitForCreation: true일 경우 앨범 생성 완료를 비동기로 기다림
+  Future<void> prepareAlbumForEdit(Album album, {bool waitForCreation = false}) async {
     _editingAlbumId = album.id > 0 ? album.id : null;
 
+    // 앨범 생성 대기 모드
+    if (waitForCreation && album.id > 0) {
+      debugPrint('🔄 [prepareAlbumForEdit] Starting creation wait mode for album ${album.id}');
+      
+      // 1. 초기 상태가 없으면 생성 (state.value가 null이면 AlbumReaderScreen에서 로딩 체크를 못함)
+      if (state.value == null) {
+        debugPrint('🔄 [prepareAlbumForEdit] Creating initial state');
+        state = const AsyncData(AlbumEditorState());
+      }
+      
+      // 2. 로딩 상태 설정 (UI에 로딩 화면 표시)
+      final prev = state.value!;
+      state = AsyncData(prev.copyWith(isCreatingInBackground: true));
+      debugPrint('✅ [prepareAlbumForEdit] Set isCreatingInBackground = true');
+
+      // 3. 백그라운드에서 비동기 폴링 시작
+      _pollAlbumCreation(album.id);
+      
+      // 4. 여기서는 즉시 리턴 (로딩 화면이 표시됨)
+      debugPrint('🔄 [prepareAlbumForEdit] Returning immediately, polling in background');
+      return;
+    }
+
+    // 일반 편집 모드 (기존 로직)
+    await _loadAlbumForEdit(album);
+  }
+
+  /// 백그라운드에서 앨범 생성 완료를 폴링
+  Future<void> _pollAlbumCreation(int albumId) async {
+    int retries = 0;
+    const maxRetries = 30; // 최대 30초 대기 (1초 간격)
+    
+    while (retries < maxRetries) {
+      try {
+        final album = await _albumRepository.fetchAlbum(albumId.toString());
+        
+        // 앨범이 정상적으로 로드되었는지 확인
+        if (album.id > 0) {
+          bool isReady = false;
+          
+          // coverLayersJson이 있으면 파싱해서 이미지 레이어 URL 확인
+          if (album.coverLayersJson.isNotEmpty && album.coverLayersJson != '{"layers":[]}') {
+            try {
+              final json = jsonDecode(album.coverLayersJson) as Map<String, dynamic>;
+              final layers = json['layers'] as List<dynamic>?;
+              
+              if (layers != null && layers.isNotEmpty) {
+                // 모든 이미지 레이어가 URL을 가지고 있는지 확인
+                bool allImagesHaveUrls = true;
+                bool hasImageLayers = false;
+                
+                for (final layerJson in layers) {
+                  final type = layerJson['type'] as String?;
+                  if (type == 'IMAGE') {
+                    hasImageLayers = true;
+                    
+                    // payload 안의 URL 확인
+                    final payload = layerJson['payload'] as Map<String, dynamic>?;
+                    String? previewUrl;
+                    String? imageUrl;
+                    String? originalUrl;
+                    
+                    if (payload != null) {
+                      previewUrl = payload['previewUrl'] as String?;
+                      imageUrl = payload['imageUrl'] as String?;
+                      originalUrl = payload['originalUrl'] as String?;
+                    }
+                    
+                    // 이미지 레이어인데 URL이 하나도 없으면 아직 업로드 중
+                    if ((previewUrl == null || previewUrl.isEmpty) && 
+                        (imageUrl == null || imageUrl.isEmpty) && 
+                        (originalUrl == null || originalUrl.isEmpty)) {
+                      allImagesHaveUrls = false;
+                      debugPrint('❌ Image layer found but no URL yet. previewUrl=$previewUrl, imageUrl=$imageUrl, originalUrl=$originalUrl');
+                      break;
+                    } else {
+                      debugPrint('✅ Image layer has URL: previewUrl=$previewUrl, imageUrl=$imageUrl, originalUrl=$originalUrl');
+                    }
+                  }
+                }
+                
+                // 이미지 레이어가 있고 모두 URL이 있으면 준비 완료
+                if (hasImageLayers && allImagesHaveUrls) {
+                  isReady = true;
+                  debugPrint('✅ All image layers have URLs. Album is ready!');
+                } else if (!hasImageLayers) {
+                  // 이미지 레이어가 없으면 (텍스트만) 바로 준비 완료
+                  isReady = true;
+                  debugPrint('✅ No image layers found. Album is ready!');
+                } else {
+                  debugPrint('❌ Some image layers missing URLs. Retrying... ($retries/$maxRetries)');
+                }
+              } else {
+                // 레이어가 없으면 준비 완료
+                isReady = true;
+                debugPrint('✅ No layers found. Album is ready!');
+              }
+            } catch (e) {
+              debugPrint('❌ Failed to parse coverLayersJson: $e');
+              isReady = false;
+            }
+          } else if ((album.coverImageUrl?.isNotEmpty ?? false) || 
+                     (album.coverThumbnailUrl?.isNotEmpty ?? false)) {
+            // coverLayersJson이 없어도 coverImageUrl이 있으면 준비 완료
+            isReady = true;
+            debugPrint('✅ coverImageUrl exists. Album is ready!');
+          } else {
+            debugPrint('❌ No content found. Retrying... ($retries/$maxRetries)');
+          }
+          
+          if (isReady) {
+            debugPrint('🎉 Album ready! ID: ${album.id}');
+            await _loadAlbumForEdit(album);
+            return;
+          }
+        }
+      } catch (e) {
+        // 아직 생성 중이면 에러 발생 가능
+        debugPrint('❌ Album not ready yet, retrying... ($retries/$maxRetries): $e');
+      }
+      
+      await Future.delayed(const Duration(seconds: 1));
+      retries++;
+    }
+
+    // 타임아웃: 앨범 생성 실패
+    debugPrint('⏱️ Timeout: Album creation exceeded 30 seconds');
+    state = const AsyncError('앨범 생성 시간이 초과되었습니다.', StackTrace.empty);
+  }
+
+  /// 앨범 데이터를 로드하여 편집 준비
+  Future<void> _loadAlbumForEdit(Album album) async {
     // 목록에서 coverLayersJson이 비어오는 케이스 대비: 상세로 보강
     Album effective = album;
     if (effective.coverLayersJson.isEmpty && effective.id > 0) {
@@ -220,8 +358,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     // 레이어 JSON은 실제 canvasSize가 정해진 다음에 복원
     _pendingCoverLayersJson =
         effective.coverLayersJson.isEmpty ? '{"layers":[]}' : effective.coverLayersJson;
-    _initialCoverImageUrl = effective.coverImageUrl;
-    _initialCoverThumbnailUrl = effective.coverThumbnailUrl;
+    _editingAlbumId = album.id > 0 ? album.id : null;
+    _initialCoverImageUrl = album.coverImageUrl;
+    _initialCoverThumbnailUrl = album.coverThumbnailUrl;
+    _initialAlbumTitle = album.title; // 앨범 제목 저장
 
     // 이전 편집 상태 초기화: 페이지/커버 캔버스 정보 리셋
     _pages.clear();
@@ -235,6 +375,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       coverCanvasSize: null,
       selectedCover: _cover,
       selectedTheme: _selectedTheme,
+      isCreatingInBackground: false, // 로딩 해제
     ));
 
     // 커버 사이즈/테마만 먼저 반영(선택기/레이아웃 동기화)
@@ -310,17 +451,83 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 앨범 데이터를 백엔드(Spring Boot)에 최종 저장
   /// [coverImageBytes]가 전달되면 에디터 화면을 그대로 캡처한 합성 이미지를
   /// 대표 커버 이미지로 사용한다.
-  Future<void> saveAlbumToBackend(
+  /// 앨범 데이터를 백엔드에 저장 (Optimistic UI 적용: ID 우선 발급 -> 백그라운드 업로드)
+  /// 반환값: 생성된 Album ID (바로 다음 화면으로 이동하기 위함)
+  Future<int?> saveAlbumToBackend(
     Size canvasSize, {
     Uint8List? coverImageBytes,
+    String? title,
   }) async {
     final List<LayerModel> currentLayers = List.of(state.value?.layers ?? []);
+    final albumVm = ref.read(albumViewModelProvider.notifier);
+    final themeLabel = _selectedTheme.label;
 
     try {
-      // 1. 이미지 레이어 최적화 업로드 (이미 URL이 있는 경우는 건너뜀)
-      final updatedLayers = await Future.wait(currentLayers.map((layer) async {
-        // 이미지 타입이고, 아직 업로드되지 않았으며(previewUrl/imageUrl null), 로컬 파일(asset)이 있는 경우만 업로드
-        if (layer.type == LayerType.image &&
+      // [STEP 1] 선(先) 생성: 메타데이터만으로 앨범 ID를 먼저 발급받음 (속도 0.x초)
+      // 커버 이미지는 아직 없으므로 비워둠 (나중에 백그라운드에서 업데이트)
+      int? createdAlbumId;
+      
+      if (_editingAlbumId != null) {
+        // 편집 모드일 때는 이미 ID가 있으므로 바로 반환 가능
+        createdAlbumId = _editingAlbumId;
+      } else {
+        // 신규 생성 모드
+        // 1-1. 임시 JSON (로컬 경로 포함될 수 있음 - 나중에 업데이트됨)
+        final tempJson = jsonEncode({
+          'layers': currentLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize)).toList()
+        });
+
+        await albumVm.createAlbum(
+          ratio: _cover.ratio.toString(),
+          title: title ?? '', // 앨범 제목
+          coverLayersJson: tempJson,
+          coverImageUrl: '', // 임시
+          coverThumbnailUrl: '', // 임시
+          coverPreviewUrl: '',
+          coverOriginalUrl: '',
+          coverTheme: themeLabel,
+        );
+        
+        // 생성된 앨범 ID 획득
+        final newAlbum = ref.read(albumViewModelProvider).value;
+        createdAlbumId = newAlbum?.id;
+      }
+
+      // [STEP 2] 후(後) 업로드: 무거운 작업은 백그라운드에서 진행 (Fire & Forget)
+    if (createdAlbumId != null) {
+      // Future를 await 하지 않고 실행 -> UI는 즉시 다음 화면으로 이동
+      _performBackgroundUpload(
+        albumId: createdAlbumId,
+        canvasSize: canvasSize,
+        currentLayers: currentLayers,
+        coverImageBytes: coverImageBytes,
+        themeLabel: themeLabel,
+        title: title ?? '', // 앨범 제목 전달
+      );
+    }
+      return createdAlbumId;
+
+    } catch (e) {
+      debugPrint("Save Album Error: $e");
+      return null;
+    }
+  }
+
+  /// 백그라운드에서 실행될 실제 업로드 로직
+  Future<void> _performBackgroundUpload({
+  required int albumId,
+  required Size canvasSize,
+  required List<LayerModel> currentLayers,
+  required Uint8List? coverImageBytes,
+  required String themeLabel,
+  required String title, // 앨범 제목
+}) async {
+    try {
+      debugPrint('[Background] Upload Started for Album $albumId');
+      
+      // 1. 레이어 업로드 Future
+      final layersFuture = Future.wait(currentLayers.map((layer) async {
+         if (layer.type == LayerType.image &&
             (layer.previewUrl == null && layer.imageUrl == null && layer.originalUrl == null) &&
             layer.asset != null) {
           final uploaded = await _storage.uploadImageVariants(layer.asset!);
@@ -330,30 +537,39 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             return layer.copyWith(
               previewUrl: preview,
               originalUrl: original,
-              imageUrl: preview, // 하위 호환 미러링
+              imageUrl: preview,
             );
           }
         }
         return layer;
       }));
 
-      // 2. 서버 저장용 JSON 문자열 생성 (상대 좌표 비율로 변환)
+      // 2. 커버 이미지 업로드 Future
+      Future<UploadedUrls?> coverFuture = Future.value(null);
+      if (coverImageBytes != null) {
+        coverFuture = _storage.uploadCoverVariants(coverImageBytes);
+      }
+
+      // 3. 병렬 실행 및 대기
+      final results = await Future.wait([layersFuture, coverFuture]);
+
+      final updatedLayers = results[0] as List<LayerModel>;
+      final coverUploaded = results[1] as UploadedUrls?;
+
+      // 4. 최종 JSON 생성 (실제 서버 URL 포함)
       final json = jsonEncode({
         'layers': updatedLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize)).toList()
       });
 
-      // 3. 대표 이미지(커버) URL 결정
+      // 5. URL 결정
       String? coverPreviewUrl;
       String? coverOriginalUrl;
-
-      // 3-1. 캡처된 합성 이미지가 있으면 우선 사용
-      if (coverImageBytes != null) {
-        final uploaded = await _storage.uploadCoverVariants(coverImageBytes);
-        coverPreviewUrl = uploaded.previewGsPath ?? uploaded.previewUrl;
-        coverOriginalUrl = uploaded.originalGsPath ?? uploaded.originalUrl;
+      if (coverUploaded != null) {
+        coverPreviewUrl = coverUploaded.previewGsPath ?? coverUploaded.previewUrl;
+        coverOriginalUrl = coverUploaded.originalGsPath ?? coverUploaded.originalUrl;
       }
 
-      // 3-2. 없으면 여전히 첫 번째 이미지 레이어 활용
+      // 커버가 없으면 첫 번째 레이어 사용
       coverPreviewUrl ??= updatedLayers
           .firstWhere(
             (l) => l.type == LayerType.image && (l.previewUrl ?? l.imageUrl) != null,
@@ -366,39 +582,24 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           )
           .imageUrl;
 
-      // 4. 백엔드 API 호출 (편집 시 update, 신규 시 create)
-      final albumVm = ref.read(albumViewModelProvider.notifier);
-      final themeLabel = _selectedTheme.label;
-      if (_editingAlbumId != null) {
-        await albumVm.updateAlbum(
-          albumId: _editingAlbumId!,
-          ratio: _cover.ratio.toString(),
-          coverLayersJson: json,
-          // 하위 호환: coverImageUrl/coverThumbnailUrl에 preview 미러링
-          coverImageUrl: coverPreviewUrl ?? '',
-          coverThumbnailUrl: coverPreviewUrl ?? '',
-          coverPreviewUrl: coverPreviewUrl,
-          coverOriginalUrl: coverOriginalUrl,
-          coverTheme: themeLabel,
-        );
-        _editingAlbumId = null;
-      } else {
-        await albumVm.createAlbum(
-          ratio: _cover.ratio.toString(),
-          coverLayersJson: json,
-          coverImageUrl: coverPreviewUrl ?? '',
-          coverThumbnailUrl: coverPreviewUrl ?? '',
-          coverPreviewUrl: coverPreviewUrl,
-          coverOriginalUrl: coverOriginalUrl,
-          coverTheme: themeLabel,
-        );
-      }
-
-      _emit();
+      // 6. 앨범 정보 업데이트 (최종)
+    final albumVm = ref.read(albumViewModelProvider.notifier);
+    await albumVm.updateAlbum(
+      albumId: albumId,
+      ratio: _cover.ratio.toString(),
+      title: title, // 앨범 제목 유지
+      coverLayersJson: json,
+      coverImageUrl: coverPreviewUrl ?? '',
+      coverThumbnailUrl: coverPreviewUrl ?? '',
+      coverPreviewUrl: coverPreviewUrl,
+      coverOriginalUrl: coverOriginalUrl,
+      coverTheme: themeLabel,
+    );
+      
+      debugPrint('[Background] Upload Completed for Album $albumId');
 
     } catch (e) {
-      // 에러 발생 시 처리 (예: 스낵바 표시 등)
-      debugPrint("Save Album Error: $e");
+      debugPrint('[Background] Upload Failed: $e');
     }
   }
 
@@ -500,8 +701,48 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 에디터 커버 캔버스 크기 설정 (썸네일/스프레드 배치용)
   void setCoverCanvasSize(Size? size) {
+    if (size == null || size == Size.zero) return;
+    print('[setCoverCanvasSize] Setting canvas size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
+    
     final prev = state.value;
     if (prev == null) return;
+    
+    final oldSize = prev.coverCanvasSize;
+    
+    // 캔버스 크기가 변경되었을 때, 기존 레이어들의 좌표를 비율에 맞춰 재조정
+    if (oldSize != null && oldSize != Size.zero && oldSize != size) {
+      print('[setCoverCanvasSize] Rescaling layers from $oldSize to $size');
+      final scaleX = size.width / oldSize.width;
+      final scaleY = size.height / oldSize.height;
+
+      // _pages 리스트 직접 수정
+      for (int i = 0; i < _pages.length; i++) {
+        final page = _pages[i];
+        if (!page.isCover) continue; // 내지 페이지는 변경 없음
+
+        final scaledLayers = page.layers.map((layer) {
+          final newX = layer.position.dx * scaleX;
+          final newY = layer.position.dy * scaleY;
+          final newW = layer.width * scaleX;
+          final newH = layer.height * scaleY;
+
+          return layer.copyWith(
+            position: Offset(newX, newY),
+            width: newW,
+            height: newH,
+          );
+        }).toList();
+
+        // 페이지 업데이트
+        final updatedPage = page.copyWith(layers: scaledLayers);
+        _pages[i] = updatedPage;
+      }
+
+      // 상태 업데이트
+      state = AsyncData(prev.copyWith(coverCanvasSize: size));
+      return;
+    }
+
     state = AsyncData(prev.copyWith(coverCanvasSize: size));
   }
 
@@ -545,8 +786,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     state = const AsyncLoading(); // 로딩 상태 시작
 
     try {
-      // 1. 모든 페이지를 순회하며 이미지 레이어 업로드 및 로컬 상태 반영
-      for (var page in _pages) {
+      // 1. 모든 페이지를 병렬로 순회하며 이미지 레이어 업로드 및 로컬 상태 반영
+      // [PERFORMANCE] 순차 처리(for문) -> 병렬 처리(Future.wait)로 변경하여 속도 개선
+      await Future.wait(_pages.map((page) async {
         final updatedLayers = await Future.wait(
           page.layers.map((layer) async {
             if (layer.type == LayerType.image &&
@@ -569,14 +811,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         page.layers
           ..clear()
           ..addAll(updatedLayers);
-      }
+      }));
 
       // 2. 전체 앨범 JSON 생성 후 서버에 저장 (편집 중인 앨범인 경우)
-      final albumVm = ref.read(albumViewModelProvider.notifier);
-      final canvasSize = state.value?.coverCanvasSize ??
-          Size(358.0, 358.0 / _cover.ratio);
-      final fullJson = exportFullAlbumLayersJson(canvasSize);
-      final themeLabel = _selectedTheme.label;
+    final albumVm = ref.read(albumViewModelProvider.notifier);
+    final canvasSize = state.value?.coverCanvasSize ??
+        Size(358.0, 358.0 / _cover.ratio);
+    print('[saveFullAlbum] Using canvas size for export: ${canvasSize.width.toStringAsFixed(1)} x ${canvasSize.height.toStringAsFixed(1)}');
+    print('[saveFullAlbum] State coverCanvasSize: ${state.value?.coverCanvasSize}');
+    final fullJson = exportFullAlbumLayersJson(canvasSize);
+    final themeLabel = _selectedTheme.label;
 
       if (_editingAlbumId != null) {
         // 커버 이미지 URL: 기존 값이 없으면 커버 페이지 첫 이미지 레이어에서 추출 (빈 문자열로 덮어쓰지 않음)
@@ -598,6 +842,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         await albumVm.updateAlbum(
           albumId: _editingAlbumId!,
           ratio: _cover.ratio.toString(),
+          title: _initialAlbumTitle ?? '', // 앨범 제목 유지
           coverLayersJson: fullJson,
           coverImageUrl: coverImg,
           coverThumbnailUrl: coverThumb,
@@ -608,6 +853,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         _editingAlbumId = null;
         _initialCoverImageUrl = null;
         _initialCoverThumbnailUrl = null;
+        _initialAlbumTitle = null; // 초기화
       }
 
       _emit();

@@ -42,6 +42,11 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
 
+        // FormData는 스트림이므로 재사용 불가 -> 뷰모델에서 수동 재시도하도록 401 그대로 반환
+        if (err.requestOptions.data is FormData) {
+           return handler.next(err);
+        }
+
         // 토큰 갱신 요청 (이 요청은 인터셉터를 타지 않도록 독립된 Dio 사용 권장하지만, 임시로 같은 Dio 사용시 무한루프 주의)
         // 여기서는 _dio를 사용하여 직접 호출하되, 인터셉터가 없는 순수 Dio를 쓰거나 경로를 잘 처리해야 함.
         // 편의상 dio.post를 쓰되, /refresh 경로는 onRequest에서 제외하거나 헤더를 안 넣는 방식을 쓸 수 있음.

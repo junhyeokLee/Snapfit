@@ -13,6 +13,8 @@ sealed class Album with _$Album {
     @Default('') String coverLayersJson,
     /// 서버에서 null 이 와도 안전하게 처리하기 위해 기본값 사용
     @Default('') String ratio,
+    /// 앨범 제목
+    @Default('') String title,
     String? coverImageUrl,
     String? coverThumbnailUrl,
     /// 운영급: 커버 원본/미리보기 URL (없으면 coverImageUrl을 preview로 간주)
@@ -23,6 +25,8 @@ sealed class Album with _$Album {
     @Default(0) int totalPages,
     /// 목표 페이지 수 (완성 기준)
     @Default(0) int targetPages,
+    /// 사용자 지정 순서 (낮을수록 상단)
+    @Default(0) int orders,
     @Default('') String createdAt,
     @Default('') String updatedAt,
   }) = _Album;

@@ -64,8 +64,8 @@ class HomeBottomNavigationBar extends StatelessWidget {
             SizedBox(width: 6.w),
             Expanded(
               child: _BottomNavItem(
-                icon: Icons.people_alt_rounded,
-                label: '알림',
+                icon: Icons.storefront_rounded,
+                label: '스토어',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
               ),

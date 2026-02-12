@@ -18,4 +18,7 @@ abstract class AlbumRepository {
 
   /// 앨범 삭제
   Future<void> deleteAlbum(int albumId);
+
+  /// 앨범 순서 변경
+  Future<void> reorderAlbums(List<int> albumIds);
 }
