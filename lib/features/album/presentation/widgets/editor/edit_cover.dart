@@ -245,7 +245,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
     final coverSt = ref.watch(coverViewModelProvider).asData?.value;
     final coverVm = ref.read(coverViewModelProvider.notifier);
     final layers = albumSt?.layers ?? [];
-    
+
     // 커버 사이즈 우선순위:
     // - 편집 모드: albumSt(서버 데이터) > coverSt > _selectedCover
     // - 생성 플로우: initialCoverSize > coverSt > albumSt > _selectedCover (Step1 선택값이 항상 우선)
@@ -256,12 +256,12 @@ class _EditCoverState extends ConsumerState<EditCover> {
             albumSt?.selectedCover ??
             _selectedCover);
     final aspect = selectedCover.ratio;
-    
+
     // 테마도 동일한 우선순위 적용
     final selectedTheme = widget.editAlbum != null
         ? (albumSt?.selectedTheme ?? coverSt?.selectedTheme ?? CoverTheme.classic)
         : (coverSt?.selectedTheme ?? albumSt?.selectedTheme ?? CoverTheme.classic);
-    
+
     // _selectedCover 동기화
     if (_selectedCover != selectedCover) {
       _selectedCover = selectedCover;
@@ -363,7 +363,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
                 },
                 child: Column(
                   children: [
-                    // 탑바 (플로우가 아닐 때만: 다크/라이트 배경 + 완료 버튼 오른쪽)
+                    // 탑바 (플로우가 아닐 때만)
                     if (!widget.isFromCreateFlow)
                       Container(
                         color: SnapFitColors.backgroundOf(context),
@@ -402,7 +402,8 @@ class _EditCoverState extends ConsumerState<EditCover> {
                           ),
                         ),
                       ),
-                    // 커버 캔버스: Expanded 실제 높이 기준으로 커버 중앙 배치
+
+                    // 커버 캔버스: Expanded (하단 툴바가 오버레이로 빠졌으므로 전체 높이 사용)
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, canvasConstraints) {
@@ -410,117 +411,100 @@ class _EditCoverState extends ConsumerState<EditCover> {
                           final coverSide = _layout.getCoverSidePadding(selectedCover);
                           final selectorHeight = kToolbarHeight;
 
-                          // 커버를 캔버스(하단 툴바 제외 영역) 기준 정중앙에 배치
-                          double coverTop;
-                          if (_coverSize == Size.zero) {
-                            final availableWidth = canvasConstraints.maxWidth - (coverSide * 2);
-                            final estimatedCoverHeight = availableWidth / selectedCover.ratio;
-                            coverTop = (canvasHeight - estimatedCoverHeight) / 2;
-                          } else {
-                            coverTop = (canvasHeight - _coverSize.height) / 2;
-                          }
-
-                          if (_state.openEditText || _state.openCoverTheme) {
-                            final double normalTop = (canvasHeight - _coverSize.height) / 2;
-                            coverTop = (normalTop - 80.h).clamp(0.0, normalTop);
-                          }
-
+                          // Refactor: AlbumReader와 동일한 Center 구조
                           final double panelHeight = kToolbarHeight;
-                          final coverBottom = _coverSize == Size.zero
-                              ? coverTop
-                              : coverTop + _coverSize.height;
-                          double panelTop = (coverBottom + canvasHeight) / 2 - panelHeight;
-                          if (panelTop < coverBottom) panelTop = coverBottom;
-                          if (panelTop + panelHeight > canvasHeight) {
-                            panelTop = math.max(0, canvasHeight - panelHeight);
-                          }
+
+                          // 툴바 패널 위치 계산
+                          double panelTop;
+                           if (_coverSize == Size.zero) {
+                             panelTop = canvasHeight - panelHeight; // fallback
+                           } else {
+                             // 커버 바로 아래 + 여백
+                             final coverBottom = (canvasHeight + _coverSize.height) / 2;
+                             panelTop = coverBottom;
+                             if (panelTop + panelHeight > canvasHeight) {
+                               panelTop = math.max(0, canvasHeight - panelHeight);
+                             }
+                           }
+
+
 
                           return Stack(
                             clipBehavior: Clip.none,
                             children: [
-                          // 커버 선택 위젯
-                          // - 일반 편집 모드에서는 노출
-                          // - 앨범 생성 플로우에서 들어온 경우에는 Step1에서 이미 선택했으므로 숨김
-                          if (!widget.isFromCreateFlow)
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOutCubicEmphasized,
-                              top: math.max(0, coverTop - selectorHeight - 48.h),
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: SizedBox(
-                                  height: selectorHeight,
-                                  child: CoverSelectorWidget(
-                                    sizes: coverSizes,
-                                    selected: selectedCover,
-                                    iconForCover: _iconForCover,
-                                    height: selectorHeight,
-                                    onSelect: (s) {
-                                      coverVm.selectCover(s);
-                                      albumVm.selectCover(s);
-                                      setState(() => _selectedCover = s);
-                                    },
+                              // 1. 커버 본체 (Center 정렬 - AlbumReaderCoverEditor와 동일 구조)
+                              Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: coverSide),
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: _interaction.clearSelection,
+                                    child: RepaintBoundary(
+                                      key: _coverKey,
+                                      child: CoverLayout(
+                                        aspect: aspect,
+                                        layers: _interaction.sortByZ(layers),
+                                        isInteracting: false,
+                                        leftSpine: 14.0,
+                                        onCoverSizeChanged: (size) {
+                                          if (_coverSize == size) return;
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            if (!mounted) return;
+                                            print('[EditCover] Canvas Size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
+                                            setState(() {
+                                              _coverSize = size;
+                                            });
+                                            albumVm.setCoverCanvasSize(size);
+                                            // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
+                                            albumVm.loadPendingEditAlbumIfNeeded(size);
+                                          });
+                                        },
+                                        buildImage: (layer) => _layerBuilder.buildImage(layer),
+                                        buildText: (layer) => _layerBuilder.buildText(layer),
+                                        sortedByZ: _interaction.sortByZ,
+                                        theme: selectedTheme,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOutCubicEmphasized,
-                            top: coverTop,
-                            left: coverSide,
-                            right: coverSide,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: _interaction.clearSelection,
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                // ✅ 레이어가 커버 밖으로 나가도 보이게
-                                children: [
-                                  RepaintBoundary(
-                                    key: _coverKey,
-                                    child: Container(
-                                      clipBehavior: Clip.none, // ✅ 클리핑 방지
-                                      child: CoverLayout(
-                                          aspect: aspect,
-                                          layers: _interaction.sortByZ(layers),
-                                          isInteracting: false,
-                                          leftSpine: 14.0,
-                                          onCoverSizeChanged: (size) {
-                                            if (_coverSize == size) return;
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                              if (!mounted) return;
-                                              setState(() {
-                                                _coverSize = size;
-                                              });
-                                              albumVm.setCoverCanvasSize(size);
-                                              // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
-                                              albumVm.loadPendingEditAlbumIfNeeded(size);
-                                            });
-                                          },
-                                          buildImage: (layer) =>
-                                              _layerBuilder.buildImage(layer),
-                                          buildText: (layer) =>
-                                              _layerBuilder.buildText(layer),
-                                          sortedByZ: _interaction.sortByZ,
-                                          theme: selectedTheme,
-                                        ),
+
+                              // 2. 커버 선택 위젯
+                              if (!widget.isFromCreateFlow)
+                                AnimatedPositioned(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOutCubicEmphasized,
+                                  top: _coverSize == Size.zero
+                                      ? 0
+                                      : math.max(0, (canvasHeight - _coverSize.height) / 2 - selectorHeight - 48.h),
+                                  left: 0,
+                                  right: 0,
+                                  child: Center(
+                                    child: SizedBox(
+                                      height: selectorHeight,
+                                      child: CoverSelectorWidget(
+                                        sizes: coverSizes,
+                                        selected: selectedCover,
+                                        iconForCover: _iconForCover,
+                                        height: selectorHeight,
+                                        onSelect: (s) {
+                                          coverVm.selectCover(s);
+                                          albumVm.selectCover(s);
+                                          setState(() => _selectedCover = s);
+                                        },
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),  // cover
-                          // === Sliding Action Panel: 커버 레이아웃 아래, 전체 Stack 상단 레벨 ===
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 350),
-                            curve: Curves.easeOutCubic,
-                            top: panelTop,
-                            left: coverSide - 14.0,
-                            right: coverSide - 14.0,
-                            child: IgnorePointer(
+
+                              // 3. Sliding Action Panel
+                              AnimatedPositioned(
+                                duration: const Duration(milliseconds: 350),
+                                curve: Curves.easeOutCubic,
+                                top: panelTop,
+                                left: coverSide - 14.0,
+                                right: coverSide - 14.0,
+                              child: IgnorePointer(
                               ignoring: !_panelVisible,
                               child: AnimatedSlide(
                                 duration: const Duration(milliseconds: 350),
@@ -550,30 +534,12 @@ class _EditCoverState extends ConsumerState<EditCover> {
                                         if (_interaction.selectedLayerId != null && layers.firstWhere((l) => l.id == _interaction.selectedLayerId,).type == LayerType.text)
                                           Row(
                                             children: [
-                                              _buildTextStyleButton(
-                                                "라벨",
-                                                "tag",
-                                              ),
-                                              _buildTextStyleButton(
-                                                "말풍선",
-                                                "bubble",
-                                              ),
-                                              _buildTextStyleButton(
-                                                "노트",
-                                                "note",
-                                              ),
-                                              _buildTextStyleButton(
-                                                "캘리",
-                                                "calligraphy",
-                                              ),
-                                              _buildTextStyleButton(
-                                                "스티커",
-                                                "sticker",
-                                              ),
-                                              _buildTextStyleButton(
-                                                "테이프",
-                                                "tape",
-                                              ),
+                                              _buildTextStyleButton("라벨", "tag"),
+                                              _buildTextStyleButton("말풍선", "bubble"),
+                                              _buildTextStyleButton("노트", "note"),
+                                              _buildTextStyleButton("캘리", "calligraphy"),
+                                              _buildTextStyleButton("스티커", "sticker"),
+                                              _buildTextStyleButton("테이프", "tape"),
                                             ],
                                           ),
                                         if (_interaction.selectedLayerId != null && layers.firstWhere((l) => l.id == _interaction.selectedLayerId).type == LayerType.image)
@@ -611,75 +577,75 @@ class _EditCoverState extends ConsumerState<EditCover> {
                         }, // LayoutBuilder builder
                       ), // LayoutBuilder
                     ), // Expanded
-
-                    // 하단 툴바
-                    SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.w),
-                          decoration: BoxDecoration(
-                            color: SnapFitColors.overlayLightOf(context),
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                          child: Builder(
-                          builder: (context) {
-                            LayerModel? selected;
-                            final selectedId = _interaction.selectedLayerId;
-                            if (selectedId != null) {
-                              final idx = layers.indexWhere(
-                                (l) => l.id == selectedId,
-                              );
-                              if (idx != -1) selected = layers[idx];
-                            }
-                            return EditToolbar(
-                              vm: albumVm,
-                              selected: selected,
-                              onAddText: () async {
-                                // 커버와 키보드가 동시에 부드럽게 올라오도록 동시 실행
-                                setState(() => _state.setTextOpen(true));
-
-                                // 키보드와 모달을 바로 표시하면서 애니메이션과 동시에 렌더
-                                final effectiveSize = _coverSize == Size.zero
-                                    ? const Size(300, 200)
-                                    : _coverSize;
-
-                                // 프레임 안정화 전에 바로 모달 띄우기 (딜레이 없음)
-                                Future.microtask(() async {
-                                  await _textEditor.openAndCreateNew(
-                                    Size(
-                                      effectiveSize.width * 0.92,
-                                      effectiveSize.height * 0.18,
-                                    ),
-                                  );
-                                  if (mounted) {
-                                    setState(() => _state.setTextOpen(false));
-                                  }
-                                });
-                              },
-                              onAddPhoto: () {
-                                final size = _interaction.getCoverSize();
-                                if (size.width > 0 && size.height > 0) {
-                                  _toolbar.addPhoto(size);
-                                }
-                              },
-                              onOpenCoverSelector: () async {
-                                setState(() => _state.setThemeOpen(true));
-                                await _toolbar.openCoverTheme();
-                                if (mounted) {
-                                  setState(() => _state.setThemeOpen(false));
-                                }
-                              },
-                            );
-                          },
-                        ),
-                        ),
-                      ),
-                    ),
                   ],  // Column children
                 ),
               ),
+
+              // 하단 툴바 (Overlay) - AlbumReader와 동일하게 Positioned로 배치
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 20.w),
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.overlayLightOf(context),
+                        borderRadius: BorderRadius.circular(18.r),
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          LayerModel? selected;
+                          final selectedId = _interaction.selectedLayerId;
+                          if (selectedId != null) {
+                            final idx = layers.indexWhere(
+                              (l) => l.id == selectedId,
+                            );
+                            if (idx != -1) selected = layers[idx];
+                          }
+                          return EditToolbar(
+                            vm: albumVm,
+                            selected: selected,
+                            onAddText: () async {
+                              setState(() => _state.setTextOpen(true));
+                              final effectiveSize = _coverSize == Size.zero
+                                  ? const Size(300, 200)
+                                  : _coverSize;
+                              Future.microtask(() async {
+                                await _textEditor.openAndCreateNew(
+                                  Size(
+                                    effectiveSize.width * 0.92,
+                                    effectiveSize.height * 0.18,
+                                  ),
+                                );
+                                if (mounted) {
+                                  setState(() => _state.setTextOpen(false));
+                                }
+                              });
+                            },
+                            onAddPhoto: () {
+                              final size = _interaction.getCoverSize();
+                              if (size.width > 0 && size.height > 0) {
+                                _toolbar.addPhoto(size);
+                              }
+                            },
+                            onOpenCoverSelector: () async {
+                              setState(() => _state.setThemeOpen(true));
+                              await _toolbar.openCoverTheme();
+                              if (mounted) {
+                                setState(() => _state.setThemeOpen(false));
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // 저장 중 전체 화면 로딩 오버레이
               if (isCreating)
                 Container(

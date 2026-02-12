@@ -91,9 +91,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          elevation: 0,
+          elevation: 0,ㅎ
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, 
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
               color: SnapFitColors.textPrimaryOf(context), size: 18.sp),
             onPressed: () => Navigator.pop(context),
           ),
@@ -136,7 +136,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
 
     // 커버 페이지가 항상 존재하도록 보장
     vm.ensureCoverPage();
-    
+
     final allPages = vm.pages;
     // 커버 페이지 찾기
     AlbumPage? coverPage;
@@ -149,12 +149,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
     }
     final pages = allPages.where((p) => !p.isCover).toList(growable: false);
     final hasInnerPages = pages.isNotEmpty;
-    
+
     // 현재 편집 중인 페이지 결정 (내지가 있으면 첫 번째 내지, 없으면 커버)
     final currentPage = hasInnerPages && _pageController.hasClients
         ? pages[_pageController.page?.round().clamp(0, pages.length - 1) ?? 0]
         : coverPage;
-    
+
     final layers = currentPage?.layers ?? [];
     final selectedLayerId = _interaction.selectedLayerId;
     LayerModel? selectedLayer;
@@ -163,7 +163,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
         selectedLayer = layers.firstWhere((l) => l.id == selectedLayerId);
       } catch (_) {}
     }
-    
+
     final selectedCover = state.selectedCover;
     final coverTheme = state.selectedTheme;
     final aspect = selectedCover.ratio;
@@ -171,63 +171,60 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      body: Stack(
-        children: [
-          // 메인 컬럼: 탑바 + 캔버스 (EditCover와 동일한 구조)
-          Column(
-            children: [
-              // 탑바 - EditCover와 동일한 구조
-              Container(
-                color: SnapFitColors.backgroundOf(context),
-                child: SafeArea(
-                  bottom: false,
-                  child: SizedBox(
-                    height: kToolbarHeight,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.close, color: SnapFitColors.textPrimaryOf(context)),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () async {
-                            try {
-                              final vm = ref.read(albumEditorViewModelProvider.notifier);
-                              await vm.saveFullAlbum();
-                              if (mounted) {
-                                // 홈 화면 갱신
-                                ref.read(homeViewModelProvider.notifier).refresh();
-                                
-                                // 홈 화면으로 이동 (모든 스택 제거)
-                                Navigator.popUntil(context, (route) => route.isFirst);
-                                
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('앨범이 저장되었습니다!')),
-                                );
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('저장 실패: $e')),
-                                );
-                              }
-                            }
-                          },
-                          child: Text(
-                            "완료",
-                            style: TextStyle(
-                              color: SnapFitColors.textPrimaryOf(context),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16.sp,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+      appBar: AppBar(
+        backgroundColor: SnapFitColors.backgroundOf(context),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(''), // AppBar 높이 통일 (AlbumCreateFlowScreen과 동일)
+        leading: IconButton(
+          icon: Icon(Icons.close, color: SnapFitColors.textPrimaryOf(context)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton(
+              onPressed: () async {
+                try {
+                  final vm = ref.read(albumEditorViewModelProvider.notifier);
+                  await vm.saveFullAlbum();
+                  if (mounted) {
+                    // 홈 화면 갱신
+                    ref.read(homeViewModelProvider.notifier).refresh();
+
+                    // 홈 화면으로 이동 (모든 스택 제거)
+                    Navigator.popUntil(context, (route) => route.isFirst);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('앨범이 저장되었습니다!')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('저장 실패: $e')),
+                    );
+                  }
+                }
+              },
+              child: Text(
+                "완료",
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.sp,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // 메인 컬럼: 캔버스 (TopBar는 AppBar로 이동됨)
+          Column(
+            children: [
+
               // 중앙 캔버스 영역 - EditCover와 동일한 Expanded 구조 (하단 위젯 없음!)
               Expanded(
                 child: hasInnerPages

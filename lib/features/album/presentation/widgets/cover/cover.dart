@@ -78,7 +78,6 @@ class CoverLayout extends StatelessWidget {
                               final coverSize = coverCts.biggest;
                               // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                print('[CoverLayout] Canvas Size: ${coverSize.width.toStringAsFixed(1)} x ${coverSize.height.toStringAsFixed(1)}');
                                 onCoverSizeChanged(coverSize);
                               });
                               return Stack(

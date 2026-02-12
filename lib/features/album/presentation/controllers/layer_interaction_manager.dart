@@ -191,7 +191,21 @@ class LayerInteractionManager {
     // VM/템플릿은 도(degree), Transform.rotate는 라디안 사용
     _rot.putIfAbsent(layer.id, () => layer.rotation * math.pi / 180);
     _z.putIfAbsent(layer.id, () => ++_zCounter);
+    
+    final bool isNewLayer = !_refBaseSize.containsKey(layer.id);
     _refBaseSize.putIfAbsent(layer.id, () => Size(baseWidth, baseHeight));
+    
+    // 디버깅: 레이어 초기화 로그 (최초 1회만)
+    if (isNewLayer) {
+      final coverSize = getCoverSize();
+      print('[LayerInteraction] Init layer ${layer.id.substring(0, 8)}: '
+            'type=${layer.type.name}, '
+            'pos=(${_pos[layer.id]!.dx.toStringAsFixed(1)}, ${_pos[layer.id]!.dy.toStringAsFixed(1)}), '
+            'baseSize=(${baseWidth.toStringAsFixed(1)}x${baseHeight.toStringAsFixed(1)}), '
+            'scale=${_scale[layer.id]!.toStringAsFixed(2)}, '
+            'canvas=(${coverSize.width.toStringAsFixed(1)}x${coverSize.height.toStringAsFixed(1)})');
+    }
+
 
     if (_isPreviewMode) {
       return Positioned(

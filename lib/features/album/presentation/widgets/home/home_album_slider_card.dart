@@ -14,6 +14,7 @@ import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
 import '../cover/cover.dart';
 import '../../viewmodels/album_editor_view_model.dart';
+import '../../viewmodels/home_view_model.dart';
 import '../../views/album_reader_screen.dart';
 import 'home_focus_wrap.dart';
 import 'home_album_helpers.dart';
@@ -310,9 +311,14 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       }
 
       if (!context.mounted) return;
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         HomePaperUnfoldRoute(cardRect: cardRect, coverImage: coverImage),
       );
+      
+      // 앨범 편집 후 돌아왔을 때 홈 화면 갱신
+      if (context.mounted) {
+        await ref.read(homeViewModelProvider.notifier).refresh();
+      }
     } catch (e) {
       if (mounted) _tapController.reverse();
       if (context.mounted) {

@@ -12,8 +12,9 @@ class LayerExportMapper {
       'type': layer.type.name.toUpperCase(),
       'x': (layer.position.dx / canvasSize.width),  // 0.0 ~ 1.0
       'y': (layer.position.dy / canvasSize.height), // 0.0 ~ 1.0
-      'width': (layer.width * layer.scale) / canvasSize.width,
-      'height': (layer.height * layer.scale) / canvasSize.height,
+      'width': layer.width / canvasSize.width,  // scale 제외 - 원본 비율 보존
+      'height': layer.height / canvasSize.height, // scale 제외 - 원본 비율 보존
+      'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
       'payload': layer.type == LayerType.image
           ? {
@@ -59,7 +60,7 @@ class LayerExportMapper {
       position: Offset(x, y), // 현재 화면에 최적화된 좌표
       width: width,
       height: height,
-      scale: 1.0,
+      scale: (json['scale'] as num?)?.toDouble() ?? 1.0, // scale 복원 (하위 호환: 없으면 1.0)
       rotation: (json['rotation'] as num).toDouble(),
       text: payload['text'] as String?,
       textAlign: _parseTextAlign(payload['textAlign'] as String?),

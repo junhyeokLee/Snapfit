@@ -84,12 +84,17 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
       await vm.prepareAlbumForEdit(album);
       if (!context.mounted) return;
       // 연필 아이콘: "앨범 생성/커버 편집" 화면으로 이동해서 커버를 다시 수정할 수 있게 함
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => AddCoverScreen(editAlbum: album),
         ),
       );
+      
+      // 편집 후 돌아왔을 때 홈 화면 갱신
+      if (context.mounted) {
+        await ref.read(homeViewModelProvider.notifier).refresh();
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +118,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
               itemBuilder: (context, index) {
                 final album = widget.albums[index];
                 return HomeAlbumSliderCard(
+                  key: ValueKey('${album.id}_${album.coverLayersJson.hashCode}'),
                   album: album,
                   index: index,
                   pageController: _pageController,
