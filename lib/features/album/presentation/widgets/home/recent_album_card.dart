@@ -82,7 +82,7 @@ class RecentAlbumCard extends StatelessWidget {
                     // Status Chip
                     Positioned(
                       top: 12.h,
-                      right: 12.w,
+                      left: 12.w,
                       child: _buildStatusChip(),
                     ),
                   ],
@@ -214,7 +214,7 @@ class RecentAlbumCard extends StatelessWidget {
     
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: 8.w,
+        horizontal: 10.w,
         vertical: 4.h,
       ),
       decoration: BoxDecoration(
@@ -231,8 +231,8 @@ class RecentAlbumCard extends StatelessWidget {
       child: Text(
         info.label,
         style: TextStyle(
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w700,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
           color: info.foregroundColor,
         ),
       ),

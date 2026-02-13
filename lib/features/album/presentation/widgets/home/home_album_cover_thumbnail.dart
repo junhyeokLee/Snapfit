@@ -32,38 +32,27 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
       width = resolvedMaxWidth;
       scaledHeight = width / ratio;
       if (scaledHeight > height) {
-        final scale = height / scaledHeight;
         scaledHeight = height;
-        width = width * scale;
+        width = scaledHeight * ratio;
       }
     } else {
       scaledHeight = height;
       width = scaledHeight * ratio;
       if (width > resolvedMaxWidth) {
-        final scale = resolvedMaxWidth / width;
         width = resolvedMaxWidth;
-        scaledHeight = scaledHeight * scale;
+        scaledHeight = width / ratio;
       }
     }
     final shadowScale = (scaledHeight / 280).clamp(0.35, 0.7);
     final theme = resolveCoverTheme(album.coverTheme);
     final canvasSize = Size(width, scaledHeight);
 
-    print('[HomeCoverThumbnail] Album ${album.id}: parsing coverLayersJson');
-    print('[HomeCoverThumbnail] Canvas size: $canvasSize');
-    print('[HomeCoverThumbnail] JSON length: ${album.coverLayersJson.length}');
     final layers = parseCoverLayers(
       album.coverLayersJson,
       canvasSize: canvasSize,
     );
-    print('[HomeCoverThumbnail] Parsed ${layers?.length ?? 0} layers');
-    if (layers != null && layers.isNotEmpty) {
-      final layer = layers.first;
-      print('[HomeCoverThumbnail] Layer 0: pos=(${layer.position.dx.toStringAsFixed(1)}, ${layer.position.dy.toStringAsFixed(1)}), size=(${layer.width.toStringAsFixed(1)}x${layer.height.toStringAsFixed(1)}), scale=${layer.scale.toStringAsFixed(2)}');
-    }
 
     if (layers != null && layers.isNotEmpty) {
-      print('[HomeCoverThumbnail] Using CoverLayout with ${layers.length} layers');
       return HomeCoverFrame(
         width: width,
         height: scaledHeight,

@@ -124,7 +124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                          ),
                        ),
                      ),
-                     // 2. Recent Albums
+                     // 2. My Records (Section 1: Masonry)
                      SliverToBoxAdapter(
                        child: RecentAlbumList(
                          albums: recentAlbums,
@@ -146,7 +146,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                          },
                        ),
                      ),
-                     // 3. Completed Albums
+                     // 3. Shared Albums (Section 2: Carousel)
+                     SliverToBoxAdapter(
+                       child: SharedAlbumList(
+                         albums: sharedAlbums,
+                         currentUserId: currentUserId,
+                         onTap: (album) async {
+                           await HomeAlbumActions.openAlbum(context, ref, album);
+                         },
+                         onViewAll: () {
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(
+                               builder: (_) => AlbumCategoryScreen(
+                                 category: AlbumCategory.shared,
+                                 initialAlbums: sharedAlbums,
+                                 currentUserId: currentUserId,
+                               ),
+                             ),
+                           );
+                         },
+                       ),
+                     ),
+                     // 4. Completed Albums (Section 3: List)
                      if (completedAlbums.isNotEmpty)
                        SliverToBoxAdapter(
                          child: Padding(
@@ -161,29 +183,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     builder: (_) => AlbumCategoryScreen(
                                       category: AlbumCategory.completed,
                                       initialAlbums: completedAlbums,
-                                      currentUserId: currentUserId,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                         ),
-                       ),
-                     // 4. Shared Albums
-                     if (sharedAlbums.isNotEmpty)
-                       SliverToBoxAdapter(
-                         child: Padding(
-                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
-                            child: SharedAlbumList(
-                              albums: sharedAlbums,
-                              currentUserId: currentUserId,
-                              onViewAll: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => AlbumCategoryScreen(
-                                      category: AlbumCategory.shared,
-                                      initialAlbums: sharedAlbums,
                                       currentUserId: currentUserId,
                                     ),
                                   ),

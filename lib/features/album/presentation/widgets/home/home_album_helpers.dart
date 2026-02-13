@@ -196,15 +196,15 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
   if (isCompletedAlbum(album)) {
     return AlbumStatusInfo(
       label: '작성 완료',
-      backgroundColor: const Color(0xFF333333).withOpacity(0.9), // Dark Gray
-      foregroundColor: Colors.white,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
     );
   }
 
   // 3. Working (작성 중) - Default
   return AlbumStatusInfo(
     label: '작성 중',
-    backgroundColor: Colors.white.withOpacity(0.95),
-    foregroundColor: const Color(0xFF00C2E0), // Cyan Text
+    backgroundColor: const Color(0xFF00C2E0), // Cyan background
+    foregroundColor: Colors.white,             // White text
   );
 }

@@ -61,9 +61,10 @@ class ListAlbumCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800,
                       color: SnapFitColors.textPrimaryOf(context),
+                      letterSpacing: -0.5,
                     ),
                   ),
                   SizedBox(height: 8.w),
