@@ -57,17 +57,17 @@ class HomeHeaderNew extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 24.w),
+        // SizedBox(height: 24.w),
         // Main Title
-        Text(
-          '함께 만드는\n우리만의 앨범',
-          style: TextStyle(
-            fontSize: 28.sp,
-            fontWeight: FontWeight.bold,
-            height: 1.3,
-            color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
+        // Text(
+        //   '함께 만드는\n우리만의 앨범',
+        //   style: TextStyle(
+        //     fontSize: 28.sp,
+        //     fontWeight: FontWeight.bold,
+        //     height: 1.3,
+        //     color: SnapFitColors.textPrimaryOf(context),
+        //   ),
+        // ),
       ],
     );
   }

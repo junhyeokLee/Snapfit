@@ -23,7 +23,7 @@ class MasonryAlbumCard extends StatelessWidget {
   double get _cardAspectRatio {
     // 세로형은 더 길게(0.6), 가로형은 더 넓게(1.4) 하여 공간 확보
     // final List<double> ratios = [0.65, 1.4, 0.6, 1.2];
-    final List<double> ratios = [0.45, 0.6, 0.6, 0.52];
+    final List<double> ratios = [0.5, 0.45, 0.55, 0.6];
     return ratios[index % ratios.length];
   }
 
@@ -44,7 +44,7 @@ class MasonryAlbumCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFE8E2D0), // 샌드톤 배경
-                borderRadius: BorderRadius.circular(36.r), // 배경이 커진 만큼 더 둥글게
+                borderRadius: BorderRadius.circular(16.r), // 배경이 커진 만큼 더 둥글게
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.06),

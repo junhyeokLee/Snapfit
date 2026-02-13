@@ -17,6 +17,7 @@ import '../widgets/home/home_header_new.dart';
 import '../widgets/home/recent_album_list.dart';
 import '../widgets/home/completed_album_list.dart';
 import '../widgets/home/shared_album_list.dart';
+import '../../../store/presentation/widgets/premium_template_list.dart';
 import '../widgets/home/home_album_actions.dart';
 import '../widgets/home/home_error_state.dart';
 import 'album_create_flow_screen.dart';
@@ -124,7 +125,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                          ),
                        ),
                      ),
-                     // 2. My Records (Section 1: Masonry)
+                     // 2. Premium Templates (New Section)
+                     SliverToBoxAdapter(
+                       child: Column(
+                         children: [
+                           const PremiumTemplateList(),
+                           SizedBox(height: 24.h),
+                         ],
+                       ),
+                     ),
+                     // 3. My Records (Section 1: Masonry)
                      SliverToBoxAdapter(
                        child: RecentAlbumList(
                          albums: recentAlbums,
@@ -146,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                          },
                        ),
                      ),
-                     // 3. Shared Albums (Section 2: Carousel)
+                     // 4. Shared Albums (Section 2: Carousel) - Restored
                      SliverToBoxAdapter(
                        child: SharedAlbumList(
                          albums: sharedAlbums,
@@ -168,29 +178,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                          },
                        ),
                      ),
-                     // 4. Completed Albums (Section 3: List)
-                     if (completedAlbums.isNotEmpty)
-                       SliverToBoxAdapter(
-                         child: Padding(
-                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
-                            child: CompletedAlbumList(
-                              albums: completedAlbums,
-                              currentUserId: currentUserId,
-                              onViewAll: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => AlbumCategoryScreen(
-                                      category: AlbumCategory.completed,
-                                      initialAlbums: completedAlbums,
-                                      currentUserId: currentUserId,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                         ),
+                     // 5. Completed Albums (Section 3: List)
+                     SliverToBoxAdapter(
+                       child: CompletedAlbumList(
+                         albums: completedAlbums, // Passed but ignored for now due to dummy data
+                         currentUserId: currentUserId,
+                         onViewAll: () {
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(
+                               builder: (_) => AlbumCategoryScreen(
+                                 category: AlbumCategory.completed,
+                                 initialAlbums: completedAlbums,
+                                 currentUserId: currentUserId,
+                               ),
+                             ),
+                           );
+                         },
                        ),
+                     ),
                      // Bottom Padding for FAB
                      SliverToBoxAdapter(
                        child: SizedBox(height: 80.w),

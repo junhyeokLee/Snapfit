@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../domain/entities/album.dart';
 import 'recent_album_card.dart';
 import 'section_header.dart';
+import 'home_album_helpers.dart';
 
 class RecentAlbumList extends StatefulWidget {
   final List<Album> albums;
@@ -79,13 +80,22 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
                   final scale = (1 - (diff.abs() * 0.1)).clamp(0.9, 1.0);
                   final isFocused = diff.abs() < 0.5;
 
-                  // Logic to align the first item to the start (20.w padding)
-                  // while keeping others centered.
+                  // Logic to align the first item to the start
+                  // If Vertical (ratio < 1.0) -> 0 padding (User Request)
+                  // Else -> 20.w padding
                   final double screenWidth = 1.sw;
                   final double viewportFraction = 0.70;
-                  // The default left spacing when centered
                   final double centeredLeftEdge = (screenWidth * (1 - viewportFraction)) / 2;
-                  final double targetLeftEdge = 20.w; // Desired padding
+                  
+                  double targetLeftEdge = 20.w;
+                  if (displayAlbums.isNotEmpty) {
+                    final firstAlbum = displayAlbums[0];
+                    final ratio = parseCoverRatio(firstAlbum.ratio);
+                    if (ratio < 1.0) {
+                      targetLeftEdge = 0;
+                    }
+                  }
+
                   final double maxShift = centeredLeftEdge - targetLeftEdge;
                   
                   // Apply shift only when near the first page (0.0 ~ 1.0)

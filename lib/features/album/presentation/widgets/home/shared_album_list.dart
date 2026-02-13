@@ -20,7 +20,7 @@ class SharedAlbumList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayAlbums = albums.take(6).toList();
+    final displayAlbums = albums.take(4).toList();
     if (displayAlbums.isEmpty) return const SizedBox.shrink();
 
     final List<MapEntry<int, Album>> leftCol = [];
