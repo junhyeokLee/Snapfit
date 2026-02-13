@@ -21,4 +21,11 @@ abstract class AlbumRepository {
 
   /// 앨범 순서 변경
   Future<void> reorderAlbums(List<int> albumIds);
+
+  /// 앨범 편집 잠금 (진입 시)
+  /// 실패 시 예외 발생 (409 Conflict 등)
+  Future<void> lockAlbum(int albumId);
+
+  /// 앨범 편집 잠금 해제 (이탈 시)
+  Future<void> unlockAlbum(int albumId);
 }

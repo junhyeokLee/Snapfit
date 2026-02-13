@@ -92,14 +92,14 @@ class LoggerInterceptor implements Interceptor {
   String _safeJsonEncode(dynamic data) {
     try {
       if (data is FormData) return 'FormData (not printable)';
-      return _truncateText(jsonEncode(data), maxLength: 500);
+      return _truncateText(jsonEncode(data), maxLength: 1500);
     } catch (_) {
-      return _truncateText(data.toString(), maxLength: 500);
+      return _truncateText(data.toString(), maxLength: 1500);
     }
   }
 
   /// 문자열 길이 제한 (길면 생략)
-  String _truncateText(String text, {int maxLength = 500, int maxLines = 5}) {
+  String _truncateText(String text, {int maxLength = 1500, int maxLines = 5}) {
     final lines = text.split('\n');
     if (lines.length > maxLines) {
       return '${lines.take(maxLines).join('\n')}\n... (truncated)';

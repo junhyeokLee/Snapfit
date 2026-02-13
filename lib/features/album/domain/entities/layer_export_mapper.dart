@@ -9,6 +9,7 @@ class LayerExportMapper {
   static Map<String, dynamic> toJson(LayerModel layer, {required Size canvasSize}) {
     // 실제 기기 캔버스 크기를 기준으로 0~1 비율 계산
     return {
+      'id': layer.id,
       'type': layer.type.name.toUpperCase(),
       'x': (layer.position.dx / canvasSize.width),  // 0.0 ~ 1.0
       'y': (layer.position.dy / canvasSize.height), // 0.0 ~ 1.0
@@ -51,7 +52,7 @@ class LayerExportMapper {
     final double height = (json['height'] as num).toDouble() * canvasSize.height;
 
     return LayerModel(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: json['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
       type: json['type'] == 'TEXT' ? LayerType.text : LayerType.image,
       // 하위 호환: imageUrl만 오면 previewUrl로 간주
       previewUrl: (payload['previewUrl'] ?? payload['imageUrl']) as String?,

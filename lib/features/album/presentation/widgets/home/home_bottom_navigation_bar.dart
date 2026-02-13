@@ -28,7 +28,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+        padding: EdgeInsets.fromLTRB(16.w, 10.w, 16.w, 12.w),
         decoration: BoxDecoration(
           color: SnapFitColors.isDark(context)
               ? SnapFitColors.surfaceOf(context)
@@ -105,7 +105,7 @@ class _CreateNavButton extends StatelessWidget {
               BoxShadow(
                 color: Colors.black.withOpacity(0.28),
                 blurRadius: 12.r,
-                offset: Offset(0, 6.h),
+                offset: Offset(0, 6.w),
               ),
             ],
           ),
@@ -164,12 +164,12 @@ class _BottomNavItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.h),
+          padding: EdgeInsets.symmetric(vertical: 6.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, size: 22.sp, color: color),
-              SizedBox(height: 4.h),
+              SizedBox(height: 4.w),
               Text(
                 label,
                 style: TextStyle(

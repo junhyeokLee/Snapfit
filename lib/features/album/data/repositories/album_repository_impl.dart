@@ -48,4 +48,16 @@ class AlbumRepositoryImpl implements AlbumRepository {
     final userId = await userIdService.getOrCreate();
     await api.reorderAlbums({'albumIds': albumIds}, userId);
   }
+
+  @override
+  Future<void> lockAlbum(int albumId) async {
+    final userId = await userIdService.getOrCreate();
+    await api.lockAlbum(albumId, userId);
+  }
+
+  @override
+  Future<void> unlockAlbum(int albumId) async {
+    final userId = await userIdService.getOrCreate();
+    await api.unlockAlbum(albumId, userId);
+  }
 }

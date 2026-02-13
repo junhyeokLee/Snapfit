@@ -11,16 +11,19 @@ import '../../domain/entities/album.dart';
 import '../widgets/home/home_bottom_navigation_bar.dart';
 import '../widgets/home/home_empty_state.dart';
 import '../widgets/home/home_header.dart';
-import '../widgets/home/home_album_list_view.dart';
-import '../widgets/home/home_error_state.dart';
-import '../widgets/home/home_bottom_nav_placeholder.dart';
-import '../widgets/home/home_album_actions.dart';
 import '../widgets/home/home_album_helpers.dart';
 import '../viewmodels/home_view_model.dart';
+import '../widgets/home/home_header_new.dart';
+import '../widgets/home/recent_album_list.dart';
+import '../widgets/home/completed_album_list.dart';
+import '../widgets/home/shared_album_list.dart';
+import '../widgets/home/home_album_actions.dart';
+import '../widgets/home/home_error_state.dart';
 import 'album_create_flow_screen.dart';
 import '../../../search/presentation/views/search_screen.dart';
 import '../../../notification/presentation/views/notification_screen.dart';
 import '../../../store/presentation/views/store_screen.dart';
+import 'album_category_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -33,8 +36,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
   int _bottomNavIndex = 0;
   bool _isEditMode = false;
-  bool _isSearching = false;
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -70,118 +71,138 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         context,
         Container(
           color: SnapFitColors.backgroundOf(context),
-          child: SafeArea(
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.backgroundOf(context),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: SnapFitColors.overlayLightOf(context),
-                      ),
-                    ),
-                  ),
-                  child: HomeHeader(
-                    hasAlbums: albumsAsync.value?.any((album) => !isDraftAlbum(album)) ?? false,
-                    isSearching: _isSearching,
-                    searchQuery: _searchQuery,
-                    onSearch: () {
-                      setState(() {
-                        _isSearching = true;
-                        _searchQuery = '';
-                      });
-                    },
-                    onSearchChanged: (query) {
-                      setState(() {
-                        _searchQuery = query;
-                      });
-                    },
-                    onSearchClose: () {
-                      setState(() {
-                        _isSearching = false;
-                        _searchQuery = '';
-                      });
-                    },
-                    onNotification: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const NotificationScreen(),
-                        ),
-                      );
-                    },
-                    isEditMode: _isEditMode,
-                    onEditToggle: () {
-                      setState(() {
-                        _isEditMode = !_isEditMode;
-                      });
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: albumsAsync.when(
-                    data: (albums) {
-                      // 검색 필터링
-                      var filteredAlbums = albums;
-                      if (_isSearching && _searchQuery.isNotEmpty) {
-                        final query = _searchQuery.toLowerCase();
-                        filteredAlbums = albums.where((album) {
-                          // 커버 테마로 검색
-                          final theme = album.coverTheme?.toLowerCase() ?? '';
-                          if (theme.contains(query)) return true;
-                          
-                          // ID로 검색 (앨범 번호)
-                          if (album.id.toString().contains(query)) return true;
-                          
-                          // 생성일로 검색
-                          if (album.createdAt.contains(query)) return true;
-                          
-                          return false;
-                        }).toList();
-                      }
+          child: SafeArea( // SafeArea applied to the whole body
+            child: albumsAsync.when(
+              data: (albums) {
+                final currentUserId = authAsync.asData?.value?.id.toString() ?? '';
+                
+                // 1. filtering (Draft 제외)
+                var baseAlbums = albums.where((a) => !isDraftAlbum(a)).toList();
+                
 
-                      // 순서(orders) 오름차순 -> 생성일(createdAt) 내림차순 정렬
-                      final sorted = List<Album>.from(filteredAlbums)
-                        ..sort((a, b) {
-                          final orderDiff = a.orders.compareTo(b.orders);
-                          if (orderDiff != 0) return orderDiff;
-                          return b.createdAt.compareTo(a.createdAt);
-                        });
-                      
-                      return HomeAlbumListView(
-                        albums: sorted,
-                        selectedIndex: _selectedIndex,
-                        userInfo: authAsync.value,
-                        emptyState: const HomeEmptyState(),
-                        isEditMode: _isEditMode,
-                        onSelect: (index) {
-                          setState(() => _selectedIndex = index);
-                        },
-                        onOpen: (album, index) async {
-                          if (_isEditMode) return; // 편집 모드일 때는 이동 막기
-                          setState(() => _selectedIndex = index);
-                          await HomeAlbumActions.openAlbum(context, ref, album);
-                        },
-                        onReorder: (oldIndex, newIndex) async {
-                          await ref
-                              .read(homeViewModelProvider.notifier)
-                              .reorder(oldIndex, newIndex);
-                        },
-                        onDelete: (album) async {
-                          await HomeAlbumActions.onDeleteSelected(
-                              context, ref, album);
-                        },
-                      );
-                    },
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(color: SnapFitColors.accentLight),
-                    ),
-                    error: (err, stack) => HomeErrorState(error: err),
-                  ),
-                ),
-              ],
+                // 2. Sorting by 'orders' (Ascending)
+                // If orders are same, fallback to createdAt (Descending)
+                final sorted = List<Album>.from(baseAlbums)
+                  ..sort((a, b) {
+                    if (a.orders != b.orders) {
+                      return a.orders.compareTo(b.orders);
+                    }
+                    return b.createdAt.compareTo(a.createdAt);
+                  });
+
+                // 3. Category Filtering
+                // Recent: Live Editing (Limit 6)
+                final recentAlbums = sorted.where((a) => isLiveEditingAlbum(a)).take(6).toList();
+                
+                // Completed: isCompletedAlbum
+                final completedAlbums = sorted.where((a) => isCompletedAlbum(a)).toList();
+                
+                // Shared: userId != currentUserId
+                final sharedAlbums = sorted.where((a) => a.userId != currentUserId).toList();
+
+                if (baseAlbums.isEmpty) {
+                  return HomeEmptyState(
+                    onCreate: handleCreateAlbum,
+                  );
+                }
+
+                return CustomScrollView(
+                  slivers: [
+                     // 1. Header
+                     SliverToBoxAdapter(
+                       child: Padding(
+                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
+                         child: HomeHeaderNew(
+                           onNotification: () {
+                             Navigator.push(
+                               context,
+                               MaterialPageRoute(
+                                 builder: (_) => const NotificationScreen(),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                     ),
+                     // 2. Recent Albums
+                     SliverToBoxAdapter(
+                       child: RecentAlbumList(
+                         albums: recentAlbums,
+                         currentUserId: currentUserId,
+                         onTap: (album) async {
+                           await HomeAlbumActions.openAlbum(context, ref, album);
+                         },
+                         onViewAll: () {
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(
+                               builder: (_) => AlbumCategoryScreen(
+                                 category: AlbumCategory.recent,
+                                 initialAlbums: recentAlbums,
+                                 currentUserId: currentUserId,
+                               ),
+                             ),
+                           );
+                         },
+                       ),
+                     ),
+                     // 3. Completed Albums
+                     if (completedAlbums.isNotEmpty)
+                       SliverToBoxAdapter(
+                         child: Padding(
+                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
+                            child: CompletedAlbumList(
+                              albums: completedAlbums,
+                              currentUserId: currentUserId,
+                              onViewAll: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AlbumCategoryScreen(
+                                      category: AlbumCategory.completed,
+                                      initialAlbums: completedAlbums,
+                                      currentUserId: currentUserId,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                         ),
+                       ),
+                     // 4. Shared Albums
+                     if (sharedAlbums.isNotEmpty)
+                       SliverToBoxAdapter(
+                         child: Padding(
+                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
+                            child: SharedAlbumList(
+                              albums: sharedAlbums,
+                              currentUserId: currentUserId,
+                              onViewAll: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AlbumCategoryScreen(
+                                      category: AlbumCategory.shared,
+                                      initialAlbums: sharedAlbums,
+                                      currentUserId: currentUserId,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                         ),
+                       ),
+                     // Bottom Padding for FAB
+                     SliverToBoxAdapter(
+                       child: SizedBox(height: 80.w),
+                     ),
+                  ],
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: SnapFitColors.accentLight),
+              ),
+              error: (err, stack) => HomeErrorState(error: err),
             ),
           ),
         ),

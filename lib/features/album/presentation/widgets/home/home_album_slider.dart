@@ -118,7 +118,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
               itemBuilder: (context, index) {
                 final album = widget.albums[index];
                 return HomeAlbumSliderCard(
-                  key: ValueKey('${album.id}_${album.coverLayersJson.hashCode}'),
+                  key: ValueKey('${album.id}_${album.updatedAt}'),
                   album: album,
                   index: index,
                   pageController: _pageController,

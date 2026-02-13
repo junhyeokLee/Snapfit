@@ -19,6 +19,8 @@ _Album _$AlbumFromJson(Map<String, dynamic> json) => _Album(
   totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
   targetPages: (json['targetPages'] as num?)?.toInt() ?? 0,
   orders: (json['orders'] as num?)?.toInt() ?? 0,
+  lockedBy: json['lockedBy'] as String?,
+  userId: json['userId'] as String? ?? '',
   createdAt: json['createdAt'] as String? ?? '',
   updatedAt: json['updatedAt'] as String? ?? '',
 );
@@ -36,6 +38,8 @@ Map<String, dynamic> _$AlbumToJson(_Album instance) => <String, dynamic>{
   'totalPages': instance.totalPages,
   'targetPages': instance.targetPages,
   'orders': instance.orders,
+  'lockedBy': instance.lockedBy,
+  'userId': instance.userId,
   'createdAt': instance.createdAt,
   'updatedAt': instance.updatedAt,
 };

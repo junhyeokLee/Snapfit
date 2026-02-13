@@ -49,4 +49,18 @@ abstract class AlbumApi {
     @Body() Map<String, dynamic> body,
     @Query('userId') String userId,
   );
+
+  /// 앨범 편집 잠금 (진입 시)
+  @POST('/api/albums/{albumId}/lock')
+  Future<void> lockAlbum(
+    @Path('albumId') int albumId,
+    @Query('userId') String userId,
+  );
+
+  /// 앨범 편집 잠금 해제 (이탈 시)
+  @POST('/api/albums/{albumId}/unlock')
+  Future<void> unlockAlbum(
+    @Path('albumId') int albumId,
+    @Query('userId') String userId,
+  );
 }

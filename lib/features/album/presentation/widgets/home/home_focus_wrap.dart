@@ -28,16 +28,16 @@ class HomeFocusWrap extends StatelessWidget {
   /// [focus] 0→1 일 때 기본 그림자에서 들어올린(animate) 그림자로 보간 → 커질 때 그림자도 함께 강해짐
   static List<BoxShadow> coverStyleShadowForScale(double scale, [double focus = 0]) {
     final baseOffset1 = const Offset(14, 12);
-    final liftedOffset1 = const Offset(14, 44);
+    final liftedOffset1 = const Offset(14, 32);
     final baseOffset2 = const Offset(24, 12);
-    final liftedOffset2 = const Offset(28, 44);
+    final liftedOffset2 = const Offset(28, 32);
     final blur1 = 1 + 10 * focus;   // 10 → 20
     final blur2 = 1 + 8 * focus;    // 10 → 18
     return [
       BoxShadow(
         color: Color.lerp(
           Colors.black.withOpacity(0.12),
-          Colors.black.withOpacity(0.18),
+          Colors.black.withOpacity(0.12),
           focus,
         )!,
         blurRadius: blur1 * scale,
@@ -46,7 +46,7 @@ class HomeFocusWrap extends StatelessWidget {
       BoxShadow(
         color: Color.lerp(
           const Color(0xFF5c5d8d).withOpacity(0.12),
-          const Color(0xFF5c5d8d).withOpacity(0.18),
+          const Color(0xFF5c5d8d).withOpacity(0.12),
           focus,
         )!,
         blurRadius: blur2 * scale,

@@ -22,7 +22,7 @@ class HomeErrorState extends StatelessWidget {
     final isTimeout = error is DioException &&
         (error as DioException).type == DioExceptionType.connectionTimeout;
     if (isTimeout) {
-      return const HomeEmptyState();
+      return HomeEmptyState(onCreate: () {}); // Error state return
     }
 
     final isConnectionRefused =

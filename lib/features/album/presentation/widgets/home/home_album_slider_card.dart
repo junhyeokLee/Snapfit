@@ -84,6 +84,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   @override
   Widget build(BuildContext context) {
+    print('[HomeCard] Building card for album ${widget.album.id}, updatedAt: ${widget.album.updatedAt}');
     final coverSize = coverSizes.firstWhere(
       (s) => s.ratio.toString() == widget.album.ratio,
       orElse: () => coverSizes.first,
@@ -107,6 +108,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           Widget coverContent;
 
           if (widget.album.coverLayersJson.isNotEmpty) {
+            print('[HomeCard] Parsing coverLayersJson for album ${widget.album.id}');
             List<LayerModel>? layers;
             try {
               final decoded =
@@ -124,9 +126,11 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                     ),
                   )
                   .toList();
-            } catch (_) {
+            } catch (e) {
+              print('[HomeCard] Error parsing coverLayersJson: $e');
               layers = null;
             }
+            print('[HomeCard] Parsed ${layers?.length ?? 0} layers');
             if (layers != null && layers.isNotEmpty) {
               coverContent = SizedBox(
                 width: base,

@@ -6,6 +6,11 @@ import '../../viewmodels/home_view_model.dart';
 import '../../views/add_cover_screen.dart';
 import '../../views/album_reader_screen.dart';
 import 'home_delete_album_dialog.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/screen_logger.dart';
+import '../../../data/api/album_provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 /// 앨범 액션 관련 헬퍼 클래스
 class HomeAlbumActions {
@@ -76,19 +81,76 @@ class HomeAlbumActions {
     }
   }
 
+
+
   /// 앨범 열기 (리더 화면)
   static Future<void> openAlbum(
     BuildContext context,
     WidgetRef ref,
     dynamic album,
   ) async {
+    // 1. 잠금 시도 (Lock)
+    final repository = ref.read(albumRepositoryProvider);
+    try {
+      await repository.lockAlbum(album.id);
+    } catch (e) {
+      if (!context.mounted) return;
+      // 잠금 실패 (다른 사용자가 편집 중)
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: SnapFitColors.surfaceOf(ctx),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          title: Text(
+            '편집 제한',
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(ctx),
+              fontWeight: FontWeight.bold,
+              fontSize: 18.sp,
+            ),
+          ),
+          content: Text(
+            '현재 다른 사용자가 편집 중입니다.\n잠시 후 다시 시도해 주세요.',
+            style: TextStyle(
+              color: SnapFitColors.textSecondaryOf(ctx),
+              fontSize: 14.sp,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('확인', style: TextStyle(color: SnapFitColors.accent)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // 2. 편집 준비
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     await ref.read(albumEditorViewModelProvider.future);
     await vm.prepareAlbumForEdit(album);
-    if (!context.mounted) return;
-    Navigator.push(
+    
+    if (!context.mounted) {
+      // 만약 준비 중 화면이 닫혔다면 잠금 해제 필요
+      try {
+        await repository.unlockAlbum(album.id);
+      } catch (_) {}
+      return;
+    }
+
+    // 3. 진입
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
     );
+
+    // 4. 복귀 시 잠금 해제 (Unlock)
+    try {
+      await repository.unlockAlbum(album.id);
+    } catch (e) {
+      debugPrint('HomeAlbumActions: Unlock failed: $e');
+    }
   }
 }

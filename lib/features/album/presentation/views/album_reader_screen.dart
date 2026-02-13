@@ -91,7 +91,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          elevation: 0,ㅎ
+          elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded,
               color: SnapFitColors.textPrimaryOf(context), size: 18.sp),
@@ -187,6 +187,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen> {
               onPressed: () async {
                 try {
                   final vm = ref.read(albumEditorViewModelProvider.notifier);
+                  
+                  // [Fix] 저장 전 레이어 순서(Z-index) 동기화
+                  if (layers.isNotEmpty) {
+                    final sorted = _interaction.sortByZ(layers);
+                    vm.updatePageLayers(sorted);
+                  }
+
                   await vm.saveFullAlbum();
                   if (mounted) {
                     // 홈 화면 갱신

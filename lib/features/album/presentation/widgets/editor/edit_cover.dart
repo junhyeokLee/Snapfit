@@ -221,6 +221,13 @@ class _EditCoverState extends ConsumerState<EditCover> {
     final editorVm = ref.read(albumEditorViewModelProvider.notifier);
 
     try {
+      final currentLayers = ref.read(albumEditorViewModelProvider).value?.layers ?? [];
+      List<LayerModel>? sortedLayers;
+      if (currentLayers.isNotEmpty) {
+        sortedLayers = _interaction.sortByZ(currentLayers);
+        editorVm.updatePageLayers(sortedLayers);
+      }
+
       // 1) 현재 커버를 그대로 캡처해서 합성 이미지 생성
       final coverBytes = await _captureCoverBytes();
 
@@ -230,6 +237,7 @@ class _EditCoverState extends ConsumerState<EditCover> {
         _coverSize,
         coverImageBytes: coverBytes,
         title: widget.albumTitle,
+        overrideLayers: sortedLayers,
       );
     } finally {
       if (mounted) {

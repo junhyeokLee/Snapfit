@@ -42,14 +42,10 @@ class CoverLayout extends StatelessWidget {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final maxW = constraints.maxWidth < constraints.maxHeight
-              ? constraints.maxWidth
-              : constraints.maxHeight;
-          final maxH = constraints.maxHeight < constraints.maxWidth
-              ? constraints.maxHeight
-              : constraints.maxWidth;
+          final maxW = constraints.maxWidth;
+          final maxH = constraints.maxHeight;
           // scale 계산
-          double scale = 1.04;
+          double scale = 1.0;
           
           return Transform.scale(
             scale: scale,

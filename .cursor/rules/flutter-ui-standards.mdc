@@ -28,17 +28,20 @@ alwaysApply: false
 ### MUST Do
 
 1. **Use ScreenUtil** — App uses `ScreenUtilInit(designSize: Size(390, 844), minTextAdapt: true, splitScreenMode: true)`.
-2. **Use `.w`, `.h`, `.sp`** — For layout: `24.w`, `100.h`; for text: `14.sp`, `16.sp`.
-3. **Use `MediaQuery.sizeOf(context)`** — For full-screen layout or when you need raw pixel size.
-4. **Use `LayoutBuilder`** — When layout depends on parent constraints (e.g. cover card aspect ratio).
-5. **Base layout on design size** — 390×844 is the reference; scale proportionally.
+2. **Use `.w` for Width & Height (Recommended)** — To ensure consistent aspect ratio across devices (e.g., maintain square shapes or specific proportions), use `.w` for both width and height (e.g., `SizedBox(height: 16.w)`).
+3. **Use `.h` sparingly** — Use `.h` only when vertical space needs to fill the screen or relative to screen height (e.g., full-screen lists, bottom sheets).
+4. **Use `.sp` for Fonts** — `14.sp` ensures text scales with device accessibility settings.
+5. **Use `MediaQuery.sizeOf(context)`** — For full-screen layout or when you need raw pixel size.
+6. **Use `LayoutBuilder`** — When layout depends on parent constraints (e.g. cover card aspect ratio).
+7. **Base layout on design size** — 390×844 is the reference; scale proportionally.
 
 ### MUST NOT Do
 
 1. **Do NOT** use raw pixel values (e.g. `SizedBox(width: 24)`) — Use `24.w` for consistency.
 2. **Do NOT** use fixed `fontSize` without `.sp` — Use `14.sp`, not `fontSize: 14`.
-3. **Do NOT** ignore fold/split screens — `splitScreenMode: true` is set; avoid assuming full screen.
-4. **Do NOT** mix `MediaQuery.of(context).size` and `MediaQuery.sizeOf(context)` — Prefer `MediaQuery.sizeOf(context)` (null-safe).
+3. **Do NOT** mix `.w` and `.h` for square or circular objects — Use `.w` for both to keep it a perfect circle/square on all aspect ratios.
+4. **Do NOT** ignore fold/split screens — `splitScreenMode: true` is set; avoid assuming full screen.
+5. **Do NOT** mix `MediaQuery.of(context).size` and `MediaQuery.sizeOf(context)` — Prefer `MediaQuery.sizeOf(context)` (null-safe).
 
 ---
 

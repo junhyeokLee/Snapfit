@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../domain/entities/album.dart';
@@ -73,21 +74,59 @@ List<LayerModel>? parseCoverLayers(
 Widget buildStaticImage(LayerModel layer) {
   final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl ?? '';
   if (url.isEmpty) {
-    return Container(color: Colors.grey[300]);
+    return Positioned(
+      left: layer.position.dx,
+      top: layer.position.dy,
+      child: Transform.rotate(
+        angle: layer.rotation * math.pi / 180,
+        child: Transform.scale(
+          scale: layer.scale,
+          child: Container(
+            width: layer.width,
+            height: layer.height,
+            color: Colors.grey[300],
+          ),
+        ),
+      ),
+    );
   }
-  return SnapfitImage(
-    urlOrGs: url,
-    fit: BoxFit.cover,
-    cacheManager: snapfitImageCacheManager,
+  return Positioned(
+    left: layer.position.dx,
+    top: layer.position.dy,
+    child: Transform.rotate(
+      angle: layer.rotation * math.pi / 180,
+      child: Transform.scale(
+        scale: layer.scale,
+        child: SizedBox(
+          width: layer.width,
+          height: layer.height,
+          child: SnapfitImage(
+            urlOrGs: url,
+            fit: BoxFit.cover,
+            cacheManager: snapfitImageCacheManager,
+          ),
+        ),
+      ),
+    ),
   );
 }
 
 /// 정적 텍스트 빌드
 Widget buildStaticText(LayerModel layer) {
-  return Text(
-    layer.text ?? '',
-    style: layer.textStyle,
-    textAlign: layer.textAlign,
+  return Positioned(
+    left: layer.position.dx,
+    top: layer.position.dy,
+    child: Transform.rotate(
+      angle: layer.rotation * math.pi / 180,
+      child: Transform.scale(
+        scale: layer.scale,
+        child: Text(
+          layer.text ?? '',
+          style: layer.textStyle,
+          textAlign: layer.textAlign,
+        ),
+      ),
+    ),
   );
 }
 
@@ -125,4 +164,47 @@ bool isCompletedAlbum(Album album) {
   if (isDraftAlbum(album)) return false;
   if (album.targetPages <= 0) return false;
   return album.totalPages >= album.targetPages;
+}
+
+/// 앨범 상태 정보 (라벨, 배경색, 글자색) 반환
+class AlbumStatusInfo {
+  final String label;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final bool isLocked;
+
+  AlbumStatusInfo({
+    required this.label,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    this.isLocked = false,
+  });
+}
+
+AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
+  // 1. Busy (남이 편집 중)
+  if (album.lockedBy != null && album.lockedBy != currentUserId) {
+    return AlbumStatusInfo(
+      label: '${album.lockedBy} 편집 중',
+      backgroundColor: const Color(0xFFFFEAEA), // Light Red/Orange
+      foregroundColor: const Color(0xFFFF4D4D), // Red
+      isLocked: true,
+    );
+  }
+
+  // 2. Done (완료)
+  if (isCompletedAlbum(album)) {
+    return AlbumStatusInfo(
+      label: '작성 완료',
+      backgroundColor: const Color(0xFF333333).withOpacity(0.9), // Dark Gray
+      foregroundColor: Colors.white,
+    );
+  }
+
+  // 3. Working (작성 중) - Default
+  return AlbumStatusInfo(
+    label: '작성 중',
+    backgroundColor: Colors.white.withOpacity(0.95),
+    foregroundColor: const Color(0xFF00C2E0), // Cyan Text
+  );
 }

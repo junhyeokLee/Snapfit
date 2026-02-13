@@ -338,6 +338,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     );
     _cover = coverSize;
 
+    // 테마 초기화 (전 상태 유출 방지)
+    _selectedTheme = CoverTheme.classic;
+
     // 테마 복원 (서버에서 coverTheme 반환 시)
     final themeStr = effective.coverTheme;
     if (themeStr != null && themeStr.isNotEmpty) {
@@ -457,8 +460,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     Size canvasSize, {
     Uint8List? coverImageBytes,
     String? title,
+    List<LayerModel>? overrideLayers,
   }) async {
-    final List<LayerModel> currentLayers = List.of(state.value?.layers ?? []);
+    final List<LayerModel> currentLayers = overrideLayers ?? List.of(state.value?.layers ?? []);
     final albumVm = ref.read(albumViewModelProvider.notifier);
     final themeLabel = _selectedTheme.label;
 
@@ -997,6 +1001,17 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 페이지 에디터(PageEditorScreen)의 내지 캔버스 크기 - 300x400 고정
   static const Size _innerPageCanvasSize = Size(300, 400);
+
+  /// 현재 페이지의 레이어 리스트 전체 교체 (순서 변경 등)
+  void updatePageLayers(List<LayerModel> newLayers) {
+    if (_pages.isEmpty) return;
+    final page = _pages[_currentPageIndex];
+    
+    // Page 객체 불변성 유지하며 레이어 리스트 교체
+    final updatedPage = page.copyWith(layers: List.of(newLayers));
+    _pages[_currentPageIndex] = updatedPage;
+    _emit();
+  }
 
   /// 커버 + 모든 내지 페이지 레이어를 서버 저장용 JSON 문자열로 변환
   /// 형식: { "pages": [ { "index": 0, "isCover": true, "layers": [...] }, ... ] }
