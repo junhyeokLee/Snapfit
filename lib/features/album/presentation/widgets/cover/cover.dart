@@ -1,4 +1,4 @@
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../shared/widgets/grid_overlay_painter.dart';
 import '../../../../../shared/widgets/spine_painter.dart';
@@ -22,6 +22,7 @@ class CoverLayout extends StatelessWidget {
   final BuildTextLayer buildText;
   final SortedByZ sortedByZ;
   final CoverTheme theme;
+  final GlobalKey? contentKey;
 
 
   const CoverLayout({
@@ -35,6 +36,7 @@ class CoverLayout extends StatelessWidget {
     required this.buildText,
     required this.sortedByZ,
     required this.theme,
+    this.contentKey,
   });
 
   @override
@@ -76,8 +78,10 @@ class CoverLayout extends StatelessWidget {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 onCoverSizeChanged(coverSize);
                               });
-                              return Stack(
-                                fit: StackFit.expand,
+                               return RepaintBoundary(
+                                 key: contentKey,
+                                 child: Stack(
+                                   fit: StackFit.expand,
                                 children: [
                                   _CoverBackground(leftSpine: leftSpine, theme: theme),
                                   ...sortedByZ(layers).map((layer) {
@@ -88,14 +92,14 @@ class CoverLayout extends StatelessWidget {
                                         return buildText(layer);
                                     }
                                   }),
-                                  Align(
+                                    Align(
                                     alignment: Alignment.centerLeft,
                                     child: CustomPaint(
                                       painter: SpinePainter(
                                         baseStart: Colors.white.withOpacity(0.1),
                                         baseEnd: Colors.white.withOpacity(0.1),
                                       ),
-                                      size: Size(18.w, double.infinity),
+                                      size: Size(kCoverSpineWidth, MediaQuery.of(context).size.height), // infinity isn't constant anyway, and Size shouldn't be const if args aren't
                                     ),
                                   ),
                                   if (isInteracting)
@@ -106,7 +110,8 @@ class CoverLayout extends StatelessWidget {
                                       ),
                                     ),
                                 ],
-                              );
+                              ),
+                            );
                             },
                           ),
                         ),

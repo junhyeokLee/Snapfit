@@ -22,30 +22,24 @@ class TextEditorManager {
       builder: (_) {
         return FractionallySizedBox(
           heightFactor: 0.92,
-          child: GestureDetector(
-            onTap: () {},
-            child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: EditTextOverlay(
-                initialText: layer.text ?? "",
-                initialStyle: safeStyle,
-                initialMode: layer.textStyleType,
-                initialBubbleColor: layer.bubbleColor,
-                onSubmit: (newText, newStyle, mode, color, align) {
-                  vm.updateLayer(
-                    layer.copyWith(
-                      text: newText,
-                      textStyle: newStyle,
-                      textStyleType: mode,
-                      bubbleColor: color,
-                      textAlign: align,
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-                onCancel: () => Navigator.pop(context),
-              ),
-            ),
+          child: EditTextOverlay(
+            initialText: layer.text ?? "",
+            initialStyle: safeStyle,
+            initialMode: layer.textStyleType,
+            initialBubbleColor: layer.bubbleColor,
+            onSubmit: (newText, newStyle, mode, color, align) {
+              vm.updateLayer(
+                layer.copyWith(
+                  text: newText,
+                  textStyle: newStyle,
+                  textStyleType: mode,
+                  bubbleColor: color,
+                  textAlign: align,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            onCancel: () => Navigator.pop(context),
           ),
         );
       },
@@ -97,30 +91,24 @@ class TextEditorManager {
       builder: (_) {
         return FractionallySizedBox(
           heightFactor: 0.92,
-          child: GestureDetector(
-            onTap: () {},
-            child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: EditTextOverlay(
-                initialText: layer.text ?? "",
-                initialStyle: safeStyle,
-                initialMode: layer.textStyleType,
-                initialBubbleColor: layer.bubbleColor,
-                onSubmit: (newText, newStyle, mode, color, align) {
-                  vm.updateLayer(
-                    layer.copyWith(
-                      text: newText,
-                      textStyle: newStyle,
-                      textStyleType: mode,
-                      bubbleColor: color,
-                      textAlign: align,
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-                onCancel: () => Navigator.pop(context),
-              ),
-            ),
+          child: EditTextOverlay(
+            initialText: layer.text ?? "",
+            initialStyle: safeStyle,
+            initialMode: layer.textStyleType,
+            initialBubbleColor: layer.bubbleColor,
+            onSubmit: (newText, newStyle, mode, color, align) {
+              vm.updateLayer(
+                layer.copyWith(
+                  text: newText,
+                  textStyle: newStyle,
+                  textStyleType: mode,
+                  bubbleColor: color,
+                  textAlign: align,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            onCancel: () => Navigator.pop(context),
           ),
         );
       },

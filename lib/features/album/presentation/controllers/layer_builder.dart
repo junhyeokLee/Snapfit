@@ -39,7 +39,7 @@ class LayerBuilder {
   }
 
   /// 이미지 레이어 빌드
-  Widget buildImage(LayerModel layer) {
+  Widget buildImage(LayerModel layer, {bool isCover = false}) {
     // 편집 중인 레이어면 숨김
     if (_isEditing(layer)) return const SizedBox.shrink();
 
@@ -51,12 +51,16 @@ class LayerBuilder {
         layer: layer,
         baseWidth: layer.width,
         baseHeight: layer.height,
-        child: _buildFramedImage(
-          layer,
-          Image(
-            image: AssetEntityImageProvider(layer.asset!),
-            fit: fit,
-            filterQuality: FilterQuality.medium,
+        isCover: isCover,
+        child: Opacity(
+          opacity: layer.opacity,
+          child: _buildFramedImage(
+            layer,
+            Image(
+              image: AssetEntityImageProvider(layer.asset!),
+              fit: fit,
+              filterQuality: FilterQuality.medium,
+            ),
           ),
         ),
       );
@@ -68,7 +72,11 @@ class LayerBuilder {
         layer: layer,
         baseWidth: layer.width,
         baseHeight: layer.height,
-        child: _buildImagePlaceholder(layer),
+        isCover: isCover,
+        child: Opacity(
+          opacity: layer.opacity,
+          child: _buildImagePlaceholder(layer),
+        ),
       );
     }
 
@@ -76,9 +84,17 @@ class LayerBuilder {
       layer: layer,
       baseWidth: layer.width,
       baseHeight: layer.height,
-      child: _buildFramedImage(
-        layer,
-        SnapfitImage(urlOrGs: url, fit: fit),
+      isCover: isCover,
+      child: Opacity(
+        opacity: layer.opacity,
+        child: _buildFramedImage(
+          layer,
+          SnapfitImage(
+            key: ValueKey(layer.id), // Stable key to prevent reloading
+            urlOrGs: url, 
+            fit: fit,
+          ),
+        ),
       ),
     );
   }
@@ -328,7 +344,7 @@ class LayerBuilder {
 
 
   /// 텍스트 레이어 빌드
-  Widget buildText(LayerModel layer) {
+  Widget buildText(LayerModel layer, {bool isCover = false}) {
     if (_isEditing(layer)) return const SizedBox.shrink();
 
     // ✅ 기본 생성 텍스트 최소 폰트 크기 (너무 작게 생성되는 것 방지)
@@ -399,7 +415,11 @@ class LayerBuilder {
         layer: layer,
         baseWidth: realSize.width,
         baseHeight: realSize.height,
-        child: styled,
+        isCover: isCover,
+        child: Opacity(
+          opacity: layer.opacity,
+          child: styled,
+        ),
       );
     }
 
@@ -427,7 +447,11 @@ class LayerBuilder {
       layer: layer,
       baseWidth: realSize.width,
       baseHeight: realSize.height,
-      child: content,
+      isCover: isCover,
+      child: Opacity(
+        opacity: layer.opacity,
+        child: content,
+      ),
     );
   }
 

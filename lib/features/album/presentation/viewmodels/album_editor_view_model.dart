@@ -47,6 +47,9 @@ abstract class AlbumEditorState with _$AlbumEditorState {
 
     /// 에디터 커버 캔버스 크기 (레이어 좌표 기준). 썸네일/스프레드 배치용.
     Size? coverCanvasSize,
+    
+    /// 내지 캔버스 크기 (3:4 비율)
+    Size? innerCanvasSize,
 
     /// 백그라운드에서 앨범 생성(업로드) 중인지 여부
     @Default(false) bool isCreatingInBackground,
@@ -84,9 +87,24 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   bool _hasMore = true;
   bool _loading = false;
 
+  /// [Rescale Fix] 커버와 내지의 마지막 캔버스 크기를 별도로 관리하여 왜곡 방지
+  Size _lastCoverCanvasSize = Size.zero;
+  Size _lastInnerCanvasSize = Size.zero;
+
   // ===== Selected getters =====
   CoverSize get selectedCover => _cover;
   CoverTheme get selectedTheme => _selectedTheme;
+  
+  // Expose the album being edited (if any)
+  Album? get album => _editingAlbumId != null 
+      ? Album(
+          id: _editingAlbumId!,
+          title: _initialAlbumTitle ?? '제목 없음',
+          coverImageUrl: _initialCoverImageUrl ?? '',
+          coverThumbnailUrl: _initialCoverThumbnailUrl ?? '',
+          createdAt: DateTime.now().toIso8601String(), // Dummy string
+        ) 
+      : null;
 
   @override
   FutureOr<AlbumEditorState> build() async {
@@ -114,22 +132,25 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 신규 생성(+ 진입)용: 기존 편집/갤러리 상태를 모두 버리고 "빈 커버"로 초기화
   /// - 갤러리(앨범/사진) 로딩은 하지 않는다 (요구사항: 불러오는거 X)
   void resetForCreate({CoverSize? initialCover, CoverTheme? initialTheme}) {
+    _pages.clear();
+    _cover = initialCover ?? coverSizes.firstWhere(
+      (s) => s.name == '세로형',
+      orElse: () => coverSizes.first,
+    );
+    _selectedTheme = initialTheme ?? CoverTheme.classic;
+    _pages.add(_service.createPage(index: 0, isCover: true));
+    _pages.add(_service.createPage(index: 1)); // 기본 내지 한 페이지
+    _currentPageIndex = 0;
     _editingAlbumId = null;
     _pendingCoverLayersJson = null;
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
     _initialAlbumTitle = null;
 
-    _cover = initialCover ?? coverSizes.firstWhere(
-      (s) => s.name == '세로형',
-      orElse: () => coverSizes.first,
-    );
-    _selectedTheme = initialTheme ?? CoverTheme.classic;
-
-    _pages.clear();
-    _pages.add(_service.createPage(index: 0, isCover: true));
-    _currentPageIndex = 0;
-
+    // [Rescale Fix] 새 앨범 생성 시 트래커 초기화
+    _lastCoverCanvasSize = Size.zero;
+    _lastInnerCanvasSize = _innerPageCanvasSize; // (300, 400) canonical
+    
     // 갤러리 상태도 비워서 "빈 레이아웃" 느낌을 유지 (사진 선택 시 그때 로딩)
     _files.clear();
     _albums.clear();
@@ -293,9 +314,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             }
           } else if ((album.coverImageUrl?.isNotEmpty ?? false) || 
                      (album.coverThumbnailUrl?.isNotEmpty ?? false)) {
-            // coverLayersJson이 없어도 coverImageUrl이 있으면 준비 완료
+            // coverImageUrl이 있으면 준비 완료
             isReady = true;
             debugPrint('✅ coverImageUrl exists. Album is ready!');
+          } else if (album.coverTheme?.isNotEmpty ?? false) {
+            // 이미지 레이어가 없는 테마 커버: coverTheme이 있으면 준비 완료
+            // (커버 배경은 테마로 렌더링되므로 coverImageUrl 없어도 정상)
+            isReady = true;
+            debugPrint('✅ coverTheme exists. Theme-only cover is ready!');
           } else {
             debugPrint('❌ No content found. Retrying... ($retries/$maxRetries)');
           }
@@ -395,10 +421,18 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void loadPendingEditAlbumIfNeeded(Size canvasSize) {
     final json = _pendingCoverLayersJson;
     if (json == null) return;
-    if (canvasSize == Size.zero) return;
+    
+    // [Fix] canvasSize가 zero이면 기존에 기록된 _lastCoverCanvasSize를 우선 사용하고, 
+    // 그조차 없으면 앨범 자체의 커버 비율을 찾아 기본값으로 사용
+    final effectiveSize = (canvasSize != Size.zero) 
+        ? canvasSize 
+        : (_lastCoverCanvasSize != Size.zero 
+            ? _lastCoverCanvasSize 
+            : Size(358.0, 358.0 / _cover.ratio));
+
     _pendingCoverLayersJson = null;
-    loadAlbum({'coverLayersJson': json}, canvasSize);
-    setCoverCanvasSize(canvasSize);
+    loadAlbum({'coverLayersJson': json}, effectiveSize);
+    setCoverCanvasSize(effectiveSize, isCover: true);
   }
 
   /// 서버에서 불러온 앨범 데이터를 편집기에 로드
@@ -407,6 +441,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void loadAlbum(Map<String, dynamic> albumData, Size canvasSize) {
     if (canvasSize == Size.zero) return;
 
+    // [Rescale Fix] 앨범 로드 시점에 마지막 캔버스 크기 동기화
+    _lastCoverCanvasSize = canvasSize;
+    _lastInnerCanvasSize = _innerPageCanvasSize;
+    
     final String raw = albumData['coverLayersJson'] as String? ?? '{}';
     final Map<String, dynamic> data = jsonDecode(raw) as Map<String, dynamic>? ?? {};
 
@@ -426,6 +464,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           return LayerExportMapper.fromJson(
             l as Map<String, dynamic>,
             canvasSize: pageCanvasSize,
+            isCover: isCover,
           );
         }).toList();
         final page = _service.createPage(index: index, isCover: isCover);
@@ -441,6 +480,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         return LayerExportMapper.fromJson(
           l as Map<String, dynamic>,
           canvasSize: canvasSize,
+          isCover: true,
         );
       }).toList();
       final coverPage = _service.createPage(index: 0, isCover: true);
@@ -478,7 +518,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         // 신규 생성 모드
         // 1-1. 임시 JSON (로컬 경로 포함될 수 있음 - 나중에 업데이트됨)
         final tempJson = jsonEncode({
-          'layers': currentLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize)).toList()
+          'layers': currentLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize, isCover: true)).toList()
         });
 
         await albumVm.createAlbum(
@@ -562,7 +602,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
       // 4. 최종 JSON 생성 (실제 서버 URL 포함)
       final json = jsonEncode({
-        'layers': updatedLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize)).toList()
+        'layers': updatedLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize, isCover: true)).toList()
       });
 
       // 5. URL 결정
@@ -573,18 +613,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         coverOriginalUrl = coverUploaded.originalGsPath ?? coverUploaded.originalUrl;
       }
 
-      // 커버가 없으면 첫 번째 레이어 사용
-      coverPreviewUrl ??= updatedLayers
-          .firstWhere(
-            (l) => l.type == LayerType.image && (l.previewUrl ?? l.imageUrl) != null,
-            orElse: () => updatedLayers.first,
-          )
-          .previewUrl ?? updatedLayers
-          .firstWhere(
-            (l) => l.type == LayerType.image && (l.previewUrl ?? l.imageUrl) != null,
-            orElse: () => updatedLayers.first,
-          )
-          .imageUrl;
+      // 커버 업로드 URL이 없고, 레이어도 있을 때만 첫 이미지 레이어를 폴백으로 사용
+      // (레이어가 비어있으면 .first 접근 시 StateError 발생하므로 반드시 isNotEmpty 체크)
+      if (coverPreviewUrl == null && updatedLayers.isNotEmpty) {
+        final imageLayer = updatedLayers.firstWhere(
+          (l) => l.type == LayerType.image && (l.previewUrl ?? l.imageUrl) != null,
+          orElse: () => updatedLayers.first,
+        );
+        coverPreviewUrl = imageLayer.previewUrl ?? imageLayer.imageUrl;
+      }
 
       // 6. 앨범 정보 업데이트 (최종)
     final albumVm = ref.read(albumViewModelProvider.notifier);
@@ -696,6 +733,33 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _service.updateImageFrame(page: currentPage, id: id, frameKey: frameKey);
     _emit();
   }
+  
+  /// 페이지 배경색 변경
+  void updatePageBackgroundColor(int color) {
+    if (_pages.isEmpty) return;
+    final page = _pages[_currentPageIndex];
+    final updated = page.copyWith(backgroundColor: color);
+    _pages[_currentPageIndex] = updated;
+    _emit();
+  }
+
+  /// 스티커 추가 (이미지 레이어로 추가, assetPath는 로컬 에셋 경로)
+  /// 실제로는 스티커도 LayerType.sticker 등으로 구분하거나 
+  /// 이미지 레이어의 subtype으로 처리하는 것이 좋으나, 
+  /// 여기서는 단순화를 위해 AssetEntity 없이 imageUrl/previewUrl에 로컬 경로를 넣어 사용하거나
+  /// 별도의 로직을 태운다. 
+  /// 하지만 현재 LayerModel 구조상 AssetEntity가 없으면 url이 있어야 한다.
+  /// 임시로: 스티커는 텍스트 레이어(이모지)로 처리하거나, 
+  /// 별도 AssetEntity를 생성해야 함.
+  /// 우선은 텍스트 이모지로 처리하는 것이 가장 구현이 빠름.
+  /// User requested "maintain existing features". If stickers were images, we need image assets.
+  /// For now, let's treat stickers as Image Layers with a special flag or just use Text Layer with emoji if assets are missing.
+  /// OR, if we assume assets are bundled in app, we need a way to load them.
+  /// Let's assume we can add them as Image Layers with `imageUrl` pointing to asset path (requires support in LayerBuilder).
+  Future<void> addSticker(String assetPath, Size canvasSize) async {
+    // TODO: AssetPath based sticker implementation
+    // For now, simple implementation or placeholder
+  }
 
   /// 커버 선택
   void selectCover(CoverSize cover) {
@@ -704,50 +768,61 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 에디터 커버 캔버스 크기 설정 (썸네일/스프레드 배치용)
-  void setCoverCanvasSize(Size? size) {
+  void setCoverCanvasSize(Size? size, {bool isCover = true}) {
     if (size == null || size == Size.zero) return;
-    print('[setCoverCanvasSize] Setting canvas size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
     
     final prev = state.value;
     if (prev == null) return;
     
-    final oldSize = prev.coverCanvasSize;
+    final oldSize = isCover ? _lastCoverCanvasSize : _lastInnerCanvasSize;
     
-    // 캔버스 크기가 변경되었을 때, 기존 레이어들의 좌표를 비율에 맞춰 재조정
-    if (oldSize != null && oldSize != Size.zero && oldSize != size) {
-      print('[setCoverCanvasSize] Rescaling layers from $oldSize to $size');
-      final scaleX = size.width / oldSize.width;
+    // 캔버스 크기가 변경되었을 때, 해당 타입의 레이어들만 재조정
+    // [Rescale Fix] 미세한 픽셀 차이(0.5px 이하)는 안정성을 위해 무시함
+    final bool isSignificantlyDifferent = (oldSize.width - size.width).abs() > 0.5 || 
+                                          (oldSize.height - size.height).abs() > 0.5;
+
+    if (oldSize != Size.zero && isSignificantlyDifferent) {
+      final oldAvailableW = isCover ? oldSize.width - kCoverSpineWidth : oldSize.width;
+      final newAvailableW = isCover ? size.width - kCoverSpineWidth : size.width;
+      
+      final scaleX = newAvailableW / oldAvailableW;
       final scaleY = size.height / oldSize.height;
 
-      // _pages 리스트 직접 수정
+      print('[setCoverCanvasSize] Scaling ${isCover ? "COVER" : "INNER"} from $oldSize to $size');
+      print('[setCoverCanvasSize] ScaleX: $scaleX, ScaleY: $scaleY');
+
       for (int i = 0; i < _pages.length; i++) {
         final page = _pages[i];
-        if (!page.isCover) continue; // 내지 페이지는 변경 없음
+        if (page.isCover != isCover) continue; // 타입이 다르면 스킵
 
         final scaledLayers = page.layers.map((layer) {
-          final newX = layer.position.dx * scaleX;
-          final newY = layer.position.dy * scaleY;
-          final newW = layer.width * scaleX;
-          final newH = layer.height * scaleY;
-
+          // [Spine fix] X좌표: Spine(14px)을 뺀 나머지 영역 내에서의 비례 이동
+          double newX;
+          if (isCover) {
+             newX = kCoverSpineWidth + (layer.position.dx - kCoverSpineWidth) * scaleX;
+          } else {
+             newX = layer.position.dx * scaleX;
+          }
+          
           return layer.copyWith(
-            position: Offset(newX, newY),
-            width: newW,
-            height: newH,
+            position: Offset(newX, layer.position.dy * scaleY),
+            width: layer.width * scaleX,
+            height: layer.height * scaleY,
           );
         }).toList();
 
-        // 페이지 업데이트
-        final updatedPage = page.copyWith(layers: scaledLayers);
-        _pages[i] = updatedPage;
+        _pages[i] = page.copyWith(layers: scaledLayers);
       }
-
-      // 상태 업데이트
-      state = AsyncData(prev.copyWith(coverCanvasSize: size));
-      return;
     }
 
-    state = AsyncData(prev.copyWith(coverCanvasSize: size));
+    // 마스터 사이즈 업데이트
+    if (isCover) {
+      _lastCoverCanvasSize = size;
+      state = AsyncData(prev.copyWith(coverCanvasSize: size));
+    } else {
+      _lastInnerCanvasSize = size;
+      state = AsyncData(prev.copyWith(innerCanvasSize: size));
+    }
   }
 
   /// 페이지 추가
@@ -786,7 +861,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 앨범 전체(모든 페이지)를 서버에 저장
-  Future<void> saveFullAlbum() async {
+  Future<bool> saveFullAlbum({Uint8List? coverImageBytes}) async {
     state = const AsyncLoading(); // 로딩 상태 시작
 
     try {
@@ -817,19 +892,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           ..addAll(updatedLayers);
       }));
 
+      // 1.1 커버 이미지 업로드 (전달된 경우)
+      UploadedUrls? coverUploaded;
+      if (coverImageBytes != null) {
+        coverUploaded = await _storage.uploadCoverVariants(coverImageBytes);
+      }
+
       // 2. 전체 앨범 JSON 생성 후 서버에 저장 (편집 중인 앨범인 경우)
     final albumVm = ref.read(albumViewModelProvider.notifier);
-    final canvasSize = state.value?.coverCanvasSize ??
-        Size(358.0, 358.0 / _cover.ratio);
-    print('[saveFullAlbum] Using canvas size for export: ${canvasSize.width.toStringAsFixed(1)} x ${canvasSize.height.toStringAsFixed(1)}');
-    print('[saveFullAlbum] State coverCanvasSize: ${state.value?.coverCanvasSize}');
+    final stateVal = state.value;
+    final canvasSize = (stateVal != null && stateVal.coverCanvasSize != null && stateVal.coverCanvasSize != Size.zero) 
+        ? stateVal.coverCanvasSize 
+        : (_lastCoverCanvasSize != Size.zero 
+            ? _lastCoverCanvasSize 
+            : Size(358.0, 358.0 / _cover.ratio));
+    
+    print('[saveFullAlbum] Using canvas size for export: ${canvasSize!.width.toStringAsFixed(1)} x ${canvasSize.height.toStringAsFixed(1)}');
     final fullJson = exportFullAlbumLayersJson(canvasSize);
     final themeLabel = _selectedTheme.label;
 
       if (_editingAlbumId != null) {
-        // 커버 이미지 URL: 기존 값이 없으면 커버 페이지 첫 이미지 레이어에서 추출 (빈 문자열로 덮어쓰지 않음)
-        String coverImg = _initialCoverImageUrl ?? _initialCoverThumbnailUrl ?? '';
-        String coverThumb = _initialCoverThumbnailUrl ?? _initialCoverImageUrl ?? '';
+        // 커버 이미지 URL: 전달된 업로드 결과가 있으면 우선 사용
+        String coverImg = coverUploaded?.previewGsPath ?? coverUploaded?.previewUrl ?? _initialCoverImageUrl ?? _initialCoverThumbnailUrl ?? '';
+        String coverThumb = coverUploaded?.previewGsPath ?? coverUploaded?.previewUrl ?? _initialCoverThumbnailUrl ?? _initialCoverImageUrl ?? '';
         if (coverImg.isEmpty && _pages.isNotEmpty) {
           final coverPage = _pages.first;
           for (final layer in coverPage.layers) {
@@ -861,8 +946,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       }
 
       _emit();
+      return true;
     } catch (e, st) {
       state = AsyncError(e, st);
+      return false; // 실패 반환
     }
   }
 
@@ -954,6 +1041,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         selectedCover: _cover,
         selectedTheme: _selectedTheme,
         coverCanvasSize: prev.coverCanvasSize,
+        innerCanvasSize: prev.innerCanvasSize,
       ),
     );
   }
@@ -994,6 +1082,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             (layer) => LayerExportMapper.toJson(
           layer,
           canvasSize: canvasSize,
+          isCover: true,
         ),
       ).toList(),
     });
@@ -1013,6 +1102,26 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
+  /// 레이어 순서 변경 (oldIndex -> newIndex)
+  void reorderLayer(int oldIndex, int newIndex) {
+    if (_pages.isEmpty) return;
+    final currentPage = _pages[_currentPageIndex];
+    
+    // 범위 체크
+    if (oldIndex < 0 || oldIndex >= currentPage.layers.length) return;
+    // newIndex는 list length까지 가능 (insert 시) 하지만 reorderable list view 로직 고려
+    // ReorderableListView는 old < new 일 때 newIndex -= 1을 이미 처리해서 보내주기도 하지만
+    // 여기서는 단순히 removeAt -> insert 로직을 따른다.
+    // 범위 조정
+    if (newIndex > currentPage.layers.length) newIndex = currentPage.layers.length;
+    
+    final layers = List<LayerModel>.from(currentPage.layers);
+    final item = layers.removeAt(oldIndex);
+    layers.insert(newIndex, item);
+    
+    updatePageLayers(layers);
+  }
+
   /// 커버 + 모든 내지 페이지 레이어를 서버 저장용 JSON 문자열로 변환
   /// 형식: { "pages": [ { "index": 0, "isCover": true, "layers": [...] }, ... ] }
   /// 커버는 coverCanvasSize, 내지는 300x400 (페이지 에디터와 동일)
@@ -1025,7 +1134,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         'index': page.pageIndex,
         'isCover': page.isCover,
         'layers': page.layers
-            .map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize))
+            .map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize, isCover: page.isCover))
             .toList(),
       };
     }).toList();

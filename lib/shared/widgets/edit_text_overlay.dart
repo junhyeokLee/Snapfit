@@ -584,7 +584,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
         /// 4) 좌측 폰트 크기 슬라이더 (키보드 표시 시에만)
         if (keyboardVisible)
           Positioned(
-            left: 8.w,
+            left: 0, // Anchor to left edge for easier access
             top: 0.h,
             bottom: viewInsets.bottom + 0.25 * MediaQuery.of(context).size.height,
             child: LayoutBuilder(

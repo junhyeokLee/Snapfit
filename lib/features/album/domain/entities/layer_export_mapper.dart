@@ -1,22 +1,40 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/cover_size.dart';
 import 'layer.dart';
 
 class LayerExportMapper {
   /// 1. 서버 저장용 JSON으로 변환 (상대 좌표 계산)
   static const double referenceWidth = 1000.0; // 가상의 기준 너비
 
-  static Map<String, dynamic> toJson(LayerModel layer, {required Size canvasSize}) {
+  static Map<String, dynamic> toJson(LayerModel layer, {
+    required Size canvasSize,
+    bool isCover = false,
+  }) {
     // 실제 기기 캔버스 크기를 기준으로 0~1 비율 계산
+    // [Spine fix] 커버인 경우, 좌측 책심(14px)을 제외한 영역을 기준으로 비율 계산
+    double xRatio;
+    double widthRatio;
+    
+    if (isCover) {
+      final availableW = canvasSize.width - kCoverSpineWidth;
+      xRatio = (layer.position.dx - kCoverSpineWidth) / availableW;
+      widthRatio = layer.width / availableW;
+    } else {
+      xRatio = layer.position.dx / canvasSize.width;
+      widthRatio = layer.width / canvasSize.width;
+    }
+
     return {
       'id': layer.id,
       'type': layer.type.name.toUpperCase(),
-      'x': (layer.position.dx / canvasSize.width),  // 0.0 ~ 1.0
+      'x': xRatio,  // 0.0 ~ 1.0 (relative to content area)
       'y': (layer.position.dy / canvasSize.height), // 0.0 ~ 1.0
-      'width': layer.width / canvasSize.width,  // scale 제외 - 원본 비율 보존
+      'width': widthRatio,  // scale 제외 - 원본 비율 보존 (relative to content area)
       'height': layer.height / canvasSize.height, // scale 제외 - 원본 비율 보존
       'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
+      'opacity': layer.opacity,
       'payload': layer.type == LayerType.image
           ? {
         'imageBackground': layer.imageBackground,
@@ -43,12 +61,24 @@ class LayerExportMapper {
   static LayerModel fromJson(
       Map<String, dynamic> json, {
         required Size canvasSize,
+        bool isCover = false,
       }) {
     final Map<String, dynamic> payload = (json['payload'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
     // 서버의 비율(0~1) 데이터를 현재 전달받은 canvasSize에 곱해 절대 좌표로 복원
-    final double x = (json['x'] as num).toDouble() * canvasSize.width;
+    
+    double x;
+    double width;
+
+    if (isCover) {
+      final availableW = canvasSize.width - kCoverSpineWidth;
+      x = kCoverSpineWidth + ((json['x'] as num).toDouble() * availableW);
+      width = (json['width'] as num).toDouble() * availableW;
+    } else {
+      x = (json['x'] as num).toDouble() * canvasSize.width;
+      width = (json['width'] as num).toDouble() * canvasSize.width;
+    }
+
     final double y = (json['y'] as num).toDouble() * canvasSize.height;
-    final double width = (json['width'] as num).toDouble() * canvasSize.width;
     final double height = (json['height'] as num).toDouble() * canvasSize.height;
 
     return LayerModel(
@@ -63,6 +93,7 @@ class LayerExportMapper {
       height: height,
       scale: (json['scale'] as num?)?.toDouble() ?? 1.0, // scale 복원 (하위 호환: 없으면 1.0)
       rotation: (json['rotation'] as num).toDouble(),
+      opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
       text: payload['text'] as String?,
       textAlign: _parseTextAlign(payload['textAlign'] as String?),
       textStyleType: _parseTextStyleType(payload['textStyleType'] as String?),

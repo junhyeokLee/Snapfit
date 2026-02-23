@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../domain/entities/album.dart';
@@ -62,11 +63,32 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
           aspect: ratio,
           layers: layers,
           isInteracting: false,
-          leftSpine: 12.w,
+          leftSpine: kCoverSpineWidth,
           onCoverSizeChanged: (_) {},
           buildImage: (layer) => buildStaticImage(layer),
           buildText: (layer) => buildStaticText(layer),
           sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
+          theme: theme,
+        ),
+      );
+    }
+
+    // 레이어가 없어도 테마가 있으면 CoverLayout으로 테마 배경 렌더링
+    if (album.coverTheme?.isNotEmpty == true) {
+      return HomeCoverFrame(
+        width: width,
+        height: scaledHeight,
+        shadowScale: shadowScale,
+        showShadow: showShadow,
+        child: CoverLayout(
+          aspect: ratio,
+          layers: const [],
+          isInteracting: false,
+          leftSpine: kCoverSpineWidth,
+          onCoverSizeChanged: (_) {},
+          buildImage: (layer) => buildStaticImage(layer),
+          buildText: (layer) => buildStaticText(layer),
+          sortedByZ: (list) => list,
           theme: theme,
         ),
       );

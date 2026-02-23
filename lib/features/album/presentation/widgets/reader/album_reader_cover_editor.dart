@@ -63,7 +63,7 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
                   child: CoverLayout(
                     aspect: aspect,
                     layers: widget.interaction.sortByZ(widget.coverPage.layers),
-                    isInteracting: true,
+                    isInteracting: false,
                     leftSpine: 14.0,
                     onCoverSizeChanged: (size) {
                       if (size == Size.zero) return;
@@ -87,8 +87,8 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
                       }
                       widget.onCoverSizeChanged(size);
                     },
-                    buildImage: (layer) => widget.layerBuilder.buildImage(layer),
-                    buildText: (layer) => widget.layerBuilder.buildText(layer),
+                    buildImage: (layer) => widget.layerBuilder.buildImage(layer, isCover: true),
+                    buildText: (layer) => widget.layerBuilder.buildText(layer, isCover: true),
                     sortedByZ: widget.interaction.sortByZ,
                     theme: widget.coverTheme,
                   ),

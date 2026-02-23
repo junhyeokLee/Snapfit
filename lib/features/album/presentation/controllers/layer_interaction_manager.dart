@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../domain/entities/layer.dart';
+import '../widgets/editor/selection_frame.dart';
 
 /// 스타일 레이어 인터랙션 관리자
 /// 이미지/텍스트 레이어의 드래그, 회전, 확대/축소를 처리.
@@ -13,11 +15,19 @@ class LayerInteractionManager {
   final void Function(void Function()) setState; // UI 업데이트 함수
   final Size Function() getCoverSize; // 커버 크기 getter
   final void Function(LayerModel layer) onEditText; // 텍스트 편집 콜백
+  /// 레이어 탭 시 콜백 (메뉴 표시용)
+  final void Function(LayerModel layer)? onLayerTap;
   /// 이미지 플레이스홀더(사진 없음) 탭 시 콜백 – 페이지 편집에서 바로 갤러리 진입용
   final void Function(LayerModel layer)? onTapPlaceholder;
 
   /// 읽기 전용 미리보기 모드 (제스처 없음, 레이어만 표시)
   final bool _isPreviewMode;
+
+  /// 선택 시 테두리/핸들 표시 여부 (EditCover에서는 false로 설정하여 기존 UI 유지)
+  final bool showSelectionControls;
+
+  /// 선택 핸들 표시 여부 (false면 테두리만 표시)
+  final bool showHandles;
 
   // ==================== 레이어 상태 저장소 ====================
   final Map<String, Offset> _pos = {}; // 레이어 위치 (좌상단 기준)
@@ -30,6 +40,9 @@ class LayerInteractionManager {
   // ==================== 인터랙션 상태 ====================
   String? _selectedLayerId; // 현재 선택된 레이어 ID
   String? _editingLayerId; // 현재 편집 중인 레이어 ID (텍스트만)
+  
+  /// 현재 제스처(이동/확대/회전) 중인지 여부
+  bool get isInteractingNow => _gestureStates.isNotEmpty;
 
   // ==================== 제스처 추적 ====================
   final Map<String, _GestureState> _gestureStates = {}; // 제스처 시작 시점의 상태 저장
@@ -79,8 +92,11 @@ class LayerInteractionManager {
     required this.setState,
     required this.getCoverSize,
     required this.onEditText,
+    this.onLayerTap,
     this.onTapPlaceholder,
     bool isPreviewMode = false,
+    this.showSelectionControls = true,
+    this.showHandles = true,
   }) : _isPreviewMode = isPreviewMode;
 
   /// 읽기 전용 미리보기용 (앨범 보기, 커버 카드 등) – 제스처 없이 레이어만 표시
@@ -177,6 +193,31 @@ class LayerInteractionManager {
     });
   }
 
+  /// 활성 레이어 목록과 내부 상태 동기화 (삭제된 레이어 상태 정리)
+  void syncLayers(List<LayerModel> activeLayers) {
+    if (_pos.isEmpty) return;
+    
+    final activeIds = activeLayers.map((l) => l.id).toSet();
+    final inactiveIds = _pos.keys.where((id) => !activeIds.contains(id)).toList();
+    
+    if (inactiveIds.isNotEmpty) {
+      setState(() {
+        for (final id in inactiveIds) {
+          _pos.remove(id);
+          _scale.remove(id);
+          _rot.remove(id);
+          _z.remove(id);
+          _refBaseSize.remove(id);
+          _gestureStates.remove(id);
+          if (_selectedLayerId == id) _selectedLayerId = null;
+          if (_editingLayerId == id) _editingLayerId = null;
+        }
+      });
+    }
+  }
+
+
+
   // ==================== 레이어 빌더 ====================
 
   /// 제스처를 처리할 수 있는 인터랙티브 레이어 위젯 생성
@@ -185,17 +226,26 @@ class LayerInteractionManager {
     required double baseWidth,
     required double baseHeight,
     required Widget child,
+    bool isCover = false,
   }) {
-    _pos.putIfAbsent(layer.id, () => layer.position);
-    _scale.putIfAbsent(layer.id, () => layer.scale);
-    // VM/템플릿은 도(degree), Transform.rotate는 라디안 사용
-    _rot.putIfAbsent(layer.id, () => layer.rotation * math.pi / 180);
+    // [Fix] putIfAbsent 대신 실시간 동기화. 
+    // 현재 제스처 중이 아니거나 프리뷰 모드라면 VM의 최신 상태(rescale 결과 등)를 강제 반영함.
+    final bool isInteracting = _selectedLayerId == layer.id && _gestureStates.containsKey(layer.id);
+    
+    if (!isInteracting || _isPreviewMode) {
+      _pos[layer.id] = layer.position;
+      _scale[layer.id] = layer.scale;
+      _rot[layer.id] = layer.rotation * math.pi / 180;
+    }
     _z.putIfAbsent(layer.id, () => ++_zCounter);
     
-    final bool isNewLayer = !_refBaseSize.containsKey(layer.id);
-    _refBaseSize.putIfAbsent(layer.id, () => Size(baseWidth, baseHeight));
+    // 레이어 기준 크기 업데이트 (커버 리사이즈 등으로 변경될 수 있음)
+    // 항상 최신 baseWidth/baseHeight로 동기화해야 제스처 시작 시 튀지 않음
+    _refBaseSize[layer.id] = Size(baseWidth, baseHeight);
     
-    // 디버깅: 레이어 초기화 로그 (최초 1회만)
+    final bool isNewLayer = !_pos.containsKey(layer.id); // _pos로 체크 (위쪽에서 putIfAbsent 했으므로 여기선 항상 존재하지만 논리적으로)
+    
+    // 디버깅: 레이어 초기화 로그
     if (isNewLayer) {
       final coverSize = getCoverSize();
       print('[LayerInteraction] Init layer ${layer.id.substring(0, 8)}: '
@@ -249,24 +299,28 @@ class LayerInteractionManager {
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent, // 빈 공간도 터치 감지
                       onTap: () {
+                        print('[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})');
+                        print('[LayerInteraction] Layer Size: ${layer.width.toStringAsFixed(1)} x ${layer.height.toStringAsFixed(1)}');
+                        print('[LayerInteraction] RefBaseSize: ${_refBaseSize[layer.id]}');
+                        print('[LayerInteraction] Scale: ${_scale[layer.id]}');
                         _handleTap(layer);
                       },
                       onScaleStart: (d) => _handleScaleStart(layer, d),
-                      onScaleUpdate: (d) => _handleScaleUpdate(layer, d, baseWidth, baseHeight),
+                      onScaleUpdate: (d) => _handleScaleUpdate(layer, d, baseWidth, baseHeight, isCover: isCover),
                       onScaleEnd: (d) => _handleScaleEnd(layer, d),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.easeOut,
-                        // BoxDecoration의 border는 내부 영역을 잠식하여 콘텐츠가 잘릴 수 있으므로
-                        // foregroundDecoration을 사용해 테두리를 레이아웃 외곽에 그리도록 처리
-                        foregroundDecoration: isSelected && !isEditing
-                            ? BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 1),
-                              )
-                            : null,
-                        child: layer.type == LayerType.text
-                            ? child
-                            : ClipRRect(child: child),
+                      child: SelectionFrame(
+                        isSelected: isSelected && !isEditing && showSelectionControls,
+                        showHandles: showHandles,
+                        onDelete: deleteSelected,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 100),
+                          curve: Curves.easeOut,
+                          width: baseWidth,
+                          height: baseHeight,
+                          child: layer.type == LayerType.text
+                              ? child
+                              : ClipRRect(child: child),
+                        ),
                       ),
                     ),
                   ),
@@ -275,57 +329,7 @@ class LayerInteractionManager {
             ),
           ),
         ),
-
-        // 스냅 가이드라인 (조건부 렌더링)
-        if (_showVerticalGuide) _buildGuide(coverSize, isVertical: true),
-        if (_showHorizontalGuide) _buildGuide(coverSize, isVertical: false),
-        if (_showDiagonalGuide) _buildDiagonalGuide(coverSize),
       ],
-    );
-  }
-
-  /// 세로/가로 스냅 가이드라인 생성 (통합 메서드)
-  Widget _buildGuide(Size coverSize, {required bool isVertical}) {
-    return Positioned(
-      left: isVertical ? coverSize.width / 2 - 1.5 : 0,
-      top: isVertical ? 0 : coverSize.height / 2 - 1.5,
-      width: isVertical ? 1 : coverSize.width,
-      height: isVertical ? coverSize.height : 1,
-      child: AnimatedOpacity(
-        opacity: 1,
-        duration: const Duration(milliseconds: 500),
-        child: Container(
-          decoration: BoxDecoration(
-            // 중앙이 밝고 양쪽이 투명한 그라데이션
-            gradient: LinearGradient(
-              begin: isVertical ? Alignment.topCenter : Alignment.centerLeft,
-              end: isVertical ? Alignment.bottomCenter : Alignment.centerRight,
-              colors: [
-                Colors.black.withOpacity(0.1),
-                Colors.black.withOpacity(0.3),
-                Colors.black.withOpacity(0.1),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 대각선 스냅 가이드라인 생성
-  Widget _buildDiagonalGuide(Size coverSize) {
-    return Positioned(
-      left: 0,
-      top: 0,
-      width: coverSize.width,
-      height: coverSize.height,
-      child: IgnorePointer( // 터치 이벤트 무시
-        child: AnimatedOpacity(
-          opacity: 0.7,
-          duration: const Duration(milliseconds: 200), // 100
-          child: CustomPaint(painter: _DiagonalGuidePainter()),
-        ),
-      ),
     );
   }
 
@@ -348,6 +352,7 @@ class LayerInteractionManager {
         _editingLayerId = null;
         _z[layer.id] = ++_zCounter;
       });
+      onLayerTap?.call(layer);
     } else {
       if (layer.type == LayerType.text) {
         setState(() => _editingLayerId = layer.id);
@@ -383,8 +388,9 @@ class LayerInteractionManager {
       LayerModel layer,
       ScaleUpdateDetails details,
       double baseWidth,
-      double baseHeight,
-      ) {
+      double baseHeight, {
+        bool isCover = false,
+      }) {
     if (_editingLayerId == layer.id) return; // 편집 중이면 제스처 무시
 
     final gestureState = _gestureStates[layer.id];
@@ -479,7 +485,13 @@ class LayerInteractionManager {
     final dynamicSnapStrength = baseSnap * 0.5;
 
     // ==================== 위치 스냅 처리 ====================
-    final coverCenter = Offset(coverSize.width / 2, coverSize.height / 2);
+    // [Spine fix] 스냅 기준점: 커버인 경우 Spine 제외 중앙
+    final centerX = isCover 
+        ? kCoverSpineWidth + (coverSize.width - kCoverSpineWidth) / 2
+        : coverSize.width / 2;
+        
+    final coverCenter = Offset(centerX, coverSize.height / 2);
+    
     bool verticalSnap = false; // 세로 중앙선 스냅 여부
     bool horizontalSnap = false; // 가로 중앙선 스냅 여부
     bool diagonalSnap = false; // 대각선 스냅 여부
@@ -616,13 +628,13 @@ class LayerInteractionManager {
     );
     ref.read(albumEditorViewModelProvider.notifier).updateLayer(updatedLayer);
 
-    // 가이드라인 숨김
+    // 가이드라인 숨김 및 제스처 상태 해제
     setState(() {
       _showVerticalGuide = false;
       _showHorizontalGuide = false;
       _showDiagonalGuide = false;
+      _gestureStates.remove(layer.id);
     });
-    _gestureStates.remove(layer.id);
   }
 
   // ==================== 애니메이션 메서드 ====================

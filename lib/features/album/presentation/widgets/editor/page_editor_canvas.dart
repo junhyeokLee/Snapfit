@@ -15,6 +15,8 @@ class PageEditorCanvas extends StatelessWidget {
   final LayerInteractionManager interaction;
   final LayerBuilder layerBuilder;
   final ValueChanged<Size> onCanvasSizeChanged;
+  final Color? backgroundColor;
+  final bool isCover;
 
   const PageEditorCanvas({
     super.key,
@@ -25,28 +27,55 @@ class PageEditorCanvas extends StatelessWidget {
     required this.interaction,
     required this.layerBuilder,
     required this.onCanvasSizeChanged,
+    this.backgroundColor,
+    this.isCover = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Cover Style Constants matching Home
+    const coverRadius = BorderRadius.only(
+      topRight: Radius.circular(12),
+      bottomRight: Radius.circular(12),
+      bottomLeft: Radius.zero,
+      topLeft: Radius.zero,
+    );
+
     return Container(
       key: canvasKey,
       width: canvasW,
       height: canvasH,
-      decoration: BoxDecoration(
-        color: SnapFitColors.pureWhite,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [
-          BoxShadow(
-            color: SnapFitColors.isDark(context)
-                ? SnapFitColors.accentLight.withOpacity(0.2)
-                : Colors.black45,
-            blurRadius: 20,
-          ),
-        ],
-      ),
+      decoration: isCover
+          ? BoxDecoration(
+              color: backgroundColor ?? SnapFitColors.pureWhite,
+              borderRadius: coverRadius,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 10,
+                  offset: const Offset(14, 12),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF5c5d8d).withOpacity(0.12),
+                  blurRadius: 10,
+                  offset: const Offset(24, 12),
+                ),
+              ],
+            )
+          : BoxDecoration(
+              color: backgroundColor ?? SnapFitColors.pureWhite,
+              borderRadius: BorderRadius.circular(8.r),
+              boxShadow: [
+                BoxShadow(
+                  color: SnapFitColors.isDark(context)
+                      ? SnapFitColors.accentLight.withOpacity(0.2)
+                      : Colors.black45,
+                  blurRadius: 20,
+                ),
+              ],
+            ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: isCover ? coverRadius : BorderRadius.circular(8.r),
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 0 && constraints.maxHeight > 0) {
@@ -78,7 +107,7 @@ class PageEditorCanvas extends StatelessWidget {
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                Container(color: SnapFitColors.pureWhite),
+                Container(color: backgroundColor ?? SnapFitColors.pureWhite),
                 ...interaction.sortByZ(layers).map((layer) {
                   if (layer.type == LayerType.image) {
                     return layerBuilder.buildImage(layer);

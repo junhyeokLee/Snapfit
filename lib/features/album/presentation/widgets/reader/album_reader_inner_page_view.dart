@@ -6,6 +6,7 @@ import '../../../../../core/constants/cover_theme.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import 'album_reader_editable_canvas.dart';
+import 'album_reader_spread_canvas.dart';
 import 'slow_page_physics.dart';
 
 /// 앨범 리더 내지 페이지 뷰
@@ -37,20 +38,55 @@ class AlbumReaderInnerPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.sizeOf(context).width;
     final screenH = MediaQuery.sizeOf(context).height;
-    final pageH = (screenH * 0.58).clamp(260.0, 520.0);
-    final pageW = pageH * (6 / 8); // 내지 페이지는 세로형 비율 고정
+
+    // 커버 비율(width/height)
+    final coverRatio = selectedCover.ratio; // 1.0=정방, <1=세로, >1=가로
+
+    // 가로 앨범(ratio > 1): 높이를 기준으로 계산 (너비가 2배라서 너비 기준이면 너무 작아짐)
+    // 세로·정방 앨범(ratio <= 1): 너비를 기준으로 계산 (한 페이지 = 화면 절반)
+    final double pageW;
+    final double pageH;
+
+    if (coverRatio > 1.0) {
+      // 가로형: 사용 가능한 높이의 45%를 한 페이지 높이로 사용
+      final h = screenH * 0.45;
+      final w = h * coverRatio;
+      // 스프레드 너비(w*2)가 화면을 넘어가면 다시 너비 기준으로 클램프
+      if (w * 2 > screenW - 32.w) {
+        pageW = (screenW - 32.w) / 2;
+        pageH = pageW / coverRatio;
+      } else {
+        pageW = w;
+        pageH = h;
+      }
+    } else {
+      // 세로·정방형: 스프레드 = 화면 너비 - 여백
+      final spreadAvailW = screenW - 32.w;
+      pageW = spreadAvailW / 2;
+      pageH = (pageW / coverRatio).clamp(0.0, screenH * 0.58);
+    }
+
+    // Spread logic: Combine two pages into one.
+    // If we have 10 pages, we'll have 5 spreads.
+    final spreadCount = (pages.length / 2).ceil();
 
     return PageView.builder(
       controller: pageController,
       physics: const SlowPagePhysics(),
-      itemCount: pages.length,
+      itemCount: spreadCount,
       onPageChanged: (index) {
-        onPageChanged(index);
+        onPageChanged(index * 2); // Notify approx page index
         onStateChanged();
       },
       itemBuilder: (context, index) {
-        final page = pages[index];
+        final leftIdx = index * 2;
+        final rightIdx = leftIdx + 1;
+
+        final leftPage = leftIdx < pages.length ? pages[leftIdx] : null;
+        final rightPage = rightIdx < pages.length ? pages[rightIdx] : null;
+
         return Center(
           child: GestureDetector(
             onTap: () {
@@ -60,11 +96,11 @@ class AlbumReaderInnerPageView extends StatelessWidget {
               }
             },
             behavior: HitTestBehavior.translucent,
-            child: AlbumReaderEditableCanvas(
-              page: page,
+            child: AlbumReaderSpreadCanvas(
+              leftPage: leftPage,
+              rightPage: rightPage,
               canvasW: pageW,
               canvasH: pageH,
-              canvasKey: canvasKey,
               interaction: interaction,
               layerBuilder: layerBuilder,
               onCanvasSizeChanged: onCanvasSizeChanged,

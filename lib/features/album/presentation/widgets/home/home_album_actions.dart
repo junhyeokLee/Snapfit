@@ -4,6 +4,7 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
 import '../../views/add_cover_screen.dart';
+import '../../views/page_editor_screen.dart';
 import '../../views/album_reader_screen.dart';
 import 'home_delete_album_dialog.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -140,17 +141,22 @@ class HomeAlbumActions {
       return;
     }
 
-    // 3. 진입
-    await Navigator.push(
+    // 3. 진입 (리더 화면으로 이동)
+    final needsRefresh = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
     );
 
-    // 4. 복귀 시 잠금 해제 (Unlock)
+    // 4. 복귀 시 잠금 해제 (항상 실행)
     try {
       await repository.unlockAlbum(album.id);
     } catch (e) {
       debugPrint('HomeAlbumActions: Unlock failed: $e');
+    } finally {
+      // 수정사항이 있을 때(needsRefresh == true)만 홈 화면 갱신
+      if (context.mounted && needsRefresh == true) {
+        ref.read(homeViewModelProvider.notifier).refresh();
+      }
     }
   }
 }

@@ -36,6 +36,7 @@ class LayerModel {
   /// 운영급: 원본/미리보기 URL
   final String? originalUrl;
   final String? previewUrl;
+  final double opacity; // 레이어 불투명도 (0.0 ~ 1.0)
 
   LayerModel({
     required this.id,
@@ -57,6 +58,7 @@ class LayerModel {
     this.imageUrl,
     this.originalUrl,
     this.previewUrl,
+    this.opacity = 1.0,
   });
 
   LayerModel copyWith({
@@ -81,6 +83,7 @@ class LayerModel {
     String? imageUrl,
     String? originalUrl,
     String? previewUrl,
+    double? opacity,
   }) {
     return LayerModel(
       id: id ?? this.id,
@@ -102,6 +105,7 @@ class LayerModel {
       imageUrl: imageUrl ?? this.imageUrl,
       originalUrl: originalUrl ?? this.originalUrl,
       previewUrl: previewUrl ?? this.previewUrl,
+      opacity: opacity ?? this.opacity,
     );
   }
 }

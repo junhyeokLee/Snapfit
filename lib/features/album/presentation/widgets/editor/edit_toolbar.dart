@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/layer.dart';
@@ -10,6 +11,7 @@ class EditToolbar extends StatelessWidget {
   final VoidCallback onAddText;
   final VoidCallback onAddPhoto;
   final VoidCallback onOpenCoverSelector;
+
   /// 첫 번째 버튼 라벨 (커버 에디터: "커버", 페이지 에디터: "템플릿")
   final String coverLabel;
 
@@ -26,15 +28,31 @@ class EditToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _toolbarButton(context, Icons.menu_book_outlined, coverLabel, onOpenCoverSelector),
-          _toolbarButton(context, Icons.text_fields, "텍스트", onAddText),
-          _toolbarButton(context, Icons.photo, "오버레이", onAddPhoto),
-        ],
+      padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 20.h, top: 10.h),
+      child: Container(
+        height: 72.h,
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context).withOpacity(0.95), // theme support
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(SnapFitColors.isDark(context) ? 0.3 : 0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // "글쓰기"
+            _toolbarButton(context, Icons.text_fields_outlined, "글쓰기", onAddText),
+            // "사진"
+            _toolbarButton(context, Icons.photo_outlined, "사진", onAddPhoto),
+            // "커버"
+            _toolbarButton(context, Icons.dashboard_outlined, "커버", onOpenCoverSelector),
+          ],
+        ),
       ),
     );
   }
@@ -47,17 +65,19 @@ class EditToolbar extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: onTap,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 26.sp, color: SnapFitColors.accent),
+            Icon(icon, size: 24.sp, color: SnapFitColors.textPrimaryOf(context)),
+            SizedBox(height: 6.h),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10.sp,
-                color: SnapFitColors.textPrimaryOf(context).withOpacity(0.85),
+                fontSize: 11.sp,
+                color: SnapFitColors.textSecondaryOf(context),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

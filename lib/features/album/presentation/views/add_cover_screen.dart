@@ -8,8 +8,17 @@ import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/snapfit_gradient_background.dart';
 import '../../data/api/album_provider.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/layer.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/cover_view_model.dart';
+import '../widgets/editor/editor_bottom_menu.dart';
+import '../widgets/editor/decorate_panel.dart';
+import '../widgets/editor/layer_manager_panel.dart';
+import '../widgets/editor/template_selection_panel.dart';
+import '../controllers/layer_interaction_manager.dart';
+import '../controllers/toolbar_action_handler.dart';
+import '../controllers/text_editor_manager.dart';
+import '../../../../shared/widgets/album_bottom_sheet.dart';
 
 
 /// 커버 편집 화면 (앨범 생성/편집 공통)
@@ -56,6 +65,12 @@ class AddCoverScreen extends ConsumerStatefulWidget {
 }
 
 class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
+  final GlobalKey<EditCoverState> _coverEditorKey = GlobalKey<EditCoverState>();
+  final GlobalKey _canvasKey = GlobalKey();
+  late final LayerInteractionManager _interaction;
+  late final ToolbarActionHandler _toolbarActionHandler;
+  EditorMode _currentMode = EditorMode.none;
+
   late final ScrollController _gridController;
   bool _initialized = false;
   late CoverSize _selectedCover;
@@ -69,14 +84,20 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
             ? '앨범 생성 플로우 · 커버 편집 (Step 2)'
             : '신규 앨범 커버 생성';
     ScreenLogger.enter('AddCoverScreen', mode);
-    _gridController = ScrollController()
-      ..addListener(() {
+    
+    _interaction = LayerInteractionManager(
+      ref: ref,
+      coverKey: _canvasKey,
+      setState: setState,
+      getCoverSize: () => coverCanvasBaseSize(_selectedCover), // Approximate size
+      onEditText: (layer) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
-        if (_gridController.position.pixels >=
-            _gridController.position.maxScrollExtent - 300) {
-          vm.loadMore();
-        }
-      });
+        TextEditorManager(context, vm).openForExisting(layer);
+      },
+    );
+    _toolbarActionHandler = ToolbarActionHandler(context, ref);
+
+    _gridController = ScrollController();
 
     // 플로우에서 넘어온 경우, 이미 선택된 커버 사이즈가 있을 수 있으므로 우선 사용
     _selectedCover = widget.initialCoverSize ??
@@ -145,39 +166,88 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     super.dispose();
   }
 
+  void _handleModeChange(EditorMode mode, List<LayerModel> layers) {
+    if (mode == EditorMode.none) {
+      setState(() => _currentMode = mode);
+      return;
+    }
+
+    if (mode == EditorMode.text) {
+       _currentMode = EditorMode.none;
+       final vm = ref.read(albumEditorViewModelProvider.notifier);
+       final effectiveSize = coverCanvasBaseSize(_selectedCover);
+       TextEditorManager(context, vm).openAndCreateNew(
+         Size(
+           effectiveSize.width * 0.92,
+           effectiveSize.height * 0.18,
+         ),
+       );
+       return;
+    }
+
+    setState(() => _currentMode = mode);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        if (mode == EditorMode.decorate) {
+          return DecoratePanel(onClose: () => Navigator.pop(ctx));
+        } else if (mode == EditorMode.layer) {
+          return LayerManagerPanel(layers: layers);
+        } else if (mode == EditorMode.template) {
+           return const TemplateSelectionPanel();
+        }
+        return const SizedBox.shrink();
+      }
+    ).then((_) {
+      if (mounted) setState(() => _currentMode = EditorMode.none);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    ref.watch(albumEditorViewModelProvider);
+    final asyncState = ref.watch(albumEditorViewModelProvider);
+    final layers = asyncState.value?.layers ?? [];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final fixedMediaQuery = MediaQuery.of(context).copyWith(
-          viewInsets: EdgeInsets.zero,   // 키보드가 viewInsets를 밀어내는걸 완전 무시
-          padding: EdgeInsets.zero,      // SafeArea 밀림 제거
-        );
-
-        return MediaQuery(
-          data: fixedMediaQuery,
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: SnapFitColors.backgroundOf(context),
-            body: Container(
-              color: SnapFitColors.backgroundOf(context),
-              child: Stack(
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          backgroundColor: SnapFitColors.backgroundOf(context), // Match theme
+          body: Stack(
+            children: [
+              Column(
                 children: [
-                  Positioned.fill(
+                  Expanded(
                     child: EditCover(
+                      key: _coverEditorKey,
                       editAlbum: widget.editAlbum,
                       isFromCreateFlow: widget.isFromCreateFlow,
-                      albumTitle: widget.albumTitle, // 앨범 제목 전달
+                      albumTitle: widget.albumTitle,
                       onAlbumCreated: widget.onAlbumCreated,
                       onRegisterCompleteAction: widget.onRegisterCompleteAction,
                       initialCoverSize: _selectedCover,
+                      showBottomToolbar: false, // Use shared menu
+                      interaction: _interaction,
+                      canvasKey: _canvasKey,
+                      onSizeChanged: (size) {
+                        // Synced size for menu actions
+                      },
                     ),
+                  ),
+                  // Bottom Menu
+                  EditorBottomMenu(
+                    currentMode: _currentMode,
+                    isCover: true,
+                    onModeChanged: (mode) => _handleModeChange(mode, layers),
+                    onAddPhoto: () => _toolbarActionHandler.addPhoto(coverCanvasBaseSize(_selectedCover)),
+                    onCover: () => _toolbarActionHandler.openCoverTheme(),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
         );
       },

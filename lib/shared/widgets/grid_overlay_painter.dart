@@ -11,14 +11,21 @@ class GridOverlayPainter extends CustomPainter {
       ..color = Colors.black.withOpacity(0.08)
       ..strokeWidth = 1;
     final startX = leftSpine;
-    final stepX = (size.width - startX) / 3;
-    final stepY = size.height / 3;
-    for (double x = startX; x <= size.width; x += stepX) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (double y = 0; y <= size.height; y += stepY) {
-      canvas.drawLine(Offset(startX, y), Offset(size.width, y), paint);
-    }
+    
+    // [Center Guide] 중앙 보조선만 유지 (3x3 격자 제거)
+
+    // [Center Guide] 중앙 보조선 추가 (스냅 라인과 시각적 조화)
+    final centerPaint = Paint()
+      ..color = Colors.black.withOpacity(0.15) // Slightly darker
+      ..strokeWidth = 1.3;
+    
+    final centerX = startX + (size.width - startX) / 2;
+    final centerY = size.height / 2;
+    
+    // 세로 중앙선
+    canvas.drawLine(Offset(centerX, 0), Offset(centerX, size.height), centerPaint);
+    // 가로 중앙선
+    canvas.drawLine(Offset(startX, centerY), Offset(size.width, centerY), centerPaint);
   }
 
   @override

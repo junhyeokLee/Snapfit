@@ -1,7 +1,9 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../views/album_reader_screen.dart';
+import '../../../domain/entities/album.dart';
+import '../../views/page_editor_screen.dart';
+import '../editor/edit_cover.dart';
 import 'home_paper_unfold_overlays.dart';
 
 const _coverRadius = BorderRadius.only(
@@ -12,7 +14,13 @@ const _coverRadius = BorderRadius.only(
 
 /// Paper: 앨범 페이지 편집 화면으로 갈 때 커버가 부채꼴로 펼쳐지며 드러나는 커스텀 라우트
 class HomePaperUnfoldRoute extends PageRouteBuilder {
-  HomePaperUnfoldRoute({Rect? cardRect, ui.Image? coverImage})
+  final Album album;
+
+  HomePaperUnfoldRoute({
+    required this.album,
+    Rect? cardRect, 
+    ui.Image? coverImage,
+  })
       : _cardRect = cardRect,
         _coverImage = coverImage,
         super(
@@ -21,6 +29,7 @@ class HomePaperUnfoldRoute extends PageRouteBuilder {
           reverseTransitionDuration: const Duration(milliseconds: 320),
           pageBuilder: (context, animation, secondaryAnimation) {
             return HomePaperUnfoldPage(
+              album: album,
               cardRect: cardRect,
               coverImage: coverImage,
             );
@@ -71,10 +80,16 @@ class HomePaperUnfoldRoute extends PageRouteBuilder {
 
 /// 라우트 위에 커버 열림 오버레이를 붙이고, 열림 애니메이션 후 앨범 페이지 편집 화면만 보이게 함
 class HomePaperUnfoldPage extends StatefulWidget {
+  final Album album;
   final Rect? cardRect;
   final ui.Image? coverImage;
 
-  const HomePaperUnfoldPage({super.key, this.cardRect, this.coverImage});
+  const HomePaperUnfoldPage({
+    super.key, 
+    required this.album,
+    this.cardRect, 
+    this.coverImage,
+  });
 
   @override
   State<HomePaperUnfoldPage> createState() => _HomePaperUnfoldPageState();
@@ -107,7 +122,13 @@ class _HomePaperUnfoldPageState extends State<HomePaperUnfoldPage>
 
   @override
   Widget build(BuildContext context) {
-    final content = const AlbumReaderScreen();
+    // 기존 PageEditorScreen 대신, 커버 편집 전용 EditCover를 사용해
+    // 이전 버전의 커버 편집 경험(팝업 메뉴, 정사이즈 등)을 복원함
+    final content = Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white, // 기본 배경색
+      body: EditCover(editAlbum: widget.album),
+    );
     final hasOverlay = widget.coverImage != null &&
         widget.cardRect != null &&
         !widget.cardRect!.isEmpty;

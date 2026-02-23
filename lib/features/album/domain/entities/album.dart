@@ -28,7 +28,10 @@ sealed class Album with _$Album {
     /// 사용자 지정 순서 (낮을수록 상단)
     @Default(0) int orders,
     /// 현재 편집 중인 사용자 ID (없으면 null)
+    /// 현재 편집 중인 사용자 ID (없으면 null)
     String? lockedBy,
+    /// 현재 편집 중인 사용자 고유 ID (없으면 null, 본인 확인용)
+    String? lockedById,
     /// 앨범 소유자 ID
     @Default('') String userId,
     @Default('') String createdAt,

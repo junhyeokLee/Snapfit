@@ -11,6 +11,7 @@ import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/cover_view_model.dart';
 import 'album_reader_screen.dart';
 import 'add_cover_screen.dart';
+import 'page_editor_screen.dart';
 import '../../data/api/album_provider.dart';
 
 /// 앨범 생성 플로우 화면 (스텝1~3)
@@ -193,7 +194,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                  // 즉시 편집 화면으로 이동 (로딩 화면 표시됨)
                  Navigator.pushReplacement(
                    context,
-                   MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
+                   MaterialPageRoute(builder: (_) => const PageEditorScreen(initialPageIndex: 1)),
                  );
               }
             }

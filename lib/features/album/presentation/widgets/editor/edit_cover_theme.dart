@@ -102,7 +102,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
 
     return Material(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      color: const Color(0xFF9893a9),
+      color: const Color(0xFF0F1113), // Unified dark theme
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
         height: 300.h,
@@ -199,8 +199,8 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                                       alignment: Alignment.centerLeft,
                                       child: CustomPaint(
                                         painter: SpinePainter(
-                                          baseStart: Colors.black.withOpacity(0.1),
-                                          baseEnd: Colors.black.withOpacity(0.1),
+                                          baseStart: Colors.white.withOpacity(0.05),
+                                          baseEnd: Colors.white.withOpacity(0.05),
                                         ),
                                         size: Size(miniLeftSpine.w, double.infinity),
                                       ),

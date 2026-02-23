@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../../../../core/constants/cover_size.dart';
 
 import '../../../core/constants/image_templates.dart';
 import '../../../core/constants/page_templates.dart';
@@ -107,6 +108,7 @@ class AlbumEditorService {
     required AssetEntity asset,
     required Size canvasSize,
     String? templateKey,
+    bool isCover = false,
   }) async {
     final maxW = canvasSize.width * 0.8;
     final maxH = canvasSize.height * 0.8;
@@ -138,8 +140,17 @@ class AlbumEditorService {
       }
     }
 
+    // [Spine fix] 커버인 경우 Spine(14px)을 고려한 시각적 중앙 정렬
+    final double centerX;
+    if (isCover) {
+      // (SpineWidth + (전체너비 - SpineWidth - LayerWidth) / 2)
+      centerX = kCoverSpineWidth + (canvasSize.width - kCoverSpineWidth - width) / 2;
+    } else {
+      centerX = (canvasSize.width - width) / 2;
+    }
+
     final pos = Offset(
-      (canvasSize.width - width) / 2,
+      centerX,
       (canvasSize.height - height) / 2,
     );
 
@@ -164,6 +175,7 @@ class AlbumEditorService {
     Color? color,
     double? initialWidth,
     double? initialHeight,
+    bool isCover = false, // Added isCover parameter
   }) {
     // ✅ layer_builder와 정확히 동일한 렌더 기준 (+55 padding)
     final tp = TextPainter(
@@ -187,8 +199,19 @@ class AlbumEditorService {
     final double textBiasX = (safeWidth - textWidth) / 2;
 
     // 커버 중앙에 '텍스트 자체의 중심'이 오도록 보정
+    // [Spine fix] 텍스트 시각적 중앙 정렬
+    final double centerX;
+    
+    // (1) safeWidth 박스 자체를 캔버스 중앙(혹은 Spine 제외 중앙)에 배치할 X 좌표
+    if (isCover) {
+      centerX = kCoverSpineWidth + (canvasSize.width - kCoverSpineWidth - safeWidth) / 2;
+    } else {
+      centerX = (canvasSize.width - safeWidth) / 2;
+    }
+
+    // (2) 텍스트 내부의 실제 글자 중심이 박스 중심과 일치하도록 bias 역보정
     final pos = Offset(
-      ((canvasSize.width - safeWidth) / 2) - textBiasX,
+      centerX - textBiasX,
       (canvasSize.height - safeHeight) / 2,
     );
 
@@ -228,6 +251,7 @@ class AlbumEditorService {
       asset: asset,
       canvasSize: canvasSize,
       templateKey: templateKey,
+      isCover: page.isCover,
     );
 
     page.layers.add(newLayer);
@@ -255,6 +279,7 @@ class AlbumEditorService {
       color: color,
       initialWidth: initialWidth,
       initialHeight: initialHeight,
+      isCover: page.isCover,
     );
     page.layers.add(newLayer);
     return page;
@@ -271,13 +296,21 @@ class AlbumEditorService {
     final oldLayer = page.layers[idx];
     page.layers[idx] = oldLayer.copyWith(
       text: updated.text ?? oldLayer.text,
-      textStyle: updated.textStyle,
+      textStyle: updated.textStyle ?? oldLayer.textStyle,
       textStyleType: updated.textStyleType,
-      bubbleColor: updated.bubbleColor,
-      position: updated.position,
-      scale: updated.scale,
-      rotation: updated.rotation,
+      bubbleColor: updated.bubbleColor ?? oldLayer.bubbleColor,
+      position: updated.position ?? oldLayer.position,
+      scale: updated.scale ?? oldLayer.scale,
+      rotation: updated.rotation ?? oldLayer.rotation,
       textAlign: updated.textAlign ?? oldLayer.textAlign,
+      opacity: updated.opacity,
+      // [Fix] 이미지 변경 반영을 위해 asset 및 URL 관련 필드 추가
+      asset: updated.asset,
+      imageUrl: updated.imageUrl,
+      previewUrl: updated.previewUrl,
+      originalUrl: updated.originalUrl,
+      imageBackground: updated.imageBackground ?? oldLayer.imageBackground,
+      textBackground: updated.textBackground ?? oldLayer.textBackground,
     );
     return page;
   }

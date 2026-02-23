@@ -5,20 +5,30 @@ import '../dto/request/invite_album_request.dart';
 import '../dto/response/invite_accept_response.dart';
 import '../dto/response/invite_info_response.dart';
 import '../dto/response/invite_link_response.dart';
-import '../../../../core/user/user_id_service.dart';
+import '../dto/response/invite_link_response.dart';
+
+import '../../../../core/interceptors/token_storage.dart';
 
 class AlbumMemberRepositoryImpl implements AlbumMemberRepository {
   final AlbumMemberApi api;
-  final UserIdService userIdService;
+  final TokenStorage tokenStorage;
 
   AlbumMemberRepositoryImpl(
     this.api, {
-    required this.userIdService,
+    required this.tokenStorage,
   });
+
+  Future<String> _getUserId() async {
+    final id = await tokenStorage.getUserId();
+    if (id == null || id.isEmpty) {
+      return '';
+    }
+    return id;
+  }
 
   @override
   Future<InviteLinkResponse> invite(int albumId, {String role = 'EDITOR'}) async {
-    final userId = await userIdService.getOrCreate();
+    final userId = await _getUserId();
     return api.invite(
       albumId,
       userId,
@@ -33,7 +43,7 @@ class AlbumMemberRepositoryImpl implements AlbumMemberRepository {
 
   @override
   Future<InviteAcceptResponse> acceptInvite(String token) async {
-    final userId = await userIdService.getOrCreate();
+    final userId = await _getUserId();
     return api.acceptInvite(token, AcceptInviteRequest(userId: userId));
   }
 }

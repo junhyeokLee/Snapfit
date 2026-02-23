@@ -1,16 +1,159 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Assuming svg is used or remove if not available
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/entities/premium_template.dart';
+import '../../data/api/template_provider.dart';
+import '../../../album/presentation/widgets/home/home_album_actions.dart';
+import '../../../album/domain/entities/layer.dart';
+import '../../../album/domain/entities/layer_export_mapper.dart';
+import '../widgets/template_page_renderer.dart';
+import 'template_full_screen_view.dart';
+import 'template_assembly_screen.dart';
 
-class TemplateDetailScreen extends StatelessWidget {
+class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
 
   const TemplateDetailScreen({
     super.key,
     required this.template,
   });
+
+  @override
+  ConsumerState<TemplateDetailScreen> createState() => _TemplateDetailScreenState();
+}
+
+class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
+  late PremiumTemplate _template;
+  bool _isUsing = false;
+  
+  // Parsed template data: List of pages, each page is a list of layers
+  List<List<LayerModel>> _parsedPages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _template = widget.template;
+    _parseTemplateJson();
+    _refreshTemplate();
+  }
+
+  void _parseTemplateJson() {
+    if (_template.templateJson == null || _template.templateJson!.isEmpty) {
+      _parsedPages = [];
+      return;
+    }
+
+    try {
+      final Map<String, dynamic> data = jsonDecode(_template.templateJson!);
+      final List<dynamic>? pagesList = data['pages'] as List<dynamic>?;
+      
+      if (pagesList != null) {
+        // Assume preview canvas size (approx ratio)
+        // 500x500 for parsing normalization
+        const canvasSize = Size(500, 500); 
+        
+        _parsedPages = pagesList.map((p) {
+          final map = p as Map<String, dynamic>;
+          final layerList = (map['layers'] as List<dynamic>?) ?? [];
+          return layerList.map((l) {
+            return LayerExportMapper.fromJson(
+              l as Map<String, dynamic>,
+              canvasSize: canvasSize,
+            );
+          }).toList();
+        }).toList();
+        
+        // Sort by pageNumber if needed, but array order usually matches
+      }
+    } catch (e) {
+      debugPrint('Failed to parse templateJson: $e');
+      _parsedPages = [];
+    }
+  }
+
+  Future<void> _refreshTemplate() async {
+    try {
+      final updated = await ref.read(templateRepositoryProvider).getTemplate(_template.id);
+      if (mounted) {
+        setState(() {
+          _template = updated;
+          _parseTemplateJson(); // Re-parse on update
+        });
+      }
+    } catch (e) {
+      // Ignore initial fetch error if offline or just rely on passed data
+    }
+  }
+
+  Future<void> _onLike() async {
+    final oldStatus = _template.isLiked;
+    final oldCount = _template.likeCount;
+
+    // 1. Optimistic Update
+    setState(() {
+      _template = _template.copyWith(
+        isLiked: !oldStatus,
+        likeCount: oldStatus ? oldCount - 1 : oldCount + 1,
+      );
+    });
+
+    try {
+      // 2. API Call
+      await ref.read(templateRepositoryProvider).likeTemplate(_template.id);
+      
+      // Invalidate list provider so the previous screen updates
+      ref.invalidate(templateListProvider);
+    } catch (e) {
+      // 3. Rollback on failure
+      if (mounted) {
+        setState(() {
+          _template = _template.copyWith(
+            isLiked: oldStatus,
+            likeCount: oldCount,
+          );
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('좋아요 처리에 실패했습니다: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _onUse() async {
+    if (_parsedPages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('템플릿 데이터를 불러오는데 실패했습니다.')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TemplateAssemblyScreen(
+          template: _template,
+          parsedPages: _parsedPages,
+        ),
+      ),
+    );
+  }
+
+  void _openFullScreenView(int initialIndex) {
+    if (_parsedPages.isEmpty && _template.previewImages.isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TemplateFullScreenView(
+          parsedPages: _parsedPages,
+          previewImages: _template.previewImages,
+          initialIndex: initialIndex,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +163,11 @@ class TemplateDetailScreen extends StatelessWidget {
         children: [
           CustomScrollView(
             slivers: [
-              // Custom App Bar using SliverAppBar or just a SliverToBoxAdapter for content
-              // Using SliverList for scrolling content
               SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 60.h), // Top padding
+                    SizedBox(height: 60.h),
                     // Header
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -64,12 +205,10 @@ class TemplateDetailScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 30.h),
                     
-                    // Main Hero Image (Card UI reused larged)
                     _buildHeroImage(),
                     
                     SizedBox(height: 40.h),
                     
-                    // "Start with this template" Section
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Column(
@@ -83,36 +222,38 @@ class TemplateDetailScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: 12.h),
-                          Text(
-                            template.subTitle,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              color: const Color(0xFF666666),
-                              height: 1.5,
+                          if (_template.subTitle != null)
+                            Text(
+                              _template.subTitle!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                color: const Color(0xFF666666),
+                                height: 1.5,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
                     
                     SizedBox(height: 40.h),
                     
-                    // Feature Cards
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildFeatureCard(Icons.photo_library_outlined, '제주 전용 레이아웃', '여행지 감성에 맞춘 스티커와 프레임이 포함되어 있습니다.')),
-                          SizedBox(width: 16.w),
-                          Expanded(child: _buildFeatureCard(Icons.people_outline, '5인 협업 최적화', '가족, 친구들과 함께 각자의 페이지를 동시에 편집하세요.')),
-                        ],
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                             Expanded(child: _buildFeatureCard(Icons.photo_library_outlined, '제주 전용 레이아웃', '여행지 감성에 맞춘 스티커와 프레임이 포함되어 있습니다.')),
+                             SizedBox(width: 16.w),
+                             Expanded(child: _buildFeatureCard(Icons.people_outline, '5인 협업 최적화', '가족, 친구들과 함께 각자의 페이지를 동시에 편집하세요.')),
+                          ],
+                        ),
                       ),
                     ),
                     
                     SizedBox(height: 50.h),
                     
-                    // Page Previews
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Row(
@@ -126,10 +267,10 @@ class TemplateDetailScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '총 ${template.pageCount}페이지',
+                            '총 ${_template.pageCount}페이지',
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: SnapFitColors.accent, // Using primary color for link-like look
+                              color: SnapFitColors.accent,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -142,9 +283,20 @@ class TemplateDetailScreen extends StatelessWidget {
                       child: ListView.separated(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         scrollDirection: Axis.horizontal,
-                        itemCount: 3, // Mock count
+                        itemCount: _template.pageCount,
                         separatorBuilder: (_, __) => SizedBox(width: 16.w),
-                        itemBuilder: (context, index) => _buildPagePreviewPlaceholder(index),
+                        itemBuilder: (context, index) {
+                          // 1. Try to render parsed layout
+                          if (index < _parsedPages.length) {
+                             return _buildPageLayoutPreview(index, _parsedPages[index]);
+                          }
+                          // 2. Fallback to preview images
+                          if (index < _template.previewImages.length) {
+                             return _buildPagePreviewItem(_template.previewImages[index]);
+                          }
+                          // 3. Fallback to placeholder
+                          return _buildPagePreviewPlaceholder(index);
+                        },
                       ),
                     ),
                     Center(
@@ -169,7 +321,6 @@ class TemplateDetailScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          // Mock Avatar Group
                           SizedBox(
                             width: 60.w,
                             height: 30.w,
@@ -182,37 +333,38 @@ class TemplateDetailScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 12.w),
-                          RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: const Color(0xFF555555),
-                              ),
-                              children: [
-                                const TextSpan(text: '현재 '),
-                                TextSpan(
-                                  text: '${template.userCount}명',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: SnapFitColors.accent,
-                                  ),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: const Color(0xFF555555),
                                 ),
-                                const TextSpan(text: '이 이 템플릿으로 제작 중입니다.'),
-                              ],
+                                children: [
+                                  const TextSpan(text: '현재 '),
+                                  TextSpan(
+                                    text: '${_template.userCount}명',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: SnapFitColors.accent,
+                                    ),
+                                  ),
+                                  const TextSpan(text: '이 이 템플릿으로 제작 중입니다.'),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                     
-                    SizedBox(height: 120.h), // Bottom padding for fixed button
+                    SizedBox(height: 120.h),
                   ],
                 ),
               ),
             ],
           ),
           
-          // Fixed Bottom Action Bar
           Positioned(
             bottom: 0,
             left: 0,
@@ -236,18 +388,32 @@ class TemplateDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.favorite_border, color: Colors.grey),
-                      SizedBox(height: 4.h),
-                      Text('241', style: TextStyle(fontSize: 11.sp, color: Colors.grey)),
-                    ],
+                  GestureDetector(
+                    onTap: _onLike,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _template.isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: _template.isLiked ? Colors.red : Colors.grey,
+                          size: 28.sp,
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          '${_template.likeCount}',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: _template.isLiked ? Colors.red : Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(width: 20.w),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _isUsing ? null : _onUse,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: SnapFitColors.accent,
                         foregroundColor: Colors.white,
@@ -257,7 +423,13 @@ class TemplateDetailScreen extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
-                      child: Row(
+                      child: _isUsing 
+                        ? SizedBox(
+                            width: 24.w, 
+                            height: 24.w, 
+                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          )
+                        : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
@@ -286,12 +458,12 @@ class TemplateDetailScreen extends StatelessWidget {
     return Center(
       child: Container(
         width: 320.w,
-        height: 380.h, // Larger hero
+        height: 380.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
-          color: const Color(0xFFE5DCD0), // Fallback
+          color: const Color(0xFFE5DCD0),
           image: DecorationImage(
-            image: NetworkImage(template.coverImageUrl),
+            image: NetworkImage(_template.coverImageUrl),
             fit: BoxFit.cover,
           ),
           boxShadow: [
@@ -304,7 +476,7 @@ class TemplateDetailScreen extends StatelessWidget {
         ),
         child: Stack(
            children: [
-             if (template.isBest || template.isPremium)
+             if (_template.isBest || _template.isPremium)
               Positioned(
                 top: 24.h,
                 left: 24.w,
@@ -336,12 +508,12 @@ class TemplateDetailScreen extends StatelessWidget {
                left: 24.w,
                right: 24.w,
                child: Text(
-                template.title.replaceAll(' ', ' '),
+                _template.title.replaceAll(' ', ' '),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 28.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // Assuming dark image or overlay
+                  color: Colors.white,
                   shadows: [
                     Shadow(
                       color: Colors.black.withOpacity(0.3),
@@ -361,7 +533,6 @@ class TemplateDetailScreen extends StatelessWidget {
   Widget _buildFeatureCard(IconData icon, String title, String desc) {
     return Container(
       padding: EdgeInsets.all(24.w),
-      height: 180.h,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24.r),
@@ -379,7 +550,7 @@ class TemplateDetailScreen extends StatelessWidget {
            Container(
              padding: EdgeInsets.all(10.w),
              decoration: BoxDecoration(
-               color: const Color(0xFFEBF8F9), // Light Cyan
+               color: const Color(0xFFEBF8F9),
                shape: BoxShape.circle,
              ),
              child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
@@ -420,12 +591,73 @@ class TemplateDetailScreen extends StatelessWidget {
           width: 140.w,
           height: 200.h,
           decoration: BoxDecoration(
-            border: Border.all(color: SnapFitColors.accent.withOpacity(0.3), width: 1.5),
+//            border: Border.all(color: SnapFitColors.accent.withOpacity(0.3), width: 1.5),
+            color: Colors.grey[200],
             borderRadius: BorderRadius.circular(4.r),
           ),
-          child: index == 0 ? Center(
-              child: Icon(Icons.add_a_photo_outlined, color: SnapFitColors.accent.withOpacity(0.5))
-          ) : null, // Placeholder dashed look simulated
+          child: Center(
+              child: Text("Preview ${index + 1}", style: TextStyle(color: Colors.grey))
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPagePreviewItem(String imageUrl) {
+    return Container(
+      width: 180.w,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
+      child: Center(
+        child: Container(
+          width: 140.w,
+          height: 200.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4.r),
+            image: DecorationImage(
+              image: NetworkImage(imageUrl),
+              fit: BoxFit.cover,
+            )
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPageLayoutPreview(int index, List<LayerModel> layers) {
+    return GestureDetector(
+      onTap: () => _openFullScreenView(index),
+      child: Container(
+        width: 180.w,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+        ),
+        child: Center(
+          child: Container(
+            width: 140.w,
+            height: 140.w,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                )
+              ]
+            ),
+            child: TemplatePageRenderer(
+              layers: layers,
+              width: 140.w,
+              height: 140.w,
+            ),
+          ),
         ),
       ),
     );
@@ -447,3 +679,4 @@ class TemplateDetailScreen extends StatelessWidget {
     );
   }
 }
+

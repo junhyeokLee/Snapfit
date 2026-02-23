@@ -62,6 +62,7 @@ List<LayerModel>? parseCoverLayers(
           (l) => LayerExportMapper.fromJson(
             l as Map<String, dynamic>,
             canvasSize: canvasSize,
+            isCover: true,
           ),
         )
         .toList();
@@ -81,10 +82,13 @@ Widget buildStaticImage(LayerModel layer) {
         angle: layer.rotation * math.pi / 180,
         child: Transform.scale(
           scale: layer.scale,
-          child: Container(
-            width: layer.width,
-            height: layer.height,
-            color: Colors.grey[300],
+          child: Opacity(
+            opacity: layer.opacity,
+            child: Container(
+              width: layer.width,
+              height: layer.height,
+              color: Colors.grey[300],
+            ),
           ),
         ),
       ),
@@ -97,13 +101,16 @@ Widget buildStaticImage(LayerModel layer) {
       angle: layer.rotation * math.pi / 180,
       child: Transform.scale(
         scale: layer.scale,
-        child: SizedBox(
-          width: layer.width,
-          height: layer.height,
-          child: SnapfitImage(
-            urlOrGs: url,
-            fit: BoxFit.cover,
-            cacheManager: snapfitImageCacheManager,
+        child: Opacity(
+          opacity: layer.opacity,
+          child: SizedBox(
+            width: layer.width,
+            height: layer.height,
+            child: SnapfitImage(
+              urlOrGs: url,
+              fit: BoxFit.cover,
+              cacheManager: snapfitImageCacheManager,
+            ),
           ),
         ),
       ),
@@ -120,10 +127,13 @@ Widget buildStaticText(LayerModel layer) {
       angle: layer.rotation * math.pi / 180,
       child: Transform.scale(
         scale: layer.scale,
-        child: Text(
-          layer.text ?? '',
-          style: layer.textStyle,
-          textAlign: layer.textAlign,
+        child: Opacity(
+          opacity: layer.opacity,
+          child: Text(
+            layer.text ?? '',
+            style: layer.textStyle,
+            textAlign: layer.textAlign,
+          ),
         ),
       ),
     ),
@@ -183,7 +193,20 @@ class AlbumStatusInfo {
 
 AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
   // 1. Busy (남이 편집 중)
-  if (album.lockedBy != null && album.lockedBy != currentUserId) {
+  // 1. Busy (남이 편집 중)
+  // lockedById가 있는 경우 ID끼리 비교, 없으면(구버전 호환) lockedBy(이름)와 비교하되 이름이 같을 수 있으므로 주의
+  // 여기서는 lockedById가 있으면 우선 사용
+  if (album.lockedById != null) {
+      if (album.lockedById != currentUserId) {
+          return AlbumStatusInfo(
+            label: '${album.lockedBy ?? "다른 사용자"} 편집 중',
+            backgroundColor: const Color(0xFFFFEAEA),
+            foregroundColor: const Color(0xFFFF4D4D),
+            isLocked: true,
+          );
+      }
+  } else if (album.lockedBy != null && album.lockedBy != currentUserId) {
+    // 하위 호환: lockedById가 없는 경우 기존 로직 (이름 비교) 실패 가능성 있음
     return AlbumStatusInfo(
       label: '${album.lockedBy} 편집 중',
       backgroundColor: const Color(0xFFFFEAEA), // Light Red/Orange

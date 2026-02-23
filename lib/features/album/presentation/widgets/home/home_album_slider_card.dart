@@ -123,11 +123,13 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                     (l) => LayerExportMapper.fromJson(
                       l as Map<String, dynamic>,
                       canvasSize: canvasSize,
+                      isCover: true,
                     ),
                   )
                   .toList();
-            } catch (e) {
+            } catch (e, st) {
               print('[HomeCard] Error parsing coverLayersJson: $e');
+              print(st);
               layers = null;
             }
             print('[HomeCard] Parsed ${layers?.length ?? 0} layers');
@@ -148,13 +150,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                   theme: CoverTheme.classic,
                 ),
               );
-            } else {
-              // 레이어 파싱 실패 또는 빈 레이어 → coverImageUrl 폴백
-              final imageUrl =
-                  widget.album.coverThumbnailUrl ??
-                  widget.album.coverPreviewUrl ??
-                  widget.album.coverImageUrl;
-              final hasUrl = (imageUrl as String?)?.isNotEmpty == true;
+            } else if (widget.album.coverTheme?.isNotEmpty == true) {
+              // 레이어가 없어도 테마가 있으면 CoverLayout으로 테마 배경 렌더링
+              final theme = resolveCoverTheme(widget.album.coverTheme);
               final cw = ratio >= 1 ? base : base * ratio;
               final ch = ratio <= 1 ? base : base / ratio;
               final shadowScale = cw / 180;
@@ -164,14 +162,47 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: _coverRadius,
-                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                        shadowScale, focus),
+                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(shadowScale, focus),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: _coverRadius,
+                    child: CoverLayout(
+                      aspect: coverSize.ratio,
+                      layers: const [],
+                      isInteracting: false,
+                      leftSpine: 14.0,
+                      onCoverSizeChanged: (_) {},
+                      buildImage: (layer) => buildStaticImage(layer),
+                      buildText: (layer) => buildStaticText(layer),
+                      sortedByZ: (list) => list,
+                      theme: theme,
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              // 레이어도 없고 테마도 없음 → coverImageUrl 폴백
+              final imageUrl =
+                  widget.album.coverThumbnailUrl ??
+                  widget.album.coverPreviewUrl ??
+                  widget.album.coverImageUrl;
+              final hasUrl = imageUrl?.isNotEmpty == true;
+              final cw = ratio >= 1 ? base : base * ratio;
+              final ch = ratio <= 1 ? base : base / ratio;
+              final shadowScale = cw / 180;
+              coverContent = SizedBox(
+                width: cw,
+                height: ch,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: _coverRadius,
+                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(shadowScale, focus),
                   ),
                   child: ClipRRect(
                     borderRadius: _coverRadius,
                     child: hasUrl
                         ? SnapfitImage(
-                            urlOrGs: imageUrl as String,
+                            urlOrGs: imageUrl!,
                             fit: BoxFit.cover,
                             cacheManager: snapfitImageCacheManager,
                           )
@@ -187,6 +218,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 ),
               );
             }
+
           } else {
             final imageUrl =
                 widget.album.coverThumbnailUrl ??
@@ -316,7 +348,11 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
       if (!context.mounted) return;
       await Navigator.of(context).push(
-        HomePaperUnfoldRoute(cardRect: cardRect, coverImage: coverImage),
+        HomePaperUnfoldRoute(
+          album: widget.album,
+          cardRect: cardRect, 
+          coverImage: coverImage,
+        ),
       );
       
       // 앨범 편집 후 돌아왔을 때 홈 화면 갱신

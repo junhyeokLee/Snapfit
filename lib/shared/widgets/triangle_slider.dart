@@ -101,8 +101,9 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
     final defaultThumb = isDark ? Colors.white : const Color(0xFF121212);
     return SizedBox(
       height: widget.height,
-      width: 48,
+      width: 80, // Increased hit area
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Capture touches in transparent areas
         onVerticalDragStart: (d) {
           _fadeTimer?.cancel();
           setState(() => _isDragging = true);

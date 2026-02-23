@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Album member repository provider
 import '../../../../core/network/dio_provider.dart';
-import '../../../../core/user/user_id_service.dart';
+import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/album_member_repository.dart';
 import '../../domain/repositories/gallery_repository.dart';
@@ -24,21 +24,17 @@ final albumMemberApiProvider = Provider<AlbumMemberApi>((ref) {
   return AlbumMemberApi(dio);
 });
 
-final userIdServiceProvider = Provider<UserIdService>((ref) {
-  return UserIdService();
-});
-
 final albumRepositoryProvider = Provider<AlbumRepository>((ref) {
   final api = ref.read(albumApiProvider);
-  final userIdService = ref.read(userIdServiceProvider);
-  return AlbumRepositoryImpl(api, userIdService: userIdService);
+  final tokenStorage = ref.read(tokenStorageProvider);
+  return AlbumRepositoryImpl(api, tokenStorage: tokenStorage);
 });
 
 /// 앨범 멤버 리포지토리 Provider
 final albumMemberRepositoryProvider = Provider<AlbumMemberRepository>((ref) {
   final api = ref.read(albumMemberApiProvider);
-  final userIdService = ref.read(userIdServiceProvider);
-  return AlbumMemberRepositoryImpl(api, userIdService: userIdService);
+  final tokenStorage = ref.read(tokenStorageProvider);
+  return AlbumMemberRepositoryImpl(api, tokenStorage: tokenStorage);
 });
 
 final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {

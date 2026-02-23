@@ -32,7 +32,7 @@ class ToolbarActionHandler {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF9893a9),
+      backgroundColor: const Color(0xFF0F1113), // Unified dark theme
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
