@@ -35,9 +35,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   @override
   void initState() {
     super.initState();
-    ScreenLogger.enter('AlbumReaderScreen', '앨범 뷰어 · 커버/내지 스프레드 · 페이지 편집 진입');
-    // viewportFraction: 0.88 → 같은 쌍(1-2, 3-4) 내부 peek 효과
-    _pageController = PageController(viewportFraction: 0.88);
+    // 스프레드 뷰에서는 한 화면에 아이템 전체(2장)가 렌더링되므로 1.0 기본값을 사용
+    _pageController = PageController();
     _coverKey = GlobalKey();
     // 앨범 보기 화면: 레이어 인터랙션 완전 비활성화 (드래그/탭/핀치 모두 잠금)
     _interaction = LayerInteractionManager(
