@@ -100,27 +100,36 @@ class PageListSelector extends ConsumerWidget {
     dynamic selectedTheme,
     dynamic selectedCover,
   }) {
+    final ratio = selectedCover?.ratio ?? 3 / 4;
+    final logicalInnerSize = Size(300.0, 300.0 / ratio);
+    final logicalCoverSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+    
     if (isCover) {
       // 커버: CoverLayout으로 테마 + 레이어 렌더링
       final theme = selectedTheme ?? resolveCoverTheme(null);
-      final ratio = selectedCover?.ratio ?? 1.0;
-      return CoverLayout(
-        aspect: ratio,
-        layers: page.layers,
-        isInteracting: false,
-        leftSpine: 0, // 썸네일에서 spine 제거
-        onCoverSizeChanged: (_) {},
-        buildImage: (layer) => buildStaticImage(layer),
-        buildText: (layer) => buildStaticText(layer),
-        sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
-        theme: theme,
+      // [Fix] 커버는 언제나 메인 뷰어와 똑같은 렌더링을 보장하기 위해 CoverLayout & FittedBox 사용
+      return FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: logicalCoverSize.width,
+          height: logicalCoverSize.height,
+          child: CoverLayout(
+            aspect: logicalCoverSize.width / logicalCoverSize.height,
+            layers: page.layers,
+            isInteracting: false,
+            leftSpine: 0 // 썸네일에서 spine 제거
+            ,
+            onCoverSizeChanged: (_) {},
+            buildImage: (layer) => buildStaticImage(layer),
+            buildText: (layer) => buildStaticText(layer),
+            sortedByZ: (list) => list..sort((a,b) => a.id.compareTo(b.id)),
+            theme: theme,
+          ),
+        ),
       );
     }
 
     // 내지: 전체 레이어 렌더링 지원 (AlbumReaderPageContent 활용)
-    final ratio = selectedCover?.ratio ?? 3 / 4;
-    final logicalInnerSize = Size(300.0, 300.0 / ratio);
-    
     // 썸네일 크기에 맞게 스케일링된 페이지 내용 표시
     return AlbumReaderPageContent(
       layers: page.layers,

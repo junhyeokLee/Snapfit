@@ -27,17 +27,18 @@ class AlbumReaderPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scale = math.min(targetW / baseCanvasSize.width, targetH / baseCanvasSize.height);
+    // [Fix] 수동 스케일 대신 FittedBox를 사용하여 내부 논리 해상도를 강제 유지하고
+    // 폰트나 요소 크기가 왜곡되지 않게 비율 맞춰 축소
     return SizedBox(
       width: targetW,
       height: targetH,
-      child: Center(
-        child: Transform.scale(
-          scale: scale,
-          child: SizedBox(
-            width: baseCanvasSize.width,
-            height: baseCanvasSize.height,
-            child: IgnorePointer(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: baseCanvasSize.width,
+          height: baseCanvasSize.height,
+          child: IgnorePointer(
               ignoring: true,
               child: Stack(
                 clipBehavior: Clip.none,
@@ -83,7 +84,7 @@ class AlbumReaderPageContent extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
+

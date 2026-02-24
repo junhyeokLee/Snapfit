@@ -9,6 +9,10 @@ import '../editor/page_template_picker.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../views/page_editor_screen.dart';
 import 'album_reader_page_content.dart';
+import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/constants/cover_theme.dart';
+import '../cover/cover.dart';
+import '../home/home_album_helpers.dart';
 
 /// 앨범 보기 화면: 하단 썸네일 스트립 + 페이지 추가 버튼
 class AlbumReaderThumbnailStrip extends ConsumerWidget {
@@ -35,9 +39,10 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
       _logged = true;
       ScreenLogger.widget('AlbumReaderThumbnailStrip', '앨범 리더 썸네일 스트립 · 페이지 추가');
     }
-    // [Fix] 내지 썸네일의 경우 커버 비율을 반영한 전용 논리 좌표계 사용 (일관성 확보)
+    // [Fix] 내지 썸네일은 300xH, 커버 썸네일은 500xH (kCoverReferenceWidth) 논리 좌표계 사용
     final double aspect = baseCanvasSize.width / baseCanvasSize.height;
     final Size logicalInnerSize = Size(300.0, 300.0 / aspect);
+    final Size logicalCoverSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
     
     final thumbW = height * aspect;
     
@@ -81,14 +86,35 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(5.r),
-                          child: AlbumReaderPageContent(
-                            layers: pageLayers,
-                            targetW: thumbW,
-                            targetH: height,
-                            previewBuilder: previewBuilder,
-                            // [Fix] 커버는 원래 사이즈, 내지는 300xH 고정 좌표계 사용
-                            baseCanvasSize: isCover ? baseCanvasSize : logicalInnerSize,
-                          ),
+                          child: isCover
+                              // [Fix] 커버는 언제나 메인 뷰어와 똑같은 렌더링을 보장하기 위해 CoverLayout & FittedBox 사용
+                              // (CoverLayout 자체는 AspectRatio로 동작하므로 내부에서 500xH 기준임을 강제해야 폰트 크기 등이 비례 축소됨)
+                              ? FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: SizedBox(
+                                    width: logicalCoverSize.width,
+                                    height: logicalCoverSize.height,
+                                    child: CoverLayout(
+                                      aspect: logicalCoverSize.width / logicalCoverSize.height,
+                                      layers: pageLayers,
+                                      isInteracting: false,
+                                      leftSpine: 0,
+                                      onCoverSizeChanged: (_) {},
+                                      buildImage: (layer) => buildStaticImage(layer),
+                                      buildText: (layer) => buildStaticText(layer),
+                                      sortedByZ: (list) => list..sort((a,b) => a.id.compareTo(b.id)),
+                                      theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ?? resolveCoverTheme(null),
+                                    ),
+                                  ),
+                                )
+                              // [Fix] 내지는 300xH 공통 렌더링 사용
+                              : AlbumReaderPageContent(
+                                  layers: pageLayers,
+                                  targetW: thumbW,
+                                  targetH: height,
+                                  previewBuilder: previewBuilder,
+                                  baseCanvasSize: logicalInnerSize,
+                                ),
                         ),
                       ),
                     );
@@ -114,13 +140,32 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(5.r),
-                    child: AlbumReaderPageContent(
-                      layers: pageLayers,
-                      targetW: thumbW,
-                      targetH: height,
-                      previewBuilder: previewBuilder,
-                      baseCanvasSize: isCover ? baseCanvasSize : logicalInnerSize,
-                    ),
+                    child: isCover
+                        ? FittedBox(
+                            fit: BoxFit.contain,
+                            child: SizedBox(
+                              width: logicalCoverSize.width,
+                              height: logicalCoverSize.height,
+                              child: CoverLayout(
+                                aspect: logicalCoverSize.width / logicalCoverSize.height,
+                                layers: pageLayers,
+                                isInteracting: false,
+                                leftSpine: 0,
+                                onCoverSizeChanged: (_) {},
+                                buildImage: (layer) => buildStaticImage(layer),
+                                buildText: (layer) => buildStaticText(layer),
+                                sortedByZ: (list) => list..sort((a,b) => a.id.compareTo(b.id)),
+                                theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ?? resolveCoverTheme(null),
+                              ),
+                            ),
+                          )
+                        : AlbumReaderPageContent(
+                            layers: pageLayers,
+                            targetW: thumbW,
+                            targetH: height,
+                            previewBuilder: previewBuilder,
+                            baseCanvasSize: logicalInnerSize,
+                          ),
                   ),
                 );
               },
