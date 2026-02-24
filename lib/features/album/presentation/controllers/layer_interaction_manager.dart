@@ -259,16 +259,18 @@ class LayerInteractionManager {
 
     if (_isPreviewMode) {
       return Positioned(
-        left: _pos[layer.id]!.dx,
-        top: _pos[layer.id]!.dy,
+        left: layer.position.dx, // [Fix] 프리뷰 모드에선 내부 _pos 캐시 대신 원본 직접 사용
+        top: layer.position.dy,
         child: Transform.rotate(
-          angle: _rot[layer.id]!,
+          angle: layer.rotation * math.pi / 180, // [Fix] _rot 대신 원본 직접 사용
+          alignment: Alignment.center,
           child: Transform.scale(
-            scale: _scale[layer.id]!,
+            scale: layer.scale, // [Fix] _scale 대신 원본 직접 사용
+            alignment: Alignment.center,
             child: SizedBox(
               width: baseWidth,
               height: layer.type == LayerType.text ? null : baseHeight,
-              child: layer.type == LayerType.text ? child : ClipRRect(child: child),
+              child: child,
             ),
           ),
         ),
@@ -287,9 +289,11 @@ class LayerInteractionManager {
           left: _pos[layer.id]!.dx,
           top: _pos[layer.id]!.dy,
           child: Transform.rotate(
-            angle: _rot[layer.id]!, // 회전 적용
+            angle: _rot[layer.id]!,
+            alignment: Alignment.center, // 명시적 중심축 설정
             child: Transform.scale(
-              scale: _scale[layer.id]!, // 스케일 적용
+              scale: _scale[layer.id]!,
+              alignment: Alignment.center, // 명시적 중심축 설정
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -297,7 +301,7 @@ class LayerInteractionManager {
                     width: baseWidth,
                     height: layer.type == LayerType.text ? null : baseHeight,
                     child: GestureDetector(
-                      behavior: HitTestBehavior.translucent, // 빈 공간도 터치 감지
+                      behavior: HitTestBehavior.translucent,
                       onTap: () {
                         print('[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})');
                         print('[LayerInteraction] Layer Size: ${layer.width.toStringAsFixed(1)} x ${layer.height.toStringAsFixed(1)}');
@@ -435,8 +439,15 @@ class LayerInteractionManager {
     }
 
     // ==================== 드래그 처리 ====================
-    // focalPointDelta: 이전 프레임부터의 손가락 이동 거리
+    // focalPointDelta: 이전 프레임부터의 손가락 이동 거리 (Global/Screen logical pixels)
     Offset rawDelta = details.focalPointDelta;
+
+    // [Inner Page Fix] 부모 위젯(Canvas)이 Transform.scale 등으로 변형된 경우, 
+    // 이동 거리(Delta)를 해당 스케일로 나누어 로지컬 공간(300x400)에 맞게 정규화함.
+    final parentScale = _getParentScale();
+    if (parentScale > 0) {
+      rawDelta = rawDelta / parentScale;
+    }
 
     // 개선된 드래그 감도 보정
     final currentScale = gestureState.initialScale * details.scale;
@@ -714,6 +725,24 @@ class LayerInteractionManager {
   /// a: 시작 각도, b: 목표 각도, t: 보간 비율 (0~1)
   double _lerpAngle(double a, double b, double t) {
     return a + _angleDifference(b, a) * t;
+  }
+
+  /// [Inner Page Fix] 부모 위젯(Canvas)이 화면상에 실측 렌더링된 물리적 스케일을 계산함.
+  /// (예: 300x400 캔버스가 340x453으로 렌더링된 경우 약 1.13배)
+  double _getParentScale() {
+    final ctx = coverKey.currentContext;
+    if (ctx == null) return 1.0;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null || !box.attached) return 1.0;
+    
+    // (1,0) 로컬 오프셋이 글로벌 화면상에서 얼마나 떨어져 있는지 확인하여 스케일 산출
+    try {
+      final p0 = box.localToGlobal(Offset.zero);
+      final p1 = box.localToGlobal(const Offset(1, 0));
+      return (p1 - p0).distance;
+    } catch (_) {
+      return 1.0;
+    }
   }
 }
 

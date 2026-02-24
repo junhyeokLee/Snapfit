@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
-import '../../../../../shared/snapfit_image.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../../domain/entities/layer.dart';
+import '../../controllers/layer_builder.dart';
+import '../../controllers/layer_interaction_manager.dart'; // [Fix] 추가
 import '../cover/cover.dart';
 import '../home/home_album_helpers.dart';
+import '../reader/album_reader_page_content.dart';
 
 class PageListSelector extends ConsumerWidget {
   final List<AlbumPage> pages;
@@ -35,12 +37,9 @@ class PageListSelector extends ConsumerWidget {
       child: ListView.separated(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         scrollDirection: Axis.horizontal,
-        itemCount: pages.length + (onAddPage != null ? 1 : 0),
+        itemCount: pages.length, // [Fix] '+' 버튼 제거
         separatorBuilder: (context, index) => SizedBox(width: 12.w),
         itemBuilder: (context, index) {
-          if (index == pages.length) {
-            return _buildAddButton(context);
-          }
           final page = pages[index];
           final isSelected = index == currentPageIndex;
           final isCover = index == 0;
@@ -67,6 +66,7 @@ class PageListSelector extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8.r),
                     child: _buildPageThumbnail(
                       context,
+                      ref: ref, // [Fix] ref 전달
                       page: page,
                       isCover: isCover,
                       selectedTheme: selectedTheme,
@@ -94,6 +94,7 @@ class PageListSelector extends ConsumerWidget {
   /// 페이지 썸네일 빌드
   Widget _buildPageThumbnail(
     BuildContext context, {
+    required WidgetRef ref, // [Fix] 파라미터 추가
     required AlbumPage page,
     required bool isCover,
     dynamic selectedTheme,
@@ -116,32 +117,20 @@ class PageListSelector extends ConsumerWidget {
       );
     }
 
-    // 내지: 첫 번째 이미지 레이어 URL 표시 또는 아이콘
-    String? previewUrl;
-    LayerModel? imageLayer;
-    try {
-      imageLayer = page.layers.firstWhere(
-        (l) => l.type == LayerType.image && (l.previewUrl != null || l.imageUrl != null),
-      );
-      previewUrl = imageLayer.previewUrl ?? imageLayer.imageUrl;
-    } catch (_) {
-      // 이미지 없음
-    }
-
-    if (previewUrl != null) {
-      return Opacity(
-        opacity: imageLayer?.opacity ?? 1.0,
-        child: SnapfitImage(
-          urlOrGs: previewUrl,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
-    return Icon(
-      Icons.description,
-      color: SnapFitColors.textMutedOf(context),
-      size: 24.sp,
+    // 내지: 전체 레이어 렌더링 지원 (AlbumReaderPageContent 활용)
+    final ratio = selectedCover?.ratio ?? 3 / 4;
+    final logicalInnerSize = Size(300.0, 300.0 / ratio);
+    
+    // 썸네일 크기에 맞게 스케일링된 페이지 내용 표시
+    return AlbumReaderPageContent(
+      layers: page.layers,
+      targetW: 50.w,
+      targetH: 50.w,
+      previewBuilder: LayerBuilder(
+        LayerInteractionManager.preview(ref, () => logicalInnerSize),
+        () => logicalInnerSize,
+      ),
+      baseCanvasSize: logicalInnerSize,
     );
   }
 
@@ -172,3 +161,4 @@ class PageListSelector extends ConsumerWidget {
     );
   }
 }
+

@@ -35,64 +35,65 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
       _logged = true;
       ScreenLogger.widget('AlbumReaderThumbnailStrip', '앨범 리더 썸네일 스트립 · 페이지 추가');
     }
-    final ratio = baseCanvasSize.width / baseCanvasSize.height;
-    final thumbW = height * ratio;
+    // [Fix] 내지 썸네일의 경우 커버 비율을 반영한 전용 논리 좌표계 사용 (일관성 확보)
+    final double aspect = baseCanvasSize.width / baseCanvasSize.height;
+    final Size logicalInnerSize = Size(300.0, 300.0 / aspect);
+    
+    final thumbW = height * aspect;
+    
     return SizedBox(
       height: height + 12.h,
       child: pageController != null
           ? AnimatedBuilder(
               animation: pageController!,
               builder: (context, _) {
-                final page = pageController!.hasClients ? (pageController!.page ?? 0) : 0;
-                final current = page.round().clamp(0, (pages.length - 1).clamp(0, pages.length));
+                final pageValue = pageController!.hasClients ? (pageController!.page ?? 0) : 0;
+                final current = pageValue.round().clamp(0, (pages.length - 1).clamp(0, pages.length));
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                  itemCount: pages.length + 1,
+                  itemCount: pages.length, // [Fix] '+' 버튼 제거
                   itemBuilder: (context, index) {
-                    if (index == pages.length) {
-                      return _AddPageThumb(
-                        width: thumbW,
-                        height: height,
-                        onTap: () => _showAddPage(context, ref),
-                      );
-                    }
-                    final pageLayers = pages[index].layers;
+                    final page = pages[index];
+                    final pageLayers = page.layers;
                     final isSelected = index == current;
+                    final isCover = index == 0;
+                    
                     return GestureDetector(
                       onTap: () {
                         pageController!.animateToPage(
                           index,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                  );
-                },
-                child: Container(
-                  width: thumbW,
-                  height: height,
-                  margin: EdgeInsets.only(right: 8.w),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6.r),
-                    border: Border.all(
-                      color: isSelected ? Colors.white : Colors.white24,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    color: Colors.white,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5.r),
-                    child: AlbumReaderPageContent(
-                      layers: pageLayers,
-                      targetW: thumbW,
-                      targetH: height,
-                      previewBuilder: previewBuilder,
-                      baseCanvasSize: baseCanvasSize,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: Container(
+                        width: thumbW,
+                        height: height,
+                        margin: EdgeInsets.only(right: 8.w),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6.r),
+                          border: Border.all(
+                            color: isSelected ? Colors.white : Colors.white24,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          color: Colors.white,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5.r),
+                          child: AlbumReaderPageContent(
+                            layers: pageLayers,
+                            targetW: thumbW,
+                            targetH: height,
+                            previewBuilder: previewBuilder,
+                            // [Fix] 커버는 원래 사이즈, 내지는 300xH 고정 좌표계 사용
+                            baseCanvasSize: isCover ? baseCanvasSize : logicalInnerSize,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
               },
             )
           : ListView.builder(
@@ -100,6 +101,7 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
               itemCount: pages.length,
               itemBuilder: (context, index) {
+                final isCover = index == 0;
                 final pageLayers = pages[index].layers;
                 return Container(
                   width: thumbW,
@@ -117,7 +119,7 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                       targetW: thumbW,
                       targetH: height,
                       previewBuilder: previewBuilder,
-                      baseCanvasSize: baseCanvasSize,
+                      baseCanvasSize: isCover ? baseCanvasSize : logicalInnerSize,
                     ),
                   ),
                 );

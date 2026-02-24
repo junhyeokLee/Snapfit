@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/constants/cover_size.dart';
 import '../controllers/cover_size_controller.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
@@ -27,7 +28,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   late final GlobalKey _coverKey;
   late final LayerInteractionManager _interaction;
   late final LayerBuilder _layerBuilder;
-  Size _baseCanvasSize = const Size(300, 400);
+  Size _baseCanvasSize = const Size(300, 400); // 초기값, initState에서 갱신됨
   Size _coverSize = Size.zero;
   final CoverSizeController _layout = CoverSizeController();
   bool _isFrozen = false; // 제작확정 여부
@@ -43,17 +44,45 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       ref: ref,
       coverKey: _coverKey,
       setState: setState,
-      getCoverSize: () => _coverSize,
+      getCoverSize: () {
+        // [10단계 Fix] 리더 화면에서도 커버 인터랙션 좌표계는 500xH 기준이어야 함
+        final vm = ref.read(albumEditorViewModelProvider.notifier);
+        final aspect = vm.selectedCover.ratio;
+        
+        // 현재 페이지가 커버인지 확인 (Page 0)
+        final double page = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
+        if (page < 0.5) {
+          return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
+        }
+        return Size(300.0, 300.0 / aspect);
+      },
       isPreviewMode: true,
       showSelectionControls: false,
       onEditText: (layer) {},
     );
-    _layerBuilder = LayerBuilder(_interaction, () => _baseCanvasSize);
+
+    // [10단계 Fix] LayerBuilder도 레이어 타입이나 페이지 위치에 따라 올바른 논리 사이즈를 참조해야 함
+    _layerBuilder = LayerBuilder(_interaction, () {
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      final aspect = vm.selectedCover.ratio;
+      final double page = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
+      
+      if (page < 0.5) {
+        return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
+      }
+      return Size(300.0, 300.0 / aspect);
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         vm.loadPendingEditAlbumIfNeeded(Size.zero);
+        
+        // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
+        final aspect = vm.selectedCover.ratio;
+        setState(() {
+          _baseCanvasSize = Size(300.0, 300.0 / aspect);
+        });
       }
     });
   }
@@ -79,6 +108,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           );
           if (saved == true && context.mounted) {
             Navigator.pop(context, true); // 홈 화면에 수정사항 있음 알림
+          } else if (context.mounted) {
+            // [Fix] 에디터에서 돌아왔을 때, 캔버스 사이즈 재동기화 강제 트리거
+            // (에디터의 캔버스 실측 사이즈와 리더의 실측 사이즈가 미세하게 다를 수 있으므로 리더 기준으로 재조정)
+            final vm = ref.read(albumEditorViewModelProvider.notifier);
+            if (_coverSize != Size.zero) {
+              debugPrint('[AlbumReaderScreen] Returned from editor, re-syncing size: $_coverSize');
+              vm.setCoverCanvasSize(_coverSize);
+            }
+            setState(() {});
           }
         },
         onConfirm: () {
@@ -200,6 +238,12 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final allPages = vm.pages;
     final totalPages = allPages.length;
 
+    // PageController는 스프레드(2페이지 묶음) 단위로 인덱싱됨
+    // itemCount = 커버(1) + 내지 스프레드 수
+    final int innerPageCount = (totalPages - 1).clamp(0, totalPages);
+    final int spreadCount = (innerPageCount / 2).ceil();
+    final int itemCount = 1 + spreadCount; // 도트 인디케이터에 사용
+
     final albumTitle = vm.album?.title ?? '';
 
     return Scaffold(
@@ -266,13 +310,25 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
               AnimatedBuilder(
                 animation: _pageController,
                 builder: (context, _) {
-                  final currentIdx = _pageController.hasClients
+                  // spreadIdx: 0=커버, 1=1-2페이지, 2=3-4페이지 ...
+                  final spreadIdx = _pageController.hasClients
                       ? (_pageController.page?.round() ?? 0)
                       : 0;
-                  final isCover = currentIdx == 0;
-                  final label = isCover
-                      ? '커버'
-                      : '${currentIdx}  /  ${allPages.length - 1}';
+                  final isCover = spreadIdx == 0;
+                  final int totalInner = allPages.length - 1; // 내지 페이지 수
+                  String label;
+                  if (isCover) {
+                    label = '커버';
+                  } else {
+                    // 스프레드 인덱스 → 실제 내지 페이지 번호
+                    final int leftPage  = (spreadIdx - 1) * 2 + 1;
+                    final int rightPage = leftPage + 1;
+                    if (rightPage <= totalInner) {
+                      label = '$leftPage - $rightPage  /  $totalInner';
+                    } else {
+                      label = '$leftPage  /  $totalInner';
+                    }
+                  }
                   return Container(
                     padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -324,7 +380,18 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                         interaction: _interaction,
                         layerBuilder: _layerBuilder,
                         canvasKey: _coverKey,
-                        onCanvasSizeChanged: (_) {},
+                        onCanvasSizeChanged: (size) {
+                          if (_coverSize == size) return;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            debugPrint('[AlbumReaderScreen] Canvas Size Changed: $size');
+                            setState(() {
+                              _coverSize = size;
+                            });
+                            // 실제 캔버스 크기가 잡히면 레이어 좌표 리스케일링 트리거
+                            vm.setCoverCanvasSize(size);
+                          });
+                        },
                         onPageChanged: (index) {
                           setState(() {});
                         },
@@ -336,17 +403,18 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
               SizedBox(height: 8.h),
 
-              // ─── 4. 페이지 도트 인디케이터 ───
-              if (totalPages > 1)
+              // ─── 4. 페이지 도트 인디케이터 (스프레드 단위) ───
+              if (itemCount > 1)
                 AnimatedBuilder(
                   animation: _pageController,
                   builder: (context, _) {
+                    // spreadIdx 기준으로 현재 활성 점 결정
                     final current = _pageController.hasClients
                         ? (_pageController.page?.round() ?? 0)
                         : 0;
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(totalPages, (i) {
+                      children: List.generate(itemCount, (i) {
                         final isActive = i == current;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -372,9 +440,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                 pageController: allPages.isNotEmpty ? _pageController : null,
                 previewBuilder: _layerBuilder,
                 baseCanvasSize: _baseCanvasSize,
-                height: 64,
+                height: 64.h,
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 18.h),
             ],
           ),
         ),

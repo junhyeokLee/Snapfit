@@ -99,17 +99,22 @@ Widget buildStaticImage(LayerModel layer) {
     top: layer.position.dy,
     child: Transform.rotate(
       angle: layer.rotation * math.pi / 180,
+      alignment: Alignment.center, // [Fix] 중심축 통일
       child: Transform.scale(
         scale: layer.scale,
+        alignment: Alignment.center, // [Fix] 중심축 통일
         child: Opacity(
           opacity: layer.opacity,
-          child: SizedBox(
-            width: layer.width,
-            height: layer.height,
-            child: SnapfitImage(
-              urlOrGs: url,
-              fit: BoxFit.cover,
-              cacheManager: snapfitImageCacheManager,
+          child: _buildStaticFramedImage(
+            layer,
+            SizedBox(
+              width: layer.width,
+              height: layer.height,
+              child: SnapfitImage(
+                urlOrGs: url,
+                fit: BoxFit.cover,
+                cacheManager: snapfitImageCacheManager,
+              ),
             ),
           ),
         ),
@@ -125,15 +130,13 @@ Widget buildStaticText(LayerModel layer) {
     top: layer.position.dy,
     child: Transform.rotate(
       angle: layer.rotation * math.pi / 180,
+      alignment: Alignment.center, // [Fix] 중심축 통일
       child: Transform.scale(
         scale: layer.scale,
+        alignment: Alignment.center, // [Fix] 중심축 통일
         child: Opacity(
           opacity: layer.opacity,
-          child: Text(
-            layer.text ?? '',
-            style: layer.textStyle,
-            textAlign: layer.textAlign,
-          ),
+          child: _buildStaticStyledText(layer),
         ),
       ),
     ),
@@ -230,4 +233,97 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
     backgroundColor: const Color(0xFF00C2E0), // Cyan background
     foregroundColor: Colors.white,             // White text
   );
+}
+/// 이미지 프레임 정적 렌더링 (LayerBuilder와 로직 동기화)
+Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
+  switch (layer.imageBackground) {
+    case 'round':
+      return ClipRRect(borderRadius: BorderRadius.circular(16), child: child);
+    case 'polaroid':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(10, 12, 10, 26),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1.2),
+        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(10), child: child),
+      );
+    case 'polaroidClassic':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 36),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFEF5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE8E4D8), width: 1.4),
+        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(8), child: child),
+      );
+    case 'sticker':
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.black, width: 4),
+        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(12), child: child),
+      );
+    default:
+      return child;
+  }
+}
+
+/// 텍스트 스타일 정적 렌더링
+Widget _buildStaticStyledText(LayerModel layer) {
+  if (layer.textBackground == null) {
+    return SizedBox(
+      width: layer.width,
+      child: Text(
+        layer.text ?? '',
+        style: layer.textStyle,
+        textAlign: layer.textAlign,
+      ),
+    );
+  }
+
+  Widget content = Text(
+    layer.text ?? '',
+    style: layer.textStyle,
+    textAlign: layer.textAlign,
+  );
+
+  switch (layer.textBackground) {
+    case 'tag':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: content,
+      );
+    case 'bubble':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black.withOpacity(0.22)),
+        ),
+        child: content,
+      );
+    case 'sticker':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.black, width: 3),
+        ),
+        child: content,
+      );
+    default:
+      return content;
+  }
 }

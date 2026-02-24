@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
@@ -33,6 +34,27 @@ class PageEditorCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // [10단계 Fix] 커버와 내지 모두 논리적 고정 좌표계(Fixed Logic Size)를 사용합니다.
+    // 커버는 500.0px 기준, 내지는 300.0px 기준으로 모든 레이어를 배치한 뒤 
+    // 최종적으로 현재 캔버스(물리적 크기)에 맞춰 스케일링합니다.
+    final double physicalAspect = canvasW / canvasH;
+    
+    // 1. 내지용 논리 사이즈 (300xH)
+    const double innerLogicalW = 300.0;
+    final double innerLogicalH = innerLogicalW / physicalAspect;
+    
+    // 2. 커버용 논리 사이즈 (500xH)
+    final double coverLogicalW = kCoverReferenceWidth;
+    final double coverLogicalH = coverLogicalW / physicalAspect;
+
+    final Size effectiveBaseSize = isCover 
+        ? Size(coverLogicalW, coverLogicalH) 
+        : Size(innerLogicalW, innerLogicalH);
+        
+    final double scale = isCover 
+        ? (canvasW / coverLogicalW) 
+        : (canvasW / innerLogicalW);
+
     // Cover Style Constants matching Home
     const coverRadius = BorderRadius.only(
       topRight: Radius.circular(12),
@@ -79,6 +101,7 @@ class PageEditorCanvas extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 0 && constraints.maxHeight > 0) {
+              // 에디터의 실측 사이즈를 보고함 (ViewModel은 내지일 경우 리스케일링 무시함)
               onCanvasSizeChanged(Size(constraints.maxWidth, constraints.maxHeight));
             }
             if (layers.isEmpty) {
@@ -104,17 +127,46 @@ class PageEditorCanvas extends StatelessWidget {
                 ),
               );
             }
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(color: backgroundColor ?? SnapFitColors.pureWhite),
-                ...interaction.sortByZ(layers).map((layer) {
-                  if (layer.type == LayerType.image) {
-                    return layerBuilder.buildImage(layer);
-                  }
-                  return layerBuilder.buildText(layer);
-                }),
-              ],
+            // 내지라면 300x400 영역을 스케일링하여 꽉 채움
+            return Transform.scale(
+              scale: scale,
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: effectiveBaseSize.width,
+                height: effectiveBaseSize.height,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(color: backgroundColor ?? SnapFitColors.pureWhite),
+                    ...interaction.sortByZ(layers).map((layer) {
+                      if (layer.type == LayerType.image) {
+                        return layerBuilder.buildImage(layer, isCover: isCover);
+                      }
+                      return layerBuilder.buildText(layer, isCover: isCover);
+                    }),
+                    // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
+                    if (isCover)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: (14.0 * (isCover ? 1.0 : scale)), // kCoverSpineWidth = 14.0
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.black.withOpacity(0.18),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             );
           },
         ),

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 /// 커버 좌측 책심(Spine)의 고정 너비 (px)
 const double kCoverSpineWidth = 14.0;
 
+/// 커버 레이아웃의 논리적 기준 너비 (모든 화면에서 일관된 비례 유지를 위해 사용)
+const double kCoverReferenceWidth = 500.0;
+
 /// 커버 기본 비율 (세로형, 가로형, 정사각형 등)
 class CoverSize {
   final String name;           // 커버 이름 (세로형, 가로형 등)

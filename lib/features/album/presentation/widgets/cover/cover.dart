@@ -82,6 +82,7 @@ class CoverLayout extends StatelessWidget {
                                  key: contentKey,
                                  child: Stack(
                                    fit: StackFit.expand,
+                                   clipBehavior: Clip.none,
                                 children: [
                                   _CoverBackground(leftSpine: leftSpine, theme: theme),
                                   ...sortedByZ(layers).map((layer) {

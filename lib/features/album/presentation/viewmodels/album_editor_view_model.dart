@@ -419,20 +419,22 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// EditCover에서 실제 커버 캔버스 크기가 잡힌 뒤 1회만 레이어 복원
   void loadPendingEditAlbumIfNeeded(Size canvasSize) {
-    final json = _pendingCoverLayersJson;
-    if (json == null) return;
-    
-    // [Fix] canvasSize가 zero이면 기존에 기록된 _lastCoverCanvasSize를 우선 사용하고, 
-    // 그조차 없으면 앨범 자체의 커버 비율을 찾아 기본값으로 사용
-    final effectiveSize = (canvasSize != Size.zero) 
-        ? canvasSize 
-        : (_lastCoverCanvasSize != Size.zero 
-            ? _lastCoverCanvasSize 
-            : Size(358.0, 358.0 / _cover.ratio));
+    if (_pendingCoverLayersJson == null) return;
 
+    final String pendingJson = _pendingCoverLayersJson!;
     _pendingCoverLayersJson = null;
-    loadAlbum({'coverLayersJson': json}, effectiveSize);
-    setCoverCanvasSize(effectiveSize, isCover: true);
+
+    // [10단계 Fix] 커버는 이제 항상 kCoverReferenceWidth(500px) 기준으로 복원합니다.
+    // 실측 canvasSize에 의한 리스케일링은 UI 단에서 Transform.scale로 처리합니다.
+    final double ratio = _cover.ratio > 0 ? _cover.ratio : 1.0;
+    final effectiveSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+    
+    debugPrint('[loadPendingEditAlbumIfNeeded] Restoring COVER layers with REFERENCE size: $effectiveSize');
+    loadAlbum({'coverLayersJson': pendingJson}, effectiveSize);
+    
+    // UI 동기화용 실측 사이즈만 업데이트 (리스케일링은 발생하지 않음)
+    _lastCoverCanvasSize = canvasSize != Size.zero ? canvasSize : effectiveSize;
+    state = AsyncData(state.value!.copyWith(coverCanvasSize: _lastCoverCanvasSize));
   }
 
   /// 서버에서 불러온 앨범 데이터를 편집기에 로드
@@ -441,8 +443,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void loadAlbum(Map<String, dynamic> albumData, Size canvasSize) {
     if (canvasSize == Size.zero) return;
 
-    // [Rescale Fix] 앨범 로드 시점에 마지막 캔버스 크기 동기화
-    _lastCoverCanvasSize = canvasSize;
+    // [10단계 Fix] 커버는 항상 500xH, 내지는 300xH 참조 사이즈를 베이스로 로드합니다.
+    final coverAspect = _cover.ratio > 0 ? _cover.ratio : 1.0;
+    final coverRefSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / coverAspect);
+    
+    _lastCoverCanvasSize = canvasSize; // 실제 UI용 캔버스 크기만 기록
     _lastInnerCanvasSize = _innerPageCanvasSize;
     
     final String raw = albumData['coverLayersJson'] as String? ?? '{}';
@@ -458,8 +463,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         final index = (map['index'] as num?)?.toInt() ?? _pages.length;
         final isCover = map['isCover'] as bool? ?? (index == 0);
         final layerList = (map['layers'] as List<dynamic>?) ?? [];
-        // 커버는 canvasSize, 내지는 300x400 (페이지 에디터와 동일)
-        final pageCanvasSize = isCover ? canvasSize : _innerPageCanvasSize;
+        // [10단계] 커버는 500xH, 내지는 300xH 고정 좌표계 사용
+        final pageCanvasSize = isCover ? coverRefSize : _innerPageCanvasSize;
         final loadedLayers = layerList.map((l) {
           return LayerExportMapper.fromJson(
             l as Map<String, dynamic>,
@@ -479,7 +484,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       final List<LayerModel> loadedLayers = layerList.map((l) {
         return LayerExportMapper.fromJson(
           l as Map<String, dynamic>,
-          canvasSize: canvasSize,
+          canvasSize: coverRefSize,
           isCover: true,
         );
       }).toList();
@@ -776,50 +781,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     
     final oldSize = isCover ? _lastCoverCanvasSize : _lastInnerCanvasSize;
     
-    // 캔버스 크기가 변경되었을 때, 해당 타입의 레이어들만 재조정
-    // [Rescale Fix] 미세한 픽셀 차이(0.5px 이하)는 안정성을 위해 무시함
-    final bool isSignificantlyDifferent = (oldSize.width - size.width).abs() > 0.5 || 
-                                          (oldSize.height - size.height).abs() > 0.5;
-
-    if (oldSize != Size.zero && isSignificantlyDifferent) {
-      final oldAvailableW = isCover ? oldSize.width - kCoverSpineWidth : oldSize.width;
-      final newAvailableW = isCover ? size.width - kCoverSpineWidth : size.width;
-      
-      final scaleX = newAvailableW / oldAvailableW;
-      final scaleY = size.height / oldSize.height;
-
-      print('[setCoverCanvasSize] Scaling ${isCover ? "COVER" : "INNER"} from $oldSize to $size');
-      print('[setCoverCanvasSize] ScaleX: $scaleX, ScaleY: $scaleY');
-
-      for (int i = 0; i < _pages.length; i++) {
-        final page = _pages[i];
-        if (page.isCover != isCover) continue; // 타입이 다르면 스킵
-
-        final scaledLayers = page.layers.map((layer) {
-          // [Spine fix] X좌표: Spine(14px)을 뺀 나머지 영역 내에서의 비례 이동
-          double newX;
-          if (isCover) {
-             newX = kCoverSpineWidth + (layer.position.dx - kCoverSpineWidth) * scaleX;
-          } else {
-             newX = layer.position.dx * scaleX;
-          }
-          
-          return layer.copyWith(
-            position: Offset(newX, layer.position.dy * scaleY),
-            width: layer.width * scaleX,
-            height: layer.height * scaleY,
-          );
-        }).toList();
-
-        _pages[i] = page.copyWith(layers: scaledLayers);
+    // [Rescale Fix] 캔버스 크기가 변경되었을 때, 해당 타입의 레이어들만 재조정.
+    // [Inner Page Fix] 내지(isCover: false)는 항상 300x400 고정 좌표계를 사용하므로 리스케일링을 하지 않음.
+    // UI 단에서 Transform.scale로 대응함.
+    if (!isCover) {
+      if (oldSize == Size.zero) {
+        _lastInnerCanvasSize = size;
+        state = AsyncData(prev.copyWith(innerCanvasSize: size));
+        debugPrint('[setCoverCanvasSize] Initial INNER size set to $size (No Scaling)');
       }
+      return;
     }
 
-    // 마스터 사이즈 업데이트
+    // [10단계 Fix] 커버 역시 내지와 마찬가지로 리스케일링을 수행하지 않습니다.
+    // 모든 좌표는 500xH 논리 좌표계에 고정되며, UI 스케일링만 적용됩니다.
     if (isCover) {
+      debugPrint('[setCoverCanvasSize] COVER canvas size updated to $size (No Rescaling)');
       _lastCoverCanvasSize = size;
       state = AsyncData(prev.copyWith(coverCanvasSize: size));
-    } else {
+      return;
+    }
+
+    // 내지 리스케일링 스킵 (기존 유지)
+    if (!isCover) {
       _lastInnerCanvasSize = size;
       state = AsyncData(prev.copyWith(innerCanvasSize: size));
     }
@@ -1081,7 +1065,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       'layers': coverPage.layers.map(
             (layer) => LayerExportMapper.toJson(
           layer,
-          canvasSize: canvasSize,
+          canvasSize: _coverReferenceSize,
           isCover: true,
         ),
       ).toList(),
@@ -1089,7 +1073,18 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 페이지 에디터(PageEditorScreen)의 내지 캔버스 크기 - 300x400 고정
-  static const Size _innerPageCanvasSize = Size(300, 400);
+  // [Fix] 내지 캔버스 크기를 커버 비율에 맞춰 동적으로 계산 (일관성 확보)
+  Size get _innerPageCanvasSize {
+    final ratio = _cover.ratio > 0 ? _cover.ratio : (3 / 4);
+    // 너비 300을 기준으로 비율에 맞는 높이 계산 (예: 1:1이면 300x300, 3:4면 300x400)
+    return Size(300.0, 300.0 / ratio);
+  }
+
+  /// [10단계] 커버 논리 고정 좌표계 크기 (500xH)
+  Size get _coverReferenceSize {
+    final ratio = _cover.ratio > 0 ? _cover.ratio : 1.0;
+    return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+  }
 
   /// 현재 페이지의 레이어 리스트 전체 교체 (순서 변경 등)
   void updatePageLayers(List<LayerModel> newLayers) {
@@ -1126,10 +1121,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 형식: { "pages": [ { "index": 0, "isCover": true, "layers": [...] }, ... ] }
   /// 커버는 coverCanvasSize, 내지는 300x400 (페이지 에디터와 동일)
   String exportFullAlbumLayersJson(Size? coverCanvasSize) {
-    final coverSize = coverCanvasSize ??
-        Size(358.0, 358.0 / _cover.ratio);
+    // [10단계] 커버와 내지 모두 고정 참조 사이즈를 사용해 내보냅니다.
     final pagesJson = _pages.map((page) {
-      final canvasSize = page.isCover ? coverSize : _innerPageCanvasSize;
+      final canvasSize = page.isCover ? _coverReferenceSize : _innerPageCanvasSize;
       return {
         'index': page.pageIndex,
         'isCover': page.isCover,

@@ -11,11 +11,13 @@ class LayerExportMapper {
     required Size canvasSize,
     bool isCover = false,
   }) {
-    // 실제 기기 캔버스 크기를 기준으로 0~1 비율 계산
-    // [Spine fix] 커버인 경우, 좌측 책심(14px)을 제외한 영역을 기준으로 비율 계산
+    final double refWidth = isCover
+        ? (canvasSize.width - kCoverSpineWidth).clamp(1.0, 5000.0)
+        : canvasSize.width;
+
     double xRatio;
     double widthRatio;
-    
+
     if (isCover) {
       final availableW = canvasSize.width - kCoverSpineWidth;
       xRatio = (layer.position.dx - kCoverSpineWidth) / availableW;
@@ -52,7 +54,7 @@ class LayerExportMapper {
         'bubbleColor': layer.bubbleColor != null
             ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
             : null,
-        'textStyle': _textStyleToJson(layer.textStyle),
+        'textStyle': _textStyleToJson(layer.textStyle, refWidth),
       },
     };
   }
@@ -99,7 +101,10 @@ class LayerExportMapper {
       textStyleType: _parseTextStyleType(payload['textStyleType'] as String?),
       textBackground: payload['textBackground'] as String?,
       bubbleColor: _parseColor(payload['bubbleColor'] as String?),
-      textStyle: _textStyleFromJson(payload['textStyle'] as Map<String, dynamic>?),
+      textStyle: _textStyleFromJson(
+        payload['textStyle'] as Map<String, dynamic>?,
+        isCover ? (canvasSize.width - kCoverSpineWidth) : canvasSize.width,
+      ),
 
       // 이미지 전용 데이터
       imageBackground: payload['imageBackground'] as String?,
@@ -142,14 +147,15 @@ class LayerExportMapper {
     FontWeight.w500, FontWeight.w600, FontWeight.w700, FontWeight.w800, FontWeight.w900,
   ];
 
-  static Map<String, dynamic>? _textStyleToJson(TextStyle? style) {
+  static Map<String, dynamic>? _textStyleToJson(TextStyle? style, double referenceWidth) {
     if (style == null) return null;
     final weightIdx = style.fontWeight != null
         ? _fontWeights.indexOf(style.fontWeight!)
         : -1;
     final int? storedWeight = weightIdx >= 0 ? weightIdx : null;
     return {
-      'fontSize': style.fontSize,
+      'fontSize': style.fontSize, // 하위 호환성 위해 유지
+      'fontSizeRatio': (style.fontSize ?? 14.0) / referenceWidth, // [New] 비율 저장
       'fontWeight': storedWeight,
       'fontStyle': style.fontStyle == FontStyle.italic ? 1 : 0,
       'fontFamily': style.fontFamily,
@@ -160,17 +166,29 @@ class LayerExportMapper {
     };
   }
 
-  static TextStyle? _textStyleFromJson(Map<String, dynamic>? json) {
+  static TextStyle? _textStyleFromJson(Map<String, dynamic>? json, double currentWidth) {
     if (json == null || json.isEmpty) return null;
-    final fontSize = json['fontSize'] as num?;
-    if (fontSize == null) return null;
+    
+    double fontSize;
+    final fontSizeRatio = json['fontSizeRatio'] as num?;
+    
+    if (fontSizeRatio != null) {
+      // 1. 비율 데이터가 있으면 현재 캔버스에 맞춰 복원
+      fontSize = fontSizeRatio.toDouble() * currentWidth;
+    } else {
+      // 2. 구버전 데이터(비율 없음)인 경우
+      final oldFontSize = (json['fontSize'] as num?)?.toDouble() ?? 14.0;
+      // 에디터 평균 너비(358.0) 대비 현재 캔버스 비율로 대략적인 스케일링 적용
+      fontSize = oldFontSize * (currentWidth / 358.0);
+    }
+
     final fontWeightIdx = json['fontWeight'] as int?;
     final fontStyleIdx = json['fontStyle'] as int?;
     final fontFamily = json['fontFamily'] as String?;
     final color = _parseColor(json['color'] as String?);
     final letterSpacing = json['letterSpacing'] as num?;
     return TextStyle(
-      fontSize: fontSize.toDouble(),
+      fontSize: fontSize,
       fontWeight: fontWeightIdx != null && fontWeightIdx >= 0 && fontWeightIdx < _fontWeights.length
           ? _fontWeights[fontWeightIdx]
           : null,

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/layer.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/constants/cover_size.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../controllers/text_editor_manager.dart';
@@ -52,17 +53,20 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   void _simulateProgress() {
     _saveProgress = 0.0;
     _progressTimer?.cancel();
-    _progressTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _progressTimer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
       setState(() {
-        if (_saveProgress < 0.9) {
+        if (_saveProgress < 0.85) {
+          // 0~85%: 빠르게 증가 (저장 시작 느낌)
           _saveProgress += 0.05;
-        } else {
-          timer.cancel();
+        } else if (_saveProgress < 0.97) {
+          // 85~97%: 아주 천천히 증가 → 90%서 멈추는 느낌 제거
+          _saveProgress += 0.003;
         }
+        // 97% 이상: 타이머 계속 돌지만 값은 고정 (실제 완료 시 100% 점프)
       });
     });
   }
@@ -86,7 +90,18 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       ref: ref,
       coverKey: _canvasKey,
       setState: setState,
-      getCoverSize: () => _canvasSize,
+      // [Inner Page Fix] 내지는 항상 300x400 논리적 좌표계를 사용함. 
+      // 인터랙션 매니저가 스냅 가이드나 좌표 계산 시 이 기준을 따르게 함.
+      getCoverSize: () {
+        final currentVm = ref.read(albumEditorViewModelProvider.notifier);
+        final aspect = currentVm.selectedCover.ratio;
+        if (currentVm.currentPageIndex == 0) {
+          // [10단계 Fix] 커버 편집 시에도 500xH 논리 좌표계를 사용함
+          return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
+        }
+        // [Inner Page Fix] 내지의 경우 300xH 논리적 베이스 사이즈 계산
+        return Size(300.0, 300.0 / aspect);
+      },
       onEditText: (layer) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         TextEditorManager(context, vm).openForExisting(layer);
@@ -129,16 +144,17 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final state = asyncState.value;
 
-    // 캔버스 크기 초기화 (ViewModel 상태 기반)
+    // [Fix] 페이지 전환 시 이전 캔버스 사이즈가 남아있어 좌표 오차가 생기는 문제 해결
+    // 현재 페이지 타입에 맞는 캔버스 사이즈로 강제 동기화
     final isCover = vm.currentPageIndex == 0;
     final activeCanvasFromState = isCover ? state?.coverCanvasSize : state?.innerCanvasSize;
-    
-    if (activeCanvasFromState != null && activeCanvasFromState != Size.zero && _canvasSize == Size.zero) {
+
+    if (activeCanvasFromState != null && activeCanvasFromState != Size.zero) {
       _canvasSize = activeCanvasFromState;
     }
     
-    // [Fix] 캔버스 비율 엄격 고정 (내지는 3:4, 커버는 선택된 비율)
-    final double aspect = isCover ? vm.selectedCover.ratio : (3/4);
+    // [Fix] 캔버스 비율 엄격 고정 (내지도 커버와 동일한 비율을 사용하여 일관성 확보)
+    final double aspect = vm.selectedCover.ratio;
     final double defaultW = 300.w;
     final double defaultH = defaultW / aspect;
     

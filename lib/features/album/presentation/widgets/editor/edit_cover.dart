@@ -154,13 +154,20 @@ class EditCoverState extends ConsumerState<EditCover> {
       ref: ref,
       coverKey: widget.canvasKey ?? _coverKey,
       setState: setState,
-      getCoverSize: () => _coverSize,
+      // [10단계 Fix] 커버 편집 시에도 500xH 논리 좌표계를 사용함
+      getCoverSize: () {
+        final ratio = _selectedCover.ratio > 0 ? _selectedCover.ratio : 1.0;
+        return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+      },
       onEditText: (layer) => _textEditor.openForExisting(layer),
       showSelectionControls: true, 
       showHandles: false, // 핸들 숨김, 테두리는 표시
     );
     // 레이어 빌더
-    _layerBuilder = LayerBuilder(_interaction, () => _coverSize);
+    _layerBuilder = LayerBuilder(_interaction, () {
+      final ratio = _selectedCover.ratio > 0 ? _selectedCover.ratio : 1.0;
+      return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+    });
 
     // Cover VM + Album VM과 동기화 (앨범 생성 시 선택한 커버 사이즈 유지)
     Future.microtask(() {
@@ -496,31 +503,50 @@ class EditCoverState extends ConsumerState<EditCover> {
                                   child: GestureDetector(
                                     behavior: HitTestBehavior.translucent,
                                     onTap: _interaction.clearSelection,
-                                    child: CoverLayout(
-                                        aspect: aspect,
-                                        layers: _interaction.sortByZ(layers),
-                                        isInteracting: _interaction.isInteractingNow,
-                                        leftSpine: 14.0,
-                                        contentKey: widget.canvasKey ?? _coverKey, // PASS KEY DOWN
-                                        onCoverSizeChanged: (size) {
-                                          if (_coverSize == size) return;
-                                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                                            if (!mounted) return;
-                                            print('[EditCover] Canvas Size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
-                                            setState(() {
-                                              _coverSize = size;
-                                            });
-                                            albumVm.setCoverCanvasSize(size);
-                                            widget.onSizeChanged?.call(size);
-                                            // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
-                                            albumVm.loadPendingEditAlbumIfNeeded(size);
-                                          });
-                                        },
-                                        buildImage: (layer) => _layerBuilder.buildImage(layer, isCover: true),
-                                        buildText: (layer) => _layerBuilder.buildText(layer, isCover: true),
-                                        sortedByZ: _interaction.sortByZ,
-                                        theme: selectedTheme,
-                                      ),
+                                    child: LayoutBuilder(
+                                      builder: (context, coverConstraints) {
+                                        final double canvasW = coverConstraints.maxWidth;
+                                        final double logicalW = kCoverReferenceWidth;
+                                        final double logicalH = logicalW / aspect;
+                                        final double scale = canvasW / logicalW;
+
+                                        return OverflowBox(
+                                          minWidth: logicalW,
+                                          maxWidth: logicalW,
+                                          minHeight: logicalH,
+                                          maxHeight: logicalH,
+                                          alignment: Alignment.center,
+                                          child: Transform.scale(
+                                            scale: scale,
+                                            child: CoverLayout(
+                                              aspect: aspect,
+                                              layers: _interaction.sortByZ(layers),
+                                              isInteracting: _interaction.isInteractingNow,
+                                              leftSpine: 14.0,
+                                              contentKey: widget.canvasKey ?? _coverKey, // PASS KEY DOWN
+                                              onCoverSizeChanged: (size) {
+                                                if (_coverSize == size) return;
+                                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                  if (!mounted) return;
+                                                  print('[EditCover] Canvas Size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
+                                                  setState(() {
+                                                    _coverSize = size;
+                                                  });
+                                                  albumVm.setCoverCanvasSize(size);
+                                                  widget.onSizeChanged?.call(size);
+                                                  // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
+                                                  albumVm.loadPendingEditAlbumIfNeeded(size);
+                                                });
+                                              },
+                                              buildImage: (layer) => _layerBuilder.buildImage(layer, isCover: true),
+                                              buildText: (layer) => _layerBuilder.buildText(layer, isCover: true),
+                                              sortedByZ: _interaction.sortByZ,
+                                              theme: selectedTheme,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    ),
                                   ),
                                 ),
                               ),

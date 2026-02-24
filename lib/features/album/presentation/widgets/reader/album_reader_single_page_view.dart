@@ -522,6 +522,14 @@ class _CoverPageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // [10단계 Fix] 리더 화면의 커버도 500xH 논리 고정 좌표계를 사용하여 렌더링합니다.
+    final double aspect = selectedCover.ratio > 0 ? selectedCover.ratio : 1.0;
+    const double logicalW = kCoverReferenceWidth; // 500.0
+    final double logicalH = logicalW / aspect;
+    
+    // 실제 화면 대비 스케일 계산
+    final double scale = pageW / logicalW;
+
     return Container(
       width: pageW,
       height: pageH,
@@ -537,16 +545,27 @@ class _CoverPageCard extends StatelessWidget {
       ),
       child: RepaintBoundary(
         key: coverKey,
-        child: CoverLayout(
-          aspect: selectedCover.ratio,
-          layers: interaction.sortByZ(page.layers),
-          isInteracting: false,
-          leftSpine: 14.0,
-          onCoverSizeChanged: onCoverSizeChanged,
-          buildImage: (layer) => layerBuilder.buildImage(layer, isCover: true),
-          buildText: (layer) => layerBuilder.buildText(layer, isCover: true),
-          sortedByZ: interaction.sortByZ,
-          theme: coverTheme,
+        child: OverflowBox(
+          // 논리 사이즈로 강제 렌더링 후 스케일링
+          minWidth: logicalW,
+          maxWidth: logicalW,
+          minHeight: logicalH,
+          maxHeight: logicalH,
+          alignment: Alignment.center,
+          child: Transform.scale(
+            scale: scale,
+            child: CoverLayout(
+              aspect: aspect,
+              layers: interaction.sortByZ(page.layers),
+              isInteracting: false,
+              leftSpine: 14.0,
+              onCoverSizeChanged: onCoverSizeChanged,
+              buildImage: (layer) => layerBuilder.buildImage(layer, isCover: true),
+              buildText: (layer) => layerBuilder.buildText(layer, isCover: true),
+              sortedByZ: interaction.sortByZ,
+              theme: coverTheme,
+            ),
+          ),
         ),
       ),
     );
@@ -575,9 +594,13 @@ class _InnerPageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scaleX = pageW / _editorBaseSize.width;
-    final scaleY = pageH / _editorBaseSize.height;
-    final scale = math.min(scaleX, scaleY);
+    // [Inner Page Fix] 에디터와 동일하게 커버 비율을 반영한 논리적 베이스 사이즈 계산
+    final ratio = pageW / pageH;
+    final logicalW = 300.0;
+    final logicalH = 300.0 / ratio;
+    final logicalBaseSize = Size(logicalW, logicalH);
+
+    final scale = pageW / logicalW;
 
     return ClipRect(
       child: Container(
@@ -585,16 +608,16 @@ class _InnerPageCard extends StatelessWidget {
         height: pageH,
         color: SnapFitColors.pureWhite,
         child: Stack(
-          clipBehavior: Clip.hardEdge,
+          clipBehavior: Clip.none, // 페이지 밖으로 살짝 나가는 요소(그림자 등) 허용
           children: [
             Transform.scale(
               scale: scale,
               alignment: Alignment.topLeft,
               child: SizedBox(
-                width: _editorBaseSize.width,
-                height: _editorBaseSize.height,
+                width: logicalBaseSize.width,
+                height: logicalBaseSize.height,
                 child: Stack(
-                  clipBehavior: Clip.hardEdge,
+                  clipBehavior: Clip.none, // 회전된 레이어의 모서리가 잘리는 현상 방지
                   children: interaction.sortByZ(page.layers).map((layer) {
                     if (layer.type == LayerType.image) {
                       return layerBuilder.buildImage(layer);
