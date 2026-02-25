@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 
 /// 앨범 삭제 확인 다이얼로그
 class HomeDeleteAlbumDialog extends StatelessWidget {
@@ -31,12 +32,12 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 20.r,
                 offset: Offset(0, 10.h),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8.r,
                 offset: Offset(0, 4.h),
               ),
@@ -50,13 +51,13 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                 width: 64.w,
                 height: 64.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE),
+                  color: SnapFitColors.errorLight,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.delete_outline_rounded,
                   size: 32.sp,
-                  color: const Color(0xFFE53935),
+                  color: SnapFitColors.error,
                 ),
               ),
               SizedBox(height: 20.h),
@@ -120,19 +121,19 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 14.h),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFE53935),
-                                Color(0xFFC62828),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  SnapFitColors.error,
+                                  SnapFitColors.errorDark,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFE53935).withOpacity(0.3),
+                                color: SnapFitColors.error.withValues(alpha: 0.3),
                                 blurRadius: 8.r,
                                 offset: Offset(0, 4.h),
                               ),

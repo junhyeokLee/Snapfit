@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Album member repository provider
 import '../../../../core/network/dio_provider.dart';
+import '../../service/album_persistence_service.dart';
+
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/album_member_repository.dart';
@@ -47,4 +49,10 @@ final storageServiceProvider = Provider<StorageService>((ref) {
 
 final albumEditorServiceProvider = Provider<AlbumEditorService>((ref) {
   return const AlbumEditorService();
+});
+
+final albumPersistenceServiceProvider = Provider<AlbumPersistenceService>((ref) {
+  final storage = ref.read(storageServiceProvider);
+  final repository = ref.read(albumRepositoryProvider);
+  return AlbumPersistenceService(storage, repository);
 });

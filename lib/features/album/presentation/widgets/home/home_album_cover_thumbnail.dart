@@ -83,7 +83,7 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
               onCoverSizeChanged: (_) {},
               buildImage: (layer) => buildStaticImage(layer),
               buildText: (layer) => buildStaticText(layer),
-              sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
+              sortedByZ: (list) => list.toList()..sort((a, b) => a.id.compareTo(b.id)),
               theme: theme,
             ),
           ),

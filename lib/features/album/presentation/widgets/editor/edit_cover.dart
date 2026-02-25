@@ -28,9 +28,12 @@ import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
+import '../../viewmodels/gallery_notifier.dart'; // Add import
 import '../../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../views/page_editor_screen.dart';
 import './layer_action_panel.dart';
+import './edit_cover_top_bar.dart';
+import './page_editor_overlays.dart';
 
 class EditCover extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 열었을 때 전달 (저장 성공 시 홈으로 pop)
@@ -51,6 +54,9 @@ class EditCover extends ConsumerStatefulWidget {
   /// 앨범 제목 (생성 플로우에서 사용)
   final String? albumTitle;
 
+  /// 목표 페이지 수 (생성 플로우에서 사용)
+  final int? targetPages;
+
   /// 상단 앱바 표시 여부 (PageEditorScreen 내에 임베딩될 때 false)
   final bool showAppBar;
 
@@ -70,6 +76,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.onRegisterCompleteAction,
     this.initialCoverSize,
     this.albumTitle,
+    this.targetPages,
     this.showAppBar = true,
     this.showBottomToolbar = true,
     this.interaction,
@@ -299,6 +306,7 @@ class EditCoverState extends ConsumerState<EditCover> {
         _coverSize,
         coverImageBytes: coverBytes,
         title: widget.albumTitle,
+        targetPages: widget.targetPages,
         overrideLayers: sortedLayers,
       );
       
@@ -417,11 +425,6 @@ class EditCoverState extends ConsumerState<EditCover> {
       context: context,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 플로우일 때는 상단 탑바 없음(플로우 AppBar 사용) → 전체 높이 사용
-          final topBarHeight = widget.isFromCreateFlow
-              ? 0.0
-              : (MediaQuery.of(context).padding.top + kToolbarHeight);
-
           return Stack(
             children: [
               GestureDetector(
@@ -435,42 +438,10 @@ class EditCoverState extends ConsumerState<EditCover> {
                   children: [
                     // 탑바 (플로우가 아닐 때만 && showAppBar가 true일 때만)
                     if (!widget.isFromCreateFlow && widget.showAppBar)
-                      Container(
-                        color: SnapFitColors.backgroundOf(context), // theme support
-                        child: SafeArea(
-                          bottom: false,
-                          child: SizedBox(
-                            height: kToolbarHeight,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: SnapFitColors.accent.withOpacity(0.9),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      minimumSize: Size(64.w, 32.h),
-                                      padding: EdgeInsets.symmetric(horizontal: 12.w),
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    onPressed: isCreating ? null : _onCreateAlbum,
-                                    child: Text(
-                                      widget.editAlbum == null ? '완료' : '다음',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 16.w),
-                              ],
-                            ),
-                          ),
-                        ),
+                      EditCoverTopBar(
+                        isCreating: isCreating,
+                        isEditMode: widget.editAlbum != null,
+                        onAction: _onCreateAlbum,
                       ),
 
                     // 커버 캔버스: Expanded (하단 툴바가 오버레이로 빠졌으므로 전체 높이 사용)
@@ -479,9 +450,7 @@ class EditCoverState extends ConsumerState<EditCover> {
                         color: SnapFitColors.backgroundOf(context), // theme support
                         child: LayoutBuilder(
                           builder: (context, canvasConstraints) {
-                          final canvasHeight = canvasConstraints.maxHeight;
                           final coverSide = _layout.getCoverSidePadding(selectedCover);
-                          final selectorHeight = kToolbarHeight;
 
                           // Refactor: AlbumReader와 동일한 Center 구조
 
@@ -505,43 +474,55 @@ class EditCoverState extends ConsumerState<EditCover> {
                                     onTap: _interaction.clearSelection,
                                     child: LayoutBuilder(
                                       builder: (context, coverConstraints) {
-                                        final double canvasW = coverConstraints.maxWidth;
+                                        final double availW = coverConstraints.maxWidth;
+                                        final double availH = canvasConstraints.maxHeight;
                                         final double logicalW = kCoverReferenceWidth;
                                         final double logicalH = logicalW / aspect;
-                                        final double scale = canvasW / logicalW;
 
-                                        return OverflowBox(
-                                          minWidth: logicalW,
-                                          maxWidth: logicalW,
-                                          minHeight: logicalH,
-                                          maxHeight: logicalH,
-                                          alignment: Alignment.center,
-                                          child: Transform.scale(
-                                            scale: scale,
-                                            child: CoverLayout(
-                                              aspect: aspect,
-                                              layers: _interaction.sortByZ(layers),
-                                              isInteracting: _interaction.isInteractingNow,
-                                              leftSpine: 14.0,
-                                              contentKey: widget.canvasKey ?? _coverKey, // PASS KEY DOWN
-                                              onCoverSizeChanged: (size) {
-                                                if (_coverSize == size) return;
-                                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                                  if (!mounted) return;
-                                                  print('[EditCover] Canvas Size: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
-                                                  setState(() {
-                                                    _coverSize = size;
+                                        // 모든 커버 유형이 같은 '최대 변' 길이를 갖도록 스케일 계산
+                                        // → 정사각형(500×500)이 세로형(375×500)보다 면적이 더 크게 표시됨
+                                        final double maxLogicalDim = logicalW > logicalH ? logicalW : logicalH;
+                                        final double scaleByMaxDim = availW / maxLogicalDim;
+                                        // 높이가 가용 영역을 넘지 않도록 제한
+                                        final double scaleByHeight = availH / logicalH;
+                                        final double scale = scaleByMaxDim < scaleByHeight ? scaleByMaxDim : scaleByHeight;
+                                        final double displayW = logicalW * scale;
+                                        final double displayH = logicalH * scale;
+                                        debugPrint('[CoverSize] aspect=$aspect maxLogicalDim=${maxLogicalDim.toStringAsFixed(0)} scaleByMaxDim=${scaleByMaxDim.toStringAsFixed(3)} scaleByH=${scaleByHeight.toStringAsFixed(3)} → scale=${scale.toStringAsFixed(3)} displayW=${displayW.toStringAsFixed(0)} displayH=${displayH.toStringAsFixed(0)}');
+
+                                        return SizedBox(
+                                          width: displayW,
+                                          height: displayH,
+                                          child: FittedBox(
+                                            fit: BoxFit.contain,
+                                            child: SizedBox(
+                                              width: logicalW,
+                                              height: logicalH,
+                                              child: CoverLayout(
+                                                aspect: aspect,
+                                                layers: _interaction.sortByZ(layers),
+                                                isInteracting: _interaction.isInteractingNow,
+                                                leftSpine: 14.0,
+                                                contentKey: widget.canvasKey ?? _coverKey,
+                                                onCoverSizeChanged: (size) {
+                                                  if (_coverSize == size) return;
+                                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                    if (!mounted) return;
+
+                                                    setState(() {
+                                                      _coverSize = size;
+                                                    });
+                                                    albumVm.setCoverCanvasSize(size);
+                                                    widget.onSizeChanged?.call(size);
+                                                    // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
+                                                    albumVm.loadPendingEditAlbumIfNeeded(size);
                                                   });
-                                                  albumVm.setCoverCanvasSize(size);
-                                                  widget.onSizeChanged?.call(size);
-                                                  // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
-                                                  albumVm.loadPendingEditAlbumIfNeeded(size);
-                                                });
-                                              },
-                                              buildImage: (layer) => _layerBuilder.buildImage(layer, isCover: true),
-                                              buildText: (layer) => _layerBuilder.buildText(layer, isCover: true),
-                                              sortedByZ: _interaction.sortByZ,
-                                              theme: selectedTheme,
+                                                },
+                                                buildImage: (layer) => _layerBuilder.buildImage(layer, isCover: true),
+                                                buildText: (layer) => _layerBuilder.buildText(layer, isCover: true),
+                                                sortedByZ: _interaction.sortByZ,
+                                                theme: selectedTheme,
+                                              ),
                                             ),
                                           ),
                                         );
@@ -573,11 +554,11 @@ class EditCoverState extends ConsumerState<EditCover> {
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
                         decoration: BoxDecoration(
-                          color: SnapFitColors.surfaceOf(context).withOpacity(0.9), // theme support
+                          color: SnapFitColors.surfaceOf(context).withValues(alpha: 0.9), // theme support
                           borderRadius: BorderRadius.circular(18.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(SnapFitColors.isDark(context) ? 0.2 : 0.08),
+                              color: Colors.black.withValues(alpha: SnapFitColors.isDark(context) ? 0.2 : 0.08),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -638,32 +619,7 @@ class EditCoverState extends ConsumerState<EditCover> {
 
               // 저장 중 진행률 오버레이
               if (isCreating)
-                Container(
-                  color: SnapFitColors.overlayStrongOf(context),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          value: _saveProgress,
-                          strokeWidth: 4,
-                          color: SnapFitColors.accent,
-                          backgroundColor: Colors.white24,
-                        ),
-                        SizedBox(height: 20.h),
-                        Text(
-                          '저장 중... ${(_saveProgress * 100).toInt()}%',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                PageEditorSaveOverlay(progress: _saveProgress),
             ],
           );
         },
@@ -691,8 +647,11 @@ class EditCoverState extends ConsumerState<EditCover> {
 
 
   Future<void> _openGalleryForSelected(LayerModel layer) async {
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-    await vm.ensureGalleryLoaded();
+    final gallery = ref.read(galleryProvider);
+    if (gallery.albums.isEmpty) {
+      await ref.read(galleryProvider.notifier).fetchInitialData();
+    }
+    
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset != null) {
       ref.read(albumEditorViewModelProvider.notifier).updateLayer(
@@ -701,10 +660,5 @@ class EditCoverState extends ConsumerState<EditCover> {
     }
   }
 
-  IconData _iconForCover(CoverSize s) {
-    final ratio = s.ratio;
-    if (ratio > 1) return Icons.crop_landscape;
-    if (ratio < 1) return Icons.crop_portrait;
-    return Icons.crop_square;
-  }
+
 }

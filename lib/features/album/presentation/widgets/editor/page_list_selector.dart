@@ -5,7 +5,6 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../domain/entities/album_page.dart';
-import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart'; // [Fix] 추가
 import '../cover/cover.dart';
@@ -37,9 +36,14 @@ class PageListSelector extends ConsumerWidget {
       child: ListView.separated(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         scrollDirection: Axis.horizontal,
-        itemCount: pages.length, // [Fix] '+' 버튼 제거
+        itemCount: pages.length + 1, // 마지막에 + 버튼 추가
         separatorBuilder: (context, index) => SizedBox(width: 12.w),
         itemBuilder: (context, index) {
+          // 마지막 아이템 = 페이지 추가 버튼
+          if (index == pages.length) {
+            return _buildAddButton(context);
+          }
+
           final page = pages[index];
           final isSelected = index == currentPageIndex;
           final isCover = index == 0;
@@ -66,7 +70,7 @@ class PageListSelector extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8.r),
                     child: _buildPageThumbnail(
                       context,
-                      ref: ref, // [Fix] ref 전달
+                      ref: ref,
                       page: page,
                       isCover: isCover,
                       selectedTheme: selectedTheme,

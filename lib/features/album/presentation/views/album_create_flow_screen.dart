@@ -147,6 +147,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           isFromCreateFlow: true,
           initialCoverSize: _selectedCover,
           albumTitle: _albumTitle, // 앨범 제목 전달
+          targetPages: _selectedPageCount, // 목표 페이지 수 전달
           onRegisterCompleteAction: (callback) {
             setState(() {
               _onCompletePressed = callback;
@@ -172,31 +173,28 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           allowEditing: _allowEditing,
           albumId: _createdAlbumId,
           onAllowEditingChanged: (value) => setState(() => _allowEditing = value),
-          onNext: () async {
+          onNext: () {
             // 마지막 단계 완료 -> 편집 화면(Reader)으로 이동
             if (_createdAlbumId != null) {
               // 앨범이 아직 생성 중일 수 있으므로 ID만으로 더미 Album 생성
               final dummyAlbum = Album(
                 id: _createdAlbumId!,
                 ratio: _selectedCover!.ratio.toString(),
+                targetPages: _selectedPageCount,
               );
               
-              // 백그라운드에서 폴링 시작 (상태 설정 대기)
-              await ref.read(albumEditorViewModelProvider.notifier).prepareAlbumForEdit(
+              // 백그라운드에서 폴링 시작 (await 하지 않음 → 즉시 화면 전환)
+              // PageEditorScreen의 isCreatingInBackground 오버레이가 "생성 중" 표시
+              ref.read(albumEditorViewModelProvider.notifier).prepareAlbumForEdit(
                 dummyAlbum,
-                waitForCreation: true, // 앨범 생성 완료 대기
+                waitForCreation: true,
               );
               
-              // 상태 업데이트가 UI에 반영되도록 약간의 지연
-              await Future.delayed(const Duration(milliseconds: 100));
-              
-              if (mounted) {
-                 // 즉시 편집 화면으로 이동 (로딩 화면 표시됨)
-                 Navigator.pushReplacement(
-                   context,
-                   MaterialPageRoute(builder: (_) => const PageEditorScreen(initialPageIndex: 1)),
-                 );
-              }
+              // 즉시 편집 화면으로 이동 (로딩 오버레이 표시됨)
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const PageEditorScreen(initialPageIndex: 1)),
+              );
             }
           },
           onBack: () => setState(() => _currentStep = 1),

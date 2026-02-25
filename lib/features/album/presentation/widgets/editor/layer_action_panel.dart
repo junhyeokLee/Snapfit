@@ -37,7 +37,11 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     final selectedId = widget.interaction.selectedLayerId;
     if (selectedId == null) return const SizedBox.shrink();
 
-    final layer = widget.layers.firstWhere((l) => l.id == selectedId, orElse: () => widget.layers.first);
+    // 레이어가 하나도 없거나(빈 페이지), 해당 ID의 레이어를 찾지 못한 경우 안전하게 처리
+    final layerIndex = widget.layers.indexWhere((l) => l.id == selectedId);
+    if (layerIndex == -1) return const SizedBox.shrink();
+    
+    final layer = widget.layers[layerIndex];
 
     return Container(
       width: double.infinity,

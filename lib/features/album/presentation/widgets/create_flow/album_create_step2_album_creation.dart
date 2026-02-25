@@ -178,7 +178,9 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
       // 앨범 생성 (빈 커버로 시작)
       final request = CreateAlbumRequest(
         ratio: widget.selectedCover.ratio.toString(),
-        coverLayersJson: '[]', // 빈 레이어로 시작
+        title: widget.albumTitle,
+        targetPages: widget.selectedPageCount, // Step1에서 선택한 페이지 수 서버 저장
+        coverLayersJson: '[]',
         coverImageUrl: '',
         coverThumbnailUrl: '',
         coverTheme: '',

@@ -86,7 +86,7 @@ class _FannedPagesViewState extends ConsumerState<FannedPagesView> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF7d7a97), Color(0xFF9893a9)],
+          colors: SnapFitColors.fannedGradient,
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -273,7 +273,7 @@ class _FannedPageStack extends StatelessWidget {
           final t = count > 1 ? depth / (count - 1) : 0.0;
           final scale = 1.0 - t * 0.05;
           final offsetX = depth * offsetStep;
-          final rotateZ = -depth * (rotateZDeg * 3.141592 / 180);
+          final rotateZ = -depth * (rotateZDeg * math.pi / 180);
           final rotateY = -t * maxFanY;
 
           return Transform(
@@ -318,7 +318,7 @@ class _FannedPageStack extends StatelessWidget {
               left: rx * pageWidth,
               top: ry * pageHeight,
               child: Transform.rotate(
-                angle: layer.rotation * (3.14159265359 / 180),
+                angle: layer.rotation * (math.pi / 180),
                 child: Transform.scale(
                   alignment: Alignment.topLeft,
                   scale: layer.scale * (pageWidth / baseW),
@@ -413,7 +413,7 @@ class _PageCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(6.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12 + depth * 0.05),
+            color: Colors.black.withValues(alpha: 0.12 + depth * 0.05),
             blurRadius: 6 + depth * 6,
             offset: Offset(2 + depth * 1.5, 4 + depth * 3),
           ),

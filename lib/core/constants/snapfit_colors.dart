@@ -35,6 +35,19 @@ class SnapFitColors {
     primaryGradientEnd,
   ];
 
+  /// Freeze 테마 전용 색상
+  static const Color freezeBackground = Color(0xFF0D1B1F);
+  static const Color freezeSurface = Color(0xFF1C3A42);
+  static const Color freezeSurfaceDark = Color(0xFF0F2226);
+  static const Color freezeAccent = Color(0xFF00D4EE);
+  static const Color freezeAccentDark = Color(0xFF00A8C4);
+  static const Color freezeGlow = Color(0xFF00C2E0);
+
+  /// 에러 및 경고 (삭제 등)
+  static const Color error = Color(0xFFE53935);
+  static const Color errorLight = Color(0xFFFFEBEE);
+  static const Color errorDark = Color(0xFFC62828);
+
   /// 배경 그라데이션 (다크/라이트)
   static const List<Color> editorGradientDark = [
     deepCharcoal,
@@ -45,6 +58,22 @@ class SnapFitColors {
     pureWhite,
     Color(0xFFF7F7F7),
     surfaceLight,
+  ];
+
+  /// 앨범 리더용 배경 그라데이션
+  static const List<Color> readerGradientDark = [
+    Color(0xFF1A2E33),
+    Color(0xFF0D1B1F),
+  ];
+  static const List<Color> readerGradientLight = [
+    Color(0xFFF0F4F8),
+    Color(0xFFE8EEF4),
+  ];
+
+  /// FannedPagesView 전용 배경 그라데이션
+  static const List<Color> fannedGradient = [
+    Color(0xFF7D7A97),
+    Color(0xFF9893A9),
   ];
 
   @Deprecated('Use textPrimaryOf(context) for theme-aware colors.')
@@ -97,4 +126,7 @@ class SnapFitColors {
 
   static List<Color> editorGradientOf(BuildContext context) =>
       isDark(context) ? editorGradientDark : editorGradientLight;
+
+  static List<Color> readerGradientOf(BuildContext context) =>
+      isDark(context) ? readerGradientDark : readerGradientLight;
 }

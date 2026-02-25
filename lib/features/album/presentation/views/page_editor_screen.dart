@@ -22,6 +22,8 @@ import '../widgets/editor/template_selection_panel.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../viewmodels/home_view_model.dart';
 import '../controllers/toolbar_action_handler.dart';
+import '../widgets/editor/page_editor_overlays.dart';
+import '../viewmodels/gallery_notifier.dart'; // Add import
 
 class PageEditorScreen extends ConsumerStatefulWidget {
   /// 편집할 내지 페이지 인덱스 (1 이상). null이면 현재 선택된 페이지 유지.
@@ -128,13 +130,76 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
   Future<void> _openGalleryForPlaceholder(LayerModel layer) async {
     if (!mounted) return;
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-    await vm.ensureGalleryLoaded();
+    
+    final gallery = ref.read(galleryProvider);
+    if (gallery.albums.isEmpty) {
+      await ref.read(galleryProvider.notifier).fetchInitialData();
+    }
     if (!mounted) return;
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset == null || !mounted) return;
+    
+    final vm = ref.read(albumEditorViewModelProvider.notifier); // vm 정의 추가
     await vm.updateSlotImage(layer.id, asset);
     if (mounted) setState(() {});
+  }
+
+  /// 앨범 저장 로직 추출
+  Future<void> _onSaveAlbum(AlbumEditorViewModel vm, List<LayerModel> layers) async {
+    if (_isSaving) return;
+
+    try {
+      setState(() {
+        _isSaving = true;
+        _simulateProgress();
+      });
+
+      // 1. Z-index 정렬 동기화
+      if (layers.isNotEmpty) {
+        final sorted = _interaction.sortByZ(layers);
+        vm.updatePageLayers(sorted);
+      }
+
+      // 2. 서버 저장
+      Uint8List? coverCapture;
+      try {
+        coverCapture = await _coverEditorKey.currentState?.captureCoverBytes();
+      } catch (e) {
+        debugPrint('Failed to capture cover in Screen: $e');
+      }
+
+      final isSuccess = await vm.saveFullAlbum(coverImageBytes: coverCapture);
+
+      if (isSuccess) {
+        // 성공 시 진행률 100%
+        _progressTimer?.cancel();
+        if (mounted) {
+          setState(() => _saveProgress = 1.0);
+        }
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+
+      if (context.mounted) {
+        // 3. 홈 화면 갱신 및 이동
+        await ref.read(homeViewModelProvider.notifier).refresh();
+        if (!context.mounted) return;
+
+        Navigator.popUntil(context, (route) => route.isFirst);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('앨범이 저장되었습니다!')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('저장 실패: $e')),
+        );
+      }
+    } finally {
+      _progressTimer?.cancel();
+    }
   }
 
 
@@ -144,22 +209,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final state = asyncState.value;
 
-    // [Fix] 페이지 전환 시 이전 캔버스 사이즈가 남아있어 좌표 오차가 생기는 문제 해결
-    // 현재 페이지 타입에 맞는 캔버스 사이즈로 강제 동기화
-    final isCover = vm.currentPageIndex == 0;
-    final activeCanvasFromState = isCover ? state?.coverCanvasSize : state?.innerCanvasSize;
-
-    if (activeCanvasFromState != null && activeCanvasFromState != Size.zero) {
-      _canvasSize = activeCanvasFromState;
-    }
-    
-    // [Fix] 캔버스 비율 엄격 고정 (내지도 커버와 동일한 비율을 사용하여 일관성 확보)
+    // aspect: 내지 LayoutBuilder에서 canvasH 계산에 사용
     final double aspect = vm.selectedCover.ratio;
-    final double defaultW = 300.w;
-    final double defaultH = defaultW / aspect;
-    
-    final canvasW = _canvasSize != Size.zero ? _canvasSize.width : defaultW; 
-    final canvasH = _canvasSize != Size.zero ? _canvasSize.height : defaultH;
     
     // Logic for displaying layers
     // If initialPageIndex is set, we might be forcing a specific page
@@ -192,61 +243,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: _isSaving ? null : () async {
-               // 저장 로직 실행
-               try {
-                 setState(() {
-                   _isSaving = true;
-                   _simulateProgress();
-                 });
-
-                 // 1. Z-index 정렬 동기화
-                 if (layers.isNotEmpty) {
-                   final sorted = _interaction.sortByZ(layers);
-                   vm.updatePageLayers(sorted);
-                 }
-
-                  // 2. 서버 저장
-                  Uint8List? coverCapture;
-                  try {
-                    coverCapture = await _coverEditorKey.currentState?.captureCoverBytes();
-                  } catch (e) {
-                    debugPrint('Failed to capture cover in Screen: $e');
-                  }
-                  
-                  final isSuccess = await vm.saveFullAlbum(coverImageBytes: coverCapture);
-                  
-                  if (isSuccess) {
-                   // 성공 시 진행률 100%
-                   _progressTimer?.cancel();
-                   if (mounted) {
-                     setState(() => _saveProgress = 1.0);
-                   }
-                   await Future.delayed(const Duration(milliseconds: 300));
-                 }
-
-                 if (context.mounted) {
-                   // 3. 홈 화면 갱신 및 이동
-                   await ref.read(homeViewModelProvider.notifier).refresh();
-                   if (!context.mounted) return;
-                   
-                   Navigator.popUntil(context, (route) => route.isFirst);
-                   
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     const SnackBar(content: Text('앨범이 저장되었습니다!')),
-                   );
-                 }
-               } catch (e) {
-                 if (context.mounted) {
-                   setState(() => _isSaving = false);
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     SnackBar(content: Text('저장 실패: $e')),
-                   );
-                 }
-               } finally {
-                 _progressTimer?.cancel();
-               }
-            },
+            onPressed: _isSaving ? null : () => _onSaveAlbum(vm, layers),
             child: Text(
               "완료",
               style: TextStyle(
@@ -270,7 +267,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   currentPageIndex: currentPageIndex,
                   onPageSelected: (index) {
                     vm.goToPage(index);
-                    setState(() {}); // Refresh UI
+                    // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
+                    setState(() => _canvasSize = Size.zero);
                   },
                   onAddPage: () {
                     vm.addPage();
@@ -302,27 +300,42 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     }
                   },
                   behavior: HitTestBehavior.translucent,
-                  child: Center(
-                    child: PageEditorCanvas(
-                      canvasKey: _canvasKey,
-                      canvasW: canvasW,
-                      canvasH: canvasH,
-                      layers: layers,
-                      interaction: _interaction,
-                      layerBuilder: _layerBuilder,
-                      onCanvasSizeChanged: (size) {
-                        _canvasSize = size;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          vm.loadPendingEditAlbumIfNeeded(size);
-                          // [Fix] 현재 페이지 타입에 맞춰 리사이징 타겟 지정
-                          vm.setCoverCanvasSize(size, isCover: vm.currentPageIndex == 0); 
-                        });
-                      },
-                      backgroundColor: vm.currentPage?.backgroundColor != null 
-                          ? Color(vm.currentPage!.backgroundColor!) 
-                          : null,
-                      isCover: vm.currentPage?.isCover ?? false,
-                    ),
+                  // 커버와 동일한 수평 패딩(16px)을 적용해 내지 크기를 정확히 일치시킴
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const double sidePadding = 16.0;
+                      final double innerW = constraints.maxWidth - sidePadding * 2;
+                      final double innerH = innerW / aspect;
+
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: sidePadding),
+                          child: PageEditorCanvas(
+                            canvasKey: _canvasKey,
+                            canvasW: innerW,
+                            canvasH: innerH,
+                            layers: layers,
+                            interaction: _interaction,
+                            layerBuilder: _layerBuilder,
+                            onCanvasSizeChanged: (size) {
+                              // 실제 측정된 캔버스 크기로 갱신
+                              if (_canvasSize != size) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (!mounted) return;
+                                  setState(() => _canvasSize = size);
+                                  vm.loadPendingEditAlbumIfNeeded(size);
+                                  vm.setCoverCanvasSize(size, isCover: vm.currentPageIndex == 0);
+                                });
+                              }
+                            },
+                            backgroundColor: vm.currentPage?.backgroundColor != null
+                                ? Color(vm.currentPage!.backgroundColor!)
+                                : null,
+                            isCover: vm.currentPage?.isCover ?? false,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -355,69 +368,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           
           // 저장 중 진행률 오버레이
           if (_isSaving)
-            Container(
-              color: SnapFitColors.overlayStrongOf(context),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      value: _saveProgress,
-                      strokeWidth: 4,
-                      color: SnapFitColors.accent,
-                      backgroundColor: Colors.white24,
-                    ),
-                    SizedBox(height: 20.h),
-                    Text(
-                      '저장 중... ${(_saveProgress * 100).toInt()}%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            PageEditorSaveOverlay(progress: _saveProgress),
           
           // 전역 로딩 오버레이 (생성 플로우 전환용)
           if (state?.isCreatingInBackground ?? false)
-            Container(
-              color: SnapFitColors.backgroundOf(context),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      strokeWidth: 3,
-                      color: SnapFitColors.accent,
-                    ),
-                    SizedBox(height: 24.h),
-                    Text(
-                      '앨범을 준비하고 있습니다...',
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.3,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '잠시만 기다려주세요.',
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 14.sp,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            const PageEditorPreparingOverlay(),
         ],
       ),
     );

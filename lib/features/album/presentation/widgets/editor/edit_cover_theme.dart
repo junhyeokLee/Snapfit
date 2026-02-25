@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../shared/widgets/spine_painter.dart';
+
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
+
+import './edit_cover_theme_item.dart';
 
 class EditCoverTheme extends ConsumerStatefulWidget {
   const EditCoverTheme({super.key});
@@ -32,19 +34,12 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients || index < 0) return;
 
-      // 실제 픽셀 기준으로 환산된 아이템/간격/패딩 폭 계산
-      final double itemWidthPx = previewWidth.w;   // 각 아이템의 실제 렌더 폭
-      final double separatorPx = 20.w;             // ListView.separated 의 간격
-      final double horizontalPaddingPx = 20.w;     // ListView 의 좌/우 패딩
+      final double itemWidthPx = previewWidth.w;
+      final double separatorPx = 20.w;
+      final double horizontalPaddingPx = 20.w;
 
       final double screenWidth = MediaQuery.of(context).size.width;
-
-      // index 번째 아이템의 왼쪽 시작 위치 (패딩 포함)
-      final double itemStart =
-          horizontalPaddingPx + (itemWidthPx + separatorPx) * index;
-
-      // 선택된 아이템이 화면 정중앙에 오도록 타깃 오프셋 계산
-      // 중앙정렬: itemCenter - screenWidth/2
+      final double itemStart = horizontalPaddingPx + (itemWidthPx + separatorPx) * index;
       final double itemCenter = itemStart + (itemWidthPx / 2);
       final double targetOffset = itemCenter - (screenWidth / 2);
 
@@ -62,50 +57,39 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.read(coverViewModelProvider.notifier);
-    final st = ref.watch(coverViewModelProvider).asData?.value;
     final editorVm = ref.read(albumEditorViewModelProvider.notifier);
     final editorSt = ref.watch(albumEditorViewModelProvider).asData?.value;
 
     if (editorSt == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    // if (st == null) {
-    //   return const Center(child: CircularProgressIndicator());
-    // }
 
-    // final selectedTheme = st.selectedTheme;
-
-    // final aspect = st.selectedCover.ratio; // 선택된 커버 비율
-    final selectedTheme = editorSt.selectedTheme; // ✅ editorState의 테마 사용
+    final selectedTheme = editorSt.selectedTheme;
     final aspect = editorSt.selectedCover.ratio;
-    double previewBaseHeight = 0.0;
-    double previewBaseWidth = 0.0;
-
-    if (aspect < 1) { // 세로형
-      previewBaseHeight = 115.0;
-      previewBaseWidth = previewBaseHeight * aspect;
-    } else if (aspect > 1) { // 가로형
-      previewBaseHeight = 110.0;
-      previewBaseWidth = previewBaseHeight * aspect;
-    } else { // 정사각형
-      previewBaseHeight = 125.0;
-      previewBaseWidth = previewBaseHeight * aspect;
+    
+    const double maxDimension = 125.0;
+    final double previewBaseWidth;
+    final double previewBaseHeight;
+    if (aspect >= 1.0) {
+      previewBaseWidth = maxDimension;
+      previewBaseHeight = maxDimension / aspect;
+    } else {
+      previewBaseHeight = maxDimension;
+      previewBaseWidth = maxDimension * aspect;
     }
 
     final themes = CoverTheme.values;
     final selectedIndex = themes.indexOf(selectedTheme);
+    debugPrint('[CoverThemeSize] aspect=$aspect cover=${editorSt.selectedCover.name} width=$previewBaseWidth height=$previewBaseHeight');
     _scrollToSelected(selectedIndex, previewBaseWidth);
-
-    const double miniLeftSpine = 8.0;
-    const double miniRightRadius = 4.0;
-    const double miniBottomRadius = 4.0;
 
     return Material(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      color: const Color(0xFF0F1113), // Unified dark theme
+      color: const Color(0xFF0F1113),
       clipBehavior: Clip.antiAlias,
-      child: SizedBox(
+      child: Container(
         height: 300.h,
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         child: Column(
           children: [
             SizedBox(height: 12.h),
@@ -118,11 +102,10 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
               ),
             ),
 
-            // 테마 리스트
             Expanded(
               child: Center(
                 child: SizedBox(
-                  height: 120.h,
+                  height: 160.h, // 충분한 높이 확보 (스케일 효과 고려)
                   child: ListView.separated(
                     controller: _scrollController,
                     clipBehavior: Clip.none,
@@ -132,105 +115,16 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                     separatorBuilder: (_, __) => SizedBox(width: 20.w),
                     itemBuilder: (context, index) {
                       final theme = themes[index];
-                      final isSelected = theme == selectedTheme;
-
-                      return GestureDetector(
+                      return EditCoverThemeItem(
+                        theme: theme,
+                        isSelected: theme == selectedTheme,
+                        width: previewBaseWidth.w,
+                        height: previewBaseHeight.w, // .w for both to preserve aspect ratio
                         onTap: () {
                           vm.updateTheme(theme);
                           editorVm.updateTheme(theme);
                           _scrollToSelected(index, previewBaseWidth);
                         },
-                        child: AnimatedScale(
-                          scale: isSelected ? 1.2 : 1.0,
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutCubic,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeOutCubic,
-                            transform: isSelected
-                                ? (Matrix4.identity()..translate(0.0, -6.h))
-                                : Matrix4.identity(),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(12.r),
-                                bottomRight: Radius.circular(12.r),
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.25),
-                                  blurRadius: 4.r,
-                                  offset: Offset(5.w, 20.h),
-                                ),
-                              ]
-                                  : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 4.r,
-                                  offset: Offset(4.w, 8.h),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(miniRightRadius.r),
-                                bottomRight: Radius.circular(miniBottomRadius.r),
-                              ),
-                              child: SizedBox(
-                                width: previewBaseWidth.w,
-                                height: previewBaseHeight.h,
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    // 커버 이미지 or 그라데이션
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        image: theme.imageAsset != null
-                                            ? DecorationImage(
-                                          image: AssetImage(theme.imageAsset!),
-                                          fit: BoxFit.cover,
-                                        )
-                                            : null,
-                                        gradient: theme.imageAsset == null ? theme.gradient : null,
-                                      ),
-                                    ),
-                                    // 왼쪽 봉제선
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: CustomPaint(
-                                        painter: SpinePainter(
-                                          baseStart: Colors.white.withOpacity(0.05),
-                                          baseEnd: Colors.white.withOpacity(0.05),
-                                        ),
-                                        size: Size(miniLeftSpine.w, double.infinity),
-                                      ),
-                                    ),
-                                    // 라벨
-                                    Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: Container(
-                                        margin: EdgeInsets.only(bottom: 6.h),
-                                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.3),
-                                          borderRadius: BorderRadius.circular(10.r),
-                                        ),
-                                        child: Text(
-                                          theme.label,
-                                          style: TextStyle(
-                                            color: SnapFitColors.textPrimaryOf(context),
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                       );
                     },
                   ),

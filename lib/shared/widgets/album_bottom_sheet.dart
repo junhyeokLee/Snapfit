@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../core/constants/snapfit_colors.dart';
-import '../../features/album/presentation/viewmodels/album_editor_view_model.dart';
+import '../../features/album/presentation/viewmodels/gallery_notifier.dart';
 import 'gallery_thumb_tile.dart';
 
 /// 상단 드래그 핸들 + 제목 + 닫기
@@ -151,20 +151,17 @@ Future<AssetEntity?> showPhotoSelectionSheet(
         expand: false,
         builder: (context, scrollController) {
           scrollController.addListener(() {
-            final vm = ref.read(albumEditorViewModelProvider.notifier);
             if (scrollController.position.pixels >=
                 scrollController.position.maxScrollExtent - 400) {
-              vm.loadMore();
+              ref.read(galleryProvider.notifier).loadMore();
             }
           });
 
           return Consumer(
             builder: (context, ref, _) {
-              final async = ref.watch(albumEditorViewModelProvider);
-              final error = async.asError;
-              final st = async.asData?.value;
+              final st = ref.watch(galleryProvider);
 
-              if (error != null) {
+              if ((st.albums.isEmpty && !st.isLoading) || st.error != null) {
                 return Container(
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
@@ -184,7 +181,7 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                           ),
                         ),
                         Text(
-                          error.error.toString().replaceFirst('Exception: ', ''),
+                          st.error?.toString() ?? '이미지 앨범이 없습니다.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14.sp,
@@ -194,7 +191,7 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                         SizedBox(height: 16.h),
                         TextButton.icon(
                           onPressed: () {
-                            ref.read(albumEditorViewModelProvider.notifier).fetchInitialData();
+                            ref.read(galleryProvider.notifier).fetchInitialData();
                           },
                           icon: Icon(Icons.refresh, size: 20.sp, color: SnapFitColors.accent),
                           label: Text(
@@ -212,7 +209,7 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                 );
               }
 
-              if (st == null) {
+              if (st.selectedAlbum == null) {
                 return Container(
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
@@ -258,20 +255,20 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                       pinned: true,
                       delegate: AlbumHeaderDelegate(
                         albums: st.albums,
-                        current: st.currentAlbum,
+                        current: st.selectedAlbum,
                         onTap: () => _showAlbumSelectionSheet(
                           context,
                           ref,
                           st.albums,
-                          st.currentAlbum,
+                          st.selectedAlbum,
                         ),
                       ),
                     ),
-                    if (st.files.isEmpty)
+                    if (st.images.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Center(
-                          child: async.isLoading
+                          child: st.isLoading
                               ? Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -317,7 +314,7 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                       SliverPadding(
                         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                         sliver: SliverGrid(
-                          key: ValueKey(st.currentAlbum?.id),
+                          key: ValueKey(st.selectedAlbum?.id),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             crossAxisSpacing: 6.w,
@@ -326,7 +323,7 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, i) {
-                              final asset = st.files[i];
+                              final asset = st.images[i];
                               return GestureDetector(
                                 onTap: () {
                                   onSelect?.call(asset);
@@ -340,11 +337,11 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                                 ),
                               );
                             },
-                            childCount: st.files.length,
+                            childCount: st.images.length,
                           ),
                         ),
                       ),
-                    if (async.isLoading && st.files.isNotEmpty)
+                    if (st.isLoading && st.images.isNotEmpty)
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -441,7 +438,7 @@ Future<void> _showAlbumSelectionSheet(
                                 height: 44.w,
                                 decoration: BoxDecoration(
                                   color: isCurr
-                                      ? SnapFitColors.accent.withOpacity(0.2)
+                                      ? SnapFitColors.accent.withValues(alpha: 0.2)
                                       : SnapFitColors.overlayLightOf(context),
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
@@ -493,8 +490,6 @@ Future<void> _showAlbumSelectionSheet(
   );
 
   if (selected != null) {
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-    await vm.selectAlbum(selected);
-    ref.invalidate(albumEditorViewModelProvider);
+    await ref.read(galleryProvider.notifier).selectAlbum(selected);
   }
 }

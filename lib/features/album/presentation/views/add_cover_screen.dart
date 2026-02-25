@@ -43,6 +43,9 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 앨범 제목 (생성 플로우에서 사용)
   final String? albumTitle;
 
+  /// 목표 페이지 수 (생성 플로우에서 사용)
+  final int? targetPages;
+
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
 
@@ -56,6 +59,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.isFromCreateFlow = false,
     this.initialCoverSize,
     this.albumTitle,
+    this.targetPages,
     this.onAlbumCreated,
     this.onRegisterCompleteAction,
   });
@@ -114,7 +118,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         // 생성 플로우(신규 생성): 선택된 커버로 바로 초기화
         ref
             .read(albumEditorViewModelProvider.notifier)
-            .resetForCreate(initialCover: _selectedCover);
+            .resetForCreate(
+              initialCover: _selectedCover,
+              targetPages: widget.targetPages ?? 1,
+            );
       } else if (widget.editAlbum != null) {
         // 편집 모드: 에디터에 이미 로드됨 → 커버 VM만 동기화
         final editorSt =
@@ -152,7 +159,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
           // 앨범 로드 실패 시 빈 커버로 시작
           ref
               .read(albumEditorViewModelProvider.notifier)
-              .resetForCreate(initialCover: _selectedCover);
+              .resetForCreate(
+                initialCover: _selectedCover,
+                targetPages: widget.targetPages ?? 1,
+              );
         }
       }
 
@@ -226,6 +236,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       editAlbum: widget.editAlbum,
                       isFromCreateFlow: widget.isFromCreateFlow,
                       albumTitle: widget.albumTitle,
+                      targetPages: widget.targetPages,
                       onAlbumCreated: widget.onAlbumCreated,
                       onRegisterCompleteAction: widget.onRegisterCompleteAction,
                       initialCoverSize: _selectedCover,

@@ -405,35 +405,6 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
     );
   }
 
-  // index 에 해당하는 전체 스프레드 (내지용)
-  Widget _buildInnerSpread(int index) {
-    if (index >= itemCount || index == 0) return const SizedBox.shrink();
-
-    final leftIndex = 1 + (index - 1) * 2;
-    final rightIndex = leftIndex + 1;
-    final lPage = leftIndex < allPages.length ? allPages[leftIndex] : null;
-    final rPage = rightIndex < allPages.length ? allPages[rightIndex] : null;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: singleW,
-          height: doubleH,
-          // lPage가 null이면 진짜 빈 종이를 출력
-          child: lPage != null ? _buildInnerCard(lPage) : Container(color: SnapFitColors.pureWhite),
-        ),
-        _buildSpine(), // 입체 제본선으로 교체
-        SizedBox(
-          width: singleW,
-          height: doubleH,
-          // rPage가 null이면 진짜 빈 종이를 출력
-          child: rPage != null ? _buildInnerCard(rPage) : Container(color: SnapFitColors.pureWhite),
-        ),
-      ],
-    );
-  }
 
   // 절반만 렌더링 (나머지는 투명 사이즈박스로 축 위치 보존)
   Widget _buildInnerSpreadHalf(int index, {required bool isLeft}) {
@@ -486,7 +457,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
 
   Widget _buildInnerCard(AlbumPage page) {
     return _InnerPageCard(
-      key: GlobalObjectKey(page),
+      key: ValueKey('inner_page_${page.id}'),
       page: page,
       pageW: singleW,
       pageH: doubleH,
@@ -536,7 +507,7 @@ class _CoverPageCard extends StatelessWidget {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.22),
+            color: Colors.black.withValues(alpha: 0.22),
             blurRadius: 30,
             offset: const Offset(0, 14),
             spreadRadius: 2,
@@ -574,8 +545,6 @@ class _CoverPageCard extends StatelessWidget {
 
 // ── 내지 페이지 카드 ──────────────────────────────────────────────
 class _InnerPageCard extends StatelessWidget {
-  /// 에디터 기준 캔버스 크기 (내지 고정값)
-  static const Size _editorBaseSize = Size(300, 400);
 
   final AlbumPage page;
   final double pageW;

@@ -11,6 +11,7 @@ import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../album/data/api/album_provider.dart';
 import '../../../album/presentation/viewmodels/album_editor_view_model.dart';
+import '../../../album/presentation/viewmodels/gallery_notifier.dart'; // Add import
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 
 /// 마이 페이지 (이미지 구조: 프로필, 주문/배송, 공유 앨범, 앱 설정·테마, 로그아웃)
@@ -205,7 +206,7 @@ class MyPageScreen extends ConsumerWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: SnapFitColors.accent.withOpacity(0.2),
+                      color: SnapFitColors.accent.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
@@ -490,7 +491,7 @@ class MyPageScreen extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? SnapFitColors.accent.withOpacity(0.2)
+              ? SnapFitColors.accent.withValues(alpha: 0.2)
               : SnapFitColors.overlayLightOf(context),
           borderRadius: BorderRadius.circular(12.r),
           border: isSelected
@@ -572,14 +573,18 @@ class MyPageScreen extends ConsumerWidget {
       return;
     }
 
-    await ref.read(albumEditorViewModelProvider.notifier).ensureGalleryLoaded();
+    final gallery = ref.read(galleryProvider);
+    if (gallery.albums.isEmpty) {
+      await ref.read(galleryProvider.notifier).fetchInitialData();
+    }
     if (!context.mounted) return;
 
     final asset = await showPhotoSelectionSheet(context, ref);
-    if (asset == null || !context.mounted) return;
+    if (!context.mounted || asset == null) return;
 
     final file = await asset.file;
-    if (file == null || !context.mounted) {
+    if (!context.mounted) return;
+    if (file == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('사진 파일을 불러올 수 없습니다.')),
       );

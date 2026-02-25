@@ -19,6 +19,7 @@ class AlbumViewModel extends _$AlbumViewModel {
     required String coverLayersJson,
     required String ratio,
     String title = '', // 앨범 제목
+    int targetPages = 0, // 목표 페이지 수
     required String coverImageUrl,
     required String coverThumbnailUrl,
     String? coverOriginalUrl,
@@ -33,6 +34,7 @@ class AlbumViewModel extends _$AlbumViewModel {
         CreateAlbumRequest(
           ratio: ratio,
           title: title, // 앨범 제목 전달
+          targetPages: targetPages, // 목표 페이지 수 전달
           coverLayersJson: coverLayersJson,
           coverImageUrl: coverImageUrl,
           coverThumbnailUrl: coverThumbnailUrl,
@@ -52,6 +54,7 @@ class AlbumViewModel extends _$AlbumViewModel {
     required String coverLayersJson,
     required String ratio,
     String title = '', // 앨범 제목
+    int targetPages = 0, // 목표 페이지 수
     required String coverImageUrl,
     required String coverThumbnailUrl,
     String? coverOriginalUrl,
@@ -67,6 +70,7 @@ class AlbumViewModel extends _$AlbumViewModel {
         CreateAlbumRequest(
           ratio: ratio,
           title: title, // 앨범 제목 전달
+          targetPages: targetPages, // 목표 페이지 수 전달
           coverLayersJson: coverLayersJson,
           coverImageUrl: coverImageUrl,
           coverThumbnailUrl: coverThumbnailUrl,

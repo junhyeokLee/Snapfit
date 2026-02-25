@@ -5,6 +5,7 @@ import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_template_picker.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/editor/edit_cover_theme.dart';
+import '../viewmodels/gallery_notifier.dart'; // Add import
 /// Toolbar 버튼 액션 전담. 기존 EditCover 내부 onAddPhoto / onOpenCoverSelector 그대로.
 class ToolbarActionHandler {
   final BuildContext context;
@@ -13,8 +14,11 @@ class ToolbarActionHandler {
   ToolbarActionHandler(this.context, this.ref);
 
   Future<void> addPhoto(Size canvasSize) async {
-    // 갤러리는 필요할 때만 로딩 (신규 생성 진입 시 "불러오기 X" 요구사항 대응)
-    await ref.read(albumEditorViewModelProvider.notifier).ensureGalleryLoaded();
+    // 갤러리는 필요할 때만 로딩 (GalleryNotifier 사용)
+    final gallery = ref.read(galleryProvider);
+    if (gallery.albums.isEmpty) {
+      await ref.read(galleryProvider.notifier).fetchInitialData();
+    }
     // 사진 선택 시 갤러리 시트가 먼저 닫히고, 선택한 사진만 반환됨
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset == null || !context.mounted) return;

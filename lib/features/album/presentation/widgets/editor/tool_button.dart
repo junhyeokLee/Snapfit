@@ -19,7 +19,7 @@ class ToolButton extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         decoration: BoxDecoration(
-          color: selected ? Colors.white.withOpacity(0.22) : Colors.white.withOpacity(0.08), // 약간 더 강조
+          color: selected ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08), // 약간 더 강조
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: selected ? Colors.white : Colors.white24,
