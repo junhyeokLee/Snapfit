@@ -271,23 +271,15 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                     Expanded(
                       child: Column(
                         children: [
-                          Text(
-                            'SNAPFIT',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2.5,
-                              color: SnapFitColors.accent,
-                            ),
-                          ),
                           if (albumTitle.isNotEmpty)
                             Text(
                               albumTitle,
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 11.sp,
+                                fontSize: 16.sp,
                                 color: SnapFitColors.textSecondaryOf(context),
+                                // color: SnapFitColors.accent,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -302,7 +294,6 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                   ],
                 ),
               ),
-
               // ─── 2. 페이지 카운터 Pill ───
               AnimatedBuilder(
                 animation: _pageController,

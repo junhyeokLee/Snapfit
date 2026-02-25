@@ -64,26 +64,35 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
     final screenH = MediaQuery.sizeOf(context).height;
 
     // 표시 가능한 최대 너비 (여백 포함)
-    final availW = screenW - 40.w;
+    final availW = screenW - 20.w;
 
-    // 단일 페이지 기준 허용 최대 크기
-    // 스프레드일 때 화면 너비(availW) 안에 2장과 가운데 제본선(4.w)이 딱 맞아야 함
-    final double maxSingleW = (availW - 4.w) / 2;
     final double maxH = screenH * 0.62;
 
     // 단일 페이지 비율
     final coverRatio = widget.selectedCover.ratio;
 
+    // [Size Fix] 모든 앨범의 높이를 '정사각형 2페이지가 화면 가로에 꽉 찼을 때'를 기준으로 통일합니다.
+    // 1. 정사각형 2페이지가 가로(availW)에 꽉 차려면, 한 페이지 너비는 availW / 2 가 되어야 합니다.
+    // 2. 정사각형이므로 높이 역시 availW / 2 가 됩니다.
     final double singlePageW;
     final double singlePageH;
 
-    final hFromW = maxSingleW / coverRatio;
-    if (hFromW <= maxH) {
-      singlePageW = maxSingleW;
-      singlePageH = hFromW;
+    if (coverRatio >= 1.0) {
+      // [Size Fix] 정사각형(1:1)과 가로형은 펼쳤을 때의 전체 가로 너비(availW)를 동일하게 맞춥니다.
+      double w = availW / 2;
+      double h = w / coverRatio;
+      if (h > maxH) {
+        h = maxH;
+        w = h * coverRatio;
+      }
+      singlePageW = w;
+      singlePageH = h;
     } else {
-      singlePageH = maxH;
-      singlePageW = maxH * coverRatio;
+      // 세로형은 높이를 정사각형 기준 높이(availW / 2)와 동일하게 맞추어 시각적 일관성을 유지합니다.
+      double h = availW / 2;
+      if (h > maxH) h = maxH;
+      singlePageH = h;
+      singlePageW = singlePageH * coverRatio;
     }
 
     // 아이템 수 계산: 커버(1) + 내지 쌍 개수
@@ -117,10 +126,10 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
               animation: widget.pageController,
               builder: (context, child) {
                 final double page = widget.pageController.hasClients ? (widget.pageController.page ?? 0.0) : 0.0;
-                
+
                 // 0 -> 1 전환 구간(커버 펼침) 및 상시 바닥 그림자 처리
                 // GPU 스케일 텍스처 재생성 깜박임 방지용 상시 가속 유도 (1.0 -> 0.9999)
-                double currentScale = 0.9999;
+                double currentScale = 1;
                 double shadowAlpha = 0.15; // 평상시 바닥 기본 그림자 농도를 대폭 상향
                 double shadowBlur = 50.0;
                 double shadowSpread = 5.0;
@@ -272,7 +281,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
     if (angle == 0.0) {
       angle = 0.00005; // 육안으로 절대 보이지 않는 3D 강제 활성 기울기
     }
-    
+
     // Layer 0: 바닥 배경
     Widget layer0Background;
     if (currentIndex == 0) {
@@ -280,15 +289,15 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
       layer0Background = Center(
         child: _buildInnerSpreadHalf(nextIndex, isLeft: false),
       );
-      
-      // 커버가 닫혀갈 때(fraction -> 0) 2페이지가 우측에서 제자리 소멸하면 부자연스러우므로, 
+
+      // 커버가 닫혀갈 때(fraction -> 0) 2페이지가 우측에서 제자리 소멸하면 부자연스러우므로,
       // 완전히 덮이는 시점(fraction=0)에 화면 중앙(Center)으로 스르륵 따라 오도록 슬라이드 시킴
       final double slideOffset = -(singleW / 2) * (1.0 - fraction);
       layer0Background = Transform.translate(
         offset: Offset(slideOffset, 0),
         child: layer0Background,
       );
-      
+
       // 커버가 완전히 덮이기 직전(0.2 ~ 0.0 구간)에 서서히 페이드아웃 시키되,
       // 투명도 0.0 으로 완전히 소멸시키면 플러터 렌더 최적화가 발동되어 다음 스와이프 시작 시 첫 프레임에 로딩 버스트(Jank/깜박임)가 터지므로,
       // 육안에 안 보이는 1% (0.01) 투명도를 유지해 백그라운드에 텍스처를 미리 살려둡니다.
@@ -297,7 +306,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
         child: layer0Background,
       );
     } else {
-      // 핵심 해결: 내지 넘길 때 바닥에 다음 스프레드 '전체'를 통짜로 깔아버리면, 
+      // 핵심 해결: 내지 넘길 때 바닥에 다음 스프레드 '전체'를 통짜로 깔아버리면,
       // 넘어간 뒤 해당 영역이 '절반' 레이아웃으로 교체되는 순간 부모 트리 구조가 달라져(Layout Shift) 화면 전체가 번쩍임!
       // 따라서 어차피 왼쪽은 layer1Left가 덮고 있으므로 바닥엔 항상 오른쪽 '절반'만 그리도록 통일시킵니다.
       layer0Background = Center(
@@ -415,28 +424,31 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
     final lPage = leftIndex < allPages.length ? allPages[leftIndex] : null;
     final rPage = rightIndex < allPages.length ? allPages[rightIndex] : null;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        isLeft 
-          ? SizedBox(
-              width: singleW, 
-              height: doubleH, 
-              child: lPage != null ? _buildInnerCard(lPage) : Container(color: SnapFitColors.pureWhite),
-            )
-          : SizedBox(width: singleW),
-        
-        isLeft ? _buildSpine() : SizedBox(width: 2.w), // 2.w 맞춤
-
-        !isLeft 
-          ? SizedBox(
-              width: singleW, 
-              height: doubleH, 
-              child: rPage != null ? _buildInnerCard(rPage) : Container(color: SnapFitColors.pureWhite),
-            )
-          : SizedBox(width: singleW),
-      ],
+    return OverflowBox(
+      maxWidth: double.infinity,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          isLeft
+              ? SizedBox(
+            width: singleW,
+            height: doubleH,
+            child: lPage != null ? _buildInnerCard(lPage) : Container(color: SnapFitColors.pureWhite),
+          )
+              : SizedBox(width: singleW),
+    
+          isLeft ? _buildSpine() : SizedBox(width: 2.w), // 2.w 맞춤
+    
+          !isLeft
+              ? SizedBox(
+            width: singleW,
+            height: doubleH,
+            child: rPage != null ? _buildInnerCard(rPage) : Container(color: SnapFitColors.pureWhite),
+          )
+              : SizedBox(width: singleW),
+        ],
+      ),
     );
   }
 
@@ -497,7 +509,7 @@ class _CoverPageCard extends StatelessWidget {
     final double aspect = selectedCover.ratio > 0 ? selectedCover.ratio : 1.0;
     const double logicalW = kCoverReferenceWidth; // 500.0
     final double logicalH = logicalW / aspect;
-    
+
     // 실제 화면 대비 스케일 계산
     final double scale = pageW / logicalW;
 
