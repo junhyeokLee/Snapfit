@@ -205,7 +205,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         if (mode == EditorMode.decorate) {
           return DecoratePanel(onClose: () => Navigator.pop(ctx));
         } else if (mode == EditorMode.layer) {
-          return LayerManagerPanel(layers: layers);
+          return LayerManagerPanel(
+            layers: layers,
+            interaction: _interaction,
+          );
         } else if (mode == EditorMode.template) {
            return const TemplateSelectionPanel();
         }

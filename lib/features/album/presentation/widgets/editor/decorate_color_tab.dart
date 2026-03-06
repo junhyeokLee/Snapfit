@@ -4,38 +4,145 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 
-class DecorateColorTab extends ConsumerWidget {
+class DecorateColorTab extends ConsumerStatefulWidget {
   final Color surfaceColor;
+  final void Function(int colorValue)? onColorTap;
 
-  const DecorateColorTab({super.key, required this.surfaceColor});
+  const DecorateColorTab({
+    super.key,
+    required this.surfaceColor,
+    this.onColorTap,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colors = [
-      Colors.white, const Color(0xFFEFEFEF), const Color(0xFFD9D9D9), const Color(0xFFB3B3B3),
-      const Color(0xFF808080), Colors.black, const Color(0xFFFFEBEE), const Color(0xFFF3E5F5),
-      const Color(0xFFE3F2FD), const Color(0xFFE8F5E9), const Color(0xFFFFFDE7), const Color(0xFFFFF3E0),
-    ];
+  ConsumerState<DecorateColorTab> createState() => _DecorateColorTabState();
+}
 
+class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
+  int? _selectedColorIndex;
+
+  /// 전체 색상(스크롤) — 파스텔 + 진한 원색/딥톤 포함
+  static const List<Color> _colorsAll = [
+    // neutrals
+    Colors.white,
+    Color(0xFFF7F7F7),
+    Color(0xFFEFEFEF),
+    Color(0xFFE3E3E3),
+    Color(0xFFD9D9D9),
+    Color(0xFFCCCCCC),
+    Color(0xFFB3B3B3),
+    Color(0xFF999999),
+    Color(0xFF808080),
+    Color(0xFF666666),
+    Color(0xFF4D4D4D),
+    Color(0xFF2B2B2B),
+    Colors.black,
+
+    // pastel-ish
+    Color(0xFFFFEBEE),
+    Color(0xFFFFCDD2),
+    Color(0xFFFCE4EC),
+    Color(0xFFF8BBD0),
+    Color(0xFFF3E5F5),
+    Color(0xFFE1BEE7),
+    Color(0xFFEDE7F6),
+    Color(0xFFD1C4E9),
+    Color(0xFFE3F2FD),
+    Color(0xFFBBDEFB),
+    Color(0xFFE0F7FA),
+    Color(0xFFB2EBF2),
+    Color(0xFFE8F5E9),
+    Color(0xFFC8E6C9),
+    Color(0xFFF1F8E9),
+    Color(0xFFDCEDC8),
+    Color(0xFFFFFDE7),
+    Color(0xFFFFF9C4),
+    Color(0xFFFFF8E1),
+    Color(0xFFFFECB3),
+    Color(0xFFFFF3E0),
+    Color(0xFFFFE0B2),
+    Color(0xFFFFCCBC),
+    Color(0xFFFFAB91),
+
+    // saturated / deep tones (요청: 더 진한 색)
+    Colors.red,
+    Colors.redAccent,
+    Colors.pink,
+    Colors.pinkAccent,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.blueAccent,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.teal,
+    Colors.green,
+    Colors.greenAccent,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.blueGrey,
+
+    // custom deep palette
+    Color(0xFF0F172A), // slate-900
+    Color(0xFF1E293B), // slate-800
+    Color(0xFF111827), // gray-900
+    Color(0xFF7F1D1D), // deep red
+    Color(0xFF991B1B),
+    Color(0xFF9A3412), // deep orange
+    Color(0xFFB45309),
+    Color(0xFF166534), // deep green
+    Color(0xFF065F46), // deep teal
+    Color(0xFF1D4ED8), // deep blue
+    Color(0xFF1E40AF), // indigo deep
+    Color(0xFF6D28D9), // deep violet
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return GridView.builder(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 6,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: colors.length,
+      itemCount: _colorsAll.length,
       itemBuilder: (context, index) {
+        final color = _colorsAll[index];
+        final isSelected = _selectedColorIndex == index;
         return GestureDetector(
           onTap: () {
-            ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(colors[index].value);
+            setState(() {
+              _selectedColorIndex = index;
+            });
+            if (widget.onColorTap != null) {
+              widget.onColorTap!.call(color.value);
+              return;
+            }
+            ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(color.value);
           },
           child: Container(
             decoration: BoxDecoration(
-              color: colors[index],
+              color: color,
               shape: BoxShape.circle,
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+              border: Border.all(
+                color: isSelected ? SnapFitColors.accent : SnapFitColors.overlayLightOf(context),
+                width: isSelected ? 2 : 1,
+              ),
             ),
+            child: isSelected
+                ? Icon(
+                    Icons.check,
+                    size: 14.sp,
+                    color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                  )
+                : null,
           ),
         );
       },

@@ -42,23 +42,27 @@ class AlbumEditorService {
   AlbumPage createPage({
     required int index,
     bool isCover = false,
+    int? backgroundColor,
   }) {
     return AlbumPage(
       id: isCover ? 'cover_page' : 'page_$index',
       isCover: isCover,
       pageIndex: index,
       layers: [],
+      backgroundColor: backgroundColor,
     );
   }
 
   /// 템플릿으로 페이지 생성 (스크랩북 스타일 레이아웃)
   /// [canvasSize]: 페이지 캔버스 크기 (비율 슬롯을 픽셀 좌표로 변환할 때 사용)
+  /// [isCover]: 커버 템플릿인지 여부 (스파인 여백 등 처리용, 현재는 좌표계만 공유)
   AlbumPage createPageFromTemplate({
     required PageTemplate template,
     required int index,
     required Size canvasSize,
+    bool isCover = false,
   }) {
-    final page = createPage(index: index, isCover: false);
+    final page = createPage(index: index, isCover: isCover);
     final w = canvasSize.width;
     final h = canvasSize.height;
 

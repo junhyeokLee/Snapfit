@@ -6,11 +6,13 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onConfirm;
+  final VoidCallback? onDetail; // null이면 메뉴에서 숨김 처리
   
   const AlbumReaderMoreOptionsSheet({
     super.key,
     required this.onEdit,
     required this.onConfirm,
+    this.onDetail,
   });
 
   @override
@@ -35,6 +37,21 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20.h),
+
+            // 상세보기 (onDetail이 전달되었을 때만 노출)
+            if (onDetail != null) ...[
+              _SheetItem(
+                icon: Icons.zoom_in_rounded,
+                label: '상세보기',
+                onTap: onDetail!,
+              ),
+              Divider(
+                height: 1,
+                color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
+                indent: 20.w,
+                endIndent: 20.w,
+              ),
+            ],
 
             // 수정하기
             _SheetItem(

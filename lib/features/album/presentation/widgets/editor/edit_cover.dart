@@ -32,6 +32,7 @@ import '../../viewmodels/gallery_notifier.dart'; // Add import
 import '../../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../views/page_editor_screen.dart';
 import './layer_action_panel.dart';
+import './text_style_picker_sheet.dart';
 import './edit_cover_top_bar.dart';
 import './page_editor_overlays.dart';
 
@@ -447,7 +448,8 @@ class EditCoverState extends ConsumerState<EditCover> {
                     // 커버 캔버스: Expanded (하단 툴바가 오버레이로 빠졌으므로 전체 높이 사용)
                     Expanded(
                       child: Container(
-                        color: SnapFitColors.backgroundOf(context), // theme support
+                        color: Colors
+                            .transparent, // 상위(스냅핏 만들기/리더) 배경과 자연스럽게 이어지도록 투명 처리
                         child: LayoutBuilder(
                           builder: (context, canvasConstraints) {
                           final coverSide = _layout.getCoverSidePadding(selectedCover);
@@ -628,8 +630,10 @@ class EditCoverState extends ConsumerState<EditCover> {
   }
 
   /// 레이어 선택 액션 패널 오버레이 빌드
+  /// PageEditorScreen에 임베딩된 경우(showBottomToolbar: false)에는 상위에서 하나만 표시하므로 여기선 숨김
   Widget _buildLayerActionPanel(List<LayerModel> layers, AlbumEditorViewModel albumVm) {
     if (_interaction.selectedLayerId == null) return const SizedBox.shrink();
+    if (!widget.showBottomToolbar) return const SizedBox.shrink(); // 상위 LayerActionPanel 사용
 
     return Positioned(
       bottom: widget.showBottomToolbar ? 100.h : 20.h,
@@ -641,6 +645,7 @@ class EditCoverState extends ConsumerState<EditCover> {
         textEditor: _textEditor,
         onRefresh: () => setState(() {}),
         onOpenGallery: (layer) => _openGalleryForSelected(layer),
+        onOpenDecorateSheet: (layer) => _openDecorateSheetForLayer(layer),
       ),
     );
   }
@@ -660,5 +665,22 @@ class EditCoverState extends ConsumerState<EditCover> {
     }
   }
 
-
+  void _openDecorateSheetForLayer(LayerModel layer) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (layer.type == LayerType.image) {
+      ImageFrameStylePicker.show(context, currentKey: layer.imageBackground ?? '').then((key) {
+        if (key != null && mounted) {
+          vm.updateImageFrame(layer.id, key);
+          setState(() {});
+        }
+      });
+    } else {
+      TextStylePickerSheet.show(context, currentKey: layer.textBackground ?? '').then((key) {
+        if (key != null && mounted) {
+          vm.updateTextStyle(layer.id, key);
+          setState(() {});
+        }
+      });
+    }
+  }
 }

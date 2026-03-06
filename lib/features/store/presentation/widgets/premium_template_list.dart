@@ -29,7 +29,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
     return templatesAsync.when(
       data: (templates) {
         if (templates.isEmpty) return const SizedBox.shrink();
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -111,7 +111,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     ],
                                     begin: Alignment.center, // Start slightly lower
                                     end: Alignment.bottomCenter,
-                                    stops: const [0.0, 0.4, 1.0], 
+                                    stops: const [0.0, 0.4, 1.0],
                                   ),
                                 ),
                               ),
@@ -214,10 +214,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
         child: const CircularProgressIndicator(),
       ),
       error: (err, stack) => SizedBox(
-        height: 100.h, 
+        height: 100.h,
         child: Center(child: Text('템플릿을 불러올 수 없습니다.')) // Simple error message
       ),
     );
   }
 }
-

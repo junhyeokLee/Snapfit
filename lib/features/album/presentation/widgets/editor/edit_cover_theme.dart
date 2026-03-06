@@ -85,11 +85,15 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
 
     return Material(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      color: const Color(0xFF0F1113),
+      color: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       child: Container(
         height: 300.h,
         padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
         child: Column(
           children: [
             SizedBox(height: 12.h),

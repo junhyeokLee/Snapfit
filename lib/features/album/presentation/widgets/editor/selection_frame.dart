@@ -41,49 +41,6 @@ class SelectionFrame extends StatelessWidget {
           child: child,
         ),
         
-        // Top-Center Rotate Handle
-        if (showHandles)
-          Positioned(
-            top: -24,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: _buildHandle(
-                icon: Icons.refresh,
-                onPanUpdate: (details) {
-                   // TODO: Implement rotation logic if needed via this handle
-                   // For now, relies on 2-finger gesture, but visual handle is requested
-                }
-              ),
-            ),
-          ),
-
-        // Bottom-Center Delete Handle
-        if (showHandles)
-          Positioned(
-            bottom: -24,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: onDelete,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4),
-                    ],
-                  ),
-                  child: const Icon(Icons.close, size: 14, color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-        
         // Corners (Visual Anchors)
         if (showHandles) ...[
           _buildCorner(top: -4, left: -4),

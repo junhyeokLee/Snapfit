@@ -4,10 +4,10 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../domain/entities/layer.dart'; // Just in case
+import '../../../../../core/constants/cover_size.dart';
 
 import './decorate_sticker_tab.dart';
 import './decorate_color_tab.dart';
-import './decorate_frame_tab.dart';
 
 class DecoratePanel extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
@@ -24,7 +24,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -33,14 +33,41 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
     super.dispose();
   }
 
+  void _closeSheet() {
+    widget.onClose?.call();
+    if (widget.onClose == null && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Size _effectiveLogicalCanvasSize({
+    required AlbumEditorViewModel editorVm,
+    required AlbumEditorState? stateVal,
+  }) {
+    final currentPage = editorVm.currentPage;
+    final isCover = currentPage?.isCover ?? false;
+
+    final physical = isCover ? stateVal?.coverCanvasSize : stateVal?.innerCanvasSize;
+    final double physicalAspect = (physical != null &&
+            physical != Size.zero &&
+            physical.height > 0 &&
+            physical.width > 0)
+        ? (physical.width / physical.height)
+        : (editorVm.selectedCover.ratio);
+
+    final double logicalW = isCover ? kCoverReferenceWidth : 300.0;
+    final double logicalH = logicalW / physicalAspect;
+    return Size(logicalW, logicalH);
+  }
+
   @override
   Widget build(BuildContext context) {
     final surfaceColor = SnapFitColors.surfaceOf(context);
 
     return Container(
-      height: 520.h,
+      height: 460.h,
       decoration: BoxDecoration(
-        color: SnapFitColors.backgroundOf(context),
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
@@ -58,62 +85,20 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
-          
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.close, color: SnapFitColors.textPrimaryOf(context), size: 24.sp),
-                  onPressed: () => widget.onClose?.call(),
-                ),
-                Text(
-                  "꾸미기",
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    color: SnapFitColors.textPrimaryOf(context),
-                  ),
-                ),
-                // 적용 버튼
-                ElevatedButton(
-                  onPressed: () => widget.onClose?.call(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF162A2E),
-                    foregroundColor: SnapFitColors.accent,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  child: Text(
-                    "적용",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
 
           // TabBar
-          Align(
-            alignment: Alignment.centerLeft,
+          SizedBox(height: 12.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: TabBar(
               controller: _tabController,
-              isScrollable: true,
+              isScrollable: false,
               labelColor: SnapFitColors.textPrimaryOf(context),
-              unselectedLabelColor: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.5),
+              unselectedLabelColor:
+                  SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.5),
               indicatorColor: SnapFitColors.accent,
-              indicatorSize: TabBarIndicatorSize.label,
               indicatorWeight: 3,
               dividerColor: Colors.transparent,
-              labelPadding: EdgeInsets.symmetric(horizontal: 20.w),
               labelStyle: TextStyle(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w700,
@@ -125,7 +110,6 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
               tabs: const [
                 Tab(text: "추천스티커"),
                 Tab(text: "배경 색상"),
-                Tab(text: "프레임스타일"),
               ],
             ),
           ),
@@ -136,9 +120,31 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
             child: TabBarView(
               controller: _tabController,
               children: [
-                DecorateStickerTab(surfaceColor: surfaceColor),
-                DecorateColorTab(surfaceColor: surfaceColor),
-                DecorateFrameTab(surfaceColor: surfaceColor),
+                DecorateStickerTab(
+                  surfaceColor: surfaceColor,
+                  onStickerTap: (sticker) {
+                    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
+                    final stateVal = ref.read(albumEditorViewModelProvider).value;
+                    final canvasSize = _effectiveLogicalCanvasSize(
+                      editorVm: editorVm,
+                      stateVal: stateVal,
+                    );
+                    editorVm.addTextLayer(
+                      sticker,
+                      style: TextStyle(fontSize: 60.sp),
+                      mode: TextStyleType.none,
+                      canvasSize: canvasSize,
+                    );
+                    _closeSheet();
+                  },
+                ),
+                DecorateColorTab(
+                  surfaceColor: surfaceColor,
+                  onColorTap: (colorValue) {
+                    ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(colorValue);
+                    _closeSheet();
+                  },
+                ),
               ],
             ),
           ),

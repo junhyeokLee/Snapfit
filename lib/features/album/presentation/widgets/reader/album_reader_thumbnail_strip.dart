@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/utils/screen_logger.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
+import '../../controllers/layer_interaction_manager.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import 'album_reader_page_content.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -67,6 +68,10 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     final Size logicalInnerSize = Size(300.0, 300.0 / aspect);
     final Size logicalCoverSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
 
+    // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
+    final coverInteraction = LayerInteractionManager.preview(ref, () => logicalCoverSize);
+    final coverBuilder = LayerBuilder(coverInteraction, () => logicalCoverSize);
+
     // 단일 썸네일 너비
     final double singleThumbW = height * aspect;
     // 스프레드(2페이지) 썸네일 너비 = 단일 x2 + 가운데 구분선 0.5
@@ -128,9 +133,9 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                                   isInteracting: false,
                                   leftSpine: 0,
                                   onCoverSizeChanged: (_) {},
-                                  buildImage: (layer) => buildStaticImage(layer),
-                                  buildText: (layer) => buildStaticText(layer),
-                                  sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
+                                  buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
+                                  buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+                                  sortedByZ: coverInteraction.sortByZ,
                                   theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ??
                                       resolveCoverTheme(null),
                                 ),
@@ -154,6 +159,9 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                                       targetH: height,
                                       previewBuilder: previewBuilder,
                                       baseCanvasSize: logicalInnerSize,
+                                      backgroundColor: pages[pageIndices[pi]].backgroundColor != null
+                                          ? Color(pages[pageIndices[pi]].backgroundColor!)
+                                          : null,
                                     ),
                                   ),
                                 ],
@@ -210,9 +218,9 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                           isInteracting: false,
                           leftSpine: 0,
                           onCoverSizeChanged: (_) {},
-                          buildImage: (layer) => buildStaticImage(layer),
-                          buildText: (layer) => buildStaticText(layer),
-                          sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
+                          buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
+                          buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+                          sortedByZ: coverInteraction.sortByZ,
                           theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ??
                               resolveCoverTheme(null),
                         ),
@@ -234,6 +242,9 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                               targetH: height,
                               previewBuilder: previewBuilder,
                               baseCanvasSize: logicalInnerSize,
+                              backgroundColor: pages[pageIndices[pi]].backgroundColor != null
+                                  ? Color(pages[pageIndices[pi]].backgroundColor!)
+                                  : null,
                             ),
                           ),
                         ],

@@ -88,15 +88,6 @@ class PageEditorImageActionButtons extends StatelessWidget {
                 size: 20.sp,
                 color: SnapFitColors.textPrimaryOf(context),
               ),
-              SizedBox(width: 4.w),
-              Text(
-                "사진 추가",
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ],
           ),
         ),

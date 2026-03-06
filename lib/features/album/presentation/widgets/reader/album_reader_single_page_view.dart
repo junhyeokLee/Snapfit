@@ -9,9 +9,9 @@ import '../../../domain/entities/album_page.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
+import '../../views/album_reader_inner_detail_screen.dart';
 import '../cover/cover.dart';
 import 'book_page_view.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 앨범 리더 단일 페이지 뷰
@@ -205,9 +205,50 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
                 setState(() => _isCoverPressed = true);
               }
             },
-            onTapUp: (_) {
+            onTapUp: (details) {
               if (_isCoverPressed) {
                 setState(() => _isCoverPressed = false);
+              }
+              // 내지 영역 탭 시 상세 보기 열기
+              if (safePage >= 0.5 && widget.interaction.selectedLayerId == null) {
+                final currentIndex = safePage.round();
+                // 1~: 내지 (0: 커버)
+                if (currentIndex > 0) {
+                  final tapX = details.localPosition.dx;
+                  final leftIndex = 1 + (currentIndex - 1) * 2;
+                  final rightIndex = leftIndex + 1;
+                  
+                  // 화면의 절반 기준으로 탭한 위치에 따라 시작 인덱스 결정
+                  int tappedPageIdx = (tapX < screenW / 2) ? leftIndex : rightIndex;
+                  
+                  // 전체 페이지 범위를 벗어나지 않도록 방어 코드 추가
+                  if (tappedPageIdx >= widget.allPages.length) {
+                    tappedPageIdx = widget.allPages.length - 1;
+                  }
+
+                  // 내지 전체 리스트
+                  final innerPages = widget.allPages.sublist(1);
+                  final innerInitialIndex = tappedPageIdx - 1;
+
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      opaque: false, // 투명한 배경
+                      pageBuilder: (context, animation, secondaryAnimation) => 
+                        FadeTransition(
+                          opacity: animation,
+                          child: AlbumReaderInnerDetailScreen(
+                            innerPages: innerPages,
+                            initialPageIndex: innerInitialIndex,
+                            singlePageW: singlePageW,
+                            singlePageH: singlePageH,
+                            interaction: widget.interaction,
+                            layerBuilder: widget.layerBuilder,
+                          ),
+                        ),
+                    ),
+                  );
+                }
               }
             },
             onTapCancel: () {
@@ -583,32 +624,39 @@ class _InnerPageCard extends StatelessWidget {
 
     final scale = pageW / logicalW;
 
+    final pageBackgroundColor = page.backgroundColor != null
+        ? Color(page.backgroundColor!)
+        : SnapFitColors.pureWhite;
+
     return ClipRect(
-      child: Container(
-        width: pageW,
-        height: pageH,
-        color: SnapFitColors.pureWhite,
-        child: Stack(
-          clipBehavior: Clip.none, // 페이지 밖으로 살짝 나가는 요소(그림자 등) 허용
-          children: [
-            Transform.scale(
-              scale: scale,
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: logicalBaseSize.width,
-                height: logicalBaseSize.height,
-                child: Stack(
-                  clipBehavior: Clip.none, // 회전된 레이어의 모서리가 잘리는 현상 방지
-                  children: interaction.sortByZ(page.layers).map((layer) {
-                    if (layer.type == LayerType.image) {
-                      return layerBuilder.buildImage(layer);
-                    }
-                    return layerBuilder.buildText(layer);
-                  }).toList(),
+      child: Hero(
+        tag: 'inner_page_${page.id}',
+        child: Container(
+          width: pageW,
+          height: pageH,
+          color: pageBackgroundColor,
+          child: Stack(
+            clipBehavior: Clip.none, // 페이지 밖으로 살짝 나가는 요소(그림자 등) 허용
+            children: [
+              Transform.scale(
+                scale: scale,
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: logicalBaseSize.width,
+                  height: logicalBaseSize.height,
+                  child: Stack(
+                    clipBehavior: Clip.none, // 회전된 레이어의 모서리가 잘리는 현상 방지
+                    children: interaction.sortByZ(page.layers).map((layer) {
+                      if (layer.type == LayerType.image) {
+                        return layerBuilder.buildImage(layer);
+                      }
+                      return layerBuilder.buildText(layer);
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

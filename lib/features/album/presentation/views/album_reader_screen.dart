@@ -14,6 +14,7 @@ import '../widgets/reader/album_reader_more_options_sheet.dart';
 import '../widgets/reader/album_frozen_screen.dart';
 import '../viewmodels/home_view_model.dart';
 import 'page_editor_screen.dart';
+import 'album_reader_inner_detail_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   const AlbumReaderScreen({super.key});
@@ -121,6 +122,51 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         onConfirm: () {
           Navigator.pop(ctx);
           _showConfirmDialog();
+        },
+        onDetail: () {
+          Navigator.pop(ctx);
+          final safePage = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
+          if (safePage < 0.5) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('상세 보기는 앨범 내지에서 이용 가능합니다.')),
+            );
+            return;
+          }
+          final currentIndex = safePage.round();
+          final leftIndex = 1 + (currentIndex - 1) * 2;
+          final innerInitialIndex = leftIndex - 1;
+
+          final vm = ref.read(albumEditorViewModelProvider.notifier);
+          final innerPages = vm.pages.sublist(1);
+          
+          if (innerPages.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('보여줄 페이지가 없습니다.')),
+            );
+            return;
+          }
+
+          final screenW = MediaQuery.sizeOf(context).width;
+          final screenH = MediaQuery.sizeOf(context).height;
+
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              opaque: false, // 투명한 배경
+              pageBuilder: (context, animation, secondaryAnimation) => 
+                FadeTransition(
+                  opacity: animation,
+                  child: AlbumReaderInnerDetailScreen(
+                    innerPages: innerPages,
+                    initialPageIndex: innerInitialIndex,
+                    singlePageW: _baseCanvasSize.width,
+                    singlePageH: _baseCanvasSize.height,
+                    interaction: _interaction,
+                    layerBuilder: _layerBuilder,
+                  ),
+                ),
+            ),
+          );
         },
       ),
     );

@@ -274,9 +274,9 @@ Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
   }
 }
 
-/// 텍스트 스타일 정적 렌더링
+/// 텍스트 스타일 정적 렌더링 (홈/리더 커버 썸네일용 — 저장된 textBackground 모두 표시)
 Widget _buildStaticStyledText(LayerModel layer) {
-  if (layer.textBackground == null) {
+  if (layer.textBackground == null || layer.textBackground!.isEmpty) {
     return SizedBox(
       width: layer.width,
       child: Text(
@@ -287,13 +287,14 @@ Widget _buildStaticStyledText(LayerModel layer) {
     );
   }
 
-  Widget content = Text(
+  final Widget content = Text(
     layer.text ?? '',
     style: layer.textStyle,
     textAlign: layer.textAlign,
   );
+  final String bg = layer.textBackground!;
 
-  switch (layer.textBackground) {
+  switch (bg) {
     case 'tag':
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -303,13 +304,138 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: content,
       );
+    case 'round':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFE0E4EC)),
+        ),
+        child: content,
+      );
     case 'bubble':
+    case 'bubbleCenter':
+    case 'bubbleCloud':
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.black.withOpacity(0.22)),
+        ),
+        child: content,
+      );
+    case 'labelSolid':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C3E50),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: Colors.white),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'labelOutline':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFF00BCD4)),
+        ),
+        child: content,
+      );
+    case 'note':
+    case 'noteYellow':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF9C4),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.brown.withOpacity(0.35)),
+        ),
+        child: content,
+      );
+    case 'noteBlue':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F0FF),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFBBC8EC)),
+        ),
+        child: content,
+      );
+    case 'notePink':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFEFF4),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFE4B4C7)),
+        ),
+        child: content,
+      );
+    case 'noteMint':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE0F7F0),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFB0D9CC)),
+        ),
+        child: content,
+      );
+    case 'noteLavender':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3E8FF),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFD4C0EB)),
+        ),
+        child: content,
+      );
+    case 'tape':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          gradient: LinearGradient(
+            colors: [const Color(0xFFE3F2FD), const Color(0xFFBBDEFB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: content,
+      );
+    case 'tapeYellow':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFF9C4), Color(0xFFFFFDE7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: content,
+      );
+    case 'tapePink':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFE4EC), Color(0xFFFFF0F4)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
         child: content,
       );
@@ -323,7 +449,26 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: content,
       );
+    case 'calligraphy':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.92),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.amber.shade700),
+        ),
+        child: content,
+      );
     default:
-      return content;
+      // 알 수 없는 스타일도 말풍선 스타일로 표시
+      return Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black.withOpacity(0.22)),
+        ),
+        child: content,
+      );
   }
 }

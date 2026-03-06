@@ -15,6 +15,8 @@ class LayerActionPanel extends ConsumerStatefulWidget {
   final TextEditorManager textEditor;
   final VoidCallback onRefresh;
   final Future<void> Function(LayerModel)? onOpenGallery;
+  /// 레이어 선택 후 "꾸미기" 탭 시 호출. 제공 시 바텀시트(프레임/텍스트 스타일)를 띄우고, 미제공 시 인라인 서브메뉴 표시.
+  final void Function(LayerModel layer)? onOpenDecorateSheet;
 
   const LayerActionPanel({
     super.key,
@@ -23,6 +25,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
     required this.textEditor,
     required this.onRefresh,
     this.onOpenGallery,
+    this.onOpenDecorateSheet,
   });
 
   @override
@@ -62,7 +65,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         children: [
           if (_panelMode == EditPanelMode.opacity)
             _buildOpacitySlider(layer),
-          if (_panelMode == EditPanelMode.decorate)
+          if (_panelMode == EditPanelMode.decorate && widget.onOpenDecorateSheet == null)
             _buildDecorateSubmenu(layer),
           if (_panelMode == EditPanelMode.none)
             Row(
@@ -74,7 +77,13 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
                   _buildActionButton(Icons.image_outlined, "사진변경", () => widget.onOpenGallery?.call(layer)),
                 
                 _buildActionButton(Icons.opacity, "불투명도", () => setState(() => _panelMode = EditPanelMode.opacity)),
-                _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () => setState(() => _panelMode = EditPanelMode.decorate)),
+                _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
+                  if (widget.onOpenDecorateSheet != null) {
+                    widget.onOpenDecorateSheet!(layer);
+                  } else {
+                    setState(() => _panelMode = EditPanelMode.decorate);
+                  }
+                }),
                 
                 _buildActionButton(Icons.delete_outline, "삭제", () {
                   widget.interaction.deleteSelected();

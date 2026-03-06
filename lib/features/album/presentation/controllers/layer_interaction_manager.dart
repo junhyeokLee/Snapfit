@@ -151,8 +151,48 @@ class LayerInteractionManager {
   /// 레이어 목록을 Z-index 순으로 정렬
   List<LayerModel> sortByZ(List<LayerModel> list) {
     final l = List<LayerModel>.from(list);
-    l.sort((a, b) => (_z[a.id] ?? 0).compareTo(_z[b.id] ?? 0));
-    return l;
+    // 새로 추가된 레이어가 같은 프레임에서 바로 최상단으로 보이도록
+    // 정렬 전에 Z-index를 먼저 할당한다. (없으면 0으로 취급되어 아래로 내려가는 문제 방지)
+    for (final layer in l) {
+      _z.putIfAbsent(layer.id, () => ++_zCounter);
+    }
+
+    // 1) 현재 Z-cache 기준 정렬 결과
+    final byZ = List<LayerModel>.from(l)
+      ..sort((a, b) => (_z[a.id] ?? 0).compareTo(_z[b.id] ?? 0));
+
+    // 2) 저장/로드/패널 드래그로 list 자체의 순서가 바뀌었는데,
+    //    _z 캐시가 예전 순서를 들고 있으면(특히 읽기 스프레드/편집 캔버스) 화면에만 순서가 어긋난다.
+    //    이 경우에는 "리스트 순서"를 진짜 z-order로 간주해 _z를 조용히 재동기화한다.
+    if (!_sameOrderById(l, byZ)) {
+      _z
+        ..clear();
+      _zCounter = 0;
+      for (final layer in l) {
+        _z[layer.id] = ++_zCounter;
+      }
+      return l; // list 순서를 그대로 사용
+    }
+
+    return byZ;
+  }
+
+  static bool _sameOrderById(List<LayerModel> a, List<LayerModel> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) return false;
+    }
+    return true;
+  }
+
+  /// 레이어 목록의 순서를 그대로 Z-index에 반영 (레이어 패널에서 드래그한 순서 동기화용)
+  void syncZOrder(List<LayerModel> orderedLayers) {
+    _z.clear();
+    _zCounter = 0;
+    for (final layer in orderedLayers) {
+      _z[layer.id] = ++_zCounter;
+    }
+    setState(() {});
   }
 
   /// 레이어 선택

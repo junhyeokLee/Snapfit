@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
+import '../../controllers/layer_builder.dart';
+import '../../controllers/layer_interaction_manager.dart';
 import '../cover/cover.dart';
 import 'home_cover_frame.dart';
 import 'home_album_helpers.dart';
 
 /// 앨범 커버 썸네일
-class HomeAlbumCoverThumbnail extends StatelessWidget {
+class HomeAlbumCoverThumbnail extends ConsumerWidget {
   final Album album;
   final double height;
   final double? maxWidth;
@@ -25,7 +28,7 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ratio = parseCoverRatio(album.ratio);
     
     // 1. 실제 표시될 대상(TARGET) 크기 결정
@@ -63,6 +66,10 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
     final shadowScale = (targetH / 280).clamp(0.35, 0.7);
     final theme = resolveCoverTheme(album.coverTheme);
 
+    // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
+    final coverInteraction = LayerInteractionManager.preview(ref, () => refCanvasSize);
+    final coverBuilder = LayerBuilder(coverInteraction, () => refCanvasSize);
+
     // 4. 기준 사이즈로 렌더링 후 FittedBox로 전체 스케일링
     Widget buildFrame({required List<LayerModel> layers}) {
       return SizedBox(
@@ -81,9 +88,9 @@ class HomeAlbumCoverThumbnail extends StatelessWidget {
               isInteracting: false,
               leftSpine: kCoverSpineWidth,
               onCoverSizeChanged: (_) {},
-              buildImage: (layer) => buildStaticImage(layer),
-              buildText: (layer) => buildStaticText(layer),
-              sortedByZ: (list) => list.toList()..sort((a, b) => a.id.compareTo(b.id)),
+              buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
+              buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+              sortedByZ: coverInteraction.sortByZ,
               theme: theme,
             ),
           ),

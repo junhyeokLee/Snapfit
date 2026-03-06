@@ -14,6 +14,8 @@ class AlbumReaderPageContent extends StatelessWidget {
   final LayerBuilder previewBuilder;
   final Size baseCanvasSize;
   final CoverTheme? theme; // [New] 테마 배경 지원
+  /// 내지 페이지 배경색 (ARGB). null이면 theme이 있을 때만 테마 배경, 없으면 흰색
+  final Color? backgroundColor;
 
   const AlbumReaderPageContent({
     super.key,
@@ -23,6 +25,7 @@ class AlbumReaderPageContent extends StatelessWidget {
     required this.previewBuilder,
     required this.baseCanvasSize,
     this.theme,
+    this.backgroundColor,
   });
 
   @override
@@ -43,10 +46,10 @@ class AlbumReaderPageContent extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // 배경: 테마가 있으면 테마 이미지/그라데이션, 없으면 흰색
+                  // 배경: backgroundColor 우선, 없으면 테마가 있으면 테마 이미지/그라데이션, 없으면 흰색
                   Container(
                     decoration: BoxDecoration(
-                      color: theme == null ? Colors.white : null,
+                      color: backgroundColor ?? (theme == null ? Colors.white : null),
                       image: theme?.imageAsset != null
                           ? DecorationImage(
                               image: AssetImage(theme!.imageAsset!),

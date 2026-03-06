@@ -15,6 +15,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 앨범 액션 관련 헬퍼 클래스
 class HomeAlbumActions {
+  static bool _isOpeningAlbum = false;
+
   /// 앨범 편집 선택 처리
   static Future<void> onEditSelected(
     BuildContext context,
@@ -90,6 +92,12 @@ class HomeAlbumActions {
     WidgetRef ref,
     dynamic album,
   ) async {
+    // 짧은 시간 내 중복 탭 방지
+    if (_isOpeningAlbum) {
+      return;
+    }
+    _isOpeningAlbum = true;
+
     // 1. 잠금 시도 (Lock)
     final repository = ref.read(albumRepositoryProvider);
     try {
@@ -125,6 +133,7 @@ class HomeAlbumActions {
           ],
         ),
       );
+      _isOpeningAlbum = false;
       return;
     }
 
@@ -153,6 +162,7 @@ class HomeAlbumActions {
     } catch (e) {
       debugPrint('HomeAlbumActions: Unlock failed: $e');
     } finally {
+      _isOpeningAlbum = false;
       // 수정사항이 있을 때(needsRefresh == true)만 홈 화면 갱신
       if (context.mounted && needsRefresh == true) {
         ref.read(homeViewModelProvider.notifier).refresh();

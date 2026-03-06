@@ -43,13 +43,16 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
     final scaleX = canvasW / _innerEditorCanvasSize.width;
     final scaleY = canvasH / _innerEditorCanvasSize.height;
     final scale = math.min(scaleX, scaleY); // 비율 유지
+    final pageBackgroundColor = page.backgroundColor != null
+        ? Color(page.backgroundColor!)
+        : SnapFitColors.pureWhite;
 
     return Container(
       key: canvasKey,
       width: canvasW,
       height: canvasH,
       decoration: BoxDecoration(
-        color: SnapFitColors.pureWhite,
+        color: pageBackgroundColor,
         borderRadius: BorderRadius.circular(8.r),
         boxShadow: showShadow ? [
           BoxShadow(
@@ -65,7 +68,7 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [
-            Container(color: SnapFitColors.pureWhite),
+            Container(color: pageBackgroundColor),
             // 에디터 기준 좌표 → Transform.scale로 올바른 위치에 렌더링
             Transform.scale(
               scale: scale,

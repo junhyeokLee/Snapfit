@@ -28,14 +28,11 @@ class EditorBottomMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 테마 대응 배경색
-    final bgColor = SnapFitColors.backgroundOf(context);
-
     return Container(
       height: 80.h,
       padding: EdgeInsets.only(bottom: 20.h), // 하단 여백 확보
       decoration: BoxDecoration(
-        color: bgColor,
+        color: Colors.transparent, // 상위 그라데이션 배경 그대로 사용
         border: Border(
           top: BorderSide(color: SnapFitColors.overlayLightOf(context), width: 1),
         ),

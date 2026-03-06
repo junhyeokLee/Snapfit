@@ -50,6 +50,10 @@ abstract class AlbumEditorState with _$AlbumEditorState {
 
     /// 백그라운드에서 앨범 생성(업로드) 중인지 여부
     @Default(false) bool isCreatingInBackground,
+
+    /// 되돌리기/다시하기 가능 여부 (현재 페이지 기준)
+    @Default(false) bool canUndo,
+    @Default(false) bool canRedo,
   }) = _AlbumEditorState;
 }
 
@@ -74,6 +78,13 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// [Rescale Fix] 커버와 내지의 마지막 캔버스 크기를 별도로 관리하여 왜곡 방지
   Size _lastCoverCanvasSize = Size.zero;
   Size _lastInnerCanvasSize = Size.zero;
+
+  // ===== Undo / Redo (현재 페이지 기준) =====
+  static const int _maxHistory = 30;
+  final Map<int, List<AlbumPage>> _undoByPage = {};
+  final Map<int, List<AlbumPage>> _redoByPage = {};
+  bool _historyLocked = false; // undo/redo 적용 중 기록 방지
+  bool _hasUnsavedChanges = false;
 
   // ===== Selected getters =====
   CoverSize get selectedCover => _cover;
@@ -117,6 +128,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     CoverTheme? initialTheme,
     int targetPages = 1,
   }) {
+    _clearAllHistory();
     _pages.clear();
     _cover = initialCover ?? coverSizes.firstWhere(
       (s) => s.name == '세로형',
@@ -233,6 +245,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _initialAlbumTitle = album.title; // 앨범 제목 저장
 
     // 이전 편집 상태 초기화: 페이지/커버 캔버스 정보 리셋
+    _clearAllHistory();
     _pages.clear();
     _pages.add(_service.createPage(index: 0, isCover: true));
 
@@ -291,6 +304,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// [canvasSize]: 커버용 캔버스 크기. 내지 페이지는 300x400 고정(페이지 에디터와 동일)
   void loadAlbum(Map<String, dynamic> albumData, Size canvasSize) {
     if (canvasSize == Size.zero) return;
+    _clearAllHistory();
 
     // [10단계 Fix] 커버는 항상 500xH, 내지는 300xH 참조 사이즈를 베이스로 로드합니다.
     final coverAspect = _cover.ratio > 0 ? _cover.ratio : 1.0;
@@ -314,6 +328,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         final index = (map['index'] as num?)?.toInt() ?? _pages.length;
         final isCover = map['isCover'] as bool? ?? (index == 0);
         final layerList = (map['layers'] as List<dynamic>?) ?? [];
+        final backgroundColor = (map['backgroundColor'] as num?)?.toInt();
         // [10단계] 커버는 500xH, 내지는 300xH 고정 좌표계 사용
         final pageCanvasSize = isCover ? coverRefSize : _innerPageCanvasSize;
         final loadedLayers = layerList.map((l) {
@@ -323,7 +338,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             isCover: isCover,
           );
         }).toList();
-        final page = _service.createPage(index: index, isCover: isCover);
+        final page = _service.createPage(index: index, isCover: isCover, backgroundColor: backgroundColor);
         page.layers.addAll(loadedLayers);
         _pages.add(page);
       }
@@ -416,6 +431,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 이미지 레이어 추가 (현재 페이지)
   /// [templateKey]: null/"free"면 원본 비율, "1:1", "4:3" 등이면 해당 템플릿으로 슬롯 생성(사진 contain)
   Future<void> addImage(AssetEntity asset, Size canvasSize, {String? templateKey}) async {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     await _service.addImageLayer(
       page: currentPage,
@@ -435,6 +451,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required Size canvasSize,
     TextAlign textAlign = TextAlign.center,
   }) {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
 
     // ✅ 텍스트 안전 여백 (descender 안전)
@@ -468,6 +485,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 레이어 업데이트
   void updateLayer(LayerModel updated) {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.updateLayer(page: currentPage, updated: updated);
     _emit();
@@ -475,6 +493,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 텍스트 스타일 변경
   void updateTextStyle(String id, String styleKey) {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.updateTextStyle(page: currentPage, id: id, styleKey: styleKey);
     _emit();
@@ -482,6 +501,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 이미지 프레임 스타일 변경
   void updateImageFrame(String id, String frameKey) {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.updateImageFrame(page: currentPage, id: id, frameKey: frameKey);
     _emit();
@@ -490,6 +510,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 페이지 배경색 변경
   void updatePageBackgroundColor(int color) {
     if (_pages.isEmpty) return;
+    _recordUndo();
     final page = _pages[_currentPageIndex];
     final updated = page.copyWith(backgroundColor: color);
     _pages[_currentPageIndex] = updated;
@@ -569,10 +590,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void applyTemplateToCurrentPage(PageTemplate template, Size canvasSize) {
     final page = currentPage;
     if (page == null) return;
+    _recordUndo();
     final fromTemplate = _service.createPageFromTemplate(
       template: template,
       index: _currentPageIndex,
       canvasSize: canvasSize,
+      isCover: page.isCover,
     );
     page.layers
       ..clear()
@@ -587,6 +610,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       template: template,
       index: nextIndex,
       canvasSize: canvasSize,
+      isCover: false,
     ));
     _currentPageIndex = nextIndex;
     _emit();
@@ -677,6 +701,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         _initialAlbumTitle = null; // 초기화
       }
 
+      _hasUnsavedChanges = false;
       _emit();
       return true;
     } catch (e, st) {
@@ -695,6 +720,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 마지막 레이어 제거
   void removeLast() {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.removeLast(page: currentPage);
     _emit();
@@ -702,6 +728,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 전체 초기화
   void clearAll() {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.clearAll(page: currentPage);
     _emit();
@@ -709,6 +736,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 특정 레이어 ID로 삭제
   void removeLayerById(String id) {
+    _recordUndo();
     final currentPage = _pages[_currentPageIndex];
     _service.removeLayerById(page: currentPage, id: id);
     _emit();
@@ -752,11 +780,105 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final idx = page.layers.indexWhere((l) => l.id == layerId);
     if (idx == -1) return;
 
+    _recordUndo();
     final old = page.layers[idx];
     final updated = old.copyWith(asset: asset);
 
     page.layers[idx] = updated;
     _emit();
+  }
+
+  bool get _canUndo => (_undoByPage[_currentPageIndex]?.isNotEmpty ?? false);
+  bool get _canRedo => (_redoByPage[_currentPageIndex]?.isNotEmpty ?? false);
+
+  void undo() {
+    if (_pages.isEmpty) return;
+    final undoStack = _undoByPage[_currentPageIndex];
+    if (undoStack == null || undoStack.isEmpty) return;
+
+    final currentSnapshot = _clonePage(_pages[_currentPageIndex]);
+    final redoStack = _redoByPage.putIfAbsent(_currentPageIndex, () => []);
+    redoStack.add(currentSnapshot);
+
+    final prevSnapshot = undoStack.removeLast();
+    _historyLocked = true;
+    _pages[_currentPageIndex] = _clonePage(prevSnapshot);
+    _historyLocked = false;
+    _hasUnsavedChanges = _canUndo || _canRedo || _hasUnsavedChanges;
+    _emit();
+  }
+
+  void redo() {
+    if (_pages.isEmpty) return;
+    final redoStack = _redoByPage[_currentPageIndex];
+    if (redoStack == null || redoStack.isEmpty) return;
+
+    final currentSnapshot = _clonePage(_pages[_currentPageIndex]);
+    final undoStack = _undoByPage.putIfAbsent(_currentPageIndex, () => []);
+    undoStack.add(currentSnapshot);
+
+    final nextSnapshot = redoStack.removeLast();
+    _historyLocked = true;
+    _pages[_currentPageIndex] = _clonePage(nextSnapshot);
+    _historyLocked = false;
+    _hasUnsavedChanges = _canUndo || _canRedo || _hasUnsavedChanges;
+    _emit();
+  }
+
+  void _clearAllHistory() {
+    _undoByPage.clear();
+    _redoByPage.clear();
+    _hasUnsavedChanges = false;
+  }
+
+  void _recordUndo() {
+    if (_historyLocked) return;
+    if (_pages.isEmpty) return;
+    final page = _pages[_currentPageIndex];
+
+    final snapshot = _clonePage(page);
+    final undoStack = _undoByPage.putIfAbsent(_currentPageIndex, () => []);
+
+    // 너무 잦은 중복 기록 방지(간단 비교)
+    if (undoStack.isNotEmpty && _pageEquals(undoStack.last, snapshot)) {
+      return;
+    }
+
+    undoStack.add(snapshot);
+    _hasUnsavedChanges = true;
+    if (undoStack.length > _maxHistory) {
+      undoStack.removeAt(0);
+    }
+    _redoByPage[_currentPageIndex]?.clear();
+  }
+
+  AlbumPage _clonePage(AlbumPage page) {
+    return page.copyWith(
+      layers: page.layers.map((l) => l.copyWith()).toList(growable: true),
+    );
+  }
+
+  bool _pageEquals(AlbumPage a, AlbumPage b) {
+    if (a.backgroundColor != b.backgroundColor) return false;
+    if (a.layers.length != b.layers.length) return false;
+    for (int i = 0; i < a.layers.length; i++) {
+      final la = a.layers[i];
+      final lb = b.layers[i];
+      if (la.id != lb.id) return false;
+      if (la.type != lb.type) return false;
+      if (la.position != lb.position) return false;
+      if (la.scale != lb.scale) return false;
+      if (la.rotation != lb.rotation) return false;
+      if (la.opacity != lb.opacity) return false;
+      if (la.text != lb.text) return false;
+      if ((la.asset?.id) != (lb.asset?.id)) return false;
+      if (la.previewUrl != lb.previewUrl) return false;
+      if (la.originalUrl != lb.originalUrl) return false;
+      if (la.imageUrl != lb.imageUrl) return false;
+      if (la.textBackground != lb.textBackground) return false;
+      if (la.imageBackground != lb.imageBackground) return false;
+    }
+    return true;
   }
 
   /// emit (현재 페이지 반영)
@@ -771,6 +893,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         selectedTheme: _selectedTheme,
         coverCanvasSize: prev.coverCanvasSize,
         innerCanvasSize: prev.innerCanvasSize,
+        canUndo: _canUndo,
+        canRedo: _canRedo,
+        isCreatingInBackground: prev.isCreatingInBackground,
       ),
     );
   }
@@ -832,9 +957,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 현재 페이지의 레이어 리스트 전체 교체 (순서 변경 등)
-  void updatePageLayers(List<LayerModel> newLayers) {
+  void updatePageLayers(List<LayerModel> newLayers, {bool recordHistory = true}) {
     if (_pages.isEmpty) return;
     final page = _pages[_currentPageIndex];
+    if (recordHistory) _recordUndo();
     
     // Page 객체 불변성 유지하며 레이어 리스트 교체
     final updatedPage = page.copyWith(layers: List.of(newLayers));
@@ -872,6 +998,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       return {
         'index': page.pageIndex,
         'isCover': page.isCover,
+        if (page.backgroundColor != null) 'backgroundColor': page.backgroundColor,
         'layers': page.layers
             .map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize, isCover: page.isCover))
             .toList(),

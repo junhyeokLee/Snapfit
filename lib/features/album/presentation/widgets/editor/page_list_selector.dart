@@ -144,6 +144,7 @@ class PageListSelector extends ConsumerWidget {
         () => logicalInnerSize,
       ),
       baseCanvasSize: logicalInnerSize,
+      backgroundColor: page.backgroundColor != null ? Color(page.backgroundColor!) : null,
     );
   }
 
