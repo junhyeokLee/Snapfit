@@ -1,0 +1,42 @@
+---
+description: SnapFit 테스트 작성 규칙 — 유닛/위젯 테스트, pump, mock
+globs: test/**/*.dart
+alwaysApply: false
+---
+
+# SnapFit Testing Rules
+
+> 상세: 프로젝트 루트 `TESTING.md` 참고.
+
+## MUST Do
+
+1. **유닛 테스트** — `test/unit/` 아래 `*_test.dart`. 외부 의존 없이 순수 함수/매퍼/유틸만.
+2. **위젯 테스트** — `test/widget/` 아래 `*_test.dart`. `pumpSnapFitApp(tester, overrides: [...])` 사용.
+3. **Provider override** — API/저장소 쓰는 화면 테스트 시 해당 provider를 `overrideWithValue`로 mock 주입해 네트워크 호출 차단.
+4. **Fixture** — `test/helpers/fake_*.dart` 에서 도메인 객체 생성. **Mock** — `mocktail` 사용 (`MockX extends Mock implements X`, `when().thenAnswer()`).
+5. **테스트 실행** — `flutter test` / `flutter test test/unit/` / `flutter test test/widget/`.
+
+## MUST NOT Do
+
+- Do NOT 테스트에서 실제 API/DB 호출 — 반드시 mock·override 사용.
+- Do NOT `pumpWidget(MaterialApp(...))` 직접 — `pumpSnapFitApp` 사용해 ProviderScope·ScreenUtil·테마 일치.
+
+## Example
+
+```dart
+// ✅ GOOD: 위젯 테스트 + override
+final mockRepo = MockAlbumRepository();
+stubFetchMyAlbums(mockRepo, [fakeAlbum(id: 1)]);
+
+await pumpSnapFitApp(tester, overrides: [
+  albumRepositoryProvider.overrideWithValue(mockRepo),
+]);
+
+expect(find.text('앨범 #1'), findsOneWidget);
+```
+
+## Reference
+
+- `test/helpers/pump_app.dart` — pumpSnapFitApp
+- `test/helpers/fake_album.dart` — fakeAlbum 등
+- `test/helpers/mock_repositories.dart` — MockAlbumRepository, stub 헬퍼

@@ -316,7 +316,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
       );
     case 'bubble':
     case 'bubbleCenter':
-    case 'bubbleCloud':
+    case 'bubbleRight':
+    case 'bubbleSquare':
+    case 'bubbleSquareCenter':
+    case 'bubbleSquareRight':
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
         decoration: BoxDecoration(

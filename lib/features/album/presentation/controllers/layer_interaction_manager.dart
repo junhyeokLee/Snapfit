@@ -396,6 +396,7 @@ class LayerInteractionManager {
         _editingLayerId = null;
         _z[layer.id] = ++_zCounter;
       });
+      _bringLayerToFrontInPage(layer.id);
       onLayerTap?.call(layer);
     } else {
       if (layer.type == LayerType.text) {
@@ -425,6 +426,18 @@ class LayerInteractionManager {
       _editingLayerId = null;
       _z[layer.id] = ++_zCounter; // 맨 앞으로 가져오기
     });
+    _bringLayerToFrontInPage(layer.id);
+  }
+
+  /// 선택된 레이어를 페이지 레이어 리스트에서 맨 위(맨 앞)로 올림 — 레이어 바텀시트 순서와 동기화
+  void _bringLayerToFrontInPage(String layerId) {
+    final state = ref.read(albumEditorViewModelProvider).value;
+    if (state == null) return;
+    final layers = state.layers;
+    if (layers.isEmpty) return;
+    final idx = layers.indexWhere((l) => l.id == layerId);
+    if (idx < 0 || idx >= layers.length - 1) return;
+    ref.read(albumEditorViewModelProvider.notifier).reorderLayer(idx, layers.length - 1);
   }
 
   /// 제스처 업데이트 이벤트 처리 (손가락을 움직이는 동안)

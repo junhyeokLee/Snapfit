@@ -24,8 +24,11 @@ class LayerBuilder {
         return Size(textSize.width + 24, textSize.height + 12);
       case "bubble":
       case "bubbleCenter":
-      case "bubbleCloud":
-        return Size(textSize.width + 28, textSize.height + 28);
+      case "bubbleRight":
+      case "bubbleSquare":
+      case "bubbleSquareCenter":
+      case "bubbleSquareRight":
+        return Size(textSize.width + 36, textSize.height + 44);
       case "note":
       case "noteBlue":
       case "notePink":
@@ -1143,7 +1146,10 @@ class LayerBuilder {
           break;
         case "bubble":
         case "bubbleCenter":
-        case "bubbleCloud":
+        case "bubbleRight":
+        case "bubbleSquare":
+        case "bubbleSquareCenter":
+        case "bubbleSquareRight":
           styled = _buildBubbleStyle(layer, textPainter, effectiveStyle);
           break;
         case "note":
@@ -1322,9 +1328,12 @@ class LayerBuilder {
       fontWeight: FontWeight.w500,
       height: 1.2,
     );
-    // 말풍선 3종: 꼬리 왼쪽(0.2) / 꼬리 중앙(0.5) / 구름형(cloud)
-    final tailPosition = layer.textBackground == 'bubbleCenter' ? 0.5 : 0.2;
-    final isCloud = layer.textBackground == 'bubbleCloud';
+    // 말풍선: 라운드(0.28/0.5/0.72) 사각형(0/0.5/1) – 꼬리가 가장자리에서 살짝 안쪽으로
+    final bg = layer.textBackground ?? '';
+    final isSquare = bg == 'bubbleSquare' || bg == 'bubbleSquareCenter' || bg == 'bubbleSquareRight';
+    final tailPosition = isSquare
+        ? (bg == 'bubbleSquare' ? 0.0 : bg == 'bubbleSquareRight' ? 1.0 : 0.5)
+        : (bg == 'bubbleCenter' ? 0.5 : bg == 'bubbleRight' ? 0.72 : 0.28);
 
     return IntrinsicWidth(
       child: IntrinsicHeight(
@@ -1333,14 +1342,14 @@ class LayerBuilder {
             fillColor: Colors.white,
             borderColor: Colors.black.withOpacity(0.22),
             tailPosition: tailPosition,
-            shapeCloud: isCloud,
+            shapeSquare: isSquare,
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 26),
             child: Text(
               layer.text ?? "",
               style: style,
-              textAlign: layer.textAlign,
+              textAlign: layer.textAlign ?? TextAlign.center,
             ),
           ),
         ),
@@ -1510,54 +1519,55 @@ class LayerBuilder {
   }
 }
 
-// 말풍선 스타일: 꼬리 위치(0~1), 구름형 여부
+// 말풍선 스타일: 라운드(꼬리 0.2/0.5/0.8) / 사각형(꼬리 0/0.5/1)
 class _BubbleBackgroundPainter extends CustomPainter {
   final Color fillColor;
   final Color borderColor;
-  final double tailPosition; // 0.2=왼쪽, 0.5=중앙
-  final bool shapeCloud;
+  final double tailPosition; // 라운드: 0.2 왼 0.5 가운데 0.8 오른 / 사각: 0 왼 0.5 가운데 1 오른
+  final bool shapeSquare;
 
   _BubbleBackgroundPainter({
     required this.fillColor,
     required this.borderColor,
     this.tailPosition = 0.2,
-    this.shapeCloud = false,
+    this.shapeSquare = false,
   });
+
+  static const double _tailWidth = 18.0;
+  static const double _tailHeight = 10.0;
+  static const double _radius = 16.0;
+  /// 꼬리가 가장자리에 붙지 않도록 여백 (자연스러운 느낌)
+  static const double _tailMargin = 12.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     final path = Path();
-    final tailWidth = 18.0;
-    final tailHeight = 10.0;
-    final bubbleHeight = size.height - 6;
-    final tailCenterX = size.width * tailPosition.clamp(0.0, 1.0);
+    final w = size.width;
+    // 꼬리가 잘리지 않도록 본체 높이 = 전체 - 꼬리 높이 (그리기는 size 안에 완전히 포함)
+    final h = size.height - _tailHeight;
 
-    if (shapeCloud) {
-      // 구름형 말풍선 (한 경로로 본체 + 꼬리)
-      final w = size.width;
-      final h = bubbleHeight;
-      path.moveTo(w * 0.25, h * 0.6);
-      path.quadraticBezierTo(0, h * 0.6, 0, h * 0.35);
-      path.quadraticBezierTo(0, 0, w * 0.35, 0);
-      path.quadraticBezierTo(w * 0.5, 0, w * 0.5, h * 0.25);
-      path.quadraticBezierTo(w * 0.5, 0, w * 0.65, 0);
-      path.quadraticBezierTo(w, 0, w, h * 0.35);
-      path.quadraticBezierTo(w, h * 0.6, w * 0.75, h * 0.6);
-      path.lineTo(w * 0.5 + tailWidth / 2, h);
-      path.lineTo(w * 0.5, h + tailHeight);
-      path.lineTo(w * 0.5 - tailWidth / 2, h);
-      path.close();
+    if (shapeSquare) {
+      final tailCenterX = tailPosition <= 0.25
+          ? _tailMargin + _tailWidth / 2
+          : tailPosition >= 0.75
+              ? w - _tailMargin - _tailWidth / 2
+              : w / 2;
+      final tailLeft = tailCenterX - _tailWidth / 2;
+      final tailRight = tailCenterX + _tailWidth / 2;
+      _drawSquareBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
     } else {
-      // 둥근 사각형 + 꼬리 (위치에 따라)
-      final body = RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, bubbleHeight),
-        const Radius.circular(16),
-      );
-      path.addRRect(body);
-      path.moveTo(tailCenterX - tailWidth / 2, bubbleHeight);
-      path.lineTo(tailCenterX, bubbleHeight + tailHeight);
-      path.lineTo(tailCenterX + tailWidth / 2, bubbleHeight);
-      path.close();
+      final r = _radius;
+      final minX = r + _tailMargin + _tailWidth / 2;
+      final maxX = w - r - _tailMargin - _tailWidth / 2;
+      // 라운드: 왼쪽(0.28) / 가운데(0.5) / 오른쪽(0.72) — 비율이 아닌 구간으로 명시 적용
+      final bool isLeft = tailPosition < 0.4;
+      final bool isRight = tailPosition > 0.6;
+      final tailCenterX = minX <= maxX
+          ? (isLeft ? minX : isRight ? maxX : w / 2)
+          : (isLeft ? (r + _tailWidth / 2) : isRight ? (w - r - _tailWidth / 2) : w / 2);
+      final tailLeft = tailCenterX - _tailWidth / 2;
+      final tailRight = tailCenterX + _tailWidth / 2;
+      _drawRoundBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
     }
 
     final fill = Paint()..color = fillColor..style = PaintingStyle.fill;
@@ -1569,12 +1579,43 @@ class _BubbleBackgroundPainter extends CustomPainter {
     canvas.drawPath(path, stroke);
   }
 
+  /// 라운드 말풍선: 둥근 사각형 본체 + 하단 평평한 구간에 꼬리 연결 (한 경로, 여백 없음)
+  void _drawRoundBubblePath(Path path, double w, double h, double tailLeft, double tailRight, double tailCenterX) {
+    final r = _radius;
+    path.moveTo(tailLeft, h);
+    path.lineTo(r, h);
+    path.arcToPoint(Offset(0, h - r), radius: Radius.circular(r));
+    path.lineTo(0, r);
+    path.arcToPoint(Offset(r, 0), radius: Radius.circular(r));
+    path.lineTo(w - r, 0);
+    path.arcToPoint(Offset(w, r), radius: Radius.circular(r));
+    path.lineTo(w, h - r);
+    path.arcToPoint(Offset(w - r, h), radius: Radius.circular(r));
+    path.lineTo(tailRight, h);
+    path.lineTo(tailCenterX, h + _tailHeight);
+    path.lineTo(tailLeft, h);
+    path.close();
+  }
+
+  /// 사각형 말풍선: 직사각형 본체 + 꼬리 왼/가운데/오른쪽 (한 경로, 여백 없음)
+  void _drawSquareBubblePath(Path path, double w, double h, double tailLeft, double tailRight, double tailCenterX) {
+    path.moveTo(tailLeft, h);
+    path.lineTo(0, h);
+    path.lineTo(0, 0);
+    path.lineTo(w, 0);
+    path.lineTo(w, h);
+    path.lineTo(tailRight, h);
+    path.lineTo(tailCenterX, h + _tailHeight);
+    path.lineTo(tailLeft, h);
+    path.close();
+  }
+
   @override
   bool shouldRepaint(covariant _BubbleBackgroundPainter oldDelegate) {
     return oldDelegate.fillColor != fillColor ||
         oldDelegate.borderColor != borderColor ||
         oldDelegate.tailPosition != tailPosition ||
-        oldDelegate.shapeCloud != shapeCloud;
+        oldDelegate.shapeSquare != shapeSquare;
   }
 }
 

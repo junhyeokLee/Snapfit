@@ -15,6 +15,8 @@ alwaysApply: true
 | snapfit-requirements.mdc | 항상 | 비즈니스 요구사항, 데이터 모델 (What/Why) |
 | snapfit-technical.mdc | 항상 | 아키텍처, Riverpod, Retrofit (How) |
 | snapfit-screen-logging.mdc | `lib/features/**/presentation/**/*.dart` 편집 시 | 스크린/위젯 진입 로그 (ScreenLogger) |
+| snapfit-testing.mdc | `test/**/*.dart` 편집 시 | 유닛/위젯 테스트, pump, mock (TESTING.md 요약) |
+| widget-component-separation.mdc | `lib/**/*_screen.dart` 편집 시 | 위젯을 widgets/{screen}/ 로 분리 |
 | create-rule.mdc | `.cursor/rules/**/*.mdc` 편집 시 | 규칙 생성 가이드 |
 | flutter-ui-standards.mdc | `lib/**/*.dart` 편집 시 | 컬러, 반응형, 애니메이션 |
 | snapfit-design-colors.mdc | `lib/**/*.dart` 편집 시 | 브랜드 컬러/그라데이션 가이드 |

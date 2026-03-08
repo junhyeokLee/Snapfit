@@ -45,11 +45,14 @@ const List<_TextStyleItem> _basicStyles = [
   _TextStyleItem(key: '', previewType: 'none'),
   _TextStyleItem(key: 'round', previewType: 'round'),
 ];
-/// 말풍선 3종 – 꼬리 왼쪽 / 꼬리 중앙 / 구름형
+/// 말풍선 – 라운드(왼쪽/가운데/오른쪽) / 사각형(왼쪽/가운데/오른쪽)
 const List<_TextStyleItem> _speechBubbles = [
   _TextStyleItem(key: 'bubble', previewType: 'tailLeft'),
   _TextStyleItem(key: 'bubbleCenter', previewType: 'tailCenter'),
-  _TextStyleItem(key: 'bubbleCloud', previewType: 'cloud'),
+  _TextStyleItem(key: 'bubbleRight', previewType: 'tailRight'),
+  _TextStyleItem(key: 'bubbleSquare', previewType: 'tailSquareLeft'),
+  _TextStyleItem(key: 'bubbleSquareCenter', previewType: 'tailSquareCenter'),
+  _TextStyleItem(key: 'bubbleSquareRight', previewType: 'tailSquareRight'),
 ];
 /// 라벨 & 태그 – 타원 채움, 점선 태그, 아웃라인, 시안 채움 등
 const List<_TextStyleItem> _labels = [
@@ -355,8 +358,14 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         return _previewBubbleTailLeft();
       case 'tailCenter':
         return _previewBubbleTailCenter();
-      case 'cloud':
-        return _previewBubbleCloud();
+      case 'tailRight':
+        return _previewBubbleTailRight();
+      case 'tailSquareLeft':
+        return _previewBubbleSquareLeft();
+      case 'tailSquareCenter':
+        return _previewBubbleSquareCenter();
+      case 'tailSquareRight':
+        return _previewBubbleSquareRight();
       case 'oval':
         return _previewLabelOval();
       case 'tag':
@@ -479,13 +488,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     );
   }
 
-  /// 말풍선 – 꼬리 왼쪽 하단
+  /// 말풍선 – 꼬리 왼쪽 하단 (가장자리에서 살짝 안쪽)
   Widget _previewBubbleTailLeft() {
     return SizedBox(
       width: 48.w,
       height: 32.h,
       child: CustomPaint(
-        painter: _SpeechBubblePreviewPainter(tailPosition: 0.2),
+        painter: _SpeechBubblePreviewPainter(tailPosition: 0.28),
       ),
     );
   }
@@ -501,13 +510,46 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     );
   }
 
-  /// 말풍선 – 구름 모양
-  Widget _previewBubbleCloud() {
+  /// 말풍선 – 꼬리 하단 오른쪽 (가장자리에서 살짝 안쪽)
+  Widget _previewBubbleTailRight() {
     return SizedBox(
-      width: 52.w,
-      height: 30.h,
+      width: 48.w,
+      height: 32.h,
       child: CustomPaint(
-        painter: _CloudBubblePreviewPainter(),
+        painter: _SpeechBubblePreviewPainter(tailPosition: 0.72),
+      ),
+    );
+  }
+
+  /// 말풍선 – 사각형, 꼬리 왼쪽
+  Widget _previewBubbleSquareLeft() {
+    return SizedBox(
+      width: 48.w,
+      height: 32.h,
+      child: CustomPaint(
+        painter: _SquareBubblePreviewPainter(tailPosition: 0.0),
+      ),
+    );
+  }
+
+  /// 말풍선 – 사각형, 꼬리 가운데
+  Widget _previewBubbleSquareCenter() {
+    return SizedBox(
+      width: 48.w,
+      height: 32.h,
+      child: CustomPaint(
+        painter: _SquareBubblePreviewPainter(tailPosition: 0.5),
+      ),
+    );
+  }
+
+  /// 말풍선 – 사각형, 꼬리 오른쪽
+  Widget _previewBubbleSquareRight() {
+    return SizedBox(
+      width: 48.w,
+      height: 32.h,
+      child: CustomPaint(
+        painter: _SquareBubblePreviewPainter(tailPosition: 1.0),
       ),
     );
   }
@@ -685,18 +727,22 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   }
 }
 
-/// 말풍선 프리뷰 (꼬리 위치 0~1, 왼쪽~오른쪽)
+/// 말풍선 프리뷰 (꼬리 위치 0~1, 가장자리에서 살짝 안쪽으로)
 class _SpeechBubblePreviewPainter extends CustomPainter {
   final double tailPosition;
 
   _SpeechBubblePreviewPainter({this.tailPosition = 0.5});
 
+  static const double _previewTailMargin = 5.0;
+
   @override
   void paint(Canvas canvas, Size size) {
     final r = size.height * 0.4;
-    final tailW = size.width * 0.15;
+    final tailW = size.width * 0.18;
     final tailH = size.height * 0.35;
-    final tailX = size.width * tailPosition;
+    final minX = _previewTailMargin + tailW / 2;
+    final maxX = size.width - _previewTailMargin - tailW / 2;
+    final tailX = (size.width * tailPosition).clamp(minX, maxX);
 
     final path = Path();
     path.addRRect(RRect.fromRectAndRadius(
@@ -721,22 +767,40 @@ class _SpeechBubblePreviewPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// 구름 말풍선 프리뷰
-class _CloudBubblePreviewPainter extends CustomPainter {
+/// 사각형 말풍선 프리뷰 – 꼬리 왼/가운데/오른, 가장자리에서 살짝 안쪽
+class _SquareBubblePreviewPainter extends CustomPainter {
+  final double tailPosition;
+
+  _SquareBubblePreviewPainter({this.tailPosition = 0.5});
+
+  static const double _tailW = 7.0;
+  static const double _tailH = 5.0;
+  static const double _margin = 4.0;
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
+    final bodyH = h - _tailH;
+    final tailCenterX = tailPosition <= 0.25
+        ? _margin + _tailW / 2
+        : tailPosition >= 0.75
+            ? w - _margin - _tailW / 2
+            : w / 2;
+    final tailLeft = tailCenterX - _tailW / 2;
+    final tailRight = tailCenterX + _tailW / 2;
+
     final path = Path();
-    path.moveTo(w * 0.25, h * 0.6);
-    path.quadraticBezierTo(0, h * 0.6, 0, h * 0.35);
-    path.quadraticBezierTo(0, 0, w * 0.35, 0);
-    path.quadraticBezierTo(w * 0.5, 0, w * 0.5, h * 0.25);
-    path.quadraticBezierTo(w * 0.5, 0, w * 0.65, 0);
-    path.quadraticBezierTo(w, 0, w, h * 0.35);
-    path.quadraticBezierTo(w, h * 0.6, w * 0.75, h * 0.6);
-    path.lineTo(w * 0.25, h * 0.6);
+    path.moveTo(tailLeft, bodyH);
+    path.lineTo(0, bodyH);
+    path.lineTo(0, 0);
+    path.lineTo(w, 0);
+    path.lineTo(w, bodyH);
+    path.lineTo(tailRight, bodyH);
+    path.lineTo(tailCenterX, h);
+    path.lineTo(tailLeft, bodyH);
     path.close();
+
     canvas.drawPath(
       path,
       Paint()
