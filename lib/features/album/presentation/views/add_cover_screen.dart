@@ -15,10 +15,14 @@ import '../widgets/editor/editor_bottom_menu.dart';
 import '../widgets/editor/decorate_panel.dart';
 import '../widgets/editor/layer_manager_panel.dart';
 import '../widgets/editor/template_selection_panel.dart';
+import '../widgets/editor/layer_action_panel.dart';
+import '../widgets/editor/text_style_picker_sheet.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../controllers/toolbar_action_handler.dart';
 import '../controllers/text_editor_manager.dart';
+import '../viewmodels/gallery_notifier.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
+import '../../../../shared/widgets/image_frame_style_picker.dart';
 
 
 /// 커버 편집 화면 (앨범 생성/편집 공통)
@@ -261,10 +265,62 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                   ),
                 ],
               ),
+
+              // 커버 레이어 선택 시 하단 액션 패널 (스텝2에서도 스냅핏 만들기 화면과 동일하게)
+              if (_interaction.selectedLayerId != null)
+                Positioned(
+                  bottom: 100, // Bottom Menu 위에 겹치도록
+                  left: 20,
+                  right: 20,
+                  child: LayerActionPanel(
+                    layers: layers,
+                    interaction: _interaction,
+                    textEditor: TextEditorManager(context, ref.read(albumEditorViewModelProvider.notifier)),
+                    onRefresh: () => setState(() {}),
+                    onOpenGallery: (layer) => _openGalleryForSelected(layer),
+                    onOpenDecorateSheet: (layer) => _openDecorateSheetForLayer(layer),
+                  ),
+                ),
             ],
           ),
         );
       },
     );
+  }
+
+  Future<void> _openGalleryForSelected(LayerModel layer) async {
+    final gallery = ref.read(galleryProvider);
+    if (gallery.albums.isEmpty) {
+      await ref.read(galleryProvider.notifier).fetchInitialData();
+    }
+
+    final asset = await showPhotoSelectionSheet(context, ref);
+    if (asset != null) {
+      ref.read(albumEditorViewModelProvider.notifier).updateLayer(
+        layer.copyWith(asset: asset, imageUrl: null, originalUrl: null, previewUrl: null),
+      );
+      if (mounted) setState(() {});
+    }
+  }
+
+  void _openDecorateSheetForLayer(LayerModel layer) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (layer.type == LayerType.image) {
+      final currentKey = vm.findLayerById(layer.id)?.imageBackground ?? layer.imageBackground ?? '';
+      ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
+        if (key != null && mounted) {
+          vm.updateImageFrame(layer.id, key);
+          setState(() {});
+        }
+      });
+    } else {
+      final currentKey = vm.findLayerById(layer.id)?.textBackground ?? layer.textBackground ?? '';
+      TextStylePickerSheet.show(context, currentKey: currentKey).then((key) {
+        if (key != null && mounted) {
+          vm.updateTextStyle(layer.id, key);
+          setState(() {});
+        }
+      });
+    }
   }
 }

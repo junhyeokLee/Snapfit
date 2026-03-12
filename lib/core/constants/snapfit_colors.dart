@@ -130,3 +130,104 @@ class SnapFitColors {
   static List<Color> readerGradientOf(BuildContext context) =>
       isDark(context) ? readerGradientDark : readerGradientLight;
 }
+
+/// 텍스트 스타일(라벨/태그/테이프/소프트필 등) 공통 기본 팔레트 — 색상·순서 통일
+class SnapFitStylePalette {
+  SnapFitStylePalette._();
+
+  // —— 연한색 (배경/기본/말풍선 공통) ——
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color gray = Color(0xFFF5F5F5);
+  static const Color pink = Color(0xFFFFEFF4);
+  static const Color blue = Color(0xFFE8F0FF);
+  static const Color mint = Color(0xFFE0F7F0);
+  static const Color lavender = Color(0xFFEDE7F6);
+  static const Color orange = Color(0xFFFFF3E0);
+  static const Color green = Color(0xFFE8F5E9);
+  static const Color cream = Color(0xFFFFFBF0);
+  static const Color gold = Color(0xFFE8D4A8);
+
+  // —— 진한색 (많이 쓰는 기본 색) ——
+  /// 진한 파랑 (네이비)
+  static const Color navy = Color(0xFF1565C0);
+  /// 진한 핑크/로즈
+  static const Color rose = Color(0xFFAD1457);
+  /// 진한 초록
+  static const Color darkGreen = Color(0xFF2E7D32);
+  /// 진한 그레이/차콜
+  static const Color charcoal = Color(0xFF424242);
+  /// 진한 오렌지
+  static const Color darkOrange = Color(0xFFE65100);
+  /// 진한 보라
+  static const Color violet = Color(0xFF5E35B1);
+
+  // —— 추가 연한/중간 톤 (색상 다양화) ——
+  /// 코랄/살몬
+  static const Color coral = Color(0xFFFFE5E0);
+  /// 베이지
+  static const Color beige = Color(0xFFF5F0E8);
+  /// 틸/청록
+  static const Color teal = Color(0xFFE0F2F1);
+  /// 레몬/연노랑
+  static const Color lemon = Color(0xFFFFF9C4);
+  /// 스카이(하늘)
+  static const Color sky = Color(0xFFE1F5FE);
+  /// 와인/버건디
+  static const Color wine = Color(0xFFFCE4EC);
+
+  /// 기본/말풍선 등에 쓰는 통일 14색 (연한 + 진한) — 순서 고정
+  static const List<Color> unifiedBackgroundColors = [
+    gray,
+    pink,
+    blue,
+    mint,
+    lavender,
+    orange,
+    green,
+    cream,
+    coral,
+    beige,
+    teal,
+    lemon,
+    navy,
+    rose,
+  ];
+
+  // 라벨 타원 배경 (연한 톤, 라벨 전용)
+  static const Color labelGray = Color(0xFFEEEEEE);
+  static const Color labelPink = Color(0xFFFFE4EC);
+  static const Color labelBlue = Color(0xFFE3F2FD);
+  static const Color labelMint = Color(0xFFE0F7F0);
+  static const Color labelLavender = Color(0xFFEDE7F6);
+  static const Color labelOrange = Color(0xFFFFF3E0);
+  static const Color labelGreen = Color(0xFFE8F5E9);
+  static const Color labelWhite = Color(0xFFFAFAFA);
+  static const Color labelCream = Color(0xFFFFFBF0);
+
+  // 태그 테두리
+  static const Color tagGray = Color(0xFF9E9E9E);
+  static const Color tagPink = Color(0xFFFFB6C1);
+  static const Color tagBlue = Color(0xFF90CAF9);
+  static const Color tagMint = Color(0xFF80CBC4);
+  static const Color tagLavender = Color(0xFFB39DDB);
+  static const Color tagOrange = Color(0xFFFFCC80);
+  static const Color tagGreen = Color(0xFF81C784);
+
+  // 스트라이프 테이프 (base, stripe) — 동일 순서
+  static const Color stripeSkyBase = Color(0xFFB6E8FF);
+  static const Color stripeSkyStripe = Color(0xFF8FC9E8);
+  static const Color stripeYellowBase = Color(0xFFFFFDE7);
+  static const Color stripeYellowStripe = Color(0xFFFFE082);
+  static const Color stripePinkBase = Color(0xFFFFE4EC);
+  static const Color stripePinkStripe = Color(0xFFFFB6C1);
+  static const Color stripeMintBase = Color(0xFFE0F7F0);
+  static const Color stripeMintStripe = Color(0xFF80CBC4);
+  static const Color stripeLavenderBase = Color(0xFFEDE7F6);
+  static const Color stripeLavenderStripe = Color(0xFFB39DDB);
+  static const Color stripeGrayBase = Color(0xFFEEEEEE);
+  static const Color stripeGrayStripe = Color(0xFFBDBDBD);
+
+  // 테이프 단색
+  static const Color tapeKraft = Color(0xFFD7CCC8);
+  static const Color tapeGold = Color(0xFFE8D4A8);
+}

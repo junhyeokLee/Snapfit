@@ -455,6 +455,47 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           if (_isSaving)
             PageEditorSaveOverlay(progress: _saveProgress),
 
+          // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
+          if (!_isSaving && (state?.backgroundUploadProgress ?? 0) > 0 && (state?.backgroundUploadProgress ?? 0) < 1)
+            Positioned(
+              bottom: 80.h,
+              left: 16.w,
+              right: 16.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.overlayStrongOf(context),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 14.r,
+                      height: 14.r,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: state!.backgroundUploadProgress,
+                        color: SnapFitColors.accent,
+                        backgroundColor: Colors.white24,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // 전역 로딩 오버레이 (생성 플로우 전환용)
           if (state?.isCreatingInBackground ?? false)
             const PageEditorPreparingOverlay(),
@@ -511,14 +552,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      ImageFrameStylePicker.show(context, currentKey: layer.imageBackground ?? '').then((key) {
+      final currentKey = vm.findLayerById(layer.id)?.imageBackground ?? layer.imageBackground ?? '';
+      ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateImageFrame(layer.id, key);
           setState(() {});
         }
       });
     } else {
-      TextStylePickerSheet.show(context, currentKey: layer.textBackground ?? '').then((key) {
+      final currentKey = vm.findLayerById(layer.id)?.textBackground ?? layer.textBackground ?? '';
+      TextStylePickerSheet.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateTextStyle(layer.id, key);
           setState(() {});

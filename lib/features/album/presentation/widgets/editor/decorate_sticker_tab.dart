@@ -189,7 +189,12 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
             ),
             child: Stack(
               children: [
-                Center(child: Text(_stickersPreview[index], style: TextStyle(fontSize: 28.sp))),
+                Center(
+                  child: Text(
+                    _stickersPreview[index],
+                    style: TextStyle(fontSize: 28.sp),
+                  ),
+                ),
                 if (isSelected)
                   Positioned(
                     top: 4,
@@ -201,6 +206,76 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
           ),
         );
       },
+    );
+  }
+
+}
+
+/// 레이아웃(찢김 스크랩) 전용 탭
+class DecorateLayoutTab extends StatelessWidget {
+  final Color surfaceColor;
+  final void Function(String layoutKey)? onLayoutTap;
+
+  const DecorateLayoutTab({
+    super.key,
+    required this.surfaceColor,
+    this.onLayoutTap,
+  });
+
+  static const List<String> _layoutKeys = ['scrap1', 'scrap2', 'scrap3'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      child: GridView.builder(
+        itemCount: _layoutKeys.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemBuilder: (context, index) {
+          final key = _layoutKeys[index];
+          return GestureDetector(
+            onTap: () => onLayoutTap?.call(key),
+            child: Container(
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: SnapFitColors.overlayLightOf(context),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(8.w),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: Image.asset(
+                          'assets/sticker/$key.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      key,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: SnapFitColors.textSecondaryOf(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

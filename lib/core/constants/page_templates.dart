@@ -1,5 +1,5 @@
 /// 페이지 템플릿 내 하나의 슬롯(이미지/텍스트) 정의
-/// 좌표는 캔버스 대비 비율(0.0~1.0)로 정의
+/// 좌표는 캔버스 대비 비율(0.0~1.0)로 정의. 슬롯 간 여백을 두려면 left/top/width/height에 여백 반영.
 class PageTemplateSlot {
   final String type; // 'image' | 'text'
   /// 캔버스 대비 비율: left, top, width, height (0.0~1.0)
@@ -8,13 +8,9 @@ class PageTemplateSlot {
   final double width;
   final double height;
   final double rotation; // 도(degree)
-  /// 이미지 슬롯: 프레임 스타일 (polaroid, polaroidClassic, tape, sticker, round 등)
   final String? imageBackground;
-  /// 이미지 슬롯: 비율 키 ('1:1', '4:3', '3:4' 등)
   final String? imageTemplate;
-  /// 텍스트 슬롯: 기본 문구
   final String? defaultText;
-  /// 텍스트 슬롯: 배경 스타일 (tag, bubble, note, tape 등)
   final String? textBackground;
 
   const PageTemplateSlot({
@@ -46,356 +42,390 @@ class PageTemplate {
   });
 }
 
-/// 캔버스 비율 기준 템플릿 슬롯 목록 (세로형 3:4 비율 가정)
+/// 슬롯 간 여백 비율 (캔버스 기준)
+const double _margin = 0.016;
+
+// --- The Journey: 상단 1칸 가로 전체, 하단 5칸 동일 크기
+List<PageTemplateSlot> get _journeySlots {
+  const m = _margin;
+  final topH = 0.38 - m * 1.5;
+  final bottomH = 0.62 - m * 1.5;
+  final bottomSlotW = (1 - m * 6) / 5;
+  return [
+    PageTemplateSlot(type: 'image', left: m, top: m, width: 1 - m * 2, height: topH, rotation: 0),
+    for (int i = 0; i < 5; i++)
+      PageTemplateSlot(
+        type: 'image',
+        left: m + (m + bottomSlotW) * i,
+        top: 0.38 + m * 0.5,
+        width: bottomSlotW,
+        height: bottomH,
+        rotation: 0,
+      ),
+  ];
+}
+
+// --- Grid Mosaic: 3x3 균등
+List<PageTemplateSlot> get _gridMosaicSlots {
+  const m = _margin;
+  final cell = (1 - m * 4) / 3;
+  final List<PageTemplateSlot> list = [];
+  for (int row = 0; row < 3; row++) {
+    for (int col = 0; col < 3; col++) {
+      list.add(PageTemplateSlot(
+        type: 'image',
+        left: m + (m + cell) * col,
+        top: m + (m + cell) * row,
+        width: cell,
+        height: cell,
+        rotation: 0,
+      ));
+    }
+  }
+  return list;
+}
+
+// --- Cinematic Spread: 상단 1칸 넓게(약 55%), 하단 2칸
+List<PageTemplateSlot> get _cinematicSlots {
+  const m = _margin;
+  final topH = 0.55 - m * 1.5;
+  final bottomH = 0.45 - m * 1.5;
+  final halfW = (1 - m * 3) / 2;
+  return [
+    PageTemplateSlot(type: 'image', left: m, top: m, width: 1 - m * 2, height: topH, rotation: 0),
+    PageTemplateSlot(type: 'image', left: m, top: 0.55 + m * 0.5, width: halfW, height: bottomH, rotation: 0),
+    PageTemplateSlot(type: 'image', left: m * 2 + halfW, top: 0.55 + m * 0.5, width: halfW, height: bottomH, rotation: 0),
+  ];
+}
+
+// --- Editorial Focus: 좌측 정사각형 이미지 1칸, 우측 텍스트 1칸
+List<PageTemplateSlot> get _editorialSlots {
+  const m = _margin;
+  final leftW = (1 - m * 3) / 2;
+  return [
+    PageTemplateSlot(type: 'image', left: m, top: m, width: leftW, height: 1 - m * 2, rotation: 0),
+    PageTemplateSlot(
+      type: 'text',
+      left: m * 2 + leftW,
+      top: m,
+      width: leftW,
+      height: 1 - m * 2,
+      rotation: 0,
+      defaultText: '오늘의 한 줄을 적어보세요',
+      textBackground: 'note',
+    ),
+  ];
+}
+
+// --- Memory Mix: 좌상 큰 칸, 우상 중간, 하단 3칸(좌 가로막대, 중 작은 칸, 우 세로)
+List<PageTemplateSlot> get _memoryMixSlots {
+  const m = _margin;
+  final big = 0.5 - m * 1.5;
+  final midW = (1 - m * 3) / 2;
+  final midH = 0.45 - m * 1.5;
+  final bottomY = 0.45 + m;
+  final bottomH = 0.55 - m * 1.5;
+  final leftBarW = 0.32 - m;
+  final small = 0.18;
+  final rightBarX = 0.32 + m * 2 + small;
+  final rightBarW = 1 - rightBarX - m;
+  return [
+    PageTemplateSlot(type: 'image', left: m, top: m, width: big, height: big, rotation: 0),
+    PageTemplateSlot(type: 'image', left: 0.5 + m * 0.5, top: m, width: midW, height: midH, rotation: 0),
+    PageTemplateSlot(type: 'image', left: 0.32 + m, top: bottomY + (bottomH - small) / 2, width: small, height: small, rotation: 0),
+    PageTemplateSlot(type: 'image', left: m, top: bottomY, width: leftBarW, height: bottomH, rotation: 0),
+    PageTemplateSlot(type: 'image', left: rightBarX, top: bottomY, width: rightBarW, height: bottomH, rotation: 0),
+  ];
+}
+
+// --- Text Heavy: 전체 영역 1개 텍스트 슬롯
+List<PageTemplateSlot> get _textHeavySlots {
+  const m = _margin;
+  return [
+    PageTemplateSlot(
+      type: 'text',
+      left: m,
+      top: m,
+      width: 1 - m * 2,
+      height: 1 - m * 2,
+      rotation: 0,
+      defaultText: '여기에 텍스트를 입력하세요',
+      textBackground: 'note',
+    ),
+  ];
+}
+
+// --- Photo + Quote: 상단 이미지 1칸, 하단 텍스트 1칸
+List<PageTemplateSlot> get _photoQuoteSlots {
+  const m = _margin;
+  final topH = 0.66 - m * 1.5;
+  final bottomH = 0.34 - m * 1.5;
+  return [
+    PageTemplateSlot(
+      type: 'image',
+      left: m,
+      top: m,
+      width: 1 - m * 2,
+      height: topH,
+      rotation: 0,
+      imageBackground: 'polaroid',
+    ),
+    PageTemplateSlot(
+      type: 'text',
+      left: m,
+      top: 0.66 + m * 0.5,
+      width: 1 - m * 2,
+      height: bottomH,
+      rotation: 0,
+      defaultText: '사진 아래에 캡션을 적어보세요',
+      textBackground: 'tag',
+    ),
+  ];
+}
+
+// --- Caption Collage: 상단 2칸 이미지, 하단 캡션 텍스트 바
+List<PageTemplateSlot> get _captionCollageSlots {
+  const m = _margin;
+  final topH = 0.74 - m * 1.5;
+  final bottomH = 0.26 - m * 1.5;
+  final halfW = (1 - m * 3) / 2;
+  return [
+    PageTemplateSlot(
+      type: 'image',
+      left: m,
+      top: m,
+      width: halfW,
+      height: topH,
+      rotation: 0,
+      imageBackground: 'round',
+    ),
+    PageTemplateSlot(
+      type: 'image',
+      left: m * 2 + halfW,
+      top: m,
+      width: halfW,
+      height: topH,
+      rotation: 0,
+      imageBackground: 'round',
+    ),
+    PageTemplateSlot(
+      type: 'text',
+      left: m,
+      top: 0.74 + m * 0.5,
+      width: 1 - m * 2,
+      height: bottomH,
+      rotation: 0,
+      defaultText: '오늘의 기록',
+      textBackground: 'tape',
+    ),
+  ];
+}
+
+// --- Scrap Note: 이미지 2칸 + 텍스트 1칸 (메모 영역)
+List<PageTemplateSlot> get _scrapNoteSlots {
+  const m = _margin;
+  final leftW = 0.58 - m * 1.5;
+  final rightW = 0.42 - m * 1.5;
+  final topH = 0.52 - m * 1.5;
+  final bottomH = 0.48 - m * 1.5;
+  return [
+    PageTemplateSlot(
+      type: 'image',
+      left: m,
+      top: m,
+      width: leftW,
+      height: topH,
+      rotation: 0,
+      imageBackground: 'film',
+    ),
+    PageTemplateSlot(
+      type: 'image',
+      left: m,
+      top: 0.52 + m * 0.5,
+      width: leftW,
+      height: bottomH,
+      rotation: 0,
+      imageBackground: 'film',
+    ),
+    PageTemplateSlot(
+      type: 'text',
+      left: 0.58 + m * 0.5,
+      top: m,
+      width: rightW,
+      height: 1 - m * 2,
+      rotation: 0,
+      defaultText: '메모',
+      textBackground: 'note',
+    ),
+  ];
+}
+
+/// Current: 위쪽 큰 1칸 + 아래쪽 2칸 (여백 포함)
+/// Collage: 2x2 균등 (여백 포함)
+/// Focus: 위쪽 큰 1칸 + 아래쪽 3칸 (여백 포함)
 List<PageTemplate> get pageTemplates => [
-      // 1. 여행/지도 – 큰 사진 1 + 텍스트 1
-      const PageTemplate(
-        id: 'travel_map',
-        name: '여행 & 지도',
+      // 1. Current – 위 큰 1칸, 아래 2칸
+      PageTemplate(
+        id: 'basic',
+        name: 'Current',
         slots: [
           PageTemplateSlot(
             type: 'image',
-            left: 0.08,
-            top: 0.12,
-            width: 0.5,
-            height: 0.45,
-            imageBackground: 'polaroid',
-            imageTemplate: '3:4',
-            rotation: -4,
-          ),
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.45,
-            top: 0.35,
-            width: 0.45,
-            height: 0.2,
-            defaultText: 'THE HIGHLIGHTS\nOF THE YEAR',
-            textBackground: 'note',
-            rotation: 2,
-          ),
-        ],
-      ),
-      // 2. 일몰/도시 – 넓은 이미지 + 폴라로이드 + 제목
-      const PageTemplate(
-        id: 'sunset_city',
-        name: '일몰 & 도시',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.05,
-            top: 0.4,
-            width: 0.9,
-            height: 0.5,
-            imageBackground: 'round',
-            imageTemplate: '16:9',
+            left: _margin,
+            top: _margin,
+            width: 1 - _margin * 2,
+            height: (2 / 3) - _margin * 1.5,
             rotation: 0,
           ),
           PageTemplateSlot(
-            type: 'text',
-            left: 0.1,
-            top: 0.08,
-            width: 0.5,
-            height: 0.12,
-            defaultText: 'SUNSET',
-            textBackground: 'tag',
-          ),
-          PageTemplateSlot(
             type: 'image',
-            left: 0.55,
-            top: 0.12,
-            width: 0.35,
-            height: 0.28,
-            imageBackground: 'polaroidClassic',
-            imageTemplate: '1:1',
-            rotation: 6,
-          ),
-        ],
-      ),
-      // 3. 해변/바다 – 2개 이미지 + 문구
-      const PageTemplate(
-        id: 'beach',
-        name: '해변 & 바다',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.08,
-            top: 0.1,
-            width: 0.5,
-            height: 0.5,
-            imageBackground: 'polaroid',
-            imageTemplate: '4:3',
-            rotation: -3,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.4,
-            top: 0.35,
-            width: 0.5,
-            height: 0.45,
-            imageBackground: 'tape',
-            imageTemplate: '3:4',
-            rotation: 4,
-          ),
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.1,
-            top: 0.78,
-            width: 0.8,
-            height: 0.12,
-            defaultText: 'WE PROVE TO EACH OTHER',
-            textBackground: 'bubble',
-          ),
-        ],
-      ),
-      // 4. 로드트립 – 단체 사진 + 텍스트 + 작은 사진 2
-      const PageTemplate(
-        id: 'road_trip',
-        name: '로드트립',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.08,
-            top: 0.08,
-            width: 0.55,
-            height: 0.4,
-            imageBackground: 'polaroid',
-            imageTemplate: '4:3',
-            rotation: -2,
-          ),
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.5,
-            top: 0.12,
-            width: 0.42,
-            height: 0.2,
-            defaultText: 'THE FIRST TRIP\nTHE BEST DRIVER',
-            textBackground: 'note',
-            rotation: 2,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.15,
-            top: 0.52,
-            width: 0.28,
-            height: 0.28,
-            imageBackground: 'polaroidWide',
-            imageTemplate: '1:1',
-            rotation: -5,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.5,
-            top: 0.55,
-            width: 0.35,
-            height: 0.32,
-            imageBackground: 'polaroidClassic',
-            imageTemplate: '1:1',
-            rotation: 5,
-          ),
-        ],
-      ),
-      // 5. 역동/모험 – 사진 2 + 텍스트
-      const PageTemplate(
-        id: 'adventure',
-        name: '모험 & 역동',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.08,
-            top: 0.1,
-            width: 0.38,
-            height: 0.4,
-            imageBackground: 'polaroid',
-            imageTemplate: '3:4',
-            rotation: -6,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.42,
-            top: 0.15,
-            width: 0.45,
-            height: 0.42,
-            imageBackground: 'polaroidClassic',
-            imageTemplate: '4:3',
-            rotation: 4,
-          ),
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.1,
-            top: 0.58,
-            width: 0.8,
-            height: 0.18,
-            defaultText: 'CRAZY MOMENT',
-            textBackground: 'tag',
-          ),
-        ],
-      ),
-      // 6. 팀/스포츠 – 큰 사진 + 긴 텍스트 + 그리드 슬롯
-      const PageTemplate(
-        id: 'team_sports',
-        name: '팀 & 스포츠',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.08,
-            top: 0.06,
-            width: 0.55,
-            height: 0.38,
-            imageBackground: 'polaroid',
-            imageTemplate: '4:3',
-            rotation: -2,
-          ),
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.08,
-            top: 0.46,
-            width: 0.84,
-            height: 0.22,
-            defaultText: 'TEAM STORY\nTHAT MOMENT WE SHARED',
-            textBackground: 'note',
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.15,
-            top: 0.72,
-            width: 0.2,
-            height: 0.2,
-            imageBackground: 'round',
-            imageTemplate: '1:1',
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.42,
-            top: 0.72,
-            width: 0.2,
-            height: 0.2,
-            imageBackground: 'round',
-            imageTemplate: '1:1',
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.69,
-            top: 0.72,
-            width: 0.2,
-            height: 0.2,
-            imageBackground: 'round',
-            imageTemplate: '1:1',
-          ),
-        ],
-      ),
-      // 7. 결혼/공식 – 여러 인물 슬롯 + 레이블
-      const PageTemplate(
-        id: 'wedding',
-        name: '결혼 & 공식',
-        slots: [
-          PageTemplateSlot(
-            type: 'text',
-            left: 0.1,
-            top: 0.05,
-            width: 0.6,
-            height: 0.1,
-            defaultText: 'MY COUSIN WEDDING',
-            textBackground: 'tag',
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.08,
-            top: 0.2,
-            width: 0.38,
-            height: 0.35,
-            imageBackground: 'polaroidClassic',
-            imageTemplate: '3:4',
-            rotation: -3,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.5,
-            top: 0.18,
-            width: 0.4,
-            height: 0.36,
-            imageBackground: 'polaroid',
-            imageTemplate: '3:4',
-            rotation: 3,
-          ),
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.2,
-            top: 0.58,
-            width: 0.55,
-            height: 0.32,
-            imageBackground: 'polaroidWide',
-            imageTemplate: '16:9',
-            rotation: -1,
-          ),
-        ],
-      ),
-      // 8. 친구 모임 – 그룹 사진 + 텍스트
-      const PageTemplate(
-        id: 'friends',
-        name: '친구 모임',
-        slots: [
-          PageTemplateSlot(
-            type: 'image',
-            left: 0.1,
-            top: 0.08,
-            width: 0.8,
-            height: 0.5,
-            imageBackground: 'polaroid',
-            imageTemplate: '4:3',
+            left: _margin,
+            top: (2 / 3) + _margin * 0.5,
+            width: (1 - _margin * 3) / 2,
+            height: (1 / 3) - _margin * 1.5,
             rotation: 0,
           ),
           PageTemplateSlot(
-            type: 'text',
-            left: 0.15,
-            top: 0.62,
-            width: 0.7,
-            height: 0.2,
-            defaultText: 'FRIENDS FOREVER',
-            textBackground: 'bubble',
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: (2 / 3) + _margin * 0.5,
+            width: (1 - _margin * 3) / 2,
+            height: (1 / 3) - _margin * 1.5,
+            rotation: 0,
           ),
         ],
       ),
-      // 9. 가족 – 2장 사진 + 세로 텍스트
-      const PageTemplate(
-        id: 'family',
-        name: '가족',
+      // 2. Collage – 2x2
+      PageTemplate(
+        id: 'collage',
+        name: 'Collage',
         slots: [
           PageTemplateSlot(
             type: 'image',
-            left: 0.08,
-            top: 0.1,
-            width: 0.4,
-            height: 0.55,
-            imageBackground: 'polaroidClassic',
-            imageTemplate: '3:4',
-            rotation: -4,
+            left: _margin,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
           ),
           PageTemplateSlot(
             type: 'image',
-            left: 0.48,
-            top: 0.15,
-            width: 0.42,
-            height: 0.5,
-            imageBackground: 'polaroid',
-            imageTemplate: '3:4',
-            rotation: 4,
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
           ),
           PageTemplateSlot(
-            type: 'text',
-            left: 0.15,
-            top: 0.68,
-            width: 0.7,
-            height: 0.15,
-            defaultText: 'THE MOMENT WE HUNG OUT THE FAMILY IS ON',
-            textBackground: 'note',
+            type: 'image',
+            left: _margin,
+            top: _margin * 2 + (1 - _margin * 3) / 2,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: _margin * 2 + (1 - _margin * 3) / 2,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
           ),
         ],
       ),
-      // 10. 빈 캔버스 (슬롯 없음 – 자유 배치)
-      const PageTemplate(
-        id: 'blank',
-        name: '빈 페이지',
-        slots: [],
+      // 3. Focus – 위 큰 1칸, 아래 3칸
+      PageTemplate(
+        id: 'focus',
+        name: 'Focus',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: 1 - _margin * 2,
+            height: (2 / 3) - _margin * 1.5,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: (2 / 3) + _margin * 0.5,
+            width: (1 - _margin * 4) / 3,
+            height: (1 / 3) - _margin * 1.5,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 4) / 3,
+            top: (2 / 3) + _margin * 0.5,
+            width: (1 - _margin * 4) / 3,
+            height: (1 / 3) - _margin * 1.5,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 3 + ((1 - _margin * 4) / 3) * 2,
+            top: (2 / 3) + _margin * 0.5,
+            width: (1 - _margin * 4) / 3,
+            height: (1 / 3) - _margin * 1.5,
+            rotation: 0,
+          ),
+        ],
+      ),
+      // 4. The Journey – 상단 1칸 가로 넓게, 하단 5칸 동일
+      PageTemplate(
+        id: 'journey',
+        name: 'The Journey',
+        slots: _journeySlots,
+      ),
+      // 5. Grid Mosaic – 3x3 (9칸)
+      PageTemplate(
+        id: 'grid_mosaic',
+        name: 'Grid Mosaic',
+        slots: _gridMosaicSlots,
+      ),
+      // 6. Cinematic Spread – 상단 1칸 넓게, 하단 2칸
+      PageTemplate(
+        id: 'cinematic',
+        name: 'Cinematic Spread',
+        slots: _cinematicSlots,
+      ),
+      // 7. Editorial Focus – 좌측 큰 이미지 1칸, 우측 텍스트 영역
+      PageTemplate(
+        id: 'editorial',
+        name: 'Editorial Focus',
+        slots: _editorialSlots,
+      ),
+      // 8. Memory Mix – 5칸 비대칭 (큰 좌상, 중간 우상, 하단 3칸)
+      PageTemplate(
+        id: 'memory_mix',
+        name: 'Memory Mix',
+        slots: _memoryMixSlots,
+      ),
+      // 9. Text Heavy – 텍스트 중심 1칸
+      PageTemplate(
+        id: 'text_heavy',
+        name: 'Text Heavy',
+        slots: _textHeavySlots,
+      ),
+      // 10. Photo + Quote – 사진 + 캡션
+      PageTemplate(
+        id: 'photo_quote',
+        name: 'Photo + Quote',
+        slots: _photoQuoteSlots,
+      ),
+      // 11. Caption Collage – 2장 + 캡션 바
+      PageTemplate(
+        id: 'caption_collage',
+        name: 'Caption Collage',
+        slots: _captionCollageSlots,
+      ),
+      // 12. Scrap Note – 사진 2장 + 메모
+      PageTemplate(
+        id: 'scrap_note',
+        name: 'Scrap Note',
+        slots: _scrapNoteSlots,
       ),
     ];
 

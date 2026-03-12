@@ -392,6 +392,13 @@ class EditCoverState extends ConsumerState<EditCover> {
         ? (albumSt?.selectedTheme ?? coverSt?.selectedTheme ?? CoverTheme.classic)
         : (coverSt?.selectedTheme ?? albumSt?.selectedTheme ?? CoverTheme.classic);
 
+    // 커버 배경색: 현재 페이지(커버 페이지)의 backgroundColor를 그대로 사용
+    // - AlbumEditorViewModel은 resetForCreate 시 index 0을 커버 페이지로 생성
+    // - 데코 탭에서 updatePageBackgroundColor 호출 시, 현재 페이지의 backgroundColor가 변경됨
+    final int? coverBgInt = albumVm.currentPage?.backgroundColor;
+    final Color? coverBackgroundColor =
+        coverBgInt != null ? Color(coverBgInt) : null;
+
     // _selectedCover 동기화
     if (_selectedCover != selectedCover) {
       _selectedCover = selectedCover;
@@ -505,6 +512,7 @@ class EditCoverState extends ConsumerState<EditCover> {
                                                 layers: _interaction.sortByZ(layers),
                                                 isInteracting: _interaction.isInteractingNow,
                                                 leftSpine: 14.0,
+                                                backgroundColor: coverBackgroundColor,
                                                 contentKey: widget.canvasKey ?? _coverKey,
                                                 onCoverSizeChanged: (size) {
                                                   if (_coverSize == size) return;
@@ -668,14 +676,16 @@ class EditCoverState extends ConsumerState<EditCover> {
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      ImageFrameStylePicker.show(context, currentKey: layer.imageBackground ?? '').then((key) {
+      final currentKey = vm.findLayerById(layer.id)?.imageBackground ?? layer.imageBackground ?? '';
+      ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateImageFrame(layer.id, key);
           setState(() {});
         }
       });
     } else {
-      TextStylePickerSheet.show(context, currentKey: layer.textBackground ?? '').then((key) {
+      final currentKey = vm.findLayerById(layer.id)?.textBackground ?? layer.textBackground ?? '';
+      TextStylePickerSheet.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateTextStyle(layer.id, key);
           setState(() {});

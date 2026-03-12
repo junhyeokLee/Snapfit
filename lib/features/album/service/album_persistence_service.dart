@@ -13,6 +13,69 @@ class AlbumPersistenceService {
 
   AlbumPersistenceService(this._storage, this._albumRepository);
 
+  static const int _maxConcurrentImageUploads = 4;
+  static const int _maxUploadRetries = 2;
+
+  Future<LayerModel> _uploadSingleLayerWithRetry(LayerModel layer) async {
+    if (layer.type != LayerType.image ||
+        (layer.previewUrl != null || layer.imageUrl != null || layer.originalUrl != null) ||
+        layer.asset == null) {
+      return layer;
+    }
+
+    int attempt = 0;
+    while (attempt <= _maxUploadRetries) {
+      try {
+        final uploaded = await _storage.uploadImageVariants(layer.asset!);
+        final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
+        final original = uploaded.originalGsPath ?? uploaded.originalUrl;
+        if (preview != null || original != null) {
+          return layer.copyWith(
+            previewUrl: preview,
+            originalUrl: original,
+            imageUrl: preview,
+          );
+        }
+        // 업로드는 성공했는데 URL이 없는 경우: 굳이 재시도하지 않고 원본 레이어 반환
+        return layer;
+      } catch (e) {
+        attempt++;
+        if (attempt > _maxUploadRetries) {
+          debugPrint('[Background] Image upload failed for layer ${layer.id}: $e');
+          return layer; // 실패한 레이어는 나중에 재시도할 수 있도록 그대로 둔다
+        }
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    }
+    return layer;
+  }
+
+  Future<List<LayerModel>> _uploadLayersWithConcurrency(
+    List<LayerModel> layers, {
+    void Function(int completed, int total)? onProgress,
+  }) async {
+    final updated = <LayerModel>[];
+    final total = layers.length;
+    int completed = 0;
+
+    // 레이어를 일정 크기(chunk)로 잘라서 동시 N개씩만 업로드
+    for (var i = 0; i < layers.length; i += _maxConcurrentImageUploads) {
+      final chunk = layers.sublist(
+        i,
+        (i + _maxConcurrentImageUploads).clamp(0, layers.length),
+      );
+      final chunkResults = await Future.wait(chunk.map(_uploadSingleLayerWithRetry));
+      updated.addAll(chunkResults);
+
+      completed = updated.length;
+      if (onProgress != null) {
+        onProgress(completed, total);
+      }
+    }
+
+    return updated;
+  }
+
   /// 백그라운드에서 실행될 실제 업로드 로직
   Future<void> performBackgroundUpload({
     required int albumId,
@@ -22,36 +85,24 @@ class AlbumPersistenceService {
     required String themeLabel,
     required String title,
     required double coverRatio,
+    void Function(int completed, int total)? onProgress,
   }) async {
     try {
       debugPrint('[Background] Upload Started for Album $albumId');
-      
-      // 1. 레이어 업로드 Future (이미지 레이어 중 업로드 안 된 것만)
-      final layersFuture = Future.wait(currentLayers.map((layer) async {
-         if (layer.type == LayerType.image &&
-            (layer.previewUrl == null && layer.imageUrl == null && layer.originalUrl == null) &&
-            layer.asset != null) {
-          final uploaded = await _storage.uploadImageVariants(layer.asset!);
-          final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
-          final original = uploaded.originalGsPath ?? uploaded.originalUrl;
-          if (preview != null || original != null) {
-            return layer.copyWith(
-              previewUrl: preview,
-              originalUrl: original,
-              imageUrl: preview,
-            );
-          }
-        }
-        return layer;
-      }));
 
-      // 2. 커버 이미지 업로드 Future
+      // 1. 레이어 업로드 Future (이미지 레이어 중 업로드 안 된 것만, 동시 N개 제한)
+      final layersFuture = _uploadLayersWithConcurrency(
+        currentLayers,
+        onProgress: onProgress,
+      );
+
+      // 2. 커버 이미지 업로드 Future (있다면)
       Future<UploadedUrls?> coverFuture = Future.value(null);
       if (coverImageBytes != null) {
         coverFuture = _storage.uploadCoverVariants(coverImageBytes);
       }
 
-      // 3. 병렬 실행 및 대기
+      // 3. 병렬 실행 및 대기 (레이어 업로드 + 커버 업로드)
       final results = await Future.wait([layersFuture, coverFuture]);
 
       final updatedLayers = results[0] as List<LayerModel>;

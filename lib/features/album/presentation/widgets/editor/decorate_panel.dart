@@ -24,7 +24,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -109,6 +109,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
               ),
               tabs: const [
                 Tab(text: "추천스티커"),
+                Tab(text: "레이아웃"),
                 Tab(text: "배경 색상"),
               ],
             ),
@@ -129,19 +130,49 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
                       editorVm: editorVm,
                       stateVal: stateVal,
                     );
-                    editorVm.addTextLayer(
-                      sticker,
-                      style: TextStyle(fontSize: 60.sp),
-                      mode: TextStyleType.none,
-                      canvasSize: canvasSize,
+
+                    if (sticker == 'scrap1' || sticker == 'scrap2') {
+                      final assetPath = 'assets/sticker/$sticker.png';
+                      editorVm.addAssetSticker(assetPath, canvasSize);
+                    } else {
+                      // 기존 이모지 스티커 (텍스트 레이어)
+                      editorVm.addTextLayer(
+                        sticker,
+                        style: TextStyle(fontSize: 60.sp),
+                        mode: TextStyleType.none,
+                        canvasSize: canvasSize,
+                      );
+                    }
+
+                    _closeSheet();
+                  },
+                ),
+                // 레이아웃 탭: 찢김 스크랩 스티커 전용
+                DecorateLayoutTab(
+                  surfaceColor: surfaceColor,
+                  onLayoutTap: (layoutKey) {
+                    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
+                    final stateVal = ref.read(albumEditorViewModelProvider).value;
+                    final canvasSize = _effectiveLogicalCanvasSize(
+                      editorVm: editorVm,
+                      stateVal: stateVal,
                     );
+
+                    final assetPath = 'assets/sticker/$layoutKey.png';
+                    editorVm.addAssetSticker(assetPath, canvasSize);
                     _closeSheet();
                   },
                 ),
                 DecorateColorTab(
                   surfaceColor: surfaceColor,
                   onColorTap: (colorValue) {
-                    ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(colorValue);
+                    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
+                    if (colorValue < 0) {
+                      // 배경 없음 선택 → 배경색 제거
+                      editorVm.clearPageBackgroundColor();
+                    } else {
+                      editorVm.updatePageBackgroundColor(colorValue);
+                    }
                     _closeSheet();
                   },
                 ),

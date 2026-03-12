@@ -92,23 +92,19 @@ class FontPickerListState extends State<FontPickerList> {
                   transform: sel ? Matrix4.translationValues(0, -6.h, 0) : Matrix4.identity(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
-                    color: sel
-                        ? SnapFitColors.surfaceOf(context)
-                        : SnapFitColors.overlayLightOf(context),
+                    // 다크/라이트 모드와 무관하게 통일된 대비를 주기 위해 고정 색상 사용
+                    color: sel ? Colors.white : const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: sel
-                          ? SnapFitColors.textPrimaryOf(context)
-                          : SnapFitColors.overlayStrongOf(context),
+                      color: sel ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
                       width: sel ? 1.5 : 1.0,
                     ),
                   ),
                   child: Text(
                     fam,
                     style: TextStyle(
-                      color: sel
-                          ? SnapFitColors.textPrimaryOf(context)
-                          : SnapFitColors.textSecondaryOf(context),
+                      // 선택/비선택 모두 충분한 명도 대비가 나도록 고정 색상 사용
+                      color: sel ? const Color(0xFF111827) : const Color(0xFF4B5563),
                       fontSize: 12.sp,
                       fontFamily: fam,
                     ),

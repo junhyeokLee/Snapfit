@@ -65,30 +65,34 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
   Color? _bubbleColor;
 
   // 폰트 패밀리 (pubspec.yaml 등록 필요)
+  // 인쇄용으로 많이 쓰는 기본 서체들을 앞쪽에 배치
   final List<String> _fontFamilies = const [
-    'Book',
-    'BookMyungjo',
+    // 인쇄/본문용 기본 세트
+    'NotoSans',     // 기본 고딕 본문
+    'Eulyoo',       // 명조/에세이 느낌 본문
+    'SeoulNamsan',  // 모던 고딕 본문
+    'Book',         // 책 느낌 타이틀/본문
+    'BookMyungjo',  // 책 명조 스타일
+    'Cormorant',    // 영문 타이틀/본문
+    'Roboto',
+    'Raleway',
+    'Poppins',
+
+    // 나머지 감성/장식 서체들
     'Doldam',
     'Maker',
     'Arita',
     'Peace',
     'RiaSans',
-    'NotoSans',
     'Aggravo',
-    'Eulyoo',
     'Tenada',
     'Arirang',
     'Arirang2',
     'Arirang3',
-    'Raleway',
-    'Roboto',
     'Yeongwol',
-    'Cormorant',
     'Samlip',
     'Run',
-    'Poppins',
     'Recipekorea',
-    'SeoulNamsan',
   ];
   late String _currentFont;
 

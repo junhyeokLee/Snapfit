@@ -7,16 +7,13 @@ class GridOverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black.withOpacity(0.08)
-      ..strokeWidth = 1;
     final startX = leftSpine;
     
     // [Center Guide] 중앙 보조선만 유지 (3x3 격자 제거)
 
     // [Center Guide] 중앙 보조선 추가 (스냅 라인과 시각적 조화)
     final centerPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15) // Slightly darker
+      ..color = Colors.black.withOpacity(0.15)
       ..strokeWidth = 1.3;
     
     final centerX = startX + (size.width - startX) / 2;

@@ -123,8 +123,22 @@ class AlbumEditorService {
 
     if (slotAspect == null) {
       // 자유: 원본 사진 비율 유지
-      final w = asset.width.toDouble();
-      final h = asset.height.toDouble();
+      // 일부 기기(특히 Android)에서는 세로 사진이 EXIF orientation(90/270)으로 저장되어
+      // width/height 값은 가로 기준이지만 실제 표시 방향은 세로인 경우가 있다.
+      // 이 경우 orientation 값을 참고하여 가로/세로를 보정해준다.
+      double w = asset.width.toDouble();
+      double h = asset.height.toDouble();
+      try {
+        final ori = asset.orientation;
+        if (ori == 90 || ori == 270) {
+          final tmp = w;
+          w = h;
+          h = tmp;
+        }
+      } catch (_) {
+        // orientation 프로퍼티가 없거나 접근 실패 시, 그대로 진행 (기존 동작 유지)
+      }
+
       final aspect = w / h;
       if (aspect >= maxW / maxH) {
         width = maxW;

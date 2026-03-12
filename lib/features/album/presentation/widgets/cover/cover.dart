@@ -17,6 +17,7 @@ class CoverLayout extends StatelessWidget {
   final List<LayerModel> layers;
   final bool isInteracting;
   final double leftSpine;
+  final Color? backgroundColor;
   final CoverSizeChanged onCoverSizeChanged;
   final BuildImageLayer buildImage;
   final BuildTextLayer buildText;
@@ -31,6 +32,7 @@ class CoverLayout extends StatelessWidget {
     required this.layers,
     required this.isInteracting,
     required this.leftSpine,
+    this.backgroundColor,
     required this.onCoverSizeChanged,
     required this.buildImage,
     required this.buildText,
@@ -78,41 +80,58 @@ class CoverLayout extends StatelessWidget {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 onCoverSizeChanged(coverSize);
                               });
-                               return RepaintBoundary(
-                                 key: contentKey,
-                                 child: Stack(
-                                   fit: StackFit.expand,
-                                   clipBehavior: Clip.none,
-                                children: [
-                                  _CoverBackground(leftSpine: leftSpine, theme: theme),
-                                  ...sortedByZ(layers).map((layer) {
-                                    switch (layer.type) {
-                                      case LayerType.image:
-                                        return buildImage(layer);
-                                      case LayerType.text:
-                                        return buildText(layer);
-                                    }
-                                  }),
+                              return RepaintBoundary(
+                                key: contentKey,
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    _CoverBackground(
+                                      leftSpine: leftSpine,
+                                      theme: theme,
+                                      backgroundColor: backgroundColor,
+                                    ),
+                                    ...sortedByZ(layers).map((layer) {
+                                      // 스타일 변경 시 즉시 반영되도록 키에 textBackground/imageBackground 포함
+                                      final styleKey = ValueKey(
+                                        '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
+                                      );
+                                      switch (layer.type) {
+                                        case LayerType.image:
+                                          return KeyedSubtree(
+                                            key: styleKey,
+                                            child: buildImage(layer),
+                                          );
+                                        case LayerType.text:
+                                          return KeyedSubtree(
+                                            key: styleKey,
+                                            child: buildText(layer),
+                                          );
+                                      }
+                                    }),
                                     Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: CustomPaint(
-                                      painter: SpinePainter(
-                                        baseStart: Colors.white.withOpacity(0.1),
-                                        baseEnd: Colors.white.withOpacity(0.1),
-                                      ),
-                                      size: Size(kCoverSpineWidth, MediaQuery.of(context).size.height), // infinity isn't constant anyway, and Size shouldn't be const if args aren't
-                                    ),
-                                  ),
-                                  if (isInteracting)
-                                    IgnorePointer(
-                                      ignoring: true,
+                                      alignment: Alignment.centerLeft,
                                       child: CustomPaint(
-                                        painter: GridOverlayPainter(leftSpine: leftSpine),
+                                        painter: SpinePainter(
+                                          baseStart: Colors.white.withOpacity(0.1),
+                                          baseEnd: Colors.white.withOpacity(0.1),
+                                        ),
+                                        size: Size(
+                                          kCoverSpineWidth,
+                                          MediaQuery.of(context).size.height,
+                                        ),
                                       ),
                                     ),
-                                ],
-                              ),
-                            );
+                                    if (isInteracting)
+                                      IgnorePointer(
+                                        ignoring: true,
+                                        child: CustomPaint(
+                                          painter: GridOverlayPainter(leftSpine: leftSpine),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
                             },
                           ),
                         ),
@@ -132,7 +151,13 @@ class CoverLayout extends StatelessWidget {
 class _CoverBackground extends StatelessWidget {
   final double leftSpine;
   final CoverTheme theme;
-  const _CoverBackground({required this.leftSpine, required this.theme});
+  final Color? backgroundColor;
+
+  const _CoverBackground({
+    required this.leftSpine,
+    required this.theme,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -146,13 +171,14 @@ class _CoverBackground extends StatelessWidget {
               topRight: Radius.circular(12),
               bottomRight: Radius.circular(12),
             ),
-            image: theme.imageAsset != null
+            color: backgroundColor,
+            image: backgroundColor == null && theme.imageAsset != null
                 ? DecorationImage(
-              image: AssetImage(theme.imageAsset!),
-              fit: BoxFit.cover,
-            )
+                    image: AssetImage(theme.imageAsset!),
+                    fit: BoxFit.cover,
+                  )
                 : null,
-            gradient: theme.imageAsset == null ? theme.gradient : null,
+            gradient: backgroundColor == null && theme.imageAsset == null ? theme.gradient : null,
           ),
         ),
 

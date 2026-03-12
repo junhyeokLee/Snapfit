@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/grid_overlay_painter.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
@@ -131,11 +132,37 @@ class PageEditorCanvas extends StatelessWidget {
                   children: [
                     Container(color: backgroundColor ?? SnapFitColors.pureWhite),
                     ...interaction.sortByZ(layers).map((layer) {
+                      // 스타일(textBackground/imageBackground) 변경 시 즉시 반영되도록 키에 포함
+                      final styleKey = ValueKey('${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}');
                       if (layer.type == LayerType.image) {
-                        return layerBuilder.buildImage(layer, isCover: isCover);
+                        return KeyedSubtree(
+                          key: styleKey,
+                          child: layerBuilder.buildImage(layer, isCover: isCover),
+                        );
                       }
-                      return layerBuilder.buildText(layer, isCover: isCover);
+                      return KeyedSubtree(
+                        key: styleKey,
+                        child: layerBuilder.buildText(layer, isCover: isCover),
+                      );
                     }),
+                    // 내지 편집 시에도 커버와 동일하게, 드래그/회전 중일 때만
+                    // 중앙 가이드선을 레이어 위에 렌더링. 논리 캔버스와 동일한 크기로 고정해 가운데가 정확히 맞도록 함.
+                    if (interaction.isInteractingNow)
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: IgnorePointer(
+                          child: SizedBox(
+                            width: effectiveBaseSize.width,
+                            height: effectiveBaseSize.height,
+                            child: CustomPaint(
+                              painter: GridOverlayPainter(
+                                leftSpine: isCover ? 14.0 : 0.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
                     if (isCover)
                       Align(

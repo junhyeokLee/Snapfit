@@ -57,6 +57,12 @@ const List<ImageFrameStyle> imageFrameStyles = [
     category: 'classic',
   ),
   ImageFrameStyle(
+    key: 'polaroidFilm',
+    label: '폴라로이드 필름',
+    subtitle: 'Black Border',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
     key: 'film',
     label: '빈티지 필름 스트립',
     subtitle: 'Retro 35mm',
@@ -477,13 +483,16 @@ class _FrameStyleItem extends StatelessWidget {
         );
         break;
       case 'polaroid':
-        content = _previewPolaroidStandard();
+        content = _previewPolaroidStandard(placeholder);
         break;
       case 'polaroidClassic':
-        content = _previewPolaroidClassic();
+        content = _previewPolaroidClassic(placeholder);
         break;
       case 'polaroidWide':
         content = _previewPolaroidWide(placeholder);
+        break;
+      case 'polaroidFilm':
+        content = _previewPolaroidFilm(placeholder);
         break;
       case 'sticker':
         content = Container(
@@ -641,88 +650,57 @@ class _FrameStyleItem extends StatelessWidget {
     );
   }
 
-  /// 레퍼런스: 클래식 폴라로이드 - 흰 카드, 위쪽 회색 사진 영역, 아래 큰 여백 + 짧은 가로선
-  Widget _previewPolaroidStandard() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final lineWidth = w * 0.45;
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 14.h),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8EAEF),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Container(
-                height: 2.5,
-                width: lineWidth,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD0D3DC),
-                  borderRadius: BorderRadius.circular(999.r),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+  /// 레퍼런스: 클래식 폴라로이드 - 실제 적용된 프레임과 동일 비율/사진 영역
+  Widget _previewPolaroidStandard(Widget child) {
+    return AspectRatio(
+      // 실제 폴라로이드와 동일하게 세로가 더 긴 비율
+      aspectRatio: 3 / 4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        // 실제 프레임과 동일: 좌우/위 20, 아래 80
+        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6.r),
+          child: SizedBox.expand(child: child),
+        ),
+      ),
     );
   }
 
-  /// 크림톤 카드 폴라로이드 (Cream Vintage)
-  Widget _previewPolaroidClassic() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF5),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 7,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.fromLTRB(8.w, 8.w, 8.w, 14.w),
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F2E9),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
+  /// 크림톤 카드 폴라로이드 (Cream Vintage) – 실제 적용된 프레임과 동일 비율/사진 영역
+  Widget _previewPolaroidClassic(Widget child) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFEF5),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 7,
+              offset: const Offset(0, 3),
             ),
-          ),
-          SizedBox(height: 6.h),
-          Container(
-            height: 3.h,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD7D1C2),
-              borderRadius: BorderRadius.circular(999.r),
-            ),
-          ),
-        ],
+          ],
+        ),
+        // 실제 프레임과 동일: 좌우/위 20, 아래 80
+        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6.r),
+          child: SizedBox.expand(child: child),
+        ),
       ),
     );
   }
@@ -749,62 +727,91 @@ class _FrameStyleItem extends StatelessWidget {
     );
   }
 
+  /// 폴라로이드 필름 – 검은 카드 + 폴라로이드 비율
+  Widget _previewPolaroidFilm(Widget child) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6.r),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   /// 레퍼런스: 빈티지 필름 스트립 - 짙은 남색, 양쪽 4개씩 연한 타공, 중앙 화면
   Widget _previewFilmStrip() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF151B2C),
-        borderRadius: BorderRadius.circular(10.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
-      child: Row(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(4, (_) {
-              return Container(
-                width: 5.w,
-                height: 5.w,
-                margin: EdgeInsets.symmetric(vertical: 2.h),
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF151B2C),
+          borderRadius: BorderRadius.circular(10.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
+        child: Row(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(4, (_) {
+                return Container(
+                  width: 5.w,
+                  height: 5.w,
+                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3D4556),
+                    borderRadius: BorderRadius.circular(1.r),
+                  ),
+                );
+              }),
+            ),
+            SizedBox(width: 4.w),
+            Expanded(
+              child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3D4556),
-                  borderRadius: BorderRadius.circular(1.r),
+                  color: const Color(0xFF1E2433),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
-              );
-            }),
-          ),
-          SizedBox(width: 4.w),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E2433),
-                borderRadius: BorderRadius.circular(6.r),
               ),
             ),
-          ),
-          SizedBox(width: 4.w),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(4, (_) {
-              return Container(
-                width: 5.w,
-                height: 5.w,
-                margin: EdgeInsets.symmetric(vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3D4556),
-                  borderRadius: BorderRadius.circular(1.r),
-                ),
-              );
-            }),
-          ),
-        ],
+            SizedBox(width: 4.w),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(4, (_) {
+                return Container(
+                  width: 5.w,
+                  height: 5.w,
+                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3D4556),
+                    borderRadius: BorderRadius.circular(1.r),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

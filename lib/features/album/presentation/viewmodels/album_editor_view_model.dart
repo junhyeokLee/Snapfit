@@ -51,6 +51,9 @@ abstract class AlbumEditorState with _$AlbumEditorState {
     /// 백그라운드에서 앨범 생성(업로드) 중인지 여부
     @Default(false) bool isCreatingInBackground,
 
+    /// 백그라운드 이미지 업로드 진행률 (0.0 ~ 1.0)
+    @Default(0.0) double backgroundUploadProgress,
+
     /// 되돌리기/다시하기 가능 여부 (현재 페이지 기준)
     @Default(false) bool canUndo,
     @Default(false) bool canRedo,
@@ -408,7 +411,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         createdAlbumId = newAlbum?.id;
       }
 
-      // [STEP 2] 후(後) 업로드: 서비스로 이관
+      // [STEP 2] 후(後) 업로드: 서비스로 이관 (진행률 콜백 포함)
       if (createdAlbumId != null) {
         _persistence.performBackgroundUpload(
           albumId: createdAlbumId,
@@ -418,6 +421,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           themeLabel: themeLabel,
           title: title ?? '',
           coverRatio: _cover.ratio,
+          onProgress: (completed, total) {
+            final prev = state.value;
+            if (prev == null || total == 0) return;
+            final progress = (completed / total).clamp(0.0, 1.0);
+            state = AsyncData(prev.copyWith(backgroundUploadProgress: progress));
+          },
         );
       }
       return createdAlbumId;
@@ -439,6 +448,39 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       canvasSize: canvasSize,
       templateKey: templateKey,
     );
+    _emit();
+  }
+
+  /// 앱 번들 에셋 스티커 추가 (예: assets/sticker/scrap1.png)
+  void addAssetSticker(String assetPath, Size canvasSize) {
+    if (_pages.isEmpty) return;
+    _recordUndo();
+    final currentPage = _pages[_currentPageIndex];
+
+    // 에셋 자체에 맞춰 보이는 고정 크기 (너무 크게 키우지 않음)
+    // - scrap 시리즈는 에셋 사이즈 기준으로 디자인되어 있어서
+    //   캔버스 비율에 따라 과하게 확대하지 않고 적당한 고정값으로 둔다.
+    const double width = 260.0;
+    const double height = 220.0;
+
+    final pos = Offset(
+      (canvasSize.width - width) / 2,
+      (canvasSize.height - height) / 2,
+    );
+
+    final layer = LayerModel(
+      id: UniqueKey().toString(),
+      type: LayerType.image,
+      position: pos,
+      width: width,
+      height: height,
+      imageUrl: 'asset:$assetPath',
+      // imageBackground를 지정하지 않아서 추가적인 흰 배경/테두리 없이
+      // PNG 자체만 그대로 출력되도록 한다.
+      opacity: 1.0,
+    );
+
+    currentPage.layers.add(layer);
     _emit();
   }
 
@@ -514,6 +556,23 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final page = _pages[_currentPageIndex];
     final updated = page.copyWith(backgroundColor: color);
     _pages[_currentPageIndex] = updated;
+    _emit();
+  }
+
+  /// 페이지 배경색 제거 (커버 테마/기본 흰 배경으로 복귀)
+  void clearPageBackgroundColor() {
+    if (_pages.isEmpty) return;
+    _recordUndo();
+    final page = _pages[_currentPageIndex];
+    // AlbumPage.copyWith는 backgroundColor에 null을 넘기면 기존 값을 유지하므로
+    // 여기서는 명시적으로 새 인스턴스를 만들어 backgroundColor를 완전히 제거한다.
+    _pages[_currentPageIndex] = AlbumPage(
+      id: page.id,
+      layers: page.layers,
+      pageIndex: page.pageIndex,
+      isCover: page.isCover,
+      backgroundColor: null,
+    );
     _emit();
   }
 
@@ -700,6 +759,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         _initialCoverThumbnailUrl = null;
         _initialAlbumTitle = null; // 초기화
       }
+
+      // 백그라운드 업로드 진행률 초기화
+      final prev = state.value ?? const AlbumEditorState();
+      state = AsyncData(prev.copyWith(backgroundUploadProgress: 0.0));
 
       _hasUnsavedChanges = false;
       _emit();

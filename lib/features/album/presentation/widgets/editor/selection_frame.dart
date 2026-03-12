@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 
+enum ResizeHandlePosition {
+  topLeft,
+  topRight,
+  bottomLeft,
+  bottomRight,
+}
+
 class SelectionFrame extends StatelessWidget {
   final Widget child;
   final bool isSelected;
@@ -11,6 +18,9 @@ class SelectionFrame extends StatelessWidget {
   final Function(ScaleStartDetails)? onScaleStart;
   final Function(ScaleUpdateDetails)? onScaleUpdate;
   final Function(ScaleEndDetails)? onScaleEnd;
+  final void Function(ResizeHandlePosition pos, DragStartDetails details)? onResizeStart;
+  final void Function(ResizeHandlePosition pos, DragUpdateDetails details)? onResizeUpdate;
+  final void Function(ResizeHandlePosition pos, DragEndDetails details)? onResizeEnd;
 
   const SelectionFrame({
     super.key,
@@ -21,6 +31,9 @@ class SelectionFrame extends StatelessWidget {
     this.onScaleUpdate,
     this.onScaleEnd,
     this.showHandles = true,
+    this.onResizeStart,
+    this.onResizeUpdate,
+    this.onResizeEnd,
   });
 
   @override
@@ -43,28 +56,61 @@ class SelectionFrame extends StatelessWidget {
         
         // Corners (Visual Anchors)
         if (showHandles) ...[
-          _buildCorner(top: -4, left: -4),
-          _buildCorner(top: -4, right: -4),
-          _buildCorner(bottom: -4, left: -4),
-          _buildCorner(bottom: -4, right: -4),
+          _buildCorner(
+            pos: ResizeHandlePosition.topLeft,
+            top: -4,
+            left: -4,
+          ),
+          _buildCorner(
+            pos: ResizeHandlePosition.topRight,
+            top: -4,
+            right: -4,
+          ),
+          _buildCorner(
+            pos: ResizeHandlePosition.bottomLeft,
+            bottom: -4,
+            left: -4,
+          ),
+          _buildCorner(
+            pos: ResizeHandlePosition.bottomRight,
+            bottom: -4,
+            right: -4,
+          ),
         ],
       ],
     );
   }
 
-  Widget _buildCorner({double? top, double? bottom, double? left, double? right}) {
+  Widget _buildCorner({
+    required ResizeHandlePosition pos,
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+  }) {
     return Positioned(
       top: top,
       bottom: bottom,
       left: left,
       right: right,
-      child: Container(
-        width: 10,
-        height: 10,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: SnapFitColors.accent, width: 2),
+      child: GestureDetector(
+        onPanStart: onResizeStart == null
+            ? null
+            : (details) => onResizeStart!(pos, details),
+        onPanUpdate: onResizeUpdate == null
+            ? null
+            : (details) => onResizeUpdate!(pos, details),
+        onPanEnd: onResizeEnd == null
+            ? null
+            : (details) => onResizeEnd!(pos, details),
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: SnapFitColors.accent, width: 2),
+          ),
         ),
       ),
     );

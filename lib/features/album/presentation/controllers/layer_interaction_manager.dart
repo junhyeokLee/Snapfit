@@ -47,6 +47,9 @@ class LayerInteractionManager {
   // ==================== 제스처 추적 ====================
   final Map<String, _GestureState> _gestureStates = {}; // 제스처 시작 시점의 상태 저장
 
+  /// 리사이즈(핸들 드래그) 상태
+  _ResizeState? _resizeState;
+
   // ==================== 스냅 가이드 표시 ====================
   bool _showVerticalGuide = false; // 세로 중앙선 표시 여부
   bool _showHorizontalGuide = false; // 가로 중앙선 표시 여부
@@ -72,12 +75,13 @@ class LayerInteractionManager {
   static const double _dragMaxSpeed = 12.0; // 프레임당 최대 이동 거리 (픽셀)
 
   // 스냅 동작
-  static const double _snapThreshold = 18.0; // 스냅 활성화 거리 (픽셀)
-  static const double _snapStrength = 0.5; // 스냅 당김 강도 (0~1)
+  static const double _snapThreshold = 24.0; // 스냅 활성화 거리 (픽셀) — 조금 더 멀리서도 잡히게
+  static const double _snapCenterExactThreshold = 4.0; // 이 거리 이내면 중앙에 정확히 맞춤 (픽셀)
+  static const double _snapStrength = 0.4; // 스냅 당김 강도 (0~1) — 약하게 해서 원하는 위치 맞추기 쉽게
   // static const double _angleSnapThreshold = 0.087; // 각도 스냅 임계값 (~5도)
-  static const double _angleSnapThreshold = 0.2; // 각도 스냅 임계값 (~5도)
+  static const double _angleSnapThreshold = 0.12; // 각도 스냅 임계값 (~7도) — 너무 세지 않게 약간 완화
   // static const double _angleSnapStrength = 0.35; // 각도 스냅 강도 (0~1)
-  static const double _angleSnapStrength = 0.05; // 각도 스냅 강도 약하게 조정
+  static const double _angleSnapStrength = 0.25; // 각도 스냅 강도 — 0/90도 근처에서 확실히 스냅
 
 
   // 스냅 각도 목록 (0°, 45°, 90°, 135°, 180°, -45°, -90°, -135°)
@@ -161,17 +165,12 @@ class LayerInteractionManager {
     final byZ = List<LayerModel>.from(l)
       ..sort((a, b) => (_z[a.id] ?? 0).compareTo(_z[b.id] ?? 0));
 
-    // 2) 저장/로드/패널 드래그로 list 자체의 순서가 바뀌었는데,
-    //    _z 캐시가 예전 순서를 들고 있으면(특히 읽기 스프레드/편집 캔버스) 화면에만 순서가 어긋난다.
-    //    이 경우에는 "리스트 순서"를 진짜 z-order로 간주해 _z를 조용히 재동기화한다.
+    // 2) list 순서와 _z 순서가 다르면, 선택/드래그로 맨 앞 올린 직후 VM 반영이 한 프레임 늦을 수 있음.
+    //    이때 _z를 list로 덮어쓰면 선택한 레이어가 잠깐 뒤로 그려지는 문제가 있으므로,
+    //    먼저 byZ(_z 기준)로 그려서 맨 앞 유지. 다음 프레임에 VM이 반영되면 l과 byZ가 일치함.
+    //    패널에서 드래그로 순서를 바꾼 경우는 syncZOrder()로 _z가 이미 list와 맞춰져 있음.
     if (!_sameOrderById(l, byZ)) {
-      _z
-        ..clear();
-      _zCounter = 0;
-      for (final layer in l) {
-        _z[layer.id] = ++_zCounter;
-      }
-      return l; // list 순서를 그대로 사용
+      return byZ;
     }
 
     return byZ;
@@ -356,6 +355,9 @@ class LayerInteractionManager {
                         isSelected: isSelected && !isEditing && showSelectionControls,
                         showHandles: showHandles,
                         onDelete: deleteSelected,
+                        onResizeStart: (pos, d) => _handleResizeStart(layer, pos, d),
+                        onResizeUpdate: (pos, d) => _handleResizeUpdate(layer, pos, d, baseWidth, baseHeight, isCover: isCover),
+                        onResizeEnd: (pos, d) => _handleResizeEnd(layer, pos, d),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 100),
                           curve: Curves.easeOut,
@@ -457,13 +459,10 @@ class LayerInteractionManager {
     final baseSize = Size(baseWidth, baseHeight);
 
     // ==================== 스케일 처리 ====================
-    // ✅ 텍스트 스케일 반응 상향 (더 빠르게 커지고 작아짐)
     final rawScale = details.scale;
-    // 기존 0.50 → 0.85로 상향 (체감 크기 변화 증가)
     final slowedScaleDelta = (rawScale - 1.0) * 0.85 + 1.0;
     double targetScale = gestureState.initialScale * slowedScaleDelta;
 
-    // 범위 초과 시 저항 적용 (고무줄 효과)
     if (targetScale < _minScale) {
       targetScale = _minScale - (_minScale - targetScale) * _scaleOvershoot;
     } else if (targetScale > _maxScale) {
@@ -471,16 +470,10 @@ class LayerInteractionManager {
     }
 
     // ==================== 회전 처리 ====================
-    // 제스처 회전량에 감도 적용
     double rotationDelta = details.rotation * _rotationResponsiveness;
-
-    // 데드존: 미세한 회전은 무시 (의도하지 않은 회전 방지)
     if (rotationDelta.abs() < _rotationDeadzone) rotationDelta = 0.0;
-
-    // 목표 회전각 = 초기 회전각 + 회전 변화량
     double targetRotation = gestureState.initialRotation + rotationDelta;
 
-    // 각도 스냅: 특정 각도에 가까우면 자석처럼 달라붙음
     bool angleSnapped = false;
     for (final angle in _snapAngles) {
       final diff = _angleDifference(targetRotation, angle);
@@ -545,8 +538,8 @@ class LayerInteractionManager {
     // 가로/세로 스냅 강도 대폭 약화 (대각선과 동일한 강도 유지 가능)
     final baseSnap = _snapStrength * math.pow(dynamicScale, 0.20);
 
-    // 가로/세로는 과도하게 빨려들지 않도록 더 약하게 0.5배 감소
-    final dynamicSnapStrength = baseSnap * 0.5;
+    // 가로/세로는 과도하게 빨려들지 않도록 더 약하게 (원하는 위치 맞추기 쉽게)
+    final dynamicSnapStrength = baseSnap * 0.28;
 
     // ==================== 위치 스냅 처리 ====================
     // [Spine fix] 스냅 기준점: 커버인 경우 Spine 제외 중앙
@@ -583,6 +576,14 @@ class LayerInteractionManager {
         newCenter.dy + (coverCenter.dy - newCenter.dy) * strength,
       );
       horizontalSnap = true;
+    }
+
+    // 가로·세로 모두 스냅 중이고 중앙에 매우 가까우면 정확히 중앙으로 고정 (가이드라인과 일치)
+    if (verticalSnap && horizontalSnap) {
+      final distToCenter = (newCenter - coverCenter).distance;
+      if (distToCenter < _snapCenterExactThreshold) {
+        newCenter = coverCenter;
+      }
     }
 
     // 대각선 스냅 1: 좌상단 → 우하단 (dx = dy)
@@ -699,6 +700,96 @@ class LayerInteractionManager {
       _showDiagonalGuide = false;
       _gestureStates.remove(layer.id);
     });
+  }
+
+  // ==================== 리사이즈 핸들러 ====================
+
+  void _handleResizeStart(
+    LayerModel layer,
+    ResizeHandlePosition handle,
+    DragStartDetails details,
+  ) {
+    // 현재 스케일/위치 기준으로 리사이즈 시작 상태 저장
+    final baseSize = _refBaseSize[layer.id] ?? Size(layer.width, layer.height);
+    _resizeState = _ResizeState(
+      layerId: layer.id,
+      handle: handle,
+      initialScale: _scale[layer.id] ?? layer.scale,
+      baseSize: baseSize,
+    );
+    setState(() {
+      _selectedLayerId = layer.id;
+      _editingLayerId = null;
+    });
+  }
+
+  void _handleResizeUpdate(
+    LayerModel layer,
+    ResizeHandlePosition handle,
+    DragUpdateDetails details,
+    double baseWidth,
+    double baseHeight, {
+    bool isCover = false,
+  }) {
+    final state = _resizeState;
+    if (state == null || state.layerId != layer.id) return;
+
+    // 드래그 거리의 크기에 비례해서 스케일을 변경 (단일 축이 아닌 균일 스케일)
+    // corner 방향 드래그 기준: x, y 이동을 모두 반영하되 과도한 변화는 클램프
+    Offset delta = details.delta;
+    // 부모 Transform.scale 보정
+    final parentScale = _getParentScale();
+    if (parentScale > 0) {
+      delta = delta / parentScale;
+    }
+
+    // 핸들 방향에 따라 부호를 일관되게 맞추기 위해, 각 코너별로 기준 부호를 준다.
+    double direction = 1.0;
+    switch (handle) {
+      case ResizeHandlePosition.topLeft:
+        direction = -1.0;
+        break;
+      case ResizeHandlePosition.topRight:
+        direction = (-delta.dx + delta.dy) >= 0 ? 1.0 : -1.0;
+        break;
+      case ResizeHandlePosition.bottomLeft:
+        direction = (delta.dx - delta.dy) >= 0 ? 1.0 : -1.0;
+        break;
+      case ResizeHandlePosition.bottomRight:
+        direction = 1.0;
+        break;
+    }
+
+    final magnitude = (delta.dx.abs() + delta.dy.abs()) * 0.5 * direction;
+    double scaleDelta = magnitude / 120.0;
+    scaleDelta = scaleDelta.clamp(-0.4, 0.4); // 한 프레임당 변화량 제한
+
+    double targetScale = (state.initialScale + scaleDelta).clamp(_minScale, _maxScale);
+
+    setState(() {
+      _scale[layer.id] = targetScale;
+    });
+  }
+
+  void _handleResizeEnd(
+    LayerModel layer,
+    ResizeHandlePosition handle,
+    DragEndDetails details,
+  ) {
+    final state = _resizeState;
+    _resizeState = null;
+    if (state == null || state.layerId != layer.id) return;
+
+    final scale = _scale[layer.id] ?? layer.scale;
+    final rotation = _rot[layer.id] ?? (layer.rotation * math.pi / 180);
+
+    // 제스처 종료와 동일하게 ViewModel에 최종 스케일/회전 적용
+    final updatedLayer = layer.copyWith(
+      position: _pos[layer.id],
+      scale: scale,
+      rotation: rotation * 180 / math.pi,
+    );
+    ref.read(albumEditorViewModelProvider.notifier).updateLayer(updatedLayer);
   }
 
   // ==================== 애니메이션 메서드 ====================
@@ -831,6 +922,20 @@ class _GestureState {
     required this.initialPosition,
     required this.baseSize,
     required this.hasSnapped,
+  });
+}
+
+class _ResizeState {
+  final String layerId;
+  final ResizeHandlePosition handle;
+  final double initialScale;
+  final Size baseSize;
+
+  _ResizeState({
+    required this.layerId,
+    required this.handle,
+    required this.initialScale,
+    required this.baseSize,
   });
 }
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
@@ -274,6 +275,184 @@ Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
   }
 }
 
+Color _roundBgColor(String bg) {
+  switch (bg) {
+    case 'roundGray': return SnapFitStylePalette.gray;
+    case 'roundPink': return SnapFitStylePalette.pink;
+    case 'roundBlue': return SnapFitStylePalette.blue;
+    case 'roundMint': return SnapFitStylePalette.mint;
+    case 'roundLavender': return SnapFitStylePalette.lavender;
+    case 'roundOrange': return SnapFitStylePalette.orange;
+    case 'roundGreen': return SnapFitStylePalette.green;
+    case 'roundCream': return SnapFitStylePalette.cream;
+    case 'roundNavy': return SnapFitStylePalette.navy;
+    case 'roundRose': return SnapFitStylePalette.rose;
+    case 'roundCoral': return SnapFitStylePalette.coral;
+    case 'roundBeige': return SnapFitStylePalette.beige;
+    case 'roundTeal': return SnapFitStylePalette.teal;
+    case 'roundLemon': return SnapFitStylePalette.lemon;
+    default: return SnapFitStylePalette.white;
+  }
+}
+Color _roundBorderColor(String bg) {
+  if (bg == 'round') return const Color(0xFFE0E4EC);
+  return Color.lerp(_roundBgColor(bg), Colors.black, 0.08) ?? const Color(0xFFE0E4EC);
+}
+Color _squareBgColor(String bg) {
+  switch (bg) {
+    case 'squareGray': return SnapFitStylePalette.gray;
+    case 'squarePink': return SnapFitStylePalette.pink;
+    case 'squareBlue': return SnapFitStylePalette.blue;
+    case 'squareMint': return SnapFitStylePalette.mint;
+    case 'squareLavender': return SnapFitStylePalette.lavender;
+    case 'squareOrange': return SnapFitStylePalette.orange;
+    case 'squareGreen': return SnapFitStylePalette.green;
+    case 'squareCream': return SnapFitStylePalette.cream;
+    case 'squareNavy': return SnapFitStylePalette.navy;
+    case 'squareRose': return SnapFitStylePalette.rose;
+    case 'squareCoral': return SnapFitStylePalette.coral;
+    case 'squareBeige': return SnapFitStylePalette.beige;
+    case 'squareTeal': return SnapFitStylePalette.teal;
+    case 'squareLemon': return SnapFitStylePalette.lemon;
+    default: return SnapFitStylePalette.white;
+  }
+}
+Color _squareBorderColor(String bg) {
+  if (bg == 'square') return const Color(0xFFE0E4EC);
+  return Color.lerp(_squareBgColor(bg), Colors.black, 0.08) ?? const Color(0xFFE0E4EC);
+}
+Color _roundSoftBgColor(String bg) {
+  switch (bg) {
+    case 'roundSoftGray': return SnapFitStylePalette.gray;
+    case 'roundSoftPink': return SnapFitStylePalette.pink;
+    case 'roundSoftBlue': return SnapFitStylePalette.blue;
+    case 'roundSoftMint': return SnapFitStylePalette.mint;
+    case 'roundSoftLavender': return SnapFitStylePalette.lavender;
+    case 'roundSoftOrange': return SnapFitStylePalette.orange;
+    case 'roundSoftGreen': return SnapFitStylePalette.green;
+    case 'roundSoftCream': return SnapFitStylePalette.cream;
+    case 'roundSoftNavy': return SnapFitStylePalette.navy;
+    case 'roundSoftRose': return SnapFitStylePalette.rose;
+    case 'roundSoftCoral': return SnapFitStylePalette.coral;
+    case 'roundSoftBeige': return SnapFitStylePalette.beige;
+    case 'roundSoftTeal': return SnapFitStylePalette.teal;
+    case 'roundSoftLemon': return SnapFitStylePalette.lemon;
+    default: return SnapFitStylePalette.white;
+  }
+}
+
+Color _bubbleFillColor(String bg) {
+  if (bg.endsWith('Gray')) return SnapFitStylePalette.gray;
+  if (bg.endsWith('Pink')) return SnapFitStylePalette.pink;
+  if (bg.endsWith('Blue')) return SnapFitStylePalette.blue;
+  if (bg.endsWith('Mint')) return SnapFitStylePalette.mint;
+  if (bg.endsWith('Lavender')) return SnapFitStylePalette.lavender;
+  if (bg.endsWith('Orange')) return SnapFitStylePalette.orange;
+  if (bg.endsWith('Green')) return SnapFitStylePalette.green;
+  if (bg.endsWith('Cream')) return SnapFitStylePalette.cream;
+  if (bg.endsWith('Navy')) return SnapFitStylePalette.navy;
+  if (bg.endsWith('Rose')) return SnapFitStylePalette.rose;
+  if (bg.endsWith('Coral')) return SnapFitStylePalette.coral;
+  if (bg.endsWith('Beige')) return SnapFitStylePalette.beige;
+  if (bg.endsWith('Teal')) return SnapFitStylePalette.teal;
+  if (bg.endsWith('Lemon')) return SnapFitStylePalette.lemon;
+  return SnapFitStylePalette.white;
+}
+
+Color _labelOvalBgColor(String bg) {
+  switch (bg) {
+    case 'labelGray': return SnapFitStylePalette.labelGray;
+    case 'labelPink': return SnapFitStylePalette.labelPink;
+    case 'labelBlue': return SnapFitStylePalette.labelBlue;
+    case 'labelMint': return SnapFitStylePalette.labelMint;
+    case 'labelLavender': return SnapFitStylePalette.labelLavender;
+    case 'labelOrange': return SnapFitStylePalette.labelOrange;
+    case 'labelGreen': return SnapFitStylePalette.labelGreen;
+    case 'labelWhite': return SnapFitStylePalette.labelWhite;
+    case 'labelCream': return SnapFitStylePalette.labelCream;
+    default: return const Color(0xFFE0F7FA);
+  }
+}
+
+Color _labelSolidBgColor(String bg) {
+  switch (bg) {
+    case 'labelSolidGray': return const Color(0xFF616161);
+    case 'labelSolidPink': return const Color(0xFFAD1457);
+    case 'labelSolidBlue': return const Color(0xFF1565C0);
+    case 'labelSolidMint': return const Color(0xFF00695C);
+    case 'labelSolidRed': return const Color(0xFFC62828);
+    case 'labelSolidGreen': return const Color(0xFF2E7D32);
+    case 'labelSolidOrange': return const Color(0xFFE65100);
+    case 'labelSolidLavender': return const Color(0xFF5E35B1);
+    case 'labelSolidCream': return const Color(0xFFF5F0E6);
+    default: return const Color(0xFF2C3E50);
+  }
+}
+
+Color _tagBorderColor(String bg) {
+  switch (bg) {
+    case 'tagGray': return SnapFitStylePalette.tagGray;
+    case 'tagPink': return SnapFitStylePalette.tagPink;
+    case 'tagBlue': return SnapFitStylePalette.tagBlue;
+    case 'tagMint': return SnapFitStylePalette.tagMint;
+    case 'tagLavender': return SnapFitStylePalette.tagLavender;
+    case 'tagOrange': return SnapFitStylePalette.tagOrange;
+    case 'tagGreen': return SnapFitStylePalette.tagGreen;
+    case 'tagRed': return const Color(0xFFE57373);
+    default: return const Color(0xFFB0B0B0);
+  }
+}
+
+Color _tapeSolidBgColor(String bg) {
+  switch (bg) {
+    case 'tapeKraft': return SnapFitStylePalette.tapeKraft;
+    case 'tapeGold': return SnapFitStylePalette.tapeGold;
+    case 'tapeSolidWhite': return SnapFitStylePalette.labelWhite;
+    case 'tapeSolidGray': return const Color(0xFFE0E0E0);
+    case 'tapeSolidPink': return const Color(0xFFFFCDD2);
+    case 'tapeSolidBlue': return const Color(0xFFBBDEFB);
+    case 'tapeSolidMint': return const Color(0xFFB2DFDB);
+    case 'tapeSolidLavender': return const Color(0xFFD1C4E9);
+    case 'tapeSolidOrange': return const Color(0xFFFFE0B2);
+    case 'tapeSolidGreen': return const Color(0xFFC8E6C9);
+    default: return SnapFitStylePalette.tapeKraft;
+  }
+}
+
+(Color, Color) _noteGridColors(String bg) {
+  switch (bg) {
+    case 'noteGridBlue': return (SnapFitStylePalette.blue, const Color(0xFFBBDEFB));
+    case 'noteGridPink': return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
+    case 'noteGridMint': return (SnapFitStylePalette.mint, const Color(0xFF80CBC4));
+    case 'noteGridLavender': return (SnapFitStylePalette.lavender, const Color(0xFFB39DDB));
+    case 'noteGridOrange': return (SnapFitStylePalette.orange, const Color(0xFFFFCC80));
+    case 'noteGridGray': return (SnapFitStylePalette.gray, const Color(0xFFBDBDBD));
+    default: return (const Color(0xFFFFFDE7), const Color(0xFFE8E0B0));
+  }
+}
+
+(Color, Color) _tapeDotsColors(String bg) {
+  switch (bg) {
+    case 'tapeDotsPink': return (SnapFitStylePalette.labelPink, SnapFitStylePalette.tagPink);
+    case 'tapeDotsMint': return (SnapFitStylePalette.mint, SnapFitStylePalette.tagMint);
+    case 'tapeDotsLavender': return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+    case 'tapeDotsOrange': return (SnapFitStylePalette.orange, SnapFitStylePalette.tagOrange);
+    case 'tapeDotsGray': return (SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
+    default: return (const Color(0xFFFFE0B2), const Color(0xFFFFCC80));
+  }
+}
+
+(Color, Color) _tapeDoubleColors(String bg) {
+  switch (bg) {
+    case 'tapeDoublePink': return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
+    case 'tapeDoubleMint': return (SnapFitStylePalette.mint, const Color(0xFFA7FFEB));
+    case 'tapeDoubleBlue': return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
+    case 'tapeDoubleLavender': return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+    case 'tapeDoubleGray': return (SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
+    default: return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
+  }
+}
+
 /// 텍스트 스타일 정적 렌더링 (홈/리더 커버 썸네일용 — 저장된 textBackground 모두 표시)
 Widget _buildStaticStyledText(LayerModel layer) {
   if (layer.textBackground == null || layer.textBackground!.isEmpty) {
@@ -305,40 +484,145 @@ Widget _buildStaticStyledText(LayerModel layer) {
         child: content,
       );
     case 'round':
+    case 'roundGray':
+    case 'roundPink':
+    case 'roundBlue':
+    case 'roundMint':
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _roundBgColor(bg),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFE0E4EC)),
+          border: Border.all(color: _roundBorderColor(bg)),
+        ),
+        child: content,
+      );
+    case 'square':
+    case 'squareGray':
+    case 'squarePink':
+    case 'squareBlue':
+    case 'squareMint':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: _squareBgColor(bg),
+          borderRadius: BorderRadius.zero,
+          border: Border.all(color: _squareBorderColor(bg)),
+        ),
+        child: content,
+      );
+    case 'roundSoft':
+    case 'roundSoftGray':
+    case 'roundSoftPink':
+    case 'roundSoftBlue':
+    case 'roundSoftMint':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: _roundSoftBgColor(bg),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2)),
+          ],
         ),
         child: content,
       );
     case 'bubble':
+    case 'bubbleGray':
+    case 'bubblePink':
+    case 'bubbleBlue':
+    case 'bubbleMint':
     case 'bubbleCenter':
+    case 'bubbleCenterGray':
+    case 'bubbleCenterPink':
+    case 'bubbleCenterBlue':
+    case 'bubbleCenterMint':
     case 'bubbleRight':
+    case 'bubbleRightGray':
+    case 'bubbleRightPink':
+    case 'bubbleRightBlue':
+    case 'bubbleRightMint':
     case 'bubbleSquare':
+    case 'bubbleSquareGray':
+    case 'bubbleSquarePink':
+    case 'bubbleSquareBlue':
+    case 'bubbleSquareMint':
     case 'bubbleSquareCenter':
+    case 'bubbleSquareCenterGray':
+    case 'bubbleSquareCenterPink':
+    case 'bubbleSquareCenterBlue':
+    case 'bubbleSquareCenterMint':
     case 'bubbleSquareRight':
+    case 'bubbleSquareRightGray':
+    case 'bubbleSquareRightPink':
+    case 'bubbleSquareRightBlue':
+    case 'bubbleSquareRightMint':
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _bubbleFillColor(bg),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withOpacity(0.22)),
+          border: Border.all(color: _bubbleFillColor(bg) == Colors.white ? Colors.black.withOpacity(0.22) : (Color.lerp(_bubbleFillColor(bg), Colors.black, 0.12) ?? Colors.black26)),
+        ),
+        child: content,
+      );
+    case 'label':
+    case 'labelGray':
+    case 'labelPink':
+    case 'labelBlue':
+    case 'labelMint':
+    case 'labelLavender':
+    case 'labelOrange':
+    case 'labelGreen':
+    case 'labelWhite':
+    case 'labelCream':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _labelOvalBgColor(bg),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: content,
+      );
+    case 'tag':
+    case 'tagGray':
+    case 'tagPink':
+    case 'tagBlue':
+    case 'tagMint':
+    case 'tagLavender':
+    case 'tagOrange':
+    case 'tagGreen':
+    case 'tagRed':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _tagBorderColor(bg), style: BorderStyle.solid),
         ),
         child: content,
       );
     case 'labelSolid':
+    case 'labelSolidGray':
+    case 'labelSolidPink':
+    case 'labelSolidBlue':
+    case 'labelSolidMint':
+    case 'labelSolidRed':
+    case 'labelSolidGreen':
+    case 'labelSolidOrange':
+    case 'labelSolidLavender':
+    case 'labelSolidCream':
+      final solidBg = _labelSolidBgColor(bg);
+      final solidTextColor = (bg == 'labelSolidCream') ? const Color(0xFF5D4037) : Colors.white;
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF2C3E50),
+          color: solidBg,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: Colors.white),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: solidTextColor),
           textAlign: layer.textAlign,
         ),
       );
@@ -352,54 +636,139 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: content,
       );
+    case 'labelGold':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF5E6C8), Color(0xFFE8D4A8), Color(0xFFD4B896)],
+          ),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: content,
+      );
+    case 'labelNeon':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFF00E5FF), width: 2),
+        ),
+        child: content,
+      );
+    case 'labelRose':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF8BBD9), Color(0xFFF48FB1)],
+          ),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: content,
+      );
     case 'note':
     case 'noteYellow':
+    case 'noteTorn':
+    case 'noteTornYellow':
       return Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF9C4),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.brown.withOpacity(0.35)),
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );
     case 'noteBlue':
+    case 'noteTornBlue':
       return Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFE8F0FF),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFBBC8EC)),
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );
     case 'notePink':
+    case 'noteTornPink':
       return Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFFFEFF4),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFE4B4C7)),
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );
     case 'noteMint':
+    case 'noteTornMint':
       return Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFE0F7F0),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFB0D9CC)),
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );
     case 'noteLavender':
+    case 'noteTornLavender':
       return Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFF3E8FF),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFD4C0EB)),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'noteOrange':
+    case 'noteTornOrange':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF0E0),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'noteGray':
+    case 'noteTornGray':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F0F0),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'noteBeige':
+    case 'noteTornBeige':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F0E8),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'noteGold':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF8E1),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'noteCream':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBF0),
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );
@@ -439,6 +808,205 @@ Widget _buildStaticStyledText(LayerModel layer) {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
+        ),
+        child: content,
+      );
+    case 'tapeMint':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD8F0E8),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: content,
+      );
+    case 'tapeLavender':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEDE4F5),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: content,
+      );
+    case 'tapeGray':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: content,
+      );
+    case 'tapeDots':
+    case 'tapeDotsPink':
+    case 'tapeDotsMint':
+    case 'tapeDotsLavender':
+      final dotsColors = _tapeDotsColors(bg);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        decoration: BoxDecoration(
+          color: dotsColors.$1,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: content,
+      );
+    case 'tapeKraft':
+    case 'tapeGold':
+    case 'tapeSolidWhite':
+    case 'tapeSolidGray':
+    case 'tapeSolidPink':
+    case 'tapeSolidBlue':
+    case 'tapeSolidMint':
+    case 'tapeSolidLavender':
+    case 'tapeSolidOrange':
+    case 'tapeSolidGreen':
+      final solidBg = _tapeSolidBgColor(bg);
+      final solidTextColor = (bg == 'tapeKraft' || bg == 'tapeGold' || solidBg.computeLuminance() > 0.6) ? const Color(0xFF5D4037) : Colors.white;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: solidBg,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: solidTextColor),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'tapeDouble':
+    case 'tapeDoublePink':
+    case 'tapeDoubleMint':
+      final doubleColors = _tapeDoubleColors(bg);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: doubleColors.$1,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: content,
+      );
+    case 'highlightYellow':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFEB3B).withOpacity(0.55),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'highlightGreen':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFB8E986).withOpacity(0.65),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'highlightPink':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFB6C1).withOpacity(0.7),
+          borderRadius: BorderRadius.zero,
+        ),
+        child: content,
+      );
+    case 'stampRed':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFC62828),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFFFF8E7), fontWeight: FontWeight.w700),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'stampBlue':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1565C0),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFFFF8E7), fontWeight: FontWeight.w700),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'ticket':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBF0),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: const Color(0xFFE8DCC8)),
+        ),
+        child: content,
+      );
+    case 'ribbon':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE91E63),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'quote':
+      return Container(
+        padding: const EdgeInsets.fromLTRB(18, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAFAFA),
+          borderRadius: BorderRadius.circular(8),
+          border: const Border(
+            left: BorderSide(color: Color(0xFF00C2E0), width: 5),
+          ),
+        ),
+        child: content,
+      );
+    case 'chalkboard':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF263238),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF546E7A), width: 2),
+        ),
+        child: Text(
+          layer.text ?? '',
+          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFECEFF1), fontWeight: FontWeight.w600),
+          textAlign: layer.textAlign,
+        ),
+      );
+    case 'caption':
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: content,
+      );
+    case 'noteGrid':
+    case 'noteGridBlue':
+    case 'noteGridPink':
+      final gridColors = _noteGridColors(bg);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: gridColors.$1,
+          borderRadius: BorderRadius.zero,
         ),
         child: content,
       );

@@ -112,14 +112,57 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: _colorsAll.length,
+      // +1: 맨 앞에 "배경 없음" 옵션 추가
+      itemCount: _colorsAll.length + 1,
       itemBuilder: (context, index) {
-        final color = _colorsAll[index];
-        final isSelected = _selectedColorIndex == index;
+        // 0번 인덱스: 배경 없음
+        if (index == 0) {
+          final bool isSelected = _selectedColorIndex == null;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedColorIndex = null;
+              });
+
+              // 콜백이 있으면 상위(DecoratePanel 등)에 위임
+              // -1: "배경 없음"을 의미하는 sentinal 값
+              if (widget.onColorTap != null) {
+                widget.onColorTap!.call(-1);
+                return;
+              }
+
+              // 직접 사용되는 경우에는 여기서 바로 배경 제거
+              ref
+                  .read(albumEditorViewModelProvider.notifier)
+                  .clearPageBackgroundColor();
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: widget.surfaceColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? SnapFitColors.accent
+                      : SnapFitColors.overlayLightOf(context),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Icon(
+                Icons.block, // 빨간색 금지 아이콘
+                size: 16.sp,
+                color: Colors.redAccent,
+              ),
+            ),
+          );
+        }
+
+        // 나머지 인덱스: 실제 색상
+        final color = _colorsAll[index - 1];
+        final isSelected = _selectedColorIndex == index - 1;
         return GestureDetector(
           onTap: () {
             setState(() {
-              _selectedColorIndex = index;
+              _selectedColorIndex = index - 1;
             });
             if (widget.onColorTap != null) {
               widget.onColorTap!.call(color.value);
