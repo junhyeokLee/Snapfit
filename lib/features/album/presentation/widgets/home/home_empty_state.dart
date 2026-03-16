@@ -7,10 +7,7 @@ import '../../../../../core/utils/screen_logger.dart';
 class HomeEmptyState extends StatelessWidget {
   final VoidCallback onCreate;
 
-  const HomeEmptyState({
-    super.key,
-    required this.onCreate,
-  });
+  const HomeEmptyState({super.key, required this.onCreate});
 
   static bool _logged = false;
 

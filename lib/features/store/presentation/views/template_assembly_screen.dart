@@ -22,10 +22,12 @@ class TemplateAssemblyScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TemplateAssemblyScreen> createState() => _TemplateAssemblyScreenState();
+  ConsumerState<TemplateAssemblyScreen> createState() =>
+      _TemplateAssemblyScreenState();
 }
 
-class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen> {
+class _TemplateAssemblyScreenState
+    extends ConsumerState<TemplateAssemblyScreen> {
   final Map<String, File> _selections = {};
   final ImagePicker _picker = ImagePicker();
   bool _isCreating = false;
@@ -73,24 +75,25 @@ class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen>
       }
 
       // 2. Call backend with replacements
-      final album = await ref.read(templateRepositoryProvider).createAlbumFromTemplate(
-        widget.template.id,
-        replacements: replacements,
-      );
+      final album = await ref
+          .read(templateRepositoryProvider)
+          .createAlbumFromTemplate(
+            widget.template.id,
+            replacements: replacements,
+          );
 
       if (!mounted) return;
 
       // 3. Open Album Editor
       await HomeAlbumActions.openAlbum(context, ref, album);
-      
+
       // Close assembly screen
       if (mounted) Navigator.pop(context);
-
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('앨범 생성 중 오류가 발생했습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 생성 중 오류가 발생했습니다: $e')));
       }
     } finally {
       if (mounted) setState(() => _isCreating = false);
@@ -102,16 +105,29 @@ class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('나만의 사진 채우기', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '나만의 사진 채우기',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
         actions: [
           TextButton(
             onPressed: _isCreating ? null : _onFinish,
-            child: _isCreating 
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('완료', style: TextStyle(fontWeight: FontWeight.bold, color: SnapFitColors.accent)),
+            child: _isCreating
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text(
+                    '완료',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: SnapFitColors.accent,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -136,7 +152,9 @@ class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen>
                     child: TemplatePageRenderer(
                       layers: widget.parsedPages[idx],
                       width: 1.sw - 80.w,
-                      height: 1.sw - 80.w, // Assume square for simplicity or keep ratio
+                      height:
+                          1.sw -
+                          80.w, // Assume square for simplicity or keep ratio
                       localFiles: _selections,
                       onLayerTap: (layerId) => _pickImage(layerId),
                     ),
@@ -145,7 +163,7 @@ class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen>
               },
             ),
           ),
-          
+
           // Page Indicator and Footer
           Container(
             padding: EdgeInsets.all(30.h),
@@ -154,16 +172,27 @@ class _TemplateAssemblyScreenState extends ConsumerState<TemplateAssemblyScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                 '${_currentIndex + 1} / ${widget.parsedPages.length} 페이지',
-                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+                  '${_currentIndex + 1} / ${widget.parsedPages.length} 페이지',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: _isCreating ? null : _onFinish,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: SnapFitColors.accent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                   ),
-                  child: const Text('앨범 생성하기', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    '앨범 생성하기',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),

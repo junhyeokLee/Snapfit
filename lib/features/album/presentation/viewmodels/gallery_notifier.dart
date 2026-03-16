@@ -72,7 +72,8 @@ class GalleryNotifier extends _$GalleryNotifier {
 
   /// 이미지 추가 로딩 (페이징)
   Future<void> loadMore() async {
-    if (state.isLoading || !state.hasMore || state.selectedAlbum == null) return;
+    if (state.isLoading || !state.hasMore || state.selectedAlbum == null)
+      return;
 
     state = state.copyWith(isLoading: true);
 
@@ -82,7 +83,7 @@ class GalleryNotifier extends _$GalleryNotifier {
         state.currentPage,
         _pageSize,
       );
-      
+
       if (!ref.mounted) return;
 
       state = state.copyWith(
@@ -96,4 +97,3 @@ class GalleryNotifier extends _$GalleryNotifier {
     }
   }
 }
-

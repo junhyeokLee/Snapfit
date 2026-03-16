@@ -8,7 +8,7 @@ import 'kakao_share_service.dart';
 /// 앨범 생성 후 초대 링크를 생성하고 공유하는 기능 제공
 class AlbumInviteService {
   /// 초대 링크 생성 및 카카오톡 공유
-  /// 
+  ///
   /// [ref] WidgetRef (Provider 접근용)
   /// [albumId] 앨범 ID
   /// [albumTitle] 앨범 제목
@@ -23,7 +23,7 @@ class AlbumInviteService {
   }) async {
     try {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
-      
+
       // 초대 링크 생성
       final inviteResponse = await memberRepository.invite(
         albumId,
@@ -52,16 +52,16 @@ class AlbumInviteService {
       return success;
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('초대 링크 생성 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
       }
       return false;
     }
   }
 
   /// 초대 링크 생성 및 복사
-  /// 
+  ///
   /// [ref] WidgetRef (Provider 접근용)
   /// [albumId] 앨범 ID
   /// [allowEditing] 편집 권한 허용 여부
@@ -74,7 +74,7 @@ class AlbumInviteService {
   }) async {
     try {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
-      
+
       // 초대 링크 생성
       final inviteResponse = await memberRepository.invite(
         albumId,
@@ -85,17 +85,17 @@ class AlbumInviteService {
       await Clipboard.setData(ClipboardData(text: inviteResponse.link));
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('초대 링크가 클립보드에 복사되었습니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('초대 링크가 클립보드에 복사되었습니다.')));
       }
 
       return inviteResponse.link;
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('초대 링크 생성 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
       }
       return null;
     }

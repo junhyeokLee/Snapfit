@@ -13,9 +13,8 @@ class AuthGate extends ConsumerWidget {
     final authAsync = ref.watch(authViewModelProvider);
     return authAsync.when(
       data: (user) => user == null ? const LoginScreen() : const HomeScreen(),
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, __) => const LoginScreen(),
     );
   }

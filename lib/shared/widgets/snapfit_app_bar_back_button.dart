@@ -6,11 +6,7 @@ class SnapFitAppBarBackButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Color? color;
 
-  const SnapFitAppBarBackButton({
-    super.key,
-    this.onPressed,
-    this.color,
-  });
+  const SnapFitAppBarBackButton({super.key, this.onPressed, this.color});
 
   @override
   Widget build(BuildContext context) {

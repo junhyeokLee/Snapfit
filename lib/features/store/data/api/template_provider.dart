@@ -22,4 +22,3 @@ final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
   final repository = ref.watch(templateRepositoryProvider);
   return repository.getTemplates();
 });
-

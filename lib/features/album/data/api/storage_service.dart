@@ -6,11 +6,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class UploadedUrls {
   final String? originalUrl;
   final String? previewUrl;
   final String? thumbnailUrl;
+
   /// Firebase Storage gs:// 경로 (원본/미리보기)
   final String? originalGsPath;
   final String? previewGsPath;
@@ -29,7 +31,10 @@ class StorageService {
 
   /// 프로필 사진 업로드 — 리사이즈(512px, 품질 85) 후 Firebase 업로드 → 다운로드 URL 반환
   Future<String?> uploadProfileImage(File file, String userId) async {
-    return uploadFile(file, 'profiles/${userId}_${DateTime.now().microsecondsSinceEpoch}.jpg');
+    return uploadFile(
+      file,
+      'profiles/${userId}_${DateTime.now().microsecondsSinceEpoch}.jpg',
+    );
   }
 
   /// Generic file upload method
@@ -42,13 +47,10 @@ class StorageService {
         quality: 85,
       );
       final ref = _storage.ref().child(path);
-      await ref.putData(
-        resized,
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
+      await ref.putData(resized, SettableMetadata(contentType: 'image/jpeg'));
       return await ref.getDownloadURL();
     } catch (e) {
-      print('Upload error ($path): $e');
+      AppLogger.warn('Upload error ($path): $e');
       return null;
     }
   }
@@ -100,10 +102,8 @@ class StorageService {
 
       // 두 업로드를 동시에 시작하고 기다림
       await Future.wait([uploadOriginal(), uploadPreview()]);
-
     } catch (e) {
-      // ignore: avoid_print
-      print('Upload Error: $e');
+      AppLogger.warn('Upload error: $e');
       // 에러 발생 시 부분 성공한 URL이라도 반환할지, 아니면 실패 처리할지는 정책에 따라 결정
       // 여기서는 일단 있는 정보라도 반환
     }
@@ -116,8 +116,6 @@ class StorageService {
     );
   }
 
-  /// 커버 전체를 캡처한 PNG 바이트를 업로드해서 대표 이미지로 사용
-  /// 운영급: 커버 원본/미리보기 업로드
   /// 커버 전체를 캡처한 PNG 바이트를 업로드해서 대표 이미지로 사용
   /// 운영급: 커버 원본/미리보기 업로드
   Future<UploadedUrls> uploadCoverVariants(
@@ -139,22 +137,26 @@ class StorageService {
 
       Future<void> uploadOriginal() async {
         final sw = Stopwatch()..start();
-        print('[PERF] Original Input Size: ${(pngBytes.length / 1024).toStringAsFixed(2)} KB');
-        
+        AppLogger.debug(
+          '[PERF] Original Input Size: ${(pngBytes.length / 1024).toStringAsFixed(2)} KB',
+        );
+
         // Native Compressor를 사용하여 빠르고 효율적으로 변환
         final originalBytes = await FlutterImageCompress.compressWithList(
           pngBytes,
           quality: 85, // 95 -> 85 (인쇄 품질 유지하되 용량 대폭 감소)
           format: CompressFormat.jpeg,
         );
-        print('[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB');
+        AppLogger.debug(
+          '[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB',
+        );
 
         final originalRef = _storage.ref().child('albums/covers/$originalName');
         final originalSnap = await originalRef.putData(
           originalBytes,
           SettableMetadata(contentType: 'image/jpeg'),
         );
-        print('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
+        AppLogger.debug('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
         originalUrl = await originalSnap.ref.getDownloadURL();
         originalGsPath =
             'gs://${originalSnap.ref.bucket}/${originalSnap.ref.fullPath}';
@@ -170,24 +172,24 @@ class StorageService {
           quality: 80,
           format: CompressFormat.jpeg,
         );
-        print('[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB');
-        
+        AppLogger.debug(
+          '[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB',
+        );
+
         final previewRef = _storage.ref().child('albums/covers/$previewName');
         final previewSnap = await previewRef.putData(
           previewBytes,
           SettableMetadata(contentType: 'image/jpeg'),
         );
-        print('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
+        AppLogger.debug('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
         previewUrl = await previewSnap.ref.getDownloadURL();
         previewGsPath =
             'gs://${previewSnap.ref.bucket}/${previewSnap.ref.fullPath}';
       }
 
       await Future.wait([uploadOriginal(), uploadPreview()]);
-
     } catch (e) {
-      // ignore: avoid_print
-      print('Upload Cover Error: $e');
+      AppLogger.warn('Upload cover error: $e');
     }
     return UploadedUrls(
       originalUrl: originalUrl,
@@ -225,8 +227,9 @@ class StorageService {
       targetHeight: targetH,
     );
     final ui.FrameInfo resizedFrame = await resizedCodec.getNextFrame();
-    final ui.ByteData? out =
-        await resizedFrame.image.toByteData(format: ui.ImageByteFormat.png);
+    final ui.ByteData? out = await resizedFrame.image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     return out?.buffer.asUint8List() ?? bytes;
   }
 
@@ -246,7 +249,7 @@ class StorageService {
       return compressed;
     } catch (e) {
       // fallback: 에러 시 원본 반환 (혹은 image 패키지 사용)
-      print("Native compress error: $e");
+      AppLogger.warn('Native compress error: $e');
       return bytes;
     }
   }

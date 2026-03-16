@@ -22,18 +22,17 @@ Widget _wrap(Widget child) {
 void main() {
   testWidgets('creates invite link and shows it', (tester) async {
     final mockRepo = MockAlbumMemberRepository();
-    when(() => mockRepo.invite(1, role: any(named: 'role')))
-        .thenAnswer((_) async => const InviteLinkResponse(
-              albumId: 1,
-              token: 't',
-              link: 'https://example.com/invite/token',
-            ));
+    when(() => mockRepo.invite(1, role: any(named: 'role'))).thenAnswer(
+      (_) async => const InviteLinkResponse(
+        albumId: 1,
+        token: 't',
+        link: 'https://example.com/invite/token',
+      ),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          albumMemberRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [albumMemberRepositoryProvider.overrideWithValue(mockRepo)],
         child: _wrap(
           AlbumCreateStep2(
             albumTitle: '앨범',
@@ -54,18 +53,14 @@ void main() {
 
   testWidgets('toggle allow editing switch', (tester) async {
     final mockRepo = MockAlbumMemberRepository();
-    when(() => mockRepo.invite(1, role: any(named: 'role')))
-        .thenAnswer((_) async => const InviteLinkResponse(
-              albumId: 1,
-              token: 't',
-              link: 'link',
-            ));
+    when(() => mockRepo.invite(1, role: any(named: 'role'))).thenAnswer(
+      (_) async =>
+          const InviteLinkResponse(albumId: 1, token: 't', link: 'link'),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          albumMemberRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [albumMemberRepositoryProvider.overrideWithValue(mockRepo)],
         child: _wrap(
           AlbumCreateStep2(
             albumTitle: '앨범',

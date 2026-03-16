@@ -22,9 +22,7 @@ abstract class AlbumMemberApi {
 
   /// 초대 정보 조회 (토큰으로)
   @GET("/api/invites/{token}")
-  Future<InviteInfoResponse> getInviteInfo(
-    @Path('token') String token,
-  );
+  Future<InviteInfoResponse> getInviteInfo(@Path('token') String token);
 
   /// 초대 수락
   @POST("/api/invites/{token}/accept")

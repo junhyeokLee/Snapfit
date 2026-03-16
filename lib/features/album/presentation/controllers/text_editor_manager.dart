@@ -12,8 +12,13 @@ class TextEditorManager {
 
   /// 선택된 텍스트 레이어 편집. 완료 시 updateLayer.
   Future<void> open(LayerModel layer) async {
-    final safeStyle = layer.textStyle ??
-        const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.normal);
+    final safeStyle =
+        layer.textStyle ??
+        const TextStyle(
+          fontSize: 14,
+          color: Colors.white,
+          fontWeight: FontWeight.normal,
+        );
 
     await showModalBottomSheet(
       context: context,
@@ -64,7 +69,10 @@ class TextEditorManager {
               fontWeight: FontWeight.bold,
             ),
             onSubmit: (newText, newStyle, mode, color, align) {
-              if (newText.trim().isEmpty) { Navigator.pop(context); return; } // 빈값 방지
+              if (newText.trim().isEmpty) {
+                Navigator.pop(context);
+                return;
+              } // 빈값 방지
               vm.addTextLayer(
                 newText,
                 style: newStyle,
@@ -85,7 +93,8 @@ class TextEditorManager {
   /// 기존 레이어 편집용 (open()과 동일하나 명시적 호출용)
   Future<void> openForExisting(LayerModel layer) async {
     // 기존 레이어 편집 시에도, 텍스트 색이 없으면 흰색을 기본으로 사용
-    final safeStyle = layer.textStyle ??
+    final safeStyle =
+        layer.textStyle ??
         const TextStyle(
           fontSize: 14,
           color: Colors.white,

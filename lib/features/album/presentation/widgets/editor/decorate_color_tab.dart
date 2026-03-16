@@ -168,14 +168,18 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
               widget.onColorTap!.call(color.value);
               return;
             }
-            ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(color.value);
+            ref
+                .read(albumEditorViewModelProvider.notifier)
+                .updatePageBackgroundColor(color.value);
           },
           child: Container(
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? SnapFitColors.accent : SnapFitColors.overlayLightOf(context),
+                color: isSelected
+                    ? SnapFitColors.accent
+                    : SnapFitColors.overlayLightOf(context),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -183,7 +187,9 @@ class _DecorateColorTabState extends ConsumerState<DecorateColorTab> {
                 ? Icon(
                     Icons.check,
                     size: 14.sp,
-                    color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                    color: color.computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white,
                   )
                 : null,
           ),

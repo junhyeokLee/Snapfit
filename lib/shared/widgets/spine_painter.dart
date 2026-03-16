@@ -27,11 +27,11 @@ class SpinePainter extends CustomPainter {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
         colors: [
-          Colors.black.withOpacity(0.35),   // outer left shadow
-          Colors.white.withOpacity(0.30),   // left shoulder highlight
-          Colors.black.withOpacity(0.15),   // central groove (deep)
-          Colors.black.withOpacity(0.1),   // right shoulder highlight
-          Colors.white.withOpacity(0.0),   // outer right shadow
+          Colors.black.withOpacity(0.35), // outer left shadow
+          Colors.white.withOpacity(0.30), // left shoulder highlight
+          Colors.black.withOpacity(0.15), // central groove (deep)
+          Colors.black.withOpacity(0.1), // right shoulder highlight
+          Colors.white.withOpacity(0.0), // outer right shadow
         ],
         stops: const [0.0, 0.25, 0.50, 0.8, 1.0],
       ).createShader(rect);
@@ -42,10 +42,7 @@ class SpinePainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withOpacity(0.08),
-          Colors.transparent,
-        ],
+        colors: [Colors.white.withOpacity(0.08), Colors.transparent],
       ).createShader(rect);
     canvas.drawRect(rect, verticalHighlight);
   }

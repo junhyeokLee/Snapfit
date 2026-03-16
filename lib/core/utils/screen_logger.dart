@@ -7,7 +7,8 @@ class ScreenLogger {
   ScreenLogger._();
 
   static const String _tag = '[SnapFit:Screen]';
-  static const String _line = '─────────────────────────────────────────────────────────';
+  static const String _line =
+      '─────────────────────────────────────────────────────────';
 
   /// 화면 진입 로그 (스크린 이름 + 설명)
   /// [screenName] 예: 'SplashScreen', 'AlbumCreateFlowScreen'
@@ -29,6 +30,8 @@ class ScreenLogger {
   /// [description] 예: '커버 편집 캔버스', '앨범 그리드 목록'
   static void widget(String widgetName, [String? description]) {
     if (!kDebugMode) return;
-    debugPrint('$_tag [위젯] $widgetName${description != null && description.isNotEmpty ? ' — $description' : ''}');
+    debugPrint(
+      '$_tag [위젯] $widgetName${description != null && description.isNotEmpty ? ' — $description' : ''}',
+    );
   }
 }

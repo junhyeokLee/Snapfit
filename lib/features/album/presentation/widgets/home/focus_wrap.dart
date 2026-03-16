@@ -28,7 +28,10 @@ class FocusWrap extends StatelessWidget {
   ///
   /// [scale] = 메인 커버 너비 / 앨범생성 커버 기준 너비(280)
   /// [focus] 0→1 일 때 기본 그림자에서 들어올린(animate) 그림자로 보간
-  static List<BoxShadow> coverStyleShadowForScale(double scale, [double focus = 0]) {
+  static List<BoxShadow> coverStyleShadowForScale(
+    double scale, [
+    double focus = 0,
+  ]) {
     const baseOffset1 = Offset(14, 12);
     const liftedOffset1 = Offset(14, 44);
     const baseOffset2 = Offset(24, 12);

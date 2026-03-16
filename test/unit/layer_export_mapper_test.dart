@@ -33,7 +33,11 @@ void main() {
 
   group('LayerExportMapper.toJson', () {
     test('텍스트 레이어를 상대 좌표 JSON으로 변환', () {
-      final layer = _textLayer(position: const Offset(100, 150), width: 80, height: 40);
+      final layer = _textLayer(
+        position: const Offset(100, 150),
+        width: 80,
+        height: 40,
+      );
       final json = LayerExportMapper.toJson(layer, canvasSize: canvasSize);
 
       expect(json['type'], 'TEXT');

@@ -36,7 +36,7 @@ PremiumTemplate _template({int likeCount = 1, bool isLiked = false}) {
         { "layers": [ { "id": "p1", "type": "IMAGE", "x": 0.2, "y": 0.2, "width": 0.5, "height": 0.5, "rotation": 0.0, "opacity": 1.0, "scale": 1.0, "payload": { "imageUrl": "x" } } ] }
       ]
     }
-    '''
+    ''',
   );
 }
 
@@ -51,9 +51,7 @@ void main() {
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            templateRepositoryProvider.overrideWithValue(mockRepo),
-          ],
+          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
           child: _wrap(TemplateDetailScreen(template: template)),
         ),
       );
@@ -78,9 +76,7 @@ void main() {
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            templateRepositoryProvider.overrideWithValue(mockRepo),
-          ],
+          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
           child: _wrap(TemplateDetailScreen(template: template)),
         ),
       );

@@ -156,8 +156,8 @@ class _BottomNavItem extends StatelessWidget {
     final color = isSelected
         ? (isDark ? SnapFitColors.accent : SnapFitColors.accent)
         : (isDark
-            ? SnapFitColors.textMutedOf(context)
-            : SnapFitColors.deepCharcoal.withOpacity(0.7));
+              ? SnapFitColors.textMutedOf(context)
+              : SnapFitColors.deepCharcoal.withOpacity(0.7));
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -173,12 +173,15 @@ class _BottomNavItem extends StatelessWidget {
               SizedBox(height: 2.w),
               Text(
                 label,
-                style: (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
-                    .copyWith(
-                  fontSize: 9.sp,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: color,
-                ),
+                style:
+                    (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
+                        .copyWith(
+                          fontSize: 9.sp,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: color,
+                        ),
               ),
             ],
           ),

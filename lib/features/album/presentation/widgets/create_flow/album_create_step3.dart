@@ -34,25 +34,25 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
 
   Future<void> _createAlbum() async {
     if (_isCreating) return;
-    
+
     setState(() => _isCreating = true);
-    
+
     try {
       final vm = ref.read(albumEditorViewModelProvider.notifier);
-      
+
       // 앨범 생성 전 초기화
       vm.resetForCreate(initialCover: widget.selectedCover);
-      
+
       // 선택된 페이지 수만큼 페이지 생성 (커버 제외)
       // 현재 커버 페이지만 있으므로, 추가로 (selectedPageCount - 1)개 페이지 생성
       for (int i = 1; i < widget.selectedPageCount; i++) {
         vm.addPage();
       }
-      
+
       // TODO: 실제 앨범 생성 API 호출
       // final albumRepo = ref.read(albumRepositoryProvider);
       // await albumRepo.createAlbum(...);
-      
+
       // 초대 이메일이 있으면 초대 요청
       if (widget.invitedEmails.isNotEmpty) {
         // TODO: 초대 API 호출
@@ -60,14 +60,14 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
         //   await albumMemberRepo.inviteAlbum(albumId, email);
         // }
       }
-      
+
       if (!mounted) return;
       widget.onComplete();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('앨범 생성 실패: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('앨범 생성 실패: $e')));
       setState(() => _isCreating = false);
     }
   }
@@ -95,9 +95,7 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
               onPressed: _isCreating ? null : widget.onBack,
               style: OutlinedButton.styleFrom(
                 foregroundColor: SnapFitColors.textPrimaryOf(context),
-                side: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
+                side: BorderSide(color: SnapFitColors.overlayLightOf(context)),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -105,10 +103,7 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
               ),
               child: Text(
                 '이전',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -128,9 +123,7 @@ class _AlbumCreateStep3State extends ConsumerState<AlbumCreateStep3> {
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: SnapFitColors.overlayLightOf(context),
-        ),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: Row(
         children: [

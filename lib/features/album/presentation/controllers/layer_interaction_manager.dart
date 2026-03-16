@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../../core/utils/app_logger.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/cover_size.dart';
@@ -17,6 +18,7 @@ class LayerInteractionManager {
   final void Function(LayerModel layer) onEditText; // 텍스트 편집 콜백
   /// 레이어 탭 시 콜백 (메뉴 표시용)
   final void Function(LayerModel layer)? onLayerTap;
+
   /// 이미지 플레이스홀더(사진 없음) 탭 시 콜백 – 페이지 편집에서 바로 갤러리 진입용
   final void Function(LayerModel layer)? onTapPlaceholder;
 
@@ -35,13 +37,14 @@ class LayerInteractionManager {
   final Map<String, double> _rot = {}; // 레이어 회전 (라디안)
   final Map<String, Size> _refBaseSize = {}; // 레이어 원본 크기
   final Map<String, int> _z = {}; // Z-index (레이어 쌓임 순서)
-  final Map<String, GlobalKey> _layerKeys = {}; // 각 레이어의 Transform 노드용 키 (글로벌 좌표 계산용)
+  final Map<String, GlobalKey> _layerKeys =
+      {}; // 각 레이어의 Transform 노드용 키 (글로벌 좌표 계산용)
   int _zCounter = 0; // Z-index 카운터
 
   // ==================== 인터랙션 상태 ====================
   String? _selectedLayerId; // 현재 선택된 레이어 ID
   String? _editingLayerId; // 현재 편집 중인 레이어 ID (텍스트만)
-  
+
   /// 현재 제스처(이동/확대/회전) 중인지 여부
   bool get isInteractingNow => _gestureStates.isNotEmpty;
 
@@ -62,7 +65,6 @@ class LayerInteractionManager {
   // ==================== 애니메이션 ====================
   Ticker? _activeTicker; // 현재 실행 중인 애니메이션 티커
 
-
   // ==================== 물리 파라미터 ====================
 
   // 스케일 제한
@@ -80,18 +82,26 @@ class LayerInteractionManager {
 
   // 스냅 동작
   static const double _snapThreshold = 24.0; // 스냅 활성화 거리 (픽셀) — 조금 더 멀리서도 잡히게
-  static const double _snapCenterExactThreshold = 4.0; // 이 거리 이내면 중앙에 정확히 맞춤 (픽셀)
-  static const double _snapStrength = 0.4; // 스냅 당김 강도 (0~1) — 약하게 해서 원하는 위치 맞추기 쉽게
+  static const double _snapCenterExactThreshold =
+      4.0; // 이 거리 이내면 중앙에 정확히 맞춤 (픽셀)
+  static const double _snapStrength =
+      0.4; // 스냅 당김 강도 (0~1) — 약하게 해서 원하는 위치 맞추기 쉽게
   // static const double _angleSnapThreshold = 0.087; // 각도 스냅 임계값 (~5도)
-  static const double _angleSnapThreshold = 0.12; // 각도 스냅 임계값 (~7도) — 너무 세지 않게 약간 완화
+  static const double _angleSnapThreshold =
+      0.12; // 각도 스냅 임계값 (~7도) — 너무 세지 않게 약간 완화
   // static const double _angleSnapStrength = 0.35; // 각도 스냅 강도 (0~1)
   static const double _angleSnapStrength = 0.25; // 각도 스냅 강도 — 0/90도 근처에서 확실히 스냅
 
-
   // 스냅 각도 목록 (0°, 45°, 90°, 135°, 180°, -45°, -90°, -135°)
   static const List<double> _snapAngles = [
-    0.0, math.pi/4, math.pi/2, 3*math.pi/4,
-    math.pi, -math.pi/4, -math.pi/2, -3*math.pi/4
+    0.0,
+    math.pi / 4,
+    math.pi / 2,
+    3 * math.pi / 4,
+    math.pi,
+    -math.pi / 4,
+    -math.pi / 2,
+    -3 * math.pi / 4,
   ];
 
   LayerInteractionManager({
@@ -220,8 +230,12 @@ class LayerInteractionManager {
     if (box == null || !box.attached) return false;
     final topLeft = box.localToGlobal(Offset.zero);
     final size = box.size;
-    return Rect.fromLTWH(topLeft.dx, topLeft.dy, size.width, size.height)
-        .contains(globalPosition);
+    return Rect.fromLTWH(
+      topLeft.dx,
+      topLeft.dy,
+      size.width,
+      size.height,
+    ).contains(globalPosition);
   }
 
   /// 레이어 위치를 커버 영역 내로 제한하지 않음 (자유 이동 가능)
@@ -321,10 +335,12 @@ class LayerInteractionManager {
   /// 활성 레이어 목록과 내부 상태 동기화 (삭제된 레이어 상태 정리)
   void syncLayers(List<LayerModel> activeLayers) {
     if (_pos.isEmpty) return;
-    
+
     final activeIds = activeLayers.map((l) => l.id).toSet();
-    final inactiveIds = _pos.keys.where((id) => !activeIds.contains(id)).toList();
-    
+    final inactiveIds = _pos.keys
+        .where((id) => !activeIds.contains(id))
+        .toList();
+
     if (inactiveIds.isNotEmpty) {
       setState(() {
         for (final id in inactiveIds) {
@@ -341,8 +357,6 @@ class LayerInteractionManager {
     }
   }
 
-
-
   // ==================== 레이어 빌더 ====================
 
   /// 제스처를 처리할 수 있는 인터랙티브 레이어 위젯 생성
@@ -353,34 +367,38 @@ class LayerInteractionManager {
     required Widget child,
     bool isCover = false,
   }) {
-    // [Fix] putIfAbsent 대신 실시간 동기화. 
+    // [Fix] putIfAbsent 대신 실시간 동기화.
     // 현재 제스처 중이 아니거나 프리뷰 모드라면 VM의 최신 상태(rescale 결과 등)를 강제 반영함.
-    final bool isInteracting = _selectedLayerId == layer.id && _gestureStates.containsKey(layer.id);
-    
+    final bool isInteracting =
+        _selectedLayerId == layer.id && _gestureStates.containsKey(layer.id);
+
     if (!isInteracting || _isPreviewMode) {
       _pos[layer.id] = layer.position;
       _scale[layer.id] = layer.scale;
       _rot[layer.id] = layer.rotation * math.pi / 180;
     }
     _z.putIfAbsent(layer.id, () => ++_zCounter);
-    
+
     // 레이어 기준 크기 업데이트 (커버 리사이즈 등으로 변경될 수 있음)
     // 항상 최신 baseWidth/baseHeight로 동기화해야 제스처 시작 시 튀지 않음
     _refBaseSize[layer.id] = Size(baseWidth, baseHeight);
-    
-    final bool isNewLayer = !_pos.containsKey(layer.id); // _pos로 체크 (위쪽에서 putIfAbsent 했으므로 여기선 항상 존재하지만 논리적으로)
-    
+
+    final bool isNewLayer = !_pos.containsKey(
+      layer.id,
+    ); // _pos로 체크 (위쪽에서 putIfAbsent 했으므로 여기선 항상 존재하지만 논리적으로)
+
     // 디버깅: 레이어 초기화 로그
     if (isNewLayer) {
       final coverSize = getCoverSize();
-      print('[LayerInteraction] Init layer ${layer.id.substring(0, 8)}: '
-            'type=${layer.type.name}, '
-            'pos=(${_pos[layer.id]!.dx.toStringAsFixed(1)}, ${_pos[layer.id]!.dy.toStringAsFixed(1)}), '
-            'baseSize=(${baseWidth.toStringAsFixed(1)}x${baseHeight.toStringAsFixed(1)}), '
-            'scale=${_scale[layer.id]!.toStringAsFixed(2)}, '
-            'canvas=(${coverSize.width.toStringAsFixed(1)}x${coverSize.height.toStringAsFixed(1)})');
+      AppLogger.debug(
+        '[LayerInteraction] Init layer ${layer.id.substring(0, 8)}: '
+        'type=${layer.type.name}, '
+        'pos=(${_pos[layer.id]!.dx.toStringAsFixed(1)}, ${_pos[layer.id]!.dy.toStringAsFixed(1)}), '
+        'baseSize=(${baseWidth.toStringAsFixed(1)}x${baseHeight.toStringAsFixed(1)}), '
+        'scale=${_scale[layer.id]!.toStringAsFixed(2)}, '
+        'canvas=(${coverSize.width.toStringAsFixed(1)}x${coverSize.height.toStringAsFixed(1)})',
+      );
     }
-
 
     if (_isPreviewMode) {
       return Positioned(
@@ -429,22 +447,46 @@ class LayerInteractionManager {
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
-                        print('[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})');
-                        print('[LayerInteraction] Layer Size: ${layer.width.toStringAsFixed(1)} x ${layer.height.toStringAsFixed(1)}');
-                        print('[LayerInteraction] RefBaseSize: ${_refBaseSize[layer.id]}');
-                        print('[LayerInteraction] Scale: ${_scale[layer.id]}');
+                        AppLogger.debug(
+                          '[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})',
+                        );
+                        AppLogger.debug(
+                          '[LayerInteraction] Layer Size: ${layer.width.toStringAsFixed(1)} x ${layer.height.toStringAsFixed(1)}',
+                        );
+                        AppLogger.debug(
+                          '[LayerInteraction] RefBaseSize: ${_refBaseSize[layer.id]}',
+                        );
+                        AppLogger.debug(
+                          '[LayerInteraction] Scale: ${_scale[layer.id]}',
+                        );
                         _handleTap(layer);
                       },
                       onScaleStart: (d) => _handleScaleStart(layer, d),
-                      onScaleUpdate: (d) => _handleScaleUpdate(layer, d, baseWidth, baseHeight, isCover: isCover),
+                      onScaleUpdate: (d) => _handleScaleUpdate(
+                        layer,
+                        d,
+                        baseWidth,
+                        baseHeight,
+                        isCover: isCover,
+                      ),
                       onScaleEnd: (d) => _handleScaleEnd(layer, d),
                       child: SelectionFrame(
-                        isSelected: isSelected && !isEditing && showSelectionControls,
+                        isSelected:
+                            isSelected && !isEditing && showSelectionControls,
                         showHandles: showHandles,
                         onDelete: deleteSelected,
-                        onResizeStart: (pos, d) => _handleResizeStart(layer, pos, d),
-                        onResizeUpdate: (pos, d) => _handleResizeUpdate(layer, pos, d, baseWidth, baseHeight, isCover: isCover),
-                        onResizeEnd: (pos, d) => _handleResizeEnd(layer, pos, d),
+                        onResizeStart: (pos, d) =>
+                            _handleResizeStart(layer, pos, d),
+                        onResizeUpdate: (pos, d) => _handleResizeUpdate(
+                          layer,
+                          pos,
+                          d,
+                          baseWidth,
+                          baseHeight,
+                          isCover: isCover,
+                        ),
+                        onResizeEnd: (pos, d) =>
+                            _handleResizeEnd(layer, pos, d),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 100),
                           curve: Curves.easeOut,
@@ -471,7 +513,8 @@ class LayerInteractionManager {
   /// 탭 이벤트 처리
   void _handleTap(LayerModel layer) {
     // 이미지 플레이스홀더(사진 없음) 탭 시 바로 갤러리 진입 (페이지 편집용)
-    final isImagePlaceholder = layer.type == LayerType.image &&
+    final isImagePlaceholder =
+        layer.type == LayerType.image &&
         layer.asset == null &&
         (layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl) == null;
     if (isImagePlaceholder && onTapPlaceholder != null) {
@@ -526,17 +569,19 @@ class LayerInteractionManager {
     if (layers.isEmpty) return;
     final idx = layers.indexWhere((l) => l.id == layerId);
     if (idx < 0 || idx >= layers.length - 1) return;
-    ref.read(albumEditorViewModelProvider.notifier).reorderLayer(idx, layers.length - 1);
+    ref
+        .read(albumEditorViewModelProvider.notifier)
+        .reorderLayer(idx, layers.length - 1);
   }
 
   /// 제스처 업데이트 이벤트 처리 (손가락을 움직이는 동안)
   void _handleScaleUpdate(
-      LayerModel layer,
-      ScaleUpdateDetails details,
-      double baseWidth,
-      double baseHeight, {
-        bool isCover = false,
-      }) {
+    LayerModel layer,
+    ScaleUpdateDetails details,
+    double baseWidth,
+    double baseHeight, {
+    bool isCover = false,
+  }) {
     if (_editingLayerId == layer.id) return; // 편집 중이면 제스처 무시
 
     // 사진 위치 조정 모드: 프레임은 고정, 안의 이미지(offset)만 이동
@@ -581,7 +626,7 @@ class LayerInteractionManager {
     // focalPointDelta: 이전 프레임부터의 손가락 이동 거리 (Global/Screen logical pixels)
     Offset rawDelta = details.focalPointDelta;
 
-    // [Inner Page Fix] 부모 위젯(Canvas)이 Transform.scale 등으로 변형된 경우, 
+    // [Inner Page Fix] 부모 위젯(Canvas)이 Transform.scale 등으로 변형된 경우,
     // 이동 거리(Delta)를 해당 스케일로 나누어 로지컬 공간(300x400)에 맞게 정규화함.
     final parentScale = _getParentScale();
     if (parentScale > 0) {
@@ -627,7 +672,10 @@ class LayerInteractionManager {
     Offset newCenter = center + localDelta;
 
     // 스케일 기반 동적 스냅 강도 (축소 시 스냅 약해짐)
-    final dynamicScale = (gestureState.initialScale * details.scale).clamp(0.3, 3.0);
+    final dynamicScale = (gestureState.initialScale * details.scale).clamp(
+      0.3,
+      3.0,
+    );
     // 가로/세로 스냅 강도 대폭 약화 (대각선과 동일한 강도 유지 가능)
     final baseSnap = _snapStrength * math.pow(dynamicScale, 0.20);
 
@@ -636,12 +684,12 @@ class LayerInteractionManager {
 
     // ==================== 위치 스냅 처리 ====================
     // [Spine fix] 스냅 기준점: 커버인 경우 Spine 제외 중앙
-    final centerX = isCover 
+    final centerX = isCover
         ? kCoverSpineWidth + (coverSize.width - kCoverSpineWidth) / 2
         : coverSize.width / 2;
-        
+
     final coverCenter = Offset(centerX, coverSize.height / 2);
-    
+
     bool verticalSnap = false; // 세로 중앙선 스냅 여부
     bool horizontalSnap = false; // 가로 중앙선 스냅 여부
     bool diagonalSnap = false; // 대각선 스냅 여부
@@ -651,7 +699,8 @@ class LayerInteractionManager {
     if (xDist < _snapThreshold) {
       // 거리에 따라 스냅 강도 조절 (가까울수록 강하게)
       final proximity = 1.0 - (xDist / _snapThreshold);
-      final strength = dynamicSnapStrength * proximity * proximity; // 2차 함수로 부드럽게
+      final strength =
+          dynamicSnapStrength * proximity * proximity; // 2차 함수로 부드럽게
       newCenter = Offset(
         newCenter.dx + (coverCenter.dx - newCenter.dx) * strength,
         newCenter.dy,
@@ -715,7 +764,6 @@ class LayerInteractionManager {
     final showHorizontal = horizontalSnap;
     final showDiagonal = diagonalSnap;
 
-
     // final isSnapped = showVertical || showHorizontal;
     final isSnapped = showVertical || showHorizontal || showDiagonal;
     final wasSnapped = gestureState.hasSnapped;
@@ -736,7 +784,10 @@ class LayerInteractionManager {
     });
 
     // 중심점을 좌상단 좌표로 변환
-    final childSize = Size(baseSize.width * targetScale, baseSize.height * targetScale);
+    final childSize = Size(
+      baseSize.width * targetScale,
+      baseSize.height * targetScale,
+    );
     Offset newPos = Offset(
       newCenter.dx - childSize.width / 2,
       newCenter.dy - childSize.height / 2,
@@ -785,7 +836,7 @@ class LayerInteractionManager {
   }
 
   /// 제스처 종료 이벤트 처리 (손가락을 뗀 순간)
-// lib/features/album/presentation/controllers/layer_interaction_manager.dart
+  // lib/features/album/presentation/controllers/layer_interaction_manager.dart
 
   /// 제스처 종료 이벤트 처리
   void _handleScaleEnd(LayerModel layer, ScaleEndDetails details) {
@@ -888,7 +939,10 @@ class LayerInteractionManager {
     double scaleDelta = magnitude / 120.0;
     scaleDelta = scaleDelta.clamp(-0.4, 0.4); // 한 프레임당 변화량 제한
 
-    double targetScale = (state.initialScale + scaleDelta).clamp(_minScale, _maxScale);
+    double targetScale = (state.initialScale + scaleDelta).clamp(
+      _minScale,
+      _maxScale,
+    );
 
     setState(() {
       _scale[layer.id] = targetScale;
@@ -929,7 +983,11 @@ class LayerInteractionManager {
       final t = (elapsed / duration.inMilliseconds).clamp(0.0, 1.0);
       setState(() {
         // easeOutCubic 커브로 부드러운 감속
-        _rot[layerId] = _lerpAngle(start, target, Curves.easeOutCubic.transform(t));
+        _rot[layerId] = _lerpAngle(
+          start,
+          target,
+          Curves.easeOutCubic.transform(t),
+        );
       });
       return t >= 1.0; // 완료 여부
     });
@@ -946,11 +1004,13 @@ class LayerInteractionManager {
       final t = (elapsed / duration.inMilliseconds).clamp(0.0, 1.0);
       setState(() {
         // easeOutExpo 커브로 더 빠른 감속
-        _scale[layerId] = start + (target - start) * Curves.easeOutExpo.transform(t);
+        _scale[layerId] =
+            start + (target - start) * Curves.easeOutExpo.transform(t);
       });
       return t >= 1.0; // 완료 여부
     });
   }
+
   /// 애니메이션 시작 (Ticker 기반)
   /// onTick: 각 프레임마다 호출되는 콜백, true 반환 시 애니메이션 종료
   void _startAnimation(bool Function(double dtSeconds) onTick) {
@@ -959,11 +1019,13 @@ class LayerInteractionManager {
     Duration? lastTime;
     _activeTicker = Ticker((Duration elapsed) {
       // 델타 타임 계산 (이전 프레임부터 경과한 시간)
-      final dt = lastTime == null ? 1/60 : (elapsed - lastTime!).inMicroseconds / 1e6;
+      final dt = lastTime == null
+          ? 1 / 60
+          : (elapsed - lastTime!).inMicroseconds / 1e6;
       lastTime = elapsed;
 
       // 프레임 드롭 방지: 델타 타임을 30fps 이하로 제한
-      if (onTick(dt.clamp(0.0, 1/30))) _stopAnimation();
+      if (onTick(dt.clamp(0.0, 1 / 30))) _stopAnimation();
     });
     _activeTicker!.start();
   }
@@ -974,9 +1036,6 @@ class LayerInteractionManager {
     _activeTicker?.dispose();
     _activeTicker = null;
   }
-
-
-
 
   // ==================== 수학 유틸리티 ====================
 
@@ -1002,7 +1061,7 @@ class LayerInteractionManager {
     if (ctx == null) return 1.0;
     final box = ctx.findRenderObject() as RenderBox?;
     if (box == null || !box.attached) return 1.0;
-    
+
     // (1,0) 로컬 오프셋이 글로벌 화면상에서 얼마나 떨어져 있는지 확인하여 스케일 산출
     try {
       final p0 = box.localToGlobal(Offset.zero);

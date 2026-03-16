@@ -51,7 +51,9 @@ final albumEditorServiceProvider = Provider<AlbumEditorService>((ref) {
   return const AlbumEditorService();
 });
 
-final albumPersistenceServiceProvider = Provider<AlbumPersistenceService>((ref) {
+final albumPersistenceServiceProvider = Provider<AlbumPersistenceService>((
+  ref,
+) {
   final storage = ref.read(storageServiceProvider);
   final repository = ref.read(albumRepositoryProvider);
   return AlbumPersistenceService(storage, repository);

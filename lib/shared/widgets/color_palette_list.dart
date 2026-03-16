@@ -4,18 +4,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
 
-
 /// 색상 팔레트 리스트 (옵션 영역)
 class ColorPaletteList extends StatelessWidget {
   final List<Color> colors;
   final Color current;
   final ValueChanged<Color> onPick;
   final ScrollController? controller;
-  const ColorPaletteList({super.key,
+  const ColorPaletteList({
+    super.key,
     required this.colors,
     required this.current,
     required this.onPick,
-    this.controller
+    this.controller,
   });
 
   @override
@@ -29,7 +29,8 @@ class ColorPaletteList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          itemBuilder: (context, i) => _colorDot(context, colors[i], current, onPick),
+          itemBuilder: (context, i) =>
+              _colorDot(context, colors[i], current, onPick),
           separatorBuilder: (_, __) => SizedBox(width: 12.w),
           itemCount: colors.length,
         ),

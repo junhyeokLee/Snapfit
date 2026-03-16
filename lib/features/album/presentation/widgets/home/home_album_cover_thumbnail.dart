@@ -30,12 +30,12 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ratio = parseCoverRatio(album.ratio);
-    
+
     // 1. 실제 표시될 대상(TARGET) 크기 결정
     double targetW;
     double targetH;
     final resolvedMaxWidth = maxWidth ?? (ratio > 1 ? 140.w : 150.w);
-    
+
     if (ratio >= 1) {
       targetW = resolvedMaxWidth;
       targetH = targetW / ratio;
@@ -62,12 +62,15 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
       album.coverLayersJson,
       canvasSize: refCanvasSize,
     );
-    
+
     final shadowScale = (targetH / 280).clamp(0.35, 0.7);
     final theme = resolveCoverTheme(album.coverTheme);
 
     // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
-    final coverInteraction = LayerInteractionManager.preview(ref, () => refCanvasSize);
+    final coverInteraction = LayerInteractionManager.preview(
+      ref,
+      () => refCanvasSize,
+    );
     final coverBuilder = LayerBuilder(coverInteraction, () => refCanvasSize);
 
     // 4. 기준 사이즈로 렌더링 후 FittedBox로 전체 스케일링
@@ -88,8 +91,10 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
               isInteracting: false,
               leftSpine: kCoverSpineWidth,
               onCoverSizeChanged: (_) {},
-              buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
-              buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+              buildImage: (layer) =>
+                  coverBuilder.buildImage(layer, isCover: true),
+              buildText: (layer) =>
+                  coverBuilder.buildText(layer, isCover: true),
               sortedByZ: coverInteraction.sortByZ,
               theme: theme,
             ),
@@ -107,9 +112,8 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
       return buildFrame(layers: const []);
     }
 
-    final imageUrl = album.coverThumbnailUrl ??
-        album.coverPreviewUrl ??
-        album.coverImageUrl;
+    final imageUrl =
+        album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl;
     final hasUrl = imageUrl?.isNotEmpty == true;
 
     return HomeCoverFrame(

@@ -26,13 +26,16 @@ class HomeFocusWrap extends StatelessWidget {
   /// 앨범 생성 페이지 cover.dart 오른쪽·아래쪽 그림자와 동일한 비율로 맞춤
   /// [scale] = 메인 커버 너비 / 앨범생성 커버 기준 너비(280)
   /// [focus] 0→1 일 때 기본 그림자에서 들어올린(animate) 그림자로 보간 → 커질 때 그림자도 함께 강해짐
-  static List<BoxShadow> coverStyleShadowForScale(double scale, [double focus = 0]) {
+  static List<BoxShadow> coverStyleShadowForScale(
+    double scale, [
+    double focus = 0,
+  ]) {
     final baseOffset1 = const Offset(14, 12);
     final liftedOffset1 = const Offset(14, 32);
     final baseOffset2 = const Offset(24, 12);
     final liftedOffset2 = const Offset(28, 32);
-    final blur1 = 1 + 10 * focus;   // 10 → 20
-    final blur2 = 1 + 8 * focus;    // 10 → 18
+    final blur1 = 1 + 10 * focus; // 10 → 20
+    final blur2 = 1 + 8 * focus; // 10 → 18
     return [
       BoxShadow(
         color: Color.lerp(

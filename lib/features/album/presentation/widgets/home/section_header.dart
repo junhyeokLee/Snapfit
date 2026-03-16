@@ -44,7 +44,9 @@ class SectionHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: SnapFitColors.textSecondaryOf(context).withOpacity(0.6),
+                      color: SnapFitColors.textSecondaryOf(
+                        context,
+                      ).withOpacity(0.6),
                       letterSpacing: -0.3,
                       height: 1.2,
                     ),
@@ -55,7 +57,9 @@ class SectionHeader extends StatelessWidget {
           ),
           if (onViewAll != null)
             Padding(
-              padding: EdgeInsets.only(bottom: 4.h), // Align slightly with title baseline
+              padding: EdgeInsets.only(
+                bottom: 4.h,
+              ), // Align slightly with title baseline
               child: GestureDetector(
                 onTap: onViewAll,
                 child: Row(
@@ -65,7 +69,9 @@ class SectionHeader extends StatelessWidget {
                       '전체보기',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: const Color(0xFF00C2E0), // Accent color from mockup
+                        color: const Color(
+                          0xFF00C2E0,
+                        ), // Accent color from mockup
                         fontWeight: FontWeight.w700,
                       ),
                     ),

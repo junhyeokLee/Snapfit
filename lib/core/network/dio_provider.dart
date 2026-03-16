@@ -16,9 +16,7 @@ Dio dio(Ref ref) {
   final tokenStorage = ref.read(tokenStorageProvider);
 
   // 2. Dio 인스턴스 생성
-  final dio = DioClient.create(
-    baseUrl: Env.baseUrl,
-  );
+  final dio = DioClient.create(baseUrl: Env.baseUrl);
   // 3. 인터셉터 추가
   // dio.interceptors.add(AuthInterceptor(tokenStorage, dio));
   dio.interceptors.addAll([

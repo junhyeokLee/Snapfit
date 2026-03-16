@@ -76,10 +76,12 @@ class HomeAlbumListView extends StatelessWidget {
       );
     }
 
-    final liveEditingAlbums =
-        visibleAlbums.where((a) => isLiveEditingAlbum(a)).toList();
-    final completedAlbums =
-        visibleAlbums.where((a) => isCompletedAlbum(a)).toList();
+    final liveEditingAlbums = visibleAlbums
+        .where((a) => isLiveEditingAlbum(a))
+        .toList();
+    final completedAlbums = visibleAlbums
+        .where((a) => isCompletedAlbum(a))
+        .toList();
 
     return ListView(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 160.h),
@@ -89,10 +91,7 @@ class HomeAlbumListView extends StatelessWidget {
           padding: EdgeInsets.only(bottom: 8.h),
           child: HomeGreetingHeader(userInfo: userInfo),
         ),
-        if (visibleAlbums.isEmpty) ...[
-          SizedBox(height: 12.h),
-          emptyState,
-        ],
+        if (visibleAlbums.isEmpty) ...[SizedBox(height: 12.h), emptyState],
         // LIVE EDITING 카드 모드
         if (liveEditingAlbums.isNotEmpty) ...[
           ...liveEditingAlbums.map((album) {

@@ -31,7 +31,7 @@ class ImageTemplatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _subtitleForKey(String key) {
+    String subtitleForKey(String key) {
       switch (key) {
         case 'free':
           return '사진 비율 그대로';
@@ -105,7 +105,10 @@ class ImageTemplatePicker extends StatelessWidget {
                       onTap: () => onSelect(t.key),
                       borderRadius: BorderRadius.circular(12.r),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 10.h,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? SnapFitColors.accent.withOpacity(0.08)
@@ -138,7 +141,8 @@ class ImageTemplatePicker extends StatelessWidget {
                                     return Padding(
                                       padding: EdgeInsets.all(3.w),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
                                             child: AspectRatio(
@@ -149,11 +153,16 @@ class ImageTemplatePicker extends StatelessWidget {
                                                     begin: Alignment.topLeft,
                                                     end: Alignment.bottomRight,
                                                     colors: [
-                                                      SnapFitColors.accent.withOpacity(0.55),
-                                                      SnapFitColors.accent.withOpacity(0.15),
+                                                      SnapFitColors.accent
+                                                          .withOpacity(0.55),
+                                                      SnapFitColors.accent
+                                                          .withOpacity(0.15),
                                                     ],
                                                   ),
-                                                  borderRadius: BorderRadius.circular(3.r),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        3.r,
+                                                      ),
                                                 ),
                                               ),
                                             ),
@@ -168,11 +177,16 @@ class ImageTemplatePicker extends StatelessWidget {
                                                     begin: Alignment.topLeft,
                                                     end: Alignment.bottomRight,
                                                     colors: [
-                                                      SnapFitColors.accent.withOpacity(0.35),
-                                                      SnapFitColors.accent.withOpacity(0.10),
+                                                      SnapFitColors.accent
+                                                          .withOpacity(0.35),
+                                                      SnapFitColors.accent
+                                                          .withOpacity(0.10),
                                                     ],
                                                   ),
-                                                  borderRadius: BorderRadius.circular(3.r),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        3.r,
+                                                      ),
                                                 ),
                                               ),
                                             ),
@@ -192,11 +206,17 @@ class ImageTemplatePicker extends StatelessWidget {
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
                                             colors: [
-                                              SnapFitColors.accent.withOpacity(0.55),
-                                              SnapFitColors.accent.withOpacity(0.15),
+                                              SnapFitColors.accent.withOpacity(
+                                                0.55,
+                                              ),
+                                              SnapFitColors.accent.withOpacity(
+                                                0.15,
+                                              ),
                                             ],
                                           ),
-                                          borderRadius: BorderRadius.circular(4.r),
+                                          borderRadius: BorderRadius.circular(
+                                            4.r,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -214,14 +234,18 @@ class ImageTemplatePicker extends StatelessWidget {
                                   style: TextStyle(
                                     color: SnapFitColors.textPrimaryOf(context),
                                     fontSize: 14.sp,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
                                   ),
                                 ),
                                 SizedBox(height: 2.h),
                                 Text(
-                                  _subtitleForKey(t.key),
+                                  subtitleForKey(t.key),
                                   style: TextStyle(
-                                    color: SnapFitColors.textSecondaryOf(context),
+                                    color: SnapFitColors.textSecondaryOf(
+                                      context,
+                                    ),
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.w400,
                                   ),

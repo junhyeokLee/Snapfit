@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'cover_size.dart';
@@ -26,7 +24,14 @@ double _scaleFor(Size canvasSize) => canvasSize.width / _baseW;
 List<LayerModel> _buildWeddingTemplate(Size canvasSize) {
   final scale = _scaleFor(canvasSize);
 
-  LayerModel image(String id, Offset pos, Size size, double rotation, {String frame = 'polaroidClassic', int z = 0}) {
+  LayerModel image(
+    String id,
+    Offset pos,
+    Size size,
+    double rotation, {
+    String frame = 'polaroidClassic',
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.image,
@@ -40,7 +45,16 @@ List<LayerModel> _buildWeddingTemplate(Size canvasSize) {
     );
   }
 
-  LayerModel text(String id, Offset pos, Size size, String value, String bg, double fontSize, {FontWeight weight = FontWeight.w600, int z = 0}) {
+  LayerModel text(
+    String id,
+    Offset pos,
+    Size size,
+    String value,
+    String bg,
+    double fontSize, {
+    FontWeight weight = FontWeight.w600,
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.text,
@@ -62,7 +76,13 @@ List<LayerModel> _buildWeddingTemplate(Size canvasSize) {
     );
   }
 
-  LayerModel sticker(String id, Offset pos, Size size, {double rotation = 0, int z = 0}) {
+  LayerModel sticker(
+    String id,
+    Offset pos,
+    Size size, {
+    double rotation = 0,
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.sticker,
@@ -136,7 +156,14 @@ List<LayerModel> _buildWeddingTemplate(Size canvasSize) {
 List<LayerModel> _buildPhotobookTemplate(Size canvasSize) {
   final scale = _scaleFor(canvasSize);
 
-  LayerModel image(String id, Offset pos, Size size, {double rotation = 0, String frame = '', int z = 0}) {
+  LayerModel image(
+    String id,
+    Offset pos,
+    Size size, {
+    double rotation = 0,
+    String frame = '',
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.image,
@@ -150,7 +177,17 @@ List<LayerModel> _buildPhotobookTemplate(Size canvasSize) {
     );
   }
 
-  LayerModel text(String id, Offset pos, Size size, String value, String bg, double fontSize, {FontWeight weight = FontWeight.w600, TextAlign align = TextAlign.left, int z = 0}) {
+  LayerModel text(
+    String id,
+    Offset pos,
+    Size size,
+    String value,
+    String bg,
+    double fontSize, {
+    FontWeight weight = FontWeight.w600,
+    TextAlign align = TextAlign.left,
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.text,
@@ -238,7 +275,14 @@ List<LayerModel> _buildPhotobookTemplate(Size canvasSize) {
 List<LayerModel> _buildScrapbookTemplate(Size canvasSize) {
   final scale = _scaleFor(canvasSize);
 
-  LayerModel image(String id, Offset pos, Size size, {double rotation = 0, String frame = '', int z = 0}) {
+  LayerModel image(
+    String id,
+    Offset pos,
+    Size size, {
+    double rotation = 0,
+    String frame = '',
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.image,
@@ -252,7 +296,13 @@ List<LayerModel> _buildScrapbookTemplate(Size canvasSize) {
     );
   }
 
-  LayerModel sticker(String id, Offset pos, Size size, {double rotation = 0, int z = 0}) {
+  LayerModel sticker(
+    String id,
+    Offset pos,
+    Size size, {
+    double rotation = 0,
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.sticker,
@@ -266,7 +316,14 @@ List<LayerModel> _buildScrapbookTemplate(Size canvasSize) {
     );
   }
 
-  LayerModel textLabel(String id, Offset pos, Size size, String value, String bg, {int z = 0}) {
+  LayerModel textLabel(
+    String id,
+    Offset pos,
+    Size size,
+    String value,
+    String bg, {
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.text,
@@ -288,24 +345,119 @@ List<LayerModel> _buildScrapbookTemplate(Size canvasSize) {
   }
 
   return [
-    image('sb_top_left', const Offset(18, 26), const Size(92, 72), rotation: -4, frame: '', z: 5),
-    image('sb_top_right', const Offset(130, 26), const Size(84, 70), rotation: 3, frame: '', z: 5),
-    image('sb_mid_left', const Offset(32, 110), const Size(86, 96), rotation: 2, frame: '', z: 5),
-    image('sb_mid_center', const Offset(126, 104), const Size(80, 88), rotation: -3, frame: '', z: 5),
-    image('sb_mid_right', const Offset(210, 116), const Size(70, 80), rotation: 4, frame: '', z: 5),
-    image('sb_bot_left', const Offset(18, 214), const Size(88, 86), rotation: -5, frame: '', z: 5),
-    image('sb_bot_center', const Offset(112, 210), const Size(88, 94), rotation: 3, frame: '', z: 5),
-    image('sb_bot_right', const Offset(204, 216), const Size(78, 88), rotation: -2, frame: '', z: 5),
+    image(
+      'sb_top_left',
+      const Offset(18, 26),
+      const Size(92, 72),
+      rotation: -4,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_top_right',
+      const Offset(130, 26),
+      const Size(84, 70),
+      rotation: 3,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_mid_left',
+      const Offset(32, 110),
+      const Size(86, 96),
+      rotation: 2,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_mid_center',
+      const Offset(126, 104),
+      const Size(80, 88),
+      rotation: -3,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_mid_right',
+      const Offset(210, 116),
+      const Size(70, 80),
+      rotation: 4,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_bot_left',
+      const Offset(18, 214),
+      const Size(88, 86),
+      rotation: -5,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_bot_center',
+      const Offset(112, 210),
+      const Size(88, 94),
+      rotation: 3,
+      frame: '',
+      z: 5,
+    ),
+    image(
+      'sb_bot_right',
+      const Offset(204, 216),
+      const Size(78, 88),
+      rotation: -2,
+      frame: '',
+      z: 5,
+    ),
 
     // 라벨 텍스트
-    textLabel('sb_goals', const Offset(208, 36), const Size(64, 20), 'goals!', 'labelSolid', z: 20),
-    textLabel('sb_habits', const Offset(20, 204), const Size(64, 20), 'habits', 'labelSolidPink', z: 20),
-    textLabel('sb_amazing', const Offset(184, 210), const Size(72, 22), 'amazing', 'labelNeon', z: 20),
+    textLabel(
+      'sb_goals',
+      const Offset(208, 36),
+      const Size(64, 20),
+      'goals!',
+      'labelSolid',
+      z: 20,
+    ),
+    textLabel(
+      'sb_habits',
+      const Offset(20, 204),
+      const Size(64, 20),
+      'habits',
+      'labelSolidPink',
+      z: 20,
+    ),
+    textLabel(
+      'sb_amazing',
+      const Offset(184, 210),
+      const Size(72, 22),
+      'amazing',
+      'labelNeon',
+      z: 20,
+    ),
 
     // 컬러 스티커/도형 느낌
-    sticker('sb_star1', const Offset(20, 116), const Size(32, 32), rotation: -8, z: 10),
-    sticker('sb_star2', const Offset(230, 80), const Size(36, 36), rotation: 12, z: 10),
-    sticker('sb_heart1', const Offset(136, 196), const Size(28, 28), rotation: -6, z: 12),
+    sticker(
+      'sb_star1',
+      const Offset(20, 116),
+      const Size(32, 32),
+      rotation: -8,
+      z: 10,
+    ),
+    sticker(
+      'sb_star2',
+      const Offset(230, 80),
+      const Size(36, 36),
+      rotation: 12,
+      z: 10,
+    ),
+    sticker(
+      'sb_heart1',
+      const Offset(136, 196),
+      const Size(28, 28),
+      rotation: -6,
+      z: 12,
+    ),
   ];
 }
 
@@ -313,7 +465,13 @@ List<LayerModel> _buildScrapbookTemplate(Size canvasSize) {
 List<LayerModel> _buildHeartCollageTemplate(Size canvasSize) {
   final scale = _scaleFor(canvasSize);
 
-  LayerModel image(String id, Offset pos, Size size, {double rotation = 0, int z = 0}) {
+  LayerModel image(
+    String id,
+    Offset pos,
+    Size size, {
+    double rotation = 0,
+    int z = 0,
+  }) {
     return LayerModel(
       id: id,
       type: LayerType.image,
@@ -329,18 +487,72 @@ List<LayerModel> _buildHeartCollageTemplate(Size canvasSize) {
 
   return [
     // 상단 아치
-    image('heart_top_left', const Offset(70, 40), const Size(60, 60), rotation: -10, z: 5),
-    image('heart_top_mid', const Offset(120, 34), const Size(64, 64), rotation: 0, z: 5),
-    image('heart_top_right', const Offset(176, 40), const Size(60, 60), rotation: 10, z: 5),
+    image(
+      'heart_top_left',
+      const Offset(70, 40),
+      const Size(60, 60),
+      rotation: -10,
+      z: 5,
+    ),
+    image(
+      'heart_top_mid',
+      const Offset(120, 34),
+      const Size(64, 64),
+      rotation: 0,
+      z: 5,
+    ),
+    image(
+      'heart_top_right',
+      const Offset(176, 40),
+      const Size(60, 60),
+      rotation: 10,
+      z: 5,
+    ),
     // 중단 좌우
-    image('heart_mid_left', const Offset(48, 96), const Size(64, 70), rotation: -8, z: 6),
-    image('heart_mid_right', const Offset(196, 96), const Size(64, 70), rotation: 8, z: 6),
+    image(
+      'heart_mid_left',
+      const Offset(48, 96),
+      const Size(64, 70),
+      rotation: -8,
+      z: 6,
+    ),
+    image(
+      'heart_mid_right',
+      const Offset(196, 96),
+      const Size(64, 70),
+      rotation: 8,
+      z: 6,
+    ),
     // 중앙
-    image('heart_center_left', const Offset(86, 112), const Size(64, 74), rotation: -4, z: 7),
-    image('heart_center_right', const Offset(150, 112), const Size(64, 74), rotation: 4, z: 7),
+    image(
+      'heart_center_left',
+      const Offset(86, 112),
+      const Size(64, 74),
+      rotation: -4,
+      z: 7,
+    ),
+    image(
+      'heart_center_right',
+      const Offset(150, 112),
+      const Size(64, 74),
+      rotation: 4,
+      z: 7,
+    ),
     // 하단 꼬리
-    image('heart_bottom_left', const Offset(104, 188), const Size(58, 70), rotation: -6, z: 8),
-    image('heart_bottom_right', const Offset(142, 188), const Size(58, 70), rotation: 6, z: 8),
+    image(
+      'heart_bottom_left',
+      const Offset(104, 188),
+      const Size(58, 70),
+      rotation: -6,
+      z: 8,
+    ),
+    image(
+      'heart_bottom_right',
+      const Offset(142, 188),
+      const Size(58, 70),
+      rotation: 6,
+      z: 8,
+    ),
   ];
 }
 
@@ -370,4 +582,3 @@ List<DesignTemplate> designTemplates = [
     forCover: false,
   ),
 ];
-

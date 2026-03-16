@@ -41,6 +41,12 @@ class AlbumReaderToolbar extends StatelessWidget {
       _logged = true;
       ScreenLogger.widget('AlbumReaderToolbar', '앨범 리더 툴바 · 텍스트/사진/레이어 순서');
     }
+    void showComingSoon(String message) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+
     return Container(
       height: 56.h,
       padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -140,10 +146,10 @@ class AlbumReaderToolbar extends StatelessWidget {
                   onStateChanged();
                 },
                 onAddPhoto: () {
-                  // TODO: 갤러리 열기
+                  showComingSoon('갤러리 연동은 준비 중입니다.');
                 },
                 onOpenCoverSelector: () {
-                  // TODO: 템플릿 선택기 표시
+                  showComingSoon('템플릿 선택은 준비 중입니다.');
                 },
               ),
             ),

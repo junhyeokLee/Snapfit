@@ -73,34 +73,38 @@ class AlbumEditorService {
       final id = '${template.id}_slot_${page.layers.length}_${UniqueKey()}';
 
       if (slot.type == 'image') {
-        page.layers.add(LayerModel(
-          id: id,
-          type: LayerType.image,
-          position: pos,
-          width: slotW,
-          height: slotH,
-          rotation: slot.rotation,
-          imageBackground: slot.imageBackground,
-          imageTemplate: slot.imageTemplate ?? 'free',
-          asset: null,
-        ));
-      } else if (slot.type == 'text') {
-        page.layers.add(LayerModel(
-          id: id,
-          type: LayerType.text,
-          position: pos,
-          width: slotW,
-          height: slotH,
-          rotation: slot.rotation,
-          text: slot.defaultText ?? '',
-          textStyle: const TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
-            fontWeight: FontWeight.w500,
+        page.layers.add(
+          LayerModel(
+            id: id,
+            type: LayerType.image,
+            position: pos,
+            width: slotW,
+            height: slotH,
+            rotation: slot.rotation,
+            imageBackground: slot.imageBackground,
+            imageTemplate: slot.imageTemplate ?? 'free',
+            asset: null,
           ),
-          textStyleType: TextStyleType.none,
-          textBackground: slot.textBackground,
-        ));
+        );
+      } else if (slot.type == 'text') {
+        page.layers.add(
+          LayerModel(
+            id: id,
+            type: LayerType.text,
+            position: pos,
+            width: slotW,
+            height: slotH,
+            rotation: slot.rotation,
+            text: slot.defaultText ?? '',
+            textStyle: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
+            textStyleType: TextStyleType.none,
+            textBackground: slot.textBackground,
+          ),
+        );
       }
     }
     return page;
@@ -162,15 +166,13 @@ class AlbumEditorService {
     final double centerX;
     if (isCover) {
       // (SpineWidth + (전체너비 - SpineWidth - LayerWidth) / 2)
-      centerX = kCoverSpineWidth + (canvasSize.width - kCoverSpineWidth - width) / 2;
+      centerX =
+          kCoverSpineWidth + (canvasSize.width - kCoverSpineWidth - width) / 2;
     } else {
       centerX = (canvasSize.width - width) / 2;
     }
 
-    final pos = Offset(
-      centerX,
-      (canvasSize.height - height) / 2,
-    );
+    final pos = Offset(centerX, (canvasSize.height - height) / 2);
 
     return LayerModel(
       id: asset.id,
@@ -219,10 +221,12 @@ class AlbumEditorService {
     // 커버 중앙에 '텍스트 자체의 중심'이 오도록 보정
     // [Spine fix] 텍스트 시각적 중앙 정렬
     final double centerX;
-    
+
     // (1) safeWidth 박스 자체를 캔버스 중앙(혹은 Spine 제외 중앙)에 배치할 X 좌표
     if (isCover) {
-      centerX = kCoverSpineWidth + (canvasSize.width - kCoverSpineWidth - safeWidth) / 2;
+      centerX =
+          kCoverSpineWidth +
+          (canvasSize.width - kCoverSpineWidth - safeWidth) / 2;
     } else {
       centerX = (canvasSize.width - safeWidth) / 2;
     }
@@ -257,11 +261,8 @@ class AlbumEditorService {
     required Size canvasSize,
     String? templateKey,
   }) async {
-
     // 같은 이미지 이미 있으면 패스
-    if (page.layers.any(
-          (l) => l.type == LayerType.image && l.id == asset.id,
-    )) {
+    if (page.layers.any((l) => l.type == LayerType.image && l.id == asset.id)) {
       return page;
     }
 
@@ -344,9 +345,7 @@ class AlbumEditorService {
     if (idx == -1) return page;
 
     final old = page.layers[idx];
-    page.layers[idx] = old.copyWith(
-      textBackground: styleKey,
-    );
+    page.layers[idx] = old.copyWith(textBackground: styleKey);
     return page;
   }
 
@@ -441,9 +440,7 @@ class AlbumEditorService {
   }
 
   /// 마지막 레이어 제거
-  AlbumPage removeLast({
-    required AlbumPage page,
-  }) {
+  AlbumPage removeLast({required AlbumPage page}) {
     if (page.layers.isNotEmpty) {
       page.layers.removeLast();
     }
@@ -451,18 +448,13 @@ class AlbumEditorService {
   }
 
   /// 모든 레이어 제거
-  AlbumPage clearAll({
-    required AlbumPage page,
-  }) {
+  AlbumPage clearAll({required AlbumPage page}) {
     page.layers.clear();
     return page;
   }
 
   /// 특정 레이어 ID 삭제
-  AlbumPage removeLayerById({
-    required AlbumPage page,
-    required String id,
-  }) {
+  AlbumPage removeLayerById({required AlbumPage page, required String id}) {
     final idx = page.layers.indexWhere((l) => l.id == id);
     if (idx != -1) {
       page.layers.removeAt(idx);

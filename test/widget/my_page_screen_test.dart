@@ -25,7 +25,9 @@ class FakeAuthViewModel extends AuthViewModel {
 }
 
 void main() {
-  testWidgets('logout button calls auth logout and shows snackbar', (tester) async {
+  testWidgets('logout button calls auth logout and shows snackbar', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final fake = FakeAuthViewModel(
       const UserInfo(
@@ -38,9 +40,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authViewModelProvider.overrideWith(() => fake),
-        ],
+        overrides: [authViewModelProvider.overrideWith(() => fake)],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,

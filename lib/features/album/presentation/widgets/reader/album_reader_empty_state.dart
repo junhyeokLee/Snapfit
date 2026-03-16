@@ -76,7 +76,10 @@ class AlbumReaderEmptyState extends ConsumerWidget {
                 child: SnapFitPrimaryGradientBackground(
                   borderRadius: BorderRadius.circular(10.r),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 8.h,
+                    ),
                     child: Text(
                       "페이지 추가",
                       style: TextStyle(
@@ -96,24 +99,26 @@ class AlbumReaderEmptyState extends ConsumerWidget {
   }
 
   void _showAddPage(BuildContext context, WidgetRef ref) {
-    PageTemplatePicker.show(context, onSelect: (template) {
-      final vm = ref.read(albumEditorViewModelProvider.notifier);
-      vm.addPageFromTemplate(template, baseCanvasSize);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!context.mounted) return;
-        final saved = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PageEditorScreen(
-              initialPageIndex: vm.currentPageIndex,
+    PageTemplatePicker.show(
+      context,
+      onSelect: (template) {
+        final vm = ref.read(albumEditorViewModelProvider.notifier);
+        vm.addPageFromTemplate(template, baseCanvasSize);
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!context.mounted) return;
+          final saved = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  PageEditorScreen(initialPageIndex: vm.currentPageIndex),
             ),
-          ),
-        );
-        if (!context.mounted) return;
-        if (saved != true) {
-          ref.read(albumEditorViewModelProvider.notifier).removeLastPage();
-        }
-      });
-    });
+          );
+          if (!context.mounted) return;
+          if (saved != true) {
+            ref.read(albumEditorViewModelProvider.notifier).removeLastPage();
+          }
+        });
+      },
+    );
   }
 }

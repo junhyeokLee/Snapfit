@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide AuthApi;
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
+    hide AuthApi;
 
 import 'dart:async';
 
@@ -10,10 +11,7 @@ import '../data/dto/auth_response.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
-  AuthService({
-    required this.api,
-    required this.tokenStorage,
-  });
+  AuthService({required this.api, required this.tokenStorage});
 
   final backend.AuthApi api;
   final TokenStorage tokenStorage;

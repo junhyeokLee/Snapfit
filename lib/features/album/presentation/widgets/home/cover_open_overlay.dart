@@ -30,7 +30,9 @@ class _CoverOpenOverlayState extends State<CoverOpenOverlay> {
             ? t * (3.141592 / 2)
             : -t * (3.141592 / 2);
         final opacity = (1.0 - t).clamp(0.0, 1.0);
-        final alignment = widget.openFromRight ? Alignment.centerRight : Alignment.centerLeft;
+        final alignment = widget.openFromRight
+            ? Alignment.centerRight
+            : Alignment.centerLeft;
 
         return IgnorePointer(
           child: Opacity(
@@ -40,10 +42,7 @@ class _CoverOpenOverlayState extends State<CoverOpenOverlay> {
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.001)
                 ..rotateY(angleY),
-              child: RawImage(
-                image: widget.coverImage,
-                fit: BoxFit.cover,
-              ),
+              child: RawImage(image: widget.coverImage, fit: BoxFit.cover),
             ),
           ),
         );

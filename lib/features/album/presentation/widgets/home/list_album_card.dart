@@ -70,53 +70,52 @@ class ListAlbumCard extends StatelessWidget {
                   SizedBox(height: 8.w),
                   Row(
                     children: [
-                       // Mock Avatars
-                       SizedBox(
-                         width: 44.w,
-                         height: 20.w,
-                         child: Stack(
-                           children: [
-                             Positioned(
-                               left: 0,
-                               child: _buildAvatar(Colors.grey[300]!),
-                             ),
-                             Positioned(
-                               left: 14.w,
-                                child: _buildAvatar(Colors.grey[400]!),
-                             ),
-                              Positioned(
-                               left: 28.w,
-                               child: _buildAvatar(Colors.amber[200]!),
-                             ),
-                           ],
-                         ),
-                       ),
-                       SizedBox(width: 8.w),
-                       () {
-                         final info = getAlbumStatusInfo(album, currentUserId);
-                         return Text(
-                           info.label,
-                           style: TextStyle(
-                             fontSize: 12.sp,
-                             fontWeight: FontWeight.w700,
-                             color: info.foregroundColor,
-                           ),
-                         );
-                       }(),
+                      // Mock Avatars
+                      SizedBox(
+                        width: 44.w,
+                        height: 20.w,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: 0,
+                              child: _buildAvatar(Colors.grey[300]!),
+                            ),
+                            Positioned(
+                              left: 14.w,
+                              child: _buildAvatar(Colors.grey[400]!),
+                            ),
+                            Positioned(
+                              left: 28.w,
+                              child: _buildAvatar(Colors.amber[200]!),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      () {
+                        final info = getAlbumStatusInfo(album, currentUserId);
+                        return Text(
+                          info.label,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: info.foregroundColor,
+                          ),
+                        );
+                      }(),
                     ],
                   ),
                   SizedBox(height: 4.w),
                   Text(
                     '마지막 수정: ${formatAlbumDate(album.updatedAt.isEmpty ? album.createdAt : album.updatedAt)}',
-                     style: TextStyle(
-                       fontSize: 11.sp,
-                       color: SnapFitColors.textSecondaryOf(context),
-                     ),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),

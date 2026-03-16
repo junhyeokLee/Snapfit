@@ -31,9 +31,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authViewModelProvider.notifier).loginWithKakao();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('카카오 로그인 실패: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('카카오 로그인 실패: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -46,9 +46,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authViewModelProvider.notifier).loginWithGoogle();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('구글 로그인 실패: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('구글 로그인 실패: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

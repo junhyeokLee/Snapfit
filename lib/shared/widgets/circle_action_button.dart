@@ -33,13 +33,10 @@ class CircleActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final (bgColor, iconColor) = switch (variant) {
       CircleButtonVariant.transparent => (
-          Colors.white.withOpacity(0.25),
-          Colors.white,
-        ),
-      CircleButtonVariant.white => (
-          Colors.white,
-          Colors.grey[800]!,
-        ),
+        Colors.white.withOpacity(0.25),
+        Colors.white,
+      ),
+      CircleButtonVariant.white => (Colors.white, Colors.grey[800]!),
     };
 
     return Material(

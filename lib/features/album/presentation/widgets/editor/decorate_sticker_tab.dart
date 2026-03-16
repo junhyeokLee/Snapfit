@@ -21,22 +21,92 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
   int? _selectedStickerIndex;
 
   static const List<String> _stickersPreview = [
-    "❤️","⭐","☀️","🐾","🔥","✨","😊","🤝","🌸","🐶","🎨","🌈",
-    "🧡","💛","💚","💙","💜","🖤","🤍","🩷",
+    "❤️",
+    "⭐",
+    "☀️",
+    "🐾",
+    "🔥",
+    "✨",
+    "😊",
+    "🤝",
+    "🌸",
+    "🐶",
+    "🎨",
+    "🌈",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🖤",
+    "🤍",
+    "🩷",
   ];
 
   static const List<String> _stickersAll = [
     // hearts / sparkle
-    "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🩷","💖","💘","💝","💞","💟",
-    "✨","⭐","🌟","💫","🔥","🌈","☀️","🌤️","🌙","⚡",
+    "❤️",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🖤",
+    "🤍",
+    "🩷",
+    "💖",
+    "💘",
+    "💝",
+    "💞",
+    "💟",
+    "✨", "⭐", "🌟", "💫", "🔥", "🌈", "☀️", "🌤️", "🌙", "⚡",
     // faces / hands
-    "😊","😍","🥰","😎","🤩","🥳","😭","😆","🤝","👏","🙌","👍","🫶","🙏",
+    "😊",
+    "😍",
+    "🥰",
+    "😎",
+    "🤩",
+    "🥳",
+    "😭",
+    "😆",
+    "🤝",
+    "👏",
+    "🙌",
+    "👍",
+    "🫶",
+    "🙏",
     // pets / nature
-    "🐶","🐱","🐰","🐻","🐼","🦊","🐾","🌸","🌷","🌼","🍀","🌿","🌵","🍃",
+    "🐶",
+    "🐱",
+    "🐰",
+    "🐻",
+    "🐼",
+    "🦊",
+    "🐾",
+    "🌸",
+    "🌷",
+    "🌼",
+    "🍀",
+    "🌿",
+    "🌵",
+    "🍃",
     // party / deco
-    "🎈","🎉","🎊","🎁","🎀","🎨","🖍️","📸","🧸","🍰","🧁","🍭","🍓","🍒",
+    "🎈",
+    "🎉",
+    "🎊",
+    "🎁",
+    "🎀",
+    "🎨",
+    "🖍️",
+    "📸",
+    "🧸",
+    "🍰",
+    "🧁",
+    "🍭",
+    "🍓",
+    "🍒",
     // travel / daily
-    "✈️","🚗","🏠","🛍️","☕","🍿","🎧","📚","🕶️","⌚","🧩","🧡",
+    "✈️", "🚗", "🏠", "🛍️", "☕", "🍿", "🎧", "📚", "🕶️", "⌚", "🧩", "🧡",
   ];
 
   @override
@@ -46,7 +116,11 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(context, '인기 스티커', onSeeAll: _openAllStickersSheet),
+          _buildSectionHeader(
+            context,
+            '인기 스티커',
+            onSeeAll: _openAllStickersSheet,
+          ),
           SizedBox(height: 16.h),
           _buildStickerGrid(context),
         ],
@@ -79,7 +153,9 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                   width: 40.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.2),
+                    color: SnapFitColors.textPrimaryOf(
+                      context,
+                    ).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
@@ -96,18 +172,21 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                 Expanded(
                   child: GridView.builder(
                     padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 20.h),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 5,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
                     itemCount: _stickersAll.length,
                     itemBuilder: (context, index) {
                       final sticker = _stickersAll[index];
                       return GestureDetector(
                         onTap: () {
                           Navigator.of(context).pop(); // 전체보기 닫기
-                          widget.onStickerTap?.call(sticker); // 선택 → (상위에서) 시트 닫힘
+                          widget.onStickerTap?.call(
+                            sticker,
+                          ); // 선택 → (상위에서) 시트 닫힘
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -118,7 +197,10 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                             ),
                           ),
                           child: Center(
-                            child: Text(sticker, style: TextStyle(fontSize: 28.sp)),
+                            child: Text(
+                              sticker,
+                              style: TextStyle(fontSize: 28.sp),
+                            ),
                           ),
                         ),
                       );
@@ -133,7 +215,11 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, {VoidCallback? onSeeAll}) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title, {
+    VoidCallback? onSeeAll,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -176,18 +262,18 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
         final isSelected = _selectedStickerIndex == index;
         return GestureDetector(
           onTap: () {
-             setState(() {
-               _selectedStickerIndex = index;
-             });
-             widget.onStickerTap?.call(_stickersPreview[index]);
+            setState(() {
+              _selectedStickerIndex = index;
+            });
+            widget.onStickerTap?.call(_stickersPreview[index]);
           },
           child: Container(
             decoration: BoxDecoration(
               color: widget.surfaceColor,
               borderRadius: BorderRadius.circular(12.r),
-              border: isSelected 
-                ? Border.all(color: SnapFitColors.accent, width: 2)
-                : null,
+              border: isSelected
+                  ? Border.all(color: SnapFitColors.accent, width: 2)
+                  : null,
             ),
             child: Stack(
               children: [
@@ -201,7 +287,11 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                   Positioned(
                     top: 4,
                     right: 4,
-                    child: Icon(Icons.check_circle, color: SnapFitColors.accent, size: 16.sp),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: SnapFitColors.accent,
+                      size: 16.sp,
+                    ),
                   ),
               ],
             ),
@@ -210,7 +300,6 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
       },
     );
   }
-
 }
 
 /// 레이아웃(찢김 스크랩) 전용 탭

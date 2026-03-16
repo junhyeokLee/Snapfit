@@ -33,8 +33,13 @@ class AlbumReaderFooter extends ConsumerWidget {
             child: AnimatedBuilder(
               animation: pageController,
               builder: (context, _) {
-                final page = pageController.hasClients ? (pageController.page ?? 0) : 0;
-                final current = page.round().clamp(0, (totalPages - 1).clamp(0, totalPages));
+                final page = pageController.hasClients
+                    ? (pageController.page ?? 0)
+                    : 0;
+                final current = page.round().clamp(
+                  0,
+                  (totalPages - 1).clamp(0, totalPages),
+                );
                 return Text(
                   "${current + 1} / $totalPages",
                   style: TextStyle(color: Colors.white70, fontSize: 13.sp),
@@ -44,8 +49,13 @@ class AlbumReaderFooter extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              final page = pageController.hasClients ? (pageController.page ?? 0) : 0;
-              final current = page.round().clamp(0, (totalPages - 1).clamp(0, totalPages));
+              final page = pageController.hasClients
+                  ? (pageController.page ?? 0)
+                  : 0;
+              final current = page.round().clamp(
+                0,
+                (totalPages - 1).clamp(0, totalPages),
+              );
               final pageIndex = current + 1;
               final vm = ref.read(albumEditorViewModelProvider.notifier);
               if (pageIndex >= 1 && pageIndex < vm.pages.length) {
@@ -53,12 +63,18 @@ class AlbumReaderFooter extends ConsumerWidget {
               }
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => PageEditorScreen(initialPageIndex: pageIndex)),
+                MaterialPageRoute(
+                  builder: (_) => PageEditorScreen(initialPageIndex: pageIndex),
+                ),
               );
             },
             child: Text(
               "편집",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13.sp),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 13.sp,
+              ),
             ),
           ),
         ],

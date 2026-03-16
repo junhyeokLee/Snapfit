@@ -19,12 +19,14 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   const AlbumCreateFlowScreen({super.key});
 
   @override
-  ConsumerState<AlbumCreateFlowScreen> createState() => _AlbumCreateFlowScreenState();
+  ConsumerState<AlbumCreateFlowScreen> createState() =>
+      _AlbumCreateFlowScreenState();
 }
 
 class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   int _currentStep = 0;
   String _albumTitle = '';
+
   /// 최초 진입 시 정사각형이 기본 선택되도록 설정
   CoverSize? _selectedCover = coverSizes.firstWhere(
     (s) => s.name == '정사각형',
@@ -34,13 +36,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   bool _allowEditing = true;
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
+
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
   VoidCallback? _onCompletePressed;
 
   @override
   void initState() {
     super.initState();
-    ScreenLogger.enter('AlbumCreateFlowScreen', '앨범 생성 플로우 Step 1~4 (정보 입력 → 커버 편집 → 친구 초대 → 페이지 편집)');
+    ScreenLogger.enter(
+      'AlbumCreateFlowScreen',
+      '앨범 생성 플로우 Step 1~4 (정보 입력 → 커버 편집 → 친구 초대 → 페이지 편집)',
+    );
   }
 
   @override
@@ -58,8 +64,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           scrolledUnderElevation: 0,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded,
-                color: SnapFitColors.textPrimaryOf(context), size: 18.sp),
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: SnapFitColors.textPrimaryOf(context),
+              size: 18.sp,
+            ),
             onPressed: _handleBack,
           ),
           title: Text(
@@ -111,9 +120,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               ),
             ),
             // 스텝별 콘텐츠
-            Expanded(
-              child: _buildStepContent(),
-            ),
+            Expanded(child: _buildStepContent()),
           ],
         ),
       ),
@@ -131,7 +138,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
           onTitleChanged: (title) => _albumTitle = title,
           onCoverSelected: (cover) => setState(() => _selectedCover = cover),
-          onPageCountChanged: (count) => setState(() => _selectedPageCount = count),
+          onPageCountChanged: (count) =>
+              setState(() => _selectedPageCount = count),
           onNext: () {
             if (_albumTitle.isNotEmpty && _selectedCover != null) {
               setState(() => _currentStep = 1);
@@ -172,7 +180,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           selectedPageCount: _selectedPageCount,
           allowEditing: _allowEditing,
           albumId: _createdAlbumId,
-          onAllowEditingChanged: (value) => setState(() => _allowEditing = value),
+          onAllowEditingChanged: (value) =>
+              setState(() => _allowEditing = value),
           onNext: () {
             // 마지막 단계 완료 -> 편집 화면(Reader)으로 이동
             if (_createdAlbumId != null) {
@@ -182,18 +191,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                 ratio: _selectedCover!.ratio.toString(),
                 targetPages: _selectedPageCount,
               );
-              
+
               // 백그라운드에서 폴링 시작 (await 하지 않음 → 즉시 화면 전환)
               // PageEditorScreen의 isCreatingInBackground 오버레이가 "생성 중" 표시
-              ref.read(albumEditorViewModelProvider.notifier).prepareAlbumForEdit(
-                dummyAlbum,
-                waitForCreation: true,
-              );
-              
+              ref
+                  .read(albumEditorViewModelProvider.notifier)
+                  .prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
+
               // 즉시 편집 화면으로 이동 (로딩 오버레이 표시됨)
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const PageEditorScreen(initialPageIndex: 1)),
+                MaterialPageRoute(
+                  builder: (_) => const PageEditorScreen(initialPageIndex: 1),
+                ),
               );
             }
           },
@@ -219,5 +229,4 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       return true;
     }
   }
-
 }

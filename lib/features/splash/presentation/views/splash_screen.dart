@@ -28,8 +28,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     ScreenLogger.enter('SplashScreen', '앱 초기 로딩 · 인증 상태 확인 후 Login/Home 분기');
     _startedAt = DateTime.now();
 
-    _authSub = ref.listenManual<AsyncValue<UserInfo?>>(authViewModelProvider,
-        (previous, next) {
+    _authSub = ref.listenManual<AsyncValue<UserInfo?>>(authViewModelProvider, (
+      previous,
+      next,
+    ) {
       if (next.isLoading) return;
       _startExit();
     });
@@ -39,7 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       _startExit();
     }
   }
-  
+
   @override
   void dispose() {
     _authSub.close();
@@ -58,9 +60,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Future.delayed(_fadeDuration);
     if (!mounted) return;
     _hasNavigated = true;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const AuthGate()),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
   }
 
   @override

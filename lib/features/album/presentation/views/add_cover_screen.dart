@@ -25,17 +25,16 @@ import '../viewmodels/gallery_notifier.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 
-
 /// 커버 편집 화면 (앨범 생성/편집 공통)
 /// - editAlbum == null && albumId == null: 앨범 생성 모드 (새 커버 만들기)
 /// - editAlbum != null: 앨범 편집 모드 (기존 커버 수정, 이미 prepareAlbumForEdit 호출됨)
 /// - albumId != null: 앨범 ID로 앨범을 로드하여 편집 모드로 진입
-/// 
+///
 /// 참고: 앨범 내부 페이지 편집은 AlbumSpreadScreen 사용
 class AddCoverScreen extends ConsumerStatefulWidget {
   /// 편집 모드: 홈에서 앨범 선택 후 이 화면으로 올 때 전달 (이미 prepareAlbumForEdit 호출됨)
   final Album? editAlbum;
-  
+
   /// 앨범 ID로 앨범을 로드하여 편집 모드로 진입 (앨범 생성 플로우에서 사용)
   final int? albumId;
 
@@ -90,15 +89,16 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     final mode = widget.editAlbum != null
         ? '기존 앨범 커버 편집'
         : widget.isFromCreateFlow
-            ? '앨범 생성 플로우 · 커버 편집 (Step 2)'
-            : '신규 앨범 커버 생성';
+        ? '앨범 생성 플로우 · 커버 편집 (Step 2)'
+        : '신규 앨범 커버 생성';
     ScreenLogger.enter('AddCoverScreen', mode);
-    
+
     _interaction = LayerInteractionManager(
       ref: ref,
       coverKey: _canvasKey,
       setState: setState,
-      getCoverSize: () => coverCanvasBaseSize(_selectedCover), // Approximate size
+      getCoverSize: () =>
+          coverCanvasBaseSize(_selectedCover), // Approximate size
       onEditText: (layer) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         TextEditorManager(context, vm).openForExisting(layer);
@@ -109,7 +109,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     _gridController = ScrollController();
 
     // 플로우에서 넘어온 경우, 이미 선택된 커버 사이즈가 있을 수 있으므로 우선 사용
-    _selectedCover = widget.initialCoverSize ??
+    _selectedCover =
+        widget.initialCoverSize ??
         coverSizes.firstWhere(
           (s) => s.name == '정사각형',
           orElse: () => coverSizes.first,
@@ -129,8 +130,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
             );
       } else if (widget.editAlbum != null) {
         // 편집 모드: 에디터에 이미 로드됨 → 커버 VM만 동기화
-        final editorSt =
-            ref.read(albumEditorViewModelProvider).asData?.value;
+        final editorSt = ref.read(albumEditorViewModelProvider).asData?.value;
         if (editorSt != null) {
           ref
               .read(coverViewModelProvider.notifier)
@@ -143,15 +143,15 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         // 앨범 ID로 앨범을 로드하여 편집 모드로 진입
         try {
           final albumRepository = ref.read(albumRepositoryProvider);
-          final album =
-              await albumRepository.fetchAlbum(widget.albumId.toString());
+          final album = await albumRepository.fetchAlbum(
+            widget.albumId.toString(),
+          );
           await ref
               .read(albumEditorViewModelProvider.notifier)
               .prepareAlbumForEdit(album);
 
           // 커버 VM 동기화
-          final editorSt =
-              ref.read(albumEditorViewModelProvider).asData?.value;
+          final editorSt = ref.read(albumEditorViewModelProvider).asData?.value;
           if (editorSt != null) {
             ref
                 .read(coverViewModelProvider.notifier)
@@ -188,16 +188,13 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     }
 
     if (mode == EditorMode.text) {
-       _currentMode = EditorMode.none;
-       final vm = ref.read(albumEditorViewModelProvider.notifier);
-       final effectiveSize = coverCanvasBaseSize(_selectedCover);
-       TextEditorManager(context, vm).openAndCreateNew(
-         Size(
-           effectiveSize.width * 0.92,
-           effectiveSize.height * 0.18,
-         ),
-       );
-       return;
+      _currentMode = EditorMode.none;
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      final effectiveSize = coverCanvasBaseSize(_selectedCover);
+      TextEditorManager(context, vm).openAndCreateNew(
+        Size(effectiveSize.width * 0.92, effectiveSize.height * 0.18),
+      );
+      return;
     }
 
     setState(() => _currentMode = mode);
@@ -210,17 +207,14 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         if (mode == EditorMode.decorate) {
           return DecoratePanel(onClose: () => Navigator.pop(ctx));
         } else if (mode == EditorMode.layer) {
-          return LayerManagerPanel(
-            layers: layers,
-            interaction: _interaction,
-          );
+          return LayerManagerPanel(layers: layers, interaction: _interaction);
         } else if (mode == EditorMode.layout) {
           return const TemplateSelectionPanel(title: '레이아웃');
         } else if (mode == EditorMode.template) {
           return const DesignTemplatePanel();
         }
         return const SizedBox.shrink();
-      }
+      },
     ).then((_) {
       if (mounted) setState(() => _currentMode = EditorMode.none);
     });
@@ -263,7 +257,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                     currentMode: _currentMode,
                     isCover: true,
                     onModeChanged: (mode) => _handleModeChange(mode, layers),
-                    onAddPhoto: () => _toolbarActionHandler.addPhoto(coverCanvasBaseSize(_selectedCover)),
+                    onAddPhoto: () => _toolbarActionHandler.addPhoto(
+                      coverCanvasBaseSize(_selectedCover),
+                    ),
                     onCover: () => _toolbarActionHandler.openCoverTheme(),
                   ),
                 ],
@@ -278,10 +274,14 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                   child: LayerActionPanel(
                     layers: layers,
                     interaction: _interaction,
-                    textEditor: TextEditorManager(context, ref.read(albumEditorViewModelProvider.notifier)),
+                    textEditor: TextEditorManager(
+                      context,
+                      ref.read(albumEditorViewModelProvider.notifier),
+                    ),
                     onRefresh: () => setState(() {}),
                     onOpenGallery: (layer) => _openGalleryForSelected(layer),
-                    onOpenDecorateSheet: (layer) => _openDecorateSheetForLayer(layer),
+                    onOpenDecorateSheet: (layer) =>
+                        _openDecorateSheetForLayer(layer),
                   ),
                 ),
             ],
@@ -299,9 +299,16 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset != null) {
-      ref.read(albumEditorViewModelProvider.notifier).updateLayer(
-        layer.copyWith(asset: asset, imageUrl: null, originalUrl: null, previewUrl: null),
-      );
+      ref
+          .read(albumEditorViewModelProvider.notifier)
+          .updateLayer(
+            layer.copyWith(
+              asset: asset,
+              imageUrl: null,
+              originalUrl: null,
+              previewUrl: null,
+            ),
+          );
       if (mounted) setState(() {});
     }
   }
@@ -309,7 +316,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      final currentKey = vm.findLayerById(layer.id)?.imageBackground ?? layer.imageBackground ?? '';
+      final currentKey =
+          vm.findLayerById(layer.id)?.imageBackground ??
+          layer.imageBackground ??
+          '';
       ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateImageFrame(layer.id, key);
@@ -317,7 +327,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         }
       });
     } else {
-      final currentKey = vm.findLayerById(layer.id)?.textBackground ?? layer.textBackground ?? '';
+      final currentKey =
+          vm.findLayerById(layer.id)?.textBackground ??
+          layer.textBackground ??
+          '';
       TextStylePickerSheet.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateTextStyle(layer.id, key);

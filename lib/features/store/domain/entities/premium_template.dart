@@ -34,7 +34,8 @@ class PremiumTemplate {
     this.templateJson,
   });
 
-  factory PremiumTemplate.fromJson(Map<String, dynamic> json) => _$PremiumTemplateFromJson(json);
+  factory PremiumTemplate.fromJson(Map<String, dynamic> json) =>
+      _$PremiumTemplateFromJson(json);
   Map<String, dynamic> toJson() => _$PremiumTemplateToJson(this);
 
   PremiumTemplate copyWith({
@@ -69,4 +70,3 @@ class PremiumTemplate {
     );
   }
 }
-

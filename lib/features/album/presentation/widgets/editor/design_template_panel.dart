@@ -11,7 +11,8 @@ class DesignTemplatePanel extends ConsumerStatefulWidget {
   const DesignTemplatePanel({super.key});
 
   @override
-  ConsumerState<DesignTemplatePanel> createState() => _DesignTemplatePanelState();
+  ConsumerState<DesignTemplatePanel> createState() =>
+      _DesignTemplatePanelState();
 }
 
 class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
@@ -22,13 +23,17 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final currentPage = vm.currentPage;
     final isCover = currentPage?.isCover ?? false;
-    final aspect = vm.selectedCover.ratio > 0 ? vm.selectedCover.ratio : (3 / 4);
+    final aspect = vm.selectedCover.ratio > 0
+        ? vm.selectedCover.ratio
+        : (3 / 4);
 
     final Size canvasSize = isCover
         ? coverCanvasBaseSize(vm.selectedCover) // 커버는 고정 캔버스 크기 기준
-        : Size(300.0, 300.0 / aspect);          // 내지는 기존 논리 좌표계 유지
+        : Size(300.0, 300.0 / aspect); // 내지는 기존 논리 좌표계 유지
 
-    final templates = designTemplates.where((t) => !t.forCover || isCover == t.forCover || !isCover).toList();
+    final templates = designTemplates
+        .where((t) => !t.forCover || isCover == t.forCover || !isCover)
+        .toList();
 
     return Container(
       height: 520.h,
@@ -50,7 +55,9 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.2),
+                  color: SnapFitColors.textPrimaryOf(
+                    context,
+                  ).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -89,7 +96,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                       logicalCanvasSize: canvasSize,
                       onTap: () {
                         setState(() => _selectedId = template.id);
-                        vm.applyDesignTemplateToCurrentPage(template, canvasSize);
+                        vm.applyDesignTemplateToCurrentPage(
+                          template,
+                          canvasSize,
+                        );
                         Navigator.of(context).pop();
                       },
                     );
@@ -121,7 +131,9 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
               color: SnapFitColors.surfaceOf(context),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: isSelected ? SnapFitColors.accent : SnapFitColors.overlayLightOf(context),
+                color: isSelected
+                    ? SnapFitColors.accent
+                    : SnapFitColors.overlayLightOf(context),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -130,7 +142,8 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
               child: Column(
                 children: [
                   AspectRatio(
-                    aspectRatio: logicalCanvasSize.width / logicalCanvasSize.height,
+                    aspectRatio:
+                        logicalCanvasSize.width / logicalCanvasSize.height,
                     child: Container(
                       decoration: BoxDecoration(
                         color: SnapFitColors.backgroundOf(context),
@@ -159,4 +172,3 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     );
   }
 }
-

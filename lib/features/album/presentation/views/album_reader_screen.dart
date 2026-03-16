@@ -48,9 +48,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         // [10단계 Fix] 리더 화면에서도 커버 인터랙션 좌표계는 500xH 기준이어야 함
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         final aspect = vm.selectedCover.ratio;
-        
+
         // 현재 페이지가 커버인지 확인 (Page 0)
-        final double page = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
+        final double page = _pageController.hasClients
+            ? (_pageController.page ?? 0.0)
+            : 0.0;
         if (page < 0.5) {
           return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
         }
@@ -65,8 +67,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     _layerBuilder = LayerBuilder(_interaction, () {
       final vm = ref.read(albumEditorViewModelProvider.notifier);
       final aspect = vm.selectedCover.ratio;
-      final double page = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
-      
+      final double page = _pageController.hasClients
+          ? (_pageController.page ?? 0.0)
+          : 0.0;
+
       if (page < 0.5) {
         return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
       }
@@ -77,7 +81,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       if (mounted) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
         vm.loadPendingEditAlbumIfNeeded(Size.zero);
-        
+
         // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
         final aspect = vm.selectedCover.ratio;
         setState(() {
@@ -113,7 +117,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             // (에디터의 캔버스 실측 사이즈와 리더의 실측 사이즈가 미세하게 다를 수 있으므로 리더 기준으로 재조정)
             final vm = ref.read(albumEditorViewModelProvider.notifier);
             if (_coverSize != Size.zero) {
-              debugPrint('[AlbumReaderScreen] Returned from editor, re-syncing size: $_coverSize');
+              debugPrint(
+                '[AlbumReaderScreen] Returned from editor, re-syncing size: $_coverSize',
+              );
               vm.setCoverCanvasSize(_coverSize);
             }
             setState(() {});
@@ -125,7 +131,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         },
         onDetail: () {
           Navigator.pop(ctx);
-          final safePage = _pageController.hasClients ? (_pageController.page ?? 0.0) : 0.0;
+          final safePage = _pageController.hasClients
+              ? (_pageController.page ?? 0.0)
+              : 0.0;
           if (safePage < 0.5) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('상세 보기는 앨범 내지에서 이용 가능합니다.')),
@@ -138,11 +146,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
           final vm = ref.read(albumEditorViewModelProvider.notifier);
           final innerPages = vm.pages.sublist(1);
-          
+
           if (innerPages.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('보여줄 페이지가 없습니다.')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('보여줄 페이지가 없습니다.')));
             return;
           }
 
@@ -153,18 +161,18 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             context,
             PageRouteBuilder(
               opaque: false, // 투명한 배경
-              pageBuilder: (context, animation, secondaryAnimation) => 
-                FadeTransition(
-                  opacity: animation,
-                  child: AlbumReaderInnerDetailScreen(
-                    innerPages: innerPages,
-                    initialPageIndex: innerInitialIndex,
-                    singlePageW: _baseCanvasSize.width,
-                    singlePageH: _baseCanvasSize.height,
-                    interaction: _interaction,
-                    layerBuilder: _layerBuilder,
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  FadeTransition(
+                    opacity: animation,
+                    child: AlbumReaderInnerDetailScreen(
+                      innerPages: innerPages,
+                      initialPageIndex: innerInitialIndex,
+                      singlePageW: _baseCanvasSize.width,
+                      singlePageH: _baseCanvasSize.height,
+                      interaction: _interaction,
+                      layerBuilder: _layerBuilder,
+                    ),
                   ),
-                ),
             ),
           );
         },
@@ -178,10 +186,16 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: SnapFitColors.surfaceOf(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Row(
           children: [
-            Icon(Icons.lock_outline_rounded, color: SnapFitColors.accent, size: 22.sp),
+            Icon(
+              Icons.lock_outline_rounded,
+              color: SnapFitColors.accent,
+              size: 22.sp,
+            ),
             SizedBox(width: 8.w),
             Text(
               '제작 확정',
@@ -241,7 +255,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     if (state == null) {
       return Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
-        body: Center(child: CircularProgressIndicator(color: SnapFitColors.accent)),
+        body: Center(
+          child: CircularProgressIndicator(color: SnapFitColors.accent),
+        ),
       );
     }
     if (state.isCreatingInBackground) {
@@ -253,9 +269,14 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             children: [
               CircularProgressIndicator(color: SnapFitColors.accent),
               SizedBox(height: 24.h),
-              Text('앨범을 생성하고 있습니다...',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700,
-                      color: SnapFitColors.textPrimaryOf(context))),
+              Text(
+                '앨범을 생성하고 있습니다...',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
+              ),
             ],
           ),
         ),
@@ -271,10 +292,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           ref.read(homeViewModelProvider.notifier).refresh();
         },
         onOrder: () {
-          // TODO: 주문 화면으로 이동
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('주문 기능은 준비 중입니다.')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('주문 기능은 준비 중입니다.')));
         },
       );
     }
@@ -355,7 +375,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                     label = '커버';
                   } else {
                     // 스프레드 인덱스 → 실제 내지 페이지 번호
-                    final int leftPage  = (spreadIdx - 1) * 2 + 1;
+                    final int leftPage = (spreadIdx - 1) * 2 + 1;
                     final int rightPage = leftPage + 1;
                     if (rightPage <= totalInner) {
                       label = '$leftPage - $rightPage  /  $totalInner';
@@ -364,7 +384,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                     }
                   }
                   return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 18.w,
+                      vertical: 6.h,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.25),
                       borderRadius: BorderRadius.circular(20.r),
@@ -390,9 +413,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.menu_book_outlined,
-                                size: 56.sp,
-                                color: SnapFitColors.textMutedOf(context).withOpacity(0.4)),
+                            Icon(
+                              Icons.menu_book_outlined,
+                              size: 56.sp,
+                              color: SnapFitColors.textMutedOf(
+                                context,
+                              ).withOpacity(0.4),
+                            ),
                             SizedBox(height: 16.h),
                             Text(
                               '아직 페이지가 없어요.\n스냅핏 만들기에서 페이지를 추가해보세요!',
@@ -418,7 +445,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                           if (_coverSize == size) return;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (!mounted) return;
-                            debugPrint('[AlbumReaderScreen] Canvas Size Changed: $size');
+                            debugPrint(
+                              '[AlbumReaderScreen] Canvas Size Changed: $size',
+                            );
                             setState(() {
                               _coverSize = size;
                             });
@@ -484,5 +513,3 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     );
   }
 }
-
-

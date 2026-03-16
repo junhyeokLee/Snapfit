@@ -4,16 +4,16 @@ import 'package:photo_manager/photo_manager.dart';
 /// 하나의 레이어(이미지/텍스트/스티커/장식)를 정의하는 데이터 모델
 /// 통합 스키마: docs/template_schema.md
 enum LayerType {
-  image,        // 사용자 사진 레이어
-  text,         // 텍스트 레이어
-  sticker,      // 스티커(이미지 기반 장식)
-  decoration,   // 배경 장식(잎사귀, 찢어진 종이 등)
+  image, // 사용자 사진 레이어
+  text, // 텍스트 레이어
+  sticker, // 스티커(이미지 기반 장식)
+  decoration, // 배경 장식(잎사귀, 찢어진 종이 등)
 }
 
 enum TextStyleType {
-  none,            // 기본
-  textOuter,       // 글자 외곽선(흰/검 자동 대비)
-  textInner,       // 글자 내부
+  none, // 기본
+  textOuter, // 글자 외곽선(흰/검 자동 대비)
+  textInner, // 글자 내부
 }
 
 class LayerModel {
@@ -28,19 +28,24 @@ class LayerModel {
   final double scale;
   final double rotation;
   final TextAlign? textAlign;
-  final double width;   // 레이어 기본 너비
-  final double height;  // 레이어 기본 높이
+  final double width; // 레이어 기본 너비
+  final double height; // 레이어 기본 높이
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
-  final String? imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
-  final String? imageTemplate; // 이미지 슬롯 템플릿 ("free", "1:1", "4:3", ...) - null/ free면 원본 비율, 지정 시 contain으로 짤리지 않게
+  final String?
+  imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
+  final String?
+  imageTemplate; // 이미지 슬롯 템플릿 ("free", "1:1", "4:3", ...) - null/ free면 원본 비율, 지정 시 contain으로 짤리지 않게
   /// 프레임 적용 전 기본 상태(크기/위치)를 되돌리기 위한 베이스 값 (런타임 전용, 서버 저장 X)
   final double? frameBaseWidth;
   final double? frameBaseHeight;
   final Offset? frameBasePosition;
+
   /// 템플릿/프레임 안에서 사진 자체를 이동시킬 때 사용하는 오프셋 (런타임 기준 좌표)
   final Offset? imageOffset;
+
   /// 하위 호환용 preview URL (기존 스키마)
   final String? imageUrl;
+
   /// 운영급: 원본/미리보기 URL
   final String? originalUrl;
   final String? previewUrl;
@@ -60,8 +65,8 @@ class LayerModel {
     this.scale = 1.0,
     this.rotation = 0.0,
     this.textAlign,
-    this.width = 120,   // 기본값 (이미지 or 텍스트 크기)
-    this.height = 120,  // 기본값
+    this.width = 120, // 기본값 (이미지 or 텍스트 크기)
+    this.height = 120, // 기본값
     this.textBackground,
     this.imageBackground,
     this.imageTemplate,

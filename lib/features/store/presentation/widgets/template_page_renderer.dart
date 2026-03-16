@@ -31,15 +31,13 @@ class TemplatePageRenderer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
         ],
       ),
       child: Stack(
-        children: layers.map((layer) => _buildLayerWidget(layer, width, height)).toList(),
+        children: layers
+            .map((layer) => _buildLayerWidget(layer, width, height))
+            .toList(),
       ),
     );
   }
@@ -71,35 +69,43 @@ class TemplatePageRenderer extends StatelessWidget {
         imageContent = Container(
           color: Colors.grey[200],
           child: const Center(
-              child: Icon(Icons.add_photo_alternate_outlined, color: Colors.grey)),
+            child: Icon(Icons.add_photo_alternate_outlined, color: Colors.grey),
+          ),
         );
       }
 
       Widget layerWidget;
       if (frame == 'polaroid') {
         layerWidget = Container(
-          padding: EdgeInsets.fromLTRB(5 * scaleX, 5 * scaleX, 5 * scaleX, 25 * scaleX),
+          padding: EdgeInsets.fromLTRB(
+            5 * scaleX,
+            5 * scaleX,
+            5 * scaleX,
+            25 * scaleX,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
           ),
           child: imageContent,
         );
-        
+
         // Adjust position/size for the frame effect if needed
         // But for simplicity, we assume the layer frame includes the polaroid border in design
-        // Actually the code in detail screen manually adjusted rect. 
+        // Actually the code in detail screen manually adjusted rect.
         // Let's copy that logic:
         return Positioned(
-            left: x - 10 * scaleX, 
-            top: y - 10 * scaleY, 
-            width: w + 20 * scaleX, 
-            height: h + 40 * scaleY, 
-            child: GestureDetector(
-              onTap: onLayerTap != null ? () => onLayerTap!(layer.id) : onImageTap,
-              child: layerWidget,
-            ),
-         );
+          left: x - 10 * scaleX,
+          top: y - 10 * scaleY,
+          width: w + 20 * scaleX,
+          height: h + 40 * scaleY,
+          child: GestureDetector(
+            onTap: onLayerTap != null
+                ? () => onLayerTap!(layer.id)
+                : onImageTap,
+            child: layerWidget,
+          ),
+        );
       } else {
         layerWidget = imageContent;
       }
@@ -137,13 +143,17 @@ class TemplatePageRenderer extends StatelessWidget {
       );
     }
   }
-  
+
   Alignment _getAlignment(TextAlign? align) {
     switch (align) {
-      case TextAlign.left: return Alignment.centerLeft;
-      case TextAlign.right: return Alignment.centerRight;
-      case TextAlign.justify: return Alignment.center;
-      default: return Alignment.center;
+      case TextAlign.left:
+        return Alignment.centerLeft;
+      case TextAlign.right:
+        return Alignment.centerRight;
+      case TextAlign.justify:
+        return Alignment.center;
+      default:
+        return Alignment.center;
     }
   }
 }

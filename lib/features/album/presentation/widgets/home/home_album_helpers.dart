@@ -46,10 +46,7 @@ CoverTheme resolveCoverTheme(String? label) {
 }
 
 /// 커버 레이어 파싱
-List<LayerModel>? parseCoverLayers(
-  String raw, {
-  required Size canvasSize,
-}) {
+List<LayerModel>? parseCoverLayers(String raw, {required Size canvasSize}) {
   if (raw.isEmpty) return null;
   try {
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
@@ -150,9 +147,8 @@ Widget buildStaticText(LayerModel layer) {
 /// - Live Editing: 목표 페이지(targetPages)를 아직 채우지 못한 경우
 /// - Completed: targetPages를 모두 채운 경우 (totalPages >= targetPages)
 bool isDraftAlbum(Album album) {
-  final hasCoverUrl = (album.coverThumbnailUrl ??
-              album.coverPreviewUrl ??
-              album.coverImageUrl)
+  final hasCoverUrl =
+      (album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl)
           ?.isNotEmpty ==
       true;
   final hasLayers = album.coverLayersJson.isNotEmpty;
@@ -201,14 +197,14 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
   // lockedById가 있는 경우 ID끼리 비교, 없으면(구버전 호환) lockedBy(이름)와 비교하되 이름이 같을 수 있으므로 주의
   // 여기서는 lockedById가 있으면 우선 사용
   if (album.lockedById != null) {
-      if (album.lockedById != currentUserId) {
-          return AlbumStatusInfo(
-            label: '${album.lockedBy ?? "다른 사용자"} 편집 중',
-            backgroundColor: const Color(0xFFFFEAEA),
-            foregroundColor: const Color(0xFFFF4D4D),
-            isLocked: true,
-          );
-      }
+    if (album.lockedById != currentUserId) {
+      return AlbumStatusInfo(
+        label: '${album.lockedBy ?? "다른 사용자"} 편집 중',
+        backgroundColor: const Color(0xFFFFEAEA),
+        foregroundColor: const Color(0xFFFF4D4D),
+        isLocked: true,
+      );
+    }
   } else if (album.lockedBy != null && album.lockedBy != currentUserId) {
     // 하위 호환: lockedById가 없는 경우 기존 로직 (이름 비교) 실패 가능성 있음
     return AlbumStatusInfo(
@@ -232,9 +228,10 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
   return AlbumStatusInfo(
     label: '작성 중',
     backgroundColor: const Color(0xFF00C2E0), // Cyan background
-    foregroundColor: Colors.white,             // White text
+    foregroundColor: Colors.white, // White text
   );
 }
+
 /// 이미지 프레임 정적 렌더링 (LayerBuilder와 로직 동기화)
 Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
   switch (layer.imageBackground) {
@@ -277,67 +274,118 @@ Widget _buildStaticFramedImage(LayerModel layer, Widget child) {
 
 Color _roundBgColor(String bg) {
   switch (bg) {
-    case 'roundGray': return SnapFitStylePalette.gray;
-    case 'roundPink': return SnapFitStylePalette.pink;
-    case 'roundBlue': return SnapFitStylePalette.blue;
-    case 'roundMint': return SnapFitStylePalette.mint;
-    case 'roundLavender': return SnapFitStylePalette.lavender;
-    case 'roundOrange': return SnapFitStylePalette.orange;
-    case 'roundGreen': return SnapFitStylePalette.green;
-    case 'roundCream': return SnapFitStylePalette.cream;
-    case 'roundNavy': return SnapFitStylePalette.navy;
-    case 'roundRose': return SnapFitStylePalette.rose;
-    case 'roundCoral': return SnapFitStylePalette.coral;
-    case 'roundBeige': return SnapFitStylePalette.beige;
-    case 'roundTeal': return SnapFitStylePalette.teal;
-    case 'roundLemon': return SnapFitStylePalette.lemon;
-    default: return SnapFitStylePalette.white;
+    case 'roundGray':
+      return SnapFitStylePalette.gray;
+    case 'roundPink':
+      return SnapFitStylePalette.pink;
+    case 'roundBlue':
+      return SnapFitStylePalette.blue;
+    case 'roundMint':
+      return SnapFitStylePalette.mint;
+    case 'roundLavender':
+      return SnapFitStylePalette.lavender;
+    case 'roundOrange':
+      return SnapFitStylePalette.orange;
+    case 'roundGreen':
+      return SnapFitStylePalette.green;
+    case 'roundCream':
+      return SnapFitStylePalette.cream;
+    case 'roundNavy':
+      return SnapFitStylePalette.navy;
+    case 'roundRose':
+      return SnapFitStylePalette.rose;
+    case 'roundCoral':
+      return SnapFitStylePalette.coral;
+    case 'roundBeige':
+      return SnapFitStylePalette.beige;
+    case 'roundTeal':
+      return SnapFitStylePalette.teal;
+    case 'roundLemon':
+      return SnapFitStylePalette.lemon;
+    default:
+      return SnapFitStylePalette.white;
   }
 }
+
 Color _roundBorderColor(String bg) {
   if (bg == 'round') return const Color(0xFFE0E4EC);
-  return Color.lerp(_roundBgColor(bg), Colors.black, 0.08) ?? const Color(0xFFE0E4EC);
+  return Color.lerp(_roundBgColor(bg), Colors.black, 0.08) ??
+      const Color(0xFFE0E4EC);
 }
+
 Color _squareBgColor(String bg) {
   switch (bg) {
-    case 'squareGray': return SnapFitStylePalette.gray;
-    case 'squarePink': return SnapFitStylePalette.pink;
-    case 'squareBlue': return SnapFitStylePalette.blue;
-    case 'squareMint': return SnapFitStylePalette.mint;
-    case 'squareLavender': return SnapFitStylePalette.lavender;
-    case 'squareOrange': return SnapFitStylePalette.orange;
-    case 'squareGreen': return SnapFitStylePalette.green;
-    case 'squareCream': return SnapFitStylePalette.cream;
-    case 'squareNavy': return SnapFitStylePalette.navy;
-    case 'squareRose': return SnapFitStylePalette.rose;
-    case 'squareCoral': return SnapFitStylePalette.coral;
-    case 'squareBeige': return SnapFitStylePalette.beige;
-    case 'squareTeal': return SnapFitStylePalette.teal;
-    case 'squareLemon': return SnapFitStylePalette.lemon;
-    default: return SnapFitStylePalette.white;
+    case 'squareGray':
+      return SnapFitStylePalette.gray;
+    case 'squarePink':
+      return SnapFitStylePalette.pink;
+    case 'squareBlue':
+      return SnapFitStylePalette.blue;
+    case 'squareMint':
+      return SnapFitStylePalette.mint;
+    case 'squareLavender':
+      return SnapFitStylePalette.lavender;
+    case 'squareOrange':
+      return SnapFitStylePalette.orange;
+    case 'squareGreen':
+      return SnapFitStylePalette.green;
+    case 'squareCream':
+      return SnapFitStylePalette.cream;
+    case 'squareNavy':
+      return SnapFitStylePalette.navy;
+    case 'squareRose':
+      return SnapFitStylePalette.rose;
+    case 'squareCoral':
+      return SnapFitStylePalette.coral;
+    case 'squareBeige':
+      return SnapFitStylePalette.beige;
+    case 'squareTeal':
+      return SnapFitStylePalette.teal;
+    case 'squareLemon':
+      return SnapFitStylePalette.lemon;
+    default:
+      return SnapFitStylePalette.white;
   }
 }
+
 Color _squareBorderColor(String bg) {
   if (bg == 'square') return const Color(0xFFE0E4EC);
-  return Color.lerp(_squareBgColor(bg), Colors.black, 0.08) ?? const Color(0xFFE0E4EC);
+  return Color.lerp(_squareBgColor(bg), Colors.black, 0.08) ??
+      const Color(0xFFE0E4EC);
 }
+
 Color _roundSoftBgColor(String bg) {
   switch (bg) {
-    case 'roundSoftGray': return SnapFitStylePalette.gray;
-    case 'roundSoftPink': return SnapFitStylePalette.pink;
-    case 'roundSoftBlue': return SnapFitStylePalette.blue;
-    case 'roundSoftMint': return SnapFitStylePalette.mint;
-    case 'roundSoftLavender': return SnapFitStylePalette.lavender;
-    case 'roundSoftOrange': return SnapFitStylePalette.orange;
-    case 'roundSoftGreen': return SnapFitStylePalette.green;
-    case 'roundSoftCream': return SnapFitStylePalette.cream;
-    case 'roundSoftNavy': return SnapFitStylePalette.navy;
-    case 'roundSoftRose': return SnapFitStylePalette.rose;
-    case 'roundSoftCoral': return SnapFitStylePalette.coral;
-    case 'roundSoftBeige': return SnapFitStylePalette.beige;
-    case 'roundSoftTeal': return SnapFitStylePalette.teal;
-    case 'roundSoftLemon': return SnapFitStylePalette.lemon;
-    default: return SnapFitStylePalette.white;
+    case 'roundSoftGray':
+      return SnapFitStylePalette.gray;
+    case 'roundSoftPink':
+      return SnapFitStylePalette.pink;
+    case 'roundSoftBlue':
+      return SnapFitStylePalette.blue;
+    case 'roundSoftMint':
+      return SnapFitStylePalette.mint;
+    case 'roundSoftLavender':
+      return SnapFitStylePalette.lavender;
+    case 'roundSoftOrange':
+      return SnapFitStylePalette.orange;
+    case 'roundSoftGreen':
+      return SnapFitStylePalette.green;
+    case 'roundSoftCream':
+      return SnapFitStylePalette.cream;
+    case 'roundSoftNavy':
+      return SnapFitStylePalette.navy;
+    case 'roundSoftRose':
+      return SnapFitStylePalette.rose;
+    case 'roundSoftCoral':
+      return SnapFitStylePalette.coral;
+    case 'roundSoftBeige':
+      return SnapFitStylePalette.beige;
+    case 'roundSoftTeal':
+      return SnapFitStylePalette.teal;
+    case 'roundSoftLemon':
+      return SnapFitStylePalette.lemon;
+    default:
+      return SnapFitStylePalette.white;
   }
 }
 
@@ -361,95 +409,160 @@ Color _bubbleFillColor(String bg) {
 
 Color _labelOvalBgColor(String bg) {
   switch (bg) {
-    case 'labelGray': return SnapFitStylePalette.labelGray;
-    case 'labelPink': return SnapFitStylePalette.labelPink;
-    case 'labelBlue': return SnapFitStylePalette.labelBlue;
-    case 'labelMint': return SnapFitStylePalette.labelMint;
-    case 'labelLavender': return SnapFitStylePalette.labelLavender;
-    case 'labelOrange': return SnapFitStylePalette.labelOrange;
-    case 'labelGreen': return SnapFitStylePalette.labelGreen;
-    case 'labelWhite': return SnapFitStylePalette.labelWhite;
-    case 'labelCream': return SnapFitStylePalette.labelCream;
-    default: return const Color(0xFFE0F7FA);
+    case 'labelGray':
+      return SnapFitStylePalette.labelGray;
+    case 'labelPink':
+      return SnapFitStylePalette.labelPink;
+    case 'labelBlue':
+      return SnapFitStylePalette.labelBlue;
+    case 'labelMint':
+      return SnapFitStylePalette.labelMint;
+    case 'labelLavender':
+      return SnapFitStylePalette.labelLavender;
+    case 'labelOrange':
+      return SnapFitStylePalette.labelOrange;
+    case 'labelGreen':
+      return SnapFitStylePalette.labelGreen;
+    case 'labelWhite':
+      return SnapFitStylePalette.labelWhite;
+    case 'labelCream':
+      return SnapFitStylePalette.labelCream;
+    default:
+      return const Color(0xFFE0F7FA);
   }
 }
 
 Color _labelSolidBgColor(String bg) {
   switch (bg) {
-    case 'labelSolidGray': return const Color(0xFF616161);
-    case 'labelSolidPink': return const Color(0xFFAD1457);
-    case 'labelSolidBlue': return const Color(0xFF1565C0);
-    case 'labelSolidMint': return const Color(0xFF00695C);
-    case 'labelSolidRed': return const Color(0xFFC62828);
-    case 'labelSolidGreen': return const Color(0xFF2E7D32);
-    case 'labelSolidOrange': return const Color(0xFFE65100);
-    case 'labelSolidLavender': return const Color(0xFF5E35B1);
-    case 'labelSolidCream': return const Color(0xFFF5F0E6);
-    default: return const Color(0xFF2C3E50);
+    case 'labelSolidGray':
+      return const Color(0xFF616161);
+    case 'labelSolidPink':
+      return const Color(0xFFAD1457);
+    case 'labelSolidBlue':
+      return const Color(0xFF1565C0);
+    case 'labelSolidMint':
+      return const Color(0xFF00695C);
+    case 'labelSolidRed':
+      return const Color(0xFFC62828);
+    case 'labelSolidGreen':
+      return const Color(0xFF2E7D32);
+    case 'labelSolidOrange':
+      return const Color(0xFFE65100);
+    case 'labelSolidLavender':
+      return const Color(0xFF5E35B1);
+    case 'labelSolidCream':
+      return const Color(0xFFF5F0E6);
+    default:
+      return const Color(0xFF2C3E50);
   }
 }
 
 Color _tagBorderColor(String bg) {
   switch (bg) {
-    case 'tagGray': return SnapFitStylePalette.tagGray;
-    case 'tagPink': return SnapFitStylePalette.tagPink;
-    case 'tagBlue': return SnapFitStylePalette.tagBlue;
-    case 'tagMint': return SnapFitStylePalette.tagMint;
-    case 'tagLavender': return SnapFitStylePalette.tagLavender;
-    case 'tagOrange': return SnapFitStylePalette.tagOrange;
-    case 'tagGreen': return SnapFitStylePalette.tagGreen;
-    case 'tagRed': return const Color(0xFFE57373);
-    default: return const Color(0xFFB0B0B0);
+    case 'tagGray':
+      return SnapFitStylePalette.tagGray;
+    case 'tagPink':
+      return SnapFitStylePalette.tagPink;
+    case 'tagBlue':
+      return SnapFitStylePalette.tagBlue;
+    case 'tagMint':
+      return SnapFitStylePalette.tagMint;
+    case 'tagLavender':
+      return SnapFitStylePalette.tagLavender;
+    case 'tagOrange':
+      return SnapFitStylePalette.tagOrange;
+    case 'tagGreen':
+      return SnapFitStylePalette.tagGreen;
+    case 'tagRed':
+      return const Color(0xFFE57373);
+    default:
+      return const Color(0xFFB0B0B0);
   }
 }
 
 Color _tapeSolidBgColor(String bg) {
   switch (bg) {
-    case 'tapeKraft': return SnapFitStylePalette.tapeKraft;
-    case 'tapeGold': return SnapFitStylePalette.tapeGold;
-    case 'tapeSolidWhite': return SnapFitStylePalette.labelWhite;
-    case 'tapeSolidGray': return const Color(0xFFE0E0E0);
-    case 'tapeSolidPink': return const Color(0xFFFFCDD2);
-    case 'tapeSolidBlue': return const Color(0xFFBBDEFB);
-    case 'tapeSolidMint': return const Color(0xFFB2DFDB);
-    case 'tapeSolidLavender': return const Color(0xFFD1C4E9);
-    case 'tapeSolidOrange': return const Color(0xFFFFE0B2);
-    case 'tapeSolidGreen': return const Color(0xFFC8E6C9);
-    default: return SnapFitStylePalette.tapeKraft;
+    case 'tapeKraft':
+      return SnapFitStylePalette.tapeKraft;
+    case 'tapeGold':
+      return SnapFitStylePalette.tapeGold;
+    case 'tapeSolidWhite':
+      return SnapFitStylePalette.labelWhite;
+    case 'tapeSolidGray':
+      return const Color(0xFFE0E0E0);
+    case 'tapeSolidPink':
+      return const Color(0xFFFFCDD2);
+    case 'tapeSolidBlue':
+      return const Color(0xFFBBDEFB);
+    case 'tapeSolidMint':
+      return const Color(0xFFB2DFDB);
+    case 'tapeSolidLavender':
+      return const Color(0xFFD1C4E9);
+    case 'tapeSolidOrange':
+      return const Color(0xFFFFE0B2);
+    case 'tapeSolidGreen':
+      return const Color(0xFFC8E6C9);
+    default:
+      return SnapFitStylePalette.tapeKraft;
   }
 }
 
 (Color, Color) _noteGridColors(String bg) {
   switch (bg) {
-    case 'noteGridBlue': return (SnapFitStylePalette.blue, const Color(0xFFBBDEFB));
-    case 'noteGridPink': return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
-    case 'noteGridMint': return (SnapFitStylePalette.mint, const Color(0xFF80CBC4));
-    case 'noteGridLavender': return (SnapFitStylePalette.lavender, const Color(0xFFB39DDB));
-    case 'noteGridOrange': return (SnapFitStylePalette.orange, const Color(0xFFFFCC80));
-    case 'noteGridGray': return (SnapFitStylePalette.gray, const Color(0xFFBDBDBD));
-    default: return (const Color(0xFFFFFDE7), const Color(0xFFE8E0B0));
+    case 'noteGridBlue':
+      return (SnapFitStylePalette.blue, const Color(0xFFBBDEFB));
+    case 'noteGridPink':
+      return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
+    case 'noteGridMint':
+      return (SnapFitStylePalette.mint, const Color(0xFF80CBC4));
+    case 'noteGridLavender':
+      return (SnapFitStylePalette.lavender, const Color(0xFFB39DDB));
+    case 'noteGridOrange':
+      return (SnapFitStylePalette.orange, const Color(0xFFFFCC80));
+    case 'noteGridGray':
+      return (SnapFitStylePalette.gray, const Color(0xFFBDBDBD));
+    default:
+      return (const Color(0xFFFFFDE7), const Color(0xFFE8E0B0));
   }
 }
 
 (Color, Color) _tapeDotsColors(String bg) {
   switch (bg) {
-    case 'tapeDotsPink': return (SnapFitStylePalette.labelPink, SnapFitStylePalette.tagPink);
-    case 'tapeDotsMint': return (SnapFitStylePalette.mint, SnapFitStylePalette.tagMint);
-    case 'tapeDotsLavender': return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
-    case 'tapeDotsOrange': return (SnapFitStylePalette.orange, SnapFitStylePalette.tagOrange);
-    case 'tapeDotsGray': return (SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
-    default: return (const Color(0xFFFFE0B2), const Color(0xFFFFCC80));
+    case 'tapeDotsPink':
+      return (SnapFitStylePalette.labelPink, SnapFitStylePalette.tagPink);
+    case 'tapeDotsMint':
+      return (SnapFitStylePalette.mint, SnapFitStylePalette.tagMint);
+    case 'tapeDotsLavender':
+      return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+    case 'tapeDotsOrange':
+      return (SnapFitStylePalette.orange, SnapFitStylePalette.tagOrange);
+    case 'tapeDotsGray':
+      return (
+        SnapFitStylePalette.stripeGrayBase,
+        SnapFitStylePalette.stripeGrayStripe,
+      );
+    default:
+      return (const Color(0xFFFFE0B2), const Color(0xFFFFCC80));
   }
 }
 
 (Color, Color) _tapeDoubleColors(String bg) {
   switch (bg) {
-    case 'tapeDoublePink': return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
-    case 'tapeDoubleMint': return (SnapFitStylePalette.mint, const Color(0xFFA7FFEB));
-    case 'tapeDoubleBlue': return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
-    case 'tapeDoubleLavender': return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
-    case 'tapeDoubleGray': return (SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
-    default: return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
+    case 'tapeDoublePink':
+      return (SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
+    case 'tapeDoubleMint':
+      return (SnapFitStylePalette.mint, const Color(0xFFA7FFEB));
+    case 'tapeDoubleBlue':
+      return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
+    case 'tapeDoubleLavender':
+      return (SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+    case 'tapeDoubleGray':
+      return (
+        SnapFitStylePalette.stripeGrayBase,
+        SnapFitStylePalette.stripeGrayStripe,
+      );
+    default:
+      return (const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
   }
 }
 
@@ -522,7 +635,11 @@ Widget _buildStaticStyledText(LayerModel layer) {
           color: _roundSoftBgColor(bg),
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: content,
@@ -562,7 +679,12 @@ Widget _buildStaticStyledText(LayerModel layer) {
         decoration: BoxDecoration(
           color: _bubbleFillColor(bg),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _bubbleFillColor(bg) == Colors.white ? Colors.black.withOpacity(0.22) : (Color.lerp(_bubbleFillColor(bg), Colors.black, 0.12) ?? Colors.black26)),
+          border: Border.all(
+            color: _bubbleFillColor(bg) == Colors.white
+                ? Colors.black.withOpacity(0.22)
+                : (Color.lerp(_bubbleFillColor(bg), Colors.black, 0.12) ??
+                      Colors.black26),
+          ),
         ),
         child: content,
       );
@@ -598,7 +720,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: _tagBorderColor(bg), style: BorderStyle.solid),
+          border: Border.all(
+            color: _tagBorderColor(bg),
+            style: BorderStyle.solid,
+          ),
         ),
         child: content,
       );
@@ -613,7 +738,9 @@ Widget _buildStaticStyledText(LayerModel layer) {
     case 'labelSolidLavender':
     case 'labelSolidCream':
       final solidBg = _labelSolidBgColor(bg);
-      final solidTextColor = (bg == 'labelSolidCream') ? const Color(0xFF5D4037) : Colors.white;
+      final solidTextColor = (bg == 'labelSolidCream')
+          ? const Color(0xFF5D4037)
+          : Colors.white;
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -622,7 +749,9 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: solidTextColor),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: solidTextColor,
+          ),
           textAlign: layer.textAlign,
         ),
       );
@@ -862,7 +991,12 @@ Widget _buildStaticStyledText(LayerModel layer) {
     case 'tapeSolidOrange':
     case 'tapeSolidGreen':
       final solidBg = _tapeSolidBgColor(bg);
-      final solidTextColor = (bg == 'tapeKraft' || bg == 'tapeGold' || solidBg.computeLuminance() > 0.6) ? const Color(0xFF5D4037) : Colors.white;
+      final solidTextColor =
+          (bg == 'tapeKraft' ||
+              bg == 'tapeGold' ||
+              solidBg.computeLuminance() > 0.6)
+          ? const Color(0xFF5D4037)
+          : Colors.white;
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -871,7 +1005,9 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: solidTextColor),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: solidTextColor,
+          ),
           textAlign: layer.textAlign,
         ),
       );
@@ -923,7 +1059,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFFFF8E7), fontWeight: FontWeight.w700),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: const Color(0xFFFFF8E7),
+            fontWeight: FontWeight.w700,
+          ),
           textAlign: layer.textAlign,
         ),
       );
@@ -936,7 +1075,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFFFF8E7), fontWeight: FontWeight.w700),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: const Color(0xFFFFF8E7),
+            fontWeight: FontWeight.w700,
+          ),
           textAlign: layer.textAlign,
         ),
       );
@@ -959,7 +1101,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
           textAlign: layer.textAlign,
         ),
       );
@@ -985,7 +1130,10 @@ Widget _buildStaticStyledText(LayerModel layer) {
         ),
         child: Text(
           layer.text ?? '',
-          style: (layer.textStyle ?? const TextStyle()).copyWith(color: const Color(0xFFECEFF1), fontWeight: FontWeight.w600),
+          style: (layer.textStyle ?? const TextStyle()).copyWith(
+            color: const Color(0xFFECEFF1),
+            fontWeight: FontWeight.w600,
+          ),
           textAlign: layer.textAlign,
         ),
       );

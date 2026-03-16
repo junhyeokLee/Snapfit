@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 class LineBoxPainter extends CustomPainter {
   final String text;
   final TextStyle style;
-  final Color? boxColor;        // null이면 박스 미표시
-  final double padding;         // 텍스트 안쪽 패딩 (좌/우/상/하 동일)
-  final TextAlign align;        // 텍스트 정렬 (TextPainter와 동일하게 적용)
+  final Color? boxColor; // null이면 박스 미표시
+  final double padding; // 텍스트 안쪽 패딩 (좌/우/상/하 동일)
+  final TextAlign align; // 텍스트 정렬 (TextPainter와 동일하게 적용)
 
   LineBoxPainter({
     required this.text,
@@ -41,7 +41,8 @@ class LineBoxPainter extends CustomPainter {
       bool placed = false;
       for (final g in lineGroups) {
         final ref = g.first;
-        if ((b.top - ref.top).abs() < eps && (b.bottom - ref.bottom).abs() < eps) {
+        if ((b.top - ref.top).abs() < eps &&
+            (b.bottom - ref.bottom).abs() < eps) {
           g.add(b);
           placed = true;
           break;
@@ -52,8 +53,8 @@ class LineBoxPainter extends CustomPainter {
 
     // 각 줄을 감싸는 RRect 계산
     // 인스타처럼 연결된 느낌을 주기 위해 줄 박스 사이를 약간 겹치게(overlap) 만든다.
-    const double radius = 12.0;     // 모서리 라운드
-    const double overlap = 4.0;     // 줄 사이 수직 겹침(px). 값이 클수록 더 붙어 보임
+    const double radius = 12.0; // 모서리 라운드
+    const double overlap = 4.0; // 줄 사이 수직 겹침(px). 값이 클수록 더 붙어 보임
 
     Path? merged; // 누적 union 경로
     for (final line in lineGroups) {
@@ -71,11 +72,11 @@ class LineBoxPainter extends CustomPainter {
       // TextPainter는 (0,0)을 기준으로 레이아웃 됨. 페인터 캔버스 좌표로 패딩 보정.
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(
-          left + padding,                 // 좌측
-          top + padding - overlap,        // 위쪽은 조금 올려서 다음 줄과 겹치게
+          left + padding, // 좌측
+          top + padding - overlap, // 위쪽은 조금 올려서 다음 줄과 겹치게
           (right - left),
-          (bottom - top) + overlap * 2,   // 높이도 겹침만큼 키움
-        ).inflate(padding),               // 내부 패딩 부여 (좌우/상하 동일)
+          (bottom - top) + overlap * 2, // 높이도 겹침만큼 키움
+        ).inflate(padding), // 내부 패딩 부여 (좌우/상하 동일)
         const Radius.circular(radius),
       );
 

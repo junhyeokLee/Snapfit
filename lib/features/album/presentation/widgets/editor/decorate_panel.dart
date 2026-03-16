@@ -18,7 +18,8 @@ class DecoratePanel extends ConsumerStatefulWidget {
   ConsumerState<DecoratePanel> createState() => _DecoratePanelState();
 }
 
-class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTickerProviderStateMixin {
+class _DecoratePanelState extends ConsumerState<DecoratePanel>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -47,8 +48,11 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
     final currentPage = editorVm.currentPage;
     final isCover = currentPage?.isCover ?? false;
 
-    final physical = isCover ? stateVal?.coverCanvasSize : stateVal?.innerCanvasSize;
-    final double physicalAspect = (physical != null &&
+    final physical = isCover
+        ? stateVal?.coverCanvasSize
+        : stateVal?.innerCanvasSize;
+    final double physicalAspect =
+        (physical != null &&
             physical != Size.zero &&
             physical.height > 0 &&
             physical.width > 0)
@@ -81,7 +85,9 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.2),
+              color: SnapFitColors.textPrimaryOf(
+                context,
+              ).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -118,7 +124,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
               ],
             ),
           ),
-          
+
           const Divider(color: Colors.black12, height: 1),
 
           Expanded(
@@ -128,8 +134,12 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
                 DecorateStickerTab(
                   surfaceColor: surfaceColor,
                   onStickerTap: (sticker) {
-                    final editorVm = ref.read(albumEditorViewModelProvider.notifier);
-                    final stateVal = ref.read(albumEditorViewModelProvider).value;
+                    final editorVm = ref.read(
+                      albumEditorViewModelProvider.notifier,
+                    );
+                    final stateVal = ref
+                        .read(albumEditorViewModelProvider)
+                        .value;
                     final canvasSize = _effectiveLogicalCanvasSize(
                       editorVm: editorVm,
                       stateVal: stateVal,
@@ -146,7 +156,9 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> with SingleTicker
                 DecorateColorTab(
                   surfaceColor: surfaceColor,
                   onColorTap: (colorValue) {
-                    ref.read(albumEditorViewModelProvider.notifier).updatePageBackgroundColor(colorValue);
+                    ref
+                        .read(albumEditorViewModelProvider.notifier)
+                        .updatePageBackgroundColor(colorValue);
                     _closeSheet();
                   },
                 ),

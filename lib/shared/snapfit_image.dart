@@ -60,7 +60,10 @@ class SnapfitImage extends StatelessWidget {
           return error ??
               Container(
                 color: Colors.grey[300],
-                child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+                child: const Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.grey,
+                ),
               );
         }
 
@@ -69,7 +72,8 @@ class SnapfitImage extends StatelessWidget {
           fit: fit,
           alignment: alignment,
           cacheManager: cacheManager,
-          placeholder: (_, __) => placeholder ??
+          placeholder: (_, __) =>
+              placeholder ??
               Container(
                 color: Colors.grey[300],
                 child: const Center(
@@ -80,14 +84,17 @@ class SnapfitImage extends StatelessWidget {
                   ),
                 ),
               ),
-          errorWidget: (_, __, ___) => error ??
+          errorWidget: (_, __, ___) =>
+              error ??
               Container(
                 color: Colors.grey[300],
-                child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+                child: const Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.grey,
+                ),
               ),
         );
       },
     );
   }
 }
-

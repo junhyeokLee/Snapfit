@@ -24,6 +24,7 @@ class Env {
   /// - --dart-define=GOOGLE_WEB_CLIENT_ID=...
   static const String googleWebClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
-    defaultValue: '991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com',
+    defaultValue:
+        '991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com',
   );
 }

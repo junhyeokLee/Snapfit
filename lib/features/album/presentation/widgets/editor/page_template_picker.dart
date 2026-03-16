@@ -10,10 +10,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class PageTemplatePicker extends StatelessWidget {
   final ValueChanged<PageTemplate> onSelect;
 
-  const PageTemplatePicker({
-    super.key,
-    required this.onSelect,
-  });
+  const PageTemplatePicker({super.key, required this.onSelect});
 
   static Future<void> show(
     BuildContext context, {
@@ -39,7 +36,9 @@ class PageTemplatePicker extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
           decoration: BoxDecoration(
             color: SnapFitColors.surfaceOf(context).withOpacity(0.95),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
@@ -124,7 +123,10 @@ class TemplatePreviewCanvas extends StatelessWidget {
         decoration: BoxDecoration(
           color: SnapFitColors.overlayLightOf(context),
           borderRadius: BorderRadius.circular(6.r),
-          border: Border.all(color: SnapFitColors.overlayStrongOf(context), width: 1),
+          border: Border.all(
+            color: SnapFitColors.overlayStrongOf(context),
+            width: 1,
+          ),
         ),
         child: Icon(
           Icons.add_photo_alternate_outlined,
@@ -200,7 +202,8 @@ class TemplatePreviewCanvas extends StatelessWidget {
                           child: Text(
                             'Aa',
                             style: TextStyle(
-                              fontSize: (slotW.clamp(0, 20) + slotH.clamp(0, 20)) / 4,
+                              fontSize:
+                                  (slotW.clamp(0, 20) + slotH.clamp(0, 20)) / 4,
                               color: Colors.amber.shade800,
                               fontWeight: FontWeight.w600,
                             ),
@@ -220,10 +223,7 @@ class _TemplateCard extends StatelessWidget {
   final PageTemplate template;
   final VoidCallback onTap;
 
-  const _TemplateCard({
-    required this.template,
-    required this.onTap,
-  });
+  const _TemplateCard({required this.template, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +238,10 @@ class _TemplateCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: SnapFitColors.overlayLightOf(context),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: SnapFitColors.overlayStrongOf(context), width: 1),
+            border: Border.all(
+              color: SnapFitColors.overlayStrongOf(context),
+              width: 1,
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

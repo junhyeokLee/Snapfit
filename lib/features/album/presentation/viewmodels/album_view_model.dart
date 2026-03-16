@@ -88,10 +88,7 @@ class AlbumViewModel extends _$AlbumViewModel {
           st,
         );
       } else if (statusCode == 500) {
-        state = AsyncError(
-          Exception('서버 오류가 발생했습니다. 백엔드 로그를 확인해주세요.'),
-          st,
-        );
+        state = AsyncError(Exception('서버 오류가 발생했습니다. 백엔드 로그를 확인해주세요.'), st);
       } else {
         state = AsyncError(e, st);
       }

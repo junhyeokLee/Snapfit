@@ -26,7 +26,14 @@ class EditTextOverlay extends StatefulWidget {
   final String initialText;
   final TextStyle initialStyle;
   // Updated onSubmit signature to accept BackgroundMode and Color? bubbleColor
-  final void Function(String newText, TextStyle newStyle, TextStyleType textStyleType, Color? bubbleColor, TextAlign align) onSubmit;
+  final void Function(
+    String newText,
+    TextStyle newStyle,
+    TextStyleType textStyleType,
+    Color? bubbleColor,
+    TextAlign align,
+  )
+  onSubmit;
   final VoidCallback onCancel;
   final TextStyleType? initialMode;
   final Color? initialBubbleColor;
@@ -45,7 +52,8 @@ class EditTextOverlay extends StatefulWidget {
   State<EditTextOverlay> createState() => _EditTextOverlayState();
 }
 
-class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingObserver {
+class _EditTextOverlayState extends State<EditTextOverlay>
+    with WidgetsBindingObserver {
   // ScrollControllers for font and color pickers
   final ScrollController _fontScroll = ScrollController();
   final ScrollController _colorScroll = ScrollController();
@@ -68,12 +76,12 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
   // 인쇄용으로 많이 쓰는 기본 서체들을 앞쪽에 배치
   final List<String> _fontFamilies = const [
     // 인쇄/본문용 기본 세트
-    'NotoSans',     // 기본 고딕 본문
-    'Eulyoo',       // 명조/에세이 느낌 본문
-    'SeoulNamsan',  // 모던 고딕 본문
-    'Book',         // 책 느낌 타이틀/본문
-    'BookMyungjo',  // 책 명조 스타일
-    'Cormorant',    // 영문 타이틀/본문
+    'NotoSans', // 기본 고딕 본문
+    'Eulyoo', // 명조/에세이 느낌 본문
+    'SeoulNamsan', // 모던 고딕 본문
+    'Book', // 책 느낌 타이틀/본문
+    'BookMyungjo', // 책 명조 스타일
+    'Cormorant', // 영문 타이틀/본문
     'Roboto',
     'Raleway',
     'Poppins',
@@ -102,7 +110,8 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
   // 폰트 크기 스케일 (0.8 ~ 2.5)
   final double _fontScale = 1.0;
   final GlobalKey repaintKey = GlobalKey();
-  final GlobalKey<EditableTextState> _editableKey = GlobalKey<EditableTextState>();
+  final GlobalKey<EditableTextState> _editableKey =
+      GlobalKey<EditableTextState>();
 
   @override
   void initState() {
@@ -132,23 +141,68 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
       // Scroll color list to current color
       // ColorPaletteList colors (must match below)
       final List<Color> colorList = const [
-        Colors.white, Colors.grey, Colors.black, Colors.red, Colors.pink, Colors.purple,
-        Colors.deepPurple, Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
-        Colors.teal, Colors.green, Colors.lightGreen, Colors.lime, Colors.yellow,
-        Colors.amber, Colors.orange, Colors.deepOrange, Colors.brown, Colors.blueGrey,
-        Color(0xFFFF5722), Color(0xFFE91E63), Color(0xFF9C27B0),
-        Color(0xFF3F51B5), Color(0xFF03A9F4), Color(0xFF00BCD4),
-        Color(0xFF4CAF50), Color(0xFFFFEB3B), Color(0xFFFF9800),
-        Color(0xFF795548), Color(0xFF607D8B), Color(0xFFB2FF59),
-        Color(0xFFFF8A80), Color(0xFFEA80FC), Color(0xFF8C9EFF),
-        Color(0xFF80D8FF), Color(0xFF84FFFF), Color(0xFFA7FFEB),
-        Color(0xFFCCFF90), Color(0xFFFFFF8D), Color(0xFFFFE57F),
-        Color(0xFFD7CCC8), Color(0xFFBCAAA4),
-        Color(0xFFFFC1CC), Color(0xFFB5EAEA), Color(0xFFEDF6E5), Color(0xFFFCECDD),
-        Color(0xFFF9F3DF), Color(0xFFFFABAB), Color(0xFFB5FFD9), Color(0xFFC3FBD8),
-        Color(0xFFDEFCFC), Color(0xFFFFD6E8), Color(0xFFCAFFD0), Color(0xFFE3EFFF),
-        Color(0xFFFFF3B0), Color(0xFFFFD4A1), Color(0xFFA9DAFF), Color(0xFFE0BBE4),
-        Color(0xFF957DAD), Color(0xFFD291BC),
+        Colors.white,
+        Colors.grey,
+        Colors.black,
+        Colors.red,
+        Colors.pink,
+        Colors.purple,
+        Colors.deepPurple,
+        Colors.indigo,
+        Colors.blue,
+        Colors.lightBlue,
+        Colors.cyan,
+        Colors.teal,
+        Colors.green,
+        Colors.lightGreen,
+        Colors.lime,
+        Colors.yellow,
+        Colors.amber,
+        Colors.orange,
+        Colors.deepOrange,
+        Colors.brown,
+        Colors.blueGrey,
+        Color(0xFFFF5722),
+        Color(0xFFE91E63),
+        Color(0xFF9C27B0),
+        Color(0xFF3F51B5),
+        Color(0xFF03A9F4),
+        Color(0xFF00BCD4),
+        Color(0xFF4CAF50),
+        Color(0xFFFFEB3B),
+        Color(0xFFFF9800),
+        Color(0xFF795548),
+        Color(0xFF607D8B),
+        Color(0xFFB2FF59),
+        Color(0xFFFF8A80),
+        Color(0xFFEA80FC),
+        Color(0xFF8C9EFF),
+        Color(0xFF80D8FF),
+        Color(0xFF84FFFF),
+        Color(0xFFA7FFEB),
+        Color(0xFFCCFF90),
+        Color(0xFFFFFF8D),
+        Color(0xFFFFE57F),
+        Color(0xFFD7CCC8),
+        Color(0xFFBCAAA4),
+        Color(0xFFFFC1CC),
+        Color(0xFFB5EAEA),
+        Color(0xFFEDF6E5),
+        Color(0xFFFCECDD),
+        Color(0xFFF9F3DF),
+        Color(0xFFFFABAB),
+        Color(0xFFB5FFD9),
+        Color(0xFFC3FBD8),
+        Color(0xFFDEFCFC),
+        Color(0xFFFFD6E8),
+        Color(0xFFCAFFD0),
+        Color(0xFFE3EFFF),
+        Color(0xFFFFF3B0),
+        Color(0xFFFFD4A1),
+        Color(0xFFA9DAFF),
+        Color(0xFFE0BBE4),
+        Color(0xFF957DAD),
+        Color(0xFFD291BC),
       ];
       final color = _style.color ?? Colors.white;
       final cidx = colorList.indexWhere((c) => c.value == color.value);
@@ -184,8 +238,8 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
 
       // 열림 -> 닫힘 감지 (디바운스 적용: 일시적인 insets 변동에 닫히지 않게)
       if (_keyboardWasVisible && !keyboardVisibleNow && _initialOpenHandled) {
-            _keyboardWasVisible = false;
-            Navigator.of(context, rootNavigator: true).pop();
+        _keyboardWasVisible = false;
+        Navigator.of(context, rootNavigator: true).pop();
       }
 
       if (keyboardVisibleNow) {
@@ -219,24 +273,22 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
       shadows: () {
         if (_textStyleType == TextStyleType.textOuter) {
           final base = _style.color ?? Colors.black;
-          final contrast = (base.computeLuminance() > 0.5) ? Colors.black : Colors.white;
+          final contrast = (base.computeLuminance() > 0.5)
+              ? Colors.black
+              : Colors.white;
           return _outline(contrast);
         } else if (_textStyleType == TextStyleType.textInner) {
           final base = _style.color ?? Colors.white;
-          final contrast = (base.computeLuminance() > 0.5) ? Colors.black : Colors.white;
+          final contrast = (base.computeLuminance() > 0.5)
+              ? Colors.black
+              : Colors.white;
           return _innerOutline(contrast);
         }
         return null;
       }(),
     );
 
-    widget.onSubmit(
-      text,
-      newStyle,
-      _textStyleType,
-      _bubbleColor,
-      _align,
-    );
+    widget.onSubmit(text, newStyle, _textStyleType, _bubbleColor, _align);
   }
 
   void _togglePanel(EditPanelMode mode) {
@@ -292,33 +344,49 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
   }
 
   // 외곽선(스트로크 모사) Shadow 8방향
-  List<Shadow> _outline(Color oc) => const [
-    Shadow(offset: Offset(0, 0), blurRadius: 0),
-    Shadow(offset: Offset(1, 0), blurRadius: 0),
-    Shadow(offset: Offset(-1, 0), blurRadius: 0),
-    Shadow(offset: Offset(0, 1), blurRadius: 0),
-    Shadow(offset: Offset(0, -1), blurRadius: 0),
-    Shadow(offset: Offset(1, 1), blurRadius: 0),
-    Shadow(offset: Offset(1, -1), blurRadius: 0),
-    Shadow(offset: Offset(-1, 1), blurRadius: 0),
-    Shadow(offset: Offset(-1, -1), blurRadius: 0),
-  ].map((s) => Shadow(offset: s.offset, blurRadius: s.blurRadius, color: oc)).toList();
+  List<Shadow> _outline(Color oc) =>
+      const [
+            Shadow(offset: Offset(0, 0), blurRadius: 0),
+            Shadow(offset: Offset(1, 0), blurRadius: 0),
+            Shadow(offset: Offset(-1, 0), blurRadius: 0),
+            Shadow(offset: Offset(0, 1), blurRadius: 0),
+            Shadow(offset: Offset(0, -1), blurRadius: 0),
+            Shadow(offset: Offset(1, 1), blurRadius: 0),
+            Shadow(offset: Offset(1, -1), blurRadius: 0),
+            Shadow(offset: Offset(-1, 1), blurRadius: 0),
+            Shadow(offset: Offset(-1, -1), blurRadius: 0),
+          ]
+          .map(
+            (s) =>
+                Shadow(offset: s.offset, blurRadius: s.blurRadius, color: oc),
+          )
+          .toList();
 
   // 내부 인버스 스트로크 (offset 반전, 더 미묘한 내부 효과, 대비색 사용)
   List<Shadow> _innerOutline(Color ic) {
     Color base = ic;
-    Color contrastColor = (base.computeLuminance() > 0.5) ? Colors.black : Colors.white;
+    Color contrastColor = (base.computeLuminance() > 0.5)
+        ? Colors.black
+        : Colors.white;
     return [
-      Shadow(offset: Offset(0, 0), blurRadius: 0),
-      Shadow(offset: Offset(0.5, 0), blurRadius: 0),
-      Shadow(offset: Offset(-0.5, 0), blurRadius: 0),
-      Shadow(offset: Offset(0, 0.5), blurRadius: 0),
-      Shadow(offset: Offset(0, -0.5), blurRadius: 0),
-      Shadow(offset: Offset(0.5, 0.5), blurRadius: 0),
-      Shadow(offset: Offset(0.5, -0.5), blurRadius: 0),
-      Shadow(offset: Offset(-0.5, 0.5), blurRadius: 0),
-      Shadow(offset: Offset(-0.5, -0.5), blurRadius: 0),
-    ].map((s) => Shadow(offset: s.offset, blurRadius: s.blurRadius, color: contrastColor)).toList();
+          Shadow(offset: Offset(0, 0), blurRadius: 0),
+          Shadow(offset: Offset(0.5, 0), blurRadius: 0),
+          Shadow(offset: Offset(-0.5, 0), blurRadius: 0),
+          Shadow(offset: Offset(0, 0.5), blurRadius: 0),
+          Shadow(offset: Offset(0, -0.5), blurRadius: 0),
+          Shadow(offset: Offset(0.5, 0.5), blurRadius: 0),
+          Shadow(offset: Offset(0.5, -0.5), blurRadius: 0),
+          Shadow(offset: Offset(-0.5, 0.5), blurRadius: 0),
+          Shadow(offset: Offset(-0.5, -0.5), blurRadius: 0),
+        ]
+        .map(
+          (s) => Shadow(
+            offset: s.offset,
+            blurRadius: s.blurRadius,
+            color: contrastColor,
+          ),
+        )
+        .toList();
   }
 
   Widget _buildOptionList() {
@@ -336,10 +404,27 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
         return ColorPaletteList(
           colors: const [
             // 기본 머티리얼 + 파스텔/인스타 감성 컬러 확장
-            Colors.white, Colors.grey, Colors.black, Colors.red, Colors.pink, Colors.purple,
-            Colors.deepPurple, Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
-            Colors.teal, Colors.green, Colors.lightGreen, Colors.lime, Colors.yellow,
-            Colors.amber, Colors.orange, Colors.deepOrange, Colors.brown, Colors.blueGrey,
+            Colors.white,
+            Colors.grey,
+            Colors.black,
+            Colors.red,
+            Colors.pink,
+            Colors.purple,
+            Colors.deepPurple,
+            Colors.indigo,
+            Colors.blue,
+            Colors.lightBlue,
+            Colors.cyan,
+            Colors.teal,
+            Colors.green,
+            Colors.lightGreen,
+            Colors.lime,
+            Colors.yellow,
+            Colors.amber,
+            Colors.orange,
+            Colors.deepOrange,
+            Colors.brown,
+            Colors.blueGrey,
             Color(0xFFFF5722), Color(0xFFE91E63), Color(0xFF9C27B0),
             Color(0xFF3F51B5), Color(0xFF03A9F4), Color(0xFF00BCD4),
             Color(0xFF4CAF50), Color(0xFFFFEB3B), Color(0xFFFF9800),
@@ -349,10 +434,22 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
             Color(0xFFCCFF90), Color(0xFFFFFF8D), Color(0xFFFFE57F),
             Color(0xFFD7CCC8), Color(0xFFBCAAA4),
             // 파스텔/네온 추가
-            Color(0xFFFFC1CC), Color(0xFFB5EAEA), Color(0xFFEDF6E5), Color(0xFFFCECDD),
-            Color(0xFFF9F3DF), Color(0xFFFFABAB), Color(0xFFB5FFD9), Color(0xFFC3FBD8),
-            Color(0xFFDEFCFC), Color(0xFFFFD6E8), Color(0xFFCAFFD0), Color(0xFFE3EFFF),
-            Color(0xFFFFF3B0), Color(0xFFFFD4A1), Color(0xFFA9DAFF), Color(0xFFE0BBE4),
+            Color(0xFFFFC1CC),
+            Color(0xFFB5EAEA),
+            Color(0xFFEDF6E5),
+            Color(0xFFFCECDD),
+            Color(0xFFF9F3DF),
+            Color(0xFFFFABAB),
+            Color(0xFFB5FFD9),
+            Color(0xFFC3FBD8),
+            Color(0xFFDEFCFC),
+            Color(0xFFFFD6E8),
+            Color(0xFFCAFFD0),
+            Color(0xFFE3EFFF),
+            Color(0xFFFFF3B0),
+            Color(0xFFFFD4A1),
+            Color(0xFFA9DAFF),
+            Color(0xFFE0BBE4),
             Color(0xFF957DAD), Color(0xFFD291BC),
           ],
           current: _style.color ?? Colors.white,
@@ -380,6 +477,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
           return Icons.format_align_center;
       }
     }
+
     return SafeArea(
       top: false,
       child: Container(
@@ -442,7 +540,8 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
               behavior: HitTestBehavior.deferToChild,
               onTap: () {
                 // 배경을 눌렀을 때만 동작
-                final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+                final isKeyboardOpen =
+                    MediaQuery.of(context).viewInsets.bottom > 0;
                 if (!isKeyboardOpen) _submit();
               },
             ),
@@ -452,10 +551,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
         /// 2) 상단 바 (완료)
         SafeArea(
           bottom: false,
-          child: TopBar(
-            onCancel: widget.onCancel,
-            onDone: _submit,
-          ),
+          child: TopBar(onCancel: widget.onCancel, onDone: _submit),
         ),
 
         /// 3) 중앙 에디터 (TextField)
@@ -474,7 +570,10 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
 
                 // 모드별 텍스트 스타일
                 TextStyle effectiveStyle = _style.copyWith(
-                  fontSize: ((_style.fontSize ?? 20) * _fontScale).sp.clamp(18.sp, 80.sp),
+                  fontSize: ((_style.fontSize ?? 20) * _fontScale).sp.clamp(
+                    18.sp,
+                    80.sp,
+                  ),
                   fontFamily: _currentFont,
                   // shadows only for textOuter or textInner, set below
                   shadows: outlineShadows,
@@ -485,20 +584,22 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
                     color: _style.color,
                     backgroundColor: null,
                     shadows: _innerOutline(
-                      (_style.color ?? Colors.black).computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                      (_style.color ?? Colors.black).computeLuminance() > 0.5
+                          ? Colors.black
+                          : Colors.white,
                     ),
                   );
-                }
-                else if (_textStyleType == TextStyleType.textOuter) {
+                } else if (_textStyleType == TextStyleType.textOuter) {
                   effectiveStyle = effectiveStyle.copyWith(
                     color: _style.color,
                     backgroundColor: null,
                     shadows: _outline(
-                      (_style.color ?? Colors.black).computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                      (_style.color ?? Colors.black).computeLuminance() > 0.5
+                          ? Colors.black
+                          : Colors.white,
                     ),
                   );
-                }
-                else {
+                } else {
                   effectiveStyle = effectiveStyle.copyWith(
                     color: _style.color,
                     backgroundColor: null,
@@ -537,8 +638,12 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
                       alignment: const Alignment(0, -0.55), // 화면 중앙보다 위로 고정
                       child: Padding(
                         padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + 20, // SafeArea + offset
-                          bottom: MediaQuery.of(context).viewInsets.bottom + 20, // 키보드 대응
+                          top:
+                              MediaQuery.of(context).padding.top +
+                              20, // SafeArea + offset
+                          bottom:
+                              MediaQuery.of(context).viewInsets.bottom +
+                              20, // 키보드 대응
                           left: 24.w,
                           right: 24.w,
                         ),
@@ -548,9 +653,7 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
                             minHeight: 60.h,
                             maxHeight: 200.h,
                           ),
-                          child: SingleChildScrollView(
-                            child: boxedEditable,
-                          ),
+                          child: SingleChildScrollView(child: boxedEditable),
                         ),
                       ),
                     ),
@@ -590,7 +693,8 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
           Positioned(
             left: 0, // Anchor to left edge for easier access
             top: 0.h,
-            bottom: viewInsets.bottom + 0.25 * MediaQuery.of(context).size.height,
+            bottom:
+                viewInsets.bottom + 0.25 * MediaQuery.of(context).size.height,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return SafeArea(
@@ -599,14 +703,12 @@ class _EditTextOverlayState extends State<EditTextOverlay> with WidgetsBindingOb
                     child: RotatedBox(
                       quarterTurns: 0,
                       child: TriangleSlider(
-                        min: 10.0,        // 최소 글자 크기
-                        max: 80.0,        // 최대 글자 크기
+                        min: 10.0, // 최소 글자 크기
+                        max: 80.0, // 최대 글자 크기
                         value: _style.fontSize ?? 20.0,
                         onChanged: (val) {
                           setState(() {
-                            _style = _style.copyWith(
-                              fontSize: val.sp,
-                            );
+                            _style = _style.copyWith(fontSize: val.sp);
                           });
                         },
                         height: 250.h,

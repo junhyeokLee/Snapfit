@@ -23,7 +23,8 @@ class GalleryThumbTile extends StatefulWidget {
   State<GalleryThumbTile> createState() => GalleryThumbTileState();
 }
 
-class GalleryThumbTileState extends State<GalleryThumbTile> with AutomaticKeepAliveClientMixin {
+class GalleryThumbTileState extends State<GalleryThumbTile>
+    with AutomaticKeepAliveClientMixin {
   Uint8List? _thumbData;
   bool _loading = false;
 
@@ -39,7 +40,9 @@ class GalleryThumbTileState extends State<GalleryThumbTile> with AutomaticKeepAl
   Future<void> _loadThumb() async {
     if (_loading) return;
     _loading = true;
-    final data = await widget.asset.thumbnailDataWithSize(const ThumbnailSize.square(150));
+    final data = await widget.asset.thumbnailDataWithSize(
+      const ThumbnailSize.square(150),
+    );
     if (!mounted) return;
     setState(() => _thumbData = data);
     _loading = false;

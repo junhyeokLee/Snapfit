@@ -89,7 +89,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.2),
+                  color: SnapFitColors.textPrimaryOf(
+                    context,
+                  ).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -121,8 +123,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
 
                   // 2) ViewModel에 새로운 레이어 순서를 그대로 반영
                   // _localLayers는 "위 → 아래" 이므로, 실제 페이지 레이어 리스트는 그 역순
-                  final newOrderedForPage =
-                      List<LayerModel>.from(_localLayers.reversed);
+                  final newOrderedForPage = List<LayerModel>.from(
+                    _localLayers.reversed,
+                  );
                   final vm = ref.read(albumEditorViewModelProvider.notifier);
                   vm.updatePageLayers(newOrderedForPage);
 
@@ -202,27 +205,28 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         borderRadius: BorderRadius.circular(8.r),
       ),
       padding: EdgeInsets.all(6.w),
-      child: Center(
-        child: _buildPreviewContent(context, layer, imageOrder),
-      ),
+      child: Center(child: _buildPreviewContent(context, layer, imageOrder)),
     );
   }
 
   /// 이미지/스티커일 때만 1-based 순서 반환, 아니면 null
   int? _imageOrderFor(LayerModel layer, int index) {
     if (layer.type != LayerType.image) return null;
-    final isSticker = (layer.imageBackground ?? '').toLowerCase().contains('sticker');
-    return _localLayers
-        .sublist(0, index + 1)
-        .where((l) {
-          if (l.type != LayerType.image) return false;
-          final st = (l.imageBackground ?? '').toLowerCase().contains('sticker');
-          return st == isSticker;
-        })
-        .length;
+    final isSticker = (layer.imageBackground ?? '').toLowerCase().contains(
+      'sticker',
+    );
+    return _localLayers.sublist(0, index + 1).where((l) {
+      if (l.type != LayerType.image) return false;
+      final st = (l.imageBackground ?? '').toLowerCase().contains('sticker');
+      return st == isSticker;
+    }).length;
   }
 
-  Widget _buildPreviewContent(BuildContext context, LayerModel layer, int? imageOrder) {
+  Widget _buildPreviewContent(
+    BuildContext context,
+    LayerModel layer,
+    int? imageOrder,
+  ) {
     switch (layer.type) {
       case LayerType.image:
         return _buildImageLayerPreview(context, layer, imageOrder ?? 1);
@@ -239,17 +243,25 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
   }
 
   /// 이미지 레이어: 썸네일 있으면 표시 + 순서 뱃지, 없으면 순서 번호를 크게 표시해 위치 파악 가능
-  Widget _buildImageLayerPreview(BuildContext context, LayerModel layer, int imageOrder) {
+  Widget _buildImageLayerPreview(
+    BuildContext context,
+    LayerModel layer,
+    int imageOrder,
+  ) {
     Widget thumbnailWidget;
     if (layer.asset != null) {
       final future = _thumbnailCache.putIfAbsent(
         layer.id,
-        () => layer.asset!.thumbnailDataWithSize(const ThumbnailSize.square(_thumbSize)),
+        () => layer.asset!.thumbnailDataWithSize(
+          const ThumbnailSize.square(_thumbSize),
+        ),
       );
       thumbnailWidget = FutureBuilder<Uint8List?>(
         future: future,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null && snapshot.data!.isNotEmpty) {
+          if (snapshot.hasData &&
+              snapshot.data != null &&
+              snapshot.data!.isNotEmpty) {
             return ClipRRect(
               borderRadius: BorderRadius.circular(6.r),
               child: Image.memory(
@@ -277,7 +289,8 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
             height: double.infinity,
             cacheWidth: _thumbSize,
             cacheHeight: _thumbSize,
-            errorBuilder: (_, __, ___) => _imageOrderPlaceholder(context, imageOrder),
+            errorBuilder: (_, __, ___) =>
+                _imageOrderPlaceholder(context, imageOrder),
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Center(child: _imageOrderPlaceholder(context, imageOrder));
@@ -350,20 +363,21 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
       case LayerType.decoration:
         return '장식 ${index + 1}';
       case LayerType.image:
-        final isSticker = (layer.imageBackground ?? '').toLowerCase().contains('sticker');
+        final isSticker = (layer.imageBackground ?? '').toLowerCase().contains(
+          'sticker',
+        );
         if (isSticker && (layer.text ?? '').isNotEmpty) {
           final text = layer.text!;
           return text.length <= 12 ? text : '${text.substring(0, 12)}…';
         }
 
-        final sameTypeCount = _localLayers
-            .sublist(0, index + 1)
-            .where((l) {
-              if (l.type != LayerType.image) return false;
-              final st = (l.imageBackground ?? '').toLowerCase().contains('sticker');
-              return st == isSticker;
-            })
-            .length;
+        final sameTypeCount = _localLayers.sublist(0, index + 1).where((l) {
+          if (l.type != LayerType.image) return false;
+          final st = (l.imageBackground ?? '').toLowerCase().contains(
+            'sticker',
+          );
+          return st == isSticker;
+        }).length;
         return isSticker ? '스티커 $sameTypeCount' : '이미지 $sameTypeCount';
     }
   }

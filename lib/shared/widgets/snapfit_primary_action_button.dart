@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/snapfit_colors.dart';
-import 'snapfit_primary_gradient_background.dart';
 
 /// 스냅핏 디자인 시스템 기준 Primary Action 버튼
 ///
@@ -104,4 +103,3 @@ class SnapFitPrimaryActionButton extends StatelessWidget {
     );
   }
 }
-

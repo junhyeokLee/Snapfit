@@ -35,24 +35,24 @@ class PageEditorCanvas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // [10단계 Fix] 커버와 내지 모두 논리적 고정 좌표계(Fixed Logic Size)를 사용합니다.
-    // 커버는 500.0px 기준, 내지는 300.0px 기준으로 모든 레이어를 배치한 뒤 
+    // 커버는 500.0px 기준, 내지는 300.0px 기준으로 모든 레이어를 배치한 뒤
     // 최종적으로 현재 캔버스(물리적 크기)에 맞춰 스케일링합니다.
     final double physicalAspect = canvasW / canvasH;
-    
+
     // 1. 내지용 논리 사이즈 (300xH)
     const double innerLogicalW = 300.0;
     final double innerLogicalH = innerLogicalW / physicalAspect;
-    
+
     // 2. 커버용 논리 사이즈 (500xH)
     final double coverLogicalW = kCoverReferenceWidth;
     final double coverLogicalH = coverLogicalW / physicalAspect;
 
-    final Size effectiveBaseSize = isCover 
-        ? Size(coverLogicalW, coverLogicalH) 
+    final Size effectiveBaseSize = isCover
+        ? Size(coverLogicalW, coverLogicalH)
         : Size(innerLogicalW, innerLogicalH);
-        
-    final double scale = isCover 
-        ? (canvasW / coverLogicalW) 
+
+    final double scale = isCover
+        ? (canvasW / coverLogicalW)
         : (canvasW / innerLogicalW);
 
     // 커버·내지 공통 스타일 (책 형태 동일하게)
@@ -86,8 +86,8 @@ class PageEditorCanvas extends StatelessWidget {
       height: canvasH,
       decoration: BoxDecoration(
         color: backgroundColor ?? SnapFitColors.pureWhite,
-        borderRadius: sharedRadius,   // 커버·내지 동일한 borderRadius
-        boxShadow: sharedShadow,      // 커버·내지 동일한 그림자
+        borderRadius: sharedRadius, // 커버·내지 동일한 borderRadius
+        boxShadow: sharedShadow, // 커버·내지 동일한 그림자
       ),
       child: ClipRRect(
         borderRadius: sharedRadius,
@@ -95,7 +95,9 @@ class PageEditorCanvas extends StatelessWidget {
           builder: (context, constraints) {
             if (constraints.maxWidth > 0 && constraints.maxHeight > 0) {
               // 에디터의 실측 사이즈를 보고함 (ViewModel은 내지일 경우 리스케일링 무시함)
-              onCanvasSizeChanged(Size(constraints.maxWidth, constraints.maxHeight));
+              onCanvasSizeChanged(
+                Size(constraints.maxWidth, constraints.maxHeight),
+              );
             }
             if (layers.isEmpty) {
               return Center(
@@ -130,21 +132,31 @@ class PageEditorCanvas extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Container(color: backgroundColor ?? SnapFitColors.pureWhite),
+                    Container(
+                      color: backgroundColor ?? SnapFitColors.pureWhite,
+                    ),
                     ...interaction.sortByZ(layers).map((layer) {
-                      final styleKey = ValueKey('${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}');
+                      final styleKey = ValueKey(
+                        '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
+                      );
                       switch (layer.type) {
                         case LayerType.image:
                         case LayerType.sticker:
                         case LayerType.decoration:
                           return KeyedSubtree(
                             key: styleKey,
-                            child: layerBuilder.buildImage(layer, isCover: isCover),
+                            child: layerBuilder.buildImage(
+                              layer,
+                              isCover: isCover,
+                            ),
                           );
                         case LayerType.text:
                           return KeyedSubtree(
                             key: styleKey,
-                            child: layerBuilder.buildText(layer, isCover: isCover),
+                            child: layerBuilder.buildText(
+                              layer,
+                              isCover: isCover,
+                            ),
                           );
                       }
                     }),
@@ -171,7 +183,11 @@ class PageEditorCanvas extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Container(
-                          width: (14.0 * (isCover ? 1.0 : scale)), // kCoverSpineWidth = 14.0
+                          width:
+                              (14.0 *
+                              (isCover
+                                  ? 1.0
+                                  : scale)), // kCoverSpineWidth = 14.0
                           height: double.infinity,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(

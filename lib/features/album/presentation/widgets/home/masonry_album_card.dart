@@ -169,7 +169,10 @@ class MasonryAlbumCard extends StatelessWidget {
                 border: Border.all(color: const Color(0xFFF9F8F4), width: 2),
               ),
               alignment: Alignment.center,
-              child: Text('+2', style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w800)),
+              child: Text(
+                '+2',
+                style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w800),
+              ),
             ),
           ),
         ],

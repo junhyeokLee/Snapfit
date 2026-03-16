@@ -39,8 +39,8 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
   @override
   Widget build(BuildContext context) {
     // Total pages is max of parsed or preview
-    final totalCount = widget.parsedPages.isNotEmpty 
-        ? widget.parsedPages.length 
+    final totalCount = widget.parsedPages.isNotEmpty
+        ? widget.parsedPages.length
         : widget.previewImages.length;
 
     return Scaffold(
@@ -67,7 +67,8 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                           return TemplatePageRenderer(
                             layers: widget.parsedPages[index],
                             width: constraints.maxWidth,
-                            height: constraints.maxWidth, // 1:1 ratio forced for now
+                            height: constraints
+                                .maxWidth, // 1:1 ratio forced for now
                           );
                         }
                         // Fallback Image
@@ -85,7 +86,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
               );
             },
           ),
-          
+
           // Close Button
           Positioned(
             top: 60.h,
@@ -102,7 +103,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
               ),
             ),
           ),
-          
+
           // Page Indicator
           Positioned(
             bottom: 40.h,
@@ -117,7 +118,10 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                 ),
                 child: Text(
                   '${_currentIndex + 1} / $totalCount',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

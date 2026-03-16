@@ -39,7 +39,8 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
       final double horizontalPaddingPx = 20.w;
 
       final double screenWidth = MediaQuery.of(context).size.width;
-      final double itemStart = horizontalPaddingPx + (itemWidthPx + separatorPx) * index;
+      final double itemStart =
+          horizontalPaddingPx + (itemWidthPx + separatorPx) * index;
       final double itemCenter = itemStart + (itemWidthPx / 2);
       final double targetOffset = itemCenter - (screenWidth / 2);
 
@@ -66,7 +67,7 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
 
     final selectedTheme = editorSt.selectedTheme;
     final aspect = editorSt.selectedCover.ratio;
-    
+
     const double maxDimension = 125.0;
     final double previewBaseWidth;
     final double previewBaseHeight;
@@ -80,7 +81,9 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
 
     final themes = CoverTheme.values;
     final selectedIndex = themes.indexOf(selectedTheme);
-    debugPrint('[CoverThemeSize] aspect=$aspect cover=${editorSt.selectedCover.name} width=$previewBaseWidth height=$previewBaseHeight');
+    debugPrint(
+      '[CoverThemeSize] aspect=$aspect cover=${editorSt.selectedCover.name} width=$previewBaseWidth height=$previewBaseHeight',
+    );
     _scrollToSelected(selectedIndex, previewBaseWidth);
 
     return Material(
@@ -123,7 +126,8 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
                         theme: theme,
                         isSelected: theme == selectedTheme,
                         width: previewBaseWidth.w,
-                        height: previewBaseHeight.w, // .w for both to preserve aspect ratio
+                        height: previewBaseHeight
+                            .w, // .w for both to preserve aspect ratio
                         onTap: () {
                           vm.updateTheme(theme);
                           editorVm.updateTheme(theme);

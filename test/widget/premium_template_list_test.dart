@@ -54,7 +54,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          templateListProvider.overrideWith((ref) async => const <PremiumTemplate>[]),
+          templateListProvider.overrideWith(
+            (ref) async => const <PremiumTemplate>[],
+          ),
         ],
         child: _wrap(const PremiumTemplateList()),
       ),

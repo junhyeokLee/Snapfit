@@ -72,18 +72,24 @@ class LayerOrderList extends StatelessWidget {
                   selected: isSelected,
                   selectedTileColor: SnapFitColors.accent.withOpacity(0.1),
                   leading: Icon(
-                    layer.type == LayerType.text ? Icons.text_fields : Icons.image,
+                    layer.type == LayerType.text
+                        ? Icons.text_fields
+                        : Icons.image,
                     color: isSelected
                         ? SnapFitColors.accent
                         : SnapFitColors.textMutedOf(context),
                   ),
                   title: Text(
                     layer.type == LayerType.text
-                        ? (layer.text?.isEmpty == false ? layer.text! : '텍스트 레이어')
+                        ? (layer.text?.isEmpty == false
+                              ? layer.text!
+                              : '텍스트 레이어')
                         : '이미지 레이어',
                     style: TextStyle(
                       fontSize: 15.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected
                           ? SnapFitColors.textPrimaryOf(context)
                           : SnapFitColors.textMutedOf(context),

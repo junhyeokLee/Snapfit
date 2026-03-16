@@ -62,15 +62,15 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
     try {
       await ref.read(homeViewModelProvider.notifier).deleteAlbum(album);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('앨범이 삭제되었습니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('앨범이 삭제되었습니다.')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('삭제 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
       }
     }
   }
@@ -86,20 +86,18 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
       // 연필 아이콘: "앨범 생성/커버 편집" 화면으로 이동해서 커버를 다시 수정할 수 있게 함
       await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => AddCoverScreen(editAlbum: album),
-        ),
+        MaterialPageRoute(builder: (_) => AddCoverScreen(editAlbum: album)),
       );
-      
+
       // 편집 후 돌아왔을 때 홈 화면 갱신
       if (context.mounted) {
         await ref.read(homeViewModelProvider.notifier).refresh();
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')));
       }
     }
   }
@@ -140,7 +138,9 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
               SizedBox(width: 16.w),
               HomeCircleActionButton(
                 icon: Icons.edit_outlined,
-                onPressed: widget.albums.isEmpty ? null : () => _onEditPressed(context),
+                onPressed: widget.albums.isEmpty
+                    ? null
+                    : () => _onEditPressed(context),
               ),
               SizedBox(width: 16.w),
               HomeCircleActionButton(

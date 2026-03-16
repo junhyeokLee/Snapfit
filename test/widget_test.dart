@@ -9,9 +9,10 @@ void main() {
   testWidgets('앱 부팅 스모크 테스트', (WidgetTester tester) async {
     final mockRepo = MockAlbumRepository();
     stubFetchMyAlbums(mockRepo, []);
-    await pumpSnapFitApp(tester, overrides: [
-      albumRepositoryProvider.overrideWithValue(mockRepo),
-    ]);
+    await pumpSnapFitApp(
+      tester,
+      overrides: [albumRepositoryProvider.overrideWithValue(mockRepo)],
+    );
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

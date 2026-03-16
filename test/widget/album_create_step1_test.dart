@@ -13,7 +13,9 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  testWidgets('next button enabled only when title is provided', (tester) async {
+  testWidgets('next button enabled only when title is provided', (
+    tester,
+  ) async {
     String title = '';
     final selectedCover = coverSizes.first;
 

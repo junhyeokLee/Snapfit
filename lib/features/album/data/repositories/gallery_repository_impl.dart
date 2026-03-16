@@ -18,10 +18,10 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
   @override
   Future<List<AssetEntity>> loadImagesPaged(
-      AssetPathEntity album,
-      int page,
-      int size,
-      ) {
+    AssetPathEntity album,
+    int page,
+    int size,
+  ) {
     return album.getAssetListPaged(page: page, size: size);
   }
 }

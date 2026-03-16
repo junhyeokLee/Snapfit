@@ -28,15 +28,24 @@ class EditToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 20.h, top: 10.h),
+      padding: EdgeInsets.only(
+        left: 20.w,
+        right: 20.w,
+        bottom: 20.h,
+        top: 10.h,
+      ),
       child: Container(
         height: 72.h,
         decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context).withOpacity(0.95), // theme support
+          color: SnapFitColors.surfaceOf(
+            context,
+          ).withOpacity(0.95), // theme support
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(SnapFitColors.isDark(context) ? 0.3 : 0.1),
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.3 : 0.1,
+              ),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -46,11 +55,21 @@ class EditToolbar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // "글쓰기"
-            _toolbarButton(context, Icons.text_fields_outlined, "글쓰기", onAddText),
+            _toolbarButton(
+              context,
+              Icons.text_fields_outlined,
+              "글쓰기",
+              onAddText,
+            ),
             // "사진"
             _toolbarButton(context, Icons.photo_outlined, "사진", onAddPhoto),
             // "커버"
-            _toolbarButton(context, Icons.dashboard_outlined, "커버", onOpenCoverSelector),
+            _toolbarButton(
+              context,
+              Icons.dashboard_outlined,
+              "커버",
+              onOpenCoverSelector,
+            ),
           ],
         ),
       ),
@@ -70,7 +89,11 @@ class EditToolbar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 24.sp, color: SnapFitColors.textPrimaryOf(context)),
+            Icon(
+              icon,
+              size: 24.sp,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
             SizedBox(height: 6.h),
             Text(
               label,

@@ -55,7 +55,10 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // 초대 링크 생성은 한 번만 실행
-    if (!_hasInitiated && _albumId != null && _inviteLink == null && !_isCreatingInvite) {
+    if (!_hasInitiated &&
+        _albumId != null &&
+        _inviteLink == null &&
+        !_isCreatingInvite) {
       _hasInitiated = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -103,10 +106,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: SnapFitColors.accent,
-                  width: 2,
-                ),
+                border: Border.all(color: SnapFitColors.accent, width: 2),
                 color: SnapFitColors.backgroundOf(context),
               ),
               child: Stack(
@@ -323,7 +323,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                       SizedBox(height: 4.h),
                       if (_inviteLink != null)
                         Text(
-                          _inviteLink!.length > 40 
+                          _inviteLink!.length > 40
                               ? '${_inviteLink!.substring(0, 40)}...'
                               : _inviteLink!,
                           style: TextStyle(
@@ -361,9 +361,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: SnapFitColors.overlayLightOf(context),
-              ),
+              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
             ),
             child: Row(
               children: [
@@ -450,10 +448,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               icon: Icon(Icons.arrow_forward, size: 20.sp),
               label: Text(
                 '다음',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: SnapFitColors.accent,
@@ -474,9 +469,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               onPressed: widget.onBack,
               style: OutlinedButton.styleFrom(
                 foregroundColor: SnapFitColors.textPrimaryOf(context),
-                side: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
+                side: BorderSide(color: SnapFitColors.overlayLightOf(context)),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -484,10 +477,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
               ),
               child: Text(
                 '이전',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -499,22 +489,22 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   /// 초대 링크 생성
   Future<void> _createInviteLink() async {
     if (_isCreatingInvite || _albumId == null) return;
-    
+
     setState(() => _isCreatingInvite = true);
-    
+
     try {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
       final inviteResponse = await memberRepository.invite(
         _albumId!,
         role: widget.allowEditing ? 'EDITOR' : 'VIEWER',
       );
-      
+
       _inviteLink = inviteResponse.link;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('초대 링크 생성 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
       }
     } finally {
       if (mounted) {
@@ -536,7 +526,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       }
       return;
     }
-    
+
     if (_inviteLink == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -552,7 +542,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         return;
       }
     }
-    
+
     // 로딩 표시
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -575,7 +565,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         ),
       );
     }
-    
+
     final success = await AlbumInviteService.inviteViaKakaoTalk(
       ref: ref,
       albumId: _albumId!,
@@ -583,7 +573,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       allowEditing: _allowEditing,
       context: context,
     );
-    
+
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -630,7 +620,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
         return;
       }
     }
-    
+
     await Clipboard.setData(ClipboardData(text: _inviteLink!));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -658,9 +648,6 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
 
 extension on Widget {
   Widget onTap(VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: this,
-    );
+    return GestureDetector(onTap: onTap, child: this);
   }
 }

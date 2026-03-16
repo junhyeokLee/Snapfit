@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/utils/app_logger.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../domain/entities/album_page.dart';
@@ -35,10 +36,12 @@ class AlbumReaderCoverEditor extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AlbumReaderCoverEditor> createState() => _AlbumReaderCoverEditorState();
+  ConsumerState<AlbumReaderCoverEditor> createState() =>
+      _AlbumReaderCoverEditorState();
 }
 
-class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor> {
+class _AlbumReaderCoverEditorState
+    extends ConsumerState<AlbumReaderCoverEditor> {
   Size _coverSize = Size.zero;
   bool _hasLoadedLayers = false;
 
@@ -49,7 +52,7 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
     return LayoutBuilder(
       builder: (context, constraints) {
         final canvasHeight = constraints.maxHeight;
-        
+
         // EditCover와 동일한 coverTop 계산 로직
         // 수동 계산 대신 Center 위젯 사용으로 정확도 향상
         return Stack(
@@ -71,12 +74,16 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
                         // 빌드 중 setState 호출 방지를 위해 postFrameCallback 사용
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (mounted && _coverSize != size) {
-                            print('[AlbumReaderCoverEditor] Cover Size Changed: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}');
+                            AppLogger.debug(
+                              '[AlbumReaderCoverEditor] Cover Size Changed: ${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)}',
+                            );
                             setState(() {
                               _coverSize = size;
                               widget.onBaseCanvasSizeChanged(size);
                             });
-                            final vm = ref.read(albumEditorViewModelProvider.notifier);
+                            final vm = ref.read(
+                              albumEditorViewModelProvider.notifier,
+                            );
                             vm.setCoverCanvasSize(size);
                             if (!_hasLoadedLayers) {
                               vm.loadPendingEditAlbumIfNeeded(size);
@@ -87,8 +94,10 @@ class _AlbumReaderCoverEditorState extends ConsumerState<AlbumReaderCoverEditor>
                       }
                       widget.onCoverSizeChanged(size);
                     },
-                    buildImage: (layer) => widget.layerBuilder.buildImage(layer, isCover: true),
-                    buildText: (layer) => widget.layerBuilder.buildText(layer, isCover: true),
+                    buildImage: (layer) =>
+                        widget.layerBuilder.buildImage(layer, isCover: true),
+                    buildText: (layer) =>
+                        widget.layerBuilder.buildText(layer, isCover: true),
                     sortedByZ: widget.interaction.sortByZ,
                     theme: widget.coverTheme,
                   ),

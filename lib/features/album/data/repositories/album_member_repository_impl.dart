@@ -13,10 +13,7 @@ class AlbumMemberRepositoryImpl implements AlbumMemberRepository {
   final AlbumMemberApi api;
   final TokenStorage tokenStorage;
 
-  AlbumMemberRepositoryImpl(
-    this.api, {
-    required this.tokenStorage,
-  });
+  AlbumMemberRepositoryImpl(this.api, {required this.tokenStorage});
 
   Future<String> _getUserId() async {
     final id = await tokenStorage.getUserId();
@@ -27,13 +24,12 @@ class AlbumMemberRepositoryImpl implements AlbumMemberRepository {
   }
 
   @override
-  Future<InviteLinkResponse> invite(int albumId, {String role = 'EDITOR'}) async {
+  Future<InviteLinkResponse> invite(
+    int albumId, {
+    String role = 'EDITOR',
+  }) async {
     final userId = await _getUserId();
-    return api.invite(
-      albumId,
-      userId,
-      InviteAlbumRequest(role: role),
-    );
+    return api.invite(albumId, userId, InviteAlbumRequest(role: role));
   }
 
   @override

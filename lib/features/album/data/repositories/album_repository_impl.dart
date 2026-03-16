@@ -10,10 +10,7 @@ class AlbumRepositoryImpl implements AlbumRepository {
   final AlbumApi api;
   final TokenStorage tokenStorage;
 
-  AlbumRepositoryImpl(
-    this.api, {
-    required this.tokenStorage,
-  });
+  AlbumRepositoryImpl(this.api, {required this.tokenStorage});
 
   Future<String> _getUserId() async {
     final id = await tokenStorage.getUserId();

@@ -6,6 +6,7 @@ import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/domain/auth_service.dart';
 
 class MockAuthApi extends Mock implements backend.AuthApi {}
+
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
@@ -21,8 +22,9 @@ void main() {
       user: UserInfo(id: 1, name: 'Tester', provider: 'KAKAO'),
     );
 
-    when(() => api.loginWithKakao({'accessToken': 'token'}))
-        .thenAnswer((_) async => response);
+    when(
+      () => api.loginWithKakao({'accessToken': 'token'}),
+    ).thenAnswer((_) async => response);
     when(() => storage.saveAuth(response)).thenAnswer((_) async {});
 
     final result = await service.loginWithKakaoToken('token');
@@ -43,8 +45,9 @@ void main() {
       user: UserInfo(id: 2, name: 'Tester', provider: 'GOOGLE'),
     );
 
-    when(() => api.refresh({'refreshToken': 'old-refresh'}))
-        .thenAnswer((_) async => response);
+    when(
+      () => api.refresh({'refreshToken': 'old-refresh'}),
+    ).thenAnswer((_) async => response);
     when(() => storage.saveAuth(response)).thenAnswer((_) async {});
 
     final result = await service.refresh('old-refresh');

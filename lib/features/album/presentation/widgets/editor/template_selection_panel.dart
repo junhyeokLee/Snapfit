@@ -15,16 +15,15 @@ import '../../../domain/entities/layer.dart';
 class TemplateSelectionPanel extends ConsumerStatefulWidget {
   final String title;
 
-  const TemplateSelectionPanel({
-    super.key,
-    this.title = '레이아웃',
-  });
+  const TemplateSelectionPanel({super.key, this.title = '레이아웃'});
 
   @override
-  ConsumerState<TemplateSelectionPanel> createState() => _TemplateSelectionPanelState();
+  ConsumerState<TemplateSelectionPanel> createState() =>
+      _TemplateSelectionPanelState();
 }
 
-class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel> {
+class _TemplateSelectionPanelState
+    extends ConsumerState<TemplateSelectionPanel> {
   String? _selectedId;
 
   @override
@@ -32,7 +31,9 @@ class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel>
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final currentPage = vm.currentPage;
     final isCover = currentPage?.isCover ?? false;
-    final aspect = vm.selectedCover.ratio > 0 ? vm.selectedCover.ratio : (3 / 4);
+    final aspect = vm.selectedCover.ratio > 0
+        ? vm.selectedCover.ratio
+        : (3 / 4);
 
     final double baseW = isCover ? kCoverReferenceWidth : 300.0;
     final Size canvasSize = Size(baseW, baseW / aspect);
@@ -59,7 +60,9 @@ class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel>
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.2),
+                  color: SnapFitColors.textPrimaryOf(
+                    context,
+                  ).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -133,7 +136,9 @@ class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel>
               color: SnapFitColors.surfaceOf(context),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: isSelected ? SnapFitColors.accent : SnapFitColors.overlayLightOf(context),
+                color: isSelected
+                    ? SnapFitColors.accent
+                    : SnapFitColors.overlayLightOf(context),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -188,7 +193,9 @@ class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel>
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
-              color: isSelected ? SnapFitColors.accent : SnapFitColors.textMutedOf(context),
+              color: isSelected
+                  ? SnapFitColors.accent
+                  : SnapFitColors.textMutedOf(context),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -217,14 +224,23 @@ class _TemplatePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     // 미리보기에서도 실제 적용과 동일한 프레임/텍스트 스타일(패딩·정렬·비율)을 재사용하기 위해
     // LayerBuilder + LayerInteractionManager.preview로 “실제 레이어 렌더링”을 그대로 사용한다.
-    final previewInteraction = LayerInteractionManager.preview(ref, () => logicalCanvasSize);
-    final layerBuilder = LayerBuilder(previewInteraction, () => logicalCanvasSize);
+    final previewInteraction = LayerInteractionManager.preview(
+      ref,
+      () => logicalCanvasSize,
+    );
+    final layerBuilder = LayerBuilder(
+      previewInteraction,
+      () => logicalCanvasSize,
+    );
 
     final layers = <LayerModel>[];
     for (final slot in template.slots) {
       final slotW = slot.width * logicalCanvasSize.width;
       final slotH = slot.height * logicalCanvasSize.height;
-      final pos = Offset(slot.left * logicalCanvasSize.width, slot.top * logicalCanvasSize.height);
+      final pos = Offset(
+        slot.left * logicalCanvasSize.width,
+        slot.top * logicalCanvasSize.height,
+      );
 
       if (slot.type == 'text') {
         // 미리보기에서는 “실제 텍스트”는 노출하지 않고 프레임(배경)만 보이게 한다.
@@ -325,11 +341,7 @@ class _ImageFramePreview extends StatelessWidget {
         );
         final photo = FittedBox(
           fit: BoxFit.cover,
-          child: SizedBox(
-            width: 220 * s,
-            height: 220 * s,
-            child: photoCore,
-          ),
+          child: SizedBox(width: 220 * s, height: 220 * s, child: photoCore),
         );
 
         switch (frameKey) {
@@ -348,7 +360,9 @@ class _ImageFramePreview extends StatelessWidget {
                 : (frameKey == 'polaroidFilm' ? Colors.black : Colors.white);
             final border = frameKey == 'polaroidClassic'
                 ? const Color(0xFFE8E4D8)
-                : (frameKey == 'polaroidFilm' ? Colors.white.withOpacity(0.3) : const Color(0xFFE0E3EC));
+                : (frameKey == 'polaroidFilm'
+                      ? Colors.white.withOpacity(0.3)
+                      : const Color(0xFFE0E3EC));
             final borderWidth = frameKey == 'polaroidClassic' ? 1.1 : 1.0;
             final radius = frameKey == 'polaroidClassic' ? 12.0 : 10.0;
             return Center(
@@ -362,7 +376,9 @@ class _ImageFramePreview extends StatelessWidget {
                     border: Border.all(color: border, width: borderWidth * s),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(frameKey == 'polaroidClassic' ? 0.1 : 0.08),
+                        color: Colors.black.withOpacity(
+                          frameKey == 'polaroidClassic' ? 0.1 : 0.08,
+                        ),
                         blurRadius: 6 * s,
                         offset: Offset(0, 3 * s),
                       ),
@@ -388,7 +404,10 @@ class _ImageFramePreview extends StatelessWidget {
                     offset: Offset(0, 2 * s),
                   ),
                 ],
-                border: Border.all(color: Colors.grey.withOpacity(0.35), width: 0.8 * s),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.35),
+                  width: 0.8 * s,
+                ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(3 * s),
@@ -410,7 +429,10 @@ class _ImageFramePreview extends StatelessWidget {
                     ),
                   ],
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 5 * s, vertical: 8 * s),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 5 * s,
+                  vertical: 8 * s,
+                ),
                 child: Row(
                   children: [
                     _filmHoles(s),
@@ -437,14 +459,14 @@ class _ImageFramePreview extends StatelessWidget {
             return Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFC0C0C0),
-                border: Border.all(color: const Color(0xFF808080), width: 1 * s),
+                border: Border.all(
+                  color: const Color(0xFF808080),
+                  width: 1 * s,
+                ),
               ),
               child: Column(
                 children: [
-                  Container(
-                    height: 22 * s,
-                    color: const Color(0xFF000080),
-                  ),
+                  Container(height: 22 * s, color: const Color(0xFF000080)),
                   Expanded(
                     child: Container(
                       color: Colors.white,
@@ -483,9 +505,15 @@ class _ImageFramePreview extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(4 * s),
-                border: Border.all(color: const Color(0xFF00FFFF), width: 2 * s),
+                border: Border.all(
+                  color: const Color(0xFF00FFFF),
+                  width: 2 * s,
+                ),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFF00FFFF).withOpacity(0.6), blurRadius: 8 * s),
+                  BoxShadow(
+                    color: const Color(0xFF00FFFF).withOpacity(0.6),
+                    blurRadius: 8 * s,
+                  ),
                 ],
               ),
               padding: EdgeInsets.all(3 * s),
@@ -498,7 +526,13 @@ class _ImageFramePreview extends StatelessWidget {
             return Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFFFFBF0),
-                boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.1), blurRadius: 6 * s, offset: Offset(0, 2 * s))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.brown.withOpacity(0.1),
+                    blurRadius: 6 * s,
+                    offset: Offset(0, 2 * s),
+                  ),
+                ],
               ),
               padding: EdgeInsets.fromLTRB(10 * s, 10 * s, 8 * s, 12 * s),
               child: Padding(
@@ -511,14 +545,20 @@ class _ImageFramePreview extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F0E6),
                 borderRadius: BorderRadius.circular(4 * s),
-                border: Border.all(color: const Color(0xFFE0D8C8), width: 1 * s),
+                border: Border.all(
+                  color: const Color(0xFFE0D8C8),
+                  width: 1 * s,
+                ),
               ),
               child: Column(
                 children: [
                   Container(height: 12 * s, color: const Color(0xFFE8E0D4)),
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 4 * s, vertical: 2 * s),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 4 * s,
+                        vertical: 2 * s,
+                      ),
                       color: const Color(0xFFF8F4EC),
                       child: photo,
                     ),
@@ -531,8 +571,17 @@ class _ImageFramePreview extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(2 * s),
-                border: Border.all(color: const Color(0xFFC0C0C0), width: 1 * s),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4 * s, offset: Offset(0, 2 * s))],
+                border: Border.all(
+                  color: const Color(0xFFC0C0C0),
+                  width: 1 * s,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 4 * s,
+                    offset: Offset(0, 2 * s),
+                  ),
+                ],
               ),
               padding: EdgeInsets.all(8 * s),
               child: ClipRect(child: photo),
@@ -542,14 +591,23 @@ class _ImageFramePreview extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFB8956E),
                 borderRadius: BorderRadius.circular(4 * s),
-                boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.2), blurRadius: 6 * s, offset: Offset(0, 2 * s))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.brown.withOpacity(0.2),
+                    blurRadius: 6 * s,
+                    offset: Offset(0, 2 * s),
+                  ),
+                ],
               ),
               padding: EdgeInsets.all(6 * s),
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFC9A86C),
                   borderRadius: BorderRadius.circular(2 * s),
-                  border: Border.all(color: const Color(0xFFA08050), width: 1.5 * s),
+                  border: Border.all(
+                    color: const Color(0xFFA08050),
+                    width: 1.5 * s,
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(1 * s),
@@ -576,10 +634,7 @@ class _ImageFramePreview extends StatelessWidget {
           case 'sketch':
             return CustomPaint(
               painter: _MiniSketchPainter(strokeWidth: 1.5 * s),
-              child: Padding(
-                padding: EdgeInsets.all(4 * s),
-                child: photo,
-              ),
+              child: Padding(padding: EdgeInsets.all(4 * s), child: photo),
             );
           case 'sticker':
             return Container(
@@ -596,7 +651,10 @@ class _ImageFramePreview extends StatelessWidget {
             );
           default:
             return DecoratedBox(
-              decoration: BoxDecoration(color: fallbackColor, borderRadius: BorderRadius.zero),
+              decoration: BoxDecoration(
+                color: fallbackColor,
+                borderRadius: BorderRadius.zero,
+              ),
               child: ClipRect(child: photo),
             );
         }
@@ -638,17 +696,15 @@ class _MiniSketchPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MiniSketchPainter oldDelegate) => oldDelegate.strokeWidth != strokeWidth;
+  bool shouldRepaint(covariant _MiniSketchPainter oldDelegate) =>
+      oldDelegate.strokeWidth != strokeWidth;
 }
 
 class _TextBgPreview extends StatelessWidget {
   final String bgKey;
   final Color fallbackColor;
 
-  const _TextBgPreview({
-    required this.bgKey,
-    required this.fallbackColor,
-  });
+  const _TextBgPreview({required this.bgKey, required this.fallbackColor});
 
   @override
   Widget build(BuildContext context) {
@@ -665,7 +721,10 @@ class _TextBgPreview extends StatelessWidget {
           case 'tag':
             return Container(
               color: SnapFitColors.accent.withOpacity(0.14),
-              padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 8 * s),
+              padding: EdgeInsets.symmetric(
+                horizontal: 12 * s,
+                vertical: 8 * s,
+              ),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
@@ -678,7 +737,10 @@ class _TextBgPreview extends StatelessWidget {
           case 'tape':
             return Container(
               color: const Color(0xFFFFF3C4),
-              padding: EdgeInsets.symmetric(horizontal: 14 * s, vertical: 10 * s),
+              padding: EdgeInsets.symmetric(
+                horizontal: 14 * s,
+                vertical: 10 * s,
+              ),
               child: content,
             );
           case 'bubble':

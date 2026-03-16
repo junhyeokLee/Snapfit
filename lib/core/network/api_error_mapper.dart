@@ -9,10 +9,7 @@ class ApiErrorMapper {
   static ApiError from(Object error) {
     if (error is ApiError) return error;
     if (error is DioException) return _fromDio(error);
-    return ApiError(
-      message: '알 수 없는 오류가 발생했습니다.',
-      cause: error,
-    );
+    return ApiError(message: '알 수 없는 오류가 발생했습니다.', cause: error);
   }
 
   /// 에러 객체에서 사용자 친화적인 메시지만 추출
@@ -117,7 +114,8 @@ class ApiErrorMapper {
       );
       if (direct != null) return direct;
 
-      final nested = _firstStringFrom(data['data']) ??
+      final nested =
+          _firstStringFrom(data['data']) ??
           _firstStringFrom(data['error']) ??
           _firstStringFrom(data['errors']);
       if (nested != null) return nested;
@@ -139,7 +137,8 @@ class ApiErrorMapper {
 
   static String? _extractServerCode(Object? data) {
     if (data is Map<String, dynamic>) {
-      final code = data['code'] ??
+      final code =
+          data['code'] ??
           data['errorCode'] ??
           data['error_code'] ??
           data['statusCode'];

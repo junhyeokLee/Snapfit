@@ -45,19 +45,19 @@ class EditCoverThemeItem extends StatelessWidget {
               ),
               boxShadow: isSelected
                   ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  blurRadius: 4.r,
-                  offset: Offset(5.w, 20.h),
-                ),
-              ]
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 4.r,
+                        offset: Offset(5.w, 20.h),
+                      ),
+                    ]
                   : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 4.r,
-                  offset: Offset(4.w, 8.h),
-                ),
-              ],
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 4.r,
+                        offset: Offset(4.w, 8.h),
+                      ),
+                    ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.only(
@@ -75,11 +75,13 @@ class EditCoverThemeItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         image: theme.imageAsset != null
                             ? DecorationImage(
-                          image: AssetImage(theme.imageAsset!),
-                          fit: BoxFit.cover,
-                        )
+                                image: AssetImage(theme.imageAsset!),
+                                fit: BoxFit.cover,
+                              )
                             : null,
-                        gradient: theme.imageAsset == null ? theme.gradient : null,
+                        gradient: theme.imageAsset == null
+                            ? theme.gradient
+                            : null,
                       ),
                     ),
                     // 왼쪽 봉제선
@@ -98,7 +100,10 @@ class EditCoverThemeItem extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         margin: EdgeInsets.only(bottom: 6.h),
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 2.h,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(10.r),

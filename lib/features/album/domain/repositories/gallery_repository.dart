@@ -4,8 +4,8 @@ abstract class GalleryRepository {
   Future<bool> requestPermission();
   Future<List<AssetPathEntity>> loadAlbums();
   Future<List<AssetEntity>> loadImagesPaged(
-      AssetPathEntity album,
-      int page,
-      int size,
-      );
+    AssetPathEntity album,
+    int page,
+    int size,
+  );
 }

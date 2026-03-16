@@ -47,7 +47,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   late final LayerInteractionManager _interaction;
   late final LayerBuilder _layerBuilder;
   late final ToolbarActionHandler _toolbarActionHandler;
-  
+
   EditorMode _currentMode = EditorMode.none; // Current bottom panel mode
 
   // 저장 진행률 상태
@@ -95,7 +95,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       ref: ref,
       coverKey: _canvasKey,
       setState: setState,
-      // [Inner Page Fix] 내지는 항상 300x400 논리적 좌표계를 사용함. 
+      // [Inner Page Fix] 내지는 항상 300x400 논리적 좌표계를 사용함.
       // 인터랙션 매니저가 스냅 가이드나 좌표 계산 시 이 기준을 따르게 함.
       getCoverSize: () {
         final currentVm = ref.read(albumEditorViewModelProvider.notifier);
@@ -133,7 +133,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
   Future<void> _openGalleryForPlaceholder(LayerModel layer) async {
     if (!mounted) return;
-    
+
     final gallery = ref.read(galleryProvider);
     if (gallery.albums.isEmpty) {
       await ref.read(galleryProvider.notifier).fetchInitialData();
@@ -141,14 +141,17 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     if (!mounted) return;
     final asset = await showPhotoSelectionSheet(context, ref);
     if (asset == null || !mounted) return;
-    
+
     final vm = ref.read(albumEditorViewModelProvider.notifier); // vm 정의 추가
     await vm.updateSlotImage(layer.id, asset);
     if (mounted) setState(() {});
   }
 
   /// 앨범 저장 로직 추출
-  Future<void> _onSaveAlbum(AlbumEditorViewModel vm, List<LayerModel> layers) async {
+  Future<void> _onSaveAlbum(
+    AlbumEditorViewModel vm,
+    List<LayerModel> layers,
+  ) async {
     if (_isSaving) return;
 
     try {
@@ -190,22 +193,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
         Navigator.popUntil(context, (route) => route.isFirst);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('앨범이 저장되었습니다!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('앨범이 저장되었습니다!')));
       }
     } catch (e) {
       if (context.mounted) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('저장 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
       }
     } finally {
       _progressTimer?.cancel();
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -217,302 +219,344 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
     // aspect: 내지 LayoutBuilder에서 canvasH 계산에 사용
     final double aspect = vm.selectedCover.ratio;
-    
+
     // Logic for displaying layers
     // If initialPageIndex is set, we might be forcing a specific page
     // But generally we should follow vm.currentPageIndex which is the source of truth
     final currentPageIndex = vm.currentPageIndex;
-    final List<LayerModel> layers = (state != null && state.layers.isNotEmpty) 
-        ? state.layers 
+    final List<LayerModel> layers = (state != null && state.layers.isNotEmpty)
+        ? state.layers
         : [];
-        
+
     final pages = vm.pages; // For the top selector
 
     return WillPopScope(
       onWillPop: () => _handleWillPop(vm, layers),
       child: Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: SnapFitColors.textPrimaryOf(context)),
-          onPressed: () async {
-            final shouldPop = await _handleWillPop(vm, layers);
-            if (shouldPop && mounted) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Undo/Redo 버튼을 타이틀 왼쪽에 배치
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.undo_rounded,
-                    size: 20.sp,
-                    color: canUndo
-                        ? SnapFitColors.textPrimaryOf(context)
-                        : SnapFitColors.textMutedOf(context),
-                  ),
-                  onPressed: canUndo
-                      ? () {
-                          vm.undo();
-                          _interaction.clearSelection();
-                          if (mounted) setState(() {});
-                        }
-                      : null,
-                  tooltip: '되돌리기',
-                ),
-                SizedBox(width: 4.w),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.redo_rounded,
-                    size: 20.sp,
-                    color: canRedo
-                        ? SnapFitColors.textPrimaryOf(context)
-                        : SnapFitColors.textMutedOf(context),
-                  ),
-                  onPressed: canRedo
-                      ? () {
-                          vm.redo();
-                          _interaction.clearSelection();
-                          if (mounted) setState(() {});
-                        }
-                      : null,
-                  tooltip: '다시하기',
-                ),
-              ],
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: SnapFitColors.textPrimaryOf(context),
             ),
-            SizedBox(width: 8.w),
-            Text(
-              "스냅핏 만들기",
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(context),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
+            onPressed: () async {
+              final shouldPop = await _handleWillPop(vm, layers);
+              if (shouldPop && mounted) {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Undo/Redo 버튼을 타이틀 왼쪽에 배치
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      Icons.undo_rounded,
+                      size: 20.sp,
+                      color: canUndo
+                          ? SnapFitColors.textPrimaryOf(context)
+                          : SnapFitColors.textMutedOf(context),
+                    ),
+                    onPressed: canUndo
+                        ? () {
+                            vm.undo();
+                            _interaction.clearSelection();
+                            if (mounted) setState(() {});
+                          }
+                        : null,
+                    tooltip: '되돌리기',
+                  ),
+                  SizedBox(width: 4.w),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      Icons.redo_rounded,
+                      size: 20.sp,
+                      color: canRedo
+                          ? SnapFitColors.textPrimaryOf(context)
+                          : SnapFitColors.textMutedOf(context),
+                    ),
+                    onPressed: canRedo
+                        ? () {
+                            vm.redo();
+                            _interaction.clearSelection();
+                            if (mounted) setState(() {});
+                          }
+                        : null,
+                    tooltip: '다시하기',
+                  ),
+                ],
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                "스냅핏 만들기",
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: _isSaving ? null : () => _onSaveAlbum(vm, layers),
+              child: Text(
+                "저장",
+                style: TextStyle(
+                  color: _isSaving
+                      ? SnapFitColors.textMutedOf(context)
+                      : SnapFitColors.accent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                ),
               ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : () => _onSaveAlbum(vm, layers),
-            child: Text(
-              "저장",
-              style: TextStyle(
-                color: _isSaving ? SnapFitColors.textMutedOf(context) : SnapFitColors.accent,
-                fontWeight: FontWeight.bold,
-                fontSize: 16.sp
-              ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: SnapFitColors.readerGradientOf(context),
             ),
-          )
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: SnapFitColors.readerGradientOf(context),
           ),
-        ),
-        child: Stack(
-        children: [
-          SafeArea(
-            bottom: false,
-            child: Column(
+          child: Stack(
             children: [
-              // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
-              Padding(
-                padding: EdgeInsets.only(top: 16.h),
-                child: PageListSelector(
-                  pages: pages,
-                  currentPageIndex: currentPageIndex,
-                  onPageSelected: (index) {
-                    vm.goToPage(index);
-                    // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
-                    setState(() => _canvasSize = Size.zero);
-                  },
-                  onAddPage: () {
-                    vm.addPage();
-                    setState(() {}); // Refresh UI
-                  },
-                ),
-              ),
-              // 2. Main Canvas Area
-              Expanded(
-                child: currentPageIndex == 0 
-                  ? EditCover(
-                      key: _coverEditorKey,
-                      editAlbum: vm.album,
-                      showAppBar: false,
-                      initialCoverSize: vm.selectedCover,
-                      showBottomToolbar: false, // Hide Cover's internal toolbar
-                      interaction: _interaction, // Pass shared interaction
-                      canvasKey: _canvasKey,     // Pass shared key
-                      onSizeChanged: (size) {
-                        _canvasSize = size; // Sync size for Write/Photo actions
-                      },
-                    )
-                  : GestureDetector(
-                  onTap: () {
-                    if (_interaction.selectedLayerId != null) {
-                      _interaction.clearSelection();
-                      setState(() {});
-                    }
-                  },
-                  behavior: HitTestBehavior.translucent,
-                  // 커버와 동일한 수평 패딩(16px)을 적용해 내지 크기를 정확히 일치시킴
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      const double sidePadding = 16.0;
-                      final double innerW = constraints.maxWidth - sidePadding * 2;
-                      final double innerH = innerW / aspect;
-
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: sidePadding),
-                          child: PageEditorCanvas(
-                            canvasKey: _canvasKey,
-                            canvasW: innerW,
-                            canvasH: innerH,
-                            layers: layers,
-                            interaction: _interaction,
-                            layerBuilder: _layerBuilder,
-                            onCanvasSizeChanged: (size) {
-                              // 실제 측정된 캔버스 크기로 갱신
-                              if (_canvasSize != size) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (!mounted) return;
-                                  setState(() => _canvasSize = size);
-                                  vm.loadPendingEditAlbumIfNeeded(size);
-                                  vm.setCoverCanvasSize(size, isCover: vm.currentPageIndex == 0);
-                                });
-                              }
-                            },
-                            backgroundColor: vm.currentPage?.backgroundColor != null
-                                ? Color(vm.currentPage!.backgroundColor!)
-                                : null,
-                            isCover: vm.currentPage?.isCover ?? false,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                ),
-
-              // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
-              // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
-              // RenderFlex overflow가 발생하지 않도록 한다.
-              SizedBox(
-                height: 80.h,
-                child: Center(
-                  child: _interaction.selectedLayerId != null
-                      ? LayerActionPanel(
-                          layers: layers,
-                          interaction: _interaction,
-                          textEditor: TextEditorManager(
-                            context,
-                            ref.read(albumEditorViewModelProvider.notifier),
-                          ),
-                          onRefresh: () => setState(() {}),
-                          onOpenGallery: (LayerModel layer) =>
-                              _openGalleryForPlaceholder(layer),
-                          onOpenDecorateSheet: (LayerModel layer) =>
-                              _openDecorateSheetForLayer(layer),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-
-              // Bottom Menu (고정)
-              EditorBottomMenu(
-                currentMode: _currentMode,
-                isCover: currentPageIndex == 0,
-                onModeChanged: (mode) => _handleModeChange(mode, layers),
-                onAddPhoto: () {
-                  // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
-                  final size = (currentPageIndex == 0 &&
-                          (_canvasSize.width <= 0 || _canvasSize.height <= 0))
-                      ? Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect)
-                      : _canvasSize;
-                  _toolbarActionHandler.addPhoto(size);
-                },
-                onCover: () => _toolbarActionHandler.openCoverTheme(),
-              ),
-            ],
-          ),
-          ),
-
-          // 저장 중 진행률 오버레이
-          if (_isSaving)
-            PageEditorSaveOverlay(progress: _saveProgress),
-
-          // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
-          if (!_isSaving && (state?.backgroundUploadProgress ?? 0) > 0 && (state?.backgroundUploadProgress ?? 0) < 1)
-            Positioned(
-              bottom: 80.h,
-              left: 16.w,
-              right: 16.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: SnapFitColors.overlayStrongOf(context),
-                  borderRadius: BorderRadius.circular(999.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+              SafeArea(
+                bottom: false,
+                child: Column(
                   children: [
-                    SizedBox(
-                      width: 14.r,
-                      height: 14.r,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        value: state!.backgroundUploadProgress,
-                        color: SnapFitColors.accent,
-                        backgroundColor: Colors.white24,
+                    // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
+                    Padding(
+                      padding: EdgeInsets.only(top: 16.h),
+                      child: PageListSelector(
+                        pages: pages,
+                        currentPageIndex: currentPageIndex,
+                        onPageSelected: (index) {
+                          vm.goToPage(index);
+                          // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
+                          setState(() => _canvasSize = Size.zero);
+                        },
+                        onAddPage: () {
+                          vm.addPage();
+                          setState(() {}); // Refresh UI
+                        },
                       ),
                     ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        decoration: TextDecoration.none,
+                    // 2. Main Canvas Area
+                    Expanded(
+                      child: currentPageIndex == 0
+                          ? EditCover(
+                              key: _coverEditorKey,
+                              editAlbum: vm.album,
+                              showAppBar: false,
+                              initialCoverSize: vm.selectedCover,
+                              showBottomToolbar:
+                                  false, // Hide Cover's internal toolbar
+                              interaction:
+                                  _interaction, // Pass shared interaction
+                              canvasKey: _canvasKey, // Pass shared key
+                              onSizeChanged: (size) {
+                                _canvasSize =
+                                    size; // Sync size for Write/Photo actions
+                              },
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                if (_interaction.selectedLayerId != null) {
+                                  _interaction.clearSelection();
+                                  setState(() {});
+                                }
+                              },
+                              behavior: HitTestBehavior.translucent,
+                              // 커버와 동일한 수평 패딩(16px)을 적용해 내지 크기를 정확히 일치시킴
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  const double sidePadding = 16.0;
+                                  final double innerW =
+                                      constraints.maxWidth - sidePadding * 2;
+                                  final double innerH = innerW / aspect;
+
+                                  return Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: sidePadding,
+                                      ),
+                                      child: PageEditorCanvas(
+                                        canvasKey: _canvasKey,
+                                        canvasW: innerW,
+                                        canvasH: innerH,
+                                        layers: layers,
+                                        interaction: _interaction,
+                                        layerBuilder: _layerBuilder,
+                                        onCanvasSizeChanged: (size) {
+                                          // 실제 측정된 캔버스 크기로 갱신
+                                          if (_canvasSize != size) {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  if (!mounted) return;
+                                                  setState(
+                                                    () => _canvasSize = size,
+                                                  );
+                                                  vm.loadPendingEditAlbumIfNeeded(
+                                                    size,
+                                                  );
+                                                  vm.setCoverCanvasSize(
+                                                    size,
+                                                    isCover:
+                                                        vm.currentPageIndex ==
+                                                        0,
+                                                  );
+                                                });
+                                          }
+                                        },
+                                        backgroundColor:
+                                            vm.currentPage?.backgroundColor !=
+                                                null
+                                            ? Color(
+                                                vm
+                                                    .currentPage!
+                                                    .backgroundColor!,
+                                              )
+                                            : null,
+                                        isCover:
+                                            vm.currentPage?.isCover ?? false,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+
+                    // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
+                    // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
+                    // RenderFlex overflow가 발생하지 않도록 한다.
+                    SizedBox(
+                      height: 80.h,
+                      child: Center(
+                        child: _interaction.selectedLayerId != null
+                            ? LayerActionPanel(
+                                layers: layers,
+                                interaction: _interaction,
+                                textEditor: TextEditorManager(
+                                  context,
+                                  ref.read(
+                                    albumEditorViewModelProvider.notifier,
+                                  ),
+                                ),
+                                onRefresh: () => setState(() {}),
+                                onOpenGallery: (LayerModel layer) =>
+                                    _openGalleryForPlaceholder(layer),
+                                onOpenDecorateSheet: (LayerModel layer) =>
+                                    _openDecorateSheetForLayer(layer),
+                              )
+                            : const SizedBox.shrink(),
                       ),
+                    ),
+
+                    // Bottom Menu (고정)
+                    EditorBottomMenu(
+                      currentMode: _currentMode,
+                      isCover: currentPageIndex == 0,
+                      onModeChanged: (mode) => _handleModeChange(mode, layers),
+                      onAddPhoto: () {
+                        // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
+                        final size =
+                            (currentPageIndex == 0 &&
+                                (_canvasSize.width <= 0 ||
+                                    _canvasSize.height <= 0))
+                            ? Size(
+                                kCoverReferenceWidth,
+                                kCoverReferenceWidth / aspect,
+                              )
+                            : _canvasSize;
+                        _toolbarActionHandler.addPhoto(size);
+                      },
+                      onCover: () => _toolbarActionHandler.openCoverTheme(),
                     ),
                   ],
                 ),
               ),
-            ),
 
-          // 전역 로딩 오버레이 (생성 플로우 전환용)
-          if (state?.isCreatingInBackground ?? false)
-            const PageEditorPreparingOverlay(),
-        ],
+              // 저장 중 진행률 오버레이
+              if (_isSaving) PageEditorSaveOverlay(progress: _saveProgress),
+
+              // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
+              if (!_isSaving &&
+                  (state?.backgroundUploadProgress ?? 0) > 0 &&
+                  (state?.backgroundUploadProgress ?? 0) < 1)
+                Positioned(
+                  bottom: 80.h,
+                  left: 16.w,
+                  right: 16.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: SnapFitColors.overlayStrongOf(context),
+                      borderRadius: BorderRadius.circular(999.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 14.r,
+                          height: 14.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: state!.backgroundUploadProgress,
+                            color: SnapFitColors.accent,
+                            backgroundColor: Colors.white24,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 전역 로딩 오버레이 (생성 플로우 전환용)
+              if (state?.isCreatingInBackground ?? false)
+                const PageEditorPreparingOverlay(),
+            ],
+          ),
+        ),
       ),
-      ),
-    ),
     );
   }
 
-  Future<bool> _handleWillPop(AlbumEditorViewModel vm, List<LayerModel> layers) async {
+  Future<bool> _handleWillPop(
+    AlbumEditorViewModel vm,
+    List<LayerModel> layers,
+  ) async {
     final asyncState = ref.read(albumEditorViewModelProvider);
     final hasChanges = asyncState.value?.canUndo ?? false;
     if (!hasChanges) return true;
@@ -558,7 +602,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      final currentKey = vm.findLayerById(layer.id)?.imageBackground ?? layer.imageBackground ?? '';
+      final currentKey =
+          vm.findLayerById(layer.id)?.imageBackground ??
+          layer.imageBackground ??
+          '';
       ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateImageFrame(layer.id, key);
@@ -566,7 +613,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         }
       });
     } else {
-      final currentKey = vm.findLayerById(layer.id)?.textBackground ?? layer.textBackground ?? '';
+      final currentKey =
+          vm.findLayerById(layer.id)?.textBackground ??
+          layer.textBackground ??
+          '';
       TextStylePickerSheet.show(context, currentKey: currentKey).then((key) {
         if (key != null && mounted) {
           vm.updateTextStyle(layer.id, key);
@@ -583,17 +633,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     if (mode == EditorMode.text) {
-       _currentMode = EditorMode.none;
-       final vm = ref.read(albumEditorViewModelProvider.notifier);
-       // Legacy logic: responsive size based on canvas
-       final effectiveSize = _canvasSize == Size.zero ? const Size(300, 400) : _canvasSize;
-       TextEditorManager(context, vm).openAndCreateNew(
-         Size(
-           effectiveSize.width * 0.92,
-           effectiveSize.height * 0.18,
-         ),
-       );
-       return;
+      _currentMode = EditorMode.none;
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      // Legacy logic: responsive size based on canvas
+      final effectiveSize = _canvasSize == Size.zero
+          ? const Size(300, 400)
+          : _canvasSize;
+      TextEditorManager(context, vm).openAndCreateNew(
+        Size(effectiveSize.width * 0.92, effectiveSize.height * 0.18),
+      );
+      return;
     }
 
     setState(() => _currentMode = mode);
@@ -607,20 +656,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         if (mode == EditorMode.decorate) {
           return DecoratePanel(onClose: () => Navigator.pop(ctx));
         } else if (mode == EditorMode.layer) {
-          return LayerManagerPanel(
-            layers: layers,
-            interaction: _interaction,
-          );
+          return LayerManagerPanel(layers: layers, interaction: _interaction);
         } else if (mode == EditorMode.layout) {
           return const TemplateSelectionPanel(title: '레이아웃');
         } else if (mode == EditorMode.template) {
           return const DesignTemplatePanel();
         }
         return const SizedBox.shrink();
-      }
+      },
     ).then((_) {
       if (mounted) setState(() => _currentMode = EditorMode.none);
     });
   }
-
 }

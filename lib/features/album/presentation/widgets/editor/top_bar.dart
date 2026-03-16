@@ -13,9 +13,7 @@ class TopBar extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          _pillBtn('완료', onDone),
-        ],
+        children: [_pillBtn('완료', onDone)],
       ),
     );
   }

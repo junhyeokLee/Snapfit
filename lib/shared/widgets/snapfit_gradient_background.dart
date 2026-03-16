@@ -6,10 +6,7 @@ import '../../core/constants/snapfit_colors.dart';
 class SnapFitGradientBackground extends StatelessWidget {
   final Widget child;
 
-  const SnapFitGradientBackground({
-    super.key,
-    required this.child,
-  });
+  const SnapFitGradientBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +20,7 @@ class SnapFitGradientBackground extends StatelessWidget {
                 end: Alignment.bottomCenter,
               ),
             )
-          : BoxDecoration(
-              color: SnapFitColors.backgroundOf(context),
-            ),
+          : BoxDecoration(color: SnapFitColors.backgroundOf(context)),
       child: child,
     );
   }

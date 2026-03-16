@@ -11,13 +11,16 @@ sealed class CreateAlbumRequest with _$CreateAlbumRequest {
     // ignore: invalid_annotation_target
     @JsonKey(name: 'userId') @Default('') String userId,
     required String ratio,
+
     /// 앨범 제목
     @Default('') String title,
+
     /// 목표 페이지 수 (완성 기준)
     @Default(0) int targetPages,
     required String coverLayersJson,
     required String coverImageUrl,
     required String coverThumbnailUrl,
+
     /// 운영급: 커버 원본/미리보기 URL (하위 호환: 없으면 coverImageUrl을 preview로 간주)
     String? coverOriginalUrl,
     String? coverPreviewUrl,

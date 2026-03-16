@@ -106,7 +106,11 @@ const List<_TextStyleItem> _basicStyles = [
 ];
 
 const List<_DesignGroup> _basicDesignGroups = [
-  _DesignGroup(id: 'none', labelKo: '없음', items: [_TextStyleItem(key: '', previewType: 'none')]),
+  _DesignGroup(
+    id: 'none',
+    labelKo: '없음',
+    items: [_TextStyleItem(key: '', previewType: 'none')],
+  ),
   _DesignGroup(
     id: 'round',
     labelKo: '라운드',
@@ -158,7 +162,10 @@ const List<_DesignGroup> _basicDesignGroups = [
       _TextStyleItem(key: 'roundSoftPink', previewType: 'roundSoftPink'),
       _TextStyleItem(key: 'roundSoftBlue', previewType: 'roundSoftBlue'),
       _TextStyleItem(key: 'roundSoftMint', previewType: 'roundSoftMint'),
-      _TextStyleItem(key: 'roundSoftLavender', previewType: 'roundSoftLavender'),
+      _TextStyleItem(
+        key: 'roundSoftLavender',
+        previewType: 'roundSoftLavender',
+      ),
       _TextStyleItem(key: 'roundSoftOrange', previewType: 'roundSoftOrange'),
       _TextStyleItem(key: 'roundSoftGreen', previewType: 'roundSoftGreen'),
       _TextStyleItem(key: 'roundSoftCream', previewType: 'roundSoftCream'),
@@ -179,7 +186,10 @@ const List<_DesignGroup> _basicDesignGroups = [
       _TextStyleItem(key: 'softPill2Pink', previewType: 'softPill2Pink'),
       _TextStyleItem(key: 'softPill2Blue', previewType: 'softPill2Blue'),
       _TextStyleItem(key: 'softPill2Mint', previewType: 'softPill2Mint'),
-      _TextStyleItem(key: 'softPill2Lavender', previewType: 'softPill2Lavender'),
+      _TextStyleItem(
+        key: 'softPill2Lavender',
+        previewType: 'softPill2Lavender',
+      ),
       _TextStyleItem(key: 'softPill2Orange', previewType: 'softPill2Orange'),
       _TextStyleItem(key: 'softPill2Green', previewType: 'softPill2Green'),
       _TextStyleItem(key: 'softPill2Cream', previewType: 'softPill2Cream'),
@@ -192,6 +202,7 @@ const List<_DesignGroup> _basicDesignGroups = [
     ],
   ),
 ];
+
 /// 말풍선 – 디자인별(6종) + 색상 10종 통일
 const List<_TextStyleItem> _speechBubbles = [
   _TextStyleItem(key: 'bubble', previewType: 'tailLeft'),
@@ -259,7 +270,10 @@ const List<_TextStyleItem> _speechBubbles = [
   _TextStyleItem(key: 'bubbleSquareCenterPink', previewType: 'bubblePink'),
   _TextStyleItem(key: 'bubbleSquareCenterBlue', previewType: 'bubbleBlue'),
   _TextStyleItem(key: 'bubbleSquareCenterMint', previewType: 'bubbleMint'),
-  _TextStyleItem(key: 'bubbleSquareCenterLavender', previewType: 'bubbleLavender'),
+  _TextStyleItem(
+    key: 'bubbleSquareCenterLavender',
+    previewType: 'bubbleLavender',
+  ),
   _TextStyleItem(key: 'bubbleSquareCenterOrange', previewType: 'bubbleOrange'),
   _TextStyleItem(key: 'bubbleSquareCenterGreen', previewType: 'bubbleGreen'),
   _TextStyleItem(key: 'bubbleSquareCenterCream', previewType: 'bubbleCream'),
@@ -274,7 +288,10 @@ const List<_TextStyleItem> _speechBubbles = [
   _TextStyleItem(key: 'bubbleSquareRightPink', previewType: 'bubblePink'),
   _TextStyleItem(key: 'bubbleSquareRightBlue', previewType: 'bubbleBlue'),
   _TextStyleItem(key: 'bubbleSquareRightMint', previewType: 'bubbleMint'),
-  _TextStyleItem(key: 'bubbleSquareRightLavender', previewType: 'bubbleLavender'),
+  _TextStyleItem(
+    key: 'bubbleSquareRightLavender',
+    previewType: 'bubbleLavender',
+  ),
   _TextStyleItem(key: 'bubbleSquareRightOrange', previewType: 'bubbleOrange'),
   _TextStyleItem(key: 'bubbleSquareRightGreen', previewType: 'bubbleGreen'),
   _TextStyleItem(key: 'bubbleSquareRightCream', previewType: 'bubbleCream'),
@@ -287,108 +304,168 @@ const List<_TextStyleItem> _speechBubbles = [
 ];
 
 const List<_DesignGroup> _speechBubbleDesignGroups = [
-  _DesignGroup(id: 'bubble', labelKo: '라운드 왼쪽', items: [
-    _TextStyleItem(key: 'bubble', previewType: 'tailLeft'),
-    _TextStyleItem(key: 'bubbleGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubblePink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleLemon', previewType: 'bubbleLemon'),
-  ]),
-  _DesignGroup(id: 'bubbleCenter', labelKo: '라운드 가운데', items: [
-    _TextStyleItem(key: 'bubbleCenter', previewType: 'tailCenter'),
-    _TextStyleItem(key: 'bubbleCenterGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubbleCenterPink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleCenterBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleCenterMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleCenterLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleCenterOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleCenterGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleCenterCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleCenterNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleCenterRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleCenterCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleCenterBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleCenterTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleCenterLemon', previewType: 'bubbleLemon'),
-  ]),
-  _DesignGroup(id: 'bubbleRight', labelKo: '라운드 오른쪽', items: [
-    _TextStyleItem(key: 'bubbleRight', previewType: 'tailRight'),
-    _TextStyleItem(key: 'bubbleRightGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubbleRightPink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleRightBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleRightMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleRightLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleRightOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleRightGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleRightCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleRightNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleRightRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleRightCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleRightBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleRightTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleRightLemon', previewType: 'bubbleLemon'),
-  ]),
-  _DesignGroup(id: 'bubbleSquare', labelKo: '사각 왼쪽', items: [
-    _TextStyleItem(key: 'bubbleSquare', previewType: 'tailSquareLeft'),
-    _TextStyleItem(key: 'bubbleSquareGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubbleSquarePink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleSquareBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleSquareMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleSquareLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleSquareOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleSquareGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleSquareCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleSquareNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleSquareRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleSquareCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleSquareBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleSquareTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleSquareLemon', previewType: 'bubbleLemon'),
-  ]),
-  _DesignGroup(id: 'bubbleSquareCenter', labelKo: '사각 가운데', items: [
-    _TextStyleItem(key: 'bubbleSquareCenter', previewType: 'tailSquareCenter'),
-    _TextStyleItem(key: 'bubbleSquareCenterGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubbleSquareCenterPink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleSquareCenterBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleSquareCenterMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleSquareCenterLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleSquareCenterOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleSquareCenterGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleSquareCenterCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleSquareCenterNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleSquareCenterRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleSquareCenterCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleSquareCenterBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleSquareCenterTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleSquareCenterLemon', previewType: 'bubbleLemon'),
-  ]),
-  _DesignGroup(id: 'bubbleSquareRight', labelKo: '사각 오른쪽', items: [
-    _TextStyleItem(key: 'bubbleSquareRight', previewType: 'tailSquareRight'),
-    _TextStyleItem(key: 'bubbleSquareRightGray', previewType: 'bubbleGray'),
-    _TextStyleItem(key: 'bubbleSquareRightPink', previewType: 'bubblePink'),
-    _TextStyleItem(key: 'bubbleSquareRightBlue', previewType: 'bubbleBlue'),
-    _TextStyleItem(key: 'bubbleSquareRightMint', previewType: 'bubbleMint'),
-    _TextStyleItem(key: 'bubbleSquareRightLavender', previewType: 'bubbleLavender'),
-    _TextStyleItem(key: 'bubbleSquareRightOrange', previewType: 'bubbleOrange'),
-    _TextStyleItem(key: 'bubbleSquareRightGreen', previewType: 'bubbleGreen'),
-    _TextStyleItem(key: 'bubbleSquareRightCream', previewType: 'bubbleCream'),
-    _TextStyleItem(key: 'bubbleSquareRightNavy', previewType: 'bubbleNavy'),
-    _TextStyleItem(key: 'bubbleSquareRightRose', previewType: 'bubbleRose'),
-    _TextStyleItem(key: 'bubbleSquareRightCoral', previewType: 'bubbleCoral'),
-    _TextStyleItem(key: 'bubbleSquareRightBeige', previewType: 'bubbleBeige'),
-    _TextStyleItem(key: 'bubbleSquareRightTeal', previewType: 'bubbleTeal'),
-    _TextStyleItem(key: 'bubbleSquareRightLemon', previewType: 'bubbleLemon'),
-  ]),
+  _DesignGroup(
+    id: 'bubble',
+    labelKo: '라운드 왼쪽',
+    items: [
+      _TextStyleItem(key: 'bubble', previewType: 'tailLeft'),
+      _TextStyleItem(key: 'bubbleGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubblePink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleMint', previewType: 'bubbleMint'),
+      _TextStyleItem(key: 'bubbleLavender', previewType: 'bubbleLavender'),
+      _TextStyleItem(key: 'bubbleOrange', previewType: 'bubbleOrange'),
+      _TextStyleItem(key: 'bubbleGreen', previewType: 'bubbleGreen'),
+      _TextStyleItem(key: 'bubbleCream', previewType: 'bubbleCream'),
+      _TextStyleItem(key: 'bubbleNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleRose', previewType: 'bubbleRose'),
+      _TextStyleItem(key: 'bubbleCoral', previewType: 'bubbleCoral'),
+      _TextStyleItem(key: 'bubbleBeige', previewType: 'bubbleBeige'),
+      _TextStyleItem(key: 'bubbleTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(key: 'bubbleLemon', previewType: 'bubbleLemon'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'bubbleCenter',
+    labelKo: '라운드 가운데',
+    items: [
+      _TextStyleItem(key: 'bubbleCenter', previewType: 'tailCenter'),
+      _TextStyleItem(key: 'bubbleCenterGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubbleCenterPink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleCenterBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleCenterMint', previewType: 'bubbleMint'),
+      _TextStyleItem(
+        key: 'bubbleCenterLavender',
+        previewType: 'bubbleLavender',
+      ),
+      _TextStyleItem(key: 'bubbleCenterOrange', previewType: 'bubbleOrange'),
+      _TextStyleItem(key: 'bubbleCenterGreen', previewType: 'bubbleGreen'),
+      _TextStyleItem(key: 'bubbleCenterCream', previewType: 'bubbleCream'),
+      _TextStyleItem(key: 'bubbleCenterNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleCenterRose', previewType: 'bubbleRose'),
+      _TextStyleItem(key: 'bubbleCenterCoral', previewType: 'bubbleCoral'),
+      _TextStyleItem(key: 'bubbleCenterBeige', previewType: 'bubbleBeige'),
+      _TextStyleItem(key: 'bubbleCenterTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(key: 'bubbleCenterLemon', previewType: 'bubbleLemon'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'bubbleRight',
+    labelKo: '라운드 오른쪽',
+    items: [
+      _TextStyleItem(key: 'bubbleRight', previewType: 'tailRight'),
+      _TextStyleItem(key: 'bubbleRightGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubbleRightPink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleRightBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleRightMint', previewType: 'bubbleMint'),
+      _TextStyleItem(key: 'bubbleRightLavender', previewType: 'bubbleLavender'),
+      _TextStyleItem(key: 'bubbleRightOrange', previewType: 'bubbleOrange'),
+      _TextStyleItem(key: 'bubbleRightGreen', previewType: 'bubbleGreen'),
+      _TextStyleItem(key: 'bubbleRightCream', previewType: 'bubbleCream'),
+      _TextStyleItem(key: 'bubbleRightNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleRightRose', previewType: 'bubbleRose'),
+      _TextStyleItem(key: 'bubbleRightCoral', previewType: 'bubbleCoral'),
+      _TextStyleItem(key: 'bubbleRightBeige', previewType: 'bubbleBeige'),
+      _TextStyleItem(key: 'bubbleRightTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(key: 'bubbleRightLemon', previewType: 'bubbleLemon'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'bubbleSquare',
+    labelKo: '사각 왼쪽',
+    items: [
+      _TextStyleItem(key: 'bubbleSquare', previewType: 'tailSquareLeft'),
+      _TextStyleItem(key: 'bubbleSquareGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubbleSquarePink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleSquareBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleSquareMint', previewType: 'bubbleMint'),
+      _TextStyleItem(
+        key: 'bubbleSquareLavender',
+        previewType: 'bubbleLavender',
+      ),
+      _TextStyleItem(key: 'bubbleSquareOrange', previewType: 'bubbleOrange'),
+      _TextStyleItem(key: 'bubbleSquareGreen', previewType: 'bubbleGreen'),
+      _TextStyleItem(key: 'bubbleSquareCream', previewType: 'bubbleCream'),
+      _TextStyleItem(key: 'bubbleSquareNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleSquareRose', previewType: 'bubbleRose'),
+      _TextStyleItem(key: 'bubbleSquareCoral', previewType: 'bubbleCoral'),
+      _TextStyleItem(key: 'bubbleSquareBeige', previewType: 'bubbleBeige'),
+      _TextStyleItem(key: 'bubbleSquareTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(key: 'bubbleSquareLemon', previewType: 'bubbleLemon'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'bubbleSquareCenter',
+    labelKo: '사각 가운데',
+    items: [
+      _TextStyleItem(
+        key: 'bubbleSquareCenter',
+        previewType: 'tailSquareCenter',
+      ),
+      _TextStyleItem(key: 'bubbleSquareCenterGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubbleSquareCenterPink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleSquareCenterBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleSquareCenterMint', previewType: 'bubbleMint'),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterLavender',
+        previewType: 'bubbleLavender',
+      ),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterOrange',
+        previewType: 'bubbleOrange',
+      ),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterGreen',
+        previewType: 'bubbleGreen',
+      ),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterCream',
+        previewType: 'bubbleCream',
+      ),
+      _TextStyleItem(key: 'bubbleSquareCenterNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleSquareCenterRose', previewType: 'bubbleRose'),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterCoral',
+        previewType: 'bubbleCoral',
+      ),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterBeige',
+        previewType: 'bubbleBeige',
+      ),
+      _TextStyleItem(key: 'bubbleSquareCenterTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(
+        key: 'bubbleSquareCenterLemon',
+        previewType: 'bubbleLemon',
+      ),
+    ],
+  ),
+  _DesignGroup(
+    id: 'bubbleSquareRight',
+    labelKo: '사각 오른쪽',
+    items: [
+      _TextStyleItem(key: 'bubbleSquareRight', previewType: 'tailSquareRight'),
+      _TextStyleItem(key: 'bubbleSquareRightGray', previewType: 'bubbleGray'),
+      _TextStyleItem(key: 'bubbleSquareRightPink', previewType: 'bubblePink'),
+      _TextStyleItem(key: 'bubbleSquareRightBlue', previewType: 'bubbleBlue'),
+      _TextStyleItem(key: 'bubbleSquareRightMint', previewType: 'bubbleMint'),
+      _TextStyleItem(
+        key: 'bubbleSquareRightLavender',
+        previewType: 'bubbleLavender',
+      ),
+      _TextStyleItem(
+        key: 'bubbleSquareRightOrange',
+        previewType: 'bubbleOrange',
+      ),
+      _TextStyleItem(key: 'bubbleSquareRightGreen', previewType: 'bubbleGreen'),
+      _TextStyleItem(key: 'bubbleSquareRightCream', previewType: 'bubbleCream'),
+      _TextStyleItem(key: 'bubbleSquareRightNavy', previewType: 'bubbleNavy'),
+      _TextStyleItem(key: 'bubbleSquareRightRose', previewType: 'bubbleRose'),
+      _TextStyleItem(key: 'bubbleSquareRightCoral', previewType: 'bubbleCoral'),
+      _TextStyleItem(key: 'bubbleSquareRightBeige', previewType: 'bubbleBeige'),
+      _TextStyleItem(key: 'bubbleSquareRightTeal', previewType: 'bubbleTeal'),
+      _TextStyleItem(key: 'bubbleSquareRightLemon', previewType: 'bubbleLemon'),
+    ],
+  ),
 ];
 
 /// 라벨 & 태그 – 기본/말풍선과 동일한 색상 순서
@@ -427,6 +504,7 @@ const List<_TextStyleItem> _labels = [
   _TextStyleItem(key: 'labelGold', previewType: 'labelGold'),
   _TextStyleItem(key: 'labelRose', previewType: 'labelRose'),
 ];
+
 /// 메모지 – 기본/말풍선과 동일한 색상 순서
 const List<_TextStyleItem> _notes = [
   _TextStyleItem(key: 'noteGray', previewType: 'noteGray'),
@@ -462,24 +540,37 @@ const List<_TextStyleItem> _notes = [
   _TextStyleItem(key: 'noteTornRoughPink', previewType: 'noteTornRoughPink'),
   _TextStyleItem(key: 'noteTornRoughBlue', previewType: 'noteTornRoughBlue'),
   _TextStyleItem(key: 'noteTornRoughMint', previewType: 'noteTornRoughMint'),
-  _TextStyleItem(key: 'noteTornRoughLavender', previewType: 'noteTornRoughLavender'),
-  _TextStyleItem(key: 'noteTornRoughOrange', previewType: 'noteTornRoughOrange'),
+  _TextStyleItem(
+    key: 'noteTornRoughLavender',
+    previewType: 'noteTornRoughLavender',
+  ),
+  _TextStyleItem(
+    key: 'noteTornRoughOrange',
+    previewType: 'noteTornRoughOrange',
+  ),
   _TextStyleItem(key: 'noteTornRoughCream', previewType: 'noteTornRoughCream'),
   _TextStyleItem(key: 'noteTornRoughBeige', previewType: 'noteTornRoughBeige'),
-  _TextStyleItem(key: 'noteTornRoughYellow', previewType: 'noteTornRoughYellow'),
+  _TextStyleItem(
+    key: 'noteTornRoughYellow',
+    previewType: 'noteTornRoughYellow',
+  ),
   _TextStyleItem(key: 'noteTornRoughGold', previewType: 'noteTornRoughGold'),
   _TextStyleItem(key: 'noteTornSoft', previewType: 'noteTornSoft'),
   _TextStyleItem(key: 'noteTornSoftGray', previewType: 'noteTornSoftGray'),
   _TextStyleItem(key: 'noteTornSoftPink', previewType: 'noteTornSoftPink'),
   _TextStyleItem(key: 'noteTornSoftBlue', previewType: 'noteTornSoftBlue'),
   _TextStyleItem(key: 'noteTornSoftMint', previewType: 'noteTornSoftMint'),
-  _TextStyleItem(key: 'noteTornSoftLavender', previewType: 'noteTornSoftLavender'),
+  _TextStyleItem(
+    key: 'noteTornSoftLavender',
+    previewType: 'noteTornSoftLavender',
+  ),
   _TextStyleItem(key: 'noteTornSoftOrange', previewType: 'noteTornSoftOrange'),
   _TextStyleItem(key: 'noteTornSoftCream', previewType: 'noteTornSoftCream'),
   _TextStyleItem(key: 'noteTornSoftBeige', previewType: 'noteTornSoftBeige'),
   _TextStyleItem(key: 'noteTornSoftYellow', previewType: 'noteTornSoftYellow'),
   _TextStyleItem(key: 'noteTornSoftGold', previewType: 'noteTornSoftGold'),
 ];
+
 /// 테이프 – 기본/말풍선과 동일한 색상 순서
 const List<_TextStyleItem> _tapes = [
   _TextStyleItem(key: 'tape', previewType: 'stripe'),
@@ -498,21 +589,36 @@ const List<_TextStyleItem> _tapes = [
   _TextStyleItem(key: 'tapeTornRoughGray', previewType: 'tapeTornRoughGray'),
   _TextStyleItem(key: 'tapeTornRoughPink', previewType: 'tapeTornRoughPink'),
   _TextStyleItem(key: 'tapeTornRoughMint', previewType: 'tapeTornRoughMint'),
-  _TextStyleItem(key: 'tapeTornRoughLavender', previewType: 'tapeTornRoughLavender'),
-  _TextStyleItem(key: 'tapeTornRoughYellow', previewType: 'tapeTornRoughYellow'),
+  _TextStyleItem(
+    key: 'tapeTornRoughLavender',
+    previewType: 'tapeTornRoughLavender',
+  ),
+  _TextStyleItem(
+    key: 'tapeTornRoughYellow',
+    previewType: 'tapeTornRoughYellow',
+  ),
   _TextStyleItem(key: 'tapeTornSoft', previewType: 'tapeTornSoft'),
   _TextStyleItem(key: 'tapeTornSoftGray', previewType: 'tapeTornSoftGray'),
   _TextStyleItem(key: 'tapeTornSoftPink', previewType: 'tapeTornSoftPink'),
   _TextStyleItem(key: 'tapeTornSoftMint', previewType: 'tapeTornSoftMint'),
-  _TextStyleItem(key: 'tapeTornSoftLavender', previewType: 'tapeTornSoftLavender'),
+  _TextStyleItem(
+    key: 'tapeTornSoftLavender',
+    previewType: 'tapeTornSoftLavender',
+  ),
   _TextStyleItem(key: 'tapeTornSoftYellow', previewType: 'tapeTornSoftYellow'),
   _TextStyleItem(key: 'tapeTornSolid', previewType: 'tapeTornSolid'),
   _TextStyleItem(key: 'tapeTornSolidGray', previewType: 'tapeTornSolidGray'),
   _TextStyleItem(key: 'tapeTornSolidPink', previewType: 'tapeTornSolidPink'),
   _TextStyleItem(key: 'tapeTornSolidBlue', previewType: 'tapeTornSolidBlue'),
   _TextStyleItem(key: 'tapeTornSolidMint', previewType: 'tapeTornSolidMint'),
-  _TextStyleItem(key: 'tapeTornSolidLavender', previewType: 'tapeTornSolidLavender'),
-  _TextStyleItem(key: 'tapeTornSolidOrange', previewType: 'tapeTornSolidOrange'),
+  _TextStyleItem(
+    key: 'tapeTornSolidLavender',
+    previewType: 'tapeTornSolidLavender',
+  ),
+  _TextStyleItem(
+    key: 'tapeTornSolidOrange',
+    previewType: 'tapeTornSolidOrange',
+  ),
   _TextStyleItem(key: 'tapeTornSolidGreen', previewType: 'tapeTornSolidGreen'),
   _TextStyleItem(key: 'tapeDots', previewType: 'tapeDots'),
   _TextStyleItem(key: 'tapeDotsGray', previewType: 'tapeDotsGray'),
@@ -544,7 +650,11 @@ class _DesignGroup {
   final String labelKo;
   final List<_TextStyleItem> items;
 
-  const _DesignGroup({required this.id, required this.labelKo, required this.items});
+  const _DesignGroup({
+    required this.id,
+    required this.labelKo,
+    required this.items,
+  });
 }
 
 /// 메모지: 디자인별 그룹 + 색상 선택 (기본/말풍선과 동일한 색상 순서: Gray→Pink→Blue→Mint→Lavender→Orange→…)
@@ -565,117 +675,208 @@ const List<_DesignGroup> _noteDesignGroups = [
       _TextStyleItem(key: 'noteGold', previewType: 'noteGold'),
     ],
   ),
-  _DesignGroup(id: 'noteGrid', labelKo: '격자', items: [
-    _TextStyleItem(key: 'noteGrid', previewType: 'noteGrid'),
-    _TextStyleItem(key: 'noteGridGray', previewType: 'noteGridGray'),
-    _TextStyleItem(key: 'noteGridPink', previewType: 'noteGridPink'),
-    _TextStyleItem(key: 'noteGridBlue', previewType: 'noteGridBlue'),
-    _TextStyleItem(key: 'noteGridMint', previewType: 'noteGridMint'),
-    _TextStyleItem(key: 'noteGridLavender', previewType: 'noteGridLavender'),
-    _TextStyleItem(key: 'noteGridOrange', previewType: 'noteGridOrange'),
-  ]),
-  _DesignGroup(id: 'noteTorn', labelKo: '찢어진', items: [
-    _TextStyleItem(key: 'noteTorn', previewType: 'noteTorn'),
-    _TextStyleItem(key: 'noteTornGray', previewType: 'noteTornGray'),
-    _TextStyleItem(key: 'noteTornPink', previewType: 'noteTornPink'),
-    _TextStyleItem(key: 'noteTornBlue', previewType: 'noteTornBlue'),
-    _TextStyleItem(key: 'noteTornMint', previewType: 'noteTornMint'),
-    _TextStyleItem(key: 'noteTornLavender', previewType: 'noteTornLavender'),
-    _TextStyleItem(key: 'noteTornOrange', previewType: 'noteTornOrange'),
-    _TextStyleItem(key: 'noteTornCream', previewType: 'noteTornCream'),
-    _TextStyleItem(key: 'noteTornBeige', previewType: 'noteTornBeige'),
-    _TextStyleItem(key: 'noteTornYellow', previewType: 'noteTornYellow'),
-    _TextStyleItem(key: 'noteTornGold', previewType: 'noteTornGold'),
-  ]),
-  _DesignGroup(id: 'noteTornRough', labelKo: '찢어진(Hard)', items: [
-    _TextStyleItem(key: 'noteTornRough', previewType: 'noteTornRough'),
-    _TextStyleItem(key: 'noteTornRoughGray', previewType: 'noteTornRoughGray'),
-    _TextStyleItem(key: 'noteTornRoughPink', previewType: 'noteTornRoughPink'),
-    _TextStyleItem(key: 'noteTornRoughBlue', previewType: 'noteTornRoughBlue'),
-    _TextStyleItem(key: 'noteTornRoughMint', previewType: 'noteTornRoughMint'),
-    _TextStyleItem(key: 'noteTornRoughLavender', previewType: 'noteTornRoughLavender'),
-    _TextStyleItem(key: 'noteTornRoughOrange', previewType: 'noteTornRoughOrange'),
-    _TextStyleItem(key: 'noteTornRoughCream', previewType: 'noteTornRoughCream'),
-    _TextStyleItem(key: 'noteTornRoughBeige', previewType: 'noteTornRoughBeige'),
-    _TextStyleItem(key: 'noteTornRoughYellow', previewType: 'noteTornRoughYellow'),
-    _TextStyleItem(key: 'noteTornRoughGold', previewType: 'noteTornRoughGold'),
-  ]),
-  _DesignGroup(id: 'noteTornSoft', labelKo: '찢어진(Soft)', items: [
-    _TextStyleItem(key: 'noteTornSoft', previewType: 'noteTornSoft'),
-    _TextStyleItem(key: 'noteTornSoftGray', previewType: 'noteTornSoftGray'),
-    _TextStyleItem(key: 'noteTornSoftPink', previewType: 'noteTornSoftPink'),
-    _TextStyleItem(key: 'noteTornSoftBlue', previewType: 'noteTornSoftBlue'),
-    _TextStyleItem(key: 'noteTornSoftMint', previewType: 'noteTornSoftMint'),
-    _TextStyleItem(key: 'noteTornSoftLavender', previewType: 'noteTornSoftLavender'),
-    _TextStyleItem(key: 'noteTornSoftOrange', previewType: 'noteTornSoftOrange'),
-    _TextStyleItem(key: 'noteTornSoftCream', previewType: 'noteTornSoftCream'),
-    _TextStyleItem(key: 'noteTornSoftBeige', previewType: 'noteTornSoftBeige'),
-    _TextStyleItem(key: 'noteTornSoftYellow', previewType: 'noteTornSoftYellow'),
-    _TextStyleItem(key: 'noteTornSoftGold', previewType: 'noteTornSoftGold'),
-  ]),
+  _DesignGroup(
+    id: 'noteGrid',
+    labelKo: '격자',
+    items: [
+      _TextStyleItem(key: 'noteGrid', previewType: 'noteGrid'),
+      _TextStyleItem(key: 'noteGridGray', previewType: 'noteGridGray'),
+      _TextStyleItem(key: 'noteGridPink', previewType: 'noteGridPink'),
+      _TextStyleItem(key: 'noteGridBlue', previewType: 'noteGridBlue'),
+      _TextStyleItem(key: 'noteGridMint', previewType: 'noteGridMint'),
+      _TextStyleItem(key: 'noteGridLavender', previewType: 'noteGridLavender'),
+      _TextStyleItem(key: 'noteGridOrange', previewType: 'noteGridOrange'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'noteTorn',
+    labelKo: '찢어진',
+    items: [
+      _TextStyleItem(key: 'noteTorn', previewType: 'noteTorn'),
+      _TextStyleItem(key: 'noteTornGray', previewType: 'noteTornGray'),
+      _TextStyleItem(key: 'noteTornPink', previewType: 'noteTornPink'),
+      _TextStyleItem(key: 'noteTornBlue', previewType: 'noteTornBlue'),
+      _TextStyleItem(key: 'noteTornMint', previewType: 'noteTornMint'),
+      _TextStyleItem(key: 'noteTornLavender', previewType: 'noteTornLavender'),
+      _TextStyleItem(key: 'noteTornOrange', previewType: 'noteTornOrange'),
+      _TextStyleItem(key: 'noteTornCream', previewType: 'noteTornCream'),
+      _TextStyleItem(key: 'noteTornBeige', previewType: 'noteTornBeige'),
+      _TextStyleItem(key: 'noteTornYellow', previewType: 'noteTornYellow'),
+      _TextStyleItem(key: 'noteTornGold', previewType: 'noteTornGold'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'noteTornRough',
+    labelKo: '찢어진(Hard)',
+    items: [
+      _TextStyleItem(key: 'noteTornRough', previewType: 'noteTornRough'),
+      _TextStyleItem(
+        key: 'noteTornRoughGray',
+        previewType: 'noteTornRoughGray',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughPink',
+        previewType: 'noteTornRoughPink',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughBlue',
+        previewType: 'noteTornRoughBlue',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughMint',
+        previewType: 'noteTornRoughMint',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughLavender',
+        previewType: 'noteTornRoughLavender',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughOrange',
+        previewType: 'noteTornRoughOrange',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughCream',
+        previewType: 'noteTornRoughCream',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughBeige',
+        previewType: 'noteTornRoughBeige',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughYellow',
+        previewType: 'noteTornRoughYellow',
+      ),
+      _TextStyleItem(
+        key: 'noteTornRoughGold',
+        previewType: 'noteTornRoughGold',
+      ),
+    ],
+  ),
+  _DesignGroup(
+    id: 'noteTornSoft',
+    labelKo: '찢어진(Soft)',
+    items: [
+      _TextStyleItem(key: 'noteTornSoft', previewType: 'noteTornSoft'),
+      _TextStyleItem(key: 'noteTornSoftGray', previewType: 'noteTornSoftGray'),
+      _TextStyleItem(key: 'noteTornSoftPink', previewType: 'noteTornSoftPink'),
+      _TextStyleItem(key: 'noteTornSoftBlue', previewType: 'noteTornSoftBlue'),
+      _TextStyleItem(key: 'noteTornSoftMint', previewType: 'noteTornSoftMint'),
+      _TextStyleItem(
+        key: 'noteTornSoftLavender',
+        previewType: 'noteTornSoftLavender',
+      ),
+      _TextStyleItem(
+        key: 'noteTornSoftOrange',
+        previewType: 'noteTornSoftOrange',
+      ),
+      _TextStyleItem(
+        key: 'noteTornSoftCream',
+        previewType: 'noteTornSoftCream',
+      ),
+      _TextStyleItem(
+        key: 'noteTornSoftBeige',
+        previewType: 'noteTornSoftBeige',
+      ),
+      _TextStyleItem(
+        key: 'noteTornSoftYellow',
+        previewType: 'noteTornSoftYellow',
+      ),
+      _TextStyleItem(key: 'noteTornSoftGold', previewType: 'noteTornSoftGold'),
+    ],
+  ),
 ];
 
 /// 라벨: 디자인별 그룹 + 기본/말풍선과 동일한 색상 순서, 그룹별 10색 통일
 const List<_DesignGroup> _labelDesignGroups = [
-  _DesignGroup(id: 'labelOval', labelKo: '타원', items: [
-    _TextStyleItem(key: 'label', previewType: 'oval'),
-    _TextStyleItem(key: 'labelGray', previewType: 'labelGray'),
-    _TextStyleItem(key: 'labelPink', previewType: 'labelPink'),
-    _TextStyleItem(key: 'labelBlue', previewType: 'labelBlue'),
-    _TextStyleItem(key: 'labelMint', previewType: 'labelMint'),
-    _TextStyleItem(key: 'labelLavender', previewType: 'labelLavender'),
-    _TextStyleItem(key: 'labelOrange', previewType: 'labelOrange'),
-    _TextStyleItem(key: 'labelGreen', previewType: 'labelGreen'),
-    _TextStyleItem(key: 'labelWhite', previewType: 'labelWhite'),
-    _TextStyleItem(key: 'labelCream', previewType: 'labelCream'),
-  ]),
-  _DesignGroup(id: 'labelSolid', labelKo: '채움', items: [
-    _TextStyleItem(key: 'labelSolid', previewType: 'labelSolid'),
-    _TextStyleItem(key: 'labelSolidGray', previewType: 'labelSolidGray'),
-    _TextStyleItem(key: 'labelSolidPink', previewType: 'labelSolidPink'),
-    _TextStyleItem(key: 'labelSolidBlue', previewType: 'labelSolidBlue'),
-    _TextStyleItem(key: 'labelSolidMint', previewType: 'labelSolidMint'),
-    _TextStyleItem(key: 'labelSolidLavender', previewType: 'labelSolidLavender'),
-    _TextStyleItem(key: 'labelSolidOrange', previewType: 'labelSolidOrange'),
-    _TextStyleItem(key: 'labelSolidGreen', previewType: 'labelSolidGreen'),
-    _TextStyleItem(key: 'labelSolidCream', previewType: 'labelSolidCream'),
-    _TextStyleItem(key: 'labelSolidRed', previewType: 'labelSolidRed'),
-  ]),
-  _DesignGroup(id: 'tag', labelKo: '태그', items: [
-    _TextStyleItem(key: 'tag', previewType: 'tag'),
-    _TextStyleItem(key: 'tagGray', previewType: 'tagGray'),
-    _TextStyleItem(key: 'tagPink', previewType: 'tagPink'),
-    _TextStyleItem(key: 'tagBlue', previewType: 'tagBlue'),
-    _TextStyleItem(key: 'tagMint', previewType: 'tagMint'),
-    _TextStyleItem(key: 'tagLavender', previewType: 'tagLavender'),
-    _TextStyleItem(key: 'tagOrange', previewType: 'tagOrange'),
-    _TextStyleItem(key: 'tagGreen', previewType: 'tagGreen'),
-    _TextStyleItem(key: 'tagRed', previewType: 'tagRed'),
-  ]),
-  _DesignGroup(id: 'labelOutline', labelKo: '테두리', items: [
-    _TextStyleItem(key: 'labelOutline', previewType: 'labelOutline'),
-    _TextStyleItem(key: 'labelNeon', previewType: 'labelNeon'),
-  ]),
-  _DesignGroup(id: 'labelGradient', labelKo: '그라데이션', items: [
-    _TextStyleItem(key: 'labelGold', previewType: 'labelGold'),
-    _TextStyleItem(key: 'labelRose', previewType: 'labelRose'),
-  ]),
+  _DesignGroup(
+    id: 'labelOval',
+    labelKo: '타원',
+    items: [
+      _TextStyleItem(key: 'label', previewType: 'oval'),
+      _TextStyleItem(key: 'labelGray', previewType: 'labelGray'),
+      _TextStyleItem(key: 'labelPink', previewType: 'labelPink'),
+      _TextStyleItem(key: 'labelBlue', previewType: 'labelBlue'),
+      _TextStyleItem(key: 'labelMint', previewType: 'labelMint'),
+      _TextStyleItem(key: 'labelLavender', previewType: 'labelLavender'),
+      _TextStyleItem(key: 'labelOrange', previewType: 'labelOrange'),
+      _TextStyleItem(key: 'labelGreen', previewType: 'labelGreen'),
+      _TextStyleItem(key: 'labelWhite', previewType: 'labelWhite'),
+      _TextStyleItem(key: 'labelCream', previewType: 'labelCream'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'labelSolid',
+    labelKo: '채움',
+    items: [
+      _TextStyleItem(key: 'labelSolid', previewType: 'labelSolid'),
+      _TextStyleItem(key: 'labelSolidGray', previewType: 'labelSolidGray'),
+      _TextStyleItem(key: 'labelSolidPink', previewType: 'labelSolidPink'),
+      _TextStyleItem(key: 'labelSolidBlue', previewType: 'labelSolidBlue'),
+      _TextStyleItem(key: 'labelSolidMint', previewType: 'labelSolidMint'),
+      _TextStyleItem(
+        key: 'labelSolidLavender',
+        previewType: 'labelSolidLavender',
+      ),
+      _TextStyleItem(key: 'labelSolidOrange', previewType: 'labelSolidOrange'),
+      _TextStyleItem(key: 'labelSolidGreen', previewType: 'labelSolidGreen'),
+      _TextStyleItem(key: 'labelSolidCream', previewType: 'labelSolidCream'),
+      _TextStyleItem(key: 'labelSolidRed', previewType: 'labelSolidRed'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'tag',
+    labelKo: '태그',
+    items: [
+      _TextStyleItem(key: 'tag', previewType: 'tag'),
+      _TextStyleItem(key: 'tagGray', previewType: 'tagGray'),
+      _TextStyleItem(key: 'tagPink', previewType: 'tagPink'),
+      _TextStyleItem(key: 'tagBlue', previewType: 'tagBlue'),
+      _TextStyleItem(key: 'tagMint', previewType: 'tagMint'),
+      _TextStyleItem(key: 'tagLavender', previewType: 'tagLavender'),
+      _TextStyleItem(key: 'tagOrange', previewType: 'tagOrange'),
+      _TextStyleItem(key: 'tagGreen', previewType: 'tagGreen'),
+      _TextStyleItem(key: 'tagRed', previewType: 'tagRed'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'labelOutline',
+    labelKo: '테두리',
+    items: [
+      _TextStyleItem(key: 'labelOutline', previewType: 'labelOutline'),
+      _TextStyleItem(key: 'labelNeon', previewType: 'labelNeon'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'labelGradient',
+    labelKo: '그라데이션',
+    items: [
+      _TextStyleItem(key: 'labelGold', previewType: 'labelGold'),
+      _TextStyleItem(key: 'labelRose', previewType: 'labelRose'),
+    ],
+  ),
 ];
 
 /// 테이프: 단색 첫 번째, 그 다음 스트라이프·찢어진·도트 등
 const List<_DesignGroup> _tapeDesignGroups = [
-  _DesignGroup(id: 'tapeSolid', labelKo: '단색', items: [
-    _TextStyleItem(key: 'tapeSolidGray', previewType: 'tapeSolidGray'),
-    _TextStyleItem(key: 'tapeSolidPink', previewType: 'tapeSolidPink'),
-    _TextStyleItem(key: 'tapeSolidBlue', previewType: 'tapeSolidBlue'),
-    _TextStyleItem(key: 'tapeSolidMint', previewType: 'tapeSolidMint'),
-    _TextStyleItem(key: 'tapeSolidLavender', previewType: 'tapeSolidLavender'),
-    _TextStyleItem(key: 'tapeSolidOrange', previewType: 'tapeSolidOrange'),
-    _TextStyleItem(key: 'tapeSolidGreen', previewType: 'tapeSolidGreen'),
-    _TextStyleItem(key: 'tapeSolidWhite', previewType: 'tapeSolidWhite'),
-    _TextStyleItem(key: 'tapeKraft', previewType: 'tapeKraft'),
-    _TextStyleItem(key: 'tapeGold', previewType: 'tapeGold'),
-  ]),
+  _DesignGroup(
+    id: 'tapeSolid',
+    labelKo: '단색',
+    items: [
+      _TextStyleItem(key: 'tapeSolidGray', previewType: 'tapeSolidGray'),
+      _TextStyleItem(key: 'tapeSolidPink', previewType: 'tapeSolidPink'),
+      _TextStyleItem(key: 'tapeSolidBlue', previewType: 'tapeSolidBlue'),
+      _TextStyleItem(key: 'tapeSolidMint', previewType: 'tapeSolidMint'),
+      _TextStyleItem(
+        key: 'tapeSolidLavender',
+        previewType: 'tapeSolidLavender',
+      ),
+      _TextStyleItem(key: 'tapeSolidOrange', previewType: 'tapeSolidOrange'),
+      _TextStyleItem(key: 'tapeSolidGreen', previewType: 'tapeSolidGreen'),
+      _TextStyleItem(key: 'tapeSolidWhite', previewType: 'tapeSolidWhite'),
+      _TextStyleItem(key: 'tapeKraft', previewType: 'tapeKraft'),
+      _TextStyleItem(key: 'tapeGold', previewType: 'tapeGold'),
+    ],
+  ),
   _DesignGroup(
     id: 'tapeStripe',
     labelKo: '스트라이프',
@@ -688,48 +889,113 @@ const List<_DesignGroup> _tapeDesignGroups = [
       _TextStyleItem(key: 'tapeYellow', previewType: 'tapeYellow'),
     ],
   ),
-  _DesignGroup(id: 'tapeTornSolid', labelKo: '찢어진', items: [
-    _TextStyleItem(key: 'tapeTornSolid', previewType: 'tapeTornSolid'),
-    _TextStyleItem(key: 'tapeTornSolidGray', previewType: 'tapeTornSolidGray'),
-    _TextStyleItem(key: 'tapeTornSolidPink', previewType: 'tapeTornSolidPink'),
-    _TextStyleItem(key: 'tapeTornSolidBlue', previewType: 'tapeTornSolidBlue'),
-    _TextStyleItem(key: 'tapeTornSolidMint', previewType: 'tapeTornSolidMint'),
-    _TextStyleItem(key: 'tapeTornSolidLavender', previewType: 'tapeTornSolidLavender'),
-    _TextStyleItem(key: 'tapeTornSolidOrange', previewType: 'tapeTornSolidOrange'),
-    _TextStyleItem(key: 'tapeTornSolidGreen', previewType: 'tapeTornSolidGreen'),
-  ]),
-  _DesignGroup(id: 'tapeTornRough', labelKo: '찢어진(Hard)', items: [
-    _TextStyleItem(key: 'tapeTornRough', previewType: 'tapeTornRough'),
-    _TextStyleItem(key: 'tapeTornRoughGray', previewType: 'tapeTornRoughGray'),
-    _TextStyleItem(key: 'tapeTornRoughPink', previewType: 'tapeTornRoughPink'),
-    _TextStyleItem(key: 'tapeTornRoughMint', previewType: 'tapeTornRoughMint'),
-    _TextStyleItem(key: 'tapeTornRoughLavender', previewType: 'tapeTornRoughLavender'),
-    _TextStyleItem(key: 'tapeTornRoughYellow', previewType: 'tapeTornRoughYellow'),
-  ]),
-  _DesignGroup(id: 'tapeTornSoft', labelKo: '찢어진(Soft)', items: [
-    _TextStyleItem(key: 'tapeTornSoft', previewType: 'tapeTornSoft'),
-    _TextStyleItem(key: 'tapeTornSoftGray', previewType: 'tapeTornSoftGray'),
-    _TextStyleItem(key: 'tapeTornSoftPink', previewType: 'tapeTornSoftPink'),
-    _TextStyleItem(key: 'tapeTornSoftMint', previewType: 'tapeTornSoftMint'),
-    _TextStyleItem(key: 'tapeTornSoftLavender', previewType: 'tapeTornSoftLavender'),
-    _TextStyleItem(key: 'tapeTornSoftYellow', previewType: 'tapeTornSoftYellow'),
-  ]),
-  _DesignGroup(id: 'tapeDots', labelKo: '도트', items: [
-    _TextStyleItem(key: 'tapeDots', previewType: 'tapeDots'),
-    _TextStyleItem(key: 'tapeDotsGray', previewType: 'tapeDotsGray'),
-    _TextStyleItem(key: 'tapeDotsPink', previewType: 'tapeDotsPink'),
-    _TextStyleItem(key: 'tapeDotsMint', previewType: 'tapeDotsMint'),
-    _TextStyleItem(key: 'tapeDotsLavender', previewType: 'tapeDotsLavender'),
-    _TextStyleItem(key: 'tapeDotsOrange', previewType: 'tapeDotsOrange'),
-  ]),
-  _DesignGroup(id: 'tapeDouble', labelKo: '이중 스트라이프', items: [
-    _TextStyleItem(key: 'tapeDouble', previewType: 'tapeDouble'),
-    _TextStyleItem(key: 'tapeDoubleGray', previewType: 'tapeDoubleGray'),
-    _TextStyleItem(key: 'tapeDoublePink', previewType: 'tapeDoublePink'),
-    _TextStyleItem(key: 'tapeDoubleBlue', previewType: 'tapeDoubleBlue'),
-    _TextStyleItem(key: 'tapeDoubleMint', previewType: 'tapeDoubleMint'),
-    _TextStyleItem(key: 'tapeDoubleLavender', previewType: 'tapeDoubleLavender'),
-  ]),
+  _DesignGroup(
+    id: 'tapeTornSolid',
+    labelKo: '찢어진',
+    items: [
+      _TextStyleItem(key: 'tapeTornSolid', previewType: 'tapeTornSolid'),
+      _TextStyleItem(
+        key: 'tapeTornSolidGray',
+        previewType: 'tapeTornSolidGray',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidPink',
+        previewType: 'tapeTornSolidPink',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidBlue',
+        previewType: 'tapeTornSolidBlue',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidMint',
+        previewType: 'tapeTornSolidMint',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidLavender',
+        previewType: 'tapeTornSolidLavender',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidOrange',
+        previewType: 'tapeTornSolidOrange',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSolidGreen',
+        previewType: 'tapeTornSolidGreen',
+      ),
+    ],
+  ),
+  _DesignGroup(
+    id: 'tapeTornRough',
+    labelKo: '찢어진(Hard)',
+    items: [
+      _TextStyleItem(key: 'tapeTornRough', previewType: 'tapeTornRough'),
+      _TextStyleItem(
+        key: 'tapeTornRoughGray',
+        previewType: 'tapeTornRoughGray',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornRoughPink',
+        previewType: 'tapeTornRoughPink',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornRoughMint',
+        previewType: 'tapeTornRoughMint',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornRoughLavender',
+        previewType: 'tapeTornRoughLavender',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornRoughYellow',
+        previewType: 'tapeTornRoughYellow',
+      ),
+    ],
+  ),
+  _DesignGroup(
+    id: 'tapeTornSoft',
+    labelKo: '찢어진(Soft)',
+    items: [
+      _TextStyleItem(key: 'tapeTornSoft', previewType: 'tapeTornSoft'),
+      _TextStyleItem(key: 'tapeTornSoftGray', previewType: 'tapeTornSoftGray'),
+      _TextStyleItem(key: 'tapeTornSoftPink', previewType: 'tapeTornSoftPink'),
+      _TextStyleItem(key: 'tapeTornSoftMint', previewType: 'tapeTornSoftMint'),
+      _TextStyleItem(
+        key: 'tapeTornSoftLavender',
+        previewType: 'tapeTornSoftLavender',
+      ),
+      _TextStyleItem(
+        key: 'tapeTornSoftYellow',
+        previewType: 'tapeTornSoftYellow',
+      ),
+    ],
+  ),
+  _DesignGroup(
+    id: 'tapeDots',
+    labelKo: '도트',
+    items: [
+      _TextStyleItem(key: 'tapeDots', previewType: 'tapeDots'),
+      _TextStyleItem(key: 'tapeDotsGray', previewType: 'tapeDotsGray'),
+      _TextStyleItem(key: 'tapeDotsPink', previewType: 'tapeDotsPink'),
+      _TextStyleItem(key: 'tapeDotsMint', previewType: 'tapeDotsMint'),
+      _TextStyleItem(key: 'tapeDotsLavender', previewType: 'tapeDotsLavender'),
+      _TextStyleItem(key: 'tapeDotsOrange', previewType: 'tapeDotsOrange'),
+    ],
+  ),
+  _DesignGroup(
+    id: 'tapeDouble',
+    labelKo: '이중 스트라이프',
+    items: [
+      _TextStyleItem(key: 'tapeDouble', previewType: 'tapeDouble'),
+      _TextStyleItem(key: 'tapeDoubleGray', previewType: 'tapeDoubleGray'),
+      _TextStyleItem(key: 'tapeDoublePink', previewType: 'tapeDoublePink'),
+      _TextStyleItem(key: 'tapeDoubleBlue', previewType: 'tapeDoubleBlue'),
+      _TextStyleItem(key: 'tapeDoubleMint', previewType: 'tapeDoubleMint'),
+      _TextStyleItem(
+        key: 'tapeDoubleLavender',
+        previewType: 'tapeDoubleLavender',
+      ),
+    ],
+  ),
 ];
 
 class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
@@ -847,31 +1113,37 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     );
   }
 
-  void _openFullView(BuildContext context, String title, List<_TextStyleItem> items) {
-    Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (ctx) => _TextStyleFullViewScreen(
-          title: title,
-          items: items,
-          selectedKey: widget.selectedKey,
-          buildPreview: _buildStylePreview,
-          onSelect: (key) {
-            // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
+  void _openFullView(
+    BuildContext context,
+    String title,
+    List<_TextStyleItem> items,
+  ) {
+    Navigator.of(context)
+        .push<String>(
+          MaterialPageRoute(
+            builder: (ctx) => _TextStyleFullViewScreen(
+              title: title,
+              items: items,
+              selectedKey: widget.selectedKey,
+              buildPreview: _buildStylePreview,
+              onSelect: (key) {
+                // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (ctx.mounted) Navigator.of(ctx).pop(key);
+                });
+              },
+            ),
+          ),
+        )
+        .then((key) {
+          if (key != null && mounted) {
+            widget.onSelect(key);
+            // 바텀시트 pop은 그다음 프레임으로 미뤄 Navigator _debugLocked 오류 방지
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (ctx.mounted) Navigator.of(ctx).pop(key);
+              if (mounted) Navigator.of(context).pop(key);
             });
-          },
-        ),
-      ),
-    ).then((key) {
-      if (key != null && mounted) {
-        widget.onSelect(key);
-        // 바텀시트 pop은 그다음 프레임으로 미뤄 Navigator _debugLocked 오류 방지
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) Navigator.of(context).pop(key);
+          }
         });
-      }
-    });
   }
 
   Widget _buildSection({
@@ -942,9 +1214,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: _buildStylePreview(item.previewType),
-                    ),
+                    child: Center(child: _buildStylePreview(item.previewType)),
                   ),
                 );
               },
@@ -1014,7 +1284,9 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               separatorBuilder: (_, __) => SizedBox(width: 12.w),
               itemBuilder: (context, index) {
                 final group = groups[index];
-                final isGroupSelected = group.items.any((e) => e.key == selectedKey);
+                final isGroupSelected = group.items.any(
+                  (e) => e.key == selectedKey,
+                );
                 final isExpanded = _expandedColorGroupId == group.id;
                 // 테두리는 하나만: 펼친 그룹이 있으면 펼친 그룹만 강조, 없으면 선택된 그룹만 강조
                 final hasAccentBorder = _expandedColorGroupId == null
@@ -1030,8 +1302,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                       return;
                     }
                     setState(() {
-                      _expandedColorGroupId =
-                          isExpanded ? null : group.id;
+                      _expandedColorGroupId = isExpanded ? null : group.id;
                     });
                   },
                   child: Container(
@@ -1136,7 +1407,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                               height: frame.height * 0.85,
                               child: FittedBox(
                                 fit: BoxFit.contain,
-                                child: _buildStylePreview(item.previewType, colorGroupId: group.id),
+                                child: _buildStylePreview(
+                                  item.previewType,
+                                  colorGroupId: group.id,
+                                ),
                               ),
                             ),
                           ),
@@ -1154,42 +1428,76 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   }
 
   /// 색상 선택 행에서 그룹별 칩 프레임 (모양·비율을 스타일에 맞춤)
-  ({double width, double height, BorderRadius borderRadius}) _colorChipFrameForGroup(String groupId) {
+  ({double width, double height, BorderRadius borderRadius})
+  _colorChipFrameForGroup(String groupId) {
     switch (groupId) {
       case 'round':
       case 'roundSoft':
-        return (width: 54.w, height: 30.h, borderRadius: BorderRadius.circular(999));
+        return (
+          width: 54.w,
+          height: 30.h,
+          borderRadius: BorderRadius.circular(999),
+        );
       case 'square':
-        return (width: 48.w, height: 32.h, borderRadius: BorderRadius.circular(4.r));
+        return (
+          width: 48.w,
+          height: 32.h,
+          borderRadius: BorderRadius.circular(4.r),
+        );
       case 'bubble':
       case 'bubbleCenter':
       case 'bubbleRight':
       case 'bubbleSquare':
       case 'bubbleSquareCenter':
       case 'bubbleSquareRight':
-        return (width: 56.w, height: 36.h, borderRadius: BorderRadius.circular(14.r));
+        return (
+          width: 56.w,
+          height: 36.h,
+          borderRadius: BorderRadius.circular(14.r),
+        );
       case 'labelOval':
       case 'labelSolid':
-        return (width: 52.w, height: 28.h, borderRadius: BorderRadius.circular(999));
+        return (
+          width: 52.w,
+          height: 28.h,
+          borderRadius: BorderRadius.circular(999),
+        );
       case 'tag':
-        return (width: 46.w, height: 26.h, borderRadius: BorderRadius.circular(8.r));
+        return (
+          width: 46.w,
+          height: 26.h,
+          borderRadius: BorderRadius.circular(8.r),
+        );
       case 'noteSolid':
       case 'noteGrid':
-        return (width: 50.w, height: 34.h, borderRadius: BorderRadius.circular(6.r));
+        return (
+          width: 50.w,
+          height: 34.h,
+          borderRadius: BorderRadius.circular(6.r),
+        );
       case 'tapeStripe':
       case 'tapeDots':
       case 'tapeSolid':
       case 'tapeDouble':
-        return (width: 56.w, height: 28.h, borderRadius: BorderRadius.circular(6.r));
+        return (
+          width: 56.w,
+          height: 28.h,
+          borderRadius: BorderRadius.circular(6.r),
+        );
       default:
-        return (width: 64.w, height: 48.h, borderRadius: BorderRadius.circular(12.r));
+        return (
+          width: 64.w,
+          height: 48.h,
+          borderRadius: BorderRadius.circular(12.r),
+        );
     }
   }
 
   /// 말풍선·라벨·메모지·테이프 시각 프리뷰 (바텀시트 디자인과 동일)
   /// [colorGroupId] 색상 선택 행일 때 전달하면 말풍선은 해당 그룹 꼬리 형태로 표시
   Widget _buildStylePreview(String previewType, {String? colorGroupId}) {
-    final isBubbleColorStrip = colorGroupId != null &&
+    final isBubbleColorStrip =
+        colorGroupId != null &&
         (colorGroupId == 'bubble' ||
             colorGroupId == 'bubbleCenter' ||
             colorGroupId == 'bubbleRight' ||
@@ -1327,59 +1635,101 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         return _previewBubbleTailRight();
       case 'bubbleGray':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.gray, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.gray,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.gray);
       case 'bubblePink':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.pink, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.pink,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.pink);
       case 'bubbleBlue':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.blue, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.blue,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.blue);
       case 'bubbleMint':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.mint, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.mint,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.mint);
       case 'bubbleLavender':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.lavender, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.lavender,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.lavender);
       case 'bubbleOrange':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.orange, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.orange,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.orange);
       case 'bubbleGreen':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.green, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.green,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.green);
       case 'bubbleCream':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.cream, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.cream,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.cream);
       case 'bubbleNavy':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.navy, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.navy,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.navy);
       case 'bubbleRose':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.rose, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.rose,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.rose);
       case 'bubbleCoral':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.coral, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.coral,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.coral);
       case 'bubbleBeige':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.beige, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.beige,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.beige);
       case 'bubbleTeal':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.teal, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.teal,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.teal);
       case 'bubbleLemon':
         return isBubbleColorStrip
-            ? _previewBubbleWithColorAndShape(SnapFitStylePalette.lemon, colorGroupId!)
+            ? _previewBubbleWithColorAndShape(
+                SnapFitStylePalette.lemon,
+                colorGroupId!,
+              )
             : _previewBubbleColor(SnapFitStylePalette.lemon);
       case 'tailSquareLeft':
         return _previewBubbleSquareLeft();
@@ -1390,23 +1740,50 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'oval':
         return _previewLabelOval();
       case 'labelGray':
-        return _previewLabelOvalWithColor(const Color(0xFFEEEEEE), const Color(0xFF616161));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFEEEEEE),
+          const Color(0xFF616161),
+        );
       case 'labelPink':
-        return _previewLabelOvalWithColor(const Color(0xFFFFE4EC), const Color(0xFFAD1457));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFFFE4EC),
+          const Color(0xFFAD1457),
+        );
       case 'labelBlue':
-        return _previewLabelOvalWithColor(const Color(0xFFE3F2FD), const Color(0xFF1565C0));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFE3F2FD),
+          const Color(0xFF1565C0),
+        );
       case 'labelMint':
-        return _previewLabelOvalWithColor(const Color(0xFFE0F7F0), const Color(0xFF00695C));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFE0F7F0),
+          const Color(0xFF00695C),
+        );
       case 'labelLavender':
-        return _previewLabelOvalWithColor(const Color(0xFFEDE7F6), const Color(0xFF5E35B1));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFEDE7F6),
+          const Color(0xFF5E35B1),
+        );
       case 'labelOrange':
-        return _previewLabelOvalWithColor(const Color(0xFFFFF3E0), const Color(0xFFE65100));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFFFF3E0),
+          const Color(0xFFE65100),
+        );
       case 'labelGreen':
-        return _previewLabelOvalWithColor(const Color(0xFFE8F5E9), const Color(0xFF2E7D32));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFE8F5E9),
+          const Color(0xFF2E7D32),
+        );
       case 'labelWhite':
-        return _previewLabelOvalWithColor(const Color(0xFFFAFAFA), const Color(0xFF424242));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFFAFAFA),
+          const Color(0xFF424242),
+        );
       case 'labelCream':
-        return _previewLabelOvalWithColor(const Color(0xFFFFFBF0), const Color(0xFF5D4037));
+        return _previewLabelOvalWithColor(
+          const Color(0xFFFFFBF0),
+          const Color(0xFF5D4037),
+        );
       case 'tag':
         return _previewTagDashed();
       case 'tagGray':
@@ -1588,29 +1965,62 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'tapeTornSolidGreen':
         return _previewTapeTornSolidWithColor(const Color(0xFFC8E6C9));
       case 'stripe':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripeSkyBase, SnapFitStylePalette.stripeSkyStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripeSkyBase,
+          SnapFitStylePalette.stripeSkyStripe,
+        );
       case 'tapeYellow':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripeYellowBase, SnapFitStylePalette.stripeYellowStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripeYellowBase,
+          SnapFitStylePalette.stripeYellowStripe,
+        );
       case 'tapePink':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripePinkBase, SnapFitStylePalette.stripePinkStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripePinkBase,
+          SnapFitStylePalette.stripePinkStripe,
+        );
       case 'tapeMint':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripeMintBase, SnapFitStylePalette.stripeMintStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripeMintBase,
+          SnapFitStylePalette.stripeMintStripe,
+        );
       case 'tapeLavender':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripeLavenderBase, SnapFitStylePalette.stripeLavenderStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripeLavenderBase,
+          SnapFitStylePalette.stripeLavenderStripe,
+        );
       case 'tapeGray':
-        return _previewTapeStripeWithColor(SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
+        return _previewTapeStripeWithColor(
+          SnapFitStylePalette.stripeGrayBase,
+          SnapFitStylePalette.stripeGrayStripe,
+        );
       case 'tapeDots':
         return _previewTapeDots();
       case 'tapeDotsPink':
-        return _previewTapeDotsWithColor(const Color(0xFFFFE4EC), const Color(0xFFFFB6C1));
+        return _previewTapeDotsWithColor(
+          const Color(0xFFFFE4EC),
+          const Color(0xFFFFB6C1),
+        );
       case 'tapeDotsMint':
-        return _previewTapeDotsWithColor(const Color(0xFFE0F7F0), const Color(0xFF80CBC4));
+        return _previewTapeDotsWithColor(
+          const Color(0xFFE0F7F0),
+          const Color(0xFF80CBC4),
+        );
       case 'tapeDotsLavender':
-        return _previewTapeDotsWithColor(SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+        return _previewTapeDotsWithColor(
+          SnapFitStylePalette.lavender,
+          SnapFitStylePalette.tagLavender,
+        );
       case 'tapeDotsOrange':
-        return _previewTapeDotsWithColor(SnapFitStylePalette.orange, SnapFitStylePalette.tagOrange);
+        return _previewTapeDotsWithColor(
+          SnapFitStylePalette.orange,
+          SnapFitStylePalette.tagOrange,
+        );
       case 'tapeDotsGray':
-        return _previewTapeDotsWithColor(SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
+        return _previewTapeDotsWithColor(
+          SnapFitStylePalette.stripeGrayBase,
+          SnapFitStylePalette.stripeGrayStripe,
+        );
       case 'tapeKraft':
         return _previewTapeKraft();
       case 'tapeGold':
@@ -1634,15 +2044,30 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'tapeDouble':
         return _previewTapeDouble();
       case 'tapeDoublePink':
-        return _previewTapeDoubleWithColor(const Color(0xFFFFEFF4), const Color(0xFFFFCDD2));
+        return _previewTapeDoubleWithColor(
+          const Color(0xFFFFEFF4),
+          const Color(0xFFFFCDD2),
+        );
       case 'tapeDoubleMint':
-        return _previewTapeDoubleWithColor(SnapFitStylePalette.mint, const Color(0xFFA7FFEB));
+        return _previewTapeDoubleWithColor(
+          SnapFitStylePalette.mint,
+          const Color(0xFFA7FFEB),
+        );
       case 'tapeDoubleBlue':
-        return _previewTapeDoubleWithColor(const Color(0xFFE3F2FD), const Color(0xFF90CAF9));
+        return _previewTapeDoubleWithColor(
+          const Color(0xFFE3F2FD),
+          const Color(0xFF90CAF9),
+        );
       case 'tapeDoubleLavender':
-        return _previewTapeDoubleWithColor(SnapFitStylePalette.lavender, SnapFitStylePalette.tagLavender);
+        return _previewTapeDoubleWithColor(
+          SnapFitStylePalette.lavender,
+          SnapFitStylePalette.tagLavender,
+        );
       case 'tapeDoubleGray':
-        return _previewTapeDoubleWithColor(SnapFitStylePalette.stripeGrayBase, SnapFitStylePalette.stripeGrayStripe);
+        return _previewTapeDoubleWithColor(
+          SnapFitStylePalette.stripeGrayBase,
+          SnapFitStylePalette.stripeGrayStripe,
+        );
       case 'highlightYellow':
         return _previewHighlightYellow();
       case 'highlightGreen':
@@ -1662,17 +2087,35 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'noteGrid':
         return _previewNoteGrid();
       case 'noteGridBlue':
-        return _previewNoteGridWithColor(SnapFitStylePalette.blue, const Color(0xFFBBDEFB));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.blue,
+          const Color(0xFFBBDEFB),
+        );
       case 'noteGridPink':
-        return _previewNoteGridWithColor(SnapFitStylePalette.pink, const Color(0xFFFFCDD2));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.pink,
+          const Color(0xFFFFCDD2),
+        );
       case 'noteGridMint':
-        return _previewNoteGridWithColor(SnapFitStylePalette.mint, const Color(0xFF80CBC4));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.mint,
+          const Color(0xFF80CBC4),
+        );
       case 'noteGridLavender':
-        return _previewNoteGridWithColor(SnapFitStylePalette.lavender, const Color(0xFFB39DDB));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.lavender,
+          const Color(0xFFB39DDB),
+        );
       case 'noteGridOrange':
-        return _previewNoteGridWithColor(SnapFitStylePalette.orange, const Color(0xFFFFCC80));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.orange,
+          const Color(0xFFFFCC80),
+        );
       case 'noteGridGray':
-        return _previewNoteGridWithColor(SnapFitStylePalette.gray, const Color(0xFFBDBDBD));
+        return _previewNoteGridWithColor(
+          SnapFitStylePalette.gray,
+          const Color(0xFFBDBDBD),
+        );
       case 'noteGold':
         return _previewNoteGold();
       case 'noteCream':
@@ -1723,8 +2166,16 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(999.r),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 3)),
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 3, offset: const Offset(0, 1)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
         ],
       ),
     );
@@ -1737,7 +2188,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: bg == Colors.white ? const Color(0xFFE8EAED) : (Color.lerp(bg, Colors.black, 0.08) ?? bg), width: 1),
+        border: Border.all(
+          color: bg == Colors.white
+              ? const Color(0xFFE8EAED)
+              : (Color.lerp(bg, Colors.black, 0.08) ?? bg),
+          width: 1,
+        ),
       ),
     );
   }
@@ -1749,7 +2205,12 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.zero,
-        border: Border.all(color: bg == Colors.white ? const Color(0xFFE0E4EC) : (Color.lerp(bg, Colors.black, 0.08) ?? bg), width: 1),
+        border: Border.all(
+          color: bg == Colors.white
+              ? const Color(0xFFE0E4EC)
+              : (Color.lerp(bg, Colors.black, 0.08) ?? bg),
+          width: 1,
+        ),
       ),
     );
   }
@@ -1762,8 +2223,16 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         color: bg,
         borderRadius: BorderRadius.circular(999.r),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 3)),
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 3, offset: const Offset(0, 1)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
         ],
       ),
     );
@@ -1782,8 +2251,16 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         color: bg,
         borderRadius: BorderRadius.zero,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 3)),
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 3, offset: const Offset(0, 1)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
         ],
       ),
     );
@@ -1901,7 +2378,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFE0F7F0),
         borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 2, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }
@@ -1914,7 +2397,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFF3E8FF),
         borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 2, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }
@@ -1927,7 +2416,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF0E0),
         borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 2, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }
@@ -1940,7 +2435,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 2, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }
@@ -1953,7 +2454,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFF5F0E8),
         borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 2, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }
@@ -1982,9 +2489,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         color: base,
         borderRadius: BorderRadius.circular(4.r),
       ),
-      child: CustomPaint(
-        painter: _PreviewDotsPainter(dotColor: dot),
-      ),
+      child: CustomPaint(painter: _PreviewDotsPainter(dotColor: dot)),
     );
   }
 
@@ -2019,9 +2524,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         color: const Color(0xFFE3F2FD),
         borderRadius: BorderRadius.circular(4.r),
       ),
-      child: CustomPaint(
-        painter: _PreviewDoubleStripePainter(),
-      ),
+      child: CustomPaint(painter: _PreviewDoubleStripePainter()),
     );
   }
 
@@ -2035,7 +2538,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: CustomPaint(
-        painter: _PreviewDoubleStripePainter(baseColor: base, stripeColor: stripe),
+        painter: _PreviewDoubleStripePainter(
+          baseColor: base,
+          stripeColor: stripe,
+        ),
       ),
     );
   }
@@ -2108,9 +2614,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border(
-          left: BorderSide(color: SnapFitColors.accent, width: 4),
-        ),
+        border: Border(left: BorderSide(color: SnapFitColors.accent, width: 4)),
         boxShadow: [
           BoxShadow(
             color: SnapFitColors.accent.withOpacity(0.1),
@@ -2186,13 +2690,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     return Container(
       width: 52.w,
       height: 36.h,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.zero,
-      ),
-      child: CustomPaint(
-        painter: _PreviewGridPainter(color: grid),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.zero),
+      child: CustomPaint(painter: _PreviewGridPainter(color: grid)),
     );
   }
 
@@ -2259,7 +2758,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       child: ClipPath(
         clipper: _TapeTornPreviewClipper(),
         child: CustomPaint(
-          painter: _StripeTapePainter(baseColor: baseColor, stripeColor: stripeColor),
+          painter: _StripeTapePainter(
+            baseColor: baseColor,
+            stripeColor: stripeColor,
+          ),
           size: Size(54.w, 30.h),
         ),
       ),
@@ -2363,19 +2865,30 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: Color.lerp(color, Colors.black, 0.1) ?? color, width: 1),
+        border: Border.all(
+          color: Color.lerp(color, Colors.black, 0.1) ?? color,
+          width: 1,
+        ),
       ),
     );
   }
 
   /// 말풍선 색상 + 꼬리 형태 (색상 선택 행에서 그룹별 꼬리 표시)
   Widget _previewBubbleWithColorAndShape(Color color, String groupId) {
-    final isSquare = groupId == 'bubbleSquare' || groupId == 'bubbleSquareCenter' || groupId == 'bubbleSquareRight';
-    final tailPos = groupId == 'bubble' ? 0.28
-        : groupId == 'bubbleCenter' ? 0.5
-        : groupId == 'bubbleRight' ? 0.72
-        : groupId == 'bubbleSquare' ? 0.0
-        : groupId == 'bubbleSquareCenter' ? 0.5
+    final isSquare =
+        groupId == 'bubbleSquare' ||
+        groupId == 'bubbleSquareCenter' ||
+        groupId == 'bubbleSquareRight';
+    final tailPos = groupId == 'bubble'
+        ? 0.28
+        : groupId == 'bubbleCenter'
+        ? 0.5
+        : groupId == 'bubbleRight'
+        ? 0.72
+        : groupId == 'bubbleSquare'
+        ? 0.0
+        : groupId == 'bubbleSquareCenter'
+        ? 0.5
         : 1.0; // bubbleSquareRight
     final borderColor = Color.lerp(color, Colors.black, 0.12) ?? color;
     return SizedBox(
@@ -2491,7 +3004,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
 
   /// 마스킹 테이프 – 사선 스트라이프 (기본 하늘색)
   Widget _previewTapeStripe() {
-    return _previewTapeStripeWithColor(SnapFitStylePalette.stripeSkyBase, SnapFitStylePalette.stripeSkyStripe);
+    return _previewTapeStripeWithColor(
+      SnapFitStylePalette.stripeSkyBase,
+      SnapFitStylePalette.stripeSkyStripe,
+    );
   }
 
   /// 마스킹 테이프 – 사선 스트라이프 색상 변형 (미리보기에서 스트라이프 패턴 표시)
@@ -2512,7 +3028,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.r),
         child: CustomPaint(
-          painter: _StripeTapePainter(baseColor: baseColor, stripeColor: stripeColor),
+          painter: _StripeTapePainter(
+            baseColor: baseColor,
+            stripeColor: stripeColor,
+          ),
         ),
       ),
     );
@@ -2577,7 +3096,9 @@ class _TextStyleFullViewScreen extends StatelessWidget {
                 onTap: () => onSelect(item.key),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark ? SnapFitColors.overlayLightOf(context) : Colors.white,
+                    color: isDark
+                        ? SnapFitColors.overlayLightOf(context)
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
                       color: isSelected
@@ -2593,9 +3114,7 @@ class _TextStyleFullViewScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: buildPreview(item.previewType),
-                  ),
+                  child: Center(child: buildPreview(item.previewType)),
                 ),
               );
             },
@@ -2666,8 +3185,16 @@ class _PreviewGridPainter extends CustomPainter {
     for (var y = 0.0; y <= size.height; y += step) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
-    canvas.drawLine(Offset(size.width, 0), Offset(size.width, size.height), paint);
-    canvas.drawLine(Offset(0, size.height), Offset(size.width, size.height), paint);
+    canvas.drawLine(
+      Offset(size.width, 0),
+      Offset(size.width, size.height),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+      paint,
+    );
   }
 
   @override
@@ -2690,7 +3217,11 @@ class _PreviewDoubleStripePainter extends CustomPainter {
       ..color = stripe.withOpacity(0.6)
       ..style = PaintingStyle.fill;
     final path = Path();
-    for (var d = -size.height - size.width; d < size.width + size.height * 2; d += stripeWidth + gap) {
+    for (
+      var d = -size.height - size.width;
+      d < size.width + size.height * 2;
+      d += stripeWidth + gap
+    ) {
       path.moveTo(d.toDouble(), -10);
       path.lineTo(d + stripeWidth, -10);
       path.lineTo(d + stripeWidth + size.height, size.height + 10);
@@ -2725,10 +3256,12 @@ class _SpeechBubblePreviewPainter extends CustomPainter {
     final tailX = (size.width * tailPosition).clamp(minX, maxX);
 
     final path = Path();
-    path.addRRect(RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height - tailH),
-      Radius.circular(r),
-    ));
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height - tailH),
+        Radius.circular(r),
+      ),
+    );
     path.moveTo(tailX - tailW / 2, size.height - tailH);
     path.lineTo(tailX, size.height);
     path.lineTo(tailX + tailW / 2, size.height - tailH);
@@ -2771,16 +3304,23 @@ class _SpeechBubblePreviewPainterWithColor extends CustomPainter {
     final tailX = (size.width * tailPosition).clamp(minX, maxX);
 
     final path = Path();
-    path.addRRect(RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height - tailH),
-      Radius.circular(r),
-    ));
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height - tailH),
+        Radius.circular(r),
+      ),
+    );
     path.moveTo(tailX - tailW / 2, size.height - tailH);
     path.lineTo(tailX, size.height);
     path.lineTo(tailX + tailW / 2, size.height - tailH);
     path.close();
 
-    canvas.drawPath(path, Paint()..color = fillColor..style = PaintingStyle.fill);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
     canvas.drawPath(
       path,
       Paint()
@@ -2812,8 +3352,8 @@ class _SquareBubblePreviewPainter extends CustomPainter {
     final tailCenterX = tailPosition <= 0.25
         ? _margin + _tailW / 2
         : tailPosition >= 0.75
-            ? w - _margin - _tailW / 2
-            : w / 2;
+        ? w - _margin - _tailW / 2
+        : w / 2;
     final tailLeft = tailCenterX - _tailW / 2;
     final tailRight = tailCenterX + _tailW / 2;
 
@@ -2865,8 +3405,8 @@ class _SquareBubblePreviewPainterWithColor extends CustomPainter {
     final tailCenterX = tailPosition <= 0.25
         ? _margin + _tailW / 2
         : tailPosition >= 0.75
-            ? w - _margin - _tailW / 2
-            : w / 2;
+        ? w - _margin - _tailW / 2
+        : w / 2;
     final tailLeft = tailCenterX - _tailW / 2;
     final tailRight = tailCenterX + _tailW / 2;
 
@@ -2881,7 +3421,12 @@ class _SquareBubblePreviewPainterWithColor extends CustomPainter {
     path.lineTo(tailLeft, bodyH);
     path.close();
 
-    canvas.drawPath(path, Paint()..color = fillColor..style = PaintingStyle.fill);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
     canvas.drawPath(
       path,
       Paint()
@@ -2909,10 +3454,7 @@ class _FoldedCornerPainter extends CustomPainter {
       ..lineTo(size.width, 0)
       ..lineTo(size.width, size.height)
       ..close();
-    canvas.drawPath(
-      path,
-      Paint()..color = color,
-    );
+    canvas.drawPath(path, Paint()..color = color);
     canvas.drawLine(
       Offset(0, size.height),
       Offset(size.width, 0),
@@ -2931,11 +3473,9 @@ class _StripeTapePainter extends CustomPainter {
   final Color baseColor;
   final Color stripeColor;
 
-  _StripeTapePainter({
-    Color? baseColor,
-    Color? stripeColor,
-  })  : baseColor = baseColor ?? Colors.white,
-        stripeColor = stripeColor ?? SnapFitColors.accent;
+  _StripeTapePainter({Color? baseColor, Color? stripeColor})
+    : baseColor = baseColor ?? Colors.white,
+      stripeColor = stripeColor ?? SnapFitColors.accent;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -2997,10 +3537,7 @@ class _DashedRectPainter extends CustomPainter {
     for (final metric in pathMetrics) {
       var distance = 0.0;
       while (distance < metric.length) {
-        final segment = metric.extractPath(
-          distance,
-          distance + dashWidth,
-        );
+        final segment = metric.extractPath(distance, distance + dashWidth);
         canvas.drawPath(segment, paint);
         distance += dashWidth + dashSpace;
       }

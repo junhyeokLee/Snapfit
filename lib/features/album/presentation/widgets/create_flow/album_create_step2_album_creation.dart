@@ -26,10 +26,12 @@ class AlbumCreateStep2AlbumCreation extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AlbumCreateStep2AlbumCreation> createState() => _AlbumCreateStep2AlbumCreationState();
+  ConsumerState<AlbumCreateStep2AlbumCreation> createState() =>
+      _AlbumCreateStep2AlbumCreationState();
 }
 
-class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2AlbumCreation> {
+class _AlbumCreateStep2AlbumCreationState
+    extends ConsumerState<AlbumCreateStep2AlbumCreation> {
   int? _albumId;
   bool _isCreating = false;
   bool _hasInitiated = false;
@@ -86,9 +88,7 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
           // 로딩 인디케이터
           Center(
             child: _isCreating
-                ? CircularProgressIndicator(
-                    color: SnapFitColors.accent,
-                  )
+                ? CircularProgressIndicator(color: SnapFitColors.accent)
                 : Icon(
                     Icons.check_circle,
                     size: 80.sp,
@@ -100,12 +100,14 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: (_isCreating || _albumId == null) ? null : () {
-                if (_albumId != null) {
-                  widget.onAlbumCreated?.call(_albumId!);
-                  widget.onNext();
-                }
-              },
+              onPressed: (_isCreating || _albumId == null)
+                  ? null
+                  : () {
+                      if (_albumId != null) {
+                        widget.onAlbumCreated?.call(_albumId!);
+                        widget.onNext();
+                      }
+                    },
               icon: _isCreating
                   ? SizedBox(
                       width: 20.w,
@@ -120,10 +122,7 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
                   : Icon(Icons.arrow_forward, size: 20.sp),
               label: Text(
                 _isCreating ? '앨범 생성 중...' : '다음',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: SnapFitColors.accent,
@@ -144,9 +143,7 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
               onPressed: widget.onBack,
               style: OutlinedButton.styleFrom(
                 foregroundColor: SnapFitColors.textPrimaryOf(context),
-                side: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
+                side: BorderSide(color: SnapFitColors.overlayLightOf(context)),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -154,10 +151,7 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
               ),
               child: Text(
                 '이전',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -169,12 +163,12 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
   /// 앨범 생성
   Future<void> _createAlbum() async {
     if (_isCreating) return;
-    
+
     setState(() => _isCreating = true);
-    
+
     try {
       final albumRepository = ref.read(albumRepositoryProvider);
-      
+
       // 앨범 생성 (빈 커버로 시작)
       final request = CreateAlbumRequest(
         ratio: widget.selectedCover.ratio.toString(),
@@ -185,19 +179,19 @@ class _AlbumCreateStep2AlbumCreationState extends ConsumerState<AlbumCreateStep2
         coverThumbnailUrl: '',
         coverTheme: '',
       );
-      
+
       final album = await albumRepository.createAlbum(request);
       _albumId = album.id;
-      
+
       if (mounted) {
         widget.onAlbumCreated?.call(album.id!);
         setState(() => _isCreating = false);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('앨범 생성 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 생성 실패: $e')));
         setState(() => _isCreating = false);
       }
     }

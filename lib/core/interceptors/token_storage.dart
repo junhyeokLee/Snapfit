@@ -5,7 +5,7 @@ import '../../features/auth/data/dto/auth_response.dart';
 /// JWT + 사용자 정보 저장소 (Secure Storage)
 class TokenStorage {
   TokenStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 

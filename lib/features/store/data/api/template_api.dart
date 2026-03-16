@@ -13,7 +13,10 @@ abstract class TemplateApi {
   Future<List<PremiumTemplate>> getTemplates(@Query('userId') String? userId);
 
   @GET('/api/templates/{id}')
-  Future<PremiumTemplate> getTemplate(@Path('id') int id, @Query('userId') String? userId);
+  Future<PremiumTemplate> getTemplate(
+    @Path('id') int id,
+    @Query('userId') String? userId,
+  );
 
   @POST('/api/templates/{id}/like')
   Future<void> likeTemplate(@Path('id') int id, @Query('userId') String userId);

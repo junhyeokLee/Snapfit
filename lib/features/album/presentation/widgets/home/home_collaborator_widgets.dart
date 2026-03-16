@@ -122,10 +122,7 @@ class HomeAvatarStack extends StatelessWidget {
           ),
           Positioned(
             left: 24.w,
-            child: HomePlusDot(
-              label: '+$extra',
-              borderColor: borderColor,
-            ),
+            child: HomePlusDot(label: '+$extra', borderColor: borderColor),
           ),
         ],
       ),

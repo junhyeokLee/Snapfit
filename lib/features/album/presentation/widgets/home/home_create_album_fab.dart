@@ -7,10 +7,7 @@ import '../../../../../core/utils/screen_logger.dart';
 class HomeCreateAlbumFab extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const HomeCreateAlbumFab({
-    super.key,
-    required this.onPressed,
-  });
+  const HomeCreateAlbumFab({super.key, required this.onPressed});
 
   static bool _logged = false;
 

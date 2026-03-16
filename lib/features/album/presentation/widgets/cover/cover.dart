@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/entities/layer.dart';
 
-
 typedef BuildImageLayer = Widget Function(LayerModel layer);
 typedef BuildTextLayer = Widget Function(LayerModel layer);
 typedef SortedByZ = List<LayerModel> Function(List<LayerModel> layers);
@@ -24,7 +23,6 @@ class CoverLayout extends StatelessWidget {
   final SortedByZ sortedByZ;
   final CoverTheme theme;
   final GlobalKey? contentKey;
-
 
   const CoverLayout({
     super.key,
@@ -50,7 +48,7 @@ class CoverLayout extends StatelessWidget {
           final maxH = constraints.maxHeight;
           // scale 계산
           double scale = 1.0;
-          
+
           return Transform.scale(
             scale: scale,
             child: ConstrainedBox(
@@ -115,8 +113,12 @@ class CoverLayout extends StatelessWidget {
                                       alignment: Alignment.centerLeft,
                                       child: CustomPaint(
                                         painter: SpinePainter(
-                                          baseStart: Colors.white.withOpacity(0.1),
-                                          baseEnd: Colors.white.withOpacity(0.1),
+                                          baseStart: Colors.white.withOpacity(
+                                            0.1,
+                                          ),
+                                          baseEnd: Colors.white.withOpacity(
+                                            0.1,
+                                          ),
                                         ),
                                         size: Size(
                                           kCoverSpineWidth,
@@ -128,7 +130,9 @@ class CoverLayout extends StatelessWidget {
                                       IgnorePointer(
                                         ignoring: true,
                                         child: CustomPaint(
-                                          painter: GridOverlayPainter(leftSpine: leftSpine),
+                                          painter: GridOverlayPainter(
+                                            leftSpine: leftSpine,
+                                          ),
                                         ),
                                       ),
                                   ],
@@ -180,7 +184,9 @@ class _CoverBackground extends StatelessWidget {
                     fit: BoxFit.cover,
                   )
                 : null,
-            gradient: backgroundColor == null && theme.imageAsset == null ? theme.gradient : null,
+            gradient: backgroundColor == null && theme.imageAsset == null
+                ? theme.gradient
+                : null,
           ),
         ),
 
@@ -193,10 +199,7 @@ class _CoverBackground extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [
-                  Colors.black.withOpacity(0.18),
-                  Colors.transparent,
-                ],
+                colors: [Colors.black.withOpacity(0.18), Colors.transparent],
                 stops: const [0.0, 1.0],
               ),
             ),
@@ -206,13 +209,15 @@ class _CoverBackground extends StatelessWidget {
     );
   }
 }
+
 class _AnimatedCoverContainer extends StatefulWidget {
   final Widget child;
   final CoverTheme theme;
   const _AnimatedCoverContainer({required this.child, required this.theme});
 
   @override
-  State<_AnimatedCoverContainer> createState() => _AnimatedCoverContainerState();
+  State<_AnimatedCoverContainer> createState() =>
+      _AnimatedCoverContainerState();
 }
 
 class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {

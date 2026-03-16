@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../utils/app_logger.dart';
 
 Future<void> _retryWithDelay(int attempt, int delayMs) async {
   await Future.delayed(Duration(milliseconds: delayMs * attempt));
@@ -14,7 +15,7 @@ class RetryInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (_shouldRetry(err)) {
-      print('에러 타입 = ${err.type}');
+      AppLogger.warn('네트워크 재시도 대상 에러 타입 = ${err.type}');
       for (int attempt = 1; attempt <= retries; attempt++) {
         try {
           await _retryWithDelay(attempt, delayMs);

@@ -7,7 +7,8 @@ class LayerExportMapper {
   /// 1. 서버 저장용 JSON으로 변환 (상대 좌표 계산)
   static const double referenceWidth = 1000.0; // 가상의 기준 너비
 
-  static Map<String, dynamic> toJson(LayerModel layer, {
+  static Map<String, dynamic> toJson(
+    LayerModel layer, {
     required Size canvasSize,
     bool isCover = false,
   }) {
@@ -31,44 +32,46 @@ class LayerExportMapper {
       'id': layer.id,
       'type': layer.type.name.toUpperCase(),
       'zIndex': layer.zIndex,
-      'x': xRatio,  // 0.0 ~ 1.0 (relative to content area)
+      'x': xRatio, // 0.0 ~ 1.0 (relative to content area)
       'y': (layer.position.dy / canvasSize.height), // 0.0 ~ 1.0
-      'width': widthRatio,  // scale 제외 - 원본 비율 보존 (relative to content area)
+      'width': widthRatio, // scale 제외 - 원본 비율 보존 (relative to content area)
       'height': layer.height / canvasSize.height, // scale 제외 - 원본 비율 보존
       'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
       'opacity': layer.opacity,
       'payload': layer.type == LayerType.image
           ? {
-        'imageBackground': layer.imageBackground,
-        'imageTemplate': layer.imageTemplate,
-        // 운영급: original/preview 우선 저장 + 하위 호환 imageUrl 미러링
-        'originalUrl': layer.originalUrl,
-        'previewUrl': layer.previewUrl ?? layer.imageUrl,
-        'imageUrl': layer.previewUrl ?? layer.imageUrl,
-      }
+              'imageBackground': layer.imageBackground,
+              'imageTemplate': layer.imageTemplate,
+              // 운영급: original/preview 우선 저장 + 하위 호환 imageUrl 미러링
+              'originalUrl': layer.originalUrl,
+              'previewUrl': layer.previewUrl ?? layer.imageUrl,
+              'imageUrl': layer.previewUrl ?? layer.imageUrl,
+            }
           : {
-        'text': layer.text,
-        'textAlign': layer.textAlign?.name,
-        'textStyleType': layer.textStyleType?.name,
-        'textBackground': layer.textBackground,
-        'bubbleColor': layer.bubbleColor != null
-            ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
-            : null,
-        'textStyle': _textStyleToJson(layer.textStyle, refWidth),
-      },
+              'text': layer.text,
+              'textAlign': layer.textAlign?.name,
+              'textStyleType': layer.textStyleType?.name,
+              'textBackground': layer.textBackground,
+              'bubbleColor': layer.bubbleColor != null
+                  ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
+                  : null,
+              'textStyle': _textStyleToJson(layer.textStyle, refWidth),
+            },
     };
   }
 
   /// 2. 서버 JSON 데이터를 LayerModel 객체로 복원 (절대 좌표 계산)
   static LayerModel fromJson(
-      Map<String, dynamic> json, {
-        required Size canvasSize,
-        bool isCover = false,
-      }) {
-    final Map<String, dynamic> payload = (json['payload'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
+    Map<String, dynamic> json, {
+    required Size canvasSize,
+    bool isCover = false,
+  }) {
+    final Map<String, dynamic> payload =
+        (json['payload'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
     // 서버의 비율(0~1) 데이터를 현재 전달받은 canvasSize에 곱해 절대 좌표로 복원
-    
+
     double x;
     double width;
 
@@ -82,7 +85,8 @@ class LayerExportMapper {
     }
 
     final double y = (json['y'] as num).toDouble() * canvasSize.height;
-    final double height = (json['height'] as num).toDouble() * canvasSize.height;
+    final double height =
+        (json['height'] as num).toDouble() * canvasSize.height;
 
     final String typeStr = (json['type'] as String? ?? 'IMAGE').toUpperCase();
     final LayerType type = switch (typeStr) {
@@ -92,7 +96,9 @@ class LayerExportMapper {
       _ => LayerType.image,
     };
     return LayerModel(
-      id: json['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id:
+          json['id'] as String? ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
       type: type,
       zIndex: json['zIndex'] as int? ?? 0,
       // 하위 호환: imageUrl만 오면 previewUrl로 간주
@@ -102,7 +108,9 @@ class LayerExportMapper {
       position: Offset(x, y), // 현재 화면에 최적화된 좌표
       width: width,
       height: height,
-      scale: (json['scale'] as num?)?.toDouble() ?? 1.0, // scale 복원 (하위 호환: 없으면 1.0)
+      scale:
+          (json['scale'] as num?)?.toDouble() ??
+          1.0, // scale 복원 (하위 호환: 없으면 1.0)
       rotation: (json['rotation'] as num).toDouble(),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
       text: payload['text'] as String?,
@@ -126,7 +134,7 @@ class LayerExportMapper {
   static TextAlign? _parseTextAlign(String? value) {
     if (value == null) return null;
     return TextAlign.values.firstWhere(
-          (e) => e.name == value,
+      (e) => e.name == value,
       orElse: () => TextAlign.center,
     );
   }
@@ -134,7 +142,7 @@ class LayerExportMapper {
   static TextStyleType? _parseTextStyleType(String? value) {
     if (value == null) return null;
     return TextStyleType.values.firstWhere(
-          (e) => e.name == value,
+      (e) => e.name == value,
       orElse: () => TextStyleType.none,
     );
   }
@@ -152,11 +160,21 @@ class LayerExportMapper {
   }
 
   static const List<FontWeight> _fontWeights = [
-    FontWeight.w100, FontWeight.w200, FontWeight.w300, FontWeight.w400,
-    FontWeight.w500, FontWeight.w600, FontWeight.w700, FontWeight.w800, FontWeight.w900,
+    FontWeight.w100,
+    FontWeight.w200,
+    FontWeight.w300,
+    FontWeight.w400,
+    FontWeight.w500,
+    FontWeight.w600,
+    FontWeight.w700,
+    FontWeight.w800,
+    FontWeight.w900,
   ];
 
-  static Map<String, dynamic>? _textStyleToJson(TextStyle? style, double referenceWidth) {
+  static Map<String, dynamic>? _textStyleToJson(
+    TextStyle? style,
+    double referenceWidth,
+  ) {
     if (style == null) return null;
     final weightIdx = style.fontWeight != null
         ? _fontWeights.indexOf(style.fontWeight!)
@@ -175,12 +193,15 @@ class LayerExportMapper {
     };
   }
 
-  static TextStyle? _textStyleFromJson(Map<String, dynamic>? json, double currentWidth) {
+  static TextStyle? _textStyleFromJson(
+    Map<String, dynamic>? json,
+    double currentWidth,
+  ) {
     if (json == null || json.isEmpty) return null;
-    
+
     double fontSize;
     final fontSizeRatio = json['fontSizeRatio'] as num?;
-    
+
     if (fontSizeRatio != null) {
       // 1. 비율 데이터가 있으면 현재 캔버스에 맞춰 복원
       fontSize = fontSizeRatio.toDouble() * currentWidth;
@@ -198,7 +219,10 @@ class LayerExportMapper {
     final letterSpacing = json['letterSpacing'] as num?;
     return TextStyle(
       fontSize: fontSize,
-      fontWeight: fontWeightIdx != null && fontWeightIdx >= 0 && fontWeightIdx < _fontWeights.length
+      fontWeight:
+          fontWeightIdx != null &&
+              fontWeightIdx >= 0 &&
+              fontWeightIdx < _fontWeights.length
           ? _fontWeights[fontWeightIdx]
           : null,
       fontStyle: fontStyleIdx == 1 ? FontStyle.italic : FontStyle.normal,

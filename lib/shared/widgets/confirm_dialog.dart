@@ -28,14 +28,14 @@ class ConfirmDialog extends StatelessWidget {
 
   /// 앨범 삭제 확인 다이얼로그
   static ConfirmDialog deleteAlbum() => ConfirmDialog(
-        title: '앨범 삭제',
-        message: '이 앨범을 삭제하시겠어요?\n복구할 수 없습니다.',
-        confirmText: '삭제',
-        icon: Icons.delete_outline_rounded,
-        iconBackgroundColor: const Color(0xFFFFEBEE),
-        iconColor: const Color(0xFFE53935),
-        isDestructive: true,
-      );
+    title: '앨범 삭제',
+    message: '이 앨범을 삭제하시겠어요?\n복구할 수 없습니다.',
+    confirmText: '삭제',
+    icon: Icons.delete_outline_rounded,
+    iconBackgroundColor: const Color(0xFFFFEBEE),
+    iconColor: const Color(0xFFE53935),
+    isDestructive: true,
+  );
 
   /// [showDeleteConfirm]과 동일한 스타일로 표시
   static Future<bool?> show(
@@ -86,10 +86,7 @@ class ConfirmDialog extends StatelessWidget {
         builder: (context, value, child) {
           return Transform.scale(
             scale: 0.8 + 0.2 * value,
-            child: Opacity(
-              opacity: value,
-              child: child,
-            ),
+            child: Opacity(opacity: value, child: child),
           );
         },
         child: Container(
@@ -201,9 +198,7 @@ class _DialogButton extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 14.h),
           decoration: BoxDecoration(
             color: isPrimary
-                ? (isDestructive
-                    ? null
-                    : Colors.grey[100])
+                ? (isDestructive ? null : Colors.grey[100])
                 : Colors.grey[100],
             gradient: isPrimary && isDestructive
                 ? const LinearGradient(
@@ -229,9 +224,7 @@ class _DialogButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: isPrimary && isDestructive
-                  ? Colors.white
-                  : Colors.black87,
+              color: isPrimary && isDestructive ? Colors.white : Colors.black87,
             ),
           ),
         ),

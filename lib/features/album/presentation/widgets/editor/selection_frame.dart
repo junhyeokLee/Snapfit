@@ -3,12 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 
-enum ResizeHandlePosition {
-  topLeft,
-  topRight,
-  bottomLeft,
-  bottomRight,
-}
+enum ResizeHandlePosition { topLeft, topRight, bottomLeft, bottomRight }
 
 class SelectionFrame extends StatelessWidget {
   final Widget child;
@@ -18,9 +13,12 @@ class SelectionFrame extends StatelessWidget {
   final Function(ScaleStartDetails)? onScaleStart;
   final Function(ScaleUpdateDetails)? onScaleUpdate;
   final Function(ScaleEndDetails)? onScaleEnd;
-  final void Function(ResizeHandlePosition pos, DragStartDetails details)? onResizeStart;
-  final void Function(ResizeHandlePosition pos, DragUpdateDetails details)? onResizeUpdate;
-  final void Function(ResizeHandlePosition pos, DragEndDetails details)? onResizeEnd;
+  final void Function(ResizeHandlePosition pos, DragStartDetails details)?
+  onResizeStart;
+  final void Function(ResizeHandlePosition pos, DragUpdateDetails details)?
+  onResizeUpdate;
+  final void Function(ResizeHandlePosition pos, DragEndDetails details)?
+  onResizeEnd;
 
   const SelectionFrame({
     super.key,
@@ -53,19 +51,11 @@ class SelectionFrame extends StatelessWidget {
           ),
           child: child,
         ),
-        
+
         // Corners (Visual Anchors)
         if (showHandles) ...[
-          _buildCorner(
-            pos: ResizeHandlePosition.topLeft,
-            top: -4,
-            left: -4,
-          ),
-          _buildCorner(
-            pos: ResizeHandlePosition.topRight,
-            top: -4,
-            right: -4,
-          ),
+          _buildCorner(pos: ResizeHandlePosition.topLeft, top: -4, left: -4),
+          _buildCorner(pos: ResizeHandlePosition.topRight, top: -4, right: -4),
           _buildCorner(
             pos: ResizeHandlePosition.bottomLeft,
             bottom: -4,
@@ -116,17 +106,20 @@ class SelectionFrame extends StatelessWidget {
     );
   }
 
-  Widget _buildHandle({required IconData icon, Function(DragUpdateDetails)? onPanUpdate}) {
+  Widget _buildHandle({
+    required IconData icon,
+    Function(DragUpdateDetails)? onPanUpdate,
+  }) {
     return GestureDetector(
-       onPanUpdate: onPanUpdate,
-       child: Container(
+      onPanUpdate: onPanUpdate,
+      child: Container(
         width: 24,
         height: 24,
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
           border: Border.all(color: SnapFitColors.accent, width: 1.5),
-           boxShadow: [
+          boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4),
           ],
         ),

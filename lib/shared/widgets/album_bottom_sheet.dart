@@ -13,7 +13,11 @@ class _GallerySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   _GallerySheetHeaderDelegate({required this.onClose});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final textColor = SnapFitColors.textPrimaryOf(context);
     return Container(
       height: 48,
@@ -64,7 +68,8 @@ class _GallerySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 48;
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      true;
 }
 
 /// 앨범 선택 헤더 (현재 앨범명 + 드롭다운)
@@ -85,7 +90,11 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final textColor = SnapFitColors.textPrimaryOf(context);
     return Container(
       color: SnapFitColors.surfaceOf(context),
@@ -112,11 +121,7 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
             ),
             SizedBox(width: 4.w),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 24.sp,
-              color: textColor,
-            ),
+            Icon(Icons.keyboard_arrow_down, size: 24.sp, color: textColor),
           ],
         ),
       ),
@@ -128,7 +133,8 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 48;
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      true;
 }
 
 /// 📸 공통 사진 선택 바텀시트 (실서비스 스타일)
@@ -165,7 +171,9 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                 return Container(
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                   ),
                   child: SafeArea(
                     top: false,
@@ -191,9 +199,15 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                         SizedBox(height: 16.h),
                         TextButton.icon(
                           onPressed: () {
-                            ref.read(galleryProvider.notifier).fetchInitialData();
+                            ref
+                                .read(galleryProvider.notifier)
+                                .fetchInitialData();
                           },
-                          icon: Icon(Icons.refresh, size: 20.sp, color: SnapFitColors.accent),
+                          icon: Icon(
+                            Icons.refresh,
+                            size: 20.sp,
+                            color: SnapFitColors.accent,
+                          ),
                           label: Text(
                             '다시 시도',
                             style: TextStyle(
@@ -213,7 +227,9 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                 return Container(
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                   ),
                   child: Center(
                     child: Column(
@@ -240,7 +256,9 @@ Future<AssetEntity?> showPhotoSelectionSheet(
               return Container(
                 decoration: BoxDecoration(
                   color: SnapFitColors.surfaceOf(context),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                 ),
                 child: CustomScrollView(
                   controller: scrollController,
@@ -285,7 +303,9 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                                       '앨범 사진 불러오는 중...',
                                       style: TextStyle(
                                         fontSize: 14.sp,
-                                        color: SnapFitColors.textSecondaryOf(context),
+                                        color: SnapFitColors.textSecondaryOf(
+                                          context,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -303,7 +323,9 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                                       '이 앨범에 사진이 없어요',
                                       style: TextStyle(
                                         fontSize: 15.sp,
-                                        color: SnapFitColors.textSecondaryOf(context),
+                                        color: SnapFitColors.textSecondaryOf(
+                                          context,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -312,33 +334,34 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                       )
                     else
                       SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 8.h,
+                        ),
                         sliver: SliverGrid(
                           key: ValueKey(st.selectedAlbum?.id),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 6.w,
-                            mainAxisSpacing: 6.w,
-                            childAspectRatio: 1,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, i) {
-                              final asset = st.images[i];
-                              return GestureDetector(
-                                onTap: () {
-                                  onSelect?.call(asset);
-                                  Navigator.pop(context, asset);
-                                },
-                                child: GalleryThumbTile(
-                                  key: ValueKey(asset.id),
-                                  asset: asset,
-                                  isSelected: false,
-                                  simpleMode: true,
-                                ),
-                              );
-                            },
-                            childCount: st.images.length,
-                          ),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                crossAxisSpacing: 6.w,
+                                mainAxisSpacing: 6.w,
+                                childAspectRatio: 1,
+                              ),
+                          delegate: SliverChildBuilderDelegate((context, i) {
+                            final asset = st.images[i];
+                            return GestureDetector(
+                              onTap: () {
+                                onSelect?.call(asset);
+                                Navigator.pop(context, asset);
+                              },
+                              child: GalleryThumbTile(
+                                key: ValueKey(asset.id),
+                                asset: asset,
+                                isSelected: false,
+                                simpleMode: true,
+                              ),
+                            );
+                          }, childCount: st.images.length),
                         ),
                       ),
                     if (st.isLoading && st.images.isNotEmpty)
@@ -368,7 +391,6 @@ Future<AssetEntity?> showPhotoSelectionSheet(
   );
   return result;
 }
-
 
 /// 📂 앨범 선택 바텀시트 (실서비스 스타일)
 Future<void> _showAlbumSelectionSheet(
@@ -430,7 +452,10 @@ Future<void> _showAlbumSelectionSheet(
                       child: InkWell(
                         onTap: () => Navigator.pop(context, a),
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
                           child: Row(
                             children: [
                               Container(
@@ -438,7 +463,9 @@ Future<void> _showAlbumSelectionSheet(
                                 height: 44.w,
                                 decoration: BoxDecoration(
                                   color: isCurr
-                                      ? SnapFitColors.accent.withValues(alpha: 0.2)
+                                      ? SnapFitColors.accent.withValues(
+                                          alpha: 0.2,
+                                        )
                                       : SnapFitColors.overlayLightOf(context),
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
@@ -456,7 +483,9 @@ Future<void> _showAlbumSelectionSheet(
                                   name,
                                   style: TextStyle(
                                     fontSize: 16.sp,
-                                    fontWeight: isCurr ? FontWeight.w700 : FontWeight.w500,
+                                    fontWeight: isCurr
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
                                     color: SnapFitColors.textPrimaryOf(context),
                                   ),
                                   overflow: TextOverflow.ellipsis,

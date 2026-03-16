@@ -47,8 +47,9 @@ class HomeGridAlbumCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color:
-              isDark ? SnapFitColors.surfaceOf(context) : SnapFitColors.pureWhite,
+          color: isDark
+              ? SnapFitColors.surfaceOf(context)
+              : SnapFitColors.pureWhite,
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Column(
@@ -71,9 +72,7 @@ class HomeGridAlbumCard extends StatelessWidget {
                 builder: (context, constraints) {
                   final ratio = parseCoverRatio(album.ratio);
                   final maxHeight = constraints.maxHeight;
-                  final height = ratio > 1
-                      ? maxHeight * 0.82
-                      : maxHeight * 0.7;
+                  final height = ratio > 1 ? maxHeight * 0.82 : maxHeight * 0.7;
                   return Align(
                     alignment: Alignment.center,
                     child: HomeAlbumCoverThumbnail(

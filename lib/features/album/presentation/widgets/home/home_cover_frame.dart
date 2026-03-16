@@ -42,10 +42,7 @@ class HomeCoverFrame extends StatelessWidget {
               ? HomeFocusWrap.coverStyleShadowForScale(shadowScale, 0.5)
               : null,
         ),
-        child: ClipRRect(
-          borderRadius: _coverRadius,
-          child: child,
-        ),
+        child: ClipRRect(borderRadius: _coverRadius, child: child),
       ),
     );
   }

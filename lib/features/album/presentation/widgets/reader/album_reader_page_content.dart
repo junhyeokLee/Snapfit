@@ -42,52 +42,55 @@ class AlbumReaderPageContent extends StatelessWidget {
           width: baseCanvasSize.width,
           height: baseCanvasSize.height,
           child: IgnorePointer(
-              ignoring: true,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 배경: backgroundColor 우선, 없으면 테마가 있으면 테마 이미지/그라데이션, 없으면 흰색
-                  Container(
-                    decoration: BoxDecoration(
-                      color: backgroundColor ?? (theme == null ? Colors.white : null),
-                      image: theme?.imageAsset != null
-                          ? DecorationImage(
-                              image: AssetImage(theme!.imageAsset!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                      gradient: theme?.imageAsset == null ? theme?.gradient : null,
-                    ),
+            ignoring: true,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 배경: backgroundColor 우선, 없으면 테마가 있으면 테마 이미지/그라데이션, 없으면 흰색
+                Container(
+                  decoration: BoxDecoration(
+                    color:
+                        backgroundColor ??
+                        (theme == null ? Colors.white : null),
+                    image: theme?.imageAsset != null
+                        ? DecorationImage(
+                            image: AssetImage(theme!.imageAsset!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    gradient: theme?.imageAsset == null
+                        ? theme?.gradient
+                        : null,
                   ),
-                  ...layers.map((layer) {
-                    return layer.type == LayerType.text
-                        ? previewBuilder.buildText(layer)
-                        : previewBuilder.buildImage(layer);
-                  }),
-                  // [New] 커버의 경우 좌측 책등(Spine) 그림자 효과 추가
-                  if (theme != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: 14.0, // kCoverSpineWidth 대응
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Colors.black.withOpacity(0.15),
-                              Colors.transparent,
-                            ],
-                          ),
+                ),
+                ...layers.map((layer) {
+                  return layer.type == LayerType.text
+                      ? previewBuilder.buildText(layer)
+                      : previewBuilder.buildImage(layer);
+                }),
+                // [New] 커버의 경우 좌측 책등(Spine) 그림자 효과 추가
+                if (theme != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      width: 14.0, // kCoverSpineWidth 대응
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.black.withOpacity(0.15),
+                            Colors.transparent,
+                          ],
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
+      ),
     );
   }
 }
-

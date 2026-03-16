@@ -7,7 +7,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onConfirm;
   final VoidCallback? onDetail; // null이면 메뉴에서 숨김 처리
-  
+
   const AlbumReaderMoreOptionsSheet({
     super.key,
     required this.onEdit,
@@ -90,7 +90,7 @@ class _SheetItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color? iconColor;
   final Color? labelColor;
-  
+
   const _SheetItem({
     required this.icon,
     required this.label,
@@ -108,7 +108,11 @@ class _SheetItem extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 18.h),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? SnapFitColors.textSecondaryOf(context), size: 22.sp),
+            Icon(
+              icon,
+              color: iconColor ?? SnapFitColors.textSecondaryOf(context),
+              size: 22.sp,
+            ),
             SizedBox(width: 16.w),
             Text(
               label,
@@ -129,7 +133,7 @@ class _SheetItem extends StatelessWidget {
 class AlbumReaderCircleBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  
+
   const AlbumReaderCircleBtn({
     super.key,
     required this.icon,

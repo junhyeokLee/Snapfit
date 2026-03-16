@@ -9,7 +9,8 @@ class PremiumTemplateList extends ConsumerStatefulWidget {
   const PremiumTemplateList({super.key});
 
   @override
-  ConsumerState<PremiumTemplateList> createState() => _PremiumTemplateListState();
+  ConsumerState<PremiumTemplateList> createState() =>
+      _PremiumTemplateListState();
 }
 
 class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
@@ -38,7 +39,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
               height: 400.h, // Adjusted height for better balance (was 480.h)
               margin: EdgeInsets.symmetric(horizontal: 20.w),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32.r), // More rounded corners
+                borderRadius: BorderRadius.circular(
+                  32.r,
+                ), // More rounded corners
                 color: Colors.grey[200],
                 boxShadow: [
                   // Softer, more diffused shadow
@@ -70,7 +73,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => TemplateDetailScreen(template: template),
+                                builder: (_) =>
+                                    TemplateDetailScreen(template: template),
                               ),
                             );
                           },
@@ -81,23 +85,32 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               Image.network(
                                 template.coverImageUrl,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[300],
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value:
+                                                loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: Colors.grey[300],
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                                    child: const Icon(Icons.error),
                                   );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                    return Container(color: Colors.grey[300], child: const Icon(Icons.error));
                                 },
                               ),
                               // Premium Gradient Overlay (Deep and smooth)
@@ -109,7 +122,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       Colors.black.withOpacity(0.2),
                                       Colors.black.withOpacity(0.8),
                                     ],
-                                    begin: Alignment.center, // Start slightly lower
+                                    begin: Alignment
+                                        .center, // Start slightly lower
                                     end: Alignment.bottomCenter,
                                     stops: const [0.0, 0.4, 1.0],
                                   ),
@@ -117,7 +131,10 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               ),
                               // Content Text
                               Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w,
+                                  vertical: 32.h,
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,10 +142,17 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     if (template.isBest)
                                       Container(
                                         margin: EdgeInsets.only(bottom: 12.h),
-                                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 14.w,
+                                          vertical: 6.h,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF22D3EE), // Cyan-400 equivalent
-                                          borderRadius: BorderRadius.circular(100.r),
+                                          color: const Color(
+                                            0xFF22D3EE,
+                                          ), // Cyan-400 equivalent
+                                          borderRadius: BorderRadius.circular(
+                                            100.r,
+                                          ),
                                         ),
                                         child: Text(
                                           'MONTHLY BEST',
@@ -152,15 +176,15 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     ),
                                     SizedBox(height: 12.h),
                                     if (template.subTitle != null)
-                                    Text(
-                                      template.subTitle!,
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: Colors.white.withOpacity(0.7),
-                                        fontWeight: FontWeight.w400,
-                                        letterSpacing: 0,
+                                      Text(
+                                        template.subTitle!,
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          color: Colors.white.withOpacity(0.7),
+                                          fontWeight: FontWeight.w400,
+                                          letterSpacing: 0,
+                                        ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -189,11 +213,11 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                   : Colors.white.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(3.r),
                               boxShadow: [
-                                 BoxShadow(
-                                   color: Colors.black.withOpacity(0.1),
-                                   blurRadius: 2,
-                                   offset: const Offset(0, 1),
-                                 ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
                               ],
                             ),
                           ),
@@ -215,7 +239,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
       ),
       error: (err, stack) => SizedBox(
         height: 100.h,
-        child: Center(child: Text('템플릿을 불러올 수 없습니다.')) // Simple error message
+        child: Center(child: Text('템플릿을 불러올 수 없습니다.')), // Simple error message
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
 
-
 /// 폰트 리스트 (옵션 영역)
 class FontPickerList extends StatefulWidget {
   final List<String> families;
@@ -29,14 +28,20 @@ class FontPickerListState extends State<FontPickerList> {
   @override
   void initState() {
     super.initState();
-    _itemKeys = List<GlobalKey>.generate(widget.families.length, (_) => GlobalKey());
+    _itemKeys = List<GlobalKey>.generate(
+      widget.families.length,
+      (_) => GlobalKey(),
+    );
   }
 
   @override
   void didUpdateWidget(covariant FontPickerList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.families.length != _itemKeys.length) {
-      _itemKeys = List<GlobalKey>.generate(widget.families.length, (_) => GlobalKey());
+      _itemKeys = List<GlobalKey>.generate(
+        widget.families.length,
+        (_) => GlobalKey(),
+      );
     }
   }
 
@@ -75,9 +80,14 @@ class FontPickerListState extends State<FontPickerList> {
                     final itemPos = box.localToGlobal(Offset.zero);
                     final itemWidth = box.size.width;
                     final screenWidth = MediaQuery.of(context).size.width;
-                    final target = widget.controller!.offset + (itemPos.dx + itemWidth / 2) - (screenWidth / 2);
-                    final minOffset = widget.controller!.position.minScrollExtent;
-                    final maxOffset = widget.controller!.position.maxScrollExtent;
+                    final target =
+                        widget.controller!.offset +
+                        (itemPos.dx + itemWidth / 2) -
+                        (screenWidth / 2);
+                    final minOffset =
+                        widget.controller!.position.minScrollExtent;
+                    final maxOffset =
+                        widget.controller!.position.maxScrollExtent;
                     final clamped = target.clamp(minOffset, maxOffset);
                     widget.controller!.animateTo(
                       clamped,
@@ -89,14 +99,21 @@ class FontPickerListState extends State<FontPickerList> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
-                  transform: sel ? Matrix4.translationValues(0, -6.h, 0) : Matrix4.identity(),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  transform: sel
+                      ? Matrix4.translationValues(0, -6.h, 0)
+                      : Matrix4.identity(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 10.h,
+                  ),
                   decoration: BoxDecoration(
                     // 다크/라이트 모드와 무관하게 통일된 대비를 주기 위해 고정 색상 사용
                     color: sel ? Colors.white : const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: sel ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+                      color: sel
+                          ? const Color(0xFF111827)
+                          : const Color(0xFF9CA3AF),
                       width: sel ? 1.5 : 1.0,
                     ),
                   ),
@@ -104,7 +121,9 @@ class FontPickerListState extends State<FontPickerList> {
                     fam,
                     style: TextStyle(
                       // 선택/비선택 모두 충분한 명도 대비가 나도록 고정 색상 사용
-                      color: sel ? const Color(0xFF111827) : const Color(0xFF4B5563),
+                      color: sel
+                          ? const Color(0xFF111827)
+                          : const Color(0xFF4B5563),
                       fontSize: 12.sp,
                       fontFamily: fam,
                     ),

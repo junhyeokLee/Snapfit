@@ -18,61 +18,63 @@ class HomePaperUnfoldRoute extends PageRouteBuilder {
 
   HomePaperUnfoldRoute({
     required this.album,
-    Rect? cardRect, 
+    Rect? cardRect,
     ui.Image? coverImage,
-  })
-      : _cardRect = cardRect,
-        _coverImage = coverImage,
-        super(
-          opaque: true,
-          transitionDuration: const Duration(milliseconds: 450),
-          reverseTransitionDuration: const Duration(milliseconds: 320),
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return HomePaperUnfoldPage(
-              album: album,
-              cardRect: cardRect,
-              coverImage: coverImage,
-            );
-          },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final curved = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            );
-            final rect = cardRect;
+  }) : _cardRect = cardRect,
+       _coverImage = coverImage,
+       super(
+         opaque: true,
+         transitionDuration: const Duration(milliseconds: 450),
+         reverseTransitionDuration: const Duration(milliseconds: 320),
+         pageBuilder: (context, animation, secondaryAnimation) {
+           return HomePaperUnfoldPage(
+             album: album,
+             cardRect: cardRect,
+             coverImage: coverImage,
+           );
+         },
+         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+           final curved = CurvedAnimation(
+             parent: animation,
+             curve: Curves.easeOutCubic,
+           );
+           final rect = cardRect;
 
-            if (coverImage != null && rect != null && rect.width > 0 && rect.height > 0) {
-              return Stack(
-                fit: StackFit.expand,
-                clipBehavior: Clip.none,
-                children: [
-                  FadeTransition(
-                    opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: const Interval(0.25, 1.0, curve: Curves.easeOut),
-                      ),
-                    ),
-                    child: child,
-                  ),
-                  HomeExpandOverlay(
-                    animation: curved,
-                    coverImage: coverImage!,
-                    cardRect: rect,
-                  ),
-                ],
-              );
-            }
-            return FadeTransition(
-              opacity: curved,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.9, end: 1.0).animate(curved),
-                alignment: Alignment.center,
-                child: child,
-              ),
-            );
-          },
-        );
+           if (coverImage != null &&
+               rect != null &&
+               rect.width > 0 &&
+               rect.height > 0) {
+             return Stack(
+               fit: StackFit.expand,
+               clipBehavior: Clip.none,
+               children: [
+                 FadeTransition(
+                   opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                     CurvedAnimation(
+                       parent: animation,
+                       curve: const Interval(0.25, 1.0, curve: Curves.easeOut),
+                     ),
+                   ),
+                   child: child,
+                 ),
+                 HomeExpandOverlay(
+                   animation: curved,
+                   coverImage: coverImage!,
+                   cardRect: rect,
+                 ),
+               ],
+             );
+           }
+           return FadeTransition(
+             opacity: curved,
+             child: ScaleTransition(
+               scale: Tween<double>(begin: 0.9, end: 1.0).animate(curved),
+               alignment: Alignment.center,
+               child: child,
+             ),
+           );
+         },
+       );
 
   final Rect? _cardRect;
   final ui.Image? _coverImage;
@@ -85,9 +87,9 @@ class HomePaperUnfoldPage extends StatefulWidget {
   final ui.Image? coverImage;
 
   const HomePaperUnfoldPage({
-    super.key, 
+    super.key,
     required this.album,
-    this.cardRect, 
+    this.cardRect,
     this.coverImage,
   });
 
@@ -129,7 +131,8 @@ class _HomePaperUnfoldPageState extends State<HomePaperUnfoldPage>
       backgroundColor: Colors.white, // 기본 배경색
       body: EditCover(editAlbum: widget.album),
     );
-    final hasOverlay = widget.coverImage != null &&
+    final hasOverlay =
+        widget.coverImage != null &&
         widget.cardRect != null &&
         !widget.cardRect!.isEmpty;
 

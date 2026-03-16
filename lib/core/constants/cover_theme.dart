@@ -23,22 +23,38 @@ enum CoverTheme {
 extension CoverThemeStyle on CoverTheme {
   String get label {
     switch (this) {
-      case CoverTheme.classic: return "classic";
-      case CoverTheme.classic2: return "classic2";
-      case CoverTheme.nature1: return "nature1";
-      case CoverTheme.nature2: return "nature2";
-      case CoverTheme.nature3: return "nature3";
-      case CoverTheme.nature4: return "nature4";
-      case CoverTheme.architecture1: return "architecture1";
-      case CoverTheme.architecture2: return "architecture2";
-      case CoverTheme.abstract1: return "abstract1";
-      case CoverTheme.abstract2: return "abstract2";
-      case CoverTheme.abstract3: return "abstract3";
-      case CoverTheme.abstract4: return "abstract4";
-      case CoverTheme.abstract5: return "abstract5";
-      case CoverTheme.abstract6: return "abstract6";
-      case CoverTheme.texture1: return "texture1";
-      case CoverTheme.texture2: return "texture2";
+      case CoverTheme.classic:
+        return "classic";
+      case CoverTheme.classic2:
+        return "classic2";
+      case CoverTheme.nature1:
+        return "nature1";
+      case CoverTheme.nature2:
+        return "nature2";
+      case CoverTheme.nature3:
+        return "nature3";
+      case CoverTheme.nature4:
+        return "nature4";
+      case CoverTheme.architecture1:
+        return "architecture1";
+      case CoverTheme.architecture2:
+        return "architecture2";
+      case CoverTheme.abstract1:
+        return "abstract1";
+      case CoverTheme.abstract2:
+        return "abstract2";
+      case CoverTheme.abstract3:
+        return "abstract3";
+      case CoverTheme.abstract4:
+        return "abstract4";
+      case CoverTheme.abstract5:
+        return "abstract5";
+      case CoverTheme.abstract6:
+        return "abstract6";
+      case CoverTheme.texture1:
+        return "texture1";
+      case CoverTheme.texture2:
+        return "texture2";
     }
   }
 
@@ -76,7 +92,6 @@ extension CoverThemeStyle on CoverTheme {
         return null;
     }
   }
-
 
   LinearGradient get gradient {
     switch (this) {
@@ -188,10 +203,7 @@ extension CoverThemeStyle on CoverTheme {
   BoxDecoration get backgroundDecoration {
     return BoxDecoration(
       image: imageAsset != null
-          ? DecorationImage(
-              image: AssetImage(imageAsset!),
-              fit: BoxFit.cover,
-            )
+          ? DecorationImage(image: AssetImage(imageAsset!), fit: BoxFit.cover)
           : null,
       gradient: imageAsset == null ? gradient : null,
     );

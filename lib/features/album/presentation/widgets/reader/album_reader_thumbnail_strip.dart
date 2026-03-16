@@ -61,15 +61,24 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (!_logged) {
       _logged = true;
-      ScreenLogger.widget('AlbumReaderThumbnailStrip', '앨범 리더 썸네일 스트립 · 스프레드 뷰');
+      ScreenLogger.widget(
+        'AlbumReaderThumbnailStrip',
+        '앨범 리더 썸네일 스트립 · 스프레드 뷰',
+      );
     }
 
     final double aspect = baseCanvasSize.width / baseCanvasSize.height;
     final Size logicalInnerSize = Size(300.0, 300.0 / aspect);
-    final Size logicalCoverSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
+    final Size logicalCoverSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth / aspect,
+    );
 
     // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
-    final coverInteraction = LayerInteractionManager.preview(ref, () => logicalCoverSize);
+    final coverInteraction = LayerInteractionManager.preview(
+      ref,
+      () => logicalCoverSize,
+    );
     final coverBuilder = LayerBuilder(coverInteraction, () => logicalCoverSize);
 
     // 단일 썸네일 너비
@@ -128,15 +137,25 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                                 width: logicalCoverSize.width,
                                 height: logicalCoverSize.height,
                                 child: CoverLayout(
-                                  aspect: logicalCoverSize.width / logicalCoverSize.height,
+                                  aspect:
+                                      logicalCoverSize.width /
+                                      logicalCoverSize.height,
                                   layers: pages[0].layers,
                                   isInteracting: false,
                                   leftSpine: 0,
                                   onCoverSizeChanged: (_) {},
-                                  buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
-                                  buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+                                  buildImage: (layer) => coverBuilder
+                                      .buildImage(layer, isCover: true),
+                                  buildText: (layer) => coverBuilder.buildText(
+                                    layer,
+                                    isCover: true,
+                                  ),
                                   sortedByZ: coverInteraction.sortByZ,
-                                  theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ??
+                                  theme:
+                                      ref
+                                          .watch(albumEditorViewModelProvider)
+                                          .value
+                                          ?.selectedTheme ??
                                       resolveCoverTheme(null),
                                 ),
                               ),
@@ -144,7 +163,11 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                           // ── 스프레드 썸네일 (1~2페이지 나란히) ──
                           : Row(
                               children: [
-                                for (int pi = 0; pi < pageIndices.length; pi++) ...[
+                                for (
+                                  int pi = 0;
+                                  pi < pageIndices.length;
+                                  pi++
+                                ) ...[
                                   if (pi > 0)
                                     // 페이지 사이 구분선
                                     Container(
@@ -159,8 +182,14 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                                       targetH: height,
                                       previewBuilder: previewBuilder,
                                       baseCanvasSize: logicalInnerSize,
-                                      backgroundColor: pages[pageIndices[pi]].backgroundColor != null
-                                          ? Color(pages[pageIndices[pi]].backgroundColor!)
+                                      backgroundColor:
+                                          pages[pageIndices[pi]]
+                                                  .backgroundColor !=
+                                              null
+                                          ? Color(
+                                              pages[pageIndices[pi]]
+                                                  .backgroundColor!,
+                                            )
                                           : null,
                                     ),
                                   ),
@@ -213,15 +242,22 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                         width: logicalCoverSize.width,
                         height: logicalCoverSize.height,
                         child: CoverLayout(
-                          aspect: logicalCoverSize.width / logicalCoverSize.height,
+                          aspect:
+                              logicalCoverSize.width / logicalCoverSize.height,
                           layers: pages[0].layers,
                           isInteracting: false,
                           leftSpine: 0,
                           onCoverSizeChanged: (_) {},
-                          buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
-                          buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+                          buildImage: (layer) =>
+                              coverBuilder.buildImage(layer, isCover: true),
+                          buildText: (layer) =>
+                              coverBuilder.buildText(layer, isCover: true),
                           sortedByZ: coverInteraction.sortByZ,
-                          theme: ref.watch(albumEditorViewModelProvider).value?.selectedTheme ??
+                          theme:
+                              ref
+                                  .watch(albumEditorViewModelProvider)
+                                  .value
+                                  ?.selectedTheme ??
                               resolveCoverTheme(null),
                         ),
                       ),
@@ -242,8 +278,11 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                               targetH: height,
                               previewBuilder: previewBuilder,
                               baseCanvasSize: logicalInnerSize,
-                              backgroundColor: pages[pageIndices[pi]].backgroundColor != null
-                                  ? Color(pages[pageIndices[pi]].backgroundColor!)
+                              backgroundColor:
+                                  pages[pageIndices[pi]].backgroundColor != null
+                                  ? Color(
+                                      pages[pageIndices[pi]].backgroundColor!,
+                                    )
                                   : null,
                             ),
                           ),
@@ -260,5 +299,4 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
       ),
     );
   }
-
 }

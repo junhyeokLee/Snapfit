@@ -29,10 +29,12 @@ class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AlbumReaderInnerDetailScreen> createState() => _AlbumReaderInnerDetailScreenState();
+  ConsumerState<AlbumReaderInnerDetailScreen> createState() =>
+      _AlbumReaderInnerDetailScreenState();
 }
 
-class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerDetailScreen> {
+class _AlbumReaderInnerDetailScreenState
+    extends ConsumerState<AlbumReaderInnerDetailScreen> {
   late PageController _pageController;
   late int _currentPage;
   bool _showSwipeHint = true;
@@ -67,7 +69,10 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
     // innerPages는 vm.pages.sublist(1) 기준으로 들어오기 때문에,
     // 에디터에서 사용할 실제 페이지 인덱스는 +1 해준다.
     final currentInnerIndex = _currentPage;
-    final targetPageIndex = (currentInnerIndex + 1).clamp(1, vm.pages.length - 1);
+    final targetPageIndex = (currentInnerIndex + 1).clamp(
+      1,
+      vm.pages.length - 1,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -79,7 +84,8 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
           final saved = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
-              builder: (_) => PageEditorScreen(initialPageIndex: targetPageIndex),
+              builder: (_) =>
+                  PageEditorScreen(initialPageIndex: targetPageIndex),
             ),
           );
           if (!mounted) return;
@@ -88,10 +94,10 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
           }
         },
         onConfirm: () {
-            Navigator.pop(ctx);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
-            );
+          Navigator.pop(ctx);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
+          );
         },
       ),
     );
@@ -105,7 +111,7 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
 
     final vmState = ref.watch(albumEditorViewModelProvider).value;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    
+
     // 앨범 정보 파싱
     final albumTitle = vm.album?.title ?? 'SnapFit Album';
     final coverName = vmState?.selectedCover.name.toUpperCase() ?? 'ALBUM';
@@ -114,19 +120,19 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
     String albumSizeInfo = '$coverName ALBUM';
     if (realW > 0 && realH > 0) {
       // 비율에 맞춰 W x H 정수 표시 (예: 20x20)
-       albumSizeInfo = '$coverName ALBUM (${realW}X$realH)';
+      albumSizeInfo = '$coverName ALBUM (${realW}X$realH)';
     }
 
     // 전달받은 singlePageW, singlePageH는 비율을 구하는 용도
     final targetRatio = widget.singlePageW / widget.singlePageH;
-    
+
     // 상세보기에서는 위아래 여백을 적게 두고 화면을 넓게 씁니다.
-    final maxW = screenW * 0.82; 
-    final maxH = screenH * 0.60; 
-    
+    final maxW = screenW * 0.82;
+    final maxH = screenH * 0.60;
+
     double detailW = maxW;
     double detailH = detailW / targetRatio;
-    
+
     // 비율을 유지하되 화면 높이를 초과하면 높이에 맞춤
     if (detailH > maxH) {
       detailH = maxH;
@@ -148,7 +154,11 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                 children: [
                   // 닫기/뒤로가기
                   IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 24.sp),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 24.sp,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   Expanded(
@@ -179,13 +189,17 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                   ),
                   // 더보기
                   IconButton(
-                    icon: Icon(Icons.more_horiz_rounded, color: Colors.white, size: 28.sp),
+                    icon: Icon(
+                      Icons.more_horiz_rounded,
+                      color: Colors.white,
+                      size: 28.sp,
+                    ),
                     onPressed: _showMoreOptions,
                   ),
                 ],
               ),
             ),
-            
+
             SizedBox(height: 20.h),
 
             Expanded(
@@ -209,13 +223,15 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                           if (_pageController.position.haveDimensions) {
                             pageDist = _pageController.page! - index;
                           } else if (index != widget.initialPageIndex) {
-                            pageDist = widget.initialPageIndex > index ? 1.0 : -1.0;
+                            pageDist = widget.initialPageIndex > index
+                                ? 1.0
+                                : -1.0;
                           }
-                          
+
                           // 페이지 크기는 1.0으로 모두 동일하게 유지
                           // 페이지 간격을 없애고 자연스럽게 겹치기 위한 X축 이동
                           double offsetX = pageDist * 28.w;
-                          
+
                           // 측면 페이지에 들어갈 어두운 딤(Dim) 효과 정도
                           double darkness = (pageDist.abs()).clamp(0.0, 0.05);
 
@@ -223,7 +239,8 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                             child: Transform.translate(
                               offset: Offset(offsetX, 0),
                               child: Hero(
-                                tag: 'inner_page_${widget.innerPages[index].id}',
+                                tag:
+                                    'inner_page_${widget.innerPages[index].id}',
                                 child: _DetailInnerCard(
                                   page: widget.innerPages[index],
                                   pageW: detailW,
@@ -239,9 +256,10 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                       );
                     },
                   ),
-                  
+
                   // 스와이프 안내 힌트 (오른쪽 중앙)
-                  if (_showSwipeHint && _currentPage < widget.innerPages.length - 1)
+                  if (_showSwipeHint &&
+                      _currentPage < widget.innerPages.length - 1)
                     Positioned(
                       right: 16.w, // 화면 가장자리에 가깝게
                       child: IgnorePointer(
@@ -258,8 +276,12 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                                   shape: BoxShape.circle,
                                   gradient: RadialGradient(
                                     colors: [
-                                      SnapFitColors.accent.withValues(alpha: 0.5),
-                                      SnapFitColors.accent.withValues(alpha: 0.1),
+                                      SnapFitColors.accent.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      SnapFitColors.accent.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       Colors.transparent,
                                     ],
                                   ),
@@ -274,12 +296,14 @@ class _AlbumReaderInnerDetailScreenState extends ConsumerState<AlbumReaderInnerD
                               Text(
                                 'SWIPE',
                                 style: TextStyle(
-                                  color: SnapFitColors.accent.withValues(alpha: 0.8),
+                                  color: SnapFitColors.accent.withValues(
+                                    alpha: 0.8,
+                                  ),
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12.sp,
                                   letterSpacing: 1.5,
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -351,7 +375,8 @@ class _DetailInnerCard extends StatelessWidget {
         ? Color(page.backgroundColor!)
         : SnapFitColors.pureWhite;
 
-    return ClipRect( // 바깥으로 튀어나온 레이어 자르기
+    return ClipRect(
+      // 바깥으로 튀어나온 레이어 자르기
       child: Container(
         width: pageW,
         height: pageH,
@@ -364,10 +389,11 @@ class _DetailInnerCard extends StatelessWidget {
               blurRadius: 20.0,
               spreadRadius: 2.0,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
-        child: ClipRRect( // 안쪽 이미지 컨텐츠용
+        child: ClipRRect(
+          // 안쪽 이미지 컨텐츠용
           borderRadius: BorderRadius.circular(4.r),
           child: Stack(
             clipBehavior: Clip.none,

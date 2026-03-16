@@ -6,10 +6,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class HomeBottomNavPlaceholder extends StatelessWidget {
   final String label;
 
-  const HomeBottomNavPlaceholder({
-    super.key,
-    required this.label,
-  });
+  const HomeBottomNavPlaceholder({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {

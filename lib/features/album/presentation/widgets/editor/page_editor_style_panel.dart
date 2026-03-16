@@ -94,7 +94,10 @@ class PageEditorStylePanel extends StatelessWidget {
                   onStateChanged();
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(8.r),

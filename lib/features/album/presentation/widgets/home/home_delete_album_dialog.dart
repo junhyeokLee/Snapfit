@@ -18,10 +18,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
         builder: (context, value, child) {
           return Transform.scale(
             scale: 0.8 + 0.2 * value,
-            child: Opacity(
-              opacity: value,
-              child: child,
-            ),
+            child: Opacity(opacity: value, child: child),
           );
         },
         child: Container(
@@ -121,19 +118,21 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 14.h),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  SnapFitColors.error,
-                                  SnapFitColors.errorDark,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                SnapFitColors.error,
+                                SnapFitColors.errorDark,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
-                                color: SnapFitColors.error.withValues(alpha: 0.3),
+                                color: SnapFitColors.error.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 8.r,
                                 offset: Offset(0, 4.h),
                               ),

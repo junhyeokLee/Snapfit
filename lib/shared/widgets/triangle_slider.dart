@@ -36,7 +36,8 @@ class TriangleSlider extends StatefulWidget {
   State<TriangleSlider> createState() => _TriangleSliderState();
 }
 
-class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProviderStateMixin {
+class _TriangleSliderState extends State<TriangleSlider>
+    with SingleTickerProviderStateMixin {
   double? _thumbY;
   bool _isDragging = false;
 
@@ -49,8 +50,13 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
   void initState() {
     super.initState();
     _thumbY = _valueToOffset(widget.value);
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _triangleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _triangleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+    );
     _controller.forward();
     _fadeTimer = Timer(const Duration(milliseconds: 800), () {
       if (mounted && !_isDragging) {
@@ -71,7 +77,10 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
   double _valueToOffset(double value) {
     const thumbMargin = 12.0;
     final range = (widget.max - widget.min).clamp(1e-6, double.infinity);
-    final t = ((value - widget.min) / range).clamp(0.0, 1.0); // 0 at min, 1 at max
+    final t = ((value - widget.min) / range).clamp(
+      0.0,
+      1.0,
+    ); // 0 at min, 1 at max
     final usableHeight = widget.height - (thumbMargin * 2);
     // Invert: min -> bottom, max -> top
     return (1.0 - t) * usableHeight + thumbMargin;
@@ -80,7 +89,8 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
   double _offsetToValue(double dy) {
     const thumbMargin = 12.0;
     final usableHeight = widget.height - (thumbMargin * 2);
-    final clamped = dy.clamp(thumbMargin, widget.height - thumbMargin) - thumbMargin;
+    final clamped =
+        dy.clamp(thumbMargin, widget.height - thumbMargin) - thumbMargin;
     final p = (clamped / usableHeight).clamp(0.0, 1.0); // 0 at top, 1 at bottom
     final t = 1.0 - p; // invert back so top=1 (max), bottom=0 (min)
     return widget.min + t * (widget.max - widget.min);
@@ -96,14 +106,19 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final defaultTrack = isDark ? const Color(0x66FFFFFF) : const Color(0x66121212);
-    final defaultTriangle = isDark ? const Color(0x22FFFFFF) : const Color(0x22121212);
+    final defaultTrack = isDark
+        ? const Color(0x66FFFFFF)
+        : const Color(0x66121212);
+    final defaultTriangle = isDark
+        ? const Color(0x22FFFFFF)
+        : const Color(0x22121212);
     final defaultThumb = isDark ? Colors.white : const Color(0xFF121212);
     return SizedBox(
       height: widget.height,
       width: 80, // original hit area
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque, // Capture touches in transparent areas
+        behavior:
+            HitTestBehavior.opaque, // Capture touches in transparent areas
         onVerticalDragStart: (d) {
           _fadeTimer?.cancel();
           setState(() => _isDragging = true);
@@ -113,14 +128,18 @@ class _TriangleSliderState extends State<TriangleSlider> with SingleTickerProvid
         onVerticalDragUpdate: (d) {
           final box = context.findRenderObject() as RenderBox;
           final local = box.globalToLocal(d.globalPosition);
-          final newValue = _offsetToValue(local.dy).clamp(widget.min, widget.max);
+          final newValue = _offsetToValue(
+            local.dy,
+          ).clamp(widget.min, widget.max);
           final clampedY = local.dy.clamp(12.0, widget.height - 12.0);
           setState(() => _thumbY = clampedY);
           widget.onChanged(newValue);
         },
         onVerticalDragEnd: (_) {
           setState(() => _isDragging = false);
-          _controller.duration = const Duration(milliseconds: 180); // Faster reverse animation
+          _controller.duration = const Duration(
+            milliseconds: 180,
+          ); // Faster reverse animation
           _fadeTimer = Timer(const Duration(milliseconds: 180), () {
             if (mounted && !_isDragging) {
               _controller.reverse();
@@ -191,7 +210,7 @@ class _TriangleSliderPainter extends CustomPainter {
         end: Alignment.topCenter,
         colors: [
           triangleColor.withOpacity(0.5),
-          triangleColor.withOpacity(0.5)
+          triangleColor.withOpacity(0.5),
         ],
       ).createShader(triRect);
       final trianglePaint = Paint()..shader = gradient;
@@ -205,11 +224,7 @@ class _TriangleSliderPainter extends CustomPainter {
     }
 
     // Thumb
-    canvas.drawCircle(
-      Offset(centerX, thumbY),
-      8,
-      Paint()..color = thumbColor,
-    );
+    canvas.drawCircle(Offset(centerX, thumbY), 8, Paint()..color = thumbColor);
   }
 
   @override

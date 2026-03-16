@@ -21,7 +21,8 @@ class HomeGreetingHeader extends StatelessWidget {
     final rawName = userInfo?.name ?? '';
     final email = userInfo?.email ?? '';
     final provider = (userInfo?.provider ?? '').toUpperCase();
-    final isPlaceholder = rawName.isEmpty ||
+    final isPlaceholder =
+        rawName.isEmpty ||
         rawName == provider ||
         rawName.endsWith('_USER') ||
         rawName.contains(provider);

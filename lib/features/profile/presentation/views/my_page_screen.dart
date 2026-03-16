@@ -50,7 +50,9 @@ class MyPageScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.settings_outlined, color: textColor, size: 24.sp),
             onPressed: () {
-              // TODO: 설정 화면
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('설정 화면은 준비 중입니다.')));
             },
           ),
         ],
@@ -125,7 +127,10 @@ class MyPageScreen extends ConsumerWidget {
                           Padding(
                             padding: EdgeInsets.all(16.w),
                             child: IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white),
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                              ),
                               onPressed: () => Navigator.of(context).pop(),
                             ),
                           ),
@@ -148,17 +153,10 @@ class MyPageScreen extends ConsumerWidget {
                       ? Image.network(
                           profileUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
-                            Icons.person,
-                            size: 36.sp,
-                            color: subColor,
-                          ),
+                          errorBuilder: (_, __, ___) =>
+                              Icon(Icons.person, size: 36.sp, color: subColor),
                         )
-                      : Icon(
-                          Icons.person,
-                          size: 36.sp,
-                          color: subColor,
-                        ),
+                      : Icon(Icons.person, size: 36.sp, color: subColor),
                 ),
               ),
             ),
@@ -204,7 +202,10 @@ class MyPageScreen extends ConsumerWidget {
                   ),
                   SizedBox(width: 8.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: SnapFitColors.accent.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.r),
@@ -224,10 +225,7 @@ class MyPageScreen extends ConsumerWidget {
                 SizedBox(height: 4.h),
                 Text(
                   email,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: subColor,
-                  ),
+                  style: TextStyle(fontSize: 13.sp, color: subColor),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -259,7 +257,9 @@ class MyPageScreen extends ConsumerWidget {
         if (actionLabel != null)
           GestureDetector(
             onTap: () {
-              // TODO: 전체보기
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('전체보기 기능은 준비 중입니다.')),
+              );
             },
             child: Text(
               actionLabel,
@@ -294,12 +294,7 @@ class MyPageScreen extends ConsumerWidget {
     Color textColor,
     Color subColor,
   ) {
-    final items = [
-      ('2', '결제완료'),
-      ('1', '제작중'),
-      ('1', '배송중'),
-      ('12', '배송완료'),
-    ];
+    final items = [('2', '결제완료'), ('1', '제작중'), ('1', '배송중'), ('12', '배송완료')];
     return _buildCard(
       context: context,
       children: [
@@ -316,9 +311,7 @@ class MyPageScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w800,
-                      color: isHighlight
-                          ? SnapFitColors.accent
-                          : textColor,
+                      color: isHighlight ? SnapFitColors.accent : textColor,
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -326,9 +319,7 @@ class MyPageScreen extends ConsumerWidget {
                     e.value.$2,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: isHighlight
-                          ? SnapFitColors.accent
-                          : subColor,
+                      color: isHighlight ? SnapFitColors.accent : subColor,
                     ),
                   ),
                 ],
@@ -450,8 +441,9 @@ class MyPageScreen extends ConsumerWidget {
                           label: '라이트',
                           mode: ThemeMode.light,
                           current: themeMode,
-                          onTap: () =>
-                              ref.read(themeModeControllerProvider.notifier).setLight(),
+                          onTap: () => ref
+                              .read(themeModeControllerProvider.notifier)
+                              .setLight(),
                         ),
                         SizedBox(width: 12.w),
                         _themeChip(
@@ -460,8 +452,9 @@ class MyPageScreen extends ConsumerWidget {
                           label: '다크',
                           mode: ThemeMode.dark,
                           current: themeMode,
-                          onTap: () =>
-                              ref.read(themeModeControllerProvider.notifier).setDark(),
+                          onTap: () => ref
+                              .read(themeModeControllerProvider.notifier)
+                              .setDark(),
                         ),
                       ],
                     ),
@@ -534,15 +527,19 @@ class MyPageScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, WidgetRef ref, Color textColor) {
+  Widget _buildLogoutButton(
+    BuildContext context,
+    WidgetRef ref,
+    Color textColor,
+  ) {
     return Center(
       child: TextButton(
         onPressed: () async {
           await ref.read(authViewModelProvider.notifier).logout();
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('로그아웃되었습니다.')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('로그아웃되었습니다.')));
           }
         },
         child: Text(
@@ -566,9 +563,9 @@ class MyPageScreen extends ConsumerWidget {
     final userId = userInfo?.id.toString();
     if (userId == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 후 이용해 주세요.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('로그인 후 이용해 주세요.')));
       }
       return;
     }
@@ -585,28 +582,32 @@ class MyPageScreen extends ConsumerWidget {
     final file = await asset.file;
     if (!context.mounted) return;
     if (file == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('사진 파일을 불러올 수 없습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('사진 파일을 불러올 수 없습니다.')));
       return;
     }
 
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('프로필 사진 업로드 중...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('프로필 사진 업로드 중...')));
 
       await ref.read(authViewModelProvider.notifier).updateProfileImage(file);
-      
+
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('프로필 사진이 저장되었습니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('프로필 사진이 저장되었습니다.')));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('저장 실패: ${e is Exception ? e.toString().replaceFirst('Exception: ', '') : e}')),
+          SnackBar(
+            content: Text(
+              '저장 실패: ${e is Exception ? e.toString().replaceFirst('Exception: ', '') : e}',
+            ),
+          ),
         );
       }
     }

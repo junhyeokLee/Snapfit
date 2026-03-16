@@ -10,6 +10,7 @@ import 'package:snap_fit/features/album/data/dto/response/invite_link_response.d
 import 'package:snap_fit/features/album/data/repositories/album_member_repository_impl.dart';
 
 class MockAlbumMemberApi extends Mock implements AlbumMemberApi {}
+
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
@@ -24,12 +25,10 @@ void main() {
     final repository = AlbumMemberRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-1');
-    when(() => api.invite(1, 'user-1', any()))
-        .thenAnswer((_) async => const InviteLinkResponse(
-              albumId: 1,
-              token: 't',
-              link: 'link',
-            ));
+    when(() => api.invite(1, 'user-1', any())).thenAnswer(
+      (_) async =>
+          const InviteLinkResponse(albumId: 1, token: 't', link: 'link'),
+    );
 
     final response = await repository.invite(1, role: 'VIEWER');
 
@@ -42,13 +41,14 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumMemberRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => api.getInviteInfo('token'))
-        .thenAnswer((_) async => const InviteInfoResponse(
-              albumId: 1,
-              albumTitle: 'Title',
-              inviterName: 'Owner',
-              role: 'EDITOR',
-            ));
+    when(() => api.getInviteInfo('token')).thenAnswer(
+      (_) async => const InviteInfoResponse(
+        albumId: 1,
+        albumTitle: 'Title',
+        inviterName: 'Owner',
+        role: 'EDITOR',
+      ),
+    );
 
     final response = await repository.getInviteInfo('token');
 
@@ -62,12 +62,10 @@ void main() {
     final repository = AlbumMemberRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-2');
-    when(() => api.acceptInvite('token', any()))
-        .thenAnswer((_) async => const InviteAcceptResponse(
-              albumId: 2,
-              role: 'EDITOR',
-              success: true,
-            ));
+    when(() => api.acceptInvite('token', any())).thenAnswer(
+      (_) async =>
+          const InviteAcceptResponse(albumId: 2, role: 'EDITOR', success: true),
+    );
 
     final response = await repository.acceptInvite('token');
 

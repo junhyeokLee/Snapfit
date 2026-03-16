@@ -52,9 +52,9 @@ class LoggerInterceptor implements Interceptor {
 
     log('에러: ${err.message ?? "No error message"}');
 
-    if (err.stackTrace != null) {
-      log('Stack Trace: ${_truncateText(err.stackTrace.toString(), maxLines: 5)}');
-    }
+    log(
+      'Stack Trace: ${_truncateText(err.stackTrace.toString(), maxLines: 5)}',
+    );
 
     handler.next(err);
   }
@@ -70,7 +70,9 @@ class LoggerInterceptor implements Interceptor {
     final elapsed = stopwatch?.elapsedMilliseconds ?? -1;
     final emoji = _getStatusEmoji(statusCode, isError, elapsed);
 
-    log('$emoji ${statusCode ?? "N/A"} | ${elapsed >= 0 ? '$elapsed ms' : 'Too Fast'} | $url');
+    log(
+      '$emoji ${statusCode ?? "N/A"} | ${elapsed >= 0 ? '$elapsed ms' : 'Too Fast'} | $url',
+    );
 
     if (responseData != null) {
       log('Response Data: ${_safeJsonEncode(responseData)}');
@@ -104,6 +106,8 @@ class LoggerInterceptor implements Interceptor {
     if (lines.length > maxLines) {
       return '${lines.take(maxLines).join('\n')}\n... (truncated)';
     }
-    return text.length > maxLength ? '${text.substring(0, maxLength)}... (truncated)' : text;
+    return text.length > maxLength
+        ? '${text.substring(0, maxLength)}... (truncated)'
+        : text;
   }
 }

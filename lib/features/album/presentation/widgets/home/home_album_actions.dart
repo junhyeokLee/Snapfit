@@ -12,7 +12,6 @@ import '../../../../../core/utils/screen_logger.dart';
 import '../../../data/api/album_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 /// 앨범 액션 관련 헬퍼 클래스
 class HomeAlbumActions {
   static bool _isOpeningAlbum = false;
@@ -36,23 +35,25 @@ class HomeAlbumActions {
       final coverState = ref.read(coverViewModelProvider).asData?.value;
       if (editorState != null) {
         // 확실하게 동기화 (항상 실행하여 상태가 반영되도록 보장)
-        ref.read(coverViewModelProvider.notifier).selectCover(editorState.selectedCover);
-        ref.read(coverViewModelProvider.notifier).updateTheme(editorState.selectedTheme);
+        ref
+            .read(coverViewModelProvider.notifier)
+            .selectCover(editorState.selectedCover);
+        ref
+            .read(coverViewModelProvider.notifier)
+            .updateTheme(editorState.selectedTheme);
         // 동기화 후 상태가 반영될 때까지 대기
         await ref.read(coverViewModelProvider.future);
       }
       if (!context.mounted) return;
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => AddCoverScreen(editAlbum: album),
-        ),
+        MaterialPageRoute(builder: (_) => AddCoverScreen(editAlbum: album)),
       );
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')));
       }
     }
   }
@@ -71,20 +72,18 @@ class HomeAlbumActions {
     try {
       await ref.read(homeViewModelProvider.notifier).deleteAlbum(album);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('앨범이 삭제되었습니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('앨범이 삭제되었습니다.')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('삭제 실패: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
       }
     }
   }
-
-
 
   /// 앨범 열기 (리더 화면)
   static Future<void> openAlbum(
@@ -109,7 +108,9 @@ class HomeAlbumActions {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: SnapFitColors.surfaceOf(ctx),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
           title: Text(
             '편집 제한',
             style: TextStyle(
@@ -128,7 +129,10 @@ class HomeAlbumActions {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('확인', style: TextStyle(color: SnapFitColors.accent)),
+              child: const Text(
+                '확인',
+                style: TextStyle(color: SnapFitColors.accent),
+              ),
             ),
           ],
         ),
@@ -141,7 +145,7 @@ class HomeAlbumActions {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     await ref.read(albumEditorViewModelProvider.future);
     await vm.prepareAlbumForEdit(album);
-    
+
     if (!context.mounted) {
       // 만약 준비 중 화면이 닫혔다면 잠금 해제 필요
       try {

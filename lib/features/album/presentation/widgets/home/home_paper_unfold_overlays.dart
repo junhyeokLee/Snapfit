@@ -44,7 +44,10 @@ class _HomeExpandOverlayState extends State<HomeExpandOverlay> {
         animation: widget.animation,
         builder: (context, _) {
           final t = widget.animation.value;
-          final opacity = (1.0 - Curves.easeOutCubic.transform(t)).clamp(0.0, 1.0);
+          final opacity = (1.0 - Curves.easeOutCubic.transform(t)).clamp(
+            0.0,
+            1.0,
+          );
           return IgnorePointer(
             child: Opacity(
               opacity: opacity,
@@ -53,10 +56,7 @@ class _HomeExpandOverlayState extends State<HomeExpandOverlay> {
                 height: h,
                 child: ClipRRect(
                   borderRadius: _coverRadius,
-                  child: RawImage(
-                    image: widget.coverImage,
-                    fit: BoxFit.cover,
-                  ),
+                  child: RawImage(image: widget.coverImage, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -101,7 +101,9 @@ class _HomeCoverOpenOverlayState extends State<HomeCoverOpenOverlay> {
             ? t * (3.141592 / 2)
             : -t * (3.141592 / 2);
         final opacity = (1.0 - t).clamp(0.0, 1.0);
-        final alignment = widget.openFromRight ? Alignment.centerRight : Alignment.centerLeft;
+        final alignment = widget.openFromRight
+            ? Alignment.centerRight
+            : Alignment.centerLeft;
 
         return IgnorePointer(
           child: Opacity(
@@ -111,10 +113,7 @@ class _HomeCoverOpenOverlayState extends State<HomeCoverOpenOverlay> {
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.001)
                 ..rotateY(angleY),
-              child: RawImage(
-                image: widget.coverImage,
-                fit: BoxFit.cover,
-              ),
+              child: RawImage(image: widget.coverImage, fit: BoxFit.cover),
             ),
           ),
         );

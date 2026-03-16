@@ -22,14 +22,19 @@ class PageEditorImageActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = selected.asset != null ||
-        (selected.previewUrl ?? selected.imageUrl ?? selected.originalUrl) != null;
+    final hasImage =
+        selected.asset != null ||
+        (selected.previewUrl ?? selected.imageUrl ?? selected.originalUrl) !=
+            null;
 
     if (hasImage) {
       return GestureDetector(
         onTap: () async {
           final currentKey = selected.imageBackground ?? '';
-          final result = await ImageFrameStylePicker.show(context, currentKey: currentKey);
+          final result = await ImageFrameStylePicker.show(
+            context,
+            currentKey: currentKey,
+          );
           if (result != null) {
             vm.updateImageFrame(selected.id, result);
             onStateChanged();

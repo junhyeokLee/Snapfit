@@ -61,11 +61,7 @@ void main() {
   });
 
   testWidgets('AuthGate shows HomeScreen when user exists', (tester) async {
-    final user = UserInfo(
-      id: 7,
-      name: 'Tester',
-      provider: 'kakao',
-    );
+    final user = UserInfo(id: 7, name: 'Tester', provider: 'kakao');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -86,13 +82,16 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
-  testWidgets('AuthGate shows loading indicator while auth is loading',
-      (tester) async {
+  testWidgets('AuthGate shows loading indicator while auth is loading', (
+    tester,
+  ) async {
     final completer = Completer<UserInfo?>();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authViewModelProvider.overrideWith(() => LoadingAuthViewModel(completer)),
+          authViewModelProvider.overrideWith(
+            () => LoadingAuthViewModel(completer),
+          ),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),

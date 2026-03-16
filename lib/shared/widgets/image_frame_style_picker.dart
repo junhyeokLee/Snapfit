@@ -20,12 +20,7 @@ class ImageFrameStyle {
 
 /// 사용 가능한 이미지 프레임 스타일 목록
 const List<ImageFrameStyle> imageFrameStyles = [
-  ImageFrameStyle(
-    key: '',
-    label: '기본',
-    subtitle: '원본 그대로',
-    category: 'basic',
-  ),
+  ImageFrameStyle(key: '', label: '기본', subtitle: '원본 그대로', category: 'basic'),
   ImageFrameStyle(
     key: 'circle',
     label: '기본 원형',
@@ -93,33 +88,143 @@ const List<ImageFrameStyle> imageFrameStyles = [
     category: 'artistic',
   ),
   // 레트로 테크 & 픽셀
-  ImageFrameStyle(key: 'win95', label: '90s 윈도우 프레임', subtitle: 'Win 95 Classic', category: 'retro'),
-  ImageFrameStyle(key: 'pixel8', label: '8비트 픽셀 보더', subtitle: 'Retro Game Style', category: 'retro'),
-  ImageFrameStyle(key: 'vhs', label: 'VHS 글리치', subtitle: 'Analog Static', category: 'retro'),
-  ImageFrameStyle(key: 'neon', label: '네온 사이버펑크', subtitle: 'Glowing Night', category: 'retro'),
+  ImageFrameStyle(
+    key: 'win95',
+    label: '90s 윈도우 프레임',
+    subtitle: 'Win 95 Classic',
+    category: 'retro',
+  ),
+  ImageFrameStyle(
+    key: 'pixel8',
+    label: '8비트 픽셀 보더',
+    subtitle: 'Retro Game Style',
+    category: 'retro',
+  ),
+  ImageFrameStyle(
+    key: 'vhs',
+    label: 'VHS 글리치',
+    subtitle: 'Analog Static',
+    category: 'retro',
+  ),
+  ImageFrameStyle(
+    key: 'neon',
+    label: '네온 사이버펑크',
+    subtitle: 'Glowing Night',
+    category: 'retro',
+  ),
   // 낙서 & 스티커
-  ImageFrameStyle(key: 'crayon', label: '손그림 크레파스', subtitle: 'Messy Crayon', category: 'artistic'),
-  ImageFrameStyle(key: 'notebook', label: '수업시간 낙서장', subtitle: 'Notebook Margin', category: 'artistic'),
-  ImageFrameStyle(key: 'tapeClip', label: '테이프 & 클립', subtitle: 'Tape & Clip Set', category: 'artistic'),
-  ImageFrameStyle(key: 'comicBubble', label: '코믹 말풍선', subtitle: 'Comic Bubble', category: 'artistic'),
+  ImageFrameStyle(
+    key: 'crayon',
+    label: '손그림 크레파스',
+    subtitle: 'Messy Crayon',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'notebook',
+    label: '수업시간 낙서장',
+    subtitle: 'Notebook Margin',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'tapeClip',
+    label: '테이프 & 클립',
+    subtitle: 'Tape & Clip Set',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'comicBubble',
+    label: '코믹 말풍선',
+    subtitle: 'Comic Bubble',
+    category: 'artistic',
+  ),
   // 미니멀 & 기하학
-  ImageFrameStyle(key: 'thinDoubleLine', label: '씬 더블 라인', subtitle: 'Elegant Spacing', category: 'minimal'),
-  ImageFrameStyle(key: 'offsetColorBlock', label: '오프셋 컬러 블록', subtitle: 'Asymmetrical Border', category: 'minimal'),
-  ImageFrameStyle(key: 'floatingGlass', label: '플로팅 글래스', subtitle: 'Glassmorphism', category: 'minimal'),
-  ImageFrameStyle(key: 'gradientEdge', label: '그라데이션 엣지', subtitle: 'Blending Border', category: 'minimal'),
+  ImageFrameStyle(
+    key: 'thinDoubleLine',
+    label: '씬 더블 라인',
+    subtitle: 'Elegant Spacing',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'offsetColorBlock',
+    label: '오프셋 컬러 블록',
+    subtitle: 'Asymmetrical Border',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'floatingGlass',
+    label: '플로팅 글래스',
+    subtitle: 'Glassmorphism',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'gradientEdge',
+    label: '그라데이션 엣지',
+    subtitle: 'Blending Border',
+    category: 'minimal',
+  ),
   // 빈티지 페이퍼 & 아카이브
-  ImageFrameStyle(key: 'tornNotebook', label: '찢어진 노트 페이지', subtitle: 'Torn Notebook', category: 'vintage'),
-  ImageFrameStyle(key: 'oldNewspaper', label: '오래된 신문 조각', subtitle: 'Old Newspaper', category: 'vintage'),
-  ImageFrameStyle(key: 'postalStamp', label: '우표 프레임', subtitle: 'Postal Stamp', category: 'vintage'),
-  ImageFrameStyle(key: 'kraftPaper', label: '크라프트 종이', subtitle: 'Brown Kraft Paper', category: 'vintage'),
+  ImageFrameStyle(
+    key: 'tornNotebook',
+    label: '찢어진 노트 페이지',
+    subtitle: 'Torn Notebook',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'oldNewspaper',
+    label: '오래된 신문 조각',
+    subtitle: 'Old Newspaper',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'postalStamp',
+    label: '우표 프레임',
+    subtitle: 'Postal Stamp',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'kraftPaper',
+    label: '크라프트 종이',
+    subtitle: 'Brown Kraft Paper',
+    category: 'vintage',
+  ),
   // 클래식 갤러리
-  ImageFrameStyle(key: 'goldFrame', label: '황금 갤러리', subtitle: 'Masterpiece Frame', category: 'classic'),
+  ImageFrameStyle(
+    key: 'goldFrame',
+    label: '황금 갤러리',
+    subtitle: 'Masterpiece Frame',
+    category: 'classic',
+  ),
   // 어반 프레임
-  ImageFrameStyle(key: 'pinkSplatter', label: '핑크 스플래터', subtitle: 'Street Art', category: 'urban'),
-  ImageFrameStyle(key: 'toxicGlow', label: '톡시크 글로우', subtitle: 'Neon Lights', category: 'urban'),
-  ImageFrameStyle(key: 'stencilBlock', label: '스텐실 블록', subtitle: 'Concrete', category: 'urban'),
-  ImageFrameStyle(key: 'midnightDrip', label: '미드나잇 드립', subtitle: 'Tagged', category: 'urban'),
-  ImageFrameStyle(key: 'vaporStreet', label: '베이퍼 스트리트', subtitle: 'Acid', category: 'urban'),
+  ImageFrameStyle(
+    key: 'pinkSplatter',
+    label: '핑크 스플래터',
+    subtitle: 'Street Art',
+    category: 'urban',
+  ),
+  ImageFrameStyle(
+    key: 'toxicGlow',
+    label: '톡시크 글로우',
+    subtitle: 'Neon Lights',
+    category: 'urban',
+  ),
+  ImageFrameStyle(
+    key: 'stencilBlock',
+    label: '스텐실 블록',
+    subtitle: 'Concrete',
+    category: 'urban',
+  ),
+  ImageFrameStyle(
+    key: 'midnightDrip',
+    label: '미드나잇 드립',
+    subtitle: 'Tagged',
+    category: 'urban',
+  ),
+  ImageFrameStyle(
+    key: 'vaporStreet',
+    label: '베이퍼 스트리트',
+    subtitle: 'Acid',
+    category: 'urban',
+  ),
 ];
 
 const _frameCategories = [
@@ -150,7 +255,9 @@ class _FilterChip extends StatelessWidget {
             : SnapFitColors.overlayLightOf(context),
         borderRadius: BorderRadius.circular(999.r),
         border: Border.all(
-          color: selected ? SnapFitColors.accent : SnapFitColors.overlayMediumOf(context),
+          color: selected
+              ? SnapFitColors.accent
+              : SnapFitColors.overlayMediumOf(context),
           width: 1,
         ),
       ),
@@ -160,7 +267,9 @@ class _FilterChip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: selected ? Colors.white : SnapFitColors.textPrimaryOf(context),
+              color: selected
+                  ? Colors.white
+                  : SnapFitColors.textPrimaryOf(context),
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -169,7 +278,9 @@ class _FilterChip extends StatelessWidget {
           Icon(
             Icons.keyboard_arrow_down,
             size: 18.sp,
-            color: selected ? Colors.white : SnapFitColors.textSecondaryOf(context),
+            color: selected
+                ? Colors.white
+                : SnapFitColors.textSecondaryOf(context),
           ),
         ],
       ),
@@ -276,7 +387,10 @@ class _ImageFrameStylePickerState extends State<ImageFrameStylePicker> {
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 6.h,
+                        ),
                         decoration: BoxDecoration(
                           color: selected
                               ? SnapFitColors.accent.withOpacity(0.12)
@@ -296,7 +410,9 @@ class _ImageFrameStylePickerState extends State<ImageFrameStylePicker> {
                                 ? SnapFitColors.accent
                                 : SnapFitColors.textSecondaryOf(context),
                             fontSize: 12.sp,
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                           ),
                         ),
                       ),
@@ -418,7 +534,11 @@ class _FrameStyleItem extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: Icon(Icons.star, size: 12.sp, color: Colors.white),
+                          child: Icon(
+                            Icons.star,
+                            size: 12.sp,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                   ],
@@ -464,9 +584,7 @@ class _FrameStyleItem extends StatelessWidget {
 
   Widget _buildFramePreview(String key) {
     final placeholder = Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFE6E9F0),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFE6E9F0)),
     );
 
     Widget content;
@@ -514,20 +632,14 @@ class _FrameStyleItem extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: const Color(0xFFE0E4F2),
-              width: 2,
-            ),
+            border: Border.all(color: const Color(0xFFE0E4F2), width: 2),
           ),
           padding: EdgeInsets.all(10.w),
           child: Container(
             decoration: BoxDecoration(
               color: const Color(0xFFF7F8FF),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: const Color(0xFFD0D7F0),
-                width: 1.4,
-              ),
+              border: Border.all(color: const Color(0xFFD0D7F0), width: 1.4),
             ),
           ),
         );
@@ -541,10 +653,7 @@ class _FrameStyleItem extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFFFF5FB),
-                Color(0xFFE9F4FF),
-              ],
+              colors: [Color(0xFFFFF5FB), Color(0xFFE9F4FF)],
             ),
             borderRadius: BorderRadius.circular(24.r),
           ),
@@ -720,10 +829,7 @@ class _FrameStyleItem extends StatelessWidget {
         ],
         border: Border.all(color: Colors.grey.withOpacity(0.35), width: 0.8),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(3.r),
-        child: child,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(3.r), child: child),
     );
   }
 
@@ -832,7 +938,10 @@ class _FrameStyleItem extends StatelessWidget {
             color: const Color(0xFF000080),
             child: Row(
               children: [
-                Text('image.exe', style: TextStyle(color: Colors.white, fontSize: 11.sp)),
+                Text(
+                  'image.exe',
+                  style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                ),
                 const Spacer(),
                 _win95Button(const Color(0xFFC0C0C0)),
                 SizedBox(width: 2.w),
@@ -846,7 +955,11 @@ class _FrameStyleItem extends StatelessWidget {
             child: Container(
               color: Colors.white,
               alignment: Alignment.center,
-              child: Icon(Icons.image_outlined, size: 24.r, color: const Color(0xFFC0C0C0)),
+              child: Icon(
+                Icons.image_outlined,
+                size: 24.r,
+                color: const Color(0xFFC0C0C0),
+              ),
             ),
           ),
         ],
@@ -868,7 +981,12 @@ class _FrameStyleItem extends StatelessWidget {
 
   /// 8비트 픽셀 보더 – 검은 테두리 + 흰 내부 + 점선 + 코너 컬러
   Widget _previewPixel8(Widget placeholder) {
-    const cornerColors = [Color(0xFFFFFF00), Color(0xFFFF0000), Color(0xFF0000FF), Color(0xFF00FF00)];
+    const cornerColors = [
+      Color(0xFFFFFF00),
+      Color(0xFFFF0000),
+      Color(0xFF0000FF),
+      Color(0xFF00FF00),
+    ];
     return Container(
       padding: EdgeInsets.all(2.w),
       decoration: BoxDecoration(
@@ -893,10 +1011,26 @@ class _FrameStyleItem extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(top: -2, left: -2, child: Container(width: 6.w, height: 6.w, color: cornerColors[0])),
-          Positioned(top: -2, right: -2, child: Container(width: 6.w, height: 6.w, color: cornerColors[1])),
-          Positioned(bottom: -2, left: -2, child: Container(width: 6.w, height: 6.w, color: cornerColors[2])),
-          Positioned(bottom: -2, right: -2, child: Container(width: 6.w, height: 6.w, color: cornerColors[3])),
+          Positioned(
+            top: -2,
+            left: -2,
+            child: Container(width: 6.w, height: 6.w, color: cornerColors[0]),
+          ),
+          Positioned(
+            top: -2,
+            right: -2,
+            child: Container(width: 6.w, height: 6.w, color: cornerColors[1]),
+          ),
+          Positioned(
+            bottom: -2,
+            left: -2,
+            child: Container(width: 6.w, height: 6.w, color: cornerColors[2]),
+          ),
+          Positioned(
+            bottom: -2,
+            right: -2,
+            child: Container(width: 6.w, height: 6.w, color: cornerColors[3]),
+          ),
         ],
       ),
     );
@@ -912,11 +1046,7 @@ class _FrameStyleItem extends StatelessWidget {
       child: Stack(
         children: [
           // 스캔라인 느낌
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _ScanLinePainter(),
-            ),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _ScanLinePainter())),
           Padding(
             padding: EdgeInsets.all(6.w),
             child: Column(
@@ -924,14 +1054,28 @@ class _FrameStyleItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text('PLAY', style: TextStyle(color: const Color(0xFF00FF00), fontSize: 10.sp, fontWeight: FontWeight.bold)),
+                    Text(
+                      'PLAY',
+                      style: TextStyle(
+                        color: const Color(0xFF00FF00),
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     SizedBox(width: 2.w),
-                    Icon(Icons.play_arrow, color: const Color(0xFF00FF00), size: 12.r),
+                    Icon(
+                      Icons.play_arrow,
+                      color: const Color(0xFF00FF00),
+                      size: 12.r,
+                    ),
                   ],
                 ),
                 const Spacer(),
                 Center(
-                  child: Text('SP 00:12:44', style: TextStyle(color: Colors.white70, fontSize: 9.sp)),
+                  child: Text(
+                    'SP 00:12:44',
+                    style: TextStyle(color: Colors.white70, fontSize: 9.sp),
+                  ),
                 ),
               ],
             ),
@@ -949,7 +1093,11 @@ class _FrameStyleItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.r),
         border: Border.all(color: const Color(0xFF00FFFF), width: 2),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF00FFFF).withOpacity(0.6), blurRadius: 8, spreadRadius: 0),
+          BoxShadow(
+            color: const Color(0xFF00FFFF).withOpacity(0.6),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
         ],
       ),
       padding: EdgeInsets.all(3.w),
@@ -1005,7 +1153,9 @@ class _FrameStyleItem extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                border: Border(left: BorderSide(color: Colors.pink.shade100, width: 1)),
+                border: Border(
+                  left: BorderSide(color: Colors.pink.shade100, width: 1),
+                ),
               ),
               child: placeholder,
             ),
@@ -1021,14 +1171,17 @@ class _FrameStyleItem extends StatelessWidget {
       width: 8.w,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(6, (_) => Container(
-          width: 3.w,
-          height: 3.w,
-          decoration: BoxDecoration(
-            color: const Color(0xFFB0B0B0),
-            shape: BoxShape.circle,
+        children: List.generate(
+          6,
+          (_) => Container(
+            width: 3.w,
+            height: 3.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFFB0B0B0),
+              shape: BoxShape.circle,
+            ),
           ),
-        )),
+        ),
       ),
     );
   }
@@ -1041,20 +1194,40 @@ class _FrameStyleItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: const Color(0xFFE8E4DC)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 12.h, left: 6.w, right: 6.w, bottom: 6.h),
+            padding: EdgeInsets.only(
+              top: 12.h,
+              left: 6.w,
+              right: 6.w,
+              bottom: 6.h,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6.r),
               child: placeholder,
             ),
           ),
-          Positioned(top: -4, left: 0, right: 0, child: Center(child: Icon(Icons.attach_file, size: 20.r, color: const Color(0xFF505050)))),
+          Positioned(
+            top: -4,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Icon(
+                Icons.attach_file,
+                size: 20.r,
+                color: const Color(0xFF505050),
+              ),
+            ),
+          ),
           Positioned(
             bottom: 4,
             right: 4,
@@ -1097,7 +1270,13 @@ class _FrameStyleItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: EdgeInsets.all(8.w),
       child: Container(
@@ -1208,7 +1387,13 @@ class _FrameStyleItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFFFFBF0),
-          boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.brown.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         padding: EdgeInsets.fromLTRB(10.w, 10.w, 8.w, 12.h),
         child: Stack(
@@ -1227,18 +1412,19 @@ class _FrameStyleItem extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(top: 12.h, left: 12.w, child: Container(
-              width: 6.w,
-              height: 6.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD0C8B8).withOpacity(0.6),
-                shape: BoxShape.circle,
+            Positioned(
+              top: 12.h,
+              left: 12.w,
+              child: Container(
+                width: 6.w,
+                height: 6.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD0C8B8).withOpacity(0.6),
+                  shape: BoxShape.circle,
+                ),
               ),
-            )),
-            Padding(
-              padding: EdgeInsets.all(12.w),
-              child: placeholder,
             ),
+            Padding(padding: EdgeInsets.all(12.w), child: placeholder),
           ],
         ),
       ),
@@ -1263,9 +1449,17 @@ class _FrameStyleItem extends StatelessWidget {
               child: placeholder,
             ),
           ),
-          Container(height: 3.h, margin: EdgeInsets.symmetric(horizontal: 8.w), color: const Color(0xFFD8D0C4)),
+          Container(
+            height: 3.h,
+            margin: EdgeInsets.symmetric(horizontal: 8.w),
+            color: const Color(0xFFD8D0C4),
+          ),
           SizedBox(height: 2.h),
-          Container(height: 3.h, margin: EdgeInsets.symmetric(horizontal: 8.w), color: const Color(0xFFD8D0C4)),
+          Container(
+            height: 3.h,
+            margin: EdgeInsets.symmetric(horizontal: 8.w),
+            color: const Color(0xFFD8D0C4),
+          ),
           SizedBox(height: 6.h),
         ],
       ),
@@ -1279,7 +1473,13 @@ class _FrameStyleItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(2.r),
         border: Border.all(color: const Color(0xFFC0C0C0), width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipPath(
         clipper: _StampPerforationClipper(),
@@ -1301,7 +1501,13 @@ class _FrameStyleItem extends StatelessWidget {
                   color: const Color(0xFFE8E8E8),
                   borderRadius: BorderRadius.circular(999.r),
                 ),
-                child: Text('1924', style: TextStyle(fontSize: 8.sp, color: const Color(0xFF707070))),
+                child: Text(
+                  '1924',
+                  style: TextStyle(
+                    fontSize: 8.sp,
+                    color: const Color(0xFF707070),
+                  ),
+                ),
               ),
             ),
           ],
@@ -1316,7 +1522,13 @@ class _FrameStyleItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFB8956E),
         borderRadius: BorderRadius.circular(4.r),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: EdgeInsets.all(6.w),
       child: Container(
@@ -1340,7 +1552,11 @@ class _FrameStyleItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(2.r),
         border: Border.all(color: const Color(0xFFC9A227), width: 10),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF8B6914).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: const Color(0xFF8B6914).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       padding: EdgeInsets.all(4.w),
@@ -1385,7 +1601,11 @@ class _FrameStyleItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: const Color(0xFF39FF14), width: 3),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF39FF14).withOpacity(0.5), blurRadius: 12, spreadRadius: 0),
+          BoxShadow(
+            color: const Color(0xFF39FF14).withOpacity(0.5),
+            blurRadius: 12,
+            spreadRadius: 0,
+          ),
         ],
       ),
       child: ClipRRect(
@@ -1402,7 +1622,13 @@ class _FrameStyleItem extends StatelessWidget {
         color: const Color(0xFFF8F4EC),
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: const Color(0xFFD0B898), width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.06),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.r),
@@ -1418,28 +1644,46 @@ class _FrameStyleItem extends StatelessWidget {
         color: const Color(0xFFF0E8DC),
         borderRadius: BorderRadius.circular(6.r),
         border: Border.all(color: const Color(0xFFD8D0C0)),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 14.h, left: 6.w, right: 6.w, bottom: 6.h),
+            padding: EdgeInsets.only(
+              top: 14.h,
+              left: 6.w,
+              right: 6.w,
+              bottom: 6.h,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4.r),
               child: placeholder,
             ),
           ),
-          Positioned(top: 2, left: 0, right: 0, child: Center(
-            child: Container(
-              width: 12.w,
-              height: 8.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0D8C8),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(4.r)),
+          Positioned(
+            top: 2,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 12.w,
+                height: 8.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0D8C8),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(4.r),
+                  ),
+                ),
               ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -1508,10 +1752,13 @@ class _NeonCornerPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     const r = 6.0;
-    canvas.drawPath(Path()
-      ..moveTo(0, r)
-      ..lineTo(0, 0)
-      ..lineTo(r, 0), paint);
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, r)
+        ..lineTo(0, 0)
+        ..lineTo(r, 0),
+      paint,
+    );
   }
 
   @override

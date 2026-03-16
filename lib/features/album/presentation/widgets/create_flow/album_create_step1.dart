@@ -203,27 +203,24 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 
   Widget _buildSizeSelector(BuildContext context) {
     // 기획 기준: 가로 / 정사각형 / 세로
-    final horizontal =
-        coverSizes.firstWhere((s) => s.name == '가로형', orElse: () => coverSizes[2]);
-    final square =
-        coverSizes.firstWhere((s) => s.name == '정사각형', orElse: () => coverSizes[1]);
-    final vertical =
-        coverSizes.firstWhere((s) => s.name == '세로형', orElse: () => coverSizes[0]);
+    final horizontal = coverSizes.firstWhere(
+      (s) => s.name == '가로형',
+      orElse: () => coverSizes[2],
+    );
+    final square = coverSizes.firstWhere(
+      (s) => s.name == '정사각형',
+      orElse: () => coverSizes[1],
+    );
+    final vertical = coverSizes.firstWhere(
+      (s) => s.name == '세로형',
+      orElse: () => coverSizes[0],
+    );
 
     // 가로형, 정사각형, 세로형 옵션
     final sizeOptions = [
-      {
-        'name': '가로형',
-        'cover': horizontal,
-      },
-      {
-        'name': '정사각형',
-        'cover': square,
-      },
-      {
-        'name': '세로형',
-        'cover': vertical,
-      },
+      {'name': '가로형', 'cover': horizontal},
+      {'name': '정사각형', 'cover': square},
+      {'name': '세로형', 'cover': vertical},
     ];
 
     return Row(
@@ -232,14 +229,16 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
         final option = entry.value;
         final cover = option['cover'] as CoverSize;
         final isSelected = widget.selectedCover?.name == cover.name;
-        
+
         return Expanded(
           child: GestureDetector(
             onTap: () {
               widget.onCoverSelected(cover);
             },
             child: Container(
-              margin: EdgeInsets.only(right: index != sizeOptions.length - 1 ? 12.w : 0),
+              margin: EdgeInsets.only(
+                right: index != sizeOptions.length - 1 ? 12.w : 0,
+              ),
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: isSelected
@@ -262,8 +261,9 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     height: 80.w,
                     child: _SizePreviewFrame(
                       cover: cover,
-                      color: SnapFitColors.textPrimaryOf(context)
-                          .withOpacity(0.35),
+                      color: SnapFitColors.textPrimaryOf(
+                        context,
+                      ).withOpacity(0.35),
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -271,7 +271,9 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     option['name'] as String,
                     style: TextStyle(
                       fontSize: 16.sp,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.normal,
                       color: SnapFitColors.textPrimaryOf(context),
                     ),
                   ),
@@ -324,10 +326,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               decoration: BoxDecoration(
                 color: SnapFitColors.accent.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: SnapFitColors.accent,
-                  width: 1,
-                ),
+                border: Border.all(color: SnapFitColors.accent, width: 1),
               ),
               child: Text(
                 '${widget.selectedPageCount}p',
@@ -369,10 +368,7 @@ class _SizePreviewFrame extends StatelessWidget {
   final CoverSize cover;
   final Color color;
 
-  const _SizePreviewFrame({
-    required this.cover,
-    required this.color,
-  });
+  const _SizePreviewFrame({required this.cover, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -401,14 +397,10 @@ class _SizePreviewFrame extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6.r),
-            border: Border.all(
-              color: color,
-              width: 2,
-            ),
+            border: Border.all(color: color, width: 2),
           ),
         ),
       ),
     );
   }
 }
-

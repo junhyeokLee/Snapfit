@@ -28,7 +28,9 @@ class LayerSelectionToolbar extends StatelessWidget {
       height: 64.h,
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context).withOpacity(0.95), // Semi-transparent based on theme
+        color: SnapFitColors.surfaceOf(
+          context,
+        ).withOpacity(0.95), // Semi-transparent based on theme
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -42,8 +44,15 @@ class LayerSelectionToolbar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildToolItem(context, Icons.style_outlined, "스타일", onStyle),
-          if (isText) _buildToolItem(context, Icons.text_fields_outlined, "폰트", onFont),
-          _buildToolItem(context, Icons.palette_outlined, "색상", onColor, isActive: true),
+          if (isText)
+            _buildToolItem(context, Icons.text_fields_outlined, "폰트", onFont),
+          _buildToolItem(
+            context,
+            Icons.palette_outlined,
+            "색상",
+            onColor,
+            isActive: true,
+          ),
           _buildToolItem(context, Icons.opacity_outlined, "불투명도", onOpacity),
           _buildDeleteButton(context),
           _buildToolItem(context, Icons.layers_outlined, "순서", onOrder),
@@ -52,30 +61,46 @@ class LayerSelectionToolbar extends StatelessWidget {
     );
   }
 
-  Widget _buildToolItem(BuildContext context, IconData icon, String label, VoidCallback? onTap, {bool isActive = false}) {
+  Widget _buildToolItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    VoidCallback? onTap, {
+    bool isActive = false,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12.r),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w),
-        decoration: isActive ? BoxDecoration(
-          color: SnapFitColors.isDark(context) ? const Color(0xFF162A2E) : SnapFitColors.accent.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: SnapFitColors.accent.withOpacity(0.3)),
-        ) : null,
+        decoration: isActive
+            ? BoxDecoration(
+                color: SnapFitColors.isDark(context)
+                    ? const Color(0xFF162A2E)
+                    : SnapFitColors.accent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: SnapFitColors.accent.withOpacity(0.3),
+                ),
+              )
+            : null,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              icon, 
-              color: isActive ? SnapFitColors.accent : SnapFitColors.textSecondaryOf(context), 
-              size: 20.sp
+              icon,
+              color: isActive
+                  ? SnapFitColors.accent
+                  : SnapFitColors.textSecondaryOf(context),
+              size: 20.sp,
             ),
             SizedBox(height: 4.h),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? SnapFitColors.accent : SnapFitColors.textMutedOf(context),
+                color: isActive
+                    ? SnapFitColors.accent
+                    : SnapFitColors.textMutedOf(context),
                 fontSize: 10.sp,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -101,7 +126,11 @@ class LayerSelectionToolbar extends StatelessWidget {
                 color: Color(0xFFFF4848), // Red delete button
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.delete_outline, color: Colors.white, size: 16.sp),
+              child: Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 16.sp,
+              ),
             ),
             SizedBox(height: 4.h),
             Text(

@@ -71,10 +71,11 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
                 animation: _pageController,
                 builder: (context, child) {
                   double currentPage = 0.0;
-                  if (_pageController.hasClients && _pageController.position.haveDimensions) {
+                  if (_pageController.hasClients &&
+                      _pageController.position.haveDimensions) {
                     currentPage = _pageController.page ?? 0.0;
                   }
-                  
+
                   // Calculate scale and focus based on position
                   double diff = (currentPage - index);
                   final scale = (1 - (diff.abs() * 0.1)).clamp(0.9, 1.0);
@@ -85,8 +86,9 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
                   // Else -> 20.w padding
                   final double screenWidth = 1.sw;
                   final double viewportFraction = 0.70;
-                  final double centeredLeftEdge = (screenWidth * (1 - viewportFraction)) / 2;
-                  
+                  final double centeredLeftEdge =
+                      (screenWidth * (1 - viewportFraction)) / 2;
+
                   double targetLeftEdge = 20.w;
                   if (displayAlbums.isNotEmpty) {
                     final firstAlbum = displayAlbums[0];
@@ -97,10 +99,10 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
                   }
 
                   final double maxShift = centeredLeftEdge - targetLeftEdge;
-                  
+
                   // Apply shift only when near the first page (0.0 ~ 1.0)
-                  final double currentShift = currentPage <= 1.0 
-                      ? -maxShift * (1.0 - currentPage) 
+                  final double currentShift = currentPage <= 1.0
+                      ? -maxShift * (1.0 - currentPage)
                       : 0.0;
 
                   return Transform.translate(
@@ -108,7 +110,8 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
                     child: Transform.scale(
                       scale: scale,
                       alignment: Alignment.center,
-                      child: RepaintBoundary( // Isolate painting
+                      child: RepaintBoundary(
+                        // Isolate painting
                         child: Center(
                           child: RecentAlbumCard(
                             album: displayAlbums[index],

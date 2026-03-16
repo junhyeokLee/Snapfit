@@ -23,7 +23,7 @@ class CompletedAlbumCard extends StatelessWidget {
       child: Container(
         // 배경 제거 및 패딩 조정
         padding: EdgeInsets.symmetric(vertical: 12.h),
-        color: Colors.transparent, 
+        color: Colors.transparent,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -109,11 +109,7 @@ class CompletedAlbumCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildAvatarGroup(),
-        Icon(
-          Icons.more_horiz,
-          size: 20.sp,
-          color: const Color(0xFFDDDDDD),
-        ),
+        Icon(Icons.more_horiz, size: 20.sp, color: const Color(0xFFDDDDDD)),
       ],
     );
   }
@@ -125,9 +121,9 @@ class CompletedAlbumCard extends StatelessWidget {
       height: 24.w,
       child: Stack(
         children: [
-           _avatar(0, const Color(0xFFE0E0E0)),
-           _avatar(16.w, const Color(0xFFD0D0D0)),
-           Positioned(
+          _avatar(0, const Color(0xFFE0E0E0)),
+          _avatar(16.w, const Color(0xFFD0D0D0)),
+          Positioned(
             left: 32.w,
             child: Container(
               width: 24.w,
@@ -148,7 +144,7 @@ class CompletedAlbumCard extends StatelessWidget {
                 ),
               ),
             ),
-           ),
+          ),
         ],
       ),
     );

@@ -36,8 +36,12 @@ class FannedPageContent extends StatelessWidget {
     final layers = page?.layers ?? [];
     final baseSize = coverCanvasBaseSize(selectedCover);
     final isCover = page?.isCover ?? false;
-    final baseW = isCover ? (coverCanvasSize?.width ?? baseSize.width) : baseSize.width;
-    final baseH = isCover ? (coverCanvasSize?.height ?? baseSize.height) : baseSize.height;
+    final baseW = isCover
+        ? (coverCanvasSize?.width ?? baseSize.width)
+        : baseSize.width;
+    final baseH = isCover
+        ? (coverCanvasSize?.height ?? baseSize.height)
+        : baseSize.height;
 
     if (layers.isNotEmpty) {
       return Stack(
@@ -75,7 +79,8 @@ class FannedPageContent extends StatelessWidget {
     }
 
     if (page != null && page!.isCover && currentAlbum != null) {
-      final url = currentAlbum!.coverPreviewUrl ??
+      final url =
+          currentAlbum!.coverPreviewUrl ??
           currentAlbum!.coverThumbnailUrl ??
           currentAlbum!.coverImageUrl;
       if (url != null && url.isNotEmpty) {

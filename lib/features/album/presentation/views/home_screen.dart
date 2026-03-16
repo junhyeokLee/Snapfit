@@ -51,14 +51,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future<void> handleCreateAlbum() async {
       final created = await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => const AlbumCreateFlowScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const AlbumCreateFlowScreen()),
       );
       if (created == true && context.mounted) {
         await ref.read(homeViewModelProvider.notifier).refresh();
       }
     }
+
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       bottomNavigationBar: HomeBottomNavigationBar(
@@ -72,14 +71,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         context,
         Container(
           color: SnapFitColors.backgroundOf(context),
-          child: SafeArea( // SafeArea applied to the whole body
+          child: SafeArea(
+            // SafeArea applied to the whole body
             child: albumsAsync.when(
               data: (albums) {
-                final currentUserId = authAsync.asData?.value?.id.toString() ?? '';
-                
+                final currentUserId =
+                    authAsync.asData?.value?.id.toString() ?? '';
+
                 // 1. filtering (Draft 제외)
                 var baseAlbums = albums.where((a) => !isDraftAlbum(a)).toList();
-                
 
                 // 2. Sorting by 'orders' (Ascending)
                 // If orders are same, fallback to createdAt (Descending)
@@ -93,119 +93,128 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                 // 3. Category Filtering
                 // Recent: Live Editing (Limit 6)
-                final recentAlbums = sorted.where((a) => isLiveEditingAlbum(a)).take(6).toList();
-                
+                final recentAlbums = sorted
+                    .where((a) => isLiveEditingAlbum(a))
+                    .take(6)
+                    .toList();
+
                 // Completed: isCompletedAlbum
-                final completedAlbums = sorted.where((a) => isCompletedAlbum(a)).toList();
-                
+                final completedAlbums = sorted
+                    .where((a) => isCompletedAlbum(a))
+                    .toList();
+
                 // Shared: userId != currentUserId
-                final sharedAlbums = sorted.where((a) => a.userId != currentUserId).toList();
+                final sharedAlbums = sorted
+                    .where((a) => a.userId != currentUserId)
+                    .toList();
 
                 if (baseAlbums.isEmpty) {
-                  return HomeEmptyState(
-                    onCreate: handleCreateAlbum,
-                  );
+                  return HomeEmptyState(onCreate: handleCreateAlbum);
                 }
 
                 return CustomScrollView(
                   slivers: [
-                     // 1. Header
-                     SliverToBoxAdapter(
-                       child: Padding(
-                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.w),
-                         child: HomeHeaderNew(
-                           onNotification: () {
-                             Navigator.push(
-                               context,
-                               MaterialPageRoute(
-                                 builder: (_) => const NotificationScreen(),
-                               ),
-                             );
-                           },
-                         ),
-                       ),
-                     ),
-                     // 2. Premium Templates (New Section)
-                     SliverToBoxAdapter(
-                       child: Column(
-                         children: [
-                           const PremiumTemplateList(),
-                           SizedBox(height: 24.h),
-                         ],
-                       ),
-                     ),
-                     // 3. My Records (Section 1: Masonry)
-                     SliverToBoxAdapter(
-                       child: RecentAlbumList(
-                         albums: recentAlbums,
-                         currentUserId: currentUserId,
-                         onTap: (album) async {
-                           await HomeAlbumActions.openAlbum(context, ref, album);
-                         },
-                         onViewAll: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => AlbumCategoryScreen(
-                                 category: AlbumCategory.recent,
-                                 initialAlbums: recentAlbums,
-                                 currentUserId: currentUserId,
-                               ),
-                             ),
-                           );
-                         },
-                       ),
-                     ),
-                     // 4. Shared Albums (Section 2: Carousel) - Restored
-                     SliverToBoxAdapter(
-                       child: SharedAlbumList(
-                         albums: sharedAlbums,
-                         currentUserId: currentUserId,
-                         onTap: (album) async {
-                           await HomeAlbumActions.openAlbum(context, ref, album);
-                         },
-                         onViewAll: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => AlbumCategoryScreen(
-                                 category: AlbumCategory.shared,
-                                 initialAlbums: sharedAlbums,
-                                 currentUserId: currentUserId,
-                               ),
-                             ),
-                           );
-                         },
-                       ),
-                     ),
-                     // 5. Completed Albums (Section 3: List)
-                     SliverToBoxAdapter(
-                       child: CompletedAlbumList(
-                         albums: completedAlbums, // Passed but ignored for now due to dummy data
-                         currentUserId: currentUserId,
-                         onViewAll: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => AlbumCategoryScreen(
-                                 category: AlbumCategory.completed,
-                                 initialAlbums: completedAlbums,
-                                 currentUserId: currentUserId,
-                               ),
-                             ),
-                           );
-                         },
-                       ),
-                     ),
-                     // Bottom Padding for FAB
-                     SliverToBoxAdapter(
-                       child: SizedBox(height: 80.w),
-                     ),
+                    // 1. Header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 12.w,
+                        ),
+                        child: HomeHeaderNew(
+                          onNotification: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const NotificationScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    // 2. Premium Templates (New Section)
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          const PremiumTemplateList(),
+                          SizedBox(height: 24.h),
+                        ],
+                      ),
+                    ),
+                    // 3. My Records (Section 1: Masonry)
+                    SliverToBoxAdapter(
+                      child: RecentAlbumList(
+                        albums: recentAlbums,
+                        currentUserId: currentUserId,
+                        onTap: (album) async {
+                          await HomeAlbumActions.openAlbum(context, ref, album);
+                        },
+                        onViewAll: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlbumCategoryScreen(
+                                category: AlbumCategory.recent,
+                                initialAlbums: recentAlbums,
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // 4. Shared Albums (Section 2: Carousel) - Restored
+                    SliverToBoxAdapter(
+                      child: SharedAlbumList(
+                        albums: sharedAlbums,
+                        currentUserId: currentUserId,
+                        onTap: (album) async {
+                          await HomeAlbumActions.openAlbum(context, ref, album);
+                        },
+                        onViewAll: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlbumCategoryScreen(
+                                category: AlbumCategory.shared,
+                                initialAlbums: sharedAlbums,
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // 5. Completed Albums (Section 3: List)
+                    SliverToBoxAdapter(
+                      child: CompletedAlbumList(
+                        albums:
+                            completedAlbums, // Passed but ignored for now due to dummy data
+                        currentUserId: currentUserId,
+                        onViewAll: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlbumCategoryScreen(
+                                category: AlbumCategory.completed,
+                                initialAlbums: completedAlbums,
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // Bottom Padding for FAB
+                    SliverToBoxAdapter(child: SizedBox(height: 80.w)),
                   ],
                 );
               },
               loading: () => const Center(
-                child: CircularProgressIndicator(color: SnapFitColors.accentLight),
+                child: CircularProgressIndicator(
+                  color: SnapFitColors.accentLight,
+                ),
               ),
               error: (err, stack) => HomeErrorState(error: err),
             ),
@@ -229,6 +238,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 }
-
-
-

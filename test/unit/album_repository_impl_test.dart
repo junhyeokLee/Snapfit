@@ -7,16 +7,19 @@ import 'package:snap_fit/features/album/data/repositories/album_repository_impl.
 import 'package:snap_fit/features/album/domain/entities/album.dart';
 
 class MockAlbumApi extends Mock implements AlbumApi {}
+
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(const CreateAlbumRequest(
-      ratio: '1:1',
-      coverLayersJson: '{}',
-      coverImageUrl: '',
-      coverThumbnailUrl: '',
-    ));
+    registerFallbackValue(
+      const CreateAlbumRequest(
+        ratio: '1:1',
+        coverLayersJson: '{}',
+        coverImageUrl: '',
+        coverThumbnailUrl: '',
+      ),
+    );
     registerFallbackValue(<String, dynamic>{});
   });
 
@@ -28,15 +31,18 @@ void main() {
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-1');
     when(() => api.createAlbum(any())).thenAnswer((_) async => const Album());
 
-    await repository.createAlbum(const CreateAlbumRequest(
-      ratio: '1:1',
-      coverLayersJson: '{}',
-      coverImageUrl: '',
-      coverThumbnailUrl: '',
-    ));
+    await repository.createAlbum(
+      const CreateAlbumRequest(
+        ratio: '1:1',
+        coverLayersJson: '{}',
+        coverImageUrl: '',
+        coverThumbnailUrl: '',
+      ),
+    );
 
-    final captured = verify(() => api.createAlbum(captureAny())).captured.single
-        as CreateAlbumRequest;
+    final captured =
+        verify(() => api.createAlbum(captureAny())).captured.single
+            as CreateAlbumRequest;
     expect(captured.userId, 'user-1');
   });
 
@@ -63,6 +69,10 @@ void main() {
 
     await repository.reorderAlbums([1, 2]);
 
-    verify(() => api.reorderAlbums({'albumIds': [1, 2]}, 'user-3')).called(1);
+    verify(
+      () => api.reorderAlbums({
+        'albumIds': [1, 2],
+      }, 'user-3'),
+    ).called(1);
   });
 }

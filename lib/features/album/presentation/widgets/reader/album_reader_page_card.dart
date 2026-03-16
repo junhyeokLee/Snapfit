@@ -61,8 +61,12 @@ class AlbumReaderPageCard extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: delta >= 0 ? Alignment.topCenter : Alignment.bottomCenter,
-                    end: delta >= 0 ? Alignment.bottomCenter : Alignment.topCenter,
+                    begin: delta >= 0
+                        ? Alignment.topCenter
+                        : Alignment.bottomCenter,
+                    end: delta >= 0
+                        ? Alignment.bottomCenter
+                        : Alignment.topCenter,
                     colors: [
                       Colors.black.withOpacity(0.22 * delta.abs()),
                       Colors.transparent,

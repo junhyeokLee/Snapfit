@@ -12,7 +12,10 @@ class DecorateFrameTab extends StatelessWidget {
     return Center(
       child: Text(
         "프레임 스타일 준비 중",
-        style: TextStyle(color: SnapFitColors.textSecondaryOf(context), fontSize: 14.sp),
+        style: TextStyle(
+          color: SnapFitColors.textSecondaryOf(context),
+          fontSize: 14.sp,
+        ),
       ),
     );
   }

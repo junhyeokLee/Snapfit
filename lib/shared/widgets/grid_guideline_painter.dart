@@ -20,6 +20,7 @@ class GridGuidelinePainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

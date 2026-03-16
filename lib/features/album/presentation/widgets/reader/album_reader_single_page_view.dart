@@ -48,10 +48,12 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AlbumReaderSinglePageView> createState() => _AlbumReaderSinglePageViewState();
+  ConsumerState<AlbumReaderSinglePageView> createState() =>
+      _AlbumReaderSinglePageViewState();
 }
 
-class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePageView> {
+class _AlbumReaderSinglePageViewState
+    extends ConsumerState<AlbumReaderSinglePageView> {
   bool _isCoverPressed = false;
 
   void onStateChanged() {
@@ -101,7 +103,11 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
     final int itemCount = 1 + spreadCount;
 
     // 0 미만 바운스 방지
-    final safePage = (widget.pageController.hasClients ? (widget.pageController.page ?? 0.0) : 0.0).clamp(0.0, (itemCount - 1).toDouble());
+    final safePage =
+        (widget.pageController.hasClients
+                ? (widget.pageController.page ?? 0.0)
+                : 0.0)
+            .clamp(0.0, (itemCount - 1).toDouble());
 
     // 터치 이벤트를 뷰 외곽에 감싸는 PageView 레이어
     final pageView = BookPageView(
@@ -125,7 +131,9 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
             child: AnimatedBuilder(
               animation: widget.pageController,
               builder: (context, child) {
-                final double page = widget.pageController.hasClients ? (widget.pageController.page ?? 0.0) : 0.0;
+                final double page = widget.pageController.hasClients
+                    ? (widget.pageController.page ?? 0.0)
+                    : 0.0;
 
                 // 0 -> 1 전환 구간(커버 펼침) 및 상시 바닥 그림자 처리
                 // GPU 스케일 텍스처 재생성 깜박임 방지용 상시 가속 유도 (1.0 -> 0.9999)
@@ -137,8 +145,12 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
                 if (page >= 0.0 && page < 1.0) {
                   // page 값이 진행되는 동안 (0.0 ~ 1.0), sin 곡선(0.0 -> 1.0 -> 0.0)을 그림
                   final bounceRatio = math.sin(page * math.pi);
-                  currentScale = 0.9999 - (bounceRatio * 0.12); // 최대 88% 로 작아짐 (0.8799). 1.0 으로 리셋 시 텍스처 파괴(Flicker) 발생 방지
-                  shadowAlpha = 0.15 + (bounceRatio * 0.1); // 공중 바운스 시 진해짐(0.25)
+                  currentScale =
+                      0.9999 -
+                      (bounceRatio *
+                          0.12); // 최대 88% 로 작아짐 (0.8799). 1.0 으로 리셋 시 텍스처 파괴(Flicker) 발생 방지
+                  shadowAlpha =
+                      0.15 + (bounceRatio * 0.1); // 공중 바운스 시 진해짐(0.25)
                   shadowBlur = 50.0 + (bounceRatio * 50.0); // 더 넓게 퍼짐(100.0)
                   shadowSpread = 5.0 + (bounceRatio * 20.0); // 밖으로 크게 번짐
                 }
@@ -162,11 +174,13 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: shadowAlpha),
+                              color: Colors.black.withValues(
+                                alpha: shadowAlpha,
+                              ),
                               blurRadius: shadowBlur,
                               spreadRadius: shadowSpread,
                               offset: Offset(0, shadowBlur / 2),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -210,17 +224,20 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
                 setState(() => _isCoverPressed = false);
               }
               // 내지 영역 탭 시 상세 보기 열기
-              if (safePage >= 0.5 && widget.interaction.selectedLayerId == null) {
+              if (safePage >= 0.5 &&
+                  widget.interaction.selectedLayerId == null) {
                 final currentIndex = safePage.round();
                 // 1~: 내지 (0: 커버)
                 if (currentIndex > 0) {
                   final tapX = details.localPosition.dx;
                   final leftIndex = 1 + (currentIndex - 1) * 2;
                   final rightIndex = leftIndex + 1;
-                  
+
                   // 화면의 절반 기준으로 탭한 위치에 따라 시작 인덱스 결정
-                  int tappedPageIdx = (tapX < screenW / 2) ? leftIndex : rightIndex;
-                  
+                  int tappedPageIdx = (tapX < screenW / 2)
+                      ? leftIndex
+                      : rightIndex;
+
                   // 전체 페이지 범위를 벗어나지 않도록 방어 코드 추가
                   if (tappedPageIdx >= widget.allPages.length) {
                     tappedPageIdx = widget.allPages.length - 1;
@@ -234,18 +251,18 @@ class _AlbumReaderSinglePageViewState extends ConsumerState<AlbumReaderSinglePag
                     context,
                     PageRouteBuilder(
                       opaque: false, // 투명한 배경
-                      pageBuilder: (context, animation, secondaryAnimation) => 
-                        FadeTransition(
-                          opacity: animation,
-                          child: AlbumReaderInnerDetailScreen(
-                            innerPages: innerPages,
-                            initialPageIndex: innerInitialIndex,
-                            singlePageW: singlePageW,
-                            singlePageH: singlePageH,
-                            interaction: widget.interaction,
-                            layerBuilder: widget.layerBuilder,
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          FadeTransition(
+                            opacity: animation,
+                            child: AlbumReaderInnerDetailScreen(
+                              innerPages: innerPages,
+                              initialPageIndex: innerInitialIndex,
+                              singlePageW: singlePageW,
+                              singlePageH: singlePageH,
+                              interaction: widget.interaction,
+                              layerBuilder: widget.layerBuilder,
+                            ),
                           ),
-                        ),
                     ),
                   );
                 }
@@ -351,7 +368,9 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
       // 넘어간 뒤 해당 영역이 '절반' 레이아웃으로 교체되는 순간 부모 트리 구조가 달라져(Layout Shift) 화면 전체가 번쩍임!
       // 따라서 어차피 왼쪽은 layer1Left가 덮고 있으므로 바닥엔 항상 오른쪽 '절반'만 그리도록 통일시킵니다.
       layer0Background = Center(
-        child: nextIndex == 0 ? _buildCoverCard() : _buildInnerSpreadHalf(nextIndex, isLeft: false),
+        child: nextIndex == 0
+            ? _buildCoverCard()
+            : _buildInnerSpreadHalf(nextIndex, isLeft: false),
       );
     }
 
@@ -418,12 +437,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
     }
 
     return Stack(
-      children: [
-        layer0Background,
-        layer1Left,
-        layer2Right,
-        layer3Left,
-      ],
+      children: [layer0Background, layer1Left, layer2Right, layer3Left],
     );
   }
 
@@ -439,7 +453,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 1.0,
             spreadRadius: 0.5,
-          )
+          ),
         ],
         gradient: LinearGradient(
           colors: [
@@ -454,7 +468,6 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
       ),
     );
   }
-
 
   // 절반만 렌더링 (나머지는 투명 사이즈박스로 축 위치 보존)
   Widget _buildInnerSpreadHalf(int index, {required bool isLeft}) {
@@ -473,20 +486,24 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
         children: [
           isLeft
               ? SizedBox(
-            width: singleW,
-            height: doubleH,
-            child: lPage != null ? _buildInnerCard(lPage) : Container(color: SnapFitColors.pureWhite),
-          )
+                  width: singleW,
+                  height: doubleH,
+                  child: lPage != null
+                      ? _buildInnerCard(lPage)
+                      : Container(color: SnapFitColors.pureWhite),
+                )
               : SizedBox(width: singleW),
-    
+
           isLeft ? _buildSpine() : SizedBox(width: 2.w), // 2.w 맞춤
-    
+
           !isLeft
               ? SizedBox(
-            width: singleW,
-            height: doubleH,
-            child: rPage != null ? _buildInnerCard(rPage) : Container(color: SnapFitColors.pureWhite),
-          )
+                  width: singleW,
+                  height: doubleH,
+                  child: rPage != null
+                      ? _buildInnerCard(rPage)
+                      : Container(color: SnapFitColors.pureWhite),
+                )
               : SizedBox(width: singleW),
         ],
       ),
@@ -584,8 +601,10 @@ class _CoverPageCard extends StatelessWidget {
               isInteracting: false,
               leftSpine: 14.0,
               onCoverSizeChanged: onCoverSizeChanged,
-              buildImage: (layer) => layerBuilder.buildImage(layer, isCover: true),
-              buildText: (layer) => layerBuilder.buildText(layer, isCover: true),
+              buildImage: (layer) =>
+                  layerBuilder.buildImage(layer, isCover: true),
+              buildText: (layer) =>
+                  layerBuilder.buildText(layer, isCover: true),
               sortedByZ: interaction.sortByZ,
               theme: coverTheme,
             ),
@@ -598,7 +617,6 @@ class _CoverPageCard extends StatelessWidget {
 
 // ── 내지 페이지 카드 ──────────────────────────────────────────────
 class _InnerPageCard extends StatelessWidget {
-
   final AlbumPage page;
   final double pageW;
   final double pageH;

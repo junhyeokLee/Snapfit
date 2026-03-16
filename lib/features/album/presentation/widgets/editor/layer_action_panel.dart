@@ -15,6 +15,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
   final TextEditorManager textEditor;
   final VoidCallback onRefresh;
   final Future<void> Function(LayerModel)? onOpenGallery;
+
   /// 레이어 선택 후 "꾸미기" 탭 시 호출. 제공 시 바텀시트(프레임/텍스트 스타일)를 띄우고, 미제공 시 인라인 서브메뉴 표시.
   final void Function(LayerModel layer)? onOpenDecorateSheet;
 
@@ -43,7 +44,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     // 레이어가 하나도 없거나(빈 페이지), 해당 ID의 레이어를 찾지 못한 경우 안전하게 처리
     final layerIndex = widget.layers.indexWhere((l) => l.id == selectedId);
     if (layerIndex == -1) return const SizedBox.shrink();
-    
+
     final layer = widget.layers[layerIndex];
 
     return Container(
@@ -62,18 +63,26 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (_panelMode == EditPanelMode.opacity)
-            _buildOpacitySlider(layer),
-          if (_panelMode == EditPanelMode.decorate && widget.onOpenDecorateSheet == null)
+          if (_panelMode == EditPanelMode.opacity) _buildOpacitySlider(layer),
+          if (_panelMode == EditPanelMode.decorate &&
+              widget.onOpenDecorateSheet == null)
             _buildDecorateSubmenu(layer),
           if (_panelMode == EditPanelMode.none)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (layer.type == LayerType.text)
-                  _buildActionButton(Icons.font_download_outlined, "폰트", () => widget.textEditor.openForExisting(layer)),
+                  _buildActionButton(
+                    Icons.font_download_outlined,
+                    "폰트",
+                    () => widget.textEditor.openForExisting(layer),
+                  ),
                 if (layer.type == LayerType.image)
-                  _buildActionButton(Icons.image_outlined, "사진변경", () => widget.onOpenGallery?.call(layer)),
+                  _buildActionButton(
+                    Icons.image_outlined,
+                    "사진변경",
+                    () => widget.onOpenGallery?.call(layer),
+                  ),
                 if (layer.type == LayerType.image)
                   _buildActionButton(
                     Icons.open_with,
@@ -86,7 +95,11 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
                         ? SnapFitColors.accent
                         : null,
                   ),
-                _buildActionButton(Icons.opacity, "불투명도", () => setState(() => _panelMode = EditPanelMode.opacity)),
+                _buildActionButton(
+                  Icons.opacity,
+                  "불투명도",
+                  () => setState(() => _panelMode = EditPanelMode.opacity),
+                ),
                 _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
                   if (widget.onOpenDecorateSheet != null) {
                     widget.onOpenDecorateSheet!(layer);
@@ -105,7 +118,12 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap, {Color? color}) {
+  Widget _buildActionButton(
+    IconData icon,
+    String label,
+    VoidCallback onTap, {
+    Color? color,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -135,9 +153,9 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
             max: 1.0,
             activeColor: SnapFitColors.accent,
             onChanged: (val) {
-              ref.read(albumEditorViewModelProvider.notifier).updateLayer(
-                layer.copyWith(opacity: val),
-              );
+              ref
+                  .read(albumEditorViewModelProvider.notifier)
+                  .updateLayer(layer.copyWith(opacity: val));
               widget.onRefresh();
             },
           ),
@@ -146,7 +164,10 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
           padding: EdgeInsets.only(right: 16.w),
           child: Text(
             "${(layer.opacity * 100).toInt()}%",
-            style: TextStyle(color: SnapFitColors.textPrimaryOf(context), fontSize: 13.sp),
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 13.sp,
+            ),
           ),
         ),
       ],
@@ -159,7 +180,11 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 16),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Colors.black,
+              size: 16,
+            ),
             onPressed: () => setState(() => _panelMode = EditPanelMode.none),
           ),
           if (layer.type == LayerType.text) ...[
@@ -192,7 +217,9 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       onTap: () {
         final id = widget.interaction.selectedLayerId;
         if (id == null) return;
-        ref.read(albumEditorViewModelProvider.notifier).updateImageFrame(id, key);
+        ref
+            .read(albumEditorViewModelProvider.notifier)
+            .updateImageFrame(id, key);
         widget.onRefresh();
       },
       child: Container(
@@ -204,7 +231,11 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         ),
         child: Text(
           label,
-          style: TextStyle(color: SnapFitColors.textPrimaryOf(context), fontSize: 12.sp, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: SnapFitColors.textPrimaryOf(context),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -215,7 +246,9 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       onTap: () {
         final id = widget.interaction.selectedLayerId;
         if (id == null) return;
-        ref.read(albumEditorViewModelProvider.notifier).updateTextStyle(id, key);
+        ref
+            .read(albumEditorViewModelProvider.notifier)
+            .updateTextStyle(id, key);
         widget.onRefresh();
       },
       child: Container(

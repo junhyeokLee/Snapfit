@@ -6,10 +6,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class PageEditorSaveOverlay extends StatelessWidget {
   final double progress;
 
-  const PageEditorSaveOverlay({
-    super.key,
-    required this.progress,
-  });
+  const PageEditorSaveOverlay({super.key, required this.progress});
 
   @override
   Widget build(BuildContext context) {

@@ -52,7 +52,8 @@ class RecentAlbumCard extends StatelessWidget {
             children: [
               // Cover Image Container
               Container(
-                height: 266.w, // Fixed height to max possible height for alignment
+                height:
+                    266.w, // Fixed height to max possible height for alignment
                 alignment: Alignment.center,
                 child: Stack(
                   alignment: Alignment.center,
@@ -67,15 +68,16 @@ class RecentAlbumCard extends StatelessWidget {
                           // scale: 0.8 matches roughly the card size relative to typical cover
                           // focus: 0.0 (unfocused) -> 1.0 (focused/lifted)
                           boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                            0.8, 
+                            0.8,
                             isFocused ? 1.0 : 0.0,
                           ),
                         ),
                         child: HomeAlbumCoverThumbnail(
                           album: album,
-                          height: height, // Actual height of the card (200, 266)
+                          height:
+                              height, // Actual height of the card (200, 266)
                           maxWidth: width,
-                          showShadow: false, 
+                          showShadow: false,
                         ),
                       ),
                     ),
@@ -211,12 +213,9 @@ class RecentAlbumCard extends StatelessWidget {
 
   Widget _buildStatusChip() {
     final info = getAlbumStatusInfo(album, currentUserId);
-    
+
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 10.w,
-        vertical: 4.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: info.backgroundColor,
         borderRadius: BorderRadius.circular(8.r),

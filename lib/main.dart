@@ -13,12 +13,9 @@ import 'features/splash/presentation/views/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (Env.kakaoNativeAppKey.isNotEmpty) {
     KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
@@ -64,9 +61,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
       darkTheme: SnapFitTheme.dark(),
       themeMode: themeMode,
       home: const SplashScreen(),
-      routes: {
-        '/add_cover': (context) => const AddCoverScreen(),
-      },
+      routes: {'/add_cover': (context) => const AddCoverScreen()},
     );
   }
 }

@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 class BookPageView extends StatefulWidget {
   final int itemCount;
   final PageController pageController;
-  final Widget Function(BuildContext context, int index, double pageOffset) itemBuilder;
+  final Widget Function(BuildContext context, int index, double pageOffset)
+  itemBuilder;
   final ValueChanged<int>? onPageChanged;
 
   const BookPageView({

@@ -19,8 +19,9 @@ class FakeAuthViewModel extends AuthViewModel {
 }
 
 void main() {
-  testWidgets('SplashScreen navigates to LoginScreen after minimum delay',
-      (tester) async {
+  testWidgets('SplashScreen navigates to LoginScreen after minimum delay', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

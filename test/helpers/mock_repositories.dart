@@ -6,6 +6,7 @@ import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/domain/repositories/template_repository.dart';
 
 class MockAlbumRepository extends Mock implements AlbumRepository {}
+
 class MockTemplateRepository extends Mock implements TemplateRepository {}
 
 bool _mockFallbacksRegistered = false;
@@ -13,12 +14,14 @@ bool _mockFallbacksRegistered = false;
 void _ensureMockFallbacksRegistered() {
   if (_mockFallbacksRegistered) return;
   _mockFallbacksRegistered = true;
-  registerFallbackValue(const CreateAlbumRequest(
-    ratio: '',
-    coverLayersJson: '{}',
-    coverImageUrl: '',
-    coverThumbnailUrl: '',
-  ));
+  registerFallbackValue(
+    const CreateAlbumRequest(
+      ratio: '',
+      coverLayersJson: '{}',
+      coverImageUrl: '',
+      coverThumbnailUrl: '',
+    ),
+  );
   registerFallbackValue(<int>[]);
   registerFallbackValue(<String, String>{});
 }
@@ -27,16 +30,29 @@ void _ensureMockFallbacksRegistered() {
 void stubFetchMyAlbums(MockAlbumRepository mock, List<Album> albums) {
   _ensureMockFallbacksRegistered();
   when(() => mock.fetchMyAlbums()).thenAnswer((_) async => albums);
-  when(() => mock.fetchAlbum(any())).thenThrow(UnimplementedError('stub if needed'));
-  when(() => mock.createAlbum(any())).thenThrow(UnimplementedError('stub if needed'));
+  when(
+    () => mock.fetchAlbum(any()),
+  ).thenThrow(UnimplementedError('stub if needed'));
+  when(
+    () => mock.createAlbum(any()),
+  ).thenThrow(UnimplementedError('stub if needed'));
   when(() => mock.deleteAlbum(any())).thenAnswer((_) async {});
 }
 
-void stubGetTemplates(MockTemplateRepository mock, List<PremiumTemplate> templates) {
+void stubGetTemplates(
+  MockTemplateRepository mock,
+  List<PremiumTemplate> templates,
+) {
   _ensureMockFallbacksRegistered();
   when(() => mock.getTemplates()).thenAnswer((_) async => templates);
-  when(() => mock.getTemplate(any())).thenThrow(UnimplementedError('stub if needed'));
+  when(
+    () => mock.getTemplate(any()),
+  ).thenThrow(UnimplementedError('stub if needed'));
   when(() => mock.likeTemplate(any())).thenAnswer((_) async {});
-  when(() => mock.createAlbumFromTemplate(any(), replacements: any(named: 'replacements')))
-      .thenThrow(UnimplementedError('stub if needed'));
+  when(
+    () => mock.createAlbumFromTemplate(
+      any(),
+      replacements: any(named: 'replacements'),
+    ),
+  ).thenThrow(UnimplementedError('stub if needed'));
 }

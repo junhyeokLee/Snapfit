@@ -83,8 +83,12 @@ class PageListSelector extends ConsumerWidget {
                   label,
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: isSelected ? SnapFitColors.accent : SnapFitColors.textSecondaryOf(context),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected
+                        ? SnapFitColors.accent
+                        : SnapFitColors.textSecondaryOf(context),
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
               ],
@@ -106,8 +110,11 @@ class PageListSelector extends ConsumerWidget {
   }) {
     final ratio = selectedCover?.ratio ?? 3 / 4;
     final logicalInnerSize = Size(300.0, 300.0 / ratio);
-    final logicalCoverSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
-    
+    final logicalCoverSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth / ratio,
+    );
+
     if (isCover) {
       // 커버: CoverLayout으로 테마 + 레이어 렌더링
       final theme = selectedTheme ?? resolveCoverTheme(null);
@@ -121,12 +128,11 @@ class PageListSelector extends ConsumerWidget {
             aspect: logicalCoverSize.width / logicalCoverSize.height,
             layers: page.layers,
             isInteracting: false,
-            leftSpine: 0 // 썸네일에서 spine 제거
-            ,
+            leftSpine: 0, // 썸네일에서 spine 제거
             onCoverSizeChanged: (_) {},
             buildImage: (layer) => buildStaticImage(layer),
             buildText: (layer) => buildStaticText(layer),
-            sortedByZ: (list) => list..sort((a,b) => a.id.compareTo(b.id)),
+            sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
             theme: theme,
           ),
         ),
@@ -144,7 +150,9 @@ class PageListSelector extends ConsumerWidget {
         () => logicalInnerSize,
       ),
       baseCanvasSize: logicalInnerSize,
-      backgroundColor: page.backgroundColor != null ? Color(page.backgroundColor!) : null,
+      backgroundColor: page.backgroundColor != null
+          ? Color(page.backgroundColor!)
+          : null,
     );
   }
 
@@ -166,7 +174,10 @@ class PageListSelector extends ConsumerWidget {
                 width: 1,
               ),
             ),
-            child: Icon(Icons.add, color: SnapFitColors.textSecondaryOf(context)),
+            child: Icon(
+              Icons.add,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
           ),
           SizedBox(height: 4.h),
           Text('', style: TextStyle(fontSize: 12.sp)),
@@ -175,4 +186,3 @@ class PageListSelector extends ConsumerWidget {
     );
   }
 }
-

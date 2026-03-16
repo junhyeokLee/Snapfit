@@ -27,9 +27,14 @@ class CompletedAlbumList extends StatelessWidget {
           title: '동기들과의 홈파티',
           coverLayersJson: '',
           userId: '',
-          createdAt: DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-          updatedAt: DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-          ratio: '1.0', // String type based on entity definition? Wait, definition said @Default('') String ratio.
+          createdAt: DateTime.now()
+              .subtract(const Duration(days: 2))
+              .toIso8601String(),
+          updatedAt: DateTime.now()
+              .subtract(const Duration(days: 2))
+              .toIso8601String(),
+          ratio:
+              '1.0', // String type based on entity definition? Wait, definition said @Default('') String ratio.
         ),
         description: '함께해서 더 즐거웠던 우리의 밤',
       ),
@@ -39,8 +44,12 @@ class CompletedAlbumList extends StatelessWidget {
           title: '한강 불꽃축제 2023',
           coverLayersJson: '',
           userId: '',
-          createdAt: DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
-          updatedAt: DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
+          createdAt: DateTime.now()
+              .subtract(const Duration(days: 7))
+              .toIso8601String(),
+          updatedAt: DateTime.now()
+              .subtract(const Duration(days: 7))
+              .toIso8601String(),
           ratio: '0.8',
         ),
         description: '밤하늘을 수놓은 아름다운 빛',

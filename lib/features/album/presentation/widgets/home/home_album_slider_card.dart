@@ -9,6 +9,7 @@ import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../../../core/utils/app_logger.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
@@ -40,7 +41,8 @@ class HomeAlbumSliderCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<HomeAlbumSliderCard> createState() => _HomeAlbumSliderCardState();
+  ConsumerState<HomeAlbumSliderCard> createState() =>
+      _HomeAlbumSliderCardState();
 }
 
 class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
@@ -57,9 +59,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _tapScale = Tween<double>(begin: 1, end: 0.92).animate(
-      CurvedAnimation(parent: _tapController, curve: Curves.easeOut),
-    );
+    _tapScale = Tween<double>(
+      begin: 1,
+      end: 0.92,
+    ).animate(CurvedAnimation(parent: _tapController, curve: Curves.easeOut));
   }
 
   void _cancelPendingUnpress() {
@@ -84,7 +87,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   @override
   Widget build(BuildContext context) {
-    print('[HomeCard] Building card for album ${widget.album.id}, updatedAt: ${widget.album.updatedAt}');
+    AppLogger.debug(
+      '[HomeCard] Building card for album ${widget.album.id}, updatedAt: ${widget.album.updatedAt}',
+    );
     final coverSize = coverSizes.firstWhere(
       (s) => s.ratio.toString() == widget.album.ratio,
       orElse: () => coverSizes.first,
@@ -108,15 +113,20 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           Widget coverContent;
 
           if (widget.album.coverLayersJson.isNotEmpty) {
-            print('[HomeCard] Parsing coverLayersJson for album ${widget.album.id}');
+            AppLogger.debug(
+              '[HomeCard] Parsing coverLayersJson for album ${widget.album.id}',
+            );
             List<LayerModel>? layers;
             try {
               final decoded =
-                  jsonDecode(widget.album.coverLayersJson) as Map<String, dynamic>;
+                  jsonDecode(widget.album.coverLayersJson)
+                      as Map<String, dynamic>;
               // 새 형식: pages 배열 → 커버(0번) 레이어 추출. 기존: layers 직접
               final pages = decoded['pages'] as List<dynamic>?;
-              final List<dynamic> layerList = (pages != null && pages.isNotEmpty)
-                  ? ((pages[0] as Map<String, dynamic>)['layers'] as List?) ?? []
+              final List<dynamic> layerList =
+                  (pages != null && pages.isNotEmpty)
+                  ? ((pages[0] as Map<String, dynamic>)['layers'] as List?) ??
+                        []
                   : (decoded['layers'] as List?) ?? [];
               layers = layerList
                   .map(
@@ -128,11 +138,14 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                   )
                   .toList();
             } catch (e, st) {
-              print('[HomeCard] Error parsing coverLayersJson: $e');
-              print(st);
+              AppLogger.error(
+                '[HomeCard] Error parsing coverLayersJson',
+                e,
+                st,
+              );
               layers = null;
             }
-            print('[HomeCard] Parsed ${layers?.length ?? 0} layers');
+            AppLogger.debug('[HomeCard] Parsed ${layers?.length ?? 0} layers');
             if (layers != null && layers.isNotEmpty) {
               coverContent = SizedBox(
                 width: base,
@@ -162,7 +175,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: _coverRadius,
-                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(shadowScale, focus),
+                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(
+                      shadowScale,
+                      focus,
+                    ),
                   ),
                   child: ClipRRect(
                     borderRadius: _coverRadius,
@@ -196,7 +212,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: _coverRadius,
-                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(shadowScale, focus),
+                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(
+                      shadowScale,
+                      focus,
+                    ),
                   ),
                   child: ClipRRect(
                     borderRadius: _coverRadius,
@@ -218,7 +237,6 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 ),
               );
             }
-
           } else {
             final imageUrl =
                 widget.album.coverThumbnailUrl ??
@@ -236,7 +254,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 decoration: BoxDecoration(
                   borderRadius: _coverRadius,
                   boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                      shadowScale, focus),
+                    shadowScale,
+                    focus,
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: _coverRadius,
@@ -291,10 +311,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 return Transform.scale(
                   scale: _tapScale.value,
                   alignment: Alignment.center,
-                  child: Opacity(
-                    opacity: _tapScale.value,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: _tapScale.value, child: child),
                 );
               },
               child: closedCover,
@@ -316,6 +333,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
         _handleTap(context);
       }
     }
+
     if (_tapController.status == AnimationStatus.completed) {
       _tapController.reset();
       _handleTap(context);
@@ -330,7 +348,12 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     final box = context.findRenderObject() as RenderBox?;
     if (box != null && box.hasSize) {
       final offset = box.localToGlobal(Offset.zero);
-      cardRect = Rect.fromLTWH(offset.dx, offset.dy, box.size.width, box.size.height);
+      cardRect = Rect.fromLTWH(
+        offset.dx,
+        offset.dy,
+        box.size.width,
+        box.size.height,
+      );
     }
 
     try {
@@ -339,7 +362,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       await vm.prepareAlbumForEdit(widget.album);
       if (!context.mounted) return;
 
-      final boundary = _coverRepaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary =
+          _coverRepaintKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary != null) {
         try {
           coverImage = await boundary.toImage(pixelRatio: 2.0);
@@ -350,11 +375,11 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       await Navigator.of(context).push(
         HomePaperUnfoldRoute(
           album: widget.album,
-          cardRect: cardRect, 
+          cardRect: cardRect,
           coverImage: coverImage,
         ),
       );
-      
+
       // 앨범 편집 후 돌아왔을 때 홈 화면 갱신
       if (context.mounted) {
         await ref.read(homeViewModelProvider.notifier).refresh();
@@ -362,9 +387,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     } catch (e) {
       if (mounted) _tapController.reverse();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 편집을 열 수 없습니다: $e')));
       }
     }
   }

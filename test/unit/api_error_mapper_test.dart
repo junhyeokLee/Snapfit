@@ -13,28 +13,28 @@ void main() {
       expect(identical(mapped, error), isTrue);
     });
 
-    test('extracts server message and code from DioException response data', () {
-      final response = Response(
-        requestOptions: RequestOptions(path: '/albums'),
-        statusCode: 400,
-        data: {
-          'message': '서버 에러 메시지',
-          'error_code': 'INVALID_INPUT',
-        },
-      );
-      final dioException = DioException(
-        requestOptions: response.requestOptions,
-        response: response,
-        type: DioExceptionType.badResponse,
-      );
+    test(
+      'extracts server message and code from DioException response data',
+      () {
+        final response = Response(
+          requestOptions: RequestOptions(path: '/albums'),
+          statusCode: 400,
+          data: {'message': '서버 에러 메시지', 'error_code': 'INVALID_INPUT'},
+        );
+        final dioException = DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
 
-      final mapped = ApiErrorMapper.from(dioException);
+        final mapped = ApiErrorMapper.from(dioException);
 
-      expect(mapped.message, '서버 에러 메시지');
-      expect(mapped.statusCode, 400);
-      expect(mapped.code, 'INVALID_INPUT');
-      expect(mapped.cause, dioException);
-    });
+        expect(mapped.message, '서버 에러 메시지');
+        expect(mapped.statusCode, 400);
+        expect(mapped.code, 'INVALID_INPUT');
+        expect(mapped.cause, dioException);
+      },
+    );
 
     test('maps timeout DioException to friendly message', () {
       final dioException = DioException(
@@ -49,23 +49,26 @@ void main() {
       expect(mapped.cause, dioException);
     });
 
-    test('maps bad response status to default message when no server message', () {
-      final response = Response(
-        requestOptions: RequestOptions(path: '/missing'),
-        statusCode: 404,
-        data: null,
-      );
-      final dioException = DioException(
-        requestOptions: response.requestOptions,
-        response: response,
-        type: DioExceptionType.badResponse,
-      );
+    test(
+      'maps bad response status to default message when no server message',
+      () {
+        final response = Response(
+          requestOptions: RequestOptions(path: '/missing'),
+          statusCode: 404,
+          data: null,
+        );
+        final dioException = DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
 
-      final mapped = ApiErrorMapper.from(dioException);
+        final mapped = ApiErrorMapper.from(dioException);
 
-      expect(mapped.message, '요청한 리소스를 찾을 수 없습니다.');
-      expect(mapped.statusCode, 404);
-      expect(mapped.code, isNull);
-    });
+        expect(mapped.message, '요청한 리소스를 찾을 수 없습니다.');
+        expect(mapped.statusCode, 404);
+        expect(mapped.code, isNull);
+      },
+    );
   });
 }

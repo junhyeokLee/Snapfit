@@ -50,6 +50,7 @@ class CanvasDecoration {
   final String id;
   final String? url;
   final String? assetRef;
+
   /// 캔버스 대비 비율 0.0~1.0
   final double left;
   final double top;

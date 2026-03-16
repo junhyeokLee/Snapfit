@@ -20,10 +20,7 @@ import '../viewmodels/home_view_model.dart';
 /// Paper 앱처럼: 부채꼴로 펼쳐진 페이지를 스와이프로 넘기기.
 /// 좌상단: "날짜/제목" + "N Pages", 우하단: 흰 원형 버튼 + 진한 아이콘.
 class FannedPagesView extends ConsumerStatefulWidget {
-  const FannedPagesView({
-    super.key,
-    required this.onClose,
-  });
+  const FannedPagesView({super.key, required this.onClose});
 
   final VoidCallback onClose;
 
@@ -76,9 +73,9 @@ class _FannedPagesViewState extends ConsumerState<FannedPagesView> {
     final Album? currentAlbum = editingId == null
         ? null
         : albums.cast<Album?>().firstWhere(
-              (a) => a != null && a.id == editingId,
-              orElse: () => null,
-            );
+            (a) => a != null && a.id == editingId,
+            orElse: () => null,
+          );
     final headerTitle = currentAlbum?.createdAt.isNotEmpty == true
         ? currentAlbum!.createdAt
         : '앨범';
@@ -243,9 +240,9 @@ class _FannedPageStack extends StatelessWidget {
     }
 
     const int maxVisible = 5;
-    const double offsetStep = 28.0;  // 부채꼴로 더 벌어지게
-    const double rotateZDeg = 4.0;   // Paper처럼 펼쳐진 느낌
-    const double maxFanY = 0.12;     // 3D 깊이
+    const double offsetStep = 28.0; // 부채꼴로 더 벌어지게
+    const double rotateZDeg = 4.0; // Paper처럼 펼쳐진 느낌
+    const double maxFanY = 0.12; // 3D 깊이
 
     // frontPageIndex가 맨 앞, 그 뒤로 frontPageIndex+1, +2, ... 부채꼴
     final count = math.min(maxVisible, pageCount - frontPageIndex);
@@ -257,7 +254,11 @@ class _FannedPageStack extends StatelessWidget {
           width: pageWidth,
           height: pageHeight,
           depth: 0,
-          content: _buildPageContent(context, this.ref, pages[frontPageIndex.clamp(0, pageCount - 1)]),
+          content: _buildPageContent(
+            context,
+            this.ref,
+            pages[frontPageIndex.clamp(0, pageCount - 1)],
+          ),
         ),
       );
     }
@@ -299,12 +300,20 @@ class _FannedPageStack extends StatelessWidget {
   /// 내지 페이지 에디터 캔버스 크기 (PageEditorScreen과 동일)
   static const Size _innerPageCanvasSize = Size(300, 400);
 
-  Widget _buildPageContent(BuildContext context, WidgetRef ref, AlbumPage? page) {
+  Widget _buildPageContent(
+    BuildContext context,
+    WidgetRef ref,
+    AlbumPage? page,
+  ) {
     final layers = page?.layers ?? [];
     // 커버는 coverCanvasSize, 내지는 300x400
     final isCover = page?.isCover ?? false;
-    final baseW = isCover ? (coverCanvasSize?.width ?? 358.0) : _innerPageCanvasSize.width;
-    final baseH = isCover ? (coverCanvasSize?.height ?? (358.0 / selectedCover.ratio)) : _innerPageCanvasSize.height;
+    final baseW = isCover
+        ? (coverCanvasSize?.width ?? 358.0)
+        : _innerPageCanvasSize.width;
+    final baseH = isCover
+        ? (coverCanvasSize?.height ?? (358.0 / selectedCover.ratio))
+        : _innerPageCanvasSize.height;
 
     if (layers.isNotEmpty) {
       return Stack(
@@ -343,7 +352,8 @@ class _FannedPageStack extends StatelessWidget {
 
     // 커버 페이지인데 레이어 없으면 앨범 커버 이미지
     if (page != null && page.isCover && currentAlbum != null) {
-      final url = currentAlbum!.coverPreviewUrl ??
+      final url =
+          currentAlbum!.coverPreviewUrl ??
           currentAlbum!.coverThumbnailUrl ??
           currentAlbum!.coverImageUrl;
       if (url != null && url.isNotEmpty) {

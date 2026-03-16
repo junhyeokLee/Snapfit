@@ -13,8 +13,8 @@ class FakeAuthViewModel extends AuthViewModel {
     this.user,
     Completer<void>? kakaoCompleter,
     Completer<void>? googleCompleter,
-  })  : _kakaoCompleter = kakaoCompleter ?? Completer<void>(),
-        _googleCompleter = googleCompleter ?? Completer<void>();
+  }) : _kakaoCompleter = kakaoCompleter ?? Completer<void>(),
+       _googleCompleter = googleCompleter ?? Completer<void>();
 
   final UserInfo? user;
   final Completer<void> _kakaoCompleter;
@@ -43,14 +43,14 @@ class FakeAuthViewModel extends AuthViewModel {
 }
 
 void main() {
-  testWidgets('kakao login button triggers loading and calls auth', (tester) async {
+  testWidgets('kakao login button triggers loading and calls auth', (
+    tester,
+  ) async {
     final fake = FakeAuthViewModel();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authViewModelProvider.overrideWith(() => fake),
-        ],
+        overrides: [authViewModelProvider.overrideWith(() => fake)],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
@@ -71,14 +71,14 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('google login button triggers loading and calls auth', (tester) async {
+  testWidgets('google login button triggers loading and calls auth', (
+    tester,
+  ) async {
     final fake = FakeAuthViewModel();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authViewModelProvider.overrideWith(() => fake),
-        ],
+        overrides: [authViewModelProvider.overrideWith(() => fake)],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,

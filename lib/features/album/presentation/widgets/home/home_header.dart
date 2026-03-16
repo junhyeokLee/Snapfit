@@ -53,19 +53,14 @@ class HomeHeader extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 hintText: '앨범 검색...',
-                hintStyle: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                ),
+                hintStyle: TextStyle(color: SnapFitColors.textMutedOf(context)),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
               ),
             ),
           ),
           SizedBox(width: 10.w),
-          HomeRoundIconButton(
-            icon: Icons.close,
-            onTap: onSearchClose ?? () {},
-          ),
+          HomeRoundIconButton(icon: Icons.close, onTap: onSearchClose ?? () {}),
         ],
       );
     }
@@ -100,14 +95,17 @@ class HomeHeader extends StatelessWidget {
         // 편집 모드 토글 버튼 (앨범이 있을 때만 표시)
         if (hasAlbums)
           HomeRoundIconButton(
-              icon: isEditMode ? Icons.check : Icons.edit_outlined,
-              onTap: onEditToggle,
-              isActive: isEditMode),
+            icon: isEditMode ? Icons.check : Icons.edit_outlined,
+            onTap: onEditToggle,
+            isActive: isEditMode,
+          ),
         SizedBox(width: 10.w),
         HomeRoundIconButton(icon: Icons.search, onTap: onSearch),
         SizedBox(width: 10.w),
         HomeRoundIconButton(
-            icon: Icons.notifications_none, onTap: onNotification),
+          icon: Icons.notifications_none,
+          onTap: onNotification,
+        ),
       ],
     );
   }

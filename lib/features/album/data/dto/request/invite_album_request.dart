@@ -5,9 +5,8 @@ part 'invite_album_request.g.dart';
 
 @freezed
 sealed class InviteAlbumRequest with _$InviteAlbumRequest {
-  const factory InviteAlbumRequest({
-    @Default('EDITOR') String role,
-  }) = _InviteAlbumRequest;
+  const factory InviteAlbumRequest({@Default('EDITOR') String role}) =
+      _InviteAlbumRequest;
 
   factory InviteAlbumRequest.fromJson(Map<String, dynamic> json) =>
       _$InviteAlbumRequestFromJson(json);

@@ -34,9 +34,10 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
       duration: const Duration(milliseconds: 800),
     );
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _slideUp = Tween<double>(begin: 40, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _slideUp = Tween<double>(
+      begin: 40,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -60,7 +61,10 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
               children: [
                 // X 닫기 버튼
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 12.h,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
@@ -72,7 +76,11 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                           color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.close, color: Colors.white, size: 20.sp),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 20.sp,
+                        ),
                       ),
                     ),
                   ),
@@ -155,7 +163,9 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                               borderRadius: BorderRadius.circular(28.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: SnapFitColors.freezeGlow.withValues(alpha: 0.4),
+                                  color: SnapFitColors.freezeGlow.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 8),
                                 ),
@@ -174,8 +184,11 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                                   ),
                                 ),
                                 SizedBox(width: 8.w),
-                                Icon(Icons.arrow_forward_rounded,
-                                    color: Colors.white, size: 20.sp),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
                               ],
                             ),
                           ),
@@ -253,7 +266,10 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [SnapFitColors.freezeSurface, SnapFitColors.freezeSurfaceDark],
+                      colors: [
+                        SnapFitColors.freezeSurface,
+                        SnapFitColors.freezeSurfaceDark,
+                      ],
                     ),
                   ),
                 ),
@@ -277,23 +293,32 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(height: 8.h, width: 80.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4.r),
-                          )),
+                      Container(
+                        height: 8.h,
+                        width: 80.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
                       SizedBox(height: 8.h),
-                      Container(height: 6.h, width: 120.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(3.r),
-                          )),
+                      Container(
+                        height: 6.h,
+                        width: 120.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(3.r),
+                        ),
+                      ),
                       SizedBox(height: 6.h),
-                      Container(height: 6.h, width: 90.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(3.r),
-                          )),
+                      Container(
+                        height: 6.h,
+                        width: 90.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(3.r),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -310,7 +335,10 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-              colors: [SnapFitColors.freezeAccent, SnapFitColors.freezeAccentDark],
+                colors: [
+                  SnapFitColors.freezeAccent,
+                  SnapFitColors.freezeAccentDark,
+                ],
               ),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [

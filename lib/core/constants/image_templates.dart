@@ -2,14 +2,11 @@
 class ImageTemplate {
   final String key;
   final String label;
+
   /// width / height. null이면 원본 사진 비율 유지(free)
   final double? aspect;
 
-  const ImageTemplate({
-    required this.key,
-    required this.label,
-    this.aspect,
-  });
+  const ImageTemplate({required this.key, required this.label, this.aspect});
 }
 
 const List<ImageTemplate> imageTemplates = [

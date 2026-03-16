@@ -16,11 +16,12 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
   static const Size _innerEditorCanvasSize = Size(300, 400);
 
   final AlbumPage page;
-  final double canvasW;   // 표시될 대상 너비
-  final double canvasH;   // 표시될 대상 높이
+  final double canvasW; // 표시될 대상 너비
+  final double canvasH; // 표시될 대상 높이
   final GlobalKey canvasKey;
   final LayerInteractionManager interaction;
   final LayerBuilder layerBuilder;
+
   /// 리더 모드에서는 레이어 리스케일을 하지 않으므로 사용 안 함 (호환성 유지용)
   final ValueChanged<Size>? onCanvasSizeChanged;
   final bool showShadow;
@@ -54,14 +55,16 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
       decoration: BoxDecoration(
         color: pageBackgroundColor,
         borderRadius: BorderRadius.circular(8.r),
-        boxShadow: showShadow ? [
-          BoxShadow(
-            color: SnapFitColors.isDark(context)
-                ? SnapFitColors.accentLight.withOpacity(0.2)
-                : Colors.black45,
-            blurRadius: 20,
-          ),
-        ] : null,
+        boxShadow: showShadow
+            ? [
+                BoxShadow(
+                  color: SnapFitColors.isDark(context)
+                      ? SnapFitColors.accentLight.withOpacity(0.2)
+                      : Colors.black45,
+                  blurRadius: 20,
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.r),

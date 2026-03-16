@@ -26,7 +26,8 @@ abstract class ApiError with _$ApiError {
   bool get isNetworkError => statusCode == null;
 
   /// 클라이언트 에러 (4xx) 여부
-  bool get isClientError => statusCode != null && statusCode! >= 400 && statusCode! < 500;
+  bool get isClientError =>
+      statusCode != null && statusCode! >= 400 && statusCode! < 500;
 
   /// 서버 에러 (5xx) 여부
   bool get isServerError => statusCode != null && statusCode! >= 500;

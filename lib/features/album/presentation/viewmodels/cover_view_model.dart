@@ -12,13 +12,7 @@ part 'cover_view_model.freezed.dart';
 @freezed
 abstract class CoverState with _$CoverState {
   const factory CoverState({
-    @Default(
-      CoverSize(
-        name: '세로형',
-        ratio: 6 / 8,
-        realSize: Size(14.5, 19.4),
-      ),
-    )
+    @Default(CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)))
     CoverSize selectedCover,
 
     @Default(CoverTheme.abstract3) CoverTheme selectedTheme,
@@ -34,21 +28,13 @@ class CoverViewModel extends _$CoverViewModel {
   CoverSize get selectedCover => _cover;
   CoverTheme get selectedTheme => _selectedTheme;
 
-
-
   @override
   FutureOr<CoverState> build() async {
-
-    return CoverState(
-      selectedCover: _cover,
-      selectedTheme: _selectedTheme,
-    );
+    return CoverState(selectedCover: _cover, selectedTheme: _selectedTheme);
   }
 
-
   /// 커버 선택 (+ 선택적으로 Variant 지정)
-  void selectCover(
-      CoverSize cover) {
+  void selectCover(CoverSize cover) {
     _cover = cover;
     _emit();
   }
@@ -64,10 +50,8 @@ class CoverViewModel extends _$CoverViewModel {
   void _emit() {
     final prev = state.value ?? const CoverState();
 
-    state = AsyncData(prev.copyWith(
-      selectedCover: _cover,
-      selectedTheme: _selectedTheme,
-    ));
+    state = AsyncData(
+      prev.copyWith(selectedCover: _cover, selectedTheme: _selectedTheme),
+    );
   }
-
 }

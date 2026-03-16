@@ -21,13 +21,17 @@ class FakeStorageService implements StorageService {
   Future<String?> uploadFile(File file, String path) async => null;
 
   @override
-  Future<UploadedUrls> uploadImageVariants(AssetEntity asset,
-          {int previewMaxDimension = 1600}) async =>
-      const UploadedUrls();
+  Future<UploadedUrls> uploadImageVariants(
+    AssetEntity asset, {
+    int previewMaxDimension = 1600,
+  }) async => const UploadedUrls();
 
   @override
-  Future<UploadedUrls> uploadCoverVariants(Uint8List pngBytes,
-      {int originalMaxDimension = 4096, int previewMaxDimension = 1024}) async {
+  Future<UploadedUrls> uploadCoverVariants(
+    Uint8List pngBytes, {
+    int originalMaxDimension = 4096,
+    int previewMaxDimension = 1024,
+  }) async {
     return const UploadedUrls(
       previewUrl: 'https://example.com/preview.jpg',
       originalUrl: 'https://example.com/original.jpg',
@@ -39,23 +43,23 @@ class FakeStorageService implements StorageService {
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(const CreateAlbumRequest(
-      ratio: '1:1',
-      coverLayersJson: '{}',
-      coverImageUrl: '',
-      coverThumbnailUrl: '',
-    ));
+    registerFallbackValue(
+      const CreateAlbumRequest(
+        ratio: '1:1',
+        coverLayersJson: '{}',
+        coverImageUrl: '',
+        coverThumbnailUrl: '',
+      ),
+    );
   });
 
   test('performBackgroundUpload updates album with cover urls', () async {
     final mockRepo = MockAlbumRepository();
-    when(() => mockRepo.updateAlbum(any(), any()))
-        .thenAnswer((_) async => fakeAlbum(id: 1));
+    when(
+      () => mockRepo.updateAlbum(any(), any()),
+    ).thenAnswer((_) async => fakeAlbum(id: 1));
 
-    final service = AlbumPersistenceService(
-      FakeStorageService(),
-      mockRepo,
-    );
+    final service = AlbumPersistenceService(FakeStorageService(), mockRepo);
 
     await service.performBackgroundUpload(
       albumId: 1,
@@ -67,9 +71,9 @@ void main() {
       coverRatio: 1.0,
     );
 
-    final captured = verify(() => mockRepo.updateAlbum(1, captureAny()))
-        .captured
-        .single;
+    final captured = verify(
+      () => mockRepo.updateAlbum(1, captureAny()),
+    ).captured.single;
     expect(captured.coverPreviewUrl, 'gs://bucket/preview.jpg');
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
   });

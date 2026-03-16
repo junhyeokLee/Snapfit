@@ -331,6 +331,7 @@ class LayerBuilder {
 
   /// 기본 텍스트와 동일한 레이아웃(maxWidth)을 쓰므로, 스타일은 텍스트 영역 + 패딩만 넉넉히 줌. 세로는 line height·다음줄까지 여유 확보.
   static const double _styleVerticalSafety = 20.0;
+
   /// 기본은 좌우 패딩 4씩이라 콘텐츠 폭이 textSize.width+12. 스타일도 같은 콘텐츠 폭 쓰도록 가로 여유.
   static const double _styleHorizontalExtra = 12.0;
 
@@ -349,16 +350,25 @@ class LayerBuilder {
         .replaceFirst('tapeTornSoft', 'tapeTorn');
     if (k.startsWith('tapeTornSolid')) {
       final resolved = k.replaceFirst('tapeTornSolid', 'tapeSolid');
-      return resolved.isEmpty ? 'tapeSolidWhite' : (resolved == 'tapeSolid' ? 'tapeSolidWhite' : resolved);
+      return resolved.isEmpty
+          ? 'tapeSolidWhite'
+          : (resolved == 'tapeSolid' ? 'tapeSolidWhite' : resolved);
     }
     switch (k) {
-      case 'tapeTorn': return 'tapeSolidWhite';
-      case 'tapeTornGray': return 'tapeSolidGray';
-      case 'tapeTornPink': return 'tapeSolidPink';
-      case 'tapeTornMint': return 'tapeSolidMint';
-      case 'tapeTornLavender': return 'tapeSolidLavender';
-      case 'tapeTornYellow': return 'tapeSolidOrange';
-      default: return 'tapeSolidWhite';
+      case 'tapeTorn':
+        return 'tapeSolidWhite';
+      case 'tapeTornGray':
+        return 'tapeSolidGray';
+      case 'tapeTornPink':
+        return 'tapeSolidPink';
+      case 'tapeTornMint':
+        return 'tapeSolidMint';
+      case 'tapeTornLavender':
+        return 'tapeSolidLavender';
+      case 'tapeTornYellow':
+        return 'tapeSolidOrange';
+      default:
+        return 'tapeSolidWhite';
     }
   }
 
@@ -778,7 +788,7 @@ class LayerBuilder {
           layer,
           SnapfitImage(
             key: ValueKey(layer.id), // Stable key to prevent reloading
-            urlOrGs: url, 
+            urlOrGs: url,
             fit: fit,
             alignment: alignment,
           ),
@@ -797,11 +807,7 @@ class LayerBuilder {
         borderRadius: BorderRadius.zero,
       ),
       child: Center(
-        child: Icon(
-          Icons.add_a_photo,
-          size: 16,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.add_a_photo, size: 16, color: Colors.white),
       ),
     );
     return _buildFramedImage(layer, placeholder);
@@ -894,9 +900,7 @@ class LayerBuilder {
           child: SizedBox(
             width: side,
             height: side,
-            child: ClipOval(
-              child: SizedBox.expand(child: image),
-            ),
+            child: ClipOval(child: SizedBox.expand(child: image)),
           ),
         );
       },
@@ -905,10 +909,7 @@ class LayerBuilder {
 
   /// 소프트 라운드 – 바텀시트와 동일: 카드 없이 18px 둥글게
   Widget _frameRound(Widget image) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: image,
-    );
+    return ClipRRect(borderRadius: BorderRadius.circular(18), child: image);
   }
 
   /// 공통: 폴라로이드 하단 가로선 (클래식/카드 동일)
@@ -1001,10 +1002,7 @@ class LayerBuilder {
       ),
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: image,
-        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(3), child: image),
       ),
     );
   }
@@ -1045,17 +1043,11 @@ class LayerBuilder {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFF5FB),
-            Color(0xFFE9F4FF),
-          ],
+          colors: [Color(0xFFFFF5FB), Color(0xFFE9F4FF)],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: image,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(20), child: image),
     );
   }
 
@@ -1074,10 +1066,7 @@ class LayerBuilder {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFD0D7F0), width: 1.4),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: image,
-        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(18), child: image),
       ),
     );
   }
@@ -1091,10 +1080,7 @@ class LayerBuilder {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.black87, width: 1.5),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(2),
-        child: image,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(2), child: image),
     );
   }
 
@@ -1107,13 +1093,9 @@ class LayerBuilder {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.black, width: 2),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: image,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(6), child: image),
     );
   }
-
 
   /// 빈티지 필름 스트립 – 폴라로이드와 비슷한 세로 카드 비율
   Widget _frameFilm(Widget image) {
@@ -1200,7 +1182,10 @@ class LayerBuilder {
             color: const Color(0xFF000080),
             child: Row(
               children: [
-                Text('image.exe', style: TextStyle(color: Colors.white, fontSize: 11)),
+                Text(
+                  'image.exe',
+                  style: TextStyle(color: Colors.white, fontSize: 11),
+                ),
                 const Spacer(),
                 _win95Button(),
                 const SizedBox(width: 2),
@@ -1213,9 +1198,7 @@ class LayerBuilder {
           Expanded(
             child: Container(
               color: Colors.white,
-              child: ClipRect(
-                child: SizedBox.expand(child: image),
-              ),
+              child: ClipRect(child: SizedBox.expand(child: image)),
             ),
           ),
         ],
@@ -1236,7 +1219,12 @@ class LayerBuilder {
 
   /// 8비트 픽셀 보더
   Widget _framePixel8(Widget image) {
-    const cornerColors = [Color(0xFFFFFF00), Color(0xFFFF0000), Color(0xFF0000FF), Color(0xFF00FF00)];
+    const cornerColors = [
+      Color(0xFFFFFF00),
+      Color(0xFFFF0000),
+      Color(0xFF0000FF),
+      Color(0xFF00FF00),
+    ];
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
@@ -1263,10 +1251,26 @@ class LayerBuilder {
               ),
             ),
           ),
-          Positioned(top: -2, left: -2, child: Container(width: 6, height: 6, color: cornerColors[0])),
-          Positioned(top: -2, right: -2, child: Container(width: 6, height: 6, color: cornerColors[1])),
-          Positioned(bottom: -2, left: -2, child: Container(width: 6, height: 6, color: cornerColors[2])),
-          Positioned(bottom: -2, right: -2, child: Container(width: 6, height: 6, color: cornerColors[3])),
+          Positioned(
+            top: -2,
+            left: -2,
+            child: Container(width: 6, height: 6, color: cornerColors[0]),
+          ),
+          Positioned(
+            top: -2,
+            right: -2,
+            child: Container(width: 6, height: 6, color: cornerColors[1]),
+          ),
+          Positioned(
+            bottom: -2,
+            left: -2,
+            child: Container(width: 6, height: 6, color: cornerColors[2]),
+          ),
+          Positioned(
+            bottom: -2,
+            right: -2,
+            child: Container(width: 6, height: 6, color: cornerColors[3]),
+          ),
         ],
       ),
     );
@@ -1281,11 +1285,7 @@ class LayerBuilder {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _VhsScanLinePainter(),
-            ),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _VhsScanLinePainter())),
           Padding(
             padding: const EdgeInsets.all(6),
             child: Column(
@@ -1293,18 +1293,30 @@ class LayerBuilder {
               children: [
                 Row(
                   children: [
-                    Text('PLAY', style: TextStyle(color: const Color(0xFF00FF00), fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(
+                      'PLAY',
+                      style: TextStyle(
+                        color: const Color(0xFF00FF00),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(width: 2),
-                    Icon(Icons.play_arrow, color: const Color(0xFF00FF00), size: 12),
+                    Icon(
+                      Icons.play_arrow,
+                      color: const Color(0xFF00FF00),
+                      size: 12,
+                    ),
                   ],
                 ),
                 Expanded(
-                  child: ClipRect(
-                    child: SizedBox.expand(child: image),
-                  ),
+                  child: ClipRect(child: SizedBox.expand(child: image)),
                 ),
                 Center(
-                  child: Text('SP 00:12:44', style: TextStyle(color: Colors.white70, fontSize: 9)),
+                  child: Text(
+                    'SP 00:12:44',
+                    style: TextStyle(color: Colors.white70, fontSize: 9),
+                  ),
                 ),
               ],
             ),
@@ -1322,7 +1334,11 @@ class LayerBuilder {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFF00FFFF), width: 2),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF00FFFF).withOpacity(0.6), blurRadius: 8, spreadRadius: 0),
+          BoxShadow(
+            color: const Color(0xFF00FFFF).withOpacity(0.6),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
         ],
       ),
       padding: const EdgeInsets.all(3),
@@ -1378,7 +1394,9 @@ class LayerBuilder {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                border: Border(left: BorderSide(color: Colors.pink.shade100, width: 1)),
+                border: Border(
+                  left: BorderSide(color: Colors.pink.shade100, width: 1),
+                ),
               ),
               child: FittedBox(fit: BoxFit.cover, child: image),
             ),
@@ -1394,14 +1412,17 @@ class LayerBuilder {
       width: 8,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(6, (_) => Container(
-          width: 3,
-          height: 3,
-          decoration: const BoxDecoration(
-            color: Color(0xFFB0B0B0),
-            shape: BoxShape.circle,
+        children: List.generate(
+          6,
+          (_) => Container(
+            width: 3,
+            height: 3,
+            decoration: const BoxDecoration(
+              color: Color(0xFFB0B0B0),
+              shape: BoxShape.circle,
+            ),
           ),
-        )),
+        ),
       ),
     );
   }
@@ -1414,20 +1435,40 @@ class LayerBuilder {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE8E4DC)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 12, left: 6, right: 6, bottom: 6),
+            padding: const EdgeInsets.only(
+              top: 12,
+              left: 6,
+              right: 6,
+              bottom: 6,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: FittedBox(fit: BoxFit.cover, child: image),
             ),
           ),
-          Positioned(top: -4, left: 0, right: 0, child: Center(child: Icon(Icons.attach_file, size: 20, color: const Color(0xFF505050)))),
+          Positioned(
+            top: -4,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Icon(
+                Icons.attach_file,
+                size: 20,
+                color: const Color(0xFF505050),
+              ),
+            ),
+          ),
           Positioned(
             bottom: 4,
             right: 4,
@@ -1470,7 +1511,13 @@ class LayerBuilder {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(8),
       child: Container(
@@ -1521,7 +1568,12 @@ class LayerBuilder {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: const Color(0xFFA0B0E0).withOpacity(0.25), blurRadius: 16)],
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFA0B0E0).withOpacity(0.25),
+            blurRadius: 16,
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(6),
       child: Container(
@@ -1569,7 +1621,13 @@ class LayerBuilder {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBF0),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.fromLTRB(10, 10, 8, 12),
       child: ClipRRect(
@@ -1599,9 +1657,17 @@ class LayerBuilder {
               ),
             ),
           ),
-          Container(height: 3, margin: const EdgeInsets.symmetric(horizontal: 8), color: const Color(0xFFD8D0C4)),
+          Container(
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            color: const Color(0xFFD8D0C4),
+          ),
           const SizedBox(height: 2),
-          Container(height: 3, margin: const EdgeInsets.symmetric(horizontal: 8), color: const Color(0xFFD8D0C4)),
+          Container(
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            color: const Color(0xFFD8D0C4),
+          ),
           const SizedBox(height: 6),
         ],
       ),
@@ -1615,7 +1681,13 @@ class LayerBuilder {
         color: Colors.white,
         borderRadius: BorderRadius.circular(2),
         border: Border.all(color: const Color(0xFFC0C0C0)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(8),
       child: Stack(
@@ -1634,7 +1706,10 @@ class LayerBuilder {
                 color: const Color(0xFFE8E8E8),
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: const Text('1924', style: TextStyle(fontSize: 8, color: Color(0xFF707070))),
+              child: const Text(
+                '1924',
+                style: TextStyle(fontSize: 8, color: Color(0xFF707070)),
+              ),
             ),
           ),
         ],
@@ -1648,7 +1723,13 @@ class LayerBuilder {
       decoration: BoxDecoration(
         color: const Color(0xFFB8956E),
         borderRadius: BorderRadius.circular(4),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(6),
       child: Container(
@@ -1671,7 +1752,13 @@ class LayerBuilder {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(2),
         border: Border.all(color: const Color(0xFFC9A227), width: 10),
-        boxShadow: [BoxShadow(color: const Color(0xFF8B6914).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B6914).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(4),
       child: ClipRRect(
@@ -1717,7 +1804,12 @@ class LayerBuilder {
         color: const Color(0xFF0D0D0D),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF39FF14), width: 3),
-        boxShadow: [BoxShadow(color: const Color(0xFF39FF14).withOpacity(0.5), blurRadius: 12)],
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF39FF14).withOpacity(0.5),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(5),
@@ -1733,7 +1825,13 @@ class LayerBuilder {
         color: const Color(0xFFF8F4EC),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFD0B898), width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.06),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
@@ -1749,7 +1847,13 @@ class LayerBuilder {
         color: const Color(0xFFF0E8DC),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: const Color(0xFFD8D0C0)),
-        boxShadow: [BoxShadow(color: Colors.brown.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.only(top: 14, left: 6, right: 6, bottom: 6),
@@ -1768,7 +1872,12 @@ class LayerBuilder {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFC44DFF), width: 3),
-        boxShadow: [BoxShadow(color: const Color(0xFFC44DFF).withOpacity(0.35), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFC44DFF).withOpacity(0.35),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
@@ -1801,10 +1910,12 @@ class LayerBuilder {
     // ✅ 기본 생성 텍스트 최소 폰트 크기 (너무 작게 생성되는 것 방지)
     const double minFontSize = 18;
 
-    final TextStyle baseStyle = layer.textStyle ?? const TextStyle(fontSize: 18);
+    final TextStyle baseStyle =
+        layer.textStyle ?? const TextStyle(fontSize: 18);
 
     // ✅ 실제 적용될 스타일 (최소값 보장)
-    final TextStyle effectiveStyle = baseStyle.fontSize != null && baseStyle.fontSize! < minFontSize
+    final TextStyle effectiveStyle =
+        baseStyle.fontSize != null && baseStyle.fontSize! < minFontSize
         ? baseStyle.copyWith(fontSize: minFontSize)
         : baseStyle;
 
@@ -2184,7 +2295,11 @@ class LayerBuilder {
       }
 
       // ✅ style 텍스트도 하단 여유 보정
-      final Size styleSize = _calculateStyleSize(layer.textBackground!, layer, textPainter);
+      final Size styleSize = _calculateStyleSize(
+        layer.textBackground!,
+        layer,
+        textPainter,
+      );
       final isNoteGrid = layer.textBackground == 'noteGrid';
       final realSize = Size(
         styleSize.width,
@@ -2197,10 +2312,7 @@ class LayerBuilder {
         baseWidth: realSize.width,
         baseHeight: realSize.height,
         isCover: isCover,
-        child: Opacity(
-          opacity: layer.opacity,
-          child: styled,
-        ),
+        child: Opacity(opacity: layer.opacity, child: styled),
       );
     }
 
@@ -2229,10 +2341,7 @@ class LayerBuilder {
       baseWidth: realSize.width,
       baseHeight: realSize.height,
       isCover: isCover,
-      child: Opacity(
-        opacity: layer.opacity,
-        child: content,
-      ),
+      child: Opacity(opacity: layer.opacity, child: content),
     );
   }
 
@@ -2247,28 +2356,49 @@ class LayerBuilder {
   /// 라운드 계열 배경색 (팔레트 통일, 연한+진한 10색)
   static Color _roundStyleBackgroundColor(String? key) {
     switch (key) {
-      case 'roundGray': return SnapFitStylePalette.gray;
-      case 'roundPink': return SnapFitStylePalette.pink;
-      case 'roundBlue': return SnapFitStylePalette.blue;
-      case 'roundMint': return SnapFitStylePalette.mint;
-      case 'roundLavender': return SnapFitStylePalette.lavender;
-      case 'roundOrange': return SnapFitStylePalette.orange;
-      case 'roundGreen': return SnapFitStylePalette.green;
-      case 'roundCream': return SnapFitStylePalette.cream;
-      case 'roundNavy': return SnapFitStylePalette.navy;
-      case 'roundRose': return SnapFitStylePalette.rose;
-      case 'roundCoral': return SnapFitStylePalette.coral;
-      case 'roundBeige': return SnapFitStylePalette.beige;
-      case 'roundTeal': return SnapFitStylePalette.teal;
-      case 'roundLemon': return SnapFitStylePalette.lemon;
-      default: return SnapFitStylePalette.white;
+      case 'roundGray':
+        return SnapFitStylePalette.gray;
+      case 'roundPink':
+        return SnapFitStylePalette.pink;
+      case 'roundBlue':
+        return SnapFitStylePalette.blue;
+      case 'roundMint':
+        return SnapFitStylePalette.mint;
+      case 'roundLavender':
+        return SnapFitStylePalette.lavender;
+      case 'roundOrange':
+        return SnapFitStylePalette.orange;
+      case 'roundGreen':
+        return SnapFitStylePalette.green;
+      case 'roundCream':
+        return SnapFitStylePalette.cream;
+      case 'roundNavy':
+        return SnapFitStylePalette.navy;
+      case 'roundRose':
+        return SnapFitStylePalette.rose;
+      case 'roundCoral':
+        return SnapFitStylePalette.coral;
+      case 'roundBeige':
+        return SnapFitStylePalette.beige;
+      case 'roundTeal':
+        return SnapFitStylePalette.teal;
+      case 'roundLemon':
+        return SnapFitStylePalette.lemon;
+      default:
+        return SnapFitStylePalette.white;
     }
   }
 
   /// 라운드 – pill (색상 선택 가능)
-  Widget _buildRoundStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildRoundStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final bg = _roundStyleBackgroundColor(layer.textBackground);
-    final borderColor = bg == Colors.white ? const Color(0xFFE8EAED) : _darken(bg, 0.08);
+    final borderColor = bg == Colors.white
+        ? const Color(0xFFE8EAED)
+        : _darken(bg, 0.08);
     return IntrinsicWidth(
       child: IntrinsicHeight(
         child: Container(
@@ -2309,28 +2439,49 @@ class LayerBuilder {
   /// 사각형 계열 배경색 (팔레트 통일, 10색)
   static Color _squareStyleBackgroundColor(String? key) {
     switch (key) {
-      case 'squareGray': return SnapFitStylePalette.gray;
-      case 'squarePink': return SnapFitStylePalette.pink;
-      case 'squareBlue': return SnapFitStylePalette.blue;
-      case 'squareMint': return SnapFitStylePalette.mint;
-      case 'squareLavender': return SnapFitStylePalette.lavender;
-      case 'squareOrange': return SnapFitStylePalette.orange;
-      case 'squareGreen': return SnapFitStylePalette.green;
-      case 'squareCream': return SnapFitStylePalette.cream;
-      case 'squareNavy': return SnapFitStylePalette.navy;
-      case 'squareRose': return SnapFitStylePalette.rose;
-      case 'squareCoral': return SnapFitStylePalette.coral;
-      case 'squareBeige': return SnapFitStylePalette.beige;
-      case 'squareTeal': return SnapFitStylePalette.teal;
-      case 'squareLemon': return SnapFitStylePalette.lemon;
-      default: return SnapFitStylePalette.white;
+      case 'squareGray':
+        return SnapFitStylePalette.gray;
+      case 'squarePink':
+        return SnapFitStylePalette.pink;
+      case 'squareBlue':
+        return SnapFitStylePalette.blue;
+      case 'squareMint':
+        return SnapFitStylePalette.mint;
+      case 'squareLavender':
+        return SnapFitStylePalette.lavender;
+      case 'squareOrange':
+        return SnapFitStylePalette.orange;
+      case 'squareGreen':
+        return SnapFitStylePalette.green;
+      case 'squareCream':
+        return SnapFitStylePalette.cream;
+      case 'squareNavy':
+        return SnapFitStylePalette.navy;
+      case 'squareRose':
+        return SnapFitStylePalette.rose;
+      case 'squareCoral':
+        return SnapFitStylePalette.coral;
+      case 'squareBeige':
+        return SnapFitStylePalette.beige;
+      case 'squareTeal':
+        return SnapFitStylePalette.teal;
+      case 'squareLemon':
+        return SnapFitStylePalette.lemon;
+      default:
+        return SnapFitStylePalette.white;
     }
   }
 
   /// 기본 – 사각형 (색상 선택 가능)
-  Widget _buildSquareStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildSquareStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final bg = _squareStyleBackgroundColor(layer.textBackground);
-    final borderColor = bg == Colors.white ? const Color(0xFFE0E4EC) : _darken(bg, 0.08);
+    final borderColor = bg == Colors.white
+        ? const Color(0xFFE0E4EC)
+        : _darken(bg, 0.08);
     return IntrinsicWidth(
       child: IntrinsicHeight(
         child: Container(
@@ -2362,26 +2513,45 @@ class LayerBuilder {
   /// 소프트 필 계열 배경색 (팔레트 통일, 10색)
   static Color _roundSoftStyleBackgroundColor(String? key) {
     switch (key) {
-      case 'roundSoftGray': return SnapFitStylePalette.gray;
-      case 'roundSoftPink': return SnapFitStylePalette.pink;
-      case 'roundSoftBlue': return SnapFitStylePalette.blue;
-      case 'roundSoftMint': return SnapFitStylePalette.mint;
-      case 'roundSoftLavender': return SnapFitStylePalette.lavender;
-      case 'roundSoftOrange': return SnapFitStylePalette.orange;
-      case 'roundSoftGreen': return SnapFitStylePalette.green;
-      case 'roundSoftCream': return SnapFitStylePalette.cream;
-      case 'roundSoftNavy': return SnapFitStylePalette.navy;
-      case 'roundSoftRose': return SnapFitStylePalette.rose;
-      case 'roundSoftCoral': return SnapFitStylePalette.coral;
-      case 'roundSoftBeige': return SnapFitStylePalette.beige;
-      case 'roundSoftTeal': return SnapFitStylePalette.teal;
-      case 'roundSoftLemon': return SnapFitStylePalette.lemon;
-      default: return SnapFitStylePalette.white;
+      case 'roundSoftGray':
+        return SnapFitStylePalette.gray;
+      case 'roundSoftPink':
+        return SnapFitStylePalette.pink;
+      case 'roundSoftBlue':
+        return SnapFitStylePalette.blue;
+      case 'roundSoftMint':
+        return SnapFitStylePalette.mint;
+      case 'roundSoftLavender':
+        return SnapFitStylePalette.lavender;
+      case 'roundSoftOrange':
+        return SnapFitStylePalette.orange;
+      case 'roundSoftGreen':
+        return SnapFitStylePalette.green;
+      case 'roundSoftCream':
+        return SnapFitStylePalette.cream;
+      case 'roundSoftNavy':
+        return SnapFitStylePalette.navy;
+      case 'roundSoftRose':
+        return SnapFitStylePalette.rose;
+      case 'roundSoftCoral':
+        return SnapFitStylePalette.coral;
+      case 'roundSoftBeige':
+        return SnapFitStylePalette.beige;
+      case 'roundSoftTeal':
+        return SnapFitStylePalette.teal;
+      case 'roundSoftLemon':
+        return SnapFitStylePalette.lemon;
+      default:
+        return SnapFitStylePalette.white;
     }
   }
 
   /// 기본 – 소프트 필 (색상 선택 가능, 그림자 적용)
-  Widget _buildRoundSoftStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildRoundSoftStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final bg = _roundSoftStyleBackgroundColor(layer.textBackground);
     return IntrinsicWidth(
       child: IntrinsicHeight(
@@ -2414,26 +2584,45 @@ class LayerBuilder {
   /// 소프트 필2 계열 배경색 (사각형 + 둥근 모서리, 15색)
   static Color _softPill2StyleBackgroundColor(String? key) {
     switch (key) {
-      case 'softPill2Gray': return SnapFitStylePalette.gray;
-      case 'softPill2Pink': return SnapFitStylePalette.pink;
-      case 'softPill2Blue': return SnapFitStylePalette.blue;
-      case 'softPill2Mint': return SnapFitStylePalette.mint;
-      case 'softPill2Lavender': return SnapFitStylePalette.lavender;
-      case 'softPill2Orange': return SnapFitStylePalette.orange;
-      case 'softPill2Green': return SnapFitStylePalette.green;
-      case 'softPill2Cream': return SnapFitStylePalette.cream;
-      case 'softPill2Navy': return SnapFitStylePalette.navy;
-      case 'softPill2Rose': return SnapFitStylePalette.rose;
-      case 'softPill2Coral': return SnapFitStylePalette.coral;
-      case 'softPill2Beige': return SnapFitStylePalette.beige;
-      case 'softPill2Teal': return SnapFitStylePalette.teal;
-      case 'softPill2Lemon': return SnapFitStylePalette.lemon;
-      default: return SnapFitStylePalette.white;
+      case 'softPill2Gray':
+        return SnapFitStylePalette.gray;
+      case 'softPill2Pink':
+        return SnapFitStylePalette.pink;
+      case 'softPill2Blue':
+        return SnapFitStylePalette.blue;
+      case 'softPill2Mint':
+        return SnapFitStylePalette.mint;
+      case 'softPill2Lavender':
+        return SnapFitStylePalette.lavender;
+      case 'softPill2Orange':
+        return SnapFitStylePalette.orange;
+      case 'softPill2Green':
+        return SnapFitStylePalette.green;
+      case 'softPill2Cream':
+        return SnapFitStylePalette.cream;
+      case 'softPill2Navy':
+        return SnapFitStylePalette.navy;
+      case 'softPill2Rose':
+        return SnapFitStylePalette.rose;
+      case 'softPill2Coral':
+        return SnapFitStylePalette.coral;
+      case 'softPill2Beige':
+        return SnapFitStylePalette.beige;
+      case 'softPill2Teal':
+        return SnapFitStylePalette.teal;
+      case 'softPill2Lemon':
+        return SnapFitStylePalette.lemon;
+      default:
+        return SnapFitStylePalette.white;
     }
   }
 
   /// 기본 – 소프트 필2 (사각형, 라운드 없음, 그림자)
-  Widget _buildSoftPill2Style(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildSoftPill2Style(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final bg = _softPill2StyleBackgroundColor(layer.textBackground);
     return IntrinsicWidth(
       child: IntrinsicHeight(
@@ -2465,24 +2654,70 @@ class LayerBuilder {
 
   static ({Color bg, Color text}) _labelOvalColors(String? key) {
     switch (key) {
-      case 'labelGray': return (bg: SnapFitStylePalette.labelGray, text: const Color(0xFF616161));
-      case 'labelPink': return (bg: SnapFitStylePalette.labelPink, text: const Color(0xFFAD1457));
-      case 'labelBlue': return (bg: SnapFitStylePalette.labelBlue, text: const Color(0xFF1565C0));
-      case 'labelMint': return (bg: SnapFitStylePalette.labelMint, text: const Color(0xFF00695C));
-      case 'labelLavender': return (bg: SnapFitStylePalette.labelLavender, text: const Color(0xFF5E35B1));
-      case 'labelOrange': return (bg: SnapFitStylePalette.labelOrange, text: const Color(0xFFE65100));
-      case 'labelGreen': return (bg: SnapFitStylePalette.labelGreen, text: const Color(0xFF2E7D32));
-      case 'labelWhite': return (bg: SnapFitStylePalette.labelWhite, text: const Color(0xFF424242));
-      case 'labelCream': return (bg: SnapFitStylePalette.labelCream, text: const Color(0xFF5D4037));
+      case 'labelGray':
+        return (
+          bg: SnapFitStylePalette.labelGray,
+          text: const Color(0xFF616161),
+        );
+      case 'labelPink':
+        return (
+          bg: SnapFitStylePalette.labelPink,
+          text: const Color(0xFFAD1457),
+        );
+      case 'labelBlue':
+        return (
+          bg: SnapFitStylePalette.labelBlue,
+          text: const Color(0xFF1565C0),
+        );
+      case 'labelMint':
+        return (
+          bg: SnapFitStylePalette.labelMint,
+          text: const Color(0xFF00695C),
+        );
+      case 'labelLavender':
+        return (
+          bg: SnapFitStylePalette.labelLavender,
+          text: const Color(0xFF5E35B1),
+        );
+      case 'labelOrange':
+        return (
+          bg: SnapFitStylePalette.labelOrange,
+          text: const Color(0xFFE65100),
+        );
+      case 'labelGreen':
+        return (
+          bg: SnapFitStylePalette.labelGreen,
+          text: const Color(0xFF2E7D32),
+        );
+      case 'labelWhite':
+        return (
+          bg: SnapFitStylePalette.labelWhite,
+          text: const Color(0xFF424242),
+        );
+      case 'labelCream':
+        return (
+          bg: SnapFitStylePalette.labelCream,
+          text: const Color(0xFF5D4037),
+        );
       default:
-        return (bg: SnapFitColors.accent.withOpacity(0.25), text: SnapFitColors.accent);
+        return (
+          bg: SnapFitColors.accent.withOpacity(0.25),
+          text: SnapFitColors.accent,
+        );
     }
   }
 
   /// 라벨 – 타원형 (색상 선택 가능)
-  Widget _buildLabelOvalStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelOvalStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final colors = _labelOvalColors(layer.textBackground);
-    final style = effectiveStyle.copyWith(fontWeight: FontWeight.w600, color: colors.text);
+    final style = effectiveStyle.copyWith(
+      fontWeight: FontWeight.w600,
+      color: colors.text,
+    );
     return IntrinsicWidth(
       child: IntrinsicHeight(
         child: Container(
@@ -2492,7 +2727,11 @@ class LayerBuilder {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2501,20 +2740,33 @@ class LayerBuilder {
 
   static Color _tagBorderColor(String? key) {
     switch (key) {
-      case 'tagGray': return SnapFitStylePalette.tagGray;
-      case 'tagPink': return SnapFitStylePalette.tagPink;
-      case 'tagBlue': return SnapFitStylePalette.tagBlue;
-      case 'tagMint': return SnapFitStylePalette.tagMint;
-      case 'tagLavender': return SnapFitStylePalette.tagLavender;
-      case 'tagOrange': return SnapFitStylePalette.tagOrange;
-      case 'tagGreen': return SnapFitStylePalette.tagGreen;
-      case 'tagRed': return const Color(0xFFE57373);
-      default: return const Color(0xFFB0B0B0);
+      case 'tagGray':
+        return SnapFitStylePalette.tagGray;
+      case 'tagPink':
+        return SnapFitStylePalette.tagPink;
+      case 'tagBlue':
+        return SnapFitStylePalette.tagBlue;
+      case 'tagMint':
+        return SnapFitStylePalette.tagMint;
+      case 'tagLavender':
+        return SnapFitStylePalette.tagLavender;
+      case 'tagOrange':
+        return SnapFitStylePalette.tagOrange;
+      case 'tagGreen':
+        return SnapFitStylePalette.tagGreen;
+      case 'tagRed':
+        return const Color(0xFFE57373);
+      default:
+        return const Color(0xFFB0B0B0);
     }
   }
 
   /// 태그 – 점선 테두리 (색상 선택 가능)
-  Widget _buildTagStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildTagStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final borderColor = _tagBorderColor(layer.textBackground);
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w600,
@@ -2528,7 +2780,11 @@ class LayerBuilder {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Center(
-                child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+                child: Text(
+                  layer.text ?? "",
+                  style: style,
+                  textAlign: layer.textAlign ?? TextAlign.center,
+                ),
               ),
             ),
             Positioned.fill(
@@ -2550,21 +2806,35 @@ class LayerBuilder {
 
   static ({Color bg, Color text}) _labelSolidColors(String? key) {
     switch (key) {
-      case 'labelSolidGray': return (bg: const Color(0xFF616161), text: Colors.white);
-      case 'labelSolidPink': return (bg: const Color(0xFFAD1457), text: Colors.white);
-      case 'labelSolidBlue': return (bg: const Color(0xFF1565C0), text: Colors.white);
-      case 'labelSolidMint': return (bg: const Color(0xFF00695C), text: Colors.white);
-      case 'labelSolidRed': return (bg: const Color(0xFFC62828), text: Colors.white);
-      case 'labelSolidGreen': return (bg: const Color(0xFF2E7D32), text: Colors.white);
-      case 'labelSolidOrange': return (bg: const Color(0xFFE65100), text: Colors.white);
-      case 'labelSolidLavender': return (bg: const Color(0xFF5E35B1), text: Colors.white);
-      case 'labelSolidCream': return (bg: const Color(0xFFF5F0E6), text: const Color(0xFF5D4037));
-      default: return (bg: const Color(0xFF1E3A5F), text: Colors.white);
+      case 'labelSolidGray':
+        return (bg: const Color(0xFF616161), text: Colors.white);
+      case 'labelSolidPink':
+        return (bg: const Color(0xFFAD1457), text: Colors.white);
+      case 'labelSolidBlue':
+        return (bg: const Color(0xFF1565C0), text: Colors.white);
+      case 'labelSolidMint':
+        return (bg: const Color(0xFF00695C), text: Colors.white);
+      case 'labelSolidRed':
+        return (bg: const Color(0xFFC62828), text: Colors.white);
+      case 'labelSolidGreen':
+        return (bg: const Color(0xFF2E7D32), text: Colors.white);
+      case 'labelSolidOrange':
+        return (bg: const Color(0xFFE65100), text: Colors.white);
+      case 'labelSolidLavender':
+        return (bg: const Color(0xFF5E35B1), text: Colors.white);
+      case 'labelSolidCream':
+        return (bg: const Color(0xFFF5F0E6), text: const Color(0xFF5D4037));
+      default:
+        return (bg: const Color(0xFF1E3A5F), text: Colors.white);
     }
   }
 
   /// 라벨 – 진한 채움 (색상 선택 가능)
-  Widget _buildLabelSolidStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelSolidStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final colors = _labelSolidColors(layer.textBackground);
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w700,
@@ -2580,7 +2850,11 @@ class LayerBuilder {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2588,7 +2862,11 @@ class LayerBuilder {
   }
 
   /// 라벨 – 아웃라인만 (TODAY 스타일)
-  Widget _buildLabelOutlineStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelOutlineStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w700,
       color: const Color(0xFF607D8B),
@@ -2603,7 +2881,11 @@ class LayerBuilder {
             border: Border.all(color: const Color(0xFF00C2E0), width: 1.5),
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2611,7 +2893,11 @@ class LayerBuilder {
   }
 
   /// 라벨 – 골드 프리미엄
-  Widget _buildLabelGoldStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelGoldStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w700,
       color: const Color(0xFF5D4037),
@@ -2641,7 +2927,11 @@ class LayerBuilder {
             ],
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2649,7 +2939,11 @@ class LayerBuilder {
   }
 
   /// 라벨 – 네온 아웃라인
-  Widget _buildLabelNeonStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelNeonStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w700,
       color: const Color(0xFF00E5FF),
@@ -2671,7 +2965,11 @@ class LayerBuilder {
             ],
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2679,7 +2977,11 @@ class LayerBuilder {
   }
 
   /// 라벨 – 로즈 (로즈골드/핑크 채움)
-  Widget _buildLabelRoseStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildLabelRoseStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       fontWeight: FontWeight.w700,
       color: const Color(0xFF880E4F),
@@ -2693,10 +2995,7 @@ class LayerBuilder {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFFF8BBD9),
-                const Color(0xFFF48FB1),
-              ],
+              colors: [const Color(0xFFF8BBD9), const Color(0xFFF48FB1)],
             ),
             borderRadius: BorderRadius.circular(999),
             boxShadow: [
@@ -2708,7 +3007,11 @@ class LayerBuilder {
             ],
           ),
           child: Center(
-            child: Text(layer.text ?? "", style: style, textAlign: layer.textAlign ?? TextAlign.center),
+            child: Text(
+              layer.text ?? "",
+              style: style,
+              textAlign: layer.textAlign ?? TextAlign.center,
+            ),
           ),
         ),
       ),
@@ -2735,12 +3038,13 @@ class LayerBuilder {
     return SnapFitStylePalette.white;
   }
 
-  Widget _buildBubbleStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildBubbleStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final baseStyle = effectiveStyle;
-    final style = baseStyle.copyWith(
-      fontWeight: FontWeight.w500,
-      height: 1.2,
-    );
+    final style = baseStyle.copyWith(fontWeight: FontWeight.w500, height: 1.2);
     final bg = layer.textBackground ?? '';
     final baseKey = bg
         .replaceAll('Gray', '')
@@ -2757,10 +3061,21 @@ class LayerBuilder {
         .replaceAll('Beige', '')
         .replaceAll('Teal', '')
         .replaceAll('Lemon', '');
-    final isSquare = baseKey == 'bubbleSquare' || baseKey == 'bubbleSquareCenter' || baseKey == 'bubbleSquareRight';
+    final isSquare =
+        baseKey == 'bubbleSquare' ||
+        baseKey == 'bubbleSquareCenter' ||
+        baseKey == 'bubbleSquareRight';
     final tailPosition = isSquare
-        ? (baseKey == 'bubbleSquare' ? 0.0 : baseKey == 'bubbleSquareRight' ? 1.0 : 0.5)
-        : (baseKey == 'bubbleCenter' ? 0.5 : baseKey == 'bubbleRight' ? 0.72 : 0.28);
+        ? (baseKey == 'bubbleSquare'
+              ? 0.0
+              : baseKey == 'bubbleSquareRight'
+              ? 1.0
+              : 0.5)
+        : (baseKey == 'bubbleCenter'
+              ? 0.5
+              : baseKey == 'bubbleRight'
+              ? 0.72
+              : 0.28);
     final fillColor = _bubbleFillColor(bg);
     final borderColor = fillColor == Colors.white
         ? Colors.black.withOpacity(0.22)
@@ -2791,40 +3106,68 @@ class LayerBuilder {
   }
 
   static Color _noteStyleBackgroundColor(String? key) {
-    final k = (key ?? '').replaceFirst('noteTornRough', 'noteTorn').replaceFirst('noteTornSoft', 'noteTorn');
+    final k = (key ?? '')
+        .replaceFirst('noteTornRough', 'noteTorn')
+        .replaceFirst('noteTornSoft', 'noteTorn');
     switch (k) {
-      case "noteBlue": return const Color(0xFFE8F0FF);
-      case "notePink": return const Color(0xFFFFEFF4);
-      case "noteMint": return const Color(0xFFE0F7F0);
-      case "noteLavender": return const Color(0xFFF3E8FF);
-      case "noteOrange": return const Color(0xFFFFF0E0);
-      case "noteGray": return const Color(0xFFF0F0F0);
-      case "noteBeige": return const Color(0xFFF5F0E8);
-      case "noteGold": return const Color(0xFFFFF8E1);
-      case "noteCream": return const Color(0xFFFFFBF0);
-      case "noteTornGray": return const Color(0xFFF0F0F0);
-      case "noteTornPink": return const Color(0xFFFFEFF4);
-      case "noteTornBlue": return const Color(0xFFE8F0FF);
-      case "noteTornMint": return const Color(0xFFE0F7F0);
-      case "noteTornLavender": return const Color(0xFFF3E8FF);
-      case "noteTornOrange": return const Color(0xFFFFF0E0);
-      case "noteTornCream": return const Color(0xFFFFFBF0);
-      case "noteTornBeige": return const Color(0xFFF5F0E8);
-      case "noteTornYellow": return const Color(0xFFFFF9C4);
-      case "noteTornGold": return const Color(0xFFFFF8E1);
+      case "noteBlue":
+        return const Color(0xFFE8F0FF);
+      case "notePink":
+        return const Color(0xFFFFEFF4);
+      case "noteMint":
+        return const Color(0xFFE0F7F0);
+      case "noteLavender":
+        return const Color(0xFFF3E8FF);
+      case "noteOrange":
+        return const Color(0xFFFFF0E0);
+      case "noteGray":
+        return const Color(0xFFF0F0F0);
+      case "noteBeige":
+        return const Color(0xFFF5F0E8);
+      case "noteGold":
+        return const Color(0xFFFFF8E1);
+      case "noteCream":
+        return const Color(0xFFFFFBF0);
+      case "noteTornGray":
+        return const Color(0xFFF0F0F0);
+      case "noteTornPink":
+        return const Color(0xFFFFEFF4);
+      case "noteTornBlue":
+        return const Color(0xFFE8F0FF);
+      case "noteTornMint":
+        return const Color(0xFFE0F7F0);
+      case "noteTornLavender":
+        return const Color(0xFFF3E8FF);
+      case "noteTornOrange":
+        return const Color(0xFFFFF0E0);
+      case "noteTornCream":
+        return const Color(0xFFFFFBF0);
+      case "noteTornBeige":
+        return const Color(0xFFF5F0E8);
+      case "noteTornYellow":
+        return const Color(0xFFFFF9C4);
+      case "noteTornGold":
+        return const Color(0xFFFFF8E1);
       case "note":
       case "noteTorn":
-      default: return const Color(0xFFFFF9C4);
+      default:
+        return const Color(0xFFFFF9C4);
     }
   }
 
   static String? _normalizeTornTapeKey(String? key) {
     if (key == null) return null;
-    return key.replaceFirst('tapeTornRough', 'tapeTorn').replaceFirst('tapeTornSoft', 'tapeTorn');
+    return key
+        .replaceFirst('tapeTornRough', 'tapeTorn')
+        .replaceFirst('tapeTornSoft', 'tapeTorn');
   }
 
   /// 메모지 – 찢어짐 없음, 스티커노트 느낌, 여러 색상 (테두리 없음)
-  Widget _buildNoteStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildNoteStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(height: 1.25);
     final background = _noteStyleBackgroundColor(layer.textBackground);
     return IntrinsicWidth(
@@ -2855,7 +3198,11 @@ class LayerBuilder {
   }
 
   /// 찢어진 메모지 – 아래쪽만 톱니 찢김 (종이 뜯은 느낌, 키에 따라 일반/거친/부드러운)
-  Widget _buildNoteTornStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildNoteTornStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(height: 1.25);
     final background = _noteStyleBackgroundColor(layer.textBackground);
     final (step, amp) = _tornEdgeParams(layer.textBackground ?? 'noteTorn');
@@ -2889,7 +3236,11 @@ class LayerBuilder {
   }
 
   /// 찢어진 테이프 – 단색만, 오른쪽만 톱니 찢김 (메모지와 다른 느낌, 키에 따라 일반/거친/부드러운)
-  Widget _buildTapeTornStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildTapeTornStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(fontWeight: FontWeight.w500);
     final bg = layer.textBackground ?? 'tapeTornSolid';
     final solidKey = _tapeTornToSolidKey(bg);
@@ -2925,12 +3276,19 @@ class LayerBuilder {
   }
 
   /// 찢어진 단색 테이프 – 동일 빌더(단색 + 오른쪽 톱니)
-  Widget _buildTapeTornSolidStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildTapeTornSolidStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     return _buildTapeTornStyle(layer, painter, effectiveStyle);
   }
 
-
-  Widget _buildCalligraphyStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildCalligraphyStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontStyle: FontStyle.italic,
@@ -2959,7 +3317,11 @@ class LayerBuilder {
     );
   }
 
-  Widget _buildStickerStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildStickerStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final baseStyle = effectiveStyle;
     final style = baseStyle.copyWith(
       fontWeight: FontWeight.w700,
@@ -2995,7 +3357,11 @@ class LayerBuilder {
   }
 
   /// 포인트 – 형광 하이라이트 (강조 포인트)
-  Widget _buildHighlightStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildHighlightStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     Color bg;
     Color textColor;
     switch (layer.textBackground) {
@@ -3013,7 +3379,10 @@ class LayerBuilder {
         textColor = const Color(0xFFF57F17);
         break;
     }
-    final style = effectiveStyle.copyWith(color: textColor, fontWeight: FontWeight.w700);
+    final style = effectiveStyle.copyWith(
+      color: textColor,
+      fontWeight: FontWeight.w700,
+    );
     return IntrinsicWidth(
       child: IntrinsicHeight(
         child: Container(
@@ -3042,7 +3411,11 @@ class LayerBuilder {
   }
 
   /// 데코 – 스탬프 인상 (테두리 + 그림자로 찍힌 느낌)
-  Widget _buildStampStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildStampStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final isRed = layer.textBackground == 'stampRed';
     final bg = isRed ? const Color(0xFFB71C1C) : const Color(0xFF0D47A1);
     final style = effectiveStyle.copyWith(
@@ -3057,7 +3430,10 @@ class LayerBuilder {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: isRed ? const Color(0xFFE53935) : const Color(0xFF1976D2), width: 1.5),
+            border: Border.all(
+              color: isRed ? const Color(0xFFE53935) : const Color(0xFF1976D2),
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -3084,7 +3460,11 @@ class LayerBuilder {
   }
 
   /// 데코 – 인용 프레임 (두꺼운 왼쪽 바 + 이중선 느낌)
-  Widget _buildQuoteStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildQuoteStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(height: 1.35);
     return IntrinsicWidth(
       child: IntrinsicHeight(
@@ -3117,7 +3497,11 @@ class LayerBuilder {
   }
 
   /// 데코 – 칠판 포인트 (테두리 있는 칠판 틀)
-  Widget _buildChalkboardStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildChalkboardStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       color: const Color(0xFFECEFF1),
       fontWeight: FontWeight.w600,
@@ -3152,7 +3536,11 @@ class LayerBuilder {
   }
 
   /// 데코 – 점선 프레임 캡션 (장식 테두리)
-  Widget _buildCaptionStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildCaptionStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(
       color: const Color(0xFF546E7A),
       height: 1.3,
@@ -3201,7 +3589,10 @@ class LayerBuilder {
       case 'noteGridMint':
         return (bg: SnapFitStylePalette.mint, grid: const Color(0xFF80CBC4));
       case 'noteGridLavender':
-        return (bg: SnapFitStylePalette.lavender, grid: const Color(0xFFB39DDB));
+        return (
+          bg: SnapFitStylePalette.lavender,
+          grid: const Color(0xFFB39DDB),
+        );
       case 'noteGridOrange':
         return (bg: SnapFitStylePalette.orange, grid: const Color(0xFFFFCC80));
       case 'noteGridGray':
@@ -3212,7 +3603,11 @@ class LayerBuilder {
   }
 
   /// 격자 노트 (색상 선택 가능) – 격자만 전체에 그림, 텍스트는 패딩으로 정렬
-  Widget _buildNoteGridStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildNoteGridStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(height: 1.25);
     final colors = _noteGridColors(layer.textBackground);
     const gridStep = 12.0;
@@ -3233,7 +3628,10 @@ class LayerBuilder {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: padH, vertical: padV),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: padH,
+                  vertical: padV,
+                ),
                 child: Center(
                   child: Text(
                     layer.text ?? "",
@@ -3253,15 +3651,30 @@ class LayerBuilder {
   static ({Color base, Color dot}) _tapeDotsColors(String? key) {
     switch (key) {
       case 'tapeDotsPink':
-        return (base: SnapFitStylePalette.labelPink, dot: SnapFitStylePalette.tagPink);
+        return (
+          base: SnapFitStylePalette.labelPink,
+          dot: SnapFitStylePalette.tagPink,
+        );
       case 'tapeDotsMint':
-        return (base: SnapFitStylePalette.mint, dot: SnapFitStylePalette.tagMint);
+        return (
+          base: SnapFitStylePalette.mint,
+          dot: SnapFitStylePalette.tagMint,
+        );
       case 'tapeDotsLavender':
-        return (base: SnapFitStylePalette.lavender, dot: SnapFitStylePalette.tagLavender);
+        return (
+          base: SnapFitStylePalette.lavender,
+          dot: SnapFitStylePalette.tagLavender,
+        );
       case 'tapeDotsOrange':
-        return (base: SnapFitStylePalette.orange, dot: SnapFitStylePalette.tagOrange);
+        return (
+          base: SnapFitStylePalette.orange,
+          dot: SnapFitStylePalette.tagOrange,
+        );
       case 'tapeDotsGray':
-        return (base: SnapFitStylePalette.stripeGrayBase, dot: SnapFitStylePalette.stripeGrayStripe);
+        return (
+          base: SnapFitStylePalette.stripeGrayBase,
+          dot: SnapFitStylePalette.stripeGrayStripe,
+        );
       default:
         return (base: const Color(0xFFFFE0B2), dot: const Color(0xFFFFCC80));
     }
@@ -3271,15 +3684,27 @@ class LayerBuilder {
   static ({Color base, Color stripe}) _tapeDoubleColors(String? key) {
     switch (key) {
       case 'tapeDoublePink':
-        return (base: SnapFitStylePalette.pink, stripe: const Color(0xFFFFCDD2));
+        return (
+          base: SnapFitStylePalette.pink,
+          stripe: const Color(0xFFFFCDD2),
+        );
       case 'tapeDoubleMint':
-        return (base: SnapFitStylePalette.mint, stripe: const Color(0xFFA7FFEB));
+        return (
+          base: SnapFitStylePalette.mint,
+          stripe: const Color(0xFFA7FFEB),
+        );
       case 'tapeDoubleBlue':
         return (base: const Color(0xFFE3F2FD), stripe: const Color(0xFF90CAF9));
       case 'tapeDoubleLavender':
-        return (base: SnapFitStylePalette.lavender, stripe: const Color(0xFFB39DDB));
+        return (
+          base: SnapFitStylePalette.lavender,
+          stripe: const Color(0xFFB39DDB),
+        );
       case 'tapeDoubleGray':
-        return (base: SnapFitStylePalette.stripeGrayBase, stripe: SnapFitStylePalette.stripeGrayStripe);
+        return (
+          base: SnapFitStylePalette.stripeGrayBase,
+          stripe: SnapFitStylePalette.stripeGrayStripe,
+        );
       default:
         return (base: const Color(0xFFE3F2FD), stripe: const Color(0xFF90CAF9));
     }
@@ -3288,17 +3713,28 @@ class LayerBuilder {
   /// 단색 테이프 (크래프트·골드 통일 + 기본 색상)
   static ({Color bg, Color text}) _tapeSolidColors(String? key) {
     switch (key) {
-      case 'tapeKraft': return (bg: const Color(0xFFD7CCC8), text: const Color(0xFF5D4037));
-      case 'tapeGold': return (bg: const Color(0xFFE8D4A8), text: const Color(0xFF5D4037));
-      case 'tapeSolidWhite': return (bg: const Color(0xFFFAFAFA), text: const Color(0xFF424242));
-      case 'tapeSolidGray': return (bg: const Color(0xFFE0E0E0), text: const Color(0xFF424242));
-      case 'tapeSolidPink': return (bg: const Color(0xFFFFCDD2), text: const Color(0xFFAD1457));
-      case 'tapeSolidBlue': return (bg: const Color(0xFFBBDEFB), text: const Color(0xFF1565C0));
-      case 'tapeSolidMint': return (bg: const Color(0xFFB2DFDB), text: const Color(0xFF00695C));
-      case 'tapeSolidLavender': return (bg: const Color(0xFFD1C4E9), text: const Color(0xFF5E35B1));
-      case 'tapeSolidOrange': return (bg: const Color(0xFFFFE0B2), text: const Color(0xFFE65100));
-      case 'tapeSolidGreen': return (bg: const Color(0xFFC8E6C9), text: const Color(0xFF2E7D32));
-      default: return (bg: const Color(0xFFD7CCC8), text: const Color(0xFF5D4037));
+      case 'tapeKraft':
+        return (bg: const Color(0xFFD7CCC8), text: const Color(0xFF5D4037));
+      case 'tapeGold':
+        return (bg: const Color(0xFFE8D4A8), text: const Color(0xFF5D4037));
+      case 'tapeSolidWhite':
+        return (bg: const Color(0xFFFAFAFA), text: const Color(0xFF424242));
+      case 'tapeSolidGray':
+        return (bg: const Color(0xFFE0E0E0), text: const Color(0xFF424242));
+      case 'tapeSolidPink':
+        return (bg: const Color(0xFFFFCDD2), text: const Color(0xFFAD1457));
+      case 'tapeSolidBlue':
+        return (bg: const Color(0xFFBBDEFB), text: const Color(0xFF1565C0));
+      case 'tapeSolidMint':
+        return (bg: const Color(0xFFB2DFDB), text: const Color(0xFF00695C));
+      case 'tapeSolidLavender':
+        return (bg: const Color(0xFFD1C4E9), text: const Color(0xFF5E35B1));
+      case 'tapeSolidOrange':
+        return (bg: const Color(0xFFFFE0B2), text: const Color(0xFFE65100));
+      case 'tapeSolidGreen':
+        return (bg: const Color(0xFFC8E6C9), text: const Color(0xFF2E7D32));
+      default:
+        return (bg: const Color(0xFFD7CCC8), text: const Color(0xFF5D4037));
     }
   }
 
@@ -3306,28 +3742,60 @@ class LayerBuilder {
   static ({Color base, Color stripe}) _stripeTapeColors(String key) {
     switch (key) {
       case 'tape':
-        return (base: SnapFitStylePalette.stripeSkyBase, stripe: SnapFitStylePalette.stripeSkyStripe);
+        return (
+          base: SnapFitStylePalette.stripeSkyBase,
+          stripe: SnapFitStylePalette.stripeSkyStripe,
+        );
       case 'tapeYellow':
-        return (base: SnapFitStylePalette.stripeYellowBase, stripe: SnapFitStylePalette.stripeYellowStripe);
+        return (
+          base: SnapFitStylePalette.stripeYellowBase,
+          stripe: SnapFitStylePalette.stripeYellowStripe,
+        );
       case 'tapePink':
-        return (base: SnapFitStylePalette.stripePinkBase, stripe: SnapFitStylePalette.stripePinkStripe);
+        return (
+          base: SnapFitStylePalette.stripePinkBase,
+          stripe: SnapFitStylePalette.stripePinkStripe,
+        );
       case 'tapeMint':
-        return (base: SnapFitStylePalette.stripeMintBase, stripe: SnapFitStylePalette.stripeMintStripe);
+        return (
+          base: SnapFitStylePalette.stripeMintBase,
+          stripe: SnapFitStylePalette.stripeMintStripe,
+        );
       case 'tapeLavender':
-        return (base: SnapFitStylePalette.stripeLavenderBase, stripe: SnapFitStylePalette.stripeLavenderStripe);
+        return (
+          base: SnapFitStylePalette.stripeLavenderBase,
+          stripe: SnapFitStylePalette.stripeLavenderStripe,
+        );
       case 'tapeGray':
-        return (base: SnapFitStylePalette.stripeGrayBase, stripe: SnapFitStylePalette.stripeGrayStripe);
+        return (
+          base: SnapFitStylePalette.stripeGrayBase,
+          stripe: SnapFitStylePalette.stripeGrayStripe,
+        );
       default:
-        return (base: SnapFitStylePalette.stripeSkyBase, stripe: SnapFitStylePalette.stripeSkyStripe);
+        return (
+          base: SnapFitStylePalette.stripeSkyBase,
+          stripe: SnapFitStylePalette.stripeSkyStripe,
+        );
     }
   }
 
-  Widget _buildTapeStyle(LayerModel layer, TextPainter painter, TextStyle effectiveStyle) {
+  Widget _buildTapeStyle(
+    LayerModel layer,
+    TextPainter painter,
+    TextStyle effectiveStyle,
+  ) {
     final style = effectiveStyle.copyWith(fontWeight: FontWeight.w500);
     final bg = layer.textBackground ?? 'tape';
 
     // 스트라이프 디자인 통일: tape, tapeYellow, tapePink, tapeMint, tapeLavender, tapeGray
-    const stripeKeys = ['tape', 'tapeYellow', 'tapePink', 'tapeMint', 'tapeLavender', 'tapeGray'];
+    const stripeKeys = [
+      'tape',
+      'tapeYellow',
+      'tapePink',
+      'tapeMint',
+      'tapeLavender',
+      'tapeGray',
+    ];
     if (stripeKeys.contains(bg)) {
       final colors = _stripeTapeColors(bg);
       return IntrinsicWidth(
@@ -3350,7 +3818,10 @@ class LayerBuilder {
                 stripeColor: colors.stripe,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 0,
+                ),
                 child: Center(
                   child: Text(
                     layer.text ?? "",
@@ -3365,7 +3836,14 @@ class LayerBuilder {
       );
     }
 
-    const dotsKeys = ['tapeDots', 'tapeDotsPink', 'tapeDotsMint', 'tapeDotsLavender', 'tapeDotsOrange', 'tapeDotsGray'];
+    const dotsKeys = [
+      'tapeDots',
+      'tapeDotsPink',
+      'tapeDotsMint',
+      'tapeDotsLavender',
+      'tapeDotsOrange',
+      'tapeDotsGray',
+    ];
     if (dotsKeys.contains(bg)) {
       final colors = _tapeDotsColors(bg);
       const dotSpacing = 8.0;
@@ -3391,7 +3869,10 @@ class LayerBuilder {
                 dotColor: colors.dot,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: padH, vertical: padV),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: padH,
+                  vertical: padV,
+                ),
                 child: Center(
                   child: Text(
                     layer.text ?? "",
@@ -3407,8 +3888,16 @@ class LayerBuilder {
     }
 
     const solidTapeKeys = [
-      'tapeKraft', 'tapeGold', 'tapeSolidWhite', 'tapeSolidGray', 'tapeSolidPink',
-      'tapeSolidBlue', 'tapeSolidMint', 'tapeSolidLavender', 'tapeSolidOrange', 'tapeSolidGreen',
+      'tapeKraft',
+      'tapeGold',
+      'tapeSolidWhite',
+      'tapeSolidGray',
+      'tapeSolidPink',
+      'tapeSolidBlue',
+      'tapeSolidMint',
+      'tapeSolidLavender',
+      'tapeSolidOrange',
+      'tapeSolidGreen',
     ];
     if (solidTapeKeys.contains(bg)) {
       final colors = _tapeSolidColors(bg);
@@ -3439,7 +3928,14 @@ class LayerBuilder {
       );
     }
 
-    const doubleKeys = ['tapeDouble', 'tapeDoublePink', 'tapeDoubleMint', 'tapeDoubleBlue', 'tapeDoubleLavender', 'tapeDoubleGray'];
+    const doubleKeys = [
+      'tapeDouble',
+      'tapeDoublePink',
+      'tapeDoubleMint',
+      'tapeDoubleBlue',
+      'tapeDoubleLavender',
+      'tapeDoubleGray',
+    ];
     if (doubleKeys.contains(bg)) {
       final colors = _tapeDoubleColors(bg);
       return IntrinsicWidth(
@@ -3462,7 +3958,10 @@ class LayerBuilder {
                 stripeColor: colors.stripe,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 0,
+                ),
                 child: Center(
                   child: Text(
                     layer.text ?? "",
@@ -3537,10 +4036,7 @@ class _DashedBorderPainter extends CustomPainter {
     for (final metric in pathMetrics) {
       var distance = 0.0;
       while (distance < metric.length) {
-        final segment = metric.extractPath(
-          distance,
-          distance + dashWidth,
-        );
+        final segment = metric.extractPath(distance, distance + dashWidth);
         canvas.drawPath(segment, paint);
         distance += dashWidth + dashSpace;
       }
@@ -3612,8 +4108,16 @@ class _GridLinePainter extends CustomPainter {
     for (var y = 0.0; y <= size.height; y += step) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
-    canvas.drawLine(Offset(size.width, 0), Offset(size.width, size.height), paint);
-    canvas.drawLine(Offset(0, size.height), Offset(size.width, size.height), paint);
+    canvas.drawLine(
+      Offset(size.width, 0),
+      Offset(size.width, size.height),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+      paint,
+    );
   }
 
   @override
@@ -3644,7 +4148,8 @@ class _TornNoteEdgeClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldDelegate) =>
-      oldDelegate is _TornNoteEdgeClipper && (oldDelegate.step != step || oldDelegate.amp != amp);
+      oldDelegate is _TornNoteEdgeClipper &&
+      (oldDelegate.step != step || oldDelegate.amp != amp);
 }
 
 /// 찢어진 테이프 전용 – 오른쪽만 톱니 찢김 (메모지 아래 톱니와 다른 느낌)
@@ -3671,7 +4176,8 @@ class _TapeTornEdgeClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldDelegate) =>
-      oldDelegate is _TapeTornEdgeClipper && (oldDelegate.step != step || oldDelegate.amp != amp);
+      oldDelegate is _TapeTornEdgeClipper &&
+      (oldDelegate.step != step || oldDelegate.amp != amp);
 }
 
 /// 도트 테이프 – 작은 원 패턴
@@ -3683,7 +4189,10 @@ class _TapeDotsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = baseColor);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = baseColor,
+    );
     final paint = Paint()..color = dotColor;
     const spacing = 8.0;
     const r = 2.0;
@@ -3704,11 +4213,17 @@ class _TapeDoubleStripePainter extends CustomPainter {
   final Color baseColor;
   final Color stripeColor;
 
-  _TapeDoubleStripePainter({required this.baseColor, required this.stripeColor});
+  _TapeDoubleStripePainter({
+    required this.baseColor,
+    required this.stripeColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = baseColor);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = baseColor,
+    );
     const stripeWidth = 12.0;
     var x = -size.height * 2;
     var index = 0;
@@ -3741,8 +4256,10 @@ class _TapeStripePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height),
-        Paint()..color = baseColor);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = baseColor,
+    );
     const stripeWidth = 6.0;
     var x = -size.height * 2;
     var index = 0;
@@ -3783,6 +4300,7 @@ class _BubbleBackgroundPainter extends CustomPainter {
   static const double _tailWidth = 18.0;
   static const double _tailHeight = 10.0;
   static const double _radius = 16.0;
+
   /// 꼬리가 가장자리에 붙지 않도록 여백 (자연스러운 느낌)
   static const double _tailMargin = 12.0;
 
@@ -3797,8 +4315,8 @@ class _BubbleBackgroundPainter extends CustomPainter {
       final tailCenterX = tailPosition <= 0.25
           ? _tailMargin + _tailWidth / 2
           : tailPosition >= 0.75
-              ? w - _tailMargin - _tailWidth / 2
-              : w / 2;
+          ? w - _tailMargin - _tailWidth / 2
+          : w / 2;
       final tailLeft = tailCenterX - _tailWidth / 2;
       final tailRight = tailCenterX + _tailWidth / 2;
       _drawSquareBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
@@ -3810,14 +4328,24 @@ class _BubbleBackgroundPainter extends CustomPainter {
       final bool isLeft = tailPosition < 0.4;
       final bool isRight = tailPosition > 0.6;
       final tailCenterX = minX <= maxX
-          ? (isLeft ? minX : isRight ? maxX : w / 2)
-          : (isLeft ? (r + _tailWidth / 2) : isRight ? (w - r - _tailWidth / 2) : w / 2);
+          ? (isLeft
+                ? minX
+                : isRight
+                ? maxX
+                : w / 2)
+          : (isLeft
+                ? (r + _tailWidth / 2)
+                : isRight
+                ? (w - r - _tailWidth / 2)
+                : w / 2);
       final tailLeft = tailCenterX - _tailWidth / 2;
       final tailRight = tailCenterX + _tailWidth / 2;
       _drawRoundBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
     }
 
-    final fill = Paint()..color = fillColor..style = PaintingStyle.fill;
+    final fill = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
     final stroke = Paint()
       ..color = borderColor
       ..style = PaintingStyle.stroke
@@ -3827,7 +4355,14 @@ class _BubbleBackgroundPainter extends CustomPainter {
   }
 
   /// 라운드 말풍선: 둥근 사각형 본체 + 하단 평평한 구간에 꼬리 연결 (한 경로, 여백 없음)
-  void _drawRoundBubblePath(Path path, double w, double h, double tailLeft, double tailRight, double tailCenterX) {
+  void _drawRoundBubblePath(
+    Path path,
+    double w,
+    double h,
+    double tailLeft,
+    double tailRight,
+    double tailCenterX,
+  ) {
     final r = _radius;
     path.moveTo(tailLeft, h);
     path.lineTo(r, h);
@@ -3845,7 +4380,14 @@ class _BubbleBackgroundPainter extends CustomPainter {
   }
 
   /// 사각형 말풍선: 직사각형 본체 + 꼬리 왼/가운데/오른쪽 (한 경로, 여백 없음)
-  void _drawSquareBubblePath(Path path, double w, double h, double tailLeft, double tailRight, double tailCenterX) {
+  void _drawSquareBubblePath(
+    Path path,
+    double w,
+    double h,
+    double tailLeft,
+    double tailRight,
+    double tailCenterX,
+  ) {
     path.moveTo(tailLeft, h);
     path.lineTo(0, h);
     path.lineTo(0, 0);
@@ -3905,7 +4447,9 @@ class _FilmHolePainterV2 extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = holeColor..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = holeColor
+      ..style = PaintingStyle.fill;
     final leftX = 2.0;
     final rightX = size.width - 2.0 - holeW;
     final totalGap = size.height - (holesPerSide * holeH);
@@ -3978,10 +4522,13 @@ class _NeonCornerLPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     const r = 6.0;
-    canvas.drawPath(Path()
-      ..moveTo(0, r)
-      ..lineTo(0, 0)
-      ..lineTo(r, 0), paint);
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, r)
+        ..lineTo(0, 0)
+        ..lineTo(r, 0),
+      paint,
+    );
   }
 
   @override

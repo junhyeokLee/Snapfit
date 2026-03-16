@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
@@ -15,19 +16,17 @@ import 'template_assembly_screen.dart';
 class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
 
-  const TemplateDetailScreen({
-    super.key,
-    required this.template,
-  });
+  const TemplateDetailScreen({super.key, required this.template});
 
   @override
-  ConsumerState<TemplateDetailScreen> createState() => _TemplateDetailScreenState();
+  ConsumerState<TemplateDetailScreen> createState() =>
+      _TemplateDetailScreenState();
 }
 
 class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   late PremiumTemplate _template;
   bool _isUsing = false;
-  
+
   // Parsed template data: List of pages, each page is a list of layers
   List<List<LayerModel>> _parsedPages = [];
 
@@ -48,12 +47,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     try {
       final Map<String, dynamic> data = jsonDecode(_template.templateJson!);
       final List<dynamic>? pagesList = data['pages'] as List<dynamic>?;
-      
+
       if (pagesList != null) {
         // Assume preview canvas size (approx ratio)
         // 500x500 for parsing normalization
-        const canvasSize = Size(500, 500); 
-        
+        const canvasSize = Size(500, 500);
+
         _parsedPages = pagesList.map((p) {
           final map = p as Map<String, dynamic>;
           final layerList = (map['layers'] as List<dynamic>?) ?? [];
@@ -64,18 +63,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             );
           }).toList();
         }).toList();
-        
+
         // Sort by pageNumber if needed, but array order usually matches
       }
     } catch (e) {
-      debugPrint('Failed to parse templateJson: $e');
+      AppLogger.warn('Failed to parse templateJson: $e');
       _parsedPages = [];
     }
   }
 
   Future<void> _refreshTemplate() async {
     try {
-      final updated = await ref.read(templateRepositoryProvider).getTemplate(_template.id);
+      final updated = await ref
+          .read(templateRepositoryProvider)
+          .getTemplate(_template.id);
       if (mounted) {
         setState(() {
           _template = updated;
@@ -102,7 +103,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     try {
       // 2. API Call
       await ref.read(templateRepositoryProvider).likeTemplate(_template.id);
-      
+
       // Invalidate list provider so the previous screen updates
       ref.invalidate(templateListProvider);
     } catch (e) {
@@ -114,18 +115,18 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             likeCount: oldCount,
           );
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('좋아요 처리에 실패했습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('좋아요 처리에 실패했습니다: $e')));
       }
     }
   }
 
   Future<void> _onUse() async {
     if (_parsedPages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('템플릿 데이터를 불러오는데 실패했습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('템플릿 데이터를 불러오는데 실패했습니다.')));
       return;
     }
 
@@ -182,7 +183,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.arrow_back_ios_new, size: 20),
+                              child: const Icon(
+                                Icons.arrow_back_ios_new,
+                                size: 20,
+                              ),
                             ),
                           ),
                           Text(
@@ -204,11 +208,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 30.h),
-                    
+
                     _buildHeroImage(),
-                    
+
                     SizedBox(height: 40.h),
-                    
+
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Column(
@@ -235,25 +239,37 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 40.h),
-                    
+
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: IntrinsicHeight(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                             Expanded(child: _buildFeatureCard(Icons.photo_library_outlined, '제주 전용 레이아웃', '여행지 감성에 맞춘 스티커와 프레임이 포함되어 있습니다.')),
-                             SizedBox(width: 16.w),
-                             Expanded(child: _buildFeatureCard(Icons.people_outline, '5인 협업 최적화', '가족, 친구들과 함께 각자의 페이지를 동시에 편집하세요.')),
+                            Expanded(
+                              child: _buildFeatureCard(
+                                Icons.photo_library_outlined,
+                                '제주 전용 레이아웃',
+                                '여행지 감성에 맞춘 스티커와 프레임이 포함되어 있습니다.',
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: _buildFeatureCard(
+                                Icons.people_outline,
+                                '5인 협업 최적화',
+                                '가족, 친구들과 함께 각자의 페이지를 동시에 편집하세요.',
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 50.h),
-                    
+
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Row(
@@ -288,11 +304,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         itemBuilder: (context, index) {
                           // 1. Try to render parsed layout
                           if (index < _parsedPages.length) {
-                             return _buildPageLayoutPreview(index, _parsedPages[index]);
+                            return _buildPageLayoutPreview(
+                              index,
+                              _parsedPages[index],
+                            );
                           }
                           // 2. Fallback to preview images
                           if (index < _template.previewImages.length) {
-                             return _buildPagePreviewItem(_template.previewImages[index]);
+                            return _buildPagePreviewItem(
+                              _template.previewImages[index],
+                            );
                           }
                           // 3. Fallback to placeholder
                           return _buildPagePreviewPlaceholder(index);
@@ -308,13 +329,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 40.h),
-                    
+
                     // User Count Badge
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 20.w),
-                      padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 16.h,
+                        horizontal: 20.w,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEBF8F9),
                         borderRadius: BorderRadius.circular(100.r),
@@ -357,24 +381,24 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 120.h),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
               padding: EdgeInsets.only(
-                left: 20.w, 
-                right: 20.w, 
-                top: 20.h, 
-                bottom: MediaQuery.of(context).padding.bottom + 20.h
+                left: 20.w,
+                right: 20.w,
+                top: 20.h,
+                bottom: MediaQuery.of(context).padding.bottom + 20.h,
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -394,7 +418,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          _template.isLiked ? Icons.favorite : Icons.favorite_border,
+                          _template.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
                           color: _template.isLiked ? Colors.red : Colors.grey,
                           size: 28.sp,
                         ),
@@ -423,26 +449,29 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: _isUsing 
-                        ? SizedBox(
-                            width: 24.w, 
-                            height: 24.w, 
-                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                          )
-                        : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '이 템플릿 사용하기',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.bold,
+                      child: _isUsing
+                          ? SizedBox(
+                              width: 24.w,
+                              height: 24.w,
+                              child: const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '이 템플릿 사용하기',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                const Icon(Icons.arrow_forward, size: 20),
+                              ],
                             ),
-                          ),
-                          SizedBox(width: 8.w),
-                          const Icon(Icons.arrow_forward, size: 20),
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -475,13 +504,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           ],
         ),
         child: Stack(
-           children: [
-             if (_template.isBest || _template.isPremium)
+          children: [
+            if (_template.isBest || _template.isPremium)
               Positioned(
                 top: 24.h,
                 left: 24.w,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF00C7D8),
                     borderRadius: BorderRadius.circular(100.r),
@@ -503,11 +535,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   ),
                 ),
               ),
-             Positioned(
-               bottom: 24.h,
-               left: 24.w,
-               right: 24.w,
-               child: Text(
+            Positioned(
+              bottom: 24.h,
+              left: 24.w,
+              right: 24.w,
+              child: Text(
                 _template.title.replaceAll(' ', ' '),
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -522,9 +554,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                     ),
                   ],
                 ),
-               ),
-             ),
-           ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -547,32 +579,32 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Container(
-             padding: EdgeInsets.all(10.w),
-             decoration: BoxDecoration(
-               color: const Color(0xFFEBF8F9),
-               shape: BoxShape.circle,
-             ),
-             child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
-           ),
-           SizedBox(height: 16.h),
-           Text(
-             title,
-             style: TextStyle(
-               fontSize: 15.sp,
-               fontWeight: FontWeight.bold,
-               color: const Color(0xFF1A1A1A),
-             ),
-           ),
-           SizedBox(height: 8.h),
-           Text(
-             desc,
-             style: TextStyle(
-               fontSize: 12.sp,
-               color: const Color(0xFF888888),
-               height: 1.4,
-             ),
-           ),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEBF8F9),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1A1A1A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            desc,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: const Color(0xFF888888),
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -591,12 +623,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           width: 140.w,
           height: 200.h,
           decoration: BoxDecoration(
-//            border: Border.all(color: SnapFitColors.accent.withOpacity(0.3), width: 1.5),
+            //            border: Border.all(color: SnapFitColors.accent.withOpacity(0.3), width: 1.5),
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(4.r),
           ),
           child: Center(
-              child: Text("Preview ${index + 1}", style: TextStyle(color: Colors.grey))
+            child: Text(
+              "Preview ${index + 1}",
+              style: TextStyle(color: Colors.grey),
+            ),
           ),
         ),
       ),
@@ -620,13 +655,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             image: DecorationImage(
               image: NetworkImage(imageUrl),
               fit: BoxFit.cover,
-            )
+            ),
           ),
         ),
       ),
     );
   }
-  
+
   Widget _buildPageLayoutPreview(int index, List<LayerModel> layers) {
     return GestureDetector(
       onTap: () => _openFullScreenView(index),
@@ -646,11 +681,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(4.r),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                )
-              ]
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+              ],
             ),
             child: TemplatePageRenderer(
               layers: layers,
@@ -679,4 +711,3 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 }
-

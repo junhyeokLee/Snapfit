@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -25,14 +23,17 @@ class FakeStorageService implements StorageService {
   Future<String?> uploadFile(File file, String path) async => null;
 
   @override
-  Future<UploadedUrls> uploadImageVariants(AssetEntity asset,
-          {int previewMaxDimension = 1600}) async =>
-      const UploadedUrls();
+  Future<UploadedUrls> uploadImageVariants(
+    AssetEntity asset, {
+    int previewMaxDimension = 1600,
+  }) async => const UploadedUrls();
 
   @override
-  Future<UploadedUrls> uploadCoverVariants(Uint8List pngBytes,
-          {int originalMaxDimension = 4096, int previewMaxDimension = 1024}) async =>
-      const UploadedUrls();
+  Future<UploadedUrls> uploadCoverVariants(
+    Uint8List pngBytes, {
+    int originalMaxDimension = 4096,
+    int previewMaxDimension = 1024,
+  }) async => const UploadedUrls();
 }
 
 class FakeAlbumPersistenceService implements AlbumPersistenceService {
@@ -58,9 +59,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         albumRepositoryProvider.overrideWithValue(mockRepo),
-        albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
-        albumPersistenceServiceProvider
-            .overrideWithValue(FakeAlbumPersistenceService()),
+        albumEditorServiceProvider.overrideWithValue(
+          const AlbumEditorService(),
+        ),
+        albumPersistenceServiceProvider.overrideWithValue(
+          FakeAlbumPersistenceService(),
+        ),
         storageServiceProvider.overrideWithValue(FakeStorageService()),
       ],
     );
@@ -84,9 +88,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         albumRepositoryProvider.overrideWithValue(mockRepo),
-        albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
-        albumPersistenceServiceProvider
-            .overrideWithValue(FakeAlbumPersistenceService()),
+        albumEditorServiceProvider.overrideWithValue(
+          const AlbumEditorService(),
+        ),
+        albumPersistenceServiceProvider.overrideWithValue(
+          FakeAlbumPersistenceService(),
+        ),
         storageServiceProvider.overrideWithValue(FakeStorageService()),
       ],
     );
@@ -109,9 +116,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         albumRepositoryProvider.overrideWithValue(mockRepo),
-        albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
-        albumPersistenceServiceProvider
-            .overrideWithValue(FakeAlbumPersistenceService()),
+        albumEditorServiceProvider.overrideWithValue(
+          const AlbumEditorService(),
+        ),
+        albumPersistenceServiceProvider.overrideWithValue(
+          FakeAlbumPersistenceService(),
+        ),
         storageServiceProvider.overrideWithValue(FakeStorageService()),
       ],
     );
@@ -132,9 +142,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         albumRepositoryProvider.overrideWithValue(mockRepo),
-        albumEditorServiceProvider.overrideWithValue(const AlbumEditorService()),
-        albumPersistenceServiceProvider
-            .overrideWithValue(FakeAlbumPersistenceService()),
+        albumEditorServiceProvider.overrideWithValue(
+          const AlbumEditorService(),
+        ),
+        albumPersistenceServiceProvider.overrideWithValue(
+          FakeAlbumPersistenceService(),
+        ),
         storageServiceProvider.overrideWithValue(FakeStorageService()),
       ],
     );

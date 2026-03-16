@@ -4,11 +4,8 @@ import '../../../../../core/constants/snapfit_colors.dart';
 
 class HomeHeaderNew extends StatelessWidget {
   final VoidCallback onNotification;
-  
-  const HomeHeaderNew({
-    super.key,
-    required this.onNotification,
-  });
+
+  const HomeHeaderNew({super.key, required this.onNotification});
 
   @override
   Widget build(BuildContext context) {

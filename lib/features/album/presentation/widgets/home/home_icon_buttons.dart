@@ -32,9 +32,7 @@ class HomeRoundIconButton extends StatelessWidget {
         child: Icon(
           icon,
           size: 18.sp,
-          color: isActive
-              ? Colors.white
-              : SnapFitColors.textPrimaryOf(context),
+          color: isActive ? Colors.white : SnapFitColors.textPrimaryOf(context),
         ),
       ),
     );
@@ -64,10 +62,7 @@ class HomeCardIconButton extends StatelessWidget {
       child: Container(
         width: 30.w,
         height: 30.w,
-        decoration: BoxDecoration(
-          color: background,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: background, shape: BoxShape.circle),
         child: Icon(icon, size: 16.sp, color: iconColor),
       ),
     );
@@ -79,11 +74,7 @@ class HomeCircleActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
 
-  const HomeCircleActionButton({
-    super.key,
-    required this.icon,
-    this.onPressed,
-  });
+  const HomeCircleActionButton({super.key, required this.icon, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

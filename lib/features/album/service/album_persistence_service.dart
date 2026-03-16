@@ -18,7 +18,9 @@ class AlbumPersistenceService {
 
   Future<LayerModel> _uploadSingleLayerWithRetry(LayerModel layer) async {
     if (layer.type != LayerType.image ||
-        (layer.previewUrl != null || layer.imageUrl != null || layer.originalUrl != null) ||
+        (layer.previewUrl != null ||
+            layer.imageUrl != null ||
+            layer.originalUrl != null) ||
         layer.asset == null) {
       return layer;
     }
@@ -41,7 +43,9 @@ class AlbumPersistenceService {
       } catch (e) {
         attempt++;
         if (attempt > _maxUploadRetries) {
-          debugPrint('[Background] Image upload failed for layer ${layer.id}: $e');
+          debugPrint(
+            '[Background] Image upload failed for layer ${layer.id}: $e',
+          );
           return layer; // 실패한 레이어는 나중에 재시도할 수 있도록 그대로 둔다
         }
         await Future.delayed(const Duration(milliseconds: 500));
@@ -64,7 +68,9 @@ class AlbumPersistenceService {
         i,
         (i + _maxConcurrentImageUploads).clamp(0, layers.length),
       );
-      final chunkResults = await Future.wait(chunk.map(_uploadSingleLayerWithRetry));
+      final chunkResults = await Future.wait(
+        chunk.map(_uploadSingleLayerWithRetry),
+      );
       updated.addAll(chunkResults);
 
       completed = updated.length;
@@ -110,22 +116,34 @@ class AlbumPersistenceService {
 
       // 4. 최종 JSON 생성 (실제 서버 URL 포함)
       final json = jsonEncode({
-        'layers': updatedLayers.map((l) => LayerExportMapper.toJson(l, canvasSize: canvasSize, isCover: true)).toList()
+        'layers': updatedLayers
+            .map(
+              (l) => LayerExportMapper.toJson(
+                l,
+                canvasSize: canvasSize,
+                isCover: true,
+              ),
+            )
+            .toList(),
       });
 
       // 5. URL 결정
       String? coverPreviewUrl;
       String? coverOriginalUrl;
       if (coverUploaded != null) {
-        coverPreviewUrl = coverUploaded.previewGsPath ?? coverUploaded.previewUrl;
-        coverOriginalUrl = coverUploaded.originalGsPath ?? coverUploaded.originalUrl;
+        coverPreviewUrl =
+            coverUploaded.previewGsPath ?? coverUploaded.previewUrl;
+        coverOriginalUrl =
+            coverUploaded.originalGsPath ?? coverUploaded.originalUrl;
       }
 
       // 커버 업로드 URL이 없고, 레이어도 있을 때만 첫 이미지 레이어를 폴백으로 사용
       if (coverPreviewUrl == null && updatedLayers.isNotEmpty) {
         try {
           final imageLayer = updatedLayers.firstWhere(
-            (l) => l.type == LayerType.image && (l.previewUrl ?? l.imageUrl) != null,
+            (l) =>
+                l.type == LayerType.image &&
+                (l.previewUrl ?? l.imageUrl) != null,
           );
           coverPreviewUrl = imageLayer.previewUrl ?? imageLayer.imageUrl;
         } catch (_) {
@@ -148,9 +166,8 @@ class AlbumPersistenceService {
           coverTheme: themeLabel,
         ),
       );
-      
-      debugPrint('[Background] Upload Completed for Album $albumId');
 
+      debugPrint('[Background] Upload Completed for Album $albumId');
     } catch (e) {
       debugPrint('[Background] Upload Failed: $e');
     }
@@ -160,28 +177,31 @@ class AlbumPersistenceService {
   Future<bool> pollAlbumCreation(int albumId) async {
     int retries = 0;
     const maxRetries = 30; // 최대 30초 대기
-    
+
     while (retries < maxRetries) {
       try {
         final album = await _albumRepository.fetchAlbum(albumId.toString());
-        
+
         if (album.id > 0) {
           bool isReady = false;
-          
-          if (album.coverLayersJson.isNotEmpty && album.coverLayersJson != '{"layers":[]}') {
+
+          if (album.coverLayersJson.isNotEmpty &&
+              album.coverLayersJson != '{"layers":[]}') {
             try {
-              final json = jsonDecode(album.coverLayersJson) as Map<String, dynamic>;
+              final json =
+                  jsonDecode(album.coverLayersJson) as Map<String, dynamic>;
               final layers = json['layers'] as List<dynamic>?;
-              
+
               if (layers != null && layers.isNotEmpty) {
                 bool allImagesHaveUrls = true;
                 bool hasImageLayers = false;
-                
+
                 for (final layerJson in layers) {
                   final type = layerJson['type'] as String?;
                   if (type == 'IMAGE') {
                     hasImageLayers = true;
-                    final payload = layerJson['payload'] as Map<String, dynamic>?;
+                    final payload =
+                        layerJson['payload'] as Map<String, dynamic>?;
                     String? previewUrl;
                     if (payload != null) {
                       previewUrl = payload['previewUrl'] as String?;
@@ -192,19 +212,21 @@ class AlbumPersistenceService {
                     }
                   }
                 }
-                if (hasImageLayers && allImagesHaveUrls) isReady = true;
-                else if (!hasImageLayers) isReady = true;
+                if (hasImageLayers && allImagesHaveUrls)
+                  isReady = true;
+                else if (!hasImageLayers)
+                  isReady = true;
               } else {
                 isReady = true;
               }
             } catch (e) {
               isReady = false;
             }
-          } else if ((album.coverImageUrl?.isNotEmpty ?? false) || 
-                     (album.coverTheme?.isNotEmpty ?? false)) {
+          } else if ((album.coverImageUrl?.isNotEmpty ?? false) ||
+              (album.coverTheme?.isNotEmpty ?? false)) {
             isReady = true;
           }
-          
+
           if (isReady) {
             debugPrint('🎉 Album ready! ID: ${album.id}');
             return true;
@@ -213,7 +235,7 @@ class AlbumPersistenceService {
       } catch (e) {
         debugPrint('❌ Album not ready yet, retrying... ($retries/$maxRetries)');
       }
-      
+
       await Future.delayed(const Duration(seconds: 1));
       retries++;
     }

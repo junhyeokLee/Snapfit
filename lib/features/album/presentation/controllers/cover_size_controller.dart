@@ -5,7 +5,7 @@ class CoverSizeController {
   double getCoverTop(CoverSize s, double maxHeight) {
     if (s.ratio > 1) return maxHeight * 0.16; // 가로형
     if (s.ratio < 1) return maxHeight * 0.12; // 세로형
-    return maxHeight * 0.12;                  // 정사각형
+    return maxHeight * 0.12; // 정사각형
   }
 
   double getCoverSidePadding(CoverSize s) {

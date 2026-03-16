@@ -19,14 +19,16 @@ class HomeErrorState extends StatelessWidget {
       _logged = true;
       ScreenLogger.widget('HomeErrorState', '홈 에러 상태 · 연결 실패 등');
     }
-    final isTimeout = error is DioException &&
+    final isTimeout =
+        error is DioException &&
         (error as DioException).type == DioExceptionType.connectionTimeout;
     if (isTimeout) {
       return HomeEmptyState(onCreate: () {}); // Error state return
     }
 
     final isConnectionRefused =
-        error is DioException && (error as DioException).type == DioExceptionType.connectionError;
+        error is DioException &&
+        (error as DioException).type == DioExceptionType.connectionError;
     final textColor = SnapFitColors.textPrimary.withOpacity(0.9);
     final subColor = SnapFitColors.textSecondary.withOpacity(0.7);
     return Center(
@@ -41,7 +43,11 @@ class HomeErrorState extends StatelessWidget {
               isConnectionRefused
                   ? '서버에 연결할 수 없습니다\n(Connection refused)'
                   : '에러 발생',
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: textColor),
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
               textAlign: TextAlign.center,
             ),
             if (isConnectionRefused) ...[
@@ -56,7 +62,10 @@ class HomeErrorState extends StatelessWidget {
             ] else
               Padding(
                 padding: EdgeInsets.only(top: 12.h),
-                child: Text('$error', style: TextStyle(fontSize: 13.sp, color: subColor)),
+                child: Text(
+                  '$error',
+                  style: TextStyle(fontSize: 13.sp, color: subColor),
+                ),
               ),
           ],
         ),

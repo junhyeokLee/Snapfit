@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 class NoGlow extends ScrollBehavior {
   const NoGlow();
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
     return child;
   }
 }

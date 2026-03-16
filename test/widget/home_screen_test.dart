@@ -41,7 +41,9 @@ void main() {
         overrides: [
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
-            () => FakeAuthViewModel(const UserInfo(id: 1, name: 'User', provider: 'kakao')),
+            () => FakeAuthViewModel(
+              const UserInfo(id: 1, name: 'User', provider: 'kakao'),
+            ),
           ),
           templateListProvider.overrideWith((ref) async => const []),
         ],
@@ -66,7 +68,9 @@ void main() {
         overrides: [
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
-            () => FakeAuthViewModel(const UserInfo(id: 1, name: 'User', provider: 'kakao')),
+            () => FakeAuthViewModel(
+              const UserInfo(id: 1, name: 'User', provider: 'kakao'),
+            ),
           ),
           templateListProvider.overrideWith((ref) async => const []),
         ],
@@ -90,7 +94,9 @@ void main() {
         overrides: [
           albumRepositoryProvider.overrideWithValue(mockRepo),
           authViewModelProvider.overrideWith(
-            () => FakeAuthViewModel(const UserInfo(id: 1, name: 'User', provider: 'kakao')),
+            () => FakeAuthViewModel(
+              const UserInfo(id: 1, name: 'User', provider: 'kakao'),
+            ),
           ),
           templateListProvider.overrideWith((ref) async => const []),
         ],

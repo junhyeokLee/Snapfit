@@ -37,7 +37,10 @@ class TemplateRepositoryImpl implements TemplateRepository {
   }
 
   @override
-  Future<Album> createAlbumFromTemplate(int id, {Map<String, String>? replacements}) async {
+  Future<Album> createAlbumFromTemplate(
+    int id, {
+    Map<String, String>? replacements,
+  }) async {
     final userId = await _getUserId();
     return api.createAlbumFromTemplate(id, userId, replacements);
   }

@@ -7,6 +7,7 @@ import 'package:snap_fit/features/store/data/repositories/template_repository_im
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 
 class MockTemplateApi extends Mock implements TemplateApi {}
+
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
@@ -16,8 +17,9 @@ void main() {
     final repository = TemplateRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-1');
-    when(() => api.getTemplates('user-1'))
-        .thenAnswer((_) async => const <PremiumTemplate>[]);
+    when(
+      () => api.getTemplates('user-1'),
+    ).thenAnswer((_) async => const <PremiumTemplate>[]);
 
     await repository.getTemplates();
 
@@ -40,11 +42,14 @@ void main() {
     final repository = TemplateRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-2');
-    when(() => api.createAlbumFromTemplate(2, 'user-2', any()))
-        .thenAnswer((_) async => const Album());
+    when(
+      () => api.createAlbumFromTemplate(2, 'user-2', any()),
+    ).thenAnswer((_) async => const Album());
 
     await repository.createAlbumFromTemplate(2, replacements: {'x': 'y'});
 
-    verify(() => api.createAlbumFromTemplate(2, 'user-2', {'x': 'y'})).called(1);
+    verify(
+      () => api.createAlbumFromTemplate(2, 'user-2', {'x': 'y'}),
+    ).called(1);
   });
 }
