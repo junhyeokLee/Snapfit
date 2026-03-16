@@ -179,7 +179,7 @@ flutter:
 
     - family: Samlip
       fonts:
-        - asset: assets/fonts/Samlip-Regular.ttf
+        - asset: assets/fonts/samlip-regular.ttf
           weight: 800
 
     - family: Aggravo
