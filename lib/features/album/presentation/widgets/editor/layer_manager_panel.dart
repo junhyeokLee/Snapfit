@@ -232,6 +232,9 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
           color: SnapFitColors.textSecondaryOf(context),
           size: 20.sp,
         );
+      case LayerType.sticker:
+      case LayerType.decoration:
+        return _buildImageLayerPreview(context, layer, imageOrder ?? 1);
     }
   }
 
@@ -342,6 +345,10 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         final text = layer.text ?? '';
         if (text.isEmpty) return '텍스트';
         return text.length <= 12 ? text : '${text.substring(0, 12)}…';
+      case LayerType.sticker:
+        return '스티커 ${index + 1}';
+      case LayerType.decoration:
+        return '장식 ${index + 1}';
       case LayerType.image:
         final isSticker = (layer.imageBackground ?? '').toLowerCase().contains('sticker');
         if (isSticker && (layer.text ?? '').isNotEmpty) {

@@ -13,8 +13,8 @@ class ImageTemplate {
 }
 
 const List<ImageTemplate> imageTemplates = [
-  ImageTemplate(key: 'free', label: '자유', aspect: null),
-  ImageTemplate(key: '1:1', label: '정사각형', aspect: 1.0),
+  ImageTemplate(key: 'free', label: '원본', aspect: null),
+  ImageTemplate(key: '1:1', label: '1:1', aspect: 1.0),
   ImageTemplate(key: '4:3', label: '4:3', aspect: 4 / 3),
   ImageTemplate(key: '3:4', label: '3:4', aspect: 3 / 4),
   ImageTemplate(key: '16:9', label: '16:9', aspect: 16 / 9),

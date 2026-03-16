@@ -57,8 +57,11 @@ class TextEditorManager {
           heightFactor: 0.92,
           child: EditTextOverlay(
             initialText: "",
+            // 글쓰기 모드 기본 텍스트는 항상 흰색으로 시작
             initialStyle: const TextStyle(
-              fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
             onSubmit: (newText, newStyle, mode, color, align) {
               if (newText.trim().isEmpty) { Navigator.pop(context); return; } // 빈값 방지
@@ -81,8 +84,13 @@ class TextEditorManager {
 
   /// 기존 레이어 편집용 (open()과 동일하나 명시적 호출용)
   Future<void> openForExisting(LayerModel layer) async {
+    // 기존 레이어 편집 시에도, 텍스트 색이 없으면 흰색을 기본으로 사용
     final safeStyle = layer.textStyle ??
-        const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.normal);
+        const TextStyle(
+          fontSize: 14,
+          color: Colors.white,
+          fontWeight: FontWeight.normal,
+        );
 
     await showModalBottomSheet(
       context: context,

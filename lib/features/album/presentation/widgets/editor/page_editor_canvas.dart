@@ -132,18 +132,21 @@ class PageEditorCanvas extends StatelessWidget {
                   children: [
                     Container(color: backgroundColor ?? SnapFitColors.pureWhite),
                     ...interaction.sortByZ(layers).map((layer) {
-                      // 스타일(textBackground/imageBackground) 변경 시 즉시 반영되도록 키에 포함
                       final styleKey = ValueKey('${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}');
-                      if (layer.type == LayerType.image) {
-                        return KeyedSubtree(
-                          key: styleKey,
-                          child: layerBuilder.buildImage(layer, isCover: isCover),
-                        );
+                      switch (layer.type) {
+                        case LayerType.image:
+                        case LayerType.sticker:
+                        case LayerType.decoration:
+                          return KeyedSubtree(
+                            key: styleKey,
+                            child: layerBuilder.buildImage(layer, isCover: isCover),
+                          );
+                        case LayerType.text:
+                          return KeyedSubtree(
+                            key: styleKey,
+                            child: layerBuilder.buildText(layer, isCover: isCover),
+                          );
                       }
-                      return KeyedSubtree(
-                        key: styleKey,
-                        child: layerBuilder.buildText(layer, isCover: isCover),
-                      );
                     }),
                     // 내지 편집 시에도 커버와 동일하게, 드래그/회전 중일 때만
                     // 중앙 가이드선을 레이어 위에 렌더링. 논리 캔버스와 동일한 크기로 고정해 가운데가 정확히 맞도록 함.

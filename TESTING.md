@@ -87,3 +87,7 @@ when(() => mock.deleteAlbum(any())).thenAnswer((_) async {});
 - [Flutter testing](https://docs.flutter.dev/testing)
 - [Riverpod testing](https://riverpod.dev/docs/essentials/testing)
 - [mocktail](https://pub.dev/packages/mocktail)
+
+## CI/CD
+
+CI 설정은 같은 저장소의 `CI_CD.md` 를 참고하세요.

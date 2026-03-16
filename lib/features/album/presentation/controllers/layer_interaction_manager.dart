@@ -35,6 +35,7 @@ class LayerInteractionManager {
   final Map<String, double> _rot = {}; // 레이어 회전 (라디안)
   final Map<String, Size> _refBaseSize = {}; // 레이어 원본 크기
   final Map<String, int> _z = {}; // Z-index (레이어 쌓임 순서)
+  final Map<String, GlobalKey> _layerKeys = {}; // 각 레이어의 Transform 노드용 키 (글로벌 좌표 계산용)
   int _zCounter = 0; // Z-index 카운터
 
   // ==================== 인터랙션 상태 ====================
@@ -49,6 +50,9 @@ class LayerInteractionManager {
 
   /// 리사이즈(핸들 드래그) 상태
   _ResizeState? _resizeState;
+
+  /// 이미지 슬롯 안에서 "사진만" 이동시키는 모드 (툴바 토글)
+  bool _imagePanMode = false;
 
   // ==================== 스냅 가이드 표시 ====================
   bool _showVerticalGuide = false; // 세로 중앙선 표시 여부
@@ -128,6 +132,79 @@ class LayerInteractionManager {
 
   String? get selectedLayerId => _selectedLayerId;
 
+  bool get isImagePanMode => _imagePanMode;
+
+  GlobalKey _getLayerKey(String id) {
+    return _layerKeys.putIfAbsent(id, () => GlobalKey());
+  }
+
+  /// 현재 선택된 레이어의 화면(Global) 좌표 Rect를 계산
+  /// - PageEditorScreen에서 툴바 위치를 잡을 때 사용
+  Rect? getSelectedLayerGlobalRect() {
+    final selectedId = _selectedLayerId;
+    if (selectedId == null) return null;
+    final key = _layerKeys[selectedId];
+    if (key == null) return null;
+    final ctx = key.currentContext;
+    if (ctx == null) return null;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null || !box.attached) return null;
+
+    // Transform(회전/스케일)까지 모두 반영된 실제 그리기 영역의
+    // 축 기준 경계 박스를 계산한다.
+    final size = box.size;
+    final points = <Offset>[
+      box.localToGlobal(Offset.zero),
+      box.localToGlobal(Offset(size.width, 0)),
+      box.localToGlobal(Offset(0, size.height)),
+      box.localToGlobal(Offset(size.width, size.height)),
+    ];
+
+    double minX = points.first.dx;
+    double maxX = points.first.dx;
+    double minY = points.first.dy;
+    double maxY = points.first.dy;
+    for (final p in points.skip(1)) {
+      minX = math.min(minX, p.dx);
+      maxX = math.max(maxX, p.dx);
+      minY = math.min(minY, p.dy);
+      maxY = math.max(maxY, p.dy);
+    }
+
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  /// 현재 선택된 레이어의 "테두리 중앙 아래" 지점(Global 좌표)
+  Offset? getSelectedLayerBottomCenterGlobal() {
+    final rect = getSelectedLayerGlobalRect();
+    if (rect == null) return null;
+    return Offset(rect.center.dx, rect.bottom);
+  }
+
+  /// 현재 선택된 레이어의 "테두리 중앙 위" 지점(Global 좌표)
+  Offset? getSelectedLayerTopCenterGlobal() {
+    final rect = getSelectedLayerGlobalRect();
+    if (rect == null) return null;
+    return Offset(rect.center.dx, rect.top);
+  }
+
+  /// 커버(캔버스)의 화면(Global) 좌표 Rect
+  Rect? getCoverGlobalRect() {
+    final ctx = coverKey.currentContext;
+    if (ctx == null) return null;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null || !box.attached) return null;
+    final topLeft = box.localToGlobal(Offset.zero);
+    final size = box.size;
+    return Rect.fromLTWH(topLeft.dx, topLeft.dy, size.width, size.height);
+  }
+
+  /// 현재 선택된 이미지 레이어에 대해 사진 이동 모드를 토글
+  void toggleImagePanMode() {
+    _imagePanMode = !_imagePanMode;
+    setState(() {});
+  }
+
   /// 편집 모드 설정 (텍스트 레이어 전용)
   void setEditing(String? id) => _editingLayerId = id;
 
@@ -153,17 +230,21 @@ class LayerInteractionManager {
   }
 
   /// 레이어 목록을 Z-index 순으로 정렬
+  /// 템플릿에서 로드한 레이어는 LayerModel.zIndex를 사용하고,
+  /// 에디터에서 순서를 바꾼 경우 _z 캐시를 사용한다.
   List<LayerModel> sortByZ(List<LayerModel> list) {
     final l = List<LayerModel>.from(list);
-    // 새로 추가된 레이어가 같은 프레임에서 바로 최상단으로 보이도록
-    // 정렬 전에 Z-index를 먼저 할당한다. (없으면 0으로 취급되어 아래로 내려가는 문제 방지)
     for (final layer in l) {
-      _z.putIfAbsent(layer.id, () => ++_zCounter);
+      _z.putIfAbsent(layer.id, () => layer.zIndex);
     }
 
-    // 1) 현재 Z-cache 기준 정렬 결과
     final byZ = List<LayerModel>.from(l)
-      ..sort((a, b) => (_z[a.id] ?? 0).compareTo(_z[b.id] ?? 0));
+      ..sort((a, b) {
+        final za = _z[a.id] ?? a.zIndex;
+        final zb = _z[b.id] ?? b.zIndex;
+        if (za != zb) return za.compareTo(zb);
+        return a.id.compareTo(b.id);
+      });
 
     // 2) list 순서와 _z 순서가 다르면, 선택/드래그로 맨 앞 올린 직후 VM 반영이 한 프레임 늦을 수 있음.
     //    이때 _z를 list로 덮어쓰면 선택한 레이어가 잠깐 뒤로 그려지는 문제가 있으므로,
@@ -198,6 +279,8 @@ class LayerInteractionManager {
   void setSelectedLayer(String layerId) {
     setState(() {
       _selectedLayerId = layerId;
+      // 새 레이어를 선택할 때는 항상 사진 위치 조정 모드를 초기화
+      _imagePanMode = false;
     });
   }
 
@@ -206,6 +289,8 @@ class LayerInteractionManager {
     setState(() {
       _selectedLayerId = null;
       _editingLayerId = null;
+      // 선택이 해제되면 사진 위치 조정 모드도 항상 OFF
+      _imagePanMode = false;
       _showVerticalGuide = false;
       _showHorizontalGuide = false;
       _showDiagonalGuide = false;
@@ -229,6 +314,7 @@ class LayerInteractionManager {
       _z.remove(id);
       _gestureStates.remove(id);
       _selectedLayerId = null;
+      _imagePanMode = false;
     });
   }
 
@@ -328,6 +414,7 @@ class LayerInteractionManager {
           left: _pos[layer.id]!.dx,
           top: _pos[layer.id]!.dy,
           child: Transform.rotate(
+            key: _getLayerKey(layer.id),
             angle: _rot[layer.id]!,
             alignment: Alignment.center, // 명시적 중심축 설정
             child: Transform.scale(
@@ -451,6 +538,12 @@ class LayerInteractionManager {
         bool isCover = false,
       }) {
     if (_editingLayerId == layer.id) return; // 편집 중이면 제스처 무시
+
+    // 사진 위치 조정 모드: 프레임은 고정, 안의 이미지(offset)만 이동
+    if (_imagePanMode && layer.type == LayerType.image) {
+      _handleImagePanUpdate(layer, details, baseWidth, baseHeight);
+      return;
+    }
 
     final gestureState = _gestureStates[layer.id];
     if (gestureState == null) return; // 상태가 없으면 무시
@@ -658,6 +751,37 @@ class LayerInteractionManager {
       _rot[layer.id] = targetRotation;
       _pos[layer.id] = newPos;
     });
+  }
+
+  /// 이미지 슬롯 안에서 사진 자체를 드래그로 이동시킬 때 호출
+  void _handleImagePanUpdate(
+    LayerModel layer,
+    ScaleUpdateDetails details,
+    double baseWidth,
+    double baseHeight,
+  ) {
+    // 부모 Transform.scale 보정
+    Offset delta = details.focalPointDelta;
+    final parentScale = _getParentScale();
+    if (parentScale > 0) {
+      delta = delta / parentScale;
+    }
+
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final current = vm.findLayerById(layer.id) ?? layer;
+    final prevOffset = current.imageOffset ?? Offset.zero;
+    var nextOffset = prevOffset + delta;
+
+    // alignment(-1~1)로 매핑할 때 적당한 범위를 주기 위해,
+    // 레이어 박스 크기의 절반을 기준으로 클램프
+    final maxDx = baseWidth * 0.5;
+    final maxDy = baseHeight * 0.5;
+    nextOffset = Offset(
+      nextOffset.dx.clamp(-maxDx, maxDx),
+      nextOffset.dy.clamp(-maxDy, maxDy),
+    );
+
+    vm.updateLayer(current.copyWith(imageOffset: nextOffset));
   }
 
   /// 제스처 종료 이벤트 처리 (손가락을 뗀 순간)

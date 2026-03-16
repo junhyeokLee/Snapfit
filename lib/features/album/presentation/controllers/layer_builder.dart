@@ -685,12 +685,28 @@ class LayerBuilder {
     return BoxFit.cover;
   }
 
+  /// 사진 위치 조정용 imageOffset(픽셀)을 Image alignment(-1.0~1.0)로 변환
+  static Alignment _imageAlignmentForLayer(LayerModel layer) {
+    final offset = layer.imageOffset ?? Offset.zero;
+    if (offset == Offset.zero) return Alignment.center;
+
+    // 레이어 박스 크기를 기준으로 정규화해서 -1.0 ~ 1.0 범위로 매핑
+    final w = layer.width > 0 ? layer.width : 1.0;
+    final h = layer.height > 0 ? layer.height : 1.0;
+    final nx = (offset.dx / (w * 0.5)).clamp(-1.0, 1.0);
+    // 화면에서 손가락을 위로 드래그하면 offset.dy는 -값이므로,
+    // 위로 드래그했을 때 사진 내용도 함께 위로 올라가도록 부호를 반대로 매핑
+    final ny = (-offset.dy / (h * 0.5)).clamp(-1.0, 1.0);
+    return Alignment(nx, ny);
+  }
+
   /// 이미지 레이어 빌드
   Widget buildImage(LayerModel layer, {bool isCover = false}) {
     // 편집 중인 레이어면 숨김
     if (_isEditing(layer)) return const SizedBox.shrink();
 
     final fit = _imageFitForLayer(layer);
+    final alignment = _imageAlignmentForLayer(layer);
 
     if (layer.asset != null) {
       // 아직 업로드 전: 로컬 AssetEntity로 표시
@@ -706,6 +722,7 @@ class LayerBuilder {
             Image(
               image: AssetEntityImageProvider(layer.asset!),
               fit: fit,
+              alignment: alignment,
               filterQuality: FilterQuality.medium,
             ),
           ),
@@ -763,6 +780,7 @@ class LayerBuilder {
             key: ValueKey(layer.id), // Stable key to prevent reloading
             urlOrGs: url, 
             fit: fit,
+            alignment: alignment,
           ),
         ),
       ),
@@ -865,8 +883,23 @@ class LayerBuilder {
 
   /// 기본 원형 – 바텀시트 디자인대로 원형
   Widget _frameCircle(Widget image) {
-    return ClipOval(
-      child: FittedBox(fit: BoxFit.cover, child: image),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final side = size.shortestSide;
+
+        // 레이어 박스 안에서 사용 가능한 가장 짧은 변을 기준으로
+        // 정사각형 영역을 잡고, 그 안에 원형으로 이미지를 채운다.
+        return Center(
+          child: SizedBox(
+            width: side,
+            height: side,
+            child: ClipOval(
+              child: SizedBox.expand(child: image),
+            ),
+          ),
+        );
+      },
     );
   }
 

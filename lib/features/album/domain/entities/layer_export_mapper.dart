@@ -30,6 +30,7 @@ class LayerExportMapper {
     return {
       'id': layer.id,
       'type': layer.type.name.toUpperCase(),
+      'zIndex': layer.zIndex,
       'x': xRatio,  // 0.0 ~ 1.0 (relative to content area)
       'y': (layer.position.dy / canvasSize.height), // 0.0 ~ 1.0
       'width': widthRatio,  // scale 제외 - 원본 비율 보존 (relative to content area)
@@ -83,9 +84,17 @@ class LayerExportMapper {
     final double y = (json['y'] as num).toDouble() * canvasSize.height;
     final double height = (json['height'] as num).toDouble() * canvasSize.height;
 
+    final String typeStr = (json['type'] as String? ?? 'IMAGE').toUpperCase();
+    final LayerType type = switch (typeStr) {
+      'TEXT' => LayerType.text,
+      'STICKER' => LayerType.sticker,
+      'DECORATION' => LayerType.decoration,
+      _ => LayerType.image,
+    };
     return LayerModel(
       id: json['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
-      type: json['type'] == 'TEXT' ? LayerType.text : LayerType.image,
+      type: type,
+      zIndex: json['zIndex'] as int? ?? 0,
       // 하위 호환: imageUrl만 오면 previewUrl로 간주
       previewUrl: (payload['previewUrl'] ?? payload['imageUrl']) as String?,
       imageUrl: (payload['previewUrl'] ?? payload['imageUrl']) as String?,

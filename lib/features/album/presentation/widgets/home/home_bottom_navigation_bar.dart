@@ -164,17 +164,19 @@ class _BottomNavItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.w),
+          padding: EdgeInsets.symmetric(vertical: 4.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 22.sp, color: color),
-              SizedBox(height: 4.w),
+              // 아이콘을 더 작고 심플하게
+              Icon(icon, size: 18.sp, color: color),
+              SizedBox(height: 2.w),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
+                style: (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
+                    .copyWith(
+                  fontSize: 9.sp,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: color,
                 ),
               ),

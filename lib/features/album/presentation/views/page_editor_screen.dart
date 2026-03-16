@@ -19,6 +19,7 @@ import '../widgets/editor/decorate_panel.dart';
 import '../widgets/editor/edit_cover.dart';
 import '../widgets/editor/layer_manager_panel.dart';
 import '../widgets/editor/template_selection_panel.dart';
+import '../widgets/editor/design_template_panel.dart';
 import '../widgets/editor/text_style_picker_sheet.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
@@ -246,13 +247,64 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             }
           },
         ),
-        title: Text(
-          "스냅핏 만들기",
-          style: TextStyle(
-            color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Undo/Redo 버튼을 타이틀 왼쪽에 배치
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    Icons.undo_rounded,
+                    size: 20.sp,
+                    color: canUndo
+                        ? SnapFitColors.textPrimaryOf(context)
+                        : SnapFitColors.textMutedOf(context),
+                  ),
+                  onPressed: canUndo
+                      ? () {
+                          vm.undo();
+                          _interaction.clearSelection();
+                          if (mounted) setState(() {});
+                        }
+                      : null,
+                  tooltip: '되돌리기',
+                ),
+                SizedBox(width: 4.w),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    Icons.redo_rounded,
+                    size: 20.sp,
+                    color: canRedo
+                        ? SnapFitColors.textPrimaryOf(context)
+                        : SnapFitColors.textMutedOf(context),
+                  ),
+                  onPressed: canRedo
+                      ? () {
+                          vm.redo();
+                          _interaction.clearSelection();
+                          if (mounted) setState(() {});
+                        }
+                      : null,
+                  tooltip: '다시하기',
+                ),
+              ],
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              "스냅핏 만들기",
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -360,63 +412,33 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     },
                   ),
                 ),
-              ),
+                ),
 
-              // Undo / Redo (앨범 커버 위, 리스트–아이콘과 동일한 간격)
-              Padding(
-                padding: EdgeInsets.only(bottom:50.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: canUndo
-                          ? () {
-                              vm.undo();
-                              _interaction.clearSelection();
-                              if (mounted) setState(() {});
-                            }
-                          : null,
-                      icon: Icon(
-                        Icons.undo_rounded,
-                        size: 22.sp,
-                        color: canUndo
-                            ? SnapFitColors.textPrimaryOf(context)
-                            : SnapFitColors.textMutedOf(context),
-                      ),
-                      tooltip: '되돌리기',
-                      style: IconButton.styleFrom(
-                        backgroundColor: canUndo
-                            ? SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.08)
-                            : null,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    IconButton(
-                      onPressed: canRedo
-                          ? () {
-                              vm.redo();
-                              _interaction.clearSelection();
-                              if (mounted) setState(() {});
-                            }
-                          : null,
-                      icon: Icon(
-                        Icons.redo_rounded,
-                        size: 22.sp,
-                        color: canRedo
-                            ? SnapFitColors.textPrimaryOf(context)
-                            : SnapFitColors.textMutedOf(context),
-                      ),
-                      tooltip: '다시하기',
-                      style: IconButton.styleFrom(
-                        backgroundColor: canRedo
-                            ? SnapFitColors.textPrimaryOf(context).withValues(alpha: 0.08)
-                            : null,
-                      ),
-                    ),
-                  ],
+              // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
+              // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
+              // RenderFlex overflow가 발생하지 않도록 한다.
+              SizedBox(
+                height: 80.h,
+                child: Center(
+                  child: _interaction.selectedLayerId != null
+                      ? LayerActionPanel(
+                          layers: layers,
+                          interaction: _interaction,
+                          textEditor: TextEditorManager(
+                            context,
+                            ref.read(albumEditorViewModelProvider.notifier),
+                          ),
+                          onRefresh: () => setState(() {}),
+                          onOpenGallery: (LayerModel layer) =>
+                              _openGalleryForPlaceholder(layer),
+                          onOpenDecorateSheet: (LayerModel layer) =>
+                              _openDecorateSheetForLayer(layer),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ),
-              // Bottom Menu
+
+              // Bottom Menu (고정)
               EditorBottomMenu(
                 currentMode: _currentMode,
                 isCover: currentPageIndex == 0,
@@ -435,22 +457,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           ),
           ),
 
-          // 4. Layer Action Panel (커버/내지 공통 — 하나만 표시, 위치 통일)
-          if (_interaction.selectedLayerId != null)
-            Positioned(
-              bottom: 100.h, // Bottom Menu 위에 위치
-              left: 20.w,
-              right: 20.w,
-              child: LayerActionPanel(
-                layers: layers,
-                interaction: _interaction,
-                textEditor: TextEditorManager(context, ref.read(albumEditorViewModelProvider.notifier)),
-                onRefresh: () => setState(() {}),
-                onOpenGallery: (LayerModel layer) => _openGalleryForPlaceholder(layer),
-                onOpenDecorateSheet: (LayerModel layer) => _openDecorateSheetForLayer(layer),
-              ),
-            ),
-          
           // 저장 중 진행률 오버레이
           if (_isSaving)
             PageEditorSaveOverlay(progress: _saveProgress),
@@ -605,8 +611,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             layers: layers,
             interaction: _interaction,
           );
+        } else if (mode == EditorMode.layout) {
+          return const TemplateSelectionPanel(title: '레이아웃');
         } else if (mode == EditorMode.template) {
-           return const TemplateSelectionPanel(); // TODO: Update template selector visuals if needed
+          return const DesignTemplatePanel();
         }
         return const SizedBox.shrink();
       }

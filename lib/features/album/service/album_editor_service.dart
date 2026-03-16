@@ -329,6 +329,7 @@ class AlbumEditorService {
       originalUrl: updated.originalUrl,
       imageBackground: updated.imageBackground ?? oldLayer.imageBackground,
       textBackground: updated.textBackground ?? oldLayer.textBackground,
+      imageOffset: updated.imageOffset ?? oldLayer.imageOffset,
     );
     return page;
   }
@@ -359,9 +360,83 @@ class AlbumEditorService {
     if (idx == -1) return page;
 
     final old = page.layers[idx];
-    page.layers[idx] = old.copyWith(
+
+    // 1) 프레임 해제(기본)일 때: 프레임 적용 전에 저장해 둔 기본 크기/위치로 복원
+    if (frameKey.isEmpty || frameKey == '') {
+      if (old.frameBaseWidth != null &&
+          old.frameBaseHeight != null &&
+          old.frameBasePosition != null) {
+        page.layers[idx] = old.copyWith(
+          imageBackground: '',
+          width: old.frameBaseWidth,
+          height: old.frameBaseHeight,
+          position: old.frameBasePosition,
+          frameBaseWidth: null,
+          frameBaseHeight: null,
+          frameBasePosition: null,
+        );
+      } else {
+        // 베이스 정보가 없으면 단순히 프레임 키만 제거
+        page.layers[idx] = old.copyWith(imageBackground: '');
+      }
+      return page;
+    }
+
+    // 2) 프레임 적용 시: 최초 한 번만 "기본 상태"를 저장해 두고,
+    //    폴라로이드 계열에 대해서만 고정 비율로 레이어 박스를 재조정한다.
+    final baseWidth = old.frameBaseWidth ?? old.width;
+    final baseHeight = old.frameBaseHeight ?? old.height;
+    final basePosition = old.frameBasePosition ?? old.position;
+
+    var updated = old.copyWith(
       imageBackground: frameKey,
+      frameBaseWidth: baseWidth,
+      frameBaseHeight: baseHeight,
+      frameBasePosition: basePosition,
     );
+
+    double? targetAspect; // width / height
+    switch (frameKey) {
+      case 'polaroid':
+      case 'polaroidClassic':
+      case 'polaroidFilm':
+        targetAspect = 3 / 4;
+        break;
+      case 'polaroidWide':
+        targetAspect = 16 / 9;
+        break;
+      default:
+        // 폴라로이드 외 나머지 프레임들도 모두
+        // 세로형 카드(3:4) 비율로 고정해서, 사진 비율에 따라
+        // 프레임 크기가 달라지지 않도록 맞춘다.
+        targetAspect = 3 / 4;
+    }
+
+    if (targetAspect != null && baseHeight > 0 && baseWidth > 0) {
+      final scale = old.scale;
+      final center = Offset(
+        basePosition.dx + (baseWidth * scale) / 2,
+        basePosition.dy + (baseHeight * scale) / 2,
+      );
+
+      // 폴라로이드 카드 크기: "기본 상태"의 세로 길이를 그대로 쓰고,
+      // 너비만 프레임 비율에 맞춰 조정 → 사진 비율과 무관하게 일정한 카드 높이 유지
+      final newHeight = baseHeight;
+      final newWidth = newHeight * targetAspect;
+
+      final newPosition = Offset(
+        center.dx - (newWidth * scale) / 2,
+        center.dy - (newHeight * scale) / 2,
+      );
+
+      updated = updated.copyWith(
+        width: newWidth,
+        height: newHeight,
+        position: newPosition,
+      );
+    }
+
+    page.layers[idx] = updated;
     return page;
   }
 

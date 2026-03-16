@@ -8,6 +8,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class SnapfitImage extends StatelessWidget {
   final String urlOrGs;
   final BoxFit fit;
+  final Alignment alignment;
   final Widget? placeholder;
   final Widget? error;
   final BaseCacheManager? cacheManager;
@@ -16,6 +17,7 @@ class SnapfitImage extends StatelessWidget {
     super.key,
     required this.urlOrGs,
     this.fit = BoxFit.cover,
+    this.alignment = Alignment.center,
     this.placeholder,
     this.error,
     this.cacheManager,
@@ -65,6 +67,7 @@ class SnapfitImage extends StatelessWidget {
         return CachedNetworkImage(
           imageUrl: snapshot.data!,
           fit: fit,
+          alignment: alignment,
           cacheManager: cacheManager,
           placeholder: (_, __) => placeholder ??
               Container(

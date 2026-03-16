@@ -4,7 +4,8 @@ import '../../../../../core/constants/snapfit_colors.dart';
 
 enum EditorMode {
   none,
-  template,
+  layout,   // 슬롯 기반 레이아웃(페이지 템플릿)
+  template, // 전체 디자인 템플릿 (확장용)
   decorate,
   layer,
   text, // For text editing, though usually handled by dialog/overlay
@@ -29,8 +30,8 @@ class EditorBottomMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h,
-      padding: EdgeInsets.only(bottom: 20.h), // 하단 여백 확보
+      height: 76.h,
+      padding: EdgeInsets.only(bottom: 16.h), // 하단 여백 살짝 줄여서 더 컴팩트하게
       decoration: BoxDecoration(
         color: Colors.transparent, // 상위 그라데이션 배경 그대로 사용
         border: Border(
@@ -39,22 +40,38 @@ class EditorBottomMenu extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildMenuItem(context, '글쓰기', Icons.text_fields_outlined, EditorMode.text),
-          _buildMenuItem(context, '사진', Icons.photo_outlined, EditorMode.none, isAction: true, onAction: onAddPhoto),
-          isCover 
-            ? _buildMenuItem(context, '커버', Icons.dashboard_outlined, EditorMode.none, isAction: true, onAction: onCover)
-            : _buildMenuItem(context, '템플릿', Icons.dashboard_outlined, EditorMode.template),
-          _buildMenuItem(context, '꾸미기', Icons.palette_outlined, EditorMode.decorate),
-          _buildMenuItem(context, '레이어', Icons.layers_outlined, EditorMode.layer),
-        ],
+        children: isCover
+            // 커버 편집 시: 커버(테마) + 레이아웃 + 템플릿 모두 제공
+            ? [
+                _buildMenuItem(context, '글쓰기', Icons.text_fields_outlined, EditorMode.text),
+                _buildMenuItem(context, '사진', Icons.photo_outlined, EditorMode.none,
+                    isAction: true, onAction: onAddPhoto),
+                _buildMenuItem(context, '커버', Icons.photo_album_outlined, EditorMode.none,
+                    isAction: true, onAction: onCover),
+                _buildMenuItem(context, '레이아웃', Icons.dashboard_outlined, EditorMode.layout),
+                _buildMenuItem(context, '템플릿', Icons.auto_awesome_outlined, EditorMode.template),
+                _buildMenuItem(context, '꾸미기', Icons.palette_outlined, EditorMode.decorate),
+                _buildMenuItem(context, '레이어', Icons.layers_outlined, EditorMode.layer),
+              ]
+            // 내지 편집 시도 동일하게 레이아웃 + 템플릿 제공
+            : [
+                _buildMenuItem(context, '글쓰기', Icons.text_fields_outlined, EditorMode.text),
+                _buildMenuItem(context, '사진', Icons.photo_outlined, EditorMode.none,
+                    isAction: true, onAction: onAddPhoto),
+                _buildMenuItem(context, '레이아웃', Icons.dashboard_outlined, EditorMode.layout),
+                _buildMenuItem(context, '템플릿', Icons.auto_awesome_outlined, EditorMode.template),
+                _buildMenuItem(context, '꾸미기', Icons.palette_outlined, EditorMode.decorate),
+                _buildMenuItem(context, '레이어', Icons.layers_outlined, EditorMode.layer),
+              ],
       ),
     );
   }
 
   Widget _buildMenuItem(BuildContext context, String label, IconData icon, EditorMode mode, {bool isAction = false, VoidCallback? onAction}) {
     final isSelected = !isAction && currentMode == mode;
-    final color = isSelected ? SnapFitColors.accent : SnapFitColors.textSecondaryOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 바텀 아이콘/텍스트 색상: 라이트 모드 = 검정, 다크 모드 = 흰색
+    final Color color = isDark ? Colors.white : Colors.black;
 
     return InkWell(
       onTap: () {
@@ -67,14 +84,18 @@ class EditorBottomMenu extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 24.sp),
-          SizedBox(height: 6.h),
+          Icon(icon, color: color, size: 20.sp),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11.sp,
+            // 앱 전역 텍스트 테마(bodySmall)를 베이스로 사용해 폰트/라인하이트를 통일하고,
+            // 크기·두께만 하단 메뉴용으로 살짝 조정한다.
+            style: (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
+                .copyWith(
+              fontSize: 9.sp,
               color: color,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+              letterSpacing: 0.1,
             ),
           ),
         ],

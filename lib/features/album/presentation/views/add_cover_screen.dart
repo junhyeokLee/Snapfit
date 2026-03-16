@@ -15,6 +15,7 @@ import '../widgets/editor/editor_bottom_menu.dart';
 import '../widgets/editor/decorate_panel.dart';
 import '../widgets/editor/layer_manager_panel.dart';
 import '../widgets/editor/template_selection_panel.dart';
+import '../widgets/editor/design_template_panel.dart';
 import '../widgets/editor/layer_action_panel.dart';
 import '../widgets/editor/text_style_picker_sheet.dart';
 import '../controllers/layer_interaction_manager.dart';
@@ -213,8 +214,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
             layers: layers,
             interaction: _interaction,
           );
+        } else if (mode == EditorMode.layout) {
+          return const TemplateSelectionPanel(title: '레이아웃');
         } else if (mode == EditorMode.template) {
-           return const TemplateSelectionPanel();
+          return const DesignTemplatePanel();
         }
         return const SizedBox.shrink();
       }

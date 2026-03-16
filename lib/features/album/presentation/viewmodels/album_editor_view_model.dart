@@ -10,6 +10,7 @@ import '../../data/api/storage_service.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/album_page.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/design_templates.dart';
 import '../../../../core/constants/cover_theme.dart';
 import '../../../../core/constants/page_templates.dart';
 import '../../domain/entities/layer.dart';
@@ -659,6 +660,18 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     page.layers
       ..clear()
       ..addAll(fromTemplate.layers);
+    _emit();
+  }
+
+  /// 디자인 템플릿(레이어 세트) 적용
+  void applyDesignTemplateToCurrentPage(DesignTemplate template, Size canvasSize) {
+    final page = currentPage;
+    if (page == null) return;
+    _recordUndo();
+    final layers = template.buildLayers(canvasSize);
+    page.layers
+      ..clear()
+      ..addAll(layers);
     _emit();
   }
 

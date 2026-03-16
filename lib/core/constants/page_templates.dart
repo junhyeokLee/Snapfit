@@ -260,6 +260,7 @@ List<PageTemplateSlot> get _scrapNoteSlots {
   ];
 }
 
+
 /// Current: 위쪽 큰 1칸 + 아래쪽 2칸 (여백 포함)
 /// Collage: 2x2 균등 (여백 포함)
 /// Focus: 위쪽 큰 1칸 + 아래쪽 3칸 (여백 포함)
@@ -391,41 +392,167 @@ List<PageTemplate> get pageTemplates => [
         name: 'Cinematic Spread',
         slots: _cinematicSlots,
       ),
-      // 7. Editorial Focus – 좌측 큰 이미지 1칸, 우측 텍스트 영역
+      // 7. Full Single – 사진 1장이 화면을 거의 꽉 채우는 레이아웃
       PageTemplate(
-        id: 'editorial',
-        name: 'Editorial Focus',
-        slots: _editorialSlots,
+        id: 'full_single',
+        name: 'Full · 1장',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: 1 - _margin * 2,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+        ],
       ),
-      // 8. Memory Mix – 5칸 비대칭 (큰 좌상, 중간 우상, 하단 3칸)
+      // 8. Full Duo Vertical – 좌/우 2장, 세로로 크게
       PageTemplate(
-        id: 'memory_mix',
-        name: 'Memory Mix',
-        slots: _memoryMixSlots,
+        id: 'full_duo_vertical',
+        name: 'Full · 2장 세로',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+        ],
       ),
-      // 9. Text Heavy – 텍스트 중심 1칸
+      // 9. Full Duo Horizontal – 상/하 2장, 가로로 크게
       PageTemplate(
-        id: 'text_heavy',
-        name: 'Text Heavy',
-        slots: _textHeavySlots,
+        id: 'full_duo_horizontal',
+        name: 'Full · 2장 가로',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: 1 - _margin * 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin * 2 + (1 - _margin * 3) / 2,
+            width: 1 - _margin * 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+        ],
       ),
-      // 10. Photo + Quote – 사진 + 캡션
+      // 10. Full Triple Strip – 세로로 3등분한 스트립 레이아웃 (위/중/아래)
       PageTemplate(
-        id: 'photo_quote',
-        name: 'Photo + Quote',
-        slots: _photoQuoteSlots,
+        id: 'full_triple_strip',
+        name: 'Full · 3칸 스트립',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: 1 - _margin * 2,
+            height: (1 - _margin * 4) / 3,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin * 2 + (1 - _margin * 4) / 3,
+            width: 1 - _margin * 2,
+            height: (1 - _margin * 4) / 3,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin * 3 + ((1 - _margin * 4) / 3) * 2,
+            width: 1 - _margin * 2,
+            height: (1 - _margin * 4) / 3,
+            rotation: 0,
+          ),
+        ],
       ),
-      // 11. Caption Collage – 2장 + 캡션 바
+      // 11. Full Triple Columns – 세로 3분할 컬럼 레이아웃
       PageTemplate(
-        id: 'caption_collage',
-        name: 'Caption Collage',
-        slots: _captionCollageSlots,
+        id: 'full_triple_columns',
+        name: 'Full · 3칸 컬럼',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: (1 - _margin * 4) / 3,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 4) / 3,
+            top: _margin,
+            width: (1 - _margin * 4) / 3,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 3 + ((1 - _margin * 4) / 3) * 2,
+            top: _margin,
+            width: (1 - _margin * 4) / 3,
+            height: 1 - _margin * 2,
+            rotation: 0,
+          ),
+        ],
       ),
-      // 12. Scrap Note – 사진 2장 + 메모
+      // 12. Full 4-Grid – 2x2 균등(상/하 2칸씩), Collage보다 여백을 조금만 두는 버전
       PageTemplate(
-        id: 'scrap_note',
-        name: 'Scrap Note',
-        slots: _scrapNoteSlots,
+        id: 'full_four_grid',
+        name: 'Full · 4칸',
+        slots: [
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: _margin,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin,
+            top: _margin * 2 + (1 - _margin * 3) / 2,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+          PageTemplateSlot(
+            type: 'image',
+            left: _margin * 2 + (1 - _margin * 3) / 2,
+            top: _margin * 2 + (1 - _margin * 3) / 2,
+            width: (1 - _margin * 3) / 2,
+            height: (1 - _margin * 3) / 2,
+            rotation: 0,
+          ),
+        ],
       ),
     ];
 

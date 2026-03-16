@@ -142,7 +142,9 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
-            color: SnapFitColors.textPrimaryOf(context),
+            color: SnapFitColors.isDark(context)
+                ? Colors.white
+                : Colors.black87,
           ),
         ),
         if (onSeeAll != null)

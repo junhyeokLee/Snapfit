@@ -31,6 +31,29 @@ class ImageTemplatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String _subtitleForKey(String key) {
+      switch (key) {
+        case 'free':
+          return '사진 비율 그대로';
+        case '1:1':
+          return '정사각형 앨범컷';
+        case '4:3':
+          return '일반 카메라 비율';
+        case '3:4':
+          return '세로형 인화 비율';
+        case '16:9':
+          return '와이드 스냅샷';
+        case '9:16':
+          return '스토리/릴스 비율';
+        case '3:2':
+          return '필름 카메라 느낌';
+        case '2:3':
+          return '클래식 인화 비율';
+        default:
+          return '';
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
@@ -61,24 +84,14 @@ class ImageTemplatePicker extends StatelessWidget {
             ),
             SizedBox(height: 20.h),
             Text(
-              '사진 크기(템플릿)',
+              '사진 크기',
               style: TextStyle(
                 color: SnapFitColors.textPrimaryOf(context),
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 8.h, bottom: 24.h),
-              child: Text(
-                '선택한 비율로 슬롯이 만들어지고, 사진이 그 안에 꽉 차게 들어갑니다.',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 13.sp,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            SizedBox(height: 20.h),
             Padding(
               padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 24.h),
               child: Wrap(
@@ -95,25 +108,127 @@ class ImageTemplatePicker extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? SnapFitColors.surfaceOf(context).withOpacity(0.95)
+                              ? SnapFitColors.accent.withOpacity(0.08)
                               : SnapFitColors.overlayLightOf(context),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
                             color: isSelected
-                                ? SnapFitColors.textPrimaryOf(context)
+                                ? SnapFitColors.accent
                                 : SnapFitColors.overlayStrongOf(context),
-                            width: isSelected ? 2.5 : 1,
+                            width: isSelected ? 2 : 1,
                           ),
                         ),
-                        child: Text(
-                          t.label,
-                          style: TextStyle(
-                            color: isSelected
-                                ? SnapFitColors.textPrimaryOf(context)
-                                : SnapFitColors.textSecondaryOf(context),
-                            fontSize: 14.sp,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 미니 비율 프리뷰 박스
+                            Container(
+                              width: 32.w,
+                              height: 22.h,
+                              decoration: BoxDecoration(
+                                color: SnapFitColors.overlayMediumOf(context),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // 원본(free)은 가로/세로 모두 가능하다는 느낌을 주기 위해
+                                  // 가로(16:9) + 세로(9:16) 미니 박스를 동시에 보여준다.
+                                  if (t.aspect == null) {
+                                    return Padding(
+                                      padding: EdgeInsets.all(3.w),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: AspectRatio(
+                                              aspectRatio: 16 / 9,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                    colors: [
+                                                      SnapFitColors.accent.withOpacity(0.55),
+                                                      SnapFitColors.accent.withOpacity(0.15),
+                                                    ],
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(3.r),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 3.w),
+                                          Expanded(
+                                            child: AspectRatio(
+                                              aspectRatio: 9 / 16,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                    colors: [
+                                                      SnapFitColors.accent.withOpacity(0.35),
+                                                      SnapFitColors.accent.withOpacity(0.10),
+                                                    ],
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(3.r),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  final baseAspect = t.aspect!;
+                                  return Center(
+                                    child: AspectRatio(
+                                      aspectRatio: baseAspect,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              SnapFitColors.accent.withOpacity(0.55),
+                                              SnapFitColors.accent.withOpacity(0.15),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(4.r),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  t.label,
+                                  style: TextStyle(
+                                    color: SnapFitColors.textPrimaryOf(context),
+                                    fontSize: 14.sp,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  _subtitleForKey(t.key),
+                                  style: TextStyle(
+                                    color: SnapFitColors.textSecondaryOf(context),
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),

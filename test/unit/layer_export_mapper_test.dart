@@ -50,8 +50,9 @@ void main() {
       final layer = _textLayer(width: 50, height: 50, scale: 2.0);
       final json = LayerExportMapper.toJson(layer, canvasSize: canvasSize);
 
-      expect(json['width'], (50 * 2) / 400);
-      expect(json['height'], (50 * 2) / 300);
+      expect(json['width'], 50 / 400);
+      expect(json['height'], 50 / 300);
+      expect(json['scale'], 2.0);
     });
   });
 
@@ -102,8 +103,9 @@ void main() {
       expect(restored.type, layer.type);
       expect(restored.position.dx, closeTo(layer.position.dx, 0.001));
       expect(restored.position.dy, closeTo(layer.position.dy, 0.001));
-      expect(restored.width, closeTo(layer.width * layer.scale, 0.001));
-      expect(restored.height, closeTo(layer.height * layer.scale, 0.001));
+      expect(restored.width, closeTo(layer.width, 0.001));
+      expect(restored.height, closeTo(layer.height, 0.001));
+      expect(restored.scale, closeTo(layer.scale, 0.001));
       expect(restored.text, layer.text);
     });
   });

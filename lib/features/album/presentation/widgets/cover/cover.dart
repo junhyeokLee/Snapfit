@@ -98,6 +98,8 @@ class CoverLayout extends StatelessWidget {
                                       );
                                       switch (layer.type) {
                                         case LayerType.image:
+                                        case LayerType.sticker:
+                                        case LayerType.decoration:
                                           return KeyedSubtree(
                                             key: styleKey,
                                             child: buildImage(layer),

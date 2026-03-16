@@ -739,6 +739,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     final surface = SnapFitColors.surfaceOf(context);
+    // 텍스트/스티커 바텀시트는 배경이 밝기 때문에
+    // 다크 모드에서도 항상 진한 글자색을 유지한다.
     final textPrimary = SnapFitColors.textPrimaryOf(context);
 
     return Container(
@@ -890,7 +892,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               Text(
                 '$titleKo ($titleEn)',
                 style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
+                  color: Colors.black87,
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -982,6 +984,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               Text(
                 '$titleKo ($titleEn)',
                 style: TextStyle(
+                  // 텍스트/스티커 바텀시트는 배경이 항상 밝으므로
+                  // 라이트/다크 모드와 상관없이 진한 검정 글자색을 사용
                   color: SnapFitColors.textPrimaryOf(context),
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
@@ -1067,7 +1071,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                               group.labelKo,
                               style: TextStyle(
                                 fontSize: 10.sp,
-                                color: SnapFitColors.textSecondaryOf(context),
+                                // 항상 검정 계열 텍스트 색상 유지
+                                color: Colors.black54,
                               ),
                             ),
                           )
@@ -1087,7 +1092,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               child: Text(
                 '색상 선택',
                 style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
+                  color: Colors.black54,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1673,13 +1678,14 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'noteCream':
         return _previewNoteCream();
       default:
-        return Icon(Icons.text_fields, size: 28.r, color: SnapFitColors.textSecondaryOf(context));
+        // 바텀시트 프리뷰 아이콘은 라이트/다크 모드 모두 회색 계열로 고정
+        return Icon(Icons.text_fields, size: 28.r, color: Colors.black45);
     }
   }
 
   /// 기본 없음 – 테두리/색 없음
   Widget _previewNone() {
-    return Icon(Icons.text_fields, size: 28.r, color: SnapFitColors.textSecondaryOf(context));
+    return Icon(Icons.text_fields, size: 28.r, color: Colors.black45);
   }
 
   /// 라운드 – 흰색 pill (바텀시트 디자인)
@@ -2533,7 +2539,7 @@ class _TextStyleFullViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     final surface = SnapFitColors.surfaceOf(context);
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
+    const textPrimary = Colors.black87;
     return Scaffold(
       backgroundColor: surface,
       appBar: AppBar(

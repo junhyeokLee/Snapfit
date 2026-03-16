@@ -47,16 +47,15 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     final layer = widget.layers[layerIndex];
 
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context).withOpacity(0.95),
-        borderRadius: BorderRadius.circular(20.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(SnapFitColors.isDark(context) ? 0.3 : 0.1),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -69,13 +68,24 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
             _buildDecorateSubmenu(layer),
           if (_panelMode == EditPanelMode.none)
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (layer.type == LayerType.text)
                   _buildActionButton(Icons.font_download_outlined, "폰트", () => widget.textEditor.openForExisting(layer)),
                 if (layer.type == LayerType.image)
                   _buildActionButton(Icons.image_outlined, "사진변경", () => widget.onOpenGallery?.call(layer)),
-                
+                if (layer.type == LayerType.image)
+                  _buildActionButton(
+                    Icons.open_with,
+                    "사진위치",
+                    () {
+                      widget.interaction.toggleImagePanMode();
+                      widget.onRefresh();
+                    },
+                    color: widget.interaction.isImagePanMode
+                        ? SnapFitColors.accent
+                        : null,
+                  ),
                 _buildActionButton(Icons.opacity, "불투명도", () => setState(() => _panelMode = EditPanelMode.opacity)),
                 _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
                   if (widget.onOpenDecorateSheet != null) {
@@ -84,11 +94,10 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
                     setState(() => _panelMode = EditPanelMode.decorate);
                   }
                 }),
-                
                 _buildActionButton(Icons.delete_outline, "삭제", () {
                   widget.interaction.deleteSelected();
                   widget.onRefresh();
-                }, color: Colors.red),
+                }, color: Colors.black),
               ],
             ),
         ],
@@ -100,8 +109,14 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        child: Icon(icon, size: 24.sp, color: color ?? SnapFitColors.textPrimaryOf(context).withOpacity(0.9)),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        child: Icon(
+          icon,
+          size: 20.sp,
+          // 편집 툴바 아이콘은 라이트/다크 모드 모두 흰 배경 위에서
+          // 동일하게 보이도록 항상 검은색으로 통일한다.
+          color: color ?? Colors.black,
+        ),
       ),
     );
   }
@@ -110,7 +125,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     return Row(
       children: [
         IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: SnapFitColors.textPrimaryOf(context), size: 16),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 16),
           onPressed: () => setState(() => _panelMode = EditPanelMode.none),
         ),
         Expanded(
@@ -144,7 +159,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: SnapFitColors.textPrimaryOf(context), size: 16),
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 16),
             onPressed: () => setState(() => _panelMode = EditPanelMode.none),
           ),
           if (layer.type == LayerType.text) ...[

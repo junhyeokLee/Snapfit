@@ -13,7 +13,12 @@ import '../../../domain/entities/layer.dart';
 /// 페이지 템플릿 선택 바텀시트
 /// - 여러 레이아웃 템플릿, 슬롯 간 여백 있음
 class TemplateSelectionPanel extends ConsumerStatefulWidget {
-  const TemplateSelectionPanel({super.key});
+  final String title;
+
+  const TemplateSelectionPanel({
+    super.key,
+    this.title = '레이아웃',
+  });
 
   @override
   ConsumerState<TemplateSelectionPanel> createState() => _TemplateSelectionPanelState();
@@ -63,7 +68,7 @@ class _TemplateSelectionPanelState extends ConsumerState<TemplateSelectionPanel>
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(
-                '레이아웃',
+                widget.title,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -284,9 +289,9 @@ class _TemplatePreview extends StatelessWidget {
           children: [
             // 배경은 카드 컨테이너의 backgroundOf(context)가 보이게 투명 처리
             for (final layer in layers)
-              (layer.type == LayerType.image)
-                  ? layerBuilder.buildImage(layer)
-                  : layerBuilder.buildText(layer),
+              layer.type == LayerType.text
+                  ? layerBuilder.buildText(layer)
+                  : layerBuilder.buildImage(layer),
           ],
         ),
       ),

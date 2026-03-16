@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-/// 하나의 레이어(이미지 or 텍스트)를 정의하는 데이터 모델
-// enum LayerType { image, text }
+/// 하나의 레이어(이미지/텍스트/스티커/장식)를 정의하는 데이터 모델
+/// 통합 스키마: docs/template_schema.md
 enum LayerType {
-  image,        // 기존 사용자 이미지 레이어
-  text,         // 기존 사용자 텍스트 레이어
+  image,        // 사용자 사진 레이어
+  text,         // 텍스트 레이어
+  sticker,      // 스티커(이미지 기반 장식)
+  decoration,   // 배경 장식(잎사귀, 찢어진 종이 등)
 }
 
 enum TextStyleType {
@@ -31,12 +33,20 @@ class LayerModel {
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
   final String? imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
   final String? imageTemplate; // 이미지 슬롯 템플릿 ("free", "1:1", "4:3", ...) - null/ free면 원본 비율, 지정 시 contain으로 짤리지 않게
+  /// 프레임 적용 전 기본 상태(크기/위치)를 되돌리기 위한 베이스 값 (런타임 전용, 서버 저장 X)
+  final double? frameBaseWidth;
+  final double? frameBaseHeight;
+  final Offset? frameBasePosition;
+  /// 템플릿/프레임 안에서 사진 자체를 이동시킬 때 사용하는 오프셋 (런타임 기준 좌표)
+  final Offset? imageOffset;
   /// 하위 호환용 preview URL (기존 스키마)
   final String? imageUrl;
   /// 운영급: 원본/미리보기 URL
   final String? originalUrl;
   final String? previewUrl;
   final double opacity; // 레이어 불투명도 (0.0 ~ 1.0)
+  /// 겹침 순서. 클수록 앞에 그림. 통합 템플릿(결혼/스크랩북/포토북 등)용.
+  final int zIndex;
 
   LayerModel({
     required this.id,
@@ -55,10 +65,15 @@ class LayerModel {
     this.textBackground,
     this.imageBackground,
     this.imageTemplate,
+    this.frameBaseWidth,
+    this.frameBaseHeight,
+    this.frameBasePosition,
+    this.imageOffset,
     this.imageUrl,
     this.originalUrl,
     this.previewUrl,
     this.opacity = 1.0,
+    this.zIndex = 0,
   });
 
   LayerModel copyWith({
@@ -78,12 +93,17 @@ class LayerModel {
     String? textBackground,
     String? imageBackground,
     String? imageTemplate,
+    double? frameBaseWidth,
+    double? frameBaseHeight,
+    Offset? frameBasePosition,
+    Offset? imageOffset,
     bool? locked,
     bool? editable,
     String? imageUrl,
     String? originalUrl,
     String? previewUrl,
     double? opacity,
+    int? zIndex,
   }) {
     return LayerModel(
       id: id ?? this.id,
@@ -102,10 +122,15 @@ class LayerModel {
       textBackground: textBackground ?? this.textBackground,
       imageBackground: imageBackground ?? this.imageBackground,
       imageTemplate: imageTemplate ?? this.imageTemplate,
+      frameBaseWidth: frameBaseWidth ?? this.frameBaseWidth,
+      frameBaseHeight: frameBaseHeight ?? this.frameBaseHeight,
+      frameBasePosition: frameBasePosition ?? this.frameBasePosition,
+      imageOffset: imageOffset ?? this.imageOffset,
       imageUrl: imageUrl ?? this.imageUrl,
       originalUrl: originalUrl ?? this.originalUrl,
       previewUrl: previewUrl ?? this.previewUrl,
       opacity: opacity ?? this.opacity,
+      zIndex: zIndex ?? this.zIndex,
     );
   }
 }
