@@ -129,7 +129,7 @@ class TemplatePageRenderer extends StatelessWidget {
           ),
         );
       } else {
-        layerWidget = imageContent;
+        layerWidget = _applyImageFrame(imageContent, frame);
       }
 
       return Positioned(
@@ -212,7 +212,115 @@ class TemplatePageRenderer extends StatelessWidget {
         ),
       );
     }
+    if (bg == 'skyBlue') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF9BCBFF), Color(0xFFE8F3FF)],
+          ),
+        ),
+      );
+    }
+    if (bg == 'retroDark') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF273240), Color(0xFF5A4A3D)],
+          ),
+        ),
+      );
+    }
+    if (bg == 'minimalGray') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF5F6F8), Color(0xFFE9EDF2)],
+          ),
+        ),
+      );
+    }
     return const SizedBox.shrink();
+  }
+
+  Widget _applyImageFrame(Widget child, String? frame) {
+    if (frame == null || frame.isEmpty) return child;
+
+    switch (frame) {
+      case 'photoCard':
+      case 'collageTile':
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: const [
+              BoxShadow(color: Color(0x22000000), blurRadius: 6, offset: Offset(0, 2)),
+            ],
+          ),
+          child: ClipRRect(borderRadius: BorderRadius.circular(3), child: child),
+        );
+      case 'filmSquare':
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDFDFD),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+            boxShadow: const [
+              BoxShadow(color: Color(0x20000000), blurRadius: 5, offset: Offset(0, 2)),
+            ],
+          ),
+          child: child,
+        );
+      case 'polaroidClassic':
+      case 'posterPolaroid':
+      case 'roughPolaroid':
+        return Container(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: const [
+              BoxShadow(color: Color(0x22000000), blurRadius: 8, offset: Offset(0, 3)),
+            ],
+          ),
+          child: child,
+        );
+      case 'maskingTapeFrame':
+      case 'paperTapeCard':
+      case 'paperClipCard':
+        return Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFEFA),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: const [
+              BoxShadow(color: Color(0x18000000), blurRadius: 10, offset: Offset(0, 4)),
+            ],
+          ),
+          child: child,
+        );
+      case 'softGlow':
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.7),
+                blurRadius: 16,
+                spreadRadius: 3,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      default:
+        return child;
+    }
   }
 
   Alignment _getAlignment(TextAlign? align) {
