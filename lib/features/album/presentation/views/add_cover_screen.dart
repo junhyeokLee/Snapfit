@@ -50,6 +50,9 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 목표 페이지 수 (생성 플로우에서 사용)
   final int? targetPages;
 
+  /// 템플릿 유입 시 Step2에서 보여줄 예시 커버 레이어
+  final List<LayerModel>? initialTemplateCoverLayers;
+
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
 
@@ -64,6 +67,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.initialCoverSize,
     this.albumTitle,
     this.targetPages,
+    this.initialTemplateCoverLayers,
     this.onAlbumCreated,
     this.onRegisterCompleteAction,
   });
@@ -81,6 +85,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
   late final ScrollController _gridController;
   bool _initialized = false;
+  bool _templateCoverApplied = false;
+  bool _templateApplyQueued = false;
   late CoverSize _selectedCover;
 
   @override
@@ -122,12 +128,12 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
       if (widget.editAlbum == null && widget.albumId == null) {
         // 생성 플로우(신규 생성): 선택된 커버로 바로 초기화
-        ref
-            .read(albumEditorViewModelProvider.notifier)
-            .resetForCreate(
-              initialCover: _selectedCover,
-              targetPages: widget.targetPages ?? 1,
-            );
+        final vm = ref.read(albumEditorViewModelProvider.notifier);
+        vm.resetForCreate(
+          initialCover: _selectedCover,
+          targetPages: widget.targetPages ?? 1,
+        );
+        _applyTemplateCoverIfNeeded();
       } else if (widget.editAlbum != null) {
         // 편집 모드: 에디터에 이미 로드됨 → 커버 VM만 동기화
         final editorSt = ref.read(albumEditorViewModelProvider).asData?.value;
@@ -172,6 +178,22 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
       }
 
       _initialized = true;
+    });
+  }
+
+  void _applyTemplateCoverIfNeeded() {
+    if (_templateCoverApplied) return;
+    final coverLayers = widget.initialTemplateCoverLayers;
+    if (coverLayers == null || coverLayers.isEmpty) return;
+
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    vm.applyTemplateCoverPreview(coverLayers);
+    _templateCoverApplied = true;
+
+    // 일부 초기화 루틴에서 레이어가 덮어써지는 경우를 대비해 한 프레임 뒤 재적용
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      vm.applyTemplateCoverPreview(coverLayers);
     });
   }
 
@@ -225,6 +247,21 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     final asyncState = ref.watch(albumEditorViewModelProvider);
     final layers = asyncState.value?.layers ?? [];
 
+    if (!_templateApplyQueued &&
+        widget.isFromCreateFlow &&
+        layers.isEmpty &&
+        widget.initialTemplateCoverLayers != null &&
+        widget.initialTemplateCoverLayers!.isNotEmpty) {
+      _templateApplyQueued = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref
+            .read(albumEditorViewModelProvider.notifier)
+            .applyTemplateCoverPreview(widget.initialTemplateCoverLayers!);
+        _templateApplyQueued = false;
+      });
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
@@ -241,6 +278,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       isFromCreateFlow: widget.isFromCreateFlow,
                       albumTitle: widget.albumTitle,
                       targetPages: widget.targetPages,
+                      fallbackTemplateCoverLayers:
+                          widget.initialTemplateCoverLayers,
                       onAlbumCreated: widget.onAlbumCreated,
                       onRegisterCompleteAction: widget.onRegisterCompleteAction,
                       initialCoverSize: _selectedCover,

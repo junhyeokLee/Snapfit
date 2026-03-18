@@ -1,9 +1,38 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../domain/entities/layer.dart';
 import 'layer_interaction_manager.dart';
+part 'layer_builder_painters.dart';
+
+/// Decorate 스티커 탭(추천/전체보기)의 미리보기와
+/// 실제 캔버스 적용 렌더링을 동일하게 맞추는 공용 위젯.
+///
+/// `style`은 `LayerModel.imageBackground`에 들어가는 sticker 키를 사용합니다.
+class DecoStickerVisual extends StatelessWidget {
+  final String style;
+  final double width;
+  final double height;
+
+  const DecoStickerVisual({
+    super.key,
+    required this.style,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayerBuilder.buildStickerDecoration(
+      style: style,
+      width: width,
+      height: height,
+    );
+  }
+}
 
 /// 이미지/텍스트 레이어의 렌더링과 기본 사이즈 계산 전담
 class LayerBuilder {
@@ -11,6 +40,303 @@ class LayerBuilder {
   final Size Function() getCoverSize;
 
   LayerBuilder(this.interaction, this.getCoverSize);
+
+  /// sticker 계열 decoration을 실제 적용과 동일하게 렌더링하는 공용 빌더.
+  /// (DecorateStickerTab 미리보기에서 사용)
+  static Widget buildStickerDecoration({
+    required String style,
+    required double width,
+    required double height,
+  }) {
+    final layer = LayerModel(
+      id: 'deco_preview_$style',
+      type: LayerType.decoration,
+      position: Offset.zero,
+      width: width,
+      height: height,
+      imageBackground: style,
+      opacity: 1,
+      zIndex: 0,
+    );
+
+    if (layer.imageBackground == 'stickerBlueStar') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFF2E4FB2),
+          points: 7,
+          innerFactor: 0.42,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerBlueStarSmall') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFF385CC8),
+          points: 6,
+          innerFactor: 0.45,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerCatDoodle') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _CatDoodlePainter(color: const Color(0xFF4A4A4A)),
+      );
+    }
+    if (layer.imageBackground == 'stickerFlowerPink') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFF1A5B8),
+          centerColor: const Color(0xFFF7D5A6),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerFlowerCoral') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFE77B8C),
+          centerColor: const Color(0xFFF4C989),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerDaisyWhite') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFFDFDFD),
+          centerColor: const Color(0xFFF0CA61),
+          petalCount: 8,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeBeige') {
+      return Transform.rotate(
+        angle: -0.10,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 6, amp: 2),
+          child: Container(
+            width: layer.width,
+            height: layer.height,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2CDA6).withOpacity(0.94),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeDotsBlue') {
+      return Transform.rotate(
+        angle: -0.08,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 7, amp: 2),
+          child: SizedBox(
+            width: layer.width,
+            height: layer.height,
+            child: CustomPaint(
+              painter: _TapeDotsPainter(
+                baseColor: const Color(0xFFCFE3FF).withOpacity(0.96),
+                dotColor: const Color(0xFF2F5FBF).withOpacity(0.32),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeStripePink') {
+      return Transform.rotate(
+        angle: 0.10,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 7, amp: 2),
+          child: SizedBox(
+            width: layer.width,
+            height: layer.height,
+            child: CustomPaint(
+              painter: _TapeStripePainter(
+                baseColor: const Color(0xFFFFD3E6).withOpacity(0.96),
+                stripeColor: const Color(0xFFE85AA9).withOpacity(0.28),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTicketPaper') {
+      return Transform.rotate(
+        angle: -0.24,
+        child: Container(
+          width: layer.width,
+          height: layer.height,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE6D6BE),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xFFBDAF99), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: CustomPaint(
+            painter: _TicketNotchPainter(color: const Color(0xFFCEC0AA)),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTornNoteBeige') {
+      return Transform.rotate(
+        angle: -0.16,
+        child: ClipPath(
+          clipper: _TornPaperClipper(),
+          child: Container(
+            width: layer.width,
+            height: layer.height,
+            color: const Color(0xFFE6D8C2),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _PaperNoisePainter(opacity: 0.08),
+                  ),
+                ),
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _TornBottomEdgeShadowPainter(
+                      color: const Color(0xFFAA9273),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 5,
+                    ),
+                    child: CustomPaint(
+                      painter: _TinyHandwritingPainter(
+                        color: const Color(0xFF6D5E4C),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerPaperClip') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _PaperClipPainter(color: const Color(0xFFA5AFB7)),
+      );
+    }
+    if (layer.imageBackground == 'stickerRibbonBlue') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _RibbonStickerPainter(
+          color: const Color(0xFF7D95D4),
+          shadeColor: const Color(0xFF5E78B9),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerHeartRed') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❤', style: TextStyle(color: Color(0xFFD74A4A))),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafGreen') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❧', style: TextStyle(color: Color(0xFF6FA05A))),
+      );
+    }
+    if (layer.imageBackground == 'stickerSparkleBlue') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('✶', style: TextStyle(color: Color(0xFF355ABA))),
+      );
+    }
+    if (layer.imageBackground == 'stickerSparkleGold') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('✶', style: TextStyle(color: Color(0xFFE6B84E))),
+      );
+    }
+    if (layer.imageBackground == 'stickerBowPink') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('🎀', style: TextStyle(color: Color(0xFFD97AAC))),
+      );
+    }
+    if (layer.imageBackground == 'stickerHeartPink') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❤', style: TextStyle(color: Color(0xFFEC58A2))),
+      );
+    }
+    if (layer.imageBackground == 'stickerScribbleBlue') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _ScribbleStickerPainter(color: const Color(0xFF4A89C8)),
+      );
+    }
+    if (layer.imageBackground == 'stickerBrushPink') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _BrushStrokeStickerPainter(color: const Color(0xFFE85AA9)),
+      );
+    }
+    if (layer.imageBackground == 'stickerBlobGreen') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _BlobStickerPainter(color: const Color(0xFF73BC67)),
+      );
+    }
+    if (layer.imageBackground == 'stickerArrowCoral') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _ArrowDoodlePainter(color: const Color(0xFFF07A63)),
+      );
+    }
+    if (layer.imageBackground == 'stickerStarGold') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFFE6B84E),
+          points: 6,
+          innerFactor: 0.46,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafCornerLeft') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _LeafCornerPainter(
+          color: const Color(0xFF2F7A2A),
+          mirror: false,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafCornerRight') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _LeafCornerPainter(
+          color: const Color(0xFF2F7A2A),
+          mirror: true,
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
 
   /// 스타일별 가로 패딩 합(좌+우) — 텍스트 레이아웃 시 콘텐츠 너비 계산용
   static double _styleHorizontalPadding(String type) {
@@ -715,6 +1041,16 @@ class LayerBuilder {
     // 편집 중인 레이어면 숨김
     if (_isEditing(layer)) return const SizedBox.shrink();
 
+    if (layer.type == LayerType.decoration) {
+      return interaction.buildInteractiveLayer(
+        layer: layer,
+        baseWidth: layer.width,
+        baseHeight: layer.height,
+        isCover: isCover,
+        child: Opacity(opacity: layer.opacity, child: _buildDecoration(layer)),
+      );
+    }
+
     final fit = _imageFitForLayer(layer);
     final alignment = _imageAlignmentForLayer(layer);
 
@@ -803,11 +1139,19 @@ class LayerBuilder {
       width: layer.width,
       height: layer.height,
       decoration: BoxDecoration(
-        color: const Color(0xFFEBEBEB),
-        borderRadius: BorderRadius.zero,
+        color: const Color(0xFFECECEC),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: const Color(0xFFD1D1D1), width: 1),
       ),
       child: Center(
-        child: Icon(Icons.add_a_photo, size: 16, color: Colors.white),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.32),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.add_a_photo, size: 16, color: Colors.white),
+        ),
       ),
     );
     return _buildFramedImage(layer, placeholder);
@@ -815,76 +1159,714 @@ class LayerBuilder {
 
   /// 이미지 프레임 적용 스위치
   Widget _buildFramedImage(LayerModel layer, Widget image) {
+    Widget framed;
     switch (layer.imageBackground) {
       case "circle":
-        return _frameCircle(image);
+        framed = _frameCircle(image);
+        break;
       case "round":
-        return _frameRound(image);
+        framed = _frameRound(image);
+        break;
       case "polaroid":
-        return _framePolaroid(image);
+        framed = _framePolaroid(image);
+        break;
       case "polaroidClassic":
-        return _framePolaroidClassic(image);
+        framed = _framePolaroidClassic(image);
+        break;
       case "polaroidWide":
-        return _framePolaroidWide(image);
+        framed = _framePolaroidWide(image);
+        break;
       case "polaroidFilm":
-        return _framePolaroidFilm(image);
+        framed = _framePolaroidFilm(image);
+        break;
       case "softGlow":
-        return _frameSoftGlow(image);
+        framed = _frameSoftGlow(image);
+        break;
       case "sticker":
-        return _frameSticker(image);
+        framed = _frameSticker(image);
+        break;
       case "vintage":
-        return _frameVintage(image);
+        framed = _frameVintage(image);
+        break;
       case "film":
-        return _frameFilm(image);
+        framed = _frameFilm(image);
+        break;
+      case "filmSquare":
+        framed = _frameFilmSquare(image);
+        break;
+      case "photoCard":
+        framed = _framePhotoCard(image);
+        break;
+      case "paperTapeCard":
+        framed = _framePaperTapeCard(image);
+        break;
+      case "posterPolaroid":
+        framed = _framePosterPolaroid(image);
+        break;
+      case "collageTile":
+        framed = _frameCollageTile(image);
+        break;
+      case "tornPaperCard":
+        framed = _frameTornPaperCard(image);
+        break;
+      case "paperClipCard":
+        framed = _framePaperClipCard(image);
+        break;
+      case "ribbonPolaroid":
+        framed = _frameRibbonPolaroid(image);
+        break;
+      case "roughPolaroid":
+        framed = _frameRoughPolaroid(image);
+        break;
+      case "maskingTapeFrame":
+        framed = _frameMaskingTape(image);
+        break;
+      case "softPaperCard":
+        framed = _frameSoftPaperCard(image);
+        break;
       case "sketch":
-        return _frameSketch(image);
+        framed = _frameSketch(image);
+        break;
       case "win95":
-        return _frameWin95(image);
+        framed = _frameWin95(image);
+        break;
       case "pixel8":
-        return _framePixel8(image);
+        framed = _framePixel8(image);
+        break;
       case "vhs":
-        return _frameVhs(image);
+        framed = _frameVhs(image);
+        break;
       case "neon":
-        return _frameNeon(image);
+        framed = _frameNeon(image);
+        break;
       case "crayon":
-        return _frameCrayon(image);
+        framed = _frameCrayon(image);
+        break;
       case "notebook":
-        return _frameNotebook(image);
+        framed = _frameNotebook(image);
+        break;
       case "tapeClip":
-        return _frameTapeClip(image);
+        framed = _frameTapeClip(image);
+        break;
       case "comicBubble":
-        return _frameComicBubble(image);
+        framed = _frameComicBubble(image);
+        break;
       case "thinDoubleLine":
-        return _frameThinDoubleLine(image);
+        framed = _frameThinDoubleLine(image);
+        break;
       case "offsetColorBlock":
-        return _frameOffsetColorBlock(image);
+        framed = _frameOffsetColorBlock(image);
+        break;
       case "floatingGlass":
-        return _frameFloatingGlass(image);
+        framed = _frameFloatingGlass(image);
+        break;
       case "gradientEdge":
-        return _frameGradientEdge(image);
+        framed = _frameGradientEdge(image);
+        break;
       case "tornNotebook":
-        return _frameTornNotebook(image);
+        framed = _frameTornNotebook(image);
+        break;
       case "oldNewspaper":
-        return _frameOldNewspaper(image);
+        framed = _frameOldNewspaper(image);
+        break;
       case "postalStamp":
-        return _framePostalStamp(image);
+        framed = _framePostalStamp(image);
+        break;
       case "kraftPaper":
-        return _frameKraftPaper(image);
+        framed = _frameKraftPaper(image);
+        break;
       case "goldFrame":
-        return _frameGoldFrame(image);
+        framed = _frameGoldFrame(image);
+        break;
+      case "blob":
+        framed = _frameBlob(image);
+        break;
       case "pinkSplatter":
-        return _framePinkSplatter(image);
+        framed = _framePinkSplatter(image);
+        break;
       case "toxicGlow":
-        return _frameToxicGlow(image);
+        framed = _frameToxicGlow(image);
+        break;
       case "stencilBlock":
-        return _frameStencilBlock(image);
+        framed = _frameStencilBlock(image);
+        break;
       case "midnightDrip":
-        return _frameMidnightDrip(image);
+        framed = _frameMidnightDrip(image);
+        break;
       case "vaporStreet":
-        return _frameVaporStreet(image);
+        framed = _frameVaporStreet(image);
+        break;
       default:
-        return image;
+        framed = image;
     }
+    return _fitFramedContent(layer, framed);
+  }
+
+  Widget _fitFramedContent(LayerModel layer, Widget child) {
+    if (layer.imageBackground == null || layer.imageBackground!.isEmpty) {
+      return SizedBox.expand(child: child);
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxW = constraints.maxWidth;
+        final maxH = constraints.maxHeight;
+        return ClipRect(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: maxW > 0 ? maxW : layer.width,
+              height: maxH > 0 ? maxH : layer.height,
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDecoration(LayerModel layer) {
+    if (layer.imageBackground == 'stickerBlueStar') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFF2E4FB2),
+          points: 7,
+          innerFactor: 0.42,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerBlueStarSmall') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFF385CC8),
+          points: 6,
+          innerFactor: 0.45,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerCatDoodle') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _CatDoodlePainter(color: const Color(0xFF4A4A4A)),
+      );
+    }
+    if (layer.imageBackground == 'stickerFlowerPink') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFF1A5B8),
+          centerColor: const Color(0xFFF7D5A6),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerFlowerCoral') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFE77B8C),
+          centerColor: const Color(0xFFF4C989),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerDaisyWhite') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _FlowerStickerPainter(
+          petalColor: const Color(0xFFFDFDFD),
+          centerColor: const Color(0xFFF0CA61),
+          petalCount: 8,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeBeige') {
+      return Transform.rotate(
+        angle: -0.10,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 6, amp: 2),
+          child: Container(
+            width: layer.width,
+            height: layer.height,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2CDA6).withOpacity(0.94),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeDotsBlue') {
+      return Transform.rotate(
+        angle: -0.08,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 7, amp: 2),
+          child: SizedBox(
+            width: layer.width,
+            height: layer.height,
+            child: CustomPaint(
+              painter: _TapeDotsPainter(
+                baseColor: const Color(0xFFCFE3FF).withOpacity(0.96),
+                dotColor: const Color(0xFF2F5FBF).withOpacity(0.32),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTapeStripePink') {
+      return Transform.rotate(
+        angle: 0.10,
+        child: ClipPath(
+          clipper: _TapeTornEdgeClipper(step: 7, amp: 2),
+          child: SizedBox(
+            width: layer.width,
+            height: layer.height,
+            child: CustomPaint(
+              painter: _TapeStripePainter(
+                baseColor: const Color(0xFFFFD3E6).withOpacity(0.96),
+                stripeColor: const Color(0xFFE85AA9).withOpacity(0.28),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTicketPaper') {
+      return Transform.rotate(
+        angle: -0.24,
+        child: Container(
+          width: layer.width,
+          height: layer.height,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE6D6BE),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xFFBDAF99), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: CustomPaint(
+            painter: _TicketNotchPainter(color: const Color(0xFFCEC0AA)),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerTornNoteBeige') {
+      return Transform.rotate(
+        angle: -0.16,
+        child: ClipPath(
+          clipper: _TornPaperClipper(),
+          child: Container(
+            width: layer.width,
+            height: layer.height,
+            color: const Color(0xFFE6D8C2),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _PaperNoisePainter(opacity: 0.08),
+                  ),
+                ),
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _TornBottomEdgeShadowPainter(
+                      color: const Color(0xFFAA9273),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 5,
+                    ),
+                    child: CustomPaint(
+                      painter: _TinyHandwritingPainter(
+                        color: const Color(0xFF6D5E4C),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerPaperClip') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _PaperClipPainter(color: const Color(0xFFA5AFB7)),
+      );
+    }
+    if (layer.imageBackground == 'stickerRibbonBlue') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _RibbonStickerPainter(
+          color: const Color(0xFF7D95D4),
+          shadeColor: const Color(0xFF5E78B9),
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerHeartRed') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❤', style: TextStyle(color: Color(0xFFD74A4A))),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafGreen') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❧', style: TextStyle(color: Color(0xFF6FA05A))),
+      );
+    }
+    if (layer.imageBackground == 'stickerSparkleBlue') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('✶', style: TextStyle(color: Color(0xFF355ABA))),
+      );
+    }
+    if (layer.imageBackground == 'stickerSparkleGold') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('✶', style: TextStyle(color: Color(0xFFE6B84E))),
+      );
+    }
+    if (layer.imageBackground == 'stickerBowPink') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('🎀', style: TextStyle(color: Color(0xFFD97AAC))),
+      );
+    }
+    if (layer.imageBackground == 'stickerHeartPink') {
+      return const FittedBox(
+        fit: BoxFit.contain,
+        child: Text('❤', style: TextStyle(color: Color(0xFFEC58A2))),
+      );
+    }
+    if (layer.imageBackground == 'stickerScribbleBlue') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _ScribbleStickerPainter(color: const Color(0xFF4A89C8)),
+      );
+    }
+    if (layer.imageBackground == 'stickerBrushPink') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _BrushStrokeStickerPainter(color: const Color(0xFFE85AA9)),
+      );
+    }
+    if (layer.imageBackground == 'stickerBlobGreen') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _BlobStickerPainter(color: const Color(0xFF73BC67)),
+      );
+    }
+    if (layer.imageBackground == 'stickerArrowCoral') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _ArrowDoodlePainter(color: const Color(0xFFF07A63)),
+      );
+    }
+    if (layer.imageBackground == 'stickerStarGold') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _StarStickerPainter(
+          fillColor: const Color(0xFFE6B84E),
+          points: 6,
+          innerFactor: 0.46,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafCornerLeft') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _LeafCornerPainter(
+          color: const Color(0xFF2F7A2A),
+          mirror: false,
+        ),
+      );
+    }
+    if (layer.imageBackground == 'stickerLeafCornerRight') {
+      return CustomPaint(
+        size: Size(layer.width, layer.height),
+        painter: _LeafCornerPainter(
+          color: const Color(0xFF2F7A2A),
+          mirror: true,
+        ),
+      );
+    }
+
+    if (layer.imageBackground == 'notebookPunchPage') {
+      return Stack(
+        children: [
+          Container(
+            width: layer.width,
+            height: layer.height,
+            color: const Color(0xFFF8F8F6),
+            child: CustomPaint(painter: _PaperNoisePainter(opacity: 0.055)),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: layer.width * 0.105,
+            child: Container(color: const Color(0xFFEFEFEB)),
+          ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(
+                    15,
+                    (_) => Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFFFF),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 1.2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: layer.width * 0.12,
+            top: 0,
+            bottom: 0,
+            width: 1,
+            child: Container(color: const Color(0xFFE6E6E1)),
+          ),
+        ],
+      );
+    }
+    if (layer.imageBackground == 'ivoryGridPaper') {
+      return SizedBox(
+        width: layer.width,
+        height: layer.height,
+        child: Stack(
+          children: [
+            Positioned.fill(child: Container(color: const Color(0xFFF3EEE0))),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _GridLinePainter(
+                  color: const Color(0xFFE0D7C5),
+                  step: 18.0,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: CustomPaint(painter: _PaperNoisePainter(opacity: 0.05)),
+            ),
+          ],
+        ),
+      );
+    }
+    if (layer.imageBackground == 'cloudSkyBlue') {
+      return SizedBox(
+        width: layer.width,
+        height: layer.height,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFAED1F3), Color(0xFFBFD9F6)],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: -layer.width * 0.08,
+              bottom: -layer.height * 0.03,
+              child: Container(
+                width: layer.width * 0.42,
+                height: layer.height * 0.22,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.24),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -layer.width * 0.1,
+              bottom: layer.height * 0.08,
+              child: Container(
+                width: layer.width * 0.5,
+                height: layer.height * 0.26,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.20),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: CustomPaint(painter: _PaperNoisePainter(opacity: 0.04)),
+            ),
+          ],
+        ),
+      );
+    }
+    if (layer.imageBackground == 'darkVignette') {
+      return Container(
+        width: layer.width,
+        height: layer.height,
+        decoration: BoxDecoration(
+          gradient: const RadialGradient(
+            center: Alignment(0.08, -0.10),
+            radius: 1.05,
+            colors: [Color(0xFF4A5E8D), Color(0xFF2E2C3E), Color(0xFF0C0C10)],
+            stops: [0.0, 0.48, 1.0],
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                const Color(0xFFCB6F2B).withOpacity(0.28),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.55],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final Color color;
+    final Gradient? gradient;
+    switch (layer.imageBackground) {
+      case 'paperBeige':
+        color = const Color(0xFFE9E0CF);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF1E8D7), Color(0xFFE5DCC9)],
+        );
+        break;
+      case 'paperBrown':
+      case 'paperBrownLined':
+        color = const Color(0xFFD2B295);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFDCC3A8), Color(0xFFC6A585)],
+        );
+        break;
+      case 'paperBrownPlain':
+        color = const Color(0xFFCDB08E);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFD6BA99), Color(0xFFC19F7C)],
+        );
+        break;
+      case 'paperYellow':
+        color = const Color(0xFFF6E18E);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF0DE89), Color(0xFFE8D476)],
+        );
+        break;
+      case 'paperPink':
+        color = const Color(0xFFF1C5B4);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF3D0C3), Color(0xFFE7B6A4)],
+        );
+        break;
+      case 'paperWarm':
+        color = const Color(0xFFF4EBDD);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF6EDE0), Color(0xFFECDDCB)],
+        );
+        break;
+      case 'paperWhite':
+        color = const Color(0xFFF7F7F3);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFAFAF7), Color(0xFFF0F0EC)],
+        );
+        break;
+      case 'paperGray':
+        color = const Color(0xFFEDEDED);
+        gradient = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF1F1F1), Color(0xFFE3E3E3)],
+        );
+        break;
+      default:
+        color = Colors.white;
+        gradient = null;
+    }
+
+    final bool linedBrown =
+        layer.imageBackground == 'paperBrown' ||
+        layer.imageBackground == 'paperBrownLined';
+    final bool texturedPaper =
+        layer.imageBackground == 'paperWhite' ||
+        layer.imageBackground == 'paperWarm' ||
+        layer.imageBackground == 'paperBeige' ||
+        layer.imageBackground == 'paperYellow' ||
+        layer.imageBackground == 'paperBrownPlain' ||
+        linedBrown;
+
+    return SizedBox(
+      width: layer.width,
+      height: layer.height,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(color: color, gradient: gradient),
+            ),
+          ),
+          if (texturedPaper)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _PaperNoisePainter(opacity: linedBrown ? 0.06 : 0.05),
+              ),
+            ),
+          if (linedBrown)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _HorizontalRulePainter(
+                  color: const Color(0xFFB8936E).withOpacity(0.28),
+                  gap: 18,
+                  stroke: 0.8,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   /// 기본 원형 – 바텀시트 디자인대로 원형
@@ -926,111 +1908,488 @@ class LayerBuilder {
 
   /// 클래식 폴라로이드 – 세로로 길고 가로는 더 좁은 카드 (좌우·위 20, 아래 80 여백)
   Widget _framePolaroid(Widget image) {
-    return Center(
-      child: AspectRatio(
-        // 세로가 더 긴 폴라로이드 카드 비율 (width : height)
-        aspectRatio: 3 / 4,
-        child: Container(
-          // 좌우/위는 동일, 아래는 더 넉넉하게
-          padding: const EdgeInsets.fromLTRB(20, 40, 20, 80),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final s = size.shortestSide;
+        final h = size.height;
+        final padLR = (s * 0.05).clamp(4.0, 14.0);
+        final padTop = (h * 0.07).clamp(4.0, 18.0);
+        var padBottom = (h * 0.17).clamp(8.0, 34.0);
+        final maxBottom = (h - padTop - 24).clamp(6.0, 42.0);
+        if (padBottom > maxBottom) padBottom = maxBottom;
+        final radius = (s * 0.04).clamp(5.0, 10.0);
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 3 / 4,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: const Color(0xFFE0E3EC), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular((radius * 0.65)),
+                child: SizedBox.expand(child: image),
+              ),
+            ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox.expand(child: image),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   /// 카드 폴라로이드 – 세로로 길고 가로는 더 좁은 카드 (좌우·위 20, 아래 80 여백)
   Widget _framePolaroidClassic(Widget image) {
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 3 / 4,
-        child: Container(
-          // 좌우/위는 동일, 아래는 더 넉넉하게
-          padding: const EdgeInsets.fromLTRB(20, 40, 20, 80),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFEF5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 7,
-                offset: const Offset(0, 3),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final s = size.shortestSide;
+        final h = size.height;
+        final padLR = (s * 0.05).clamp(4.0, 12.0);
+        final padTop = (h * 0.07).clamp(4.0, 16.0);
+        var padBottom = (h * 0.16).clamp(8.0, 30.0);
+        final maxBottom = (h - padTop - 24).clamp(6.0, 38.0);
+        if (padBottom > maxBottom) padBottom = maxBottom;
+        final radius = (s * 0.045).clamp(6.0, 12.0);
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 3 / 4,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFEF5),
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: const Color(0xFFE8E4D8), width: 1.1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 7,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular((radius * 0.60)),
+                child: SizedBox.expand(child: image),
+              ),
+            ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox.expand(child: image),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   /// 와이드 폴라로이드 – 바텀시트와 동일: 흰색 6r, 패딩 2/6/2/14, 사진 3r
   Widget _framePolaroidWide(Widget image) {
-    return Container(
-      // 와이드 샷 – 좌우/위는 적당히, 아래는 조금 더 여유
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.withOpacity(0.35), width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = constraints.biggest.shortestSide;
+        final padLR = (s * 0.045).clamp(4.0, 10.0);
+        final padTop = (s * 0.06).clamp(5.0, 12.0);
+        final padBottom = (s * 0.14).clamp(10.0, 24.0);
+        return Container(
+          padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.35),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: ClipRRect(borderRadius: BorderRadius.circular(3), child: image),
-      ),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: image,
+            ),
+          ),
+        );
+      },
     );
   }
 
   /// 폴라로이드 필름 – 검은 카드 + 폴라로이드 비율
   Widget _framePolaroidFilm(Widget image) {
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 3 / 4,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 40, 20, 80),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = constraints.biggest.shortestSide;
+        final padLR = (s * 0.07).clamp(6.0, 18.0);
+        final padTop = (s * 0.12).clamp(8.0, 28.0);
+        final padBottom = (s * 0.24).clamp(14.0, 54.0);
+        final radius = (s * 0.04).clamp(5.0, 10.0);
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 3 / 4,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: Colors.white30, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular((radius * 0.65)),
+                child: SizedBox.expand(child: image),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _framePhotoCard(Widget image) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = constraints.biggest.shortestSide;
+        final pad = (s * 0.052).clamp(3.0, 10.0);
+        final radius = (s * 0.012).clamp(1.0, 3.0);
+        return Container(
+          padding: EdgeInsets.all(pad),
           decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white30, width: 1),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(radius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.4),
-                blurRadius: 8,
+                color: Colors.black.withOpacity(0.16),
+                blurRadius: (s * 0.05).clamp(2.0, 7.0),
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular((radius * 0.7).clamp(0.8, 2.0)),
+            child: SizedBox.expand(child: image),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _framePaperTapeCard(Widget image) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = constraints.biggest.shortestSide;
+        final padLR = (s * 0.038).clamp(4.0, 14.0);
+        final padTop = (s * 0.042).clamp(4.0, 14.0);
+        final padBottom = (s * 0.064).clamp(6.0, 20.0);
+        final tapeW = (s * 0.32).clamp(30.0, 84.0);
+        final tapeH = (s * 0.08).clamp(8.0, 18.0);
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: ClipPath(
+                clipper: _RoughEdgePaperClipper(),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFBC9067),
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.16),
+                        blurRadius: (s * 0.07).clamp(3.0, 10.0),
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _PaperNoisePainter(opacity: 0.07),
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(1),
+                        child: SizedBox.expand(child: image),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: -tapeH * 0.5,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Transform.rotate(
+                  angle: -0.09,
+                  child: Container(
+                    width: tapeW,
+                    height: tapeH,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0C79F).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: CustomPaint(
+                      painter: _TapeDotsPainter(
+                        baseColor: Colors.transparent,
+                        dotColor: const Color(0xFFC9AF85).withOpacity(0.35),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _framePosterPolaroid(Widget image) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final s = size.shortestSide;
+        final h = size.height;
+        final padLR = (s * 0.06).clamp(6.0, 16.0);
+        final padTop = (h * 0.05).clamp(5.0, 14.0);
+        var padBottom = (h * 0.20).clamp(14.0, 42.0);
+        final maxBottom = (h - padTop - 24).clamp(8.0, 48.0);
+        if (padBottom > maxBottom) padBottom = maxBottom;
+        return Container(
+          padding: EdgeInsets.fromLTRB(padLR, padTop, padLR, padBottom),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: (s * 0.09).clamp(4.0, 12.0),
                 offset: const Offset(0, 3),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(1),
             child: SizedBox.expand(child: image),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _frameCollageTile(Widget image) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(1),
+      child: SizedBox.expand(child: image),
+    );
+  }
+
+  Widget _frameTornPaperCard(Widget image) {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.14),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipPath(
+        clipper: _TornPaperClipper(),
+        child: Stack(
+          children: [
+            Container(
+              color: const Color(0xFFFFFBF2),
+              child: CustomPaint(painter: _PaperNoisePainter(opacity: 0.08)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 14),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(1),
+                child: SizedBox.expand(child: image),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _TornBottomEdgeShadowPainter(
+                    color: const Color(0xFFB49D7E),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _framePaperClipCard(Widget image) {
+    final clipWidget = SizedBox(
+      width: 22,
+      height: 28,
+      child: CustomPaint(
+        painter: _PaperClipPainter(color: const Color(0xFF9AA6B1)),
+      ),
+    );
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.14),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipPath(
+              clipper: _TornPaperClipper(),
+              child: Stack(
+                children: [
+                  Container(
+                    color: const Color(0xFFFFFBF2),
+                    child: CustomPaint(
+                      painter: _PaperNoisePainter(opacity: 0.09),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 14),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(1),
+                      child: SizedBox.expand(child: image),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: CustomPaint(
+                        painter: _TornBottomEdgeShadowPainter(
+                          color: const Color(0xFFB49D7E),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(top: -12, right: 8, child: clipWidget),
+      ],
+    );
+  }
+
+  Widget _frameRibbonPolaroid(Widget image) {
+    const ribbon = SizedBox(
+      width: 26,
+      height: 24,
+      child: CustomPaint(
+        painter: _RibbonStickerPainter(
+          color: Color(0xFF6E89CE),
+          shadeColor: Color(0xFF506EB8),
+        ),
+      ),
+    );
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Positioned.fill(child: _framePolaroidClassic(image)),
+        const Positioned(top: 2, right: 2, child: ribbon),
+      ],
+    );
+  }
+
+  Widget _frameRoughPolaroid(Widget image) {
+    return ClipPath(
+      clipper: _RoughEdgePaperClipper(),
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 18),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(1),
+          child: SizedBox.expand(child: image),
+        ),
+      ),
+    );
+  }
+
+  Widget _frameMaskingTape(Widget image) {
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Positioned.fill(
+          child: Container(
+            color: const Color(0xFFFDFBF5),
+            padding: const EdgeInsets.all(6),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: SizedBox.expand(child: image),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 1,
+          left: 12,
+          right: 12,
+          child: Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE4D2A6).withOpacity(0.9),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 1,
+          left: 16,
+          right: 18,
+          child: Container(
+            height: 9,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE4D2A6).withOpacity(0.82),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _frameSoftPaperCard(Widget image) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4EBDD),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: const Color(0xFFDDCDB9), width: 1.1),
+      ),
+      padding: const EdgeInsets.all(7),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: SizedBox.expand(child: image),
       ),
     );
   }
@@ -1102,65 +2461,156 @@ class LayerBuilder {
     return Center(
       child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF151B2C),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // 왼쪽 점 4개 (프리뷰와 동일)
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (_) {
-                  return Container(
-                    width: 5,
-                    height: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3D4556),
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(width: 4),
-              // 중앙 화면 영역 (사진 + 배경색)
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    color: const Color(0xFF1E2433),
-                    child: SizedBox.expand(child: image),
-                  ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final h = constraints.maxHeight;
+            final outerPadX = (w * 0.06).clamp(2.0, 6.0);
+            final outerPadY = (h * 0.06).clamp(2.0, 8.0);
+            final sideW = (w * 0.08).clamp(3.0, 10.0);
+            final gap = (w * 0.03).clamp(1.0, 4.0);
+            final dotSize = (math.min(w, h) * 0.04).clamp(1.5, 4.5);
+
+            Widget sideDots() {
+              return SizedBox(
+                width: sideW,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (_) {
+                    return Container(
+                      width: dotSize,
+                      height: dotSize,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3D4556),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    );
+                  }),
                 ),
+              );
+            }
+
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: outerPadX,
+                vertical: outerPadY,
               ),
-              const SizedBox(width: 4),
-              // 오른쪽 점 4개 (프리뷰와 동일)
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (_) {
-                  return Container(
-                    width: 5,
-                    height: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3D4556),
-                      borderRadius: BorderRadius.circular(1),
+              decoration: BoxDecoration(
+                color: const Color(0xFF151B2C),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  sideDots(),
+                  SizedBox(width: gap),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        color: const Color(0xFF1E2433),
+                        child: SizedBox.expand(child: image),
+                      ),
                     ),
-                  );
-                }),
+                  ),
+                  SizedBox(width: gap),
+                  sideDots(),
+                ],
               ),
-            ],
-          ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 정사각 필름 프레임 (포스터 느낌)
+  Widget _frameFilmSquare(Widget image) {
+    return Center(
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final h = constraints.maxHeight;
+            final w = constraints.maxWidth;
+            final pad = (h * 0.04).clamp(4.0, 8.0);
+            final sideGap = (w * 0.02).clamp(3.0, 7.0);
+            final dotSize = (h * 0.045).clamp(2.8, 5.5);
+            final dotCount = (h / (dotSize * 2.3)).floor().clamp(4, 9);
+
+            Widget sprocketColumn() {
+              return SizedBox(
+                width: dotSize + 1.0,
+                child: LayoutBuilder(
+                  builder: (context, c) {
+                    final safeH = c.maxHeight.isFinite ? c.maxHeight : h;
+                    final count = dotCount.clamp(3, 9);
+                    final travel = (safeH - dotSize).clamp(
+                      0.0,
+                      double.infinity,
+                    );
+                    return Stack(
+                      children: [
+                        for (int i = 0; i < count; i++)
+                          Positioned(
+                            left: 0,
+                            top: count == 1
+                                ? (safeH - dotSize) / 2
+                                : (travel * i) / (count - 1),
+                            child: Container(
+                              width: dotSize,
+                              height: dotSize,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8E3D8),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            }
+
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: pad, vertical: pad),
+              decoration: BoxDecoration(
+                color: const Color(0xFF242424),
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  sprocketColumn(),
+                  SizedBox(width: sideGap),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: Container(
+                        color: const Color(0xFF1A1A1A),
+                        child: SizedBox.expand(child: image),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: sideGap),
+                  sprocketColumn(),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -1168,48 +2618,70 @@ class LayerBuilder {
 
   /// 90s 윈도우 프레임
   Widget _frameWin95(Widget image) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFC0C0C0),
-        border: Border.all(color: const Color(0xFF808080), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Container(
-            height: 22,
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            color: const Color(0xFF000080),
-            child: Row(
-              children: [
-                Text(
-                  'image.exe',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        final barH = math.min((h * 0.32).clamp(6.0, 22.0), h * 0.55);
+        final showTitle = w >= 92;
+        final showButtons = w >= 64;
+        final btnSize = (barH - 5).clamp(7.0, 12.0);
+        final sidePad = w < 80 ? 3.0 : 6.0;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFC0C0C0),
+            border: Border.all(color: const Color(0xFF808080), width: 1),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                height: barH,
+                padding: EdgeInsets.symmetric(horizontal: sidePad),
+                color: const Color(0xFF000080),
+                child: Row(
+                  children: [
+                    if (showTitle)
+                      Expanded(
+                        child: Text(
+                          'image.exe',
+                          maxLines: 1,
+                          overflow: TextOverflow.fade,
+                          softWrap: false,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: (barH * 0.45).clamp(7.0, 11.0),
+                          ),
+                        ),
+                      ),
+                    if (showButtons) ...[
+                      _win95Button(size: btnSize),
+                      SizedBox(width: (btnSize * 0.12).clamp(1.0, 2.0)),
+                      _win95Button(size: btnSize),
+                      SizedBox(width: (btnSize * 0.12).clamp(1.0, 2.0)),
+                      _win95Button(size: btnSize),
+                    ],
+                  ],
                 ),
-                const Spacer(),
-                _win95Button(),
-                const SizedBox(width: 2),
-                _win95Button(),
-                const SizedBox(width: 2),
-                _win95Button(),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: ClipRect(child: SizedBox.expand(child: image)),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              color: Colors.white,
-              child: ClipRect(child: SizedBox.expand(child: image)),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _win95Button() {
+  Widget _win95Button({double size = 12}) {
     return Container(
-      width: 14,
-      height: 12,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: const Color(0xFFC0C0C0),
         border: Border.all(color: const Color(0xFF808080)),
@@ -1278,51 +2750,76 @@ class LayerBuilder {
 
   /// VHS 글리치
   Widget _frameVhs(Widget image) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D0D0D),
-        border: Border.all(color: const Color(0xFF333333)),
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(child: CustomPaint(painter: _VhsScanLinePainter())),
-          Padding(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        final pad = (w * 0.05).clamp(2.0, 6.0);
+        final topH = (h * 0.14).clamp(10.0, 16.0);
+        final showTop = h >= 34 && w >= 48;
+        final showBottom = h >= 40 && w >= 60;
+        final playFont = (topH * 0.55).clamp(6.0, 10.0);
+        final bottomFont = (h * 0.09).clamp(6.0, 9.0);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0D0D0D),
+            border: Border.all(color: const Color(0xFF333333)),
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(painter: _VhsScanLinePainter()),
+              ),
+              Padding(
+                padding: EdgeInsets.all(pad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'PLAY',
-                      style: TextStyle(
-                        color: const Color(0xFF00FF00),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                    if (showTop)
+                      SizedBox(
+                        height: topH,
+                        child: Row(
+                          children: [
+                            Text(
+                              'PLAY',
+                              style: TextStyle(
+                                color: const Color(0xFF00FF00),
+                                fontSize: playFont,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: (playFont * 0.2).clamp(1.0, 2.0)),
+                            Icon(
+                              Icons.play_arrow,
+                              color: const Color(0xFF00FF00),
+                              size: (playFont * 1.2).clamp(7.0, 12.0),
+                            ),
+                          ],
+                        ),
                       ),
+                    Expanded(
+                      child: ClipRect(child: SizedBox.expand(child: image)),
                     ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      Icons.play_arrow,
-                      color: const Color(0xFF00FF00),
-                      size: 12,
-                    ),
+                    if (showBottom)
+                      Center(
+                        child: Text(
+                          'SP 00:12:44',
+                          maxLines: 1,
+                          overflow: TextOverflow.clip,
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: bottomFont,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-                Expanded(
-                  child: ClipRect(child: SizedBox.expand(child: image)),
-                ),
-                Center(
-                  child: Text(
-                    'SP 00:12:44',
-                    style: TextStyle(color: Colors.white70, fontSize: 9),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1765,6 +3262,61 @@ class LayerBuilder {
         borderRadius: BorderRadius.circular(1),
         child: FittedBox(fit: BoxFit.cover, child: image),
       ),
+    );
+  }
+
+  Widget _frameBlob(Widget image) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final clipper = _BlobClipper();
+        return Stack(
+          children: [
+            ClipPath(
+              clipper: clipper,
+              child: Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFEFB),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.10),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ClipPath(
+              clipper: clipper,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: image,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ClipPath(
+                  clipper: clipper,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: const Color(0xFFE6E0D7),
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -4002,535 +5554,3 @@ class LayerBuilder {
 }
 
 /// 점선 테두리 (태그 적용 시 미리보기와 동일)
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final double borderRadius;
-  final double dashWidth;
-  final double dashSpace;
-
-  _DashedBorderPainter({
-    required this.color,
-    required this.strokeWidth,
-    required this.borderRadius,
-    this.dashWidth = 4,
-    this.dashSpace = 3,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(borderRadius),
-    );
-    final path = Path()..addRRect(rect);
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-    _drawDashedPath(canvas, path, paint);
-  }
-
-  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
-    final pathMetrics = path.computeMetrics();
-    for (final metric in pathMetrics) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final segment = metric.extractPath(distance, distance + dashWidth);
-        canvas.drawPath(segment, paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 티켓 스텁 – 왼쪽 톱니(원형 터치선) 연출
-class _TicketNotchPainter extends CustomPainter {
-  final Color color;
-
-  _TicketNotchPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const cx = 6.0;
-    const r = 2.5;
-    final step = size.height / 5;
-    for (var i = 1; i <= 4; i++) {
-      final y = step * i;
-      canvas.drawCircle(Offset(cx, y), r, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 리본 – 양끝 비스듬히 잘린 배너 클리퍼
-class _RibbonClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    const cut = 14.0;
-    final path = Path()
-      ..moveTo(cut, 0)
-      ..lineTo(size.width - cut, 0)
-      ..lineTo(size.width, size.height / 2)
-      ..lineTo(size.width - cut, size.height)
-      ..lineTo(cut, size.height)
-      ..lineTo(0, size.height / 2)
-      ..close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-/// 격자 노트 – 가로·세로 그리드 라인 (step 지정 가능)
-class _GridLinePainter extends CustomPainter {
-  final Color color;
-  final double step;
-
-  _GridLinePainter({required this.color, this.step = 12.0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withOpacity(0.6)
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-    for (var x = 0.0; x <= size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (var y = 0.0; y <= size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-    canvas.drawLine(
-      Offset(size.width, 0),
-      Offset(size.width, size.height),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(size.width, size.height),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 찢어진 메모지 전용 – 아래쪽만 톱니 찢김 (종이 뜯은 느낌)
-class _TornNoteEdgeClipper extends CustomClipper<Path> {
-  final double step;
-  final double amp;
-
-  _TornNoteEdgeClipper({this.step = 8.0, this.amp = 2.5});
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height);
-    for (var x = size.width - step; x > 0; x -= step) {
-      path.lineTo(x + step / 2, size.height - amp);
-      path.lineTo(x, size.height);
-    }
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldDelegate) =>
-      oldDelegate is _TornNoteEdgeClipper &&
-      (oldDelegate.step != step || oldDelegate.amp != amp);
-}
-
-/// 찢어진 테이프 전용 – 오른쪽만 톱니 찢김 (메모지 아래 톱니와 다른 느낌)
-class _TapeTornEdgeClipper extends CustomClipper<Path> {
-  final double step;
-  final double amp;
-
-  _TapeTornEdgeClipper({this.step = 8.0, this.amp = 2.5});
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(size.width, 0);
-    for (var y = step; y < size.height; y += step) {
-      path.lineTo(size.width - amp, y - step / 2);
-      path.lineTo(size.width, y);
-    }
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldDelegate) =>
-      oldDelegate is _TapeTornEdgeClipper &&
-      (oldDelegate.step != step || oldDelegate.amp != amp);
-}
-
-/// 도트 테이프 – 작은 원 패턴
-class _TapeDotsPainter extends CustomPainter {
-  final Color baseColor;
-  final Color dotColor;
-
-  _TapeDotsPainter({required this.baseColor, required this.dotColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = baseColor,
-    );
-    final paint = Paint()..color = dotColor;
-    const spacing = 8.0;
-    const r = 2.0;
-    // 여백 일정: 네 면 모두 spacing 이상 비워 두고 그 안쪽에만 도트 그리기 (끝 잘림 방지)
-    for (var x = spacing; x <= size.width - spacing; x += spacing) {
-      for (var y = spacing; y <= size.height - spacing; y += spacing) {
-        canvas.drawCircle(Offset(x, y), r, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 이중 스트라이프 테이프 (넓은 대각 줄무늬)
-class _TapeDoubleStripePainter extends CustomPainter {
-  final Color baseColor;
-  final Color stripeColor;
-
-  _TapeDoubleStripePainter({
-    required this.baseColor,
-    required this.stripeColor,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = baseColor,
-    );
-    const stripeWidth = 12.0;
-    var x = -size.height * 2;
-    var index = 0;
-    while (x < size.width + size.height * 2) {
-      final paint = Paint()
-        ..color = index.isEven ? stripeColor : baseColor
-        ..style = PaintingStyle.fill;
-      final path = Path();
-      path.moveTo(x, 0);
-      path.lineTo(x + stripeWidth, 0);
-      path.lineTo(x + stripeWidth + size.height, size.height);
-      path.lineTo(x + size.height, size.height);
-      path.close();
-      canvas.drawPath(path, paint);
-      x += stripeWidth;
-      index++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 마스킹 테이프 적용 시 대각 스트라이프 (라벨/노트와 구분)
-class _TapeStripePainter extends CustomPainter {
-  final Color baseColor;
-  final Color stripeColor;
-
-  _TapeStripePainter({required this.baseColor, required this.stripeColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = baseColor,
-    );
-    const stripeWidth = 6.0;
-    var x = -size.height * 2;
-    var index = 0;
-    while (x < size.width + size.height * 2) {
-      final paint = Paint()
-        ..color = index.isEven ? stripeColor : baseColor
-        ..style = PaintingStyle.fill;
-      final path = Path();
-      path.moveTo(x, 0);
-      path.lineTo(x + stripeWidth, 0);
-      path.lineTo(x + stripeWidth + size.height, size.height);
-      path.lineTo(x + size.height, size.height);
-      path.close();
-      canvas.drawPath(path, paint);
-      x += stripeWidth;
-      index++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// 말풍선 스타일: 라운드(꼬리 0.2/0.5/0.8) / 사각형(꼬리 0/0.5/1)
-class _BubbleBackgroundPainter extends CustomPainter {
-  final Color fillColor;
-  final Color borderColor;
-  final double tailPosition; // 라운드: 0.2 왼 0.5 가운데 0.8 오른 / 사각: 0 왼 0.5 가운데 1 오른
-  final bool shapeSquare;
-
-  _BubbleBackgroundPainter({
-    required this.fillColor,
-    required this.borderColor,
-    this.tailPosition = 0.2,
-    this.shapeSquare = false,
-  });
-
-  static const double _tailWidth = 18.0;
-  static const double _tailHeight = 10.0;
-  static const double _radius = 16.0;
-
-  /// 꼬리가 가장자리에 붙지 않도록 여백 (자연스러운 느낌)
-  static const double _tailMargin = 12.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path();
-    final w = size.width;
-    // 꼬리가 잘리지 않도록 본체 높이 = 전체 - 꼬리 높이 (그리기는 size 안에 완전히 포함)
-    final h = size.height - _tailHeight;
-
-    if (shapeSquare) {
-      final tailCenterX = tailPosition <= 0.25
-          ? _tailMargin + _tailWidth / 2
-          : tailPosition >= 0.75
-          ? w - _tailMargin - _tailWidth / 2
-          : w / 2;
-      final tailLeft = tailCenterX - _tailWidth / 2;
-      final tailRight = tailCenterX + _tailWidth / 2;
-      _drawSquareBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
-    } else {
-      final r = _radius;
-      final minX = r + _tailMargin + _tailWidth / 2;
-      final maxX = w - r - _tailMargin - _tailWidth / 2;
-      // 라운드: 왼쪽(0.28) / 가운데(0.5) / 오른쪽(0.72) — 비율이 아닌 구간으로 명시 적용
-      final bool isLeft = tailPosition < 0.4;
-      final bool isRight = tailPosition > 0.6;
-      final tailCenterX = minX <= maxX
-          ? (isLeft
-                ? minX
-                : isRight
-                ? maxX
-                : w / 2)
-          : (isLeft
-                ? (r + _tailWidth / 2)
-                : isRight
-                ? (w - r - _tailWidth / 2)
-                : w / 2);
-      final tailLeft = tailCenterX - _tailWidth / 2;
-      final tailRight = tailCenterX + _tailWidth / 2;
-      _drawRoundBubblePath(path, w, h, tailLeft, tailRight, tailCenterX);
-    }
-
-    final fill = Paint()
-      ..color = fillColor
-      ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawPath(path, fill);
-    canvas.drawPath(path, stroke);
-  }
-
-  /// 라운드 말풍선: 둥근 사각형 본체 + 하단 평평한 구간에 꼬리 연결 (한 경로, 여백 없음)
-  void _drawRoundBubblePath(
-    Path path,
-    double w,
-    double h,
-    double tailLeft,
-    double tailRight,
-    double tailCenterX,
-  ) {
-    final r = _radius;
-    path.moveTo(tailLeft, h);
-    path.lineTo(r, h);
-    path.arcToPoint(Offset(0, h - r), radius: Radius.circular(r));
-    path.lineTo(0, r);
-    path.arcToPoint(Offset(r, 0), radius: Radius.circular(r));
-    path.lineTo(w - r, 0);
-    path.arcToPoint(Offset(w, r), radius: Radius.circular(r));
-    path.lineTo(w, h - r);
-    path.arcToPoint(Offset(w - r, h), radius: Radius.circular(r));
-    path.lineTo(tailRight, h);
-    path.lineTo(tailCenterX, h + _tailHeight);
-    path.lineTo(tailLeft, h);
-    path.close();
-  }
-
-  /// 사각형 말풍선: 직사각형 본체 + 꼬리 왼/가운데/오른쪽 (한 경로, 여백 없음)
-  void _drawSquareBubblePath(
-    Path path,
-    double w,
-    double h,
-    double tailLeft,
-    double tailRight,
-    double tailCenterX,
-  ) {
-    path.moveTo(tailLeft, h);
-    path.lineTo(0, h);
-    path.lineTo(0, 0);
-    path.lineTo(w, 0);
-    path.lineTo(w, h);
-    path.lineTo(tailRight, h);
-    path.lineTo(tailCenterX, h + _tailHeight);
-    path.lineTo(tailLeft, h);
-    path.close();
-  }
-
-  @override
-  bool shouldRepaint(covariant _BubbleBackgroundPainter oldDelegate) {
-    return oldDelegate.fillColor != fillColor ||
-        oldDelegate.borderColor != borderColor ||
-        oldDelegate.tailPosition != tailPosition ||
-        oldDelegate.shapeSquare != shapeSquare;
-  }
-}
-
-// 노트 스타일: 아래 찢어진 종이 효과
-class _TornPaperClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height - 4);
-
-    // 아랫부분 찢어진 효과
-    const step = 8.0;
-    double x = size.width;
-    bool up = true;
-    while (x > 0) {
-      x -= step;
-      final y = size.height - (up ? 0 : 4);
-      path.lineTo(x.clamp(0, size.width), y);
-      up = !up;
-    }
-
-    path.lineTo(0, size.height - 4);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-// (중앙 찢김 스크래치용 CustomPainter들은 찢김 스티커 제거에 따라 삭제되었습니다)
-// Film strip painter: 양쪽에 4개씩 연한 타공(perforation) — 레퍼런스 빈티지 필름 스트립
-class _FilmHolePainterV2 extends CustomPainter {
-  static const int holesPerSide = 4;
-  static const double holeW = 5.0;
-  static const double holeH = 5.0;
-  static const Color holeColor = Color(0xFF3D4556);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = holeColor
-      ..style = PaintingStyle.fill;
-    final leftX = 2.0;
-    final rightX = size.width - 2.0 - holeW;
-    final totalGap = size.height - (holesPerSide * holeH);
-    final gap = holesPerSide > 1 ? totalGap / (holesPerSide + 1) : totalGap / 2;
-
-    for (int i = 0; i < holesPerSide; i++) {
-      final y = gap + i * (holeH + gap);
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(leftX, y, holeW, holeH),
-        const Radius.circular(1),
-      );
-      canvas.drawRRect(rect, paint);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(rightX, y, holeW, holeH),
-          const Radius.circular(1),
-        ),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// Sketch frame painter for _frameSketch
-class _SketchFramePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black87
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    final path = Path();
-    path.moveTo(4, 8);
-    path.lineTo(size.width - 4, 4);
-    path.lineTo(size.width - 6, size.height - 6);
-    path.lineTo(6, size.height - 4);
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// VHS 스캔라인
-class _VhsScanLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.03);
-    for (var y = 0.0; y < size.height; y += 3) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 네온 코너 L자
-class _NeonCornerLPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF00FFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    const r = 6.0;
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, r)
-        ..lineTo(0, 0)
-        ..lineTo(r, 0),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

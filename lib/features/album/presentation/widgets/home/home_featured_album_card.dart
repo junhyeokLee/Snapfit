@@ -35,10 +35,8 @@ class HomeFeaturedAlbumCard extends StatelessWidget {
       ScreenLogger.widget('HomeFeaturedAlbumCard', '피처드 앨범 카드 · 진행률/협업자');
     }
     final created = formatAlbumDate(album.createdAt);
-    final hasTarget = album.targetPages > 0;
-    final progressText = hasTarget
-        ? '${album.totalPages}/${album.targetPages} 페이지 진행 중'
-        : '${album.totalPages} 페이지 진행 중';
+    final progressInfo = calculateAlbumProgress(album);
+    final progressText = progressInfo.pageProgressLabel;
 
     final cardContent = InkWell(
       onTap: isEditMode ? null : onTap, // 편집 모드일 때 클릭 방지

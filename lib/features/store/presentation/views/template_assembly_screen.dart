@@ -10,6 +10,9 @@ import '../../data/api/template_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../album/data/api/storage_service.dart';
 import '../../../album/presentation/widgets/home/home_album_actions.dart';
+import '../../../album/presentation/viewmodels/album_editor_view_model.dart';
+import '../../../album/presentation/views/page_editor_screen.dart';
+import '../../../../core/constants/cover_size.dart';
 
 class TemplateAssemblyScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
@@ -74,21 +77,63 @@ class _TemplateAssemblyScreenState
         }
       }
 
-      // 2. Call backend with replacements
-      final album = await ref
-          .read(templateRepositoryProvider)
-          .createAlbumFromTemplate(
-            widget.template.id,
-            replacements: replacements,
-          );
+      if (widget.template.id < 0) {
+        // 로컬 피처드 템플릿: 서버 생성 없이 바로 편집 세션으로 시작
+        final pageLayers = widget.parsedPages
+            .map((page) {
+              return page
+                  .map((layer) {
+                    if (layer.type != LayerType.image) return layer.copyWith();
+                    final selectedUrl = replacements[layer.id];
+                    if (selectedUrl == null || selectedUrl.isEmpty) {
+                      return layer.copyWith();
+                    }
+                    return layer.copyWith(
+                      previewUrl: selectedUrl,
+                      imageUrl: selectedUrl,
+                      originalUrl: selectedUrl,
+                    );
+                  })
+                  .toList(growable: false);
+            })
+            .toList(growable: false);
 
-      if (!mounted) return;
+        final portraitCover = coverSizes.firstWhere(
+          (s) => s.name == '세로형',
+          orElse: () => coverSizes.first,
+        );
+        ref
+            .read(albumEditorViewModelProvider.notifier)
+            .startLocalTemplateAlbum(
+              albumTitle: widget.template.title,
+              pages: pageLayers,
+              initialCover: portraitCover,
+            );
 
-      // 3. Open Album Editor
-      await HomeAlbumActions.openAlbum(context, ref, album);
+        if (!mounted) return;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PageEditorScreen(initialPageIndex: 0),
+          ),
+        );
+      } else {
+        // 2. Call backend with replacements
+        final album = await ref
+            .read(templateRepositoryProvider)
+            .createAlbumFromTemplate(
+              widget.template.id,
+              replacements: replacements,
+            );
 
-      // Close assembly screen
-      if (mounted) Navigator.pop(context);
+        if (!mounted) return;
+
+        // 3. Open Album Editor
+        await HomeAlbumActions.openAlbum(context, ref, album);
+
+        // Close assembly screen
+        if (mounted) Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -141,24 +186,38 @@ class _TemplateAssemblyScreenState
             ),
           ),
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: widget.parsedPages.length,
-              onPageChanged: (idx) => setState(() => _currentIndex = idx),
-              itemBuilder: (context, idx) {
-                return Center(
-                  child: Container(
-                    padding: EdgeInsets.all(40.w),
-                    child: TemplatePageRenderer(
-                      layers: widget.parsedPages[idx],
-                      width: 1.sw - 80.w,
-                      height:
-                          1.sw -
-                          80.w, // Assume square for simplicity or keep ratio
-                      localFiles: _selections,
-                      onLayerTap: (layerId) => _pickImage(layerId),
-                    ),
-                  ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.parsedPages.length,
+                  onPageChanged: (idx) => setState(() => _currentIndex = idx),
+                  itemBuilder: (context, idx) {
+                    final layers = widget.parsedPages[idx];
+                    final ratio = _pageAspect(layers);
+                    final maxW = (constraints.maxWidth - 80.w).clamp(220.0, 620.0);
+                    final maxH = (constraints.maxHeight - 40.h).clamp(220.0, 720.0);
+                    var renderW = maxW;
+                    var renderH = renderW / ratio;
+                    if (renderH > maxH) {
+                      renderH = maxH;
+                      renderW = renderH * ratio;
+                    }
+
+                    return Center(
+                      child: SizedBox(
+                        width: renderW,
+                        height: renderH,
+                        child: TemplatePageRenderer(
+                          layers: layers,
+                          width: renderW,
+                          height: renderH,
+                          localFiles: _selections,
+                          onLayerTap: (layerId) => _pickImage(layerId),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -200,5 +259,22 @@ class _TemplateAssemblyScreenState
         ],
       ),
     );
+  }
+
+  double _pageAspect(List<LayerModel> layers) {
+    if (layers.isEmpty) return 3 / 4;
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = -double.infinity;
+    double maxY = -double.infinity;
+    for (final l in layers) {
+      minX = minX > l.position.dx ? l.position.dx : minX;
+      minY = minY > l.position.dy ? l.position.dy : minY;
+      maxX = maxX < l.position.dx + l.width ? l.position.dx + l.width : maxX;
+      maxY = maxY < l.position.dy + l.height ? l.position.dy + l.height : maxY;
+    }
+    final w = (maxX - minX).clamp(1.0, 10000.0);
+    final h = (maxY - minY).clamp(1.0, 10000.0);
+    return w / h;
   }
 }

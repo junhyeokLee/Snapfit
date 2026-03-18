@@ -5,6 +5,7 @@ import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
+import '../../domain/entities/layer.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -16,7 +17,16 @@ import '../../data/api/album_provider.dart';
 
 /// 앨범 생성 플로우 화면 (스텝1~3)
 class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
-  const AlbumCreateFlowScreen({super.key});
+  final List<List<LayerModel>>? initialTemplatePages;
+  final String? initialAlbumTitle;
+  final List<String>? initialTemplatePreviewImages;
+
+  const AlbumCreateFlowScreen({
+    super.key,
+    this.initialTemplatePages,
+    this.initialAlbumTitle,
+    this.initialTemplatePreviewImages,
+  });
 
   @override
   ConsumerState<AlbumCreateFlowScreen> createState() =>
@@ -24,6 +34,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
 }
 
 class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
+  static const int _maxPageCount = 50;
   int _currentStep = 0;
   String _albumTitle = '';
 
@@ -33,16 +44,66 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     orElse: () => coverSizes.first,
   );
   int _selectedPageCount = 10;
+  int _templateMinPageCount = 10;
   bool _allowEditing = true;
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
+  List<List<LayerModel>>? _resolvedTemplatePages;
 
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
   VoidCallback? _onCompletePressed;
 
+  List<List<LayerModel>> _hydrateTemplatePages(List<List<LayerModel>> pages) {
+    final images = widget.initialTemplatePreviewImages ?? const <String>[];
+    if (images.isEmpty) return pages;
+
+    var imageCursor = 0;
+    return pages
+        .map((page) {
+          return page
+              .map((layer) {
+                if (layer.type != LayerType.image) return layer;
+                final hasUrl =
+                    (layer.previewUrl != null &&
+                        layer.previewUrl!.isNotEmpty) ||
+                    (layer.imageUrl != null && layer.imageUrl!.isNotEmpty) ||
+                    (layer.originalUrl != null &&
+                        layer.originalUrl!.isNotEmpty);
+                if (hasUrl) return layer;
+                final url = images[imageCursor % images.length];
+                imageCursor++;
+                return layer.copyWith(
+                  previewUrl: url,
+                  imageUrl: url,
+                  originalUrl: url,
+                );
+              })
+              .toList(growable: false);
+        })
+        .toList(growable: false);
+  }
+
   @override
   void initState() {
     super.initState();
+    if (widget.initialTemplatePages != null &&
+        widget.initialTemplatePages!.isNotEmpty) {
+      _resolvedTemplatePages = _hydrateTemplatePages(
+        widget.initialTemplatePages!,
+      );
+    }
+    if (widget.initialAlbumTitle != null &&
+        widget.initialAlbumTitle!.trim().isNotEmpty) {
+      _albumTitle = widget.initialAlbumTitle!.trim();
+    }
+    if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
+      // cover 제외 내지 페이지 수
+      _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
+        1,
+        _maxPageCount,
+      );
+      _selectedPageCount = _templateMinPageCount;
+    }
     ScreenLogger.enter(
       'AlbumCreateFlowScreen',
       '앨범 생성 플로우 Step 1~4 (정보 입력 → 커버 편집 → 친구 초대 → 페이지 편집)',
@@ -132,14 +193,25 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       case 0:
         return AlbumCreateStep1(
           albumTitle: _albumTitle,
+          templateTitle: widget.initialAlbumTitle,
+          templatePreviewImageUrl:
+              widget.initialTemplatePreviewImages != null &&
+                  widget.initialTemplatePreviewImages!.isNotEmpty
+              ? widget.initialTemplatePreviewImages!.first
+              : null,
           selectedCover: _selectedCover,
           selectedPageCount: _selectedPageCount,
+          minPageCount: _templateMinPageCount,
           // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
           // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
           onTitleChanged: (title) => _albumTitle = title,
           onCoverSelected: (cover) => setState(() => _selectedCover = cover),
-          onPageCountChanged: (count) =>
-              setState(() => _selectedPageCount = count),
+          onPageCountChanged: (count) => setState(
+            () => _selectedPageCount = count.clamp(
+              _templateMinPageCount,
+              _maxPageCount,
+            ),
+          ),
           onNext: () {
             if (_albumTitle.isNotEmpty && _selectedCover != null) {
               setState(() => _currentStep = 1);
@@ -156,17 +228,18 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           initialCoverSize: _selectedCover,
           albumTitle: _albumTitle, // 앨범 제목 전달
           targetPages: _selectedPageCount, // 목표 페이지 수 전달
+          initialTemplateCoverLayers:
+              (_resolvedTemplatePages != null &&
+                  _resolvedTemplatePages!.isNotEmpty)
+              ? _resolvedTemplatePages!.first
+              : null,
           onRegisterCompleteAction: (callback) {
             setState(() {
               _onCompletePressed = callback;
             });
           },
           onAlbumCreated: (albumId) {
-            // 앨범 생성 완료 후 앨범 ID 저장하고 Step 3로 이동
-            setState(() {
-              _createdAlbumId = albumId;
-              _currentStep = 2; // 친구 초대 화면으로 이동
-            });
+            _handleAlbumCreated(albumId);
           },
         );
       case 2:
@@ -192,11 +265,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                 targetPages: _selectedPageCount,
               );
 
+              final vm = ref.read(albumEditorViewModelProvider.notifier);
+              if (_resolvedTemplatePages != null &&
+                  _resolvedTemplatePages!.isNotEmpty) {
+                // 템플릿 경로에서도 Step3 이후에 페이지 편집으로 진입할 때
+                // 템플릿 페이지가 적용되도록 큐를 먼저 주입한다.
+                vm.queueTemplatePagesForNextLoad(_resolvedTemplatePages!);
+              }
+
               // 백그라운드에서 폴링 시작 (await 하지 않음 → 즉시 화면 전환)
               // PageEditorScreen의 isCreatingInBackground 오버레이가 "생성 중" 표시
-              ref
-                  .read(albumEditorViewModelProvider.notifier)
-                  .prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
+              vm.prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
 
               // 즉시 편집 화면으로 이동 (로딩 오버레이 표시됨)
               Navigator.pushReplacement(
@@ -212,6 +291,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Future<void> _handleAlbumCreated(int albumId) async {
+    // 템플릿/일반 생성 모두 Step 3(친구 초대)로 이동
+    setState(() {
+      _createdAlbumId = albumId;
+      _currentStep = 2;
+    });
   }
 
   /// 뒤로가기 처리

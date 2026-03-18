@@ -1,10 +1,10 @@
 import '../../domain/repositories/album_member_repository.dart';
 import '../api/album_member_api.dart';
+import '../dto/album_member_response.dart';
 import '../dto/request/accept_invite_request.dart';
 import '../dto/request/invite_album_request.dart';
 import '../dto/response/invite_accept_response.dart';
 import '../dto/response/invite_info_response.dart';
-import '../dto/response/invite_link_response.dart';
 import '../dto/response/invite_link_response.dart';
 
 import '../../../../core/interceptors/token_storage.dart';
@@ -41,5 +41,11 @@ class AlbumMemberRepositoryImpl implements AlbumMemberRepository {
   Future<InviteAcceptResponse> acceptInvite(String token) async {
     final userId = await _getUserId();
     return api.acceptInvite(token, AcceptInviteRequest(userId: userId));
+  }
+
+  @override
+  Future<List<AlbumMemberResponse>> fetchMembers(int albumId) async {
+    final userId = await _getUserId();
+    return api.fetchMembers(albumId, userId);
   }
 }

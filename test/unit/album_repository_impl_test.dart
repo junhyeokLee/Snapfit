@@ -75,4 +75,30 @@ void main() {
       }, 'user-3'),
     ).called(1);
   });
+
+  test('lockAlbum passes userId to api', () async {
+    final api = MockAlbumApi();
+    final storage = MockTokenStorage();
+    final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
+
+    when(() => storage.getUserId()).thenAnswer((_) async => 'user-lock');
+    when(() => api.lockAlbum(170, 'user-lock')).thenAnswer((_) async {});
+
+    await repository.lockAlbum(170);
+
+    verify(() => api.lockAlbum(170, 'user-lock')).called(1);
+  });
+
+  test('unlockAlbum passes userId to api', () async {
+    final api = MockAlbumApi();
+    final storage = MockTokenStorage();
+    final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
+
+    when(() => storage.getUserId()).thenAnswer((_) async => 'user-unlock');
+    when(() => api.unlockAlbum(170, 'user-unlock')).thenAnswer((_) async {});
+
+    await repository.unlockAlbum(170);
+
+    verify(() => api.unlockAlbum(170, 'user-unlock')).called(1);
+  });
 }

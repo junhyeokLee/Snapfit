@@ -46,7 +46,7 @@ class CompletedAlbumCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 17.sp,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1A1A1A),
+                            color: SnapFitColors.textPrimaryOf(context),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -55,7 +55,7 @@ class CompletedAlbumCard extends StatelessWidget {
                         '2일 전', // Dummy relative time
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: const Color(0xFFAAAAAA),
+                          color: SnapFitColors.textMutedOf(context),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -68,12 +68,12 @@ class CompletedAlbumCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13.sp,
-                      color: const Color(0xFF888888),
+                      color: SnapFitColors.textSecondaryOf(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   SizedBox(height: 16.h),
-                  _buildBottomRow(),
+                  _buildBottomRow(context),
                 ],
               ),
             ),
@@ -104,17 +104,21 @@ class CompletedAlbumCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildAvatarGroup(),
-        Icon(Icons.more_horiz, size: 20.sp, color: const Color(0xFFDDDDDD)),
+        _buildAvatarGroup(context),
+        Icon(
+          Icons.more_horiz,
+          size: 20.sp,
+          color: SnapFitColors.textMutedOf(context),
+        ),
       ],
     );
   }
 
-  Widget _buildAvatarGroup() {
+  Widget _buildAvatarGroup(BuildContext context) {
     // Dummy avatars
     return SizedBox(
       width: 60.w,
@@ -129,9 +133,12 @@ class CompletedAlbumCard extends StatelessWidget {
               width: 24.w,
               height: 24.w,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: SnapFitColors.surfaceOf(context),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+                border: Border.all(
+                  color: SnapFitColors.backgroundOf(context),
+                  width: 1.5,
+                ),
               ),
               child: Center(
                 child: Text(
@@ -139,7 +146,7 @@ class CompletedAlbumCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 9.sp,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF888888),
+                    color: SnapFitColors.textSecondaryOf(context),
                   ),
                 ),
               ),
@@ -159,7 +166,7 @@ class CompletedAlbumCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 1.5),
+          border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         ),
         child: Icon(Icons.person, size: 14.sp, color: Colors.white),
       ),

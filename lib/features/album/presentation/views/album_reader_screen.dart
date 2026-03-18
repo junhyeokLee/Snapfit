@@ -15,6 +15,7 @@ import '../widgets/reader/album_frozen_screen.dart';
 import '../viewmodels/home_view_model.dart';
 import 'page_editor_screen.dart';
 import 'album_reader_inner_detail_screen.dart';
+import 'album_invite_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   const AlbumReaderScreen({super.key});
@@ -99,6 +100,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
   // ... 메뉴 (수정하기 / 제작확정)
   void _showMoreOptions() {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -128,6 +130,25 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         onConfirm: () {
           Navigator.pop(ctx);
           _showConfirmDialog();
+        },
+        onInvite: () {
+          Navigator.pop(ctx);
+          final album = vm.album;
+          if (album == null || album.id <= 0) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')));
+            return;
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AlbumInviteScreen(
+                albumId: album.id,
+                albumTitle: album.title ?? 'SnapFit Album',
+              ),
+            ),
+          );
         },
         onDetail: () {
           Navigator.pop(ctx);

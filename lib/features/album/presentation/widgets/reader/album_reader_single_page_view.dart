@@ -296,7 +296,7 @@ class _AlbumReaderSinglePageViewState
 }
 
 // ── 단일 렌더러 기반 플립 애니메이션 ───────────────────────────────
-class _GlobalPageFlipRenderer extends StatelessWidget {
+class _GlobalPageFlipRenderer extends StatefulWidget {
   final double page;
   final int itemCount;
   final double singleW;
@@ -324,9 +324,33 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
   });
 
   @override
+  State<_GlobalPageFlipRenderer> createState() =>
+      _GlobalPageFlipRendererState();
+}
+
+class _GlobalPageFlipRendererState extends State<_GlobalPageFlipRenderer> {
+  final Map<String, Widget> _cachedInnerCards = {};
+
+  @override
+  void didUpdateWidget(covariant _GlobalPageFlipRenderer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 사이즈/테마/페이지 데이터가 바뀐 경우에만 캐시를 비운다.
+    if (oldWidget.singleW != widget.singleW ||
+        oldWidget.doubleH != widget.doubleH ||
+        oldWidget.selectedCover != widget.selectedCover ||
+        oldWidget.coverTheme != widget.coverTheme ||
+        oldWidget.allPages.length != widget.allPages.length) {
+      _cachedInnerCards.clear();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // 0 미만 바운스, itemCount 이상 바운스 처리
-    final double safePage = page.clamp(0.0, (itemCount - 1).toDouble());
+    final double safePage = widget.page.clamp(
+      0.0,
+      (widget.itemCount - 1).toDouble(),
+    );
     final int currentIndex = safePage.floor();
     final int nextIndex = currentIndex + 1;
     final double fraction = safePage - currentIndex; // 0.0 ~ 1.0
@@ -350,7 +374,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
 
       // 커버가 닫혀갈 때(fraction -> 0) 2페이지가 우측에서 제자리 소멸하면 부자연스러우므로,
       // 완전히 덮이는 시점(fraction=0)에 화면 중앙(Center)으로 스르륵 따라 오도록 슬라이드 시킴
-      final double slideOffset = -(singleW / 2) * (1.0 - fraction);
+      final double slideOffset = -(widget.singleW / 2) * (1.0 - fraction);
       layer0Background = Transform.translate(
         offset: Offset(slideOffset, 0),
         child: layer0Background,
@@ -411,7 +435,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
 
     // Layer 3: B의 거울상 뒷면 강하
     Widget layer3Left = const SizedBox.shrink();
-    if (fraction >= 0.5 && nextIndex < itemCount) {
+    if (fraction >= 0.5 && nextIndex < widget.itemCount) {
       final angle = (1.0 - fraction) * math.pi;
       if (nextIndex == 0) {
         layer3Left = Center(
@@ -445,7 +469,7 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
   Widget _buildSpine() {
     return Container(
       width: 2.w,
-      height: doubleH * 0.98, // 카드 위아래 여백을 고려하여 아주 살짝 짧게
+      height: widget.doubleH * 0.98, // 카드 위아래 여백을 고려하여 아주 살짝 짧게
       decoration: BoxDecoration(
         color: const Color(0xFFF0F0F0),
         boxShadow: [
@@ -471,12 +495,16 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
 
   // 절반만 렌더링 (나머지는 투명 사이즈박스로 축 위치 보존)
   Widget _buildInnerSpreadHalf(int index, {required bool isLeft}) {
-    if (index >= itemCount || index == 0) return const SizedBox.shrink();
+    if (index >= widget.itemCount || index == 0) return const SizedBox.shrink();
 
     final leftIndex = 1 + (index - 1) * 2;
     final rightIndex = leftIndex + 1;
-    final lPage = leftIndex < allPages.length ? allPages[leftIndex] : null;
-    final rPage = rightIndex < allPages.length ? allPages[rightIndex] : null;
+    final lPage = leftIndex < widget.allPages.length
+        ? widget.allPages[leftIndex]
+        : null;
+    final rPage = rightIndex < widget.allPages.length
+        ? widget.allPages[rightIndex]
+        : null;
 
     return OverflowBox(
       maxWidth: double.infinity,
@@ -486,25 +514,25 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
         children: [
           isLeft
               ? SizedBox(
-                  width: singleW,
-                  height: doubleH,
+                  width: widget.singleW,
+                  height: widget.doubleH,
                   child: lPage != null
                       ? _buildInnerCard(lPage)
                       : Container(color: SnapFitColors.pureWhite),
                 )
-              : SizedBox(width: singleW),
+              : SizedBox(width: widget.singleW),
 
           isLeft ? _buildSpine() : SizedBox(width: 2.w), // 2.w 맞춤
 
           !isLeft
               ? SizedBox(
-                  width: singleW,
-                  height: doubleH,
+                  width: widget.singleW,
+                  height: widget.doubleH,
                   child: rPage != null
                       ? _buildInnerCard(rPage)
                       : Container(color: SnapFitColors.pureWhite),
                 )
-              : SizedBox(width: singleW),
+              : SizedBox(width: widget.singleW),
         ],
       ),
     );
@@ -512,28 +540,67 @@ class _GlobalPageFlipRenderer extends StatelessWidget {
 
   Widget _buildCoverCard() {
     return _CoverPageCard(
-      key: GlobalObjectKey(allPages.isNotEmpty ? allPages[0] : 'cover'),
-      page: allPages[0],
-      pageW: singleW,
-      pageH: doubleH,
-      selectedCover: selectedCover,
-      coverTheme: coverTheme,
-      interaction: interaction,
-      layerBuilder: layerBuilder,
-      coverKey: canvasKey,
-      onCoverSizeChanged: onCanvasSizeChanged,
+      key: GlobalObjectKey(
+        widget.allPages.isNotEmpty ? widget.allPages[0] : 'cover',
+      ),
+      page: widget.allPages[0],
+      pageW: widget.singleW,
+      pageH: widget.doubleH,
+      selectedCover: widget.selectedCover,
+      coverTheme: widget.coverTheme,
+      interaction: widget.interaction,
+      layerBuilder: widget.layerBuilder,
+      coverKey: widget.canvasKey,
+      onCoverSizeChanged: widget.onCanvasSizeChanged,
     );
   }
 
   Widget _buildInnerCard(AlbumPage page) {
-    return _InnerPageCard(
+    final key =
+        '${page.id}_${_pageRenderSignature(page)}_${widget.singleW.toStringAsFixed(3)}_${widget.doubleH.toStringAsFixed(3)}';
+    final cached = _cachedInnerCards[key];
+    if (cached != null) return cached;
+    final card = _InnerPageCard(
       key: ValueKey('inner_page_${page.id}'),
       page: page,
-      pageW: singleW,
-      pageH: doubleH,
-      interaction: interaction,
-      layerBuilder: layerBuilder,
+      pageW: widget.singleW,
+      pageH: widget.doubleH,
+      interaction: widget.interaction,
+      layerBuilder: widget.layerBuilder,
     );
+    if (_cachedInnerCards.length > 200) {
+      _cachedInnerCards.clear();
+    }
+    _cachedInnerCards[key] = card;
+    return card;
+  }
+
+  int _pageRenderSignature(AlbumPage page) {
+    return Object.hashAll([
+      page.backgroundColor,
+      page.layers.length,
+      ...page.layers.map(
+        (l) => Object.hash(
+          l.id,
+          l.type,
+          l.asset?.id,
+          l.previewUrl,
+          l.imageUrl,
+          l.originalUrl,
+          l.position.dx,
+          l.position.dy,
+          l.width,
+          l.height,
+          l.scale,
+          l.rotation,
+          l.opacity,
+          l.zIndex,
+          l.imageBackground,
+          l.imageTemplate,
+          l.text,
+        ),
+      ),
+    ]);
   }
 }
 
@@ -647,8 +714,7 @@ class _InnerPageCard extends StatelessWidget {
         : SnapFitColors.pureWhite;
 
     return ClipRect(
-      child: Hero(
-        tag: 'inner_page_${page.id}',
+      child: RepaintBoundary(
         child: Container(
           width: pageW,
           height: pageH,
@@ -665,7 +731,9 @@ class _InnerPageCard extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none, // 회전된 레이어의 모서리가 잘리는 현상 방지
                     children: interaction.sortByZ(page.layers).map((layer) {
-                      if (layer.type == LayerType.image) {
+                      if (layer.type == LayerType.image ||
+                          layer.type == LayerType.sticker ||
+                          layer.type == LayerType.decoration) {
                         return layerBuilder.buildImage(layer);
                       }
                       return layerBuilder.buildText(layer);

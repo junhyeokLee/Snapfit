@@ -1,0 +1,645 @@
+import 'dart:convert';
+
+import '../../domain/entities/premium_template.dart';
+
+Map<String, dynamic> _textStyle({
+  required double fontSize,
+  String? fontFamily,
+  int fontWeight = 5,
+  String color = '#FF1F2937',
+  double letterSpacing = 0,
+}) {
+  return {
+    'fontSize': fontSize,
+    'fontWeight': fontWeight,
+    'fontFamily': fontFamily,
+    'color': color,
+    'letterSpacing': letterSpacing,
+  };
+}
+
+Map<String, dynamic> _img(
+  String id,
+  double x,
+  double y,
+  double w,
+  double h, {
+  String? frame,
+  String? imageTemplate,
+  String? imageUrl,
+  double rotation = 0,
+  int z = 10,
+}) {
+  final fallbackUrl = imageUrl ?? _sampleImageForId(id);
+  return {
+    'id': id,
+    'type': 'IMAGE',
+    'x': x,
+    'y': y,
+    'width': w,
+    'height': h,
+    'rotation': rotation,
+    'opacity': 1.0,
+    'scale': 1.0,
+    'zIndex': z,
+    'payload': {
+      'imageBackground': frame,
+      'imageTemplate': imageTemplate ?? 'free',
+      'imageUrl': fallbackUrl,
+      'previewUrl': fallbackUrl,
+      'originalUrl': fallbackUrl,
+    },
+  };
+}
+
+String _sampleImageForId(String id) {
+  const urls = [
+    'https://picsum.photos/id/1015/1200/900',
+    'https://picsum.photos/id/1016/1200/900',
+    'https://picsum.photos/id/1025/1200/900',
+    'https://picsum.photos/id/1035/1200/900',
+    'https://picsum.photos/id/1040/1200/900',
+    'https://picsum.photos/id/1050/1200/900',
+    'https://picsum.photos/id/1067/1200/900',
+    'https://picsum.photos/id/1074/1200/900',
+  ];
+  var hash = 0;
+  for (final unit in id.codeUnits) {
+    hash = (hash * 31 + unit) & 0x7fffffff;
+  }
+  return urls[hash % urls.length];
+}
+
+Map<String, dynamic> _txt(
+  String id,
+  double x,
+  double y,
+  double w,
+  double h,
+  String text, {
+  String align = 'center',
+  int z = 20,
+  Map<String, dynamic>? style,
+}) {
+  return {
+    'id': id,
+    'type': 'TEXT',
+    'x': x,
+    'y': y,
+    'width': w,
+    'height': h,
+    'rotation': 0.0,
+    'opacity': 1.0,
+    'scale': 1.0,
+    'zIndex': z,
+    'payload': {
+      'text': text,
+      'textAlign': align,
+      'textStyleType': 'none',
+      'textBackground': null,
+      'textStyle': style ?? _textStyle(fontSize: 22),
+    },
+  };
+}
+
+Map<String, dynamic> _deco(
+  String id,
+  double x,
+  double y,
+  double w,
+  double h, {
+  required String background,
+  double rotation = 0,
+  int z = 1,
+}) {
+  return {
+    'id': id,
+    'type': 'DECORATION',
+    'x': x,
+    'y': y,
+    'width': w,
+    'height': h,
+    'rotation': rotation,
+    'opacity': 1.0,
+    'scale': 1.0,
+    'zIndex': z,
+    'payload': {'imageBackground': background, 'imageTemplate': 'free'},
+  };
+}
+
+String buildJejuSummerTemplateJson() {
+  final pages = <Map<String, dynamic>>[
+    {
+      'pageNumber': 1,
+      'layers': [
+        _deco('cover_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWarm', z: 1),
+        _txt(
+          'cover_badge',
+          0.34,
+          0.06,
+          0.32,
+          0.06,
+          'PHOTOTRIP 2026',
+          style: _textStyle(
+            fontSize: 12,
+            fontFamily: 'Cormorant',
+            fontWeight: 6,
+            color: '#FF5A5A5A',
+            letterSpacing: 1.2,
+          ),
+        ),
+        _txt(
+          'cover_title',
+          0.12,
+          0.12,
+          0.76,
+          0.12,
+          '우리들의 여름 제주',
+          align: 'center',
+          style: _textStyle(
+            fontSize: 34,
+            fontFamily: 'BookMyungjo',
+            fontWeight: 7,
+            color: '#FF134E4A',
+          ),
+        ),
+        _img(
+          'cover_main',
+          0.10,
+          0.28,
+          0.80,
+          0.48,
+          frame: 'paperClipCard',
+          z: 10,
+        ),
+        _img(
+          'cover_polaroid',
+          0.62,
+          0.63,
+          0.26,
+          0.23,
+          frame: 'polaroidClassic',
+          rotation: -6,
+          z: 12,
+        ),
+        _img(
+          'cover_side',
+          0.12,
+          0.67,
+          0.24,
+          0.18,
+          frame: 'ribbonPolaroid',
+          rotation: 5,
+          z: 11,
+        ),
+        _txt(
+          'cover_bottom',
+          0.18,
+          0.90,
+          0.64,
+          0.06,
+          'JEJU · BEACH · SUNSET',
+          style: _textStyle(
+            fontSize: 13,
+            fontFamily: 'Cormorant',
+            fontWeight: 6,
+            color: '#FF4B5563',
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    },
+    {
+      'pageNumber': 2,
+      'layers': [
+        _deco('p2_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWhite', z: 1),
+        _txt(
+          'p2_title',
+          0.12,
+          0.06,
+          0.76,
+          0.09,
+          'DAY 1 · 공항에서 해변까지',
+          align: 'left',
+          style: _textStyle(
+            fontSize: 24,
+            fontFamily: 'BookMyungjo',
+            fontWeight: 7,
+          ),
+        ),
+        _img('p2_main', 0.08, 0.18, 0.84, 0.42, frame: 'tornPaperCard'),
+        _img(
+          'p2_left',
+          0.08,
+          0.65,
+          0.40,
+          0.24,
+          frame: 'roughPolaroid',
+          rotation: -3,
+        ),
+        _img(
+          'p2_right',
+          0.52,
+          0.65,
+          0.40,
+          0.24,
+          frame: 'roughPolaroid',
+          rotation: 3,
+        ),
+      ],
+    },
+    {
+      'pageNumber': 3,
+      'layers': [
+        _deco('p3_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWarm', z: 1),
+        _txt(
+          'p3_title',
+          0.10,
+          0.05,
+          0.80,
+          0.08,
+          '오름과 바람의 날',
+          style: _textStyle(
+            fontSize: 23,
+            fontFamily: 'BookMyungjo',
+            fontWeight: 7,
+          ),
+        ),
+        _img('p3_1', 0.06, 0.16, 0.42, 0.28, frame: 'collageTile'),
+        _img('p3_2', 0.52, 0.16, 0.42, 0.28, frame: 'collageTile'),
+        _img('p3_3', 0.06, 0.48, 0.28, 0.22, frame: 'collageTile'),
+        _img('p3_4', 0.36, 0.48, 0.28, 0.22, frame: 'collageTile'),
+        _img('p3_5', 0.66, 0.48, 0.28, 0.22, frame: 'collageTile'),
+        _img('p3_6', 0.10, 0.73, 0.80, 0.20, frame: 'filmSquare'),
+      ],
+    },
+    {
+      'pageNumber': 4,
+      'layers': [
+        _deco('p4_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperBeige', z: 1),
+        _txt(
+          'p4_quote',
+          0.11,
+          0.08,
+          0.78,
+          0.10,
+          '파도 소리와 함께 걷던 오후',
+          style: _textStyle(
+            fontSize: 24,
+            fontFamily: 'SeoulNamsan',
+            fontWeight: 8,
+            color: '#FF1F2937',
+          ),
+        ),
+        _img('p4_main', 0.10, 0.22, 0.80, 0.54, frame: 'posterPolaroid'),
+        _img(
+          'p4_stamp',
+          0.70,
+          0.15,
+          0.18,
+          0.14,
+          frame: 'polaroidFilm',
+          rotation: 8,
+          z: 13,
+        ),
+        _txt(
+          'p4_note',
+          0.15,
+          0.80,
+          0.70,
+          0.10,
+          '제주의 바람은 사진보다 오래 남았다.',
+          style: _textStyle(
+            fontSize: 16,
+            fontFamily: 'Run',
+            fontWeight: 6,
+            color: '#FF4B5563',
+          ),
+        ),
+      ],
+    },
+    {
+      'pageNumber': 5,
+      'layers': [
+        _deco('p5_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWarm', z: 1),
+        _txt(
+          'p5_title',
+          0.14,
+          0.06,
+          0.72,
+          0.08,
+          '카페 · 골목 · 노을 · 밤',
+          style: _textStyle(
+            fontSize: 24,
+            fontFamily: 'BookMyungjo',
+            fontWeight: 7,
+          ),
+        ),
+        _img('p5_l', 0.08, 0.18, 0.40, 0.30, frame: 'photoCard', rotation: -2),
+        _img('p5_r', 0.52, 0.18, 0.40, 0.30, frame: 'photoCard', rotation: 2),
+        _img('p5_m', 0.20, 0.52, 0.60, 0.34, frame: 'maskingTapeFrame'),
+        _txt(
+          'p5_cap',
+          0.23,
+          0.88,
+          0.54,
+          0.06,
+          '기억은 항상 빛났다',
+          style: _textStyle(
+            fontSize: 14,
+            fontFamily: 'SeoulNamsan',
+            fontWeight: 6,
+            color: '#FF525252',
+          ),
+        ),
+      ],
+    },
+    {
+      'pageNumber': 6,
+      'layers': [
+        _deco('p6_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWhite', z: 1),
+        _img('p6_main', 0.08, 0.07, 0.84, 0.56, frame: 'filmSquare'),
+        _txt(
+          'p6_t1',
+          0.12,
+          0.68,
+          0.76,
+          0.08,
+          'DAY 3 · 해질녘 드라이브',
+          style: _textStyle(
+            fontSize: 22,
+            fontFamily: 'Cormorant',
+            fontWeight: 7,
+            letterSpacing: 1.0,
+          ),
+        ),
+        _img('p6_sub1', 0.08, 0.79, 0.26, 0.15, frame: 'collageTile'),
+        _img('p6_sub2', 0.37, 0.79, 0.26, 0.15, frame: 'collageTile'),
+        _img('p6_sub3', 0.66, 0.79, 0.26, 0.15, frame: 'collageTile'),
+      ],
+    },
+    {
+      'pageNumber': 7,
+      'layers': [
+        _deco('p7_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWarm', z: 1),
+        _img(
+          'p7_1',
+          0.06,
+          0.10,
+          0.28,
+          0.24,
+          frame: 'polaroidClassic',
+          rotation: -4,
+        ),
+        _img('p7_2', 0.36, 0.10, 0.28, 0.24, frame: 'polaroidClassic'),
+        _img(
+          'p7_3',
+          0.66,
+          0.10,
+          0.28,
+          0.24,
+          frame: 'polaroidClassic',
+          rotation: 4,
+        ),
+        _img('p7_4', 0.06, 0.38, 0.28, 0.24, frame: 'polaroidClassic'),
+        _img(
+          'p7_5',
+          0.36,
+          0.38,
+          0.28,
+          0.24,
+          frame: 'polaroidClassic',
+          rotation: -2,
+        ),
+        _img(
+          'p7_6',
+          0.66,
+          0.38,
+          0.28,
+          0.24,
+          frame: 'polaroidClassic',
+          rotation: 2,
+        ),
+        _img(
+          'p7_bottom',
+          0.10,
+          0.68,
+          0.80,
+          0.22,
+          frame: 'paperTapeCard',
+          rotation: -1,
+        ),
+        _txt(
+          'p7_t',
+          0.20,
+          0.74,
+          0.60,
+          0.12,
+          '우리의 제주는\n사진보다 더 선명했다',
+          style: _textStyle(
+            fontSize: 21,
+            fontFamily: 'Run',
+            fontWeight: 7,
+            color: '#FF0F766E',
+          ),
+        ),
+      ],
+    },
+    {
+      'pageNumber': 8,
+      'layers': [
+        _deco('p8_bg', 0.0, 0.0, 1.0, 1.0, background: 'paperWhite', z: 1),
+        _img('p8_main', 0.10, 0.10, 0.80, 0.52, frame: 'softGlow'),
+        _txt(
+          'p8_thanks',
+          0.16,
+          0.70,
+          0.68,
+          0.10,
+          'THANK YOU, JEJU',
+          style: _textStyle(
+            fontSize: 30,
+            fontFamily: 'Cormorant',
+            fontWeight: 7,
+            letterSpacing: 1.2,
+            color: '#FF134E4A',
+          ),
+        ),
+        _txt(
+          'p8_date',
+          0.20,
+          0.82,
+          0.60,
+          0.06,
+          '2026 · SUMMER TRIP',
+          style: _textStyle(
+            fontSize: 14,
+            fontFamily: 'Raleway',
+            fontWeight: 6,
+            letterSpacing: 1.3,
+            color: '#FF6B7280',
+          ),
+        ),
+      ],
+    },
+  ];
+
+  return jsonEncode({'pages': pages});
+}
+
+List<PremiumTemplate> localFeaturedTemplates() {
+  return [
+    PremiumTemplate(
+      id: -1001,
+      title: '우리들의 여름 제주',
+      subTitle: '프리미엄 무드로 구성된 제주 여행 앨범 템플릿',
+      description: '커버 포함 8페이지가 감성 프레임/타이포와 함께 자동 구성됩니다.',
+      coverImageUrl: 'https://picsum.photos/id/1015/1200/900',
+      previewImages: const [
+        'https://picsum.photos/id/1015/1200/900',
+        'https://picsum.photos/id/1016/1200/900',
+        'https://picsum.photos/id/1025/1200/900',
+      ],
+      pageCount: 8,
+      likeCount: 0,
+      userCount: 0,
+      isBest: true,
+      isPremium: true,
+      isLiked: false,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1002,
+      title: '오션 브리즈',
+      subTitle: '푸른 바다의 감성을 담은 여행 템플릿',
+      description: '해변 감성 레이아웃과 페이퍼 프레임으로 구성된 8페이지 템플릿',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1520942702018-0862200e6873?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 8,
+      likeCount: 124,
+      userCount: 4,
+      isBest: true,
+      isPremium: true,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1003,
+      title: '도시의 밤',
+      subTitle: '화려한 도심 야경을 담은 시티 무드',
+      description: '네온 컬러 포인트와 모던 타이포로 도시 여행 기록에 어울리는 템플릿',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1465447142348-e9952c393450?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 8,
+      likeCount: 98,
+      userCount: 2,
+      isBest: true,
+      isPremium: true,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1004,
+      title: '빛나는 졸업장',
+      subTitle: '소중한 졸업 순간을 담는 기념 템플릿',
+      description: '졸업식/입학식 사진에 맞춘 깔끔한 격자형 구성',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 6,
+      likeCount: 88,
+      userCount: 2,
+      isBest: false,
+      isPremium: false,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1005,
+      title: '가족 여행 일기',
+      subTitle: '가족과 함께한 하루를 따뜻하게 기록해요',
+      description: '여행/가족 카테고리에 모두 어울리는 다목적 템플릿',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1518933165971-611dbc9c412d?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 10,
+      likeCount: 142,
+      userCount: 3,
+      isBest: false,
+      isPremium: true,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1006,
+      title: '이터널 러브',
+      subTitle: '연인의 특별한 순간을 담는 하드커버',
+      description: '커플/프로포즈 스냅에 어울리는 로맨틱 톤 템플릿',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 8,
+      likeCount: 176,
+      userCount: 1,
+      isBest: true,
+      isPremium: true,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1007,
+      title: 'Vintage In Focus',
+      subTitle: '레트로 투어 감성을 담은 빈티지 스타일',
+      description: '스크린샷 레퍼런스 기반의 빈티지 무드 템플릿',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 8,
+      likeCount: 132,
+      userCount: 2,
+      isBest: true,
+      isPremium: true,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+    PremiumTemplate(
+      id: -1008,
+      title: 'Ring Trip Story',
+      subTitle: '연인 여행의 하이라이트를 담는 스토리북',
+      description: '프로포즈 순간에 어울리는 스티커 스타일 구성',
+      coverImageUrl:
+          'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
+      previewImages: const [
+        'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
+      ],
+      pageCount: 8,
+      likeCount: 109,
+      userCount: 5,
+      isBest: false,
+      isPremium: false,
+      templateJson: buildJejuSummerTemplateJson(),
+    ),
+  ];
+}

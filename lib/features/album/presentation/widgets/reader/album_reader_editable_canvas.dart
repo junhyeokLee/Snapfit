@@ -82,7 +82,9 @@ class AlbumReaderEditableCanvas extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: interaction.sortByZ(page.layers).map((layer) {
-                    if (layer.type == LayerType.image) {
+                    if (layer.type == LayerType.image ||
+                        layer.type == LayerType.sticker ||
+                        layer.type == LayerType.decoration) {
                       return layerBuilder.buildImage(layer);
                     }
                     return layerBuilder.buildText(layer);

@@ -8,8 +8,11 @@ import '../../../../../shared/widgets/snapfit_primary_action_button.dart';
 /// 스텝1: 제목, 커버 사이즈 선택, 페이지 수 선택
 class AlbumCreateStep1 extends StatefulWidget {
   final String albumTitle;
+  final String? templateTitle;
+  final String? templatePreviewImageUrl;
   final CoverSize? selectedCover;
   final int selectedPageCount;
+  final int minPageCount;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<CoverSize> onCoverSelected;
   final ValueChanged<int> onPageCountChanged;
@@ -18,8 +21,11 @@ class AlbumCreateStep1 extends StatefulWidget {
   const AlbumCreateStep1({
     super.key,
     required this.albumTitle,
+    this.templateTitle,
+    this.templatePreviewImageUrl,
     required this.selectedCover,
     required this.selectedPageCount,
+    this.minPageCount = 10,
     required this.onTitleChanged,
     required this.onCoverSelected,
     required this.onPageCountChanged,
@@ -31,6 +37,7 @@ class AlbumCreateStep1 extends StatefulWidget {
 }
 
 class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
+  static const int _maxPageCount = 50;
   late TextEditingController _titleController;
 
   @override
@@ -61,6 +68,72 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.templateTitle != null &&
+              widget.templateTitle!.trim().isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: SnapFitColors.surfaceOf(context),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: SnapFitColors.overlayLightOf(context),
+                ),
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: SizedBox(
+                      width: 52.w,
+                      height: 52.w,
+                      child:
+                          (widget.templatePreviewImageUrl != null &&
+                              widget.templatePreviewImageUrl!.isNotEmpty)
+                          ? Image.network(
+                              widget.templatePreviewImageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: SnapFitColors.overlayLightOf(context),
+                              ),
+                            )
+                          : Container(
+                              color: SnapFitColors.overlayLightOf(context),
+                            ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '선택한 템플릿',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                            color: SnapFitColors.textMutedOf(context),
+                          ),
+                        ),
+                        SizedBox(height: 3.h),
+                        Text(
+                          widget.templateTitle!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: SnapFitColors.textPrimaryOf(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 18.h),
+          ],
           // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
           Text(
             '새로운 추억의 정보를 입력해 주세요',
@@ -295,14 +368,26 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   }
 
   Widget _buildPageCountSelector(BuildContext context) {
+    final minPage = widget.minPageCount.clamp(1, _maxPageCount);
+    final safePageCount = widget.selectedPageCount.clamp(
+      minPage,
+      _maxPageCount,
+    );
+    if (safePageCount != widget.selectedPageCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onPageCountChanged(safePageCount);
+      });
+    }
+
     return Column(
       children: [
         // 슬라이더
         Slider(
-          value: widget.selectedPageCount.toDouble(),
-          min: 10,
-          max: 21,
-          divisions: 11,
+          value: safePageCount.toDouble(),
+          min: minPage.toDouble(),
+          max: _maxPageCount.toDouble(),
+          divisions: (_maxPageCount - minPage).clamp(1, _maxPageCount - 1),
           activeColor: SnapFitColors.accent,
           inactiveColor: SnapFitColors.overlayLightOf(context),
           onChanged: (value) {
@@ -315,7 +400,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '10p',
+              '${minPage}p',
               style: TextStyle(
                 fontSize: 12.sp,
                 color: SnapFitColors.textMutedOf(context),
@@ -329,7 +414,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 border: Border.all(color: SnapFitColors.accent, width: 1),
               ),
               child: Text(
-                '${widget.selectedPageCount}p',
+                '${safePageCount}p',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album.dart';
 import 'masonry_album_card.dart';
 import 'section_header.dart';
@@ -34,8 +35,7 @@ class SharedAlbumList extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      // 스크린샷의 배경 톤과 시원한 여백 적용
-      color: const Color(0xFFF9F8F4),
+      color: SnapFitColors.backgroundOf(context),
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -69,6 +69,7 @@ void main() {
       themeLabel: 'classic',
       title: 'title',
       coverRatio: 1.0,
+      targetPages: 24,
     );
 
     final captured = verify(

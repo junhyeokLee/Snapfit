@@ -28,6 +28,11 @@ void main() {
   testWidgets('logout button calls auth logout and shows snackbar', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     SharedPreferences.setMockInitialValues({});
     final fake = FakeAuthViewModel(
       const UserInfo(
@@ -49,9 +54,14 @@ void main() {
       ),
     );
 
-    final logoutButton = find.byType(TextButton);
-    await tester.scrollUntilVisible(logoutButton, 500);
-    await tester.tap(logoutButton);
+    final logoutButton = find.widgetWithText(TextButton, '로그아웃');
+    await tester.scrollUntilVisible(
+      logoutButton,
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final buttonWidget = tester.widget<TextButton>(logoutButton);
+    buttonWidget.onPressed?.call();
     await tester.pumpAndSettle();
 
     expect(fake.logoutCalled, isTrue);

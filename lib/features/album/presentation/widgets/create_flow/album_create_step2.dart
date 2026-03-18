@@ -444,7 +444,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: widget.onNext,
+              onPressed: _confirmSkipInviteBeforeNext,
               icon: Icon(Icons.arrow_forward, size: 20.sp),
               label: Text(
                 '다음',
@@ -642,6 +642,57 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+    }
+  }
+
+  Future<void> _confirmSkipInviteBeforeNext() async {
+    final goNext = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: SnapFitColors.surfaceOf(context),
+        title: Text(
+          '초대를 건너뛸까요?',
+          style: TextStyle(
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w800,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+        content: Text(
+          '지금은 초대하지 않고 다음 단계로 이동합니다.\n멤버 초대는 앨범에서도 언제든 할 수 있어요.',
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: SnapFitColors.textSecondaryOf(context),
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              '계속 초대하기',
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              '건너뛰고 다음',
+              style: TextStyle(
+                color: SnapFitColors.accent,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (goNext == true) {
+      widget.onNext();
     }
   }
 }

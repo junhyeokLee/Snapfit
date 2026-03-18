@@ -144,12 +144,29 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel>
                       editorVm: editorVm,
                       stateVal: stateVal,
                     );
-                    editorVm.addTextLayer(
-                      sticker,
-                      style: TextStyle(fontSize: 60.sp),
-                      mode: TextStyleType.none,
-                      canvasSize: canvasSize,
-                    );
+                    if (sticker.startsWith('deco:')) {
+                      final payload = sticker.replaceFirst('deco:', '');
+                      final parts = payload.split('@');
+                      final style = parts.first;
+                      final scale = parts.length > 1
+                          ? (double.tryParse(parts[1]) ?? 1.0)
+                          : 1.0;
+                      editorVm.addDecorationSticker(
+                        style,
+                        canvasSize,
+                        scale: scale,
+                      );
+                    } else if (sticker.startsWith('asset:')) {
+                      final assetPath = sticker.replaceFirst('asset:', '');
+                      editorVm.addAssetSticker(assetPath, canvasSize);
+                    } else {
+                      editorVm.addTextLayer(
+                        sticker,
+                        style: TextStyle(fontSize: 60.sp),
+                        mode: TextStyleType.none,
+                        canvasSize: canvasSize,
+                      );
+                    }
                     _closeSheet();
                   },
                 ),

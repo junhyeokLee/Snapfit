@@ -6,7 +6,9 @@ import '../views/template_detail_screen.dart';
 import '../../data/api/template_provider.dart';
 
 class PremiumTemplateList extends ConsumerStatefulWidget {
-  const PremiumTemplateList({super.key});
+  final int? maxItems;
+
+  const PremiumTemplateList({super.key, this.maxItems});
 
   @override
   ConsumerState<PremiumTemplateList> createState() =>
@@ -30,6 +32,10 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
     return templatesAsync.when(
       data: (templates) {
         if (templates.isEmpty) return const SizedBox.shrink();
+        final visibleTemplates = widget.maxItems == null
+            ? templates
+            : templates.take(widget.maxItems!).toList();
+        if (visibleTemplates.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,14 +66,14 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                     // Swipeable Content (Image changes)
                     PageView.builder(
                       controller: _pageController,
-                      itemCount: templates.length,
+                      itemCount: visibleTemplates.length,
                       onPageChanged: (index) {
                         setState(() {
                           _currentIndex = index;
                         });
                       },
                       itemBuilder: (context, index) {
-                        final template = templates[index];
+                        final template = visibleTemplates[index];
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -166,6 +172,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       ),
                                     Text(
                                       template.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 34.sp, // Large, clean font
                                         fontWeight: FontWeight.w700,
@@ -178,6 +186,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     if (template.subTitle != null)
                                       Text(
                                         template.subTitle!,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontSize: 14.sp,
                                           color: Colors.white.withOpacity(0.7),
@@ -201,7 +211,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                          templates.length,
+                          visibleTemplates.length,
                           (index) => AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             margin: EdgeInsets.symmetric(horizontal: 4.w),

@@ -31,6 +31,7 @@ class MasonryAlbumCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // 전체적인 카드 너비를 확보 (좌우 여백을 미세하게 줄여 카드를 키움)
     final double columnWidth = (1.sw - 60.w) / 2;
+    final coverTone = sharedAlbumCoverToneColor(album);
 
     return GestureDetector(
       onTap: onTap,
@@ -43,7 +44,7 @@ class MasonryAlbumCard extends StatelessWidget {
             aspectRatio: _cardAspectRatio,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFE8E2D0), // 샌드톤 배경
+                color: coverTone, // 커버 톤과 유사한 배경색 자동 매칭
                 borderRadius: BorderRadius.circular(16.r), // 배경이 커진 만큼 더 둥글게
                 boxShadow: [
                   BoxShadow(
@@ -104,7 +105,7 @@ class MasonryAlbumCard extends StatelessWidget {
         style: TextStyle(
           fontSize: 18.sp, // 배경이 커진 만큼 폰트도 키움
           fontWeight: FontWeight.w900,
-          color: const Color(0xFF1A1A1A),
+          color: SnapFitColors.textPrimaryOf(context),
           letterSpacing: -0.8,
         ),
       ),
@@ -122,7 +123,7 @@ class MasonryAlbumCard extends StatelessWidget {
             '${formatAlbumDate(album.updatedAt.isEmpty ? album.createdAt : album.updatedAt)} 전',
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.black.withOpacity(0.4),
+              color: SnapFitColors.textMutedOf(context),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -156,22 +157,29 @@ class MasonryAlbumCard extends StatelessWidget {
       height: 26.w,
       child: Stack(
         children: [
-          _avatar(0, const Color(0xFFD9D4C7)),
-          _avatar(18.w, const Color(0xFFC9C4B7)),
+          _avatar(context, 0, const Color(0xFFD9D4C7)),
+          _avatar(context, 18.w, const Color(0xFFC9C4B7)),
           Positioned(
             left: 36.w,
             child: Container(
               width: 26.w,
               height: 26.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F0),
+                color: SnapFitColors.surfaceOf(context),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF9F8F4), width: 2),
+                border: Border.all(
+                  color: SnapFitColors.backgroundOf(context),
+                  width: 2,
+                ),
               ),
               alignment: Alignment.center,
               child: Text(
                 '+2',
-                style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w800,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
               ),
             ),
           ),
@@ -180,7 +188,7 @@ class MasonryAlbumCard extends StatelessWidget {
     );
   }
 
-  Widget _avatar(double left, Color color) {
+  Widget _avatar(BuildContext context, double left, Color color) {
     return Positioned(
       left: left,
       child: Container(
@@ -189,7 +197,10 @@ class MasonryAlbumCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFF9F8F4), width: 2),
+          border: Border.all(
+            color: SnapFitColors.backgroundOf(context),
+            width: 2,
+          ),
         ),
         child: Icon(Icons.person, size: 16.sp, color: Colors.white),
       ),

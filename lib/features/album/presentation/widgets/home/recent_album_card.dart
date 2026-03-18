@@ -22,6 +22,10 @@ class RecentAlbumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progressInfo = calculateAlbumProgress(album);
+    final progress = progressInfo.ratio;
+    final progressLabel = progressInfo.percentLabel;
+
     // Dynamic card size based on aspect ratio
     final ratio = parseCoverRatio(album.ratio);
     double width, height;
@@ -171,7 +175,7 @@ class RecentAlbumCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4.r),
                       child: LinearProgressIndicator(
-                        value: 0.75, // 75% Dummy
+                        value: progress,
                         backgroundColor: const Color(0xFFEEEEEE),
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           Color(0xFF00C2E0),
@@ -182,7 +186,7 @@ class RecentAlbumCard extends StatelessWidget {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '75%',
+                    progressLabel,
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: const Color(0xFF00C2E0),
@@ -215,23 +219,24 @@ class RecentAlbumCard extends StatelessWidget {
     final info = getAlbumStatusInfo(album, currentUserId);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
-        color: info.backgroundColor,
-        borderRadius: BorderRadius.circular(8.r),
+        color: info.backgroundColor.withOpacity(0.78),
+        borderRadius: BorderRadius.circular(7.r),
+        border: Border.all(color: Colors.white.withOpacity(0.65), width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Text(
         info.label,
         style: TextStyle(
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w700,
           color: info.foregroundColor,
         ),
       ),

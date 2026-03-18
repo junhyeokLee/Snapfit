@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../domain/entities/premium_template.dart';
@@ -11,7 +12,7 @@ import '../../../album/domain/entities/layer.dart';
 import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../widgets/template_page_renderer.dart';
 import 'template_full_screen_view.dart';
-import 'template_assembly_screen.dart';
+import '../../../album/presentation/views/album_create_flow_screen.dart';
 
 class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
@@ -38,9 +39,44 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     _refreshTemplate();
   }
 
+  String _normalizeTitle(String value) {
+    return value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
+  }
+
+  Future<PremiumTemplate?> _findRemoteMatchByTitle() async {
+    try {
+      final repository = ref.read(templateRepositoryProvider);
+      final remoteList = await repository.getTemplates();
+      if (remoteList.isEmpty) return null;
+
+      final key = _normalizeTitle(_template.title);
+      for (final t in remoteList) {
+        if (_normalizeTitle(t.title) == key) {
+          // 로컬 템플릿의 풍부한 미리보기/JSON이 있으면 우선 사용
+          return t.copyWith(
+            previewImages: _template.previewImages.isNotEmpty
+                ? _template.previewImages
+                : t.previewImages,
+            templateJson:
+                (_template.templateJson != null &&
+                    _template.templateJson!.isNotEmpty)
+                ? _template.templateJson
+                : t.templateJson,
+          );
+        }
+      }
+    } catch (_) {
+      // ignore and fallback
+    }
+    return null;
+  }
+
   void _parseTemplateJson() {
     if (_template.templateJson == null || _template.templateJson!.isEmpty) {
-      _parsedPages = [];
+      // 이미 파싱된 템플릿이 있으면 유지 (리프레시 시 빈 JSON으로 덮이지 않게)
+      if (_parsedPages.isEmpty) {
+        _parsedPages = [];
+      }
       return;
     }
 
@@ -68,18 +104,28 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       }
     } catch (e) {
       AppLogger.warn('Failed to parse templateJson: $e');
-      _parsedPages = [];
+      if (_parsedPages.isEmpty) {
+        _parsedPages = [];
+      }
     }
   }
 
   Future<void> _refreshTemplate() async {
     try {
-      final updated = await ref
-          .read(templateRepositoryProvider)
-          .getTemplate(_template.id);
+      PremiumTemplate? updated;
+      if (_template.id < 0) {
+        updated = await _findRemoteMatchByTitle();
+      } else {
+        updated = await ref
+            .read(templateRepositoryProvider)
+            .getTemplate(_template.id);
+      }
+
+      if (updated == null) return;
+      final updatedTemplate = updated;
       if (mounted) {
         setState(() {
-          _template = updated;
+          _template = updatedTemplate;
           _parseTemplateJson(); // Re-parse on update
         });
       }
@@ -89,12 +135,32 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _onLike() async {
-    final oldStatus = _template.isLiked;
-    final oldCount = _template.likeCount;
+    var target = _template;
+    if (target.id < 0) {
+      final matched = await _findRemoteMatchByTitle();
+      if (matched != null && mounted) {
+        setState(() {
+          _template = matched;
+          target = matched;
+        });
+      }
+    }
+
+    if (target.id < 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이 템플릿은 아직 좋아요 서버 연동 전입니다.')),
+        );
+      }
+      return;
+    }
+
+    final oldStatus = target.isLiked;
+    final oldCount = target.likeCount;
 
     // 1. Optimistic Update
     setState(() {
-      _template = _template.copyWith(
+      _template = target.copyWith(
         isLiked: !oldStatus,
         likeCount: oldStatus ? oldCount - 1 : oldCount + 1,
       );
@@ -102,7 +168,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     try {
       // 2. API Call
-      await ref.read(templateRepositoryProvider).likeTemplate(_template.id);
+      await ref.read(templateRepositoryProvider).likeTemplate(target.id);
+
+      // 3. Server truth 재동기화
+      final refreshed = await ref
+          .read(templateRepositoryProvider)
+          .getTemplate(target.id);
+      setState(() {
+        _template = refreshed;
+      });
 
       // Invalidate list provider so the previous screen updates
       ref.invalidate(templateListProvider);
@@ -110,10 +184,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       // 3. Rollback on failure
       if (mounted) {
         setState(() {
-          _template = _template.copyWith(
-            isLiked: oldStatus,
-            likeCount: oldCount,
-          );
+          _template = target.copyWith(isLiked: oldStatus, likeCount: oldCount);
         });
         ScaffoldMessenger.of(
           context,
@@ -123,22 +194,142 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _onUse() async {
-    if (_parsedPages.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('템플릿 데이터를 불러오는데 실패했습니다.')));
+    if (_isUsing) return;
+    setState(() => _isUsing = true);
+    final pages = _resolvePagesForCreateFlow();
+    if (pages.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('템플릿 데이터 준비에 실패했습니다.')));
+        setState(() => _isUsing = false);
+      }
       return;
     }
 
-    Navigator.push(
+    if (!mounted) return;
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TemplateAssemblyScreen(
-          template: _template,
-          parsedPages: _parsedPages,
+        builder: (_) => AlbumCreateFlowScreen(
+          initialTemplatePages: pages,
+          initialAlbumTitle: _template.title,
+          initialTemplatePreviewImages: _template.previewImages,
         ),
       ),
     );
+    if (mounted) {
+      setState(() => _isUsing = false);
+    }
+  }
+
+  Future<void> _onShareTemplate() async {
+    final subtitle = _template.subTitle?.trim();
+    final lines = <String>[
+      'SnapFit 템플릿 공유',
+      _template.title,
+      if (subtitle != null && subtitle.isNotEmpty) subtitle,
+      _template.coverImageUrl,
+    ];
+    final text = lines.join('\n');
+
+    try {
+      await SharePlus.instance.share(ShareParams(text: text));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('공유 기능을 실행할 수 없습니다.')));
+    }
+  }
+
+  List<List<LayerModel>> _resolvePagesForCreateFlow() {
+    if (_parsedPages.isNotEmpty) return _parsedPages;
+    return _buildFallbackTemplatePages();
+  }
+
+  List<List<LayerModel>> _buildFallbackTemplatePages() {
+    final preview = _template.previewImages;
+    if (preview.isEmpty) return const [];
+    final pageCount = _template.pageCount < 2 ? 2 : _template.pageCount;
+    final pages = <List<LayerModel>>[];
+
+    LayerModel imageLayer({
+      required String id,
+      required String url,
+      required double x,
+      required double y,
+      required double w,
+      required double h,
+      String frame = 'photoCard',
+      int z = 10,
+    }) {
+      return LayerModel(
+        id: id,
+        type: LayerType.image,
+        position: Offset(x, y),
+        width: w,
+        height: h,
+        imageBackground: frame,
+        previewUrl: url,
+        imageUrl: url,
+        originalUrl: url,
+        zIndex: z,
+      );
+    }
+
+    pages.add([
+      imageLayer(
+        id: 'cover_main',
+        url: preview.first,
+        x: 56,
+        y: 82,
+        w: 388,
+        h: 300,
+        frame: 'paperClipCard',
+      ),
+      LayerModel(
+        id: 'cover_title',
+        type: LayerType.text,
+        position: const Offset(84, 24),
+        width: 332,
+        height: 44,
+        text: _template.title,
+        textAlign: TextAlign.center,
+        textStyle: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF1F2937),
+        ),
+        zIndex: 20,
+      ),
+    ]);
+
+    for (int i = 1; i < pageCount; i++) {
+      final left = preview[i % preview.length];
+      final right = preview[(i + 1) % preview.length];
+      pages.add([
+        imageLayer(
+          id: 'p${i}_left',
+          url: left,
+          x: 52,
+          y: 78,
+          w: 196,
+          h: 314,
+          frame: 'collageTile',
+        ),
+        imageLayer(
+          id: 'p${i}_right',
+          url: right,
+          x: 252,
+          y: 78,
+          w: 196,
+          h: 314,
+          frame: 'collageTile',
+        ),
+      ]);
+    }
+    return pages;
   }
 
   void _openFullScreenView(int initialIndex) {
@@ -158,8 +349,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = SnapFitColors.textPrimaryOf(context);
+    final secondaryColor = SnapFitColors.textSecondaryOf(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: SnapFitColors.backgroundOf(context),
       body: Stack(
         children: [
           CustomScrollView(
@@ -179,13 +374,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             onTap: () => Navigator.pop(context),
                             child: Container(
                               padding: EdgeInsets.all(8.w),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
+                              decoration: BoxDecoration(
+                                color: SnapFitColors.surfaceOf(context),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_back_ios_new,
                                 size: 20,
+                                color: titleColor,
                               ),
                             ),
                           ),
@@ -194,22 +390,30 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
+                              color: titleColor,
                             ),
                           ),
-                          Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
+                          GestureDetector(
+                            onTap: _onShareTemplate,
+                            child: Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                color: SnapFitColors.surfaceOf(context),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.share_outlined,
+                                size: 20,
+                                color: titleColor,
+                              ),
                             ),
-                            child: const Icon(Icons.share_outlined, size: 20),
                           ),
                         ],
                       ),
                     ),
                     SizedBox(height: 30.h),
 
-                    _buildHeroImage(),
+                    _buildHeroImage(context),
 
                     SizedBox(height: 40.h),
 
@@ -222,7 +426,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             style: TextStyle(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1A1A),
+                              color: titleColor,
                             ),
                           ),
                           SizedBox(height: 12.h),
@@ -232,7 +436,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15.sp,
-                                color: const Color(0xFF666666),
+                                color: secondaryColor,
                                 height: 1.5,
                               ),
                             ),
@@ -250,6 +454,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           children: [
                             Expanded(
                               child: _buildFeatureCard(
+                                context,
                                 Icons.photo_library_outlined,
                                 '제주 전용 레이아웃',
                                 '여행지 감성에 맞춘 스티커와 프레임이 포함되어 있습니다.',
@@ -258,6 +463,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             SizedBox(width: 16.w),
                             Expanded(
                               child: _buildFeatureCard(
+                                context,
                                 Icons.people_outline,
                                 '5인 협업 최적화',
                                 '가족, 친구들과 함께 각자의 페이지를 동시에 편집하세요.',
@@ -280,6 +486,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
+                              color: titleColor,
                             ),
                           ),
                           Text(
@@ -305,6 +512,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           // 1. Try to render parsed layout
                           if (index < _parsedPages.length) {
                             return _buildPageLayoutPreview(
+                              context,
                               index,
                               _parsedPages[index],
                             );
@@ -312,11 +520,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           // 2. Fallback to preview images
                           if (index < _template.previewImages.length) {
                             return _buildPagePreviewItem(
+                              context,
                               _template.previewImages[index],
                             );
                           }
                           // 3. Fallback to placeholder
-                          return _buildPagePreviewPlaceholder(index);
+                          return _buildPagePreviewPlaceholder(context, index);
                         },
                       ),
                     ),
@@ -325,7 +534,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         padding: EdgeInsets.only(top: 12.h),
                         child: Text(
                           '표지 및 프롤로그',
-                          style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: SnapFitColors.textMutedOf(context),
+                          ),
                         ),
                       ),
                     ),
@@ -340,7 +552,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         horizontal: 20.w,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEBF8F9),
+                        color: isDark
+                            ? SnapFitColors.surfaceOf(context)
+                            : const Color(0xFFEBF8F9),
                         borderRadius: BorderRadius.circular(100.r),
                       ),
                       child: Row(
@@ -350,9 +564,27 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             height: 30.w,
                             child: Stack(
                               children: [
-                                _avatar(0, Colors.grey[300]!),
-                                _avatar(18.w, Colors.grey[400]!),
-                                _avatar(36.w, Colors.grey[500]!),
+                                _avatar(
+                                  context,
+                                  0,
+                                  isDark
+                                      ? Colors.grey[600]!
+                                      : Colors.grey[300]!,
+                                ),
+                                _avatar(
+                                  context,
+                                  18.w,
+                                  isDark
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[400]!,
+                                ),
+                                _avatar(
+                                  context,
+                                  36.w,
+                                  isDark
+                                      ? Colors.grey[800]!
+                                      : Colors.grey[500]!,
+                                ),
                               ],
                             ),
                           ),
@@ -362,7 +594,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                               text: TextSpan(
                                 style: TextStyle(
                                   fontSize: 13.sp,
-                                  color: const Color(0xFF555555),
+                                  color: SnapFitColors.textSecondaryOf(context),
                                 ),
                                 children: [
                                   const TextSpan(text: '현재 '),
@@ -401,10 +633,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 bottom: MediaQuery.of(context).padding.bottom + 20.h,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: SnapFitColors.surfaceOf(context),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),
@@ -421,7 +653,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           _template.isLiked
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          color: _template.isLiked ? Colors.red : Colors.grey,
+                          color: _template.isLiked
+                              ? Colors.red
+                              : SnapFitColors.textMutedOf(context),
                           size: 28.sp,
                         ),
                         SizedBox(height: 4.h),
@@ -429,7 +663,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           '${_template.likeCount}',
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: _template.isLiked ? Colors.red : Colors.grey,
+                            color: _template.isLiked
+                                ? Colors.red
+                                : SnapFitColors.textMutedOf(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -483,14 +719,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _buildHeroImage() {
+  Widget _buildHeroImage(BuildContext context) {
     return Center(
       child: Container(
         width: 320.w,
         height: 380.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
-          color: const Color(0xFFE5DCD0),
+          color: SnapFitColors.surfaceOf(context),
           image: DecorationImage(
             image: NetworkImage(_template.coverImageUrl),
             fit: BoxFit.cover,
@@ -562,15 +798,21 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String title, String desc) {
+  Widget _buildFeatureCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String desc,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -582,7 +824,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: const Color(0xFFEBF8F9),
+              color: isDark
+                  ? SnapFitColors.accent.withOpacity(0.16)
+                  : const Color(0xFFEBF8F9),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
@@ -593,7 +837,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF1A1A1A),
+              color: SnapFitColors.textPrimaryOf(context),
             ),
           ),
           SizedBox(height: 8.h),
@@ -601,7 +845,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             desc,
             style: TextStyle(
               fontSize: 12.sp,
-              color: const Color(0xFF888888),
+              color: SnapFitColors.textSecondaryOf(context),
               height: 1.4,
             ),
           ),
@@ -610,27 +854,27 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _buildPagePreviewPlaceholder(int index) {
+  Widget _buildPagePreviewPlaceholder(BuildContext context, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 180.w,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: Center(
         child: Container(
           width: 140.w,
           height: 200.h,
           decoration: BoxDecoration(
-            //            border: Border.all(color: SnapFitColors.accent.withOpacity(0.3), width: 1.5),
-            color: Colors.grey[200],
+            color: isDark ? Colors.grey[800] : Colors.grey[200],
             borderRadius: BorderRadius.circular(4.r),
           ),
           child: Center(
             child: Text(
               "Preview ${index + 1}",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: SnapFitColors.textMutedOf(context)),
             ),
           ),
         ),
@@ -638,13 +882,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _buildPagePreviewItem(String imageUrl) {
+  Widget _buildPagePreviewItem(BuildContext context, String imageUrl) {
     return Container(
       width: 180.w,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: Center(
         child: Container(
@@ -662,15 +906,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _buildPageLayoutPreview(int index, List<LayerModel> layers) {
+  Widget _buildPageLayoutPreview(
+    BuildContext context,
+    int index,
+    List<LayerModel> layers,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => _openFullScreenView(index),
       child: Container(
         width: 180.w,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: SnapFitColors.surfaceOf(context),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFEEEEEE)),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
         ),
         child: Center(
           child: Container(
@@ -678,10 +927,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             height: 140.w,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: SnapFitColors.backgroundOf(context),
               borderRadius: BorderRadius.circular(4.r),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.28 : 0.05),
+                  blurRadius: 4,
+                ),
               ],
             ),
             child: TemplatePageRenderer(
@@ -695,7 +947,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  Widget _avatar(double left, Color color) {
+  Widget _avatar(BuildContext context, double left, Color color) {
     return Positioned(
       left: left,
       child: Container(
@@ -704,7 +956,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(
+            color: SnapFitColors.backgroundOf(context),
+            width: 2,
+          ),
         ),
         child: Icon(Icons.person, color: Colors.white, size: 16.sp),
       ),

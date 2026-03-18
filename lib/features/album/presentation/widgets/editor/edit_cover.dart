@@ -58,6 +58,9 @@ class EditCover extends ConsumerStatefulWidget {
   /// 목표 페이지 수 (생성 플로우에서 사용)
   final int? targetPages;
 
+  /// 생성 플로우에서 템플릿 커버가 비어 보일 때 저장 직전 보정용
+  final List<LayerModel>? fallbackTemplateCoverLayers;
+
   /// 상단 앱바 표시 여부 (PageEditorScreen 내에 임베딩될 때 false)
   final bool showAppBar;
 
@@ -78,6 +81,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.initialCoverSize,
     this.albumTitle,
     this.targetPages,
+    this.fallbackTemplateCoverLayers,
     this.showAppBar = true,
     this.showBottomToolbar = true,
     this.interaction,
@@ -309,14 +313,26 @@ class EditCoverState extends ConsumerState<EditCover> {
     try {
       final currentLayers =
           ref.read(albumEditorViewModelProvider).value?.layers ?? [];
+      if (currentLayers.isEmpty &&
+          widget.fallbackTemplateCoverLayers != null &&
+          widget.fallbackTemplateCoverLayers!.isNotEmpty) {
+        // 템플릿 유입인데 커버가 비어 저장되는 케이스 방어
+        editorVm.applyTemplateCoverPreview(widget.fallbackTemplateCoverLayers!);
+      }
+      final effectiveLayers =
+          ref.read(albumEditorViewModelProvider).value?.layers ?? currentLayers;
       List<LayerModel>? sortedLayers;
-      if (currentLayers.isNotEmpty) {
-        sortedLayers = _interaction.sortByZ(currentLayers);
+      if (effectiveLayers.isNotEmpty) {
+        sortedLayers = _interaction.sortByZ(effectiveLayers);
         editorVm.updatePageLayers(sortedLayers);
       }
 
-      // 1) 현재 커버를 그대로 캡처해서 합성 이미지 생성
-      final coverBytes = await captureCoverBytes();
+      // 1) 현재 커버 캡처
+      // 생성 플로우에서는 체감 속도를 위해 캡처를 생략하고(빠른 진입),
+      // 백그라운드 업로드 단계에서 레이어 기반 대표 이미지를 사용한다.
+      final coverBytes = widget.isFromCreateFlow
+          ? null
+          : await captureCoverBytes();
 
       // 2) Firebase 업로드 + 대표 이미지 URL 생성 + 서버 저장
       //    coverImageBytes 로 합성 이미지를 함께 전달
@@ -411,8 +427,8 @@ class EditCoverState extends ConsumerState<EditCover> {
         ? (albumSt?.selectedTheme ??
               coverSt?.selectedTheme ??
               CoverTheme.classic)
-        : (coverSt?.selectedTheme ??
-              albumSt?.selectedTheme ??
+        : (albumSt?.selectedTheme ??
+              coverSt?.selectedTheme ??
               CoverTheme.classic);
 
     // 커버 배경색: 현재 페이지(커버 페이지)의 backgroundColor를 그대로 사용

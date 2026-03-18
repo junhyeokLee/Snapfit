@@ -137,6 +137,12 @@ const List<ImageFrameStyle> imageFrameStyles = [
     subtitle: 'Comic Bubble',
     category: 'artistic',
   ),
+  ImageFrameStyle(
+    key: 'blob',
+    label: '뉴포스트 블랍',
+    subtitle: 'Organic Mask',
+    category: 'artistic',
+  ),
   // 미니멀 & 기하학
   ImageFrameStyle(
     key: 'thinDoubleLine',
@@ -237,56 +243,6 @@ const _frameCategories = [
   {'key': 'minimal', 'label': '미니멀'},
   {'key': 'urban', 'label': '어반'},
 ];
-
-/// 인기순/최신순 등 필터 칩 (레퍼런스 UI)
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _FilterChip({required this.label, this.selected = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: selected
-            ? SnapFitColors.accent
-            : SnapFitColors.overlayLightOf(context),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(
-          color: selected
-              ? SnapFitColors.accent
-              : SnapFitColors.overlayMediumOf(context),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: selected
-                  ? Colors.white
-                  : SnapFitColors.textPrimaryOf(context),
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(width: 4.w),
-          Icon(
-            Icons.keyboard_arrow_down,
-            size: 18.sp,
-            color: selected
-                ? Colors.white
-                : SnapFitColors.textSecondaryOf(context),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// 이미지 프레임 스타일 선택 바텀시트
 class ImageFrameStylePicker extends StatefulWidget {
@@ -419,23 +375,6 @@ class _ImageFrameStylePickerState extends State<ImageFrameStylePicker> {
                     ),
                   );
                 }).toList(),
-              ),
-            ),
-            SizedBox(height: 10.h),
-            // 필터: 인기순 / 최신순 / 무료 / 프리미엄
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Row(
-                children: [
-                  _FilterChip(label: '인기순', selected: true),
-                  SizedBox(width: 8.w),
-                  _FilterChip(label: '최신순', selected: false),
-                  SizedBox(width: 8.w),
-                  _FilterChip(label: '무료', selected: false),
-                  SizedBox(width: 8.w),
-                  _FilterChip(label: '프리미엄', selected: false),
-                ],
               ),
             ),
             SizedBox(height: 12.h),

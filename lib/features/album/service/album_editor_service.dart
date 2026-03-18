@@ -288,6 +288,7 @@ class AlbumEditorService {
     Color? color,
     double? initialWidth,
     double? initialHeight,
+    int? zIndex,
   }) {
     final newLayer = createTextLayer(
       text: text,
@@ -299,7 +300,7 @@ class AlbumEditorService {
       initialWidth: initialWidth,
       initialHeight: initialHeight,
       isCover: page.isCover,
-    );
+    ).copyWith(zIndex: zIndex);
     page.layers.add(newLayer);
     return page;
   }

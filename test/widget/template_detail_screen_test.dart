@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
-import 'package:snap_fit/features/store/presentation/views/template_assembly_screen.dart';
+import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 
 import '../helpers/mock_repositories.dart';
@@ -44,8 +44,13 @@ void main() {
   testWidgets('like button toggles count and calls repository', (tester) async {
     final mockRepo = MockTemplateRepository();
     final template = _template();
+    final likedTemplate = _template(likeCount: 2, isLiked: true);
+    var getTemplateCallCount = 0;
 
-    when(() => mockRepo.getTemplate(1)).thenAnswer((_) async => template);
+    when(() => mockRepo.getTemplate(1)).thenAnswer((invocation) async {
+      getTemplateCallCount++;
+      return getTemplateCallCount >= 2 ? likedTemplate : template;
+    });
     when(() => mockRepo.likeTemplate(1)).thenAnswer((_) async {});
 
     await mockNetworkImagesFor(() async {
@@ -60,14 +65,14 @@ void main() {
 
       expect(find.text('1'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.favorite_border));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('2'), findsOneWidget);
       verify(() => mockRepo.likeTemplate(1)).called(1);
     });
   });
 
-  testWidgets('use button navigates to TemplateAssemblyScreen', (tester) async {
+  testWidgets('use button navigates to AlbumCreateFlowScreen', (tester) async {
     final mockRepo = MockTemplateRepository();
     final template = _template();
 
@@ -86,7 +91,7 @@ void main() {
       await tester.tap(find.text('이 템플릿 사용하기'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(TemplateAssemblyScreen), findsOneWidget);
+      expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
     });
   });
 }

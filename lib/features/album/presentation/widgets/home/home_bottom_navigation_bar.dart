@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
-import '../../../../../shared/widgets/snapfit_primary_gradient_background.dart';
 
 /// 홈 화면 하단 네비게이션 바
 class HomeBottomNavigationBar extends StatelessWidget {
@@ -28,11 +27,13 @@ class HomeBottomNavigationBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        padding: EdgeInsets.fromLTRB(16.w, 10.w, 16.w, 12.w),
+        margin: EdgeInsets.fromLTRB(10.w, 0, 10.w, 6.h),
+        padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 6.h),
         decoration: BoxDecoration(
           color: SnapFitColors.isDark(context)
               ? SnapFitColors.surfaceOf(context)
               : SnapFitColors.pureWhite,
+          borderRadius: BorderRadius.circular(16.r),
           border: Border(
             top: BorderSide(
               color: SnapFitColors.isDark(context)
@@ -40,6 +41,15 @@ class HomeBottomNavigationBar extends StatelessWidget {
                   : SnapFitColors.overlayStrongOf(context),
             ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.12 : 0.045,
+              ),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -54,17 +64,17 @@ class HomeBottomNavigationBar extends StatelessWidget {
             Expanded(
               child: _BottomNavItem(
                 icon: Icons.photo_album_rounded,
-                label: '커넥트',
+                label: '앨범',
                 isSelected: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
             ),
-            SizedBox(width: 6.w),
+            SizedBox(width: 4.w),
             _CreateNavButton(onTap: onCreate),
-            SizedBox(width: 6.w),
+            SizedBox(width: 4.w),
             Expanded(
               child: _BottomNavItem(
-                icon: Icons.storefront_rounded,
+                icon: Icons.explore_rounded,
                 label: '스토어',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
@@ -73,7 +83,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
             Expanded(
               child: _BottomNavItem(
                 icon: Icons.person_rounded,
-                label: '마이',
+                label: '설정',
                 isSelected: currentIndex == 3,
                 onTap: () => onTap(3),
               ),
@@ -93,19 +103,23 @@ class _CreateNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    final buttonColor = isDark
+        ? const Color(0xFF1987AB)
+        : const Color(0xFF10A4D1);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(32.r),
+        borderRadius: BorderRadius.circular(22.r),
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.28),
-                blurRadius: 12.r,
-                offset: Offset(0, 6.w),
+                color: buttonColor.withOpacity(isDark ? 0.18 : 0.16),
+                blurRadius: 7.r,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -116,16 +130,21 @@ class _CreateNavButton extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               customBorder: const CircleBorder(),
-              child: SnapFitPrimaryGradientBackground(
-                borderRadius: BorderRadius.circular(999),
-                child: SizedBox(
-                  width: 52.w,
-                  height: 52.w,
-                  child: Icon(
-                    Icons.add,
-                    size: 28.sp,
-                    color: SnapFitColors.pureWhite,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: buttonColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(isDark ? 0.08 : 0.5),
+                    width: 1.0,
                   ),
+                ),
+                child: Icon(
+                  Icons.add,
+                  size: 20.sp,
+                  color: SnapFitColors.pureWhite,
                 ),
               ),
             ),
@@ -162,15 +181,25 @@ class _BottomNavItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.w),
+          padding: EdgeInsets.symmetric(vertical: 2.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 아이콘을 더 작고 심플하게
-              Icon(icon, size: 18.sp, color: color),
-              SizedBox(height: 2.w),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? SnapFitColors.accent.withOpacity(isDark ? 0.14 : 0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Icon(icon, size: 17.sp, color: color),
+              ),
+              SizedBox(height: 2.h),
               Text(
                 label,
                 style:
@@ -179,7 +208,7 @@ class _BottomNavItem extends StatelessWidget {
                           fontSize: 9.sp,
                           fontWeight: isSelected
                               ? FontWeight.w600
-                              : FontWeight.w400,
+                              : FontWeight.w500,
                           color: color,
                         ),
               ),

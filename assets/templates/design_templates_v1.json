@@ -1,0 +1,4234 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "data_pastel_story_001",
+      "name": "파스텔 스토리",
+      "category": "감성",
+      "tags": [
+        "파스텔",
+        "노트",
+        "여백"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperPink",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.84,
+          "h": 0.52,
+          "frame": "paperTapeCard",
+          "z": 10
+        },
+        {
+          "id": "sub1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.64,
+          "w": 0.4,
+          "h": 0.24,
+          "frame": "photoCard",
+          "rotation": -4,
+          "z": 12
+        },
+        {
+          "id": "sub2",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.66,
+          "w": 0.4,
+          "h": 0.22,
+          "frame": "photoCard",
+          "rotation": 3,
+          "z": 12
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.14,
+          "y": 0.9,
+          "w": 0.72,
+          "h": 0.07,
+          "text": "PASTEL STORY",
+          "align": "center",
+          "z": 20,
+          "style": {
+            "fontSize": 11.5,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w800",
+            "color": "#4B3A32",
+            "letterSpacing": 1.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_magazine_grid_001",
+      "name": "매거진 그리드",
+      "category": "매거진",
+      "tags": [
+        "그리드",
+        "모던",
+        "콜라주"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.05,
+          "w": 0.42,
+          "h": 0.28,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.48,
+          "y": 0.05,
+          "w": 0.48,
+          "h": 0.42,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.35,
+          "w": 0.42,
+          "h": 0.27,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.64,
+          "w": 0.3,
+          "h": 0.3,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.36,
+          "y": 0.64,
+          "w": 0.28,
+          "h": 0.3,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "f",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.5,
+          "w": 0.3,
+          "h": 0.44,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.06,
+          "y": 0.46,
+          "w": 0.54,
+          "h": 0.16,
+          "text": "MY\nMOODBOARD",
+          "align": "left",
+          "z": 22,
+          "style": {
+            "fontSize": 21,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#1E1E1E",
+            "height": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_note_journal_001",
+      "name": "저널 노트",
+      "category": "감성",
+      "tags": [
+        "찢김",
+        "노트",
+        "테이프"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWarm",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.14,
+          "w": 0.76,
+          "h": 0.52,
+          "frame": "tornPaperCard",
+          "z": 10
+        },
+        {
+          "id": "t1",
+          "type": "text",
+          "x": 0.13,
+          "y": 0.08,
+          "w": 0.36,
+          "h": 0.06,
+          "text": "journal",
+          "align": "left",
+          "rotation": -6,
+          "z": 25,
+          "style": {
+            "fontSize": 12,
+            "fontFamily": "Run",
+            "fontWeight": "w700",
+            "color": "#765542"
+          }
+        },
+        {
+          "id": "t2",
+          "type": "text",
+          "x": 0.2,
+          "y": 0.7,
+          "w": 0.6,
+          "h": 0.11,
+          "text": "오늘도 천천히,\n좋은 하루",
+          "align": "center",
+          "z": 22,
+          "style": {
+            "fontSize": 13.5,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w500",
+            "color": "#FFFFFF",
+            "height": 1.2
+          }
+        },
+        {
+          "id": "clip",
+          "type": "text",
+          "x": 0.75,
+          "y": 0.12,
+          "w": 0.09,
+          "h": 0.06,
+          "text": "📎",
+          "z": 26,
+          "style": {
+            "fontSize": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_dark_film_001",
+      "name": "다크 필름",
+      "category": "시네마",
+      "tags": [
+        "필름",
+        "다크",
+        "포스터"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "darkVignette",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.16,
+          "y": 0.14,
+          "w": 0.68,
+          "h": 0.64,
+          "frame": "posterPolaroid",
+          "z": 10
+        },
+        {
+          "id": "caption",
+          "type": "text",
+          "x": 0.24,
+          "y": 0.64,
+          "w": 0.52,
+          "h": 0.1,
+          "text": "오늘의 선택이\n내일의 웃음을 만듭니다.",
+          "align": "center",
+          "z": 25,
+          "style": {
+            "fontSize": 9.6,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w500",
+            "color": "#111111",
+            "height": 1.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_yellow_poster_001",
+      "name": "옐로우 포스터",
+      "category": "포스터",
+      "tags": [
+        "미니멀",
+        "타이포",
+        "포스터"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperYellow",
+          "z": 0
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.12,
+          "y": 0.07,
+          "w": 0.76,
+          "h": 0.1,
+          "text": "SEASONS OF 2026",
+          "align": "center",
+          "z": 20,
+          "style": {
+            "fontSize": 15,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w500",
+            "color": "#303030",
+            "letterSpacing": 0.8
+          }
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.21,
+          "y": 0.2,
+          "w": 0.58,
+          "h": 0.5,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "body",
+          "type": "text",
+          "x": 0.12,
+          "y": 0.72,
+          "w": 0.76,
+          "h": 0.22,
+          "text": "TWELVE STORIES, ONE YEAR\nTHROUGH WINDING ROADS AND SHIFTING SKIES,\nWE RETURN TO OURSELVES.",
+          "align": "center",
+          "z": 20,
+          "style": {
+            "fontSize": 7.2,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w500",
+            "color": "#4D4D4D",
+            "height": 1.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_kids_scrap_001",
+      "name": "키즈 스크랩",
+      "category": "키즈",
+      "tags": [
+        "가족",
+        "스크랩",
+        "포토카드"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBrown",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.08,
+          "w": 0.3,
+          "h": 0.3,
+          "frame": "photoCard",
+          "rotation": -3,
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.35,
+          "y": 0.08,
+          "w": 0.3,
+          "h": 0.29,
+          "frame": "photoCard",
+          "rotation": 2,
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.08,
+          "w": 0.3,
+          "h": 0.31,
+          "frame": "photoCard",
+          "rotation": 4,
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.5,
+          "w": 0.4,
+          "h": 0.31,
+          "frame": "photoCard",
+          "rotation": -2,
+          "z": 10
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.56,
+          "y": 0.5,
+          "w": 0.39,
+          "h": 0.29,
+          "frame": "photoCard",
+          "rotation": 3,
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.3,
+          "y": 0.36,
+          "w": 0.4,
+          "h": 0.12,
+          "text": "My Kids,\nMy Life.",
+          "align": "center",
+          "z": 30,
+          "style": {
+            "fontSize": 18.5,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#2F1F12",
+            "height": 0.92
+          }
+        },
+        {
+          "id": "flower",
+          "type": "text",
+          "x": 0.45,
+          "y": 0.88,
+          "w": 0.1,
+          "h": 0.06,
+          "text": "✿",
+          "z": 30,
+          "style": {
+            "fontSize": 18,
+            "color": "#F1B3BC"
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_photo_dump_clean_001",
+      "name": "포토덤프 클린",
+      "category": "콜라주",
+      "tags": [
+        "포토덤프",
+        "노트",
+        "스티커"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "notebookPunchPage",
+          "z": 0
+        },
+        {
+          "id": "title1",
+          "type": "text",
+          "x": 0.17,
+          "y": 0.04,
+          "w": 0.42,
+          "h": 0.09,
+          "text": "PHOTO",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 23,
+            "fontFamily": "Maker",
+            "fontWeight": "w800",
+            "color": "#2D2D2D"
+          }
+        },
+        {
+          "id": "title2",
+          "type": "text",
+          "x": 0.5,
+          "y": 0.11,
+          "w": 0.36,
+          "h": 0.08,
+          "text": "DUMP",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 22,
+            "fontFamily": "Maker",
+            "fontWeight": "w800",
+            "color": "#2D2D2D"
+          }
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.23,
+          "w": 0.42,
+          "h": 0.29,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.3,
+          "w": 0.33,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.6,
+          "w": 0.4,
+          "h": 0.22,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.57,
+          "w": 0.35,
+          "h": 0.21,
+          "frame": "tornPaperCard",
+          "rotation": -5,
+          "z": 10
+        },
+        {
+          "id": "s1",
+          "type": "text",
+          "x": 0.68,
+          "y": 0.06,
+          "w": 0.13,
+          "h": 0.1,
+          "text": "✶",
+          "z": 40,
+          "style": {
+            "fontSize": 34,
+            "fontWeight": "w800",
+            "color": "#335AA6"
+          }
+        },
+        {
+          "id": "s2",
+          "type": "text",
+          "x": 0.69,
+          "y": 0.73,
+          "w": 0.13,
+          "h": 0.1,
+          "text": "✶",
+          "z": 40,
+          "style": {
+            "fontSize": 35,
+            "fontWeight": "w800",
+            "color": "#335AA6"
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_polaroid_album_001",
+      "name": "폴라로이드 앨범",
+      "category": "앨범",
+      "tags": [
+        "폴라로이드",
+        "빈티지",
+        "추억"
+      ],
+      "aspect": "any",
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBeige",
+          "z": 0
+        },
+        {
+          "id": "p1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.12,
+          "w": 0.4,
+          "h": 0.36,
+          "frame": "polaroidClassic",
+          "rotation": -5,
+          "z": 10
+        },
+        {
+          "id": "p2",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.14,
+          "w": 0.38,
+          "h": 0.34,
+          "frame": "polaroidClassic",
+          "rotation": 6,
+          "z": 10
+        },
+        {
+          "id": "p3",
+          "type": "image",
+          "x": 0.18,
+          "y": 0.5,
+          "w": 0.64,
+          "h": 0.4,
+          "frame": "polaroid",
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.12,
+          "y": 0.04,
+          "w": 0.76,
+          "h": 0.07,
+          "text": "MEMORIES",
+          "align": "center",
+          "z": 22,
+          "style": {
+            "fontSize": 13,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w800",
+            "color": "#B25345",
+            "letterSpacing": 1.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_ref_wedding_day_001",
+      "name": "레퍼런스 웨딩데이",
+      "category": "웨딩",
+      "tags": [
+        "웨딩",
+        "폴라로이드",
+        "리본",
+        "포스터"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "variants": {
+        "square": {
+          "scale": 0.995,
+          "offsetY": 0.002
+        },
+        "landscape": {
+          "scale": 0.87,
+          "offsetY": 0.04
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.043,
+          "w": 0.66,
+          "h": 0.16,
+          "text": "Our\nWedding Day",
+          "rotation": -14,
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 21.4,
+            "fontFamily": "Run",
+            "fontWeight": "w800",
+            "color": "#4A7B44",
+            "height": 0.9,
+            "letterSpacing": 0.16
+          }
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.236,
+          "y": 0.208,
+          "w": 0.515,
+          "h": 0.478,
+          "frame": "ribbonPolaroid",
+          "rotation": -6.5,
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.29,
+              "y": 0.165,
+              "w": 0.42,
+              "h": 0.58
+            }
+          }
+        },
+        {
+          "id": "sub",
+          "type": "image",
+          "x": 0.592,
+          "y": 0.572,
+          "w": 0.274,
+          "h": 0.233,
+          "frame": "polaroidClassic",
+          "rotation": 10.5,
+          "z": 16,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.6,
+              "y": 0.57,
+              "w": 0.245,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "id": "ribbon",
+          "type": "decoration",
+          "x": 0.744,
+          "y": 0.173,
+          "w": 0.14,
+          "h": 0.116,
+          "style": "stickerRibbonBlue",
+          "z": 36
+        },
+        {
+          "id": "flower",
+          "type": "decoration",
+          "x": 0.078,
+          "y": 0.355,
+          "w": 0.1,
+          "h": 0.1,
+          "style": "stickerFlowerCoral",
+          "z": 35
+        },
+        {
+          "id": "tiny",
+          "type": "text",
+          "x": 0.103,
+          "y": 0.733,
+          "w": 0.132,
+          "h": 0.04,
+          "text": "w/ love",
+          "rotation": -8.5,
+          "z": 21,
+          "style": {
+            "fontSize": 7.0,
+            "fontFamily": "Run",
+            "color": "#A9A9A9"
+          }
+        },
+        {
+          "id": "date",
+          "type": "text",
+          "x": 0.205,
+          "y": 0.833,
+          "w": 0.59,
+          "h": 0.055,
+          "text": "August 24, 20XX / at 4 PM",
+          "z": 22,
+          "style": {
+            "fontSize": 7.9,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w700",
+            "color": "#636363",
+            "letterSpacing": 1.05
+          }
+        },
+        {
+          "id": "doodle",
+          "type": "decoration",
+          "x": 0.075,
+          "y": 0.645,
+          "w": 0.11,
+          "h": 0.075,
+          "style": "stickerCatDoodle",
+          "z": 33
+        }
+      ]
+    },
+    {
+      "id": "data_ref_kids_collage_001",
+      "name": "레퍼런스 키즈콜라주",
+      "category": "키즈",
+      "tags": [
+        "키즈",
+        "콜라주",
+        "노트",
+        "스티커"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.007,
+      "variants": {
+        "square": {
+          "scale": 1.0
+        },
+        "landscape": {
+          "scale": 0.84,
+          "offsetY": 0.05
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.0,
+          "y": 0.02,
+          "w": 0.34,
+          "h": 0.36,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.35,
+          "y": 0.02,
+          "w": 0.31,
+          "h": 0.28,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.67,
+          "y": 0.02,
+          "w": 0.25,
+          "h": 0.28,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.87,
+          "y": 0.02,
+          "w": 0.13,
+          "h": 0.34,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.0,
+          "y": 0.4,
+          "w": 0.39,
+          "h": 0.27,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "f",
+          "type": "image",
+          "x": 0.4,
+          "y": 0.42,
+          "w": 0.34,
+          "h": 0.25,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "g",
+          "type": "image",
+          "x": 0.75,
+          "y": 0.4,
+          "w": 0.25,
+          "h": 0.29,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "h",
+          "type": "image",
+          "x": 0.0,
+          "y": 0.78,
+          "w": 0.4,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "i",
+          "type": "image",
+          "x": 0.42,
+          "y": 0.79,
+          "w": 0.19,
+          "h": 0.17,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "j",
+          "type": "image",
+          "x": 0.63,
+          "y": 0.79,
+          "w": 0.17,
+          "h": 0.17,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "k",
+          "type": "image",
+          "x": 0.81,
+          "y": 0.79,
+          "w": 0.19,
+          "h": 0.17,
+          "frame": "collageTile",
+          "z": 11
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.236,
+          "y": 0.664,
+          "w": 0.535,
+          "h": 0.125,
+          "text": "my kids,\nmy life,",
+          "textBackground": "noteTornPink",
+          "align": "center",
+          "z": 33,
+          "style": {
+            "fontSize": 21.4,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#141414",
+            "height": 0.9,
+            "letterSpacing": -0.1
+          }
+        },
+        {
+          "id": "cat",
+          "type": "decoration",
+          "x": 0.36,
+          "y": 0.316,
+          "w": 0.215,
+          "h": 0.106,
+          "style": "stickerCatDoodle",
+          "z": 34
+        },
+        {
+          "id": "ticket",
+          "type": "decoration",
+          "x": 0.255,
+          "y": 0.555,
+          "w": 0.173,
+          "h": 0.086,
+          "style": "stickerTicketPaper",
+          "z": 35
+        },
+        {
+          "id": "quote_paper",
+          "type": "decoration",
+          "x": 0.786,
+          "y": 0.736,
+          "w": 0.2,
+          "h": 0.09,
+          "style": "stickerTornNoteBeige",
+          "rotation": -9,
+          "z": 34
+        },
+        {
+          "id": "quote_torn",
+          "type": "text",
+          "x": 0.808,
+          "y": 0.741,
+          "w": 0.166,
+          "h": 0.066,
+          "text": "more fun with us",
+          "rotation": -8,
+          "align": "left",
+          "z": 35,
+          "style": {
+            "fontSize": 6.6,
+            "fontFamily": "Cormorant",
+            "color": "#6B6053",
+            "height": 1.12
+          }
+        },
+        {
+          "id": "flower1",
+          "type": "decoration",
+          "x": 0.546,
+          "y": 0.814,
+          "w": 0.105,
+          "h": 0.082,
+          "style": "stickerFlowerCoral",
+          "z": 34
+        },
+        {
+          "id": "flower2",
+          "type": "decoration",
+          "x": 0.659,
+          "y": 0.814,
+          "w": 0.105,
+          "h": 0.082,
+          "style": "stickerFlowerPink",
+          "z": 34
+        }
+      ]
+    },
+    {
+      "id": "data_ref_photo_dump_001",
+      "name": "레퍼런스 포토덤프",
+      "category": "콜라주",
+      "tags": [
+        "포토덤프",
+        "별",
+        "노트",
+        "찢김"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "variants": {
+        "square": {
+          "scale": 0.982,
+          "offsetY": 0.004
+        },
+        "landscape": {
+          "scale": 0.82,
+          "offsetY": 0.062
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "notebookPunchPage",
+          "z": 0
+        },
+        {
+          "id": "title1",
+          "type": "text",
+          "x": 0.148,
+          "y": 0.044,
+          "w": 0.44,
+          "h": 0.092,
+          "text": "PHOTO",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 24.0,
+            "fontFamily": "Maker",
+            "fontWeight": "w800",
+            "color": "#1F1F1F",
+            "letterSpacing": 0.2,
+            "height": 1.08
+          }
+        },
+        {
+          "id": "title2",
+          "type": "text",
+          "x": 0.505,
+          "y": 0.108,
+          "w": 0.35,
+          "h": 0.082,
+          "text": "DUMP",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 22.6,
+            "fontFamily": "Maker",
+            "fontWeight": "w800",
+            "color": "#1F1F1F",
+            "letterSpacing": 0.25,
+            "height": 1.08
+          }
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.096,
+          "y": 0.232,
+          "w": 0.425,
+          "h": 0.29,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.542,
+          "y": 0.305,
+          "w": 0.334,
+          "h": 0.191,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.096,
+          "y": 0.604,
+          "w": 0.405,
+          "h": 0.225,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.575,
+          "w": 0.358,
+          "h": 0.212,
+          "frame": "tornPaperCard",
+          "rotation": -5,
+          "z": 10
+        },
+        {
+          "id": "note",
+          "type": "text",
+          "x": 0.545,
+          "y": 0.502,
+          "w": 0.312,
+          "h": 0.145,
+          "text": "Please add a short\ndescription about the topic.",
+          "align": "left",
+          "z": 20,
+          "style": {
+            "fontSize": 7.2,
+            "fontFamily": "Cormorant",
+            "color": "#555555",
+            "height": 1.25,
+            "letterSpacing": 0.1
+          }
+        },
+        {
+          "id": "s1",
+          "type": "decoration",
+          "x": 0.675,
+          "y": 0.06,
+          "w": 0.126,
+          "h": 0.102,
+          "style": "stickerBlueStar",
+          "z": 40
+        },
+        {
+          "id": "s2",
+          "type": "decoration",
+          "x": 0.681,
+          "y": 0.736,
+          "w": 0.126,
+          "h": 0.102,
+          "style": "stickerBlueStar",
+          "z": 40
+        },
+        {
+          "id": "s3",
+          "type": "decoration",
+          "x": 0.791,
+          "y": 0.791,
+          "w": 0.068,
+          "h": 0.058,
+          "style": "stickerBlueStarSmall",
+          "z": 40
+        },
+        {
+          "id": "s4",
+          "type": "decoration",
+          "x": 0.83,
+          "y": 0.752,
+          "w": 0.045,
+          "h": 0.04,
+          "style": "stickerBlueStarSmall",
+          "z": 40
+        },
+        {
+          "id": "s5",
+          "type": "decoration",
+          "x": 0.79,
+          "y": 0.121,
+          "w": 0.038,
+          "h": 0.034,
+          "style": "stickerBlueStarSmall",
+          "z": 40
+        }
+      ]
+    },
+    {
+      "id": "data_ref_paper_note_001",
+      "name": "레퍼런스 페이퍼노트",
+      "category": "감성",
+      "tags": [
+        "갈색노트",
+        "클립",
+        "한국어"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.985
+        },
+        "landscape": {
+          "scale": 0.845,
+          "offsetY": 0.052
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBrownLined",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.102,
+          "y": 0.134,
+          "w": 0.794,
+          "h": 0.49,
+          "frame": "paperClipCard",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.205,
+              "y": 0.12,
+              "w": 0.59,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "id": "clip",
+          "type": "decoration",
+          "x": 0.735,
+          "y": 0.145,
+          "w": 0.082,
+          "h": 0.083,
+          "style": "stickerPaperClip",
+          "z": 24
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.16,
+          "y": 0.66,
+          "w": 0.68,
+          "h": 0.115,
+          "text": "매 순간이 특별한\n당신의 일상",
+          "z": 20,
+          "style": {
+            "fontSize": 14.8,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w500",
+            "color": "#FFFFFF",
+            "height": 1.2,
+            "letterSpacing": 0.2
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_miricar_001",
+      "name": "레퍼런스 미리카",
+      "category": "시네마",
+      "tags": [
+        "미리카",
+        "폴라로이드",
+        "다크"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.99,
+          "offsetY": 0.0
+        },
+        "landscape": {
+          "scale": 0.81,
+          "offsetY": 0.072
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "darkVignette",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.175,
+          "y": 0.138,
+          "w": 0.65,
+          "h": 0.63,
+          "frame": "posterPolaroid",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.255,
+              "y": 0.09,
+              "w": 0.49,
+              "h": 0.74
+            }
+          }
+        },
+        {
+          "id": "caption",
+          "type": "text",
+          "x": 0.25,
+          "y": 0.62,
+          "w": 0.5,
+          "h": 0.102,
+          "text": "오늘의 선택이 내일의 웃음을 만듭니다.\n당신의 선택을 응원합니다.",
+          "z": 20,
+          "style": {
+            "fontSize": 9.5,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w500",
+            "color": "#111111",
+            "height": 1.34,
+            "letterSpacing": 0.05
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_travel_tape_001",
+      "name": "레퍼런스 트래블테이프",
+      "category": "여행",
+      "tags": [
+        "여행",
+        "테이프",
+        "찢김",
+        "꽃"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.86,
+          "offsetY": 0.04
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWarm",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.182,
+          "y": 0.145,
+          "w": 0.636,
+          "h": 0.552,
+          "frame": "paperTapeCard",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.23,
+              "y": 0.11,
+              "w": 0.54,
+              "h": 0.66
+            }
+          }
+        },
+        {
+          "id": "flower",
+          "type": "decoration",
+          "x": 0.7,
+          "y": 0.485,
+          "w": 0.12,
+          "h": 0.15,
+          "style": "stickerDaisyWhite",
+          "z": 20
+        },
+        {
+          "id": "tape2",
+          "type": "decoration",
+          "x": 0.645,
+          "y": 0.565,
+          "w": 0.15,
+          "h": 0.05,
+          "style": "stickerTapeBeige",
+          "z": 20
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.22,
+          "y": 0.708,
+          "w": 0.56,
+          "h": 0.118,
+          "text": "두근 두근\n바캉스 가자",
+          "z": 20,
+          "style": {
+            "fontSize": 15.2,
+            "fontFamily": "Yeongwol",
+            "fontWeight": "w700",
+            "color": "#FDFDFD",
+            "height": 1.18,
+            "letterSpacing": 0.2
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_seasons_001",
+      "name": "레퍼런스 시즌즈",
+      "category": "포스터",
+      "tags": [
+        "시즌",
+        "옐로우",
+        "타이포",
+        "미니멀"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 1.0
+        },
+        "landscape": {
+          "scale": 0.88,
+          "offsetY": 0.04
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperYellow",
+          "z": 0
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.11,
+          "y": 0.072,
+          "w": 0.78,
+          "h": 0.098,
+          "text": "SEASONS OF 2026",
+          "z": 20,
+          "style": {
+            "fontSize": 15.8,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w500",
+            "color": "#303030",
+            "letterSpacing": 0.86
+          }
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.205,
+          "y": 0.205,
+          "w": 0.59,
+          "h": 0.5,
+          "frame": "collageTile",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.29,
+              "y": 0.18,
+              "w": 0.42,
+              "h": 0.56
+            }
+          }
+        },
+        {
+          "id": "footer",
+          "type": "text",
+          "x": 0.11,
+          "y": 0.722,
+          "w": 0.78,
+          "h": 0.225,
+          "text": "TWELVE STORIES, ONE YEAR\n\nTHROUGH WINDING ROADS AND SHIFTING SKIES,\nWE RETURN TO OURSELVES. EACH JOURNEY CARRIES THE HUES OF THE SEASON,\nAND EVERY PAUSE INVITES US TO BREATHE IN THE STILL BEAUTY OF NOW.",
+          "z": 20,
+          "style": {
+            "fontSize": 7.15,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w500",
+            "color": "#4D4D4D",
+            "height": 1.28
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_kids_life_001",
+      "name": "레퍼런스 키즈라이프",
+      "category": "키즈",
+      "tags": [
+        "가족",
+        "폴라로이드",
+        "브라운",
+        "꽃"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.83,
+          "offsetY": 0.06
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBrownPlain",
+          "z": 0
+        },
+        {
+          "id": "strip",
+          "type": "text",
+          "x": 0.04,
+          "y": 0.022,
+          "w": 0.92,
+          "h": 0.065,
+          "text": "little moments, big smiles",
+          "textBackground": "tapeYellow",
+          "z": 18,
+          "style": {
+            "fontSize": 8.6,
+            "fontFamily": "Cormorant",
+            "color": "#6C4D32",
+            "letterSpacing": 0.42,
+            "height": 1.08
+          }
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.295,
+          "y": 0.375,
+          "w": 0.4,
+          "h": 0.118,
+          "text": "My Kids,\nMy Life.",
+          "z": 20,
+          "style": {
+            "fontSize": 18.4,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#2F1F12",
+            "height": 0.92,
+            "letterSpacing": 0.05
+          }
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.08,
+          "w": 0.31,
+          "h": 0.29,
+          "frame": "photoCard",
+          "rotation": -5,
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.36,
+          "y": 0.08,
+          "w": 0.29,
+          "h": 0.29,
+          "frame": "photoCard",
+          "rotation": -2,
+          "z": 11
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.08,
+          "w": 0.3,
+          "h": 0.3,
+          "frame": "photoCard",
+          "rotation": 6,
+          "z": 12
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.7,
+          "y": 0.33,
+          "w": 0.28,
+          "h": 0.17,
+          "frame": "photoCard",
+          "rotation": 11,
+          "z": 12
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.6,
+          "w": 0.34,
+          "h": 0.28,
+          "frame": "photoCard",
+          "rotation": -4,
+          "z": 13
+        },
+        {
+          "id": "f",
+          "type": "image",
+          "x": 0.45,
+          "y": 0.6,
+          "w": 0.3,
+          "h": 0.24,
+          "frame": "photoCard",
+          "z": 13
+        },
+        {
+          "id": "g",
+          "type": "image",
+          "x": 0.76,
+          "y": 0.61,
+          "w": 0.2,
+          "h": 0.24,
+          "frame": "photoCard",
+          "rotation": 3,
+          "z": 13
+        },
+        {
+          "id": "note",
+          "type": "text",
+          "x": 0.155,
+          "y": 0.522,
+          "w": 0.35,
+          "h": 0.082,
+          "text": "Lorem ipsum dolor sit amet\nconsectetur adipiscing elit.",
+          "textBackground": "noteTornBeige",
+          "align": "left",
+          "z": 24,
+          "style": {
+            "fontSize": 6.9,
+            "fontFamily": "Cormorant",
+            "color": "#5E4B3A",
+            "height": 1.14
+          }
+        },
+        {
+          "id": "flower",
+          "type": "decoration",
+          "x": 0.468,
+          "y": 0.842,
+          "w": 0.092,
+          "h": 0.092,
+          "style": "stickerFlowerPink",
+          "z": 24
+        },
+        {
+          "id": "leaf",
+          "type": "text",
+          "x": 0.56,
+          "y": 0.84,
+          "w": 0.08,
+          "h": 0.09,
+          "text": "❧",
+          "z": 24,
+          "style": {
+            "fontSize": 19,
+            "color": "#78A05A",
+            "height": 1.08
+          }
+        },
+        {
+          "id": "snippet",
+          "type": "decoration",
+          "x": 0.84,
+          "y": 0.84,
+          "w": 0.13,
+          "h": 0.09,
+          "style": "stickerTornNoteBeige",
+          "rotation": -12,
+          "z": 24
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.009
+    },
+    {
+      "id": "data_ref_olivia_single_001",
+      "name": "레퍼런스 올리비아 싱글",
+      "category": "포스터",
+      "tags": [
+        "필름",
+        "앨범",
+        "빈티지",
+        "타이포"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.995
+        },
+        "landscape": {
+          "scale": 0.85,
+          "offsetY": 0.042
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBeige",
+          "z": 0
+        },
+        {
+          "id": "time",
+          "type": "text",
+          "x": 0.205,
+          "y": 0.042,
+          "w": 0.59,
+          "h": 0.05,
+          "text": "03.24.20XX PM 4:00",
+          "z": 20,
+          "style": {
+            "fontSize": 8.0,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#B65B4A",
+            "letterSpacing": 1.15,
+            "height": 1.0
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.23,
+              "y": 0.04,
+              "w": 0.54,
+              "h": 0.042
+            }
+          }
+        },
+        {
+          "id": "header",
+          "type": "text",
+          "x": 0.088,
+          "y": 0.096,
+          "w": 0.824,
+          "h": 0.062,
+          "text": "OLIVIA WHITE / THE FIRST SINGLE ALBUM",
+          "z": 20,
+          "style": {
+            "fontSize": 8.5,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#B14F42",
+            "letterSpacing": 1.55,
+            "height": 1.0
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.16,
+              "y": 0.082,
+              "w": 0.68,
+              "h": 0.048,
+              "style": {
+                "fontSize": 7.2,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w600",
+                "color": "#B14F42",
+                "letterSpacing": 1.2,
+                "height": 1.0
+              }
+            }
+          }
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.172,
+          "y": 0.188,
+          "w": 0.656,
+          "h": 0.514,
+          "frame": "filmSquare",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.275,
+              "y": 0.16,
+              "w": 0.45,
+              "h": 0.64
+            }
+          }
+        },
+        {
+          "id": "single",
+          "type": "text",
+          "x": 0.36,
+          "y": 0.536,
+          "w": 0.28,
+          "h": 0.04,
+          "text": "1ST SINGLE ALBUM",
+          "z": 24,
+          "style": {
+            "fontSize": 7.6,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#ECECEC",
+            "letterSpacing": 1.0,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.395,
+              "y": 0.542,
+              "w": 0.21,
+              "h": 0.036,
+              "style": {
+                "fontSize": 6.4,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w600",
+                "color": "#ECECEC",
+                "letterSpacing": 0.9,
+                "height": 1.06
+              }
+            }
+          }
+        },
+        {
+          "id": "script",
+          "type": "text",
+          "x": 0.318,
+          "y": 0.648,
+          "w": 0.37,
+          "h": 0.05,
+          "text": "twenty one",
+          "z": 24,
+          "style": {
+            "fontSize": 12.2,
+            "fontFamily": "Run",
+            "fontWeight": "w700",
+            "color": "#B45A4E",
+            "letterSpacing": 0.35,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.402,
+              "y": 0.65,
+              "w": 0.2,
+              "h": 0.042,
+              "style": {
+                "fontSize": 9.6,
+                "fontFamily": "Run",
+                "fontWeight": "w700",
+                "color": "#B45A4E",
+                "letterSpacing": 0.22,
+                "height": 1.04
+              }
+            }
+          }
+        },
+        {
+          "id": "left_v",
+          "type": "text",
+          "x": 0.032,
+          "y": 0.29,
+          "w": 0.082,
+          "h": 0.37,
+          "text": "N E W   W O R L D   L O V E   S T O R Y",
+          "rotation": -90,
+          "z": 20,
+          "style": {
+            "fontSize": 7.2,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#363636",
+            "letterSpacing": 0.72,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.19,
+              "y": 0.275,
+              "w": 0.052,
+              "h": 0.44,
+              "style": {
+                "fontSize": 6.2,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w600",
+                "color": "#363636",
+                "letterSpacing": 0.45,
+                "height": 1.04
+              }
+            }
+          }
+        },
+        {
+          "id": "right_v",
+          "type": "text",
+          "x": 0.886,
+          "y": 0.29,
+          "w": 0.082,
+          "h": 0.37,
+          "text": "N E W   W O R L D   L O V E   S T O R Y",
+          "rotation": 90,
+          "z": 20,
+          "style": {
+            "fontSize": 7.2,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#363636",
+            "letterSpacing": 0.72,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.758,
+              "y": 0.275,
+              "w": 0.052,
+              "h": 0.44,
+              "style": {
+                "fontSize": 6.2,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w600",
+                "color": "#363636",
+                "letterSpacing": 0.45,
+                "height": 1.04
+              }
+            }
+          }
+        },
+        {
+          "id": "track",
+          "type": "text",
+          "x": 0.337,
+          "y": 0.757,
+          "w": 0.326,
+          "h": 0.045,
+          "text": "TRACK LIST",
+          "z": 20,
+          "style": {
+            "fontSize": 11.6,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w700",
+            "color": "#B14F42",
+            "letterSpacing": 1.55,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.405,
+              "y": 0.768,
+              "w": 0.19,
+              "h": 0.04,
+              "style": {
+                "fontSize": 9.1,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w700",
+                "color": "#B14F42",
+                "letterSpacing": 1.05,
+                "height": 1.06
+              }
+            }
+          }
+        },
+        {
+          "id": "list",
+          "type": "text",
+          "x": 0.108,
+          "y": 0.815,
+          "w": 0.784,
+          "h": 0.1,
+          "text": "1. TWENTY-ONE  2. YOU DON'T KNOW  3. SUMMER DANCE\n4. HEAR THE MIND  5. LOVE FOR ME  6. AND END",
+          "z": 20,
+          "style": {
+            "fontSize": 6.85,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#B14F42",
+            "letterSpacing": 0.42,
+            "height": 1.35
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.27,
+              "y": 0.81,
+              "w": 0.46,
+              "h": 0.09,
+              "style": {
+                "fontSize": 5.7,
+                "fontFamily": "Cormorant",
+                "fontWeight": "w600",
+                "color": "#B14F42",
+                "letterSpacing": 0.28,
+                "height": 1.25
+              }
+            }
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_new_post_001",
+      "name": "레퍼런스 뉴포스트",
+      "category": "포스터",
+      "tags": [
+        "매거진",
+        "타이포",
+        "블랍",
+        "심플"
+      ],
+      "aspect": "any",
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.845,
+          "offsetY": 0.052
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.075,
+          "y": -0.002,
+          "w": 0.85,
+          "h": 0.23,
+          "text": "NEW\nPOST",
+          "align": "left",
+          "z": 25,
+          "style": {
+            "fontSize": 64,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#CE3D2D",
+            "letterSpacing": -0.05,
+            "height": 0.74
+          },
+          "aspectOverrides": {
+            "square": {
+              "style": {
+                "fontSize": 58,
+                "fontFamily": "BookMyungjo",
+                "fontWeight": "w800",
+                "color": "#CE3D2D",
+                "letterSpacing": -0.05,
+                "height": 0.74
+              }
+            },
+            "landscape": {
+              "style": {
+                "fontSize": 42,
+                "fontFamily": "BookMyungjo",
+                "fontWeight": "w800",
+                "color": "#CE3D2D",
+                "letterSpacing": -0.05,
+                "height": 0.74
+              },
+              "x": 0.145,
+              "w": 0.71,
+              "y": 0.004
+            }
+          }
+        },
+        {
+          "id": "portrait",
+          "type": "image",
+          "x": 0.198,
+          "y": 0.3,
+          "w": 0.604,
+          "h": 0.33,
+          "frame": "blob",
+          "z": 10,
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.3,
+              "y": 0.29,
+              "w": 0.4,
+              "h": 0.42
+            }
+          }
+        },
+        {
+          "id": "footer1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.855,
+          "w": 0.25,
+          "h": 0.05,
+          "text": "welcome to my blog",
+          "align": "left",
+          "z": 20,
+          "style": {
+            "fontSize": 8.2,
+            "fontFamily": "Raleway",
+            "fontWeight": "w600",
+            "color": "#CE3D2D",
+            "letterSpacing": 0.24,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.09,
+              "y": 0.848,
+              "w": 0.23,
+              "h": 0.045
+            }
+          }
+        },
+        {
+          "id": "footer2",
+          "type": "text",
+          "x": 0.355,
+          "y": 0.855,
+          "w": 0.25,
+          "h": 0.05,
+          "text": "aesthetics",
+          "align": "center",
+          "z": 20,
+          "style": {
+            "fontSize": 8.2,
+            "fontFamily": "Raleway",
+            "fontWeight": "w600",
+            "color": "#CE3D2D",
+            "letterSpacing": 0.24,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.37,
+              "y": 0.848,
+              "w": 0.22,
+              "h": 0.045
+            }
+          }
+        },
+        {
+          "id": "footer3",
+          "type": "text",
+          "x": 0.62,
+          "y": 0.855,
+          "w": 0.31,
+          "h": 0.05,
+          "text": "style inspiration",
+          "align": "right",
+          "z": 20,
+          "style": {
+            "fontSize": 8.0,
+            "fontFamily": "Raleway",
+            "fontWeight": "w600",
+            "color": "#CE3D2D",
+            "letterSpacing": 0.2,
+            "height": 1.08
+          },
+          "aspectOverrides": {
+            "landscape": {
+              "x": 0.61,
+              "y": 0.848,
+              "w": 0.3,
+              "h": 0.045
+            }
+          }
+        }
+      ],
+      "autoFit": true,
+      "autoFitPadding": 0.012
+    },
+    {
+      "id": "data_ref_memory_board_001",
+      "name": "레퍼런스 메모리보드",
+      "category": "콜라주",
+      "tags": [
+        "콜라주",
+        "스크랩",
+        "메모",
+        "테이프"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.84,
+          "offsetY": 0.05
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperBrownPlain",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.08,
+          "w": 0.28,
+          "h": 0.3,
+          "frame": "maskingTapeFrame",
+          "rotation": -4,
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.36,
+          "y": 0.07,
+          "w": 0.28,
+          "h": 0.3,
+          "frame": "photoCard",
+          "rotation": 3,
+          "z": 11
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.08,
+          "w": 0.28,
+          "h": 0.3,
+          "frame": "maskingTapeFrame",
+          "rotation": 5,
+          "z": 12
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.22,
+          "y": 0.4,
+          "w": 0.56,
+          "h": 0.13,
+          "text": "My memory,\nmy little world",
+          "z": 20,
+          "style": {
+            "fontSize": 18.5,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#2D2218",
+            "height": 0.92
+          }
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.57,
+          "w": 0.32,
+          "h": 0.26,
+          "frame": "softPaperCard",
+          "rotation": -4,
+          "z": 13
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.44,
+          "y": 0.57,
+          "w": 0.26,
+          "h": 0.22,
+          "frame": "photoCard",
+          "z": 13
+        },
+        {
+          "id": "f",
+          "type": "image",
+          "x": 0.72,
+          "y": 0.58,
+          "w": 0.2,
+          "h": 0.22,
+          "frame": "photoCard",
+          "rotation": 4,
+          "z": 13
+        },
+        {
+          "id": "note",
+          "type": "decoration",
+          "x": 0.18,
+          "y": 0.5,
+          "w": 0.24,
+          "h": 0.09,
+          "style": "stickerTornNoteBeige",
+          "rotation": -11,
+          "z": 22
+        },
+        {
+          "id": "flower",
+          "type": "decoration",
+          "x": 0.5,
+          "y": 0.8,
+          "w": 0.1,
+          "h": 0.09,
+          "style": "stickerFlowerPink",
+          "z": 24
+        },
+        {
+          "id": "leaf",
+          "type": "decoration",
+          "x": 0.6,
+          "y": 0.81,
+          "w": 0.08,
+          "h": 0.08,
+          "style": "stickerLeafGreen",
+          "z": 24
+        }
+      ]
+    },
+    {
+      "id": "data_ref_soft_poster_001",
+      "name": "레퍼런스 소프트포스터",
+      "category": "포스터",
+      "tags": [
+        "포스터",
+        "미니멀",
+        "무드",
+        "감성"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.86,
+          "offsetY": 0.04
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWarm",
+          "z": 0
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.18,
+          "y": 0.09,
+          "w": 0.64,
+          "h": 0.11,
+          "text": "SEASONS NOTE",
+          "z": 20,
+          "style": {
+            "fontSize": 17.5,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w600",
+            "color": "#353535",
+            "letterSpacing": 0.9
+          }
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.19,
+          "y": 0.22,
+          "w": 0.62,
+          "h": 0.5,
+          "frame": "softPaperCard",
+          "z": 10
+        },
+        {
+          "id": "sub",
+          "type": "text",
+          "x": 0.22,
+          "y": 0.76,
+          "w": 0.56,
+          "h": 0.1,
+          "text": "today is beautiful",
+          "z": 20,
+          "style": {
+            "fontSize": 13.2,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#5A4A38",
+            "letterSpacing": 0.6
+          }
+        },
+        {
+          "id": "body",
+          "type": "text",
+          "x": 0.18,
+          "y": 0.84,
+          "w": 0.64,
+          "h": 0.11,
+          "text": "small stories make\nour days bright.",
+          "z": 20,
+          "style": {
+            "fontSize": 8.4,
+            "fontFamily": "Cormorant",
+            "color": "#6E6255",
+            "height": 1.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_ref_film_grid_001",
+      "name": "레퍼런스 필름그리드",
+      "category": "시네마",
+      "tags": [
+        "필름",
+        "그리드",
+        "포스터",
+        "다크"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": {
+          "scale": 0.98
+        },
+        "landscape": {
+          "scale": 0.86,
+          "offsetY": 0.05
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "darkVignette",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.14,
+          "w": 0.36,
+          "h": 0.28,
+          "frame": "filmSquare",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.14,
+          "w": 0.36,
+          "h": 0.28,
+          "frame": "filmSquare",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.45,
+          "w": 0.36,
+          "h": 0.28,
+          "frame": "filmSquare",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.45,
+          "w": 0.36,
+          "h": 0.28,
+          "frame": "filmSquare",
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.2,
+          "y": 0.03,
+          "w": 0.6,
+          "h": 0.08,
+          "text": "MIDNIGHT FRAME",
+          "z": 20,
+          "style": {
+            "fontSize": 12.8,
+            "fontFamily": "Raleway",
+            "fontWeight": "w800",
+            "color": "#ECECEC",
+            "letterSpacing": 1.5
+          }
+        },
+        {
+          "id": "footer",
+          "type": "text",
+          "x": 0.24,
+          "y": 0.84,
+          "w": 0.52,
+          "h": 0.08,
+          "text": "our favorite cuts",
+          "z": 20,
+          "style": {
+            "fontSize": 10.4,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w600",
+            "color": "#F3F3F3",
+            "letterSpacing": 0.8
+          }
+        },
+        {
+          "id": "spark",
+          "type": "decoration",
+          "x": 0.78,
+          "y": 0.8,
+          "w": 0.09,
+          "h": 0.08,
+          "style": "stickerSparkleBlue",
+          "z": 25
+        }
+      ]
+    },
+    {
+      "id": "data_ref_clean_scrap_001",
+      "name": "레퍼런스 클린스크랩",
+      "category": "감성",
+      "tags": [
+        "스크랩",
+        "클린",
+        "테이프",
+        "노트"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.011,
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.87,
+          "offsetY": 0.04
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "main",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.16,
+          "w": 0.76,
+          "h": 0.42,
+          "frame": "maskingTapeFrame",
+          "z": 10
+        },
+        {
+          "id": "caption",
+          "type": "text",
+          "x": 0.16,
+          "y": 0.61,
+          "w": 0.68,
+          "h": 0.11,
+          "text": "오늘의 한 장",
+          "z": 20,
+          "style": {
+            "fontSize": 16.2,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w600",
+            "color": "#303030"
+          }
+        },
+        {
+          "id": "left",
+          "type": "image",
+          "x": 0.14,
+          "y": 0.74,
+          "w": 0.33,
+          "h": 0.21,
+          "frame": "softPaperCard",
+          "rotation": -4,
+          "z": 11
+        },
+        {
+          "id": "right",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.74,
+          "w": 0.33,
+          "h": 0.21,
+          "frame": "roughPolaroid",
+          "rotation": 4,
+          "z": 11
+        },
+        {
+          "id": "heart",
+          "type": "decoration",
+          "x": 0.78,
+          "y": 0.11,
+          "w": 0.08,
+          "h": 0.07,
+          "style": "stickerHeartRed",
+          "z": 22
+        },
+        {
+          "id": "bow",
+          "type": "decoration",
+          "x": 0.17,
+          "y": 0.1,
+          "w": 0.08,
+          "h": 0.07,
+          "style": "stickerBowPink",
+          "z": 22
+        }
+      ]
+    },
+    {
+      "id": "data_ref_daily_board_001",
+      "name": "레퍼런스 데일리보드",
+      "category": "앨범",
+      "tags": [
+        "데일리",
+        "보드",
+        "폴라로이드",
+        "스티커"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.011,
+      "variants": {
+        "square": {
+          "scale": 0.99
+        },
+        "landscape": {
+          "scale": 0.86,
+          "offsetY": 0.045
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWarm",
+          "z": 0
+        },
+        {
+          "id": "p1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.1,
+          "w": 0.36,
+          "h": 0.3,
+          "frame": "roughPolaroid",
+          "rotation": -4,
+          "z": 10
+        },
+        {
+          "id": "p2",
+          "type": "image",
+          "x": 0.56,
+          "y": 0.1,
+          "w": 0.36,
+          "h": 0.3,
+          "frame": "maskingTapeFrame",
+          "rotation": 4,
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.22,
+          "y": 0.44,
+          "w": 0.56,
+          "h": 0.1,
+          "text": "my daily\nalbum board",
+          "z": 20,
+          "style": {
+            "fontSize": 18.0,
+            "fontFamily": "BookMyungjo",
+            "fontWeight": "w800",
+            "color": "#33261A",
+            "height": 0.95,
+            "letterSpacing": 0.05
+          }
+        },
+        {
+          "id": "p3",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.58,
+          "w": 0.3,
+          "h": 0.23,
+          "frame": "softPaperCard",
+          "rotation": -2,
+          "z": 11
+        },
+        {
+          "id": "p4",
+          "type": "image",
+          "x": 0.46,
+          "y": 0.58,
+          "w": 0.24,
+          "h": 0.2,
+          "frame": "photoCard",
+          "z": 11
+        },
+        {
+          "id": "p5",
+          "type": "image",
+          "x": 0.72,
+          "y": 0.58,
+          "w": 0.18,
+          "h": 0.22,
+          "frame": "photoCard",
+          "rotation": 3,
+          "z": 11
+        },
+        {
+          "id": "heart",
+          "type": "decoration",
+          "x": 0.83,
+          "y": 0.09,
+          "w": 0.08,
+          "h": 0.07,
+          "style": "stickerHeartRed",
+          "z": 24
+        },
+        {
+          "id": "spark",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.52,
+          "w": 0.08,
+          "h": 0.07,
+          "style": "stickerSparkleBlue",
+          "z": 24
+        },
+        {
+          "id": "memo",
+          "type": "decoration",
+          "x": 0.69,
+          "y": 0.8,
+          "w": 0.2,
+          "h": 0.09,
+          "style": "stickerTornNoteBeige",
+          "rotation": -10,
+          "z": 23
+        }
+      ]
+    },
+    {
+      "id": "data_ref_love_mosaic_001",
+      "name": "레퍼런스 러브 모자이크",
+      "category": "웨딩",
+      "tags": [
+        "러브",
+        "모자이크",
+        "타이포",
+        "웨딩"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.007,
+      "variants": {
+        "square": {
+          "scale": 0.996,
+          "offsetY": 0.002
+        },
+        "landscape": {
+          "scale": 0.86,
+          "offsetY": 0.048
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "a",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.03,
+          "w": 0.42,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "b",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.03,
+          "w": 0.42,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "c",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.27,
+          "w": 0.35,
+          "h": 0.21,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "d",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.27,
+          "w": 0.35,
+          "h": 0.21,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "e",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.53,
+          "w": 0.42,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "f",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.53,
+          "w": 0.42,
+          "h": 0.19,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "g",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.77,
+          "w": 0.42,
+          "h": 0.2,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "h",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.77,
+          "w": 0.42,
+          "h": 0.2,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "l",
+          "type": "text",
+          "x": 0.41,
+          "y": 0.225,
+          "w": 0.18,
+          "h": 0.2,
+          "text": "L",
+          "z": 30,
+          "style": {
+            "fontSize": 95,
+            "fontFamily": "Raleway",
+            "fontWeight": "w800",
+            "color": "#F5F5F5",
+            "letterSpacing": -1.2
+          }
+        },
+        {
+          "id": "o",
+          "type": "text",
+          "x": 0.41,
+          "y": 0.35,
+          "w": 0.18,
+          "h": 0.2,
+          "text": "O",
+          "z": 30,
+          "style": {
+            "fontSize": 97,
+            "fontFamily": "Raleway",
+            "fontWeight": "w800",
+            "color": "#F5F5F5",
+            "letterSpacing": -1.2
+          }
+        },
+        {
+          "id": "v",
+          "type": "text",
+          "x": 0.41,
+          "y": 0.56,
+          "w": 0.18,
+          "h": 0.2,
+          "text": "V",
+          "z": 30,
+          "style": {
+            "fontSize": 95,
+            "fontFamily": "Raleway",
+            "fontWeight": "w800",
+            "color": "#F5F5F5",
+            "letterSpacing": -1.2
+          }
+        },
+        {
+          "id": "e_txt",
+          "type": "text",
+          "x": 0.41,
+          "y": 0.77,
+          "w": 0.18,
+          "h": 0.2,
+          "text": "E",
+          "z": 30,
+          "style": {
+            "fontSize": 94,
+            "fontFamily": "Raleway",
+            "fontWeight": "w800",
+            "color": "#F5F5F5",
+            "letterSpacing": -1.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_ref_color_doodle_001",
+      "name": "레퍼런스 컬러 두들",
+      "category": "감성",
+      "tags": [
+        "컬러",
+        "두들",
+        "스티커",
+        "콜라주"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": {
+          "scale": 0.994
+        },
+        "landscape": {
+          "scale": 0.842,
+          "offsetY": 0.054
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "p1",
+          "type": "image",
+          "x": 0.14,
+          "y": 0.12,
+          "w": 0.31,
+          "h": 0.19,
+          "frame": "polaroidClassic",
+          "rotation": -4,
+          "z": 10
+        },
+        {
+          "id": "p2",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.12,
+          "w": 0.35,
+          "h": 0.19,
+          "frame": "polaroidClassic",
+          "rotation": 3,
+          "z": 10
+        },
+        {
+          "id": "p3",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.33,
+          "w": 0.31,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "rotation": 1,
+          "z": 10
+        },
+        {
+          "id": "p4",
+          "type": "image",
+          "x": 0.44,
+          "y": 0.33,
+          "w": 0.21,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "z": 10
+        },
+        {
+          "id": "p5",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.33,
+          "w": 0.23,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "rotation": -2,
+          "z": 10
+        },
+        {
+          "id": "p6",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.56,
+          "w": 0.3,
+          "h": 0.21,
+          "frame": "polaroidClassic",
+          "rotation": -3,
+          "z": 10
+        },
+        {
+          "id": "p7",
+          "type": "image",
+          "x": 0.42,
+          "y": 0.56,
+          "w": 0.24,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "z": 10
+        },
+        {
+          "id": "p8",
+          "type": "image",
+          "x": 0.6,
+          "y": 0.68,
+          "w": 0.31,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "rotation": 4,
+          "z": 10
+        },
+        {
+          "id": "t_goals",
+          "type": "text",
+          "x": 0.715,
+          "y": 0.082,
+          "w": 0.175,
+          "h": 0.05,
+          "text": "goals!",
+          "z": 35,
+          "style": {
+            "fontSize": 11.9,
+            "fontFamily": "Poppins",
+            "fontWeight": "w700",
+            "color": "#8656D4"
+          }
+        },
+        {
+          "id": "t_habits",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.452,
+          "w": 0.18,
+          "h": 0.05,
+          "text": "habits",
+          "textBackground": "labelSolidLavender",
+          "z": 35,
+          "style": {
+            "fontSize": 10.3,
+            "fontFamily": "Poppins",
+            "fontWeight": "w700",
+            "color": "#F6EEFF"
+          }
+        },
+        {
+          "id": "t_amazing",
+          "type": "text",
+          "x": 0.438,
+          "y": 0.652,
+          "w": 0.225,
+          "h": 0.05,
+          "text": "amazing!",
+          "textBackground": "labelSolidPink",
+          "rotation": -6,
+          "z": 35,
+          "style": {
+            "fontSize": 10.4,
+            "fontFamily": "Poppins",
+            "fontWeight": "w700",
+            "color": "#FFEAFE"
+          }
+        },
+        {
+          "id": "t_day",
+          "type": "text",
+          "x": 0.556,
+          "y": 0.863,
+          "w": 0.29,
+          "h": 0.08,
+          "text": "One day\nat a time.",
+          "z": 35,
+          "style": {
+            "fontSize": 12.5,
+            "fontFamily": "Run",
+            "fontWeight": "w700",
+            "color": "#EC58A2",
+            "height": 0.95
+          }
+        },
+        {
+          "id": "d1",
+          "type": "decoration",
+          "x": 0.018,
+          "y": 0.02,
+          "w": 0.12,
+          "h": 0.08,
+          "style": "stickerBrushPink",
+          "rotation": -14,
+          "z": 40
+        },
+        {
+          "id": "d2",
+          "type": "decoration",
+          "x": 0.28,
+          "y": 0.056,
+          "w": 0.17,
+          "h": 0.08,
+          "style": "stickerBlobGreen",
+          "rotation": 5,
+          "z": 40
+        },
+        {
+          "id": "d3",
+          "type": "decoration",
+          "x": 0.77,
+          "y": 0.02,
+          "w": 0.14,
+          "h": 0.08,
+          "style": "stickerArrowCoral",
+          "rotation": 10,
+          "z": 40
+        },
+        {
+          "id": "d4",
+          "type": "decoration",
+          "x": 0.03,
+          "y": 0.86,
+          "w": 0.16,
+          "h": 0.08,
+          "style": "stickerBlobGreen",
+          "rotation": -8,
+          "z": 40
+        },
+        {
+          "id": "d5",
+          "type": "decoration",
+          "x": 0.247,
+          "y": 0.234,
+          "w": 0.145,
+          "h": 0.1,
+          "style": "stickerScribbleBlue",
+          "rotation": -6,
+          "z": 40
+        },
+        {
+          "id": "d6",
+          "type": "decoration",
+          "x": 0.79,
+          "y": 0.86,
+          "w": 0.12,
+          "h": 0.08,
+          "style": "stickerBrushPink",
+          "rotation": 17,
+          "z": 40
+        },
+        {
+          "id": "d7",
+          "type": "decoration",
+          "x": 0.448,
+          "y": 0.25,
+          "w": 0.11,
+          "h": 0.08,
+          "style": "stickerHeartRed",
+          "z": 40
+        }
+      ]
+    },
+    {
+      "id": "data_ref_inner_rhythm_001",
+      "name": "레퍼런스 이너리듬",
+      "category": "매거진",
+      "tags": [
+        "포스터",
+        "뮤직",
+        "테이프",
+        "콜라주"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": {
+          "scale": 0.995
+        },
+        "landscape": {
+          "scale": 0.845,
+          "offsetY": 0.056
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperGray",
+          "z": 0
+        },
+        {
+          "id": "p1",
+          "type": "image",
+          "x": 0.18,
+          "y": 0.2,
+          "w": 0.28,
+          "h": 0.2,
+          "frame": "polaroidClassic",
+          "rotation": -6,
+          "z": 10
+        },
+        {
+          "id": "p2",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.11,
+          "w": 0.3,
+          "h": 0.21,
+          "frame": "photoCard",
+          "z": 10
+        },
+        {
+          "id": "p3",
+          "type": "image",
+          "x": 0.19,
+          "y": 0.45,
+          "w": 0.28,
+          "h": 0.2,
+          "frame": "photoCard",
+          "z": 10
+        },
+        {
+          "id": "p4",
+          "type": "image",
+          "x": 0.57,
+          "y": 0.45,
+          "w": 0.27,
+          "h": 0.27,
+          "frame": "polaroidClassic",
+          "rotation": 4,
+          "z": 10
+        },
+        {
+          "id": "p5",
+          "type": "image",
+          "x": 0.21,
+          "y": 0.67,
+          "w": 0.31,
+          "h": 0.2,
+          "frame": "tornPaperCard",
+          "rotation": -4,
+          "z": 10
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.315,
+          "y": 0.26,
+          "w": 0.43,
+          "h": 0.3,
+          "text": "Our\nInner\nRhythm",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 37.2,
+            "fontFamily": "Eulyoo",
+            "fontWeight": "w800",
+            "color": "#1E2340",
+            "height": 0.82,
+            "letterSpacing": -0.6
+          }
+        },
+        {
+          "id": "desc1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.12,
+          "w": 0.31,
+          "h": 0.1,
+          "text": "An invitation to\nconnect with artists\nat singing sessions",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 8.2,
+            "fontFamily": "Cormorant",
+            "color": "#262626",
+            "height": 1.15
+          }
+        },
+        {
+          "id": "desc2",
+          "type": "text",
+          "x": 0.58,
+          "y": 0.69,
+          "w": 0.3,
+          "h": 0.12,
+          "text": "\"Celebrating\nsound, moment by\nmoment.\"",
+          "align": "left",
+          "z": 30,
+          "style": {
+            "fontSize": 9.2,
+            "fontFamily": "Cormorant",
+            "color": "#202020",
+            "height": 1.16
+          }
+        },
+        {
+          "id": "desc3",
+          "type": "text",
+          "x": 0.2,
+          "y": 0.78,
+          "w": 0.31,
+          "h": 0.07,
+          "text": "SOUND IS\nFREEDOM",
+          "align": "left",
+          "z": 31,
+          "style": {
+            "fontSize": 15.1,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w800",
+            "color": "#F1F1F1",
+            "height": 0.92
+          }
+        },
+        {
+          "id": "tape1",
+          "type": "decoration",
+          "x": 0.16,
+          "y": 0.2,
+          "w": 0.16,
+          "h": 0.04,
+          "style": "stickerTapeBeige",
+          "rotation": -12,
+          "z": 34
+        },
+        {
+          "id": "tape2",
+          "type": "decoration",
+          "x": 0.67,
+          "y": 0.1,
+          "w": 0.16,
+          "h": 0.04,
+          "style": "stickerTapeBeige",
+          "rotation": 8,
+          "z": 34
+        },
+        {
+          "id": "tape3",
+          "type": "decoration",
+          "x": 0.56,
+          "y": 0.45,
+          "w": 0.14,
+          "h": 0.04,
+          "style": "stickerTapeBeige",
+          "rotation": 6,
+          "z": 34
+        },
+        {
+          "id": "tape4",
+          "type": "decoration",
+          "x": 0.2,
+          "y": 0.66,
+          "w": 0.16,
+          "h": 0.04,
+          "style": "stickerTapeBeige",
+          "rotation": -8,
+          "z": 34
+        }
+      ]
+    },
+    {
+      "id": "data_ref_korean_photobook_001",
+      "name": "레퍼런스 여름나기 포토북",
+      "category": "앨범",
+      "tags": [
+        "포토북",
+        "한국어",
+        "필름",
+        "가족"
+      ],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "variants": {
+        "square": {
+          "scale": 0.996
+        },
+        "landscape": {
+          "scale": 0.85,
+          "offsetY": 0.055
+        }
+      },
+      "layers": [
+        {
+          "id": "bg",
+          "type": "decoration",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "style": "paperWhite",
+          "z": 0
+        },
+        {
+          "id": "leaf_l",
+          "type": "decoration",
+          "x": -0.01,
+          "y": -0.01,
+          "w": 0.29,
+          "h": 0.23,
+          "style": "stickerLeafCornerLeft",
+          "z": 31
+        },
+        {
+          "id": "leaf_r",
+          "type": "decoration",
+          "x": 0.72,
+          "y": -0.01,
+          "w": 0.29,
+          "h": 0.23,
+          "style": "stickerLeafCornerRight",
+          "z": 31
+        },
+        {
+          "id": "chip",
+          "type": "text",
+          "x": 0.346,
+          "y": 0.1,
+          "w": 0.31,
+          "h": 0.05,
+          "text": "PHOTOBOOK",
+          "textBackground": "labelCream",
+          "z": 20,
+          "style": {
+            "fontSize": 10,
+            "fontFamily": "Cormorant",
+            "fontWeight": "w700",
+            "color": "#6A6A6A",
+            "letterSpacing": 0.8
+          }
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "x": 0.238,
+          "y": 0.16,
+          "w": 0.524,
+          "h": 0.16,
+          "text": "김씨네\n여름나기",
+          "z": 22,
+          "style": {
+            "fontSize": 26.4,
+            "fontFamily": "SeoulNamsan",
+            "fontWeight": "w800",
+            "color": "#393939",
+            "height": 0.95
+          }
+        },
+        {
+          "id": "main_l",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.36,
+          "w": 0.37,
+          "h": 0.29,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "main_r",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.36,
+          "w": 0.37,
+          "h": 0.35,
+          "frame": "collageTile",
+          "z": 10
+        },
+        {
+          "id": "film",
+          "type": "image",
+          "x": 0.16,
+          "y": 0.64,
+          "w": 0.54,
+          "h": 0.18,
+          "frame": "filmSquare",
+          "rotation": -8,
+          "z": 11
+        },
+        {
+          "id": "copy",
+          "type": "text",
+          "x": 0.05,
+          "y": 0.95,
+          "w": 0.33,
+          "h": 0.03,
+          "text": "*페이지 및 사진위치는 비율마다 달라집니다.",
+          "align": "left",
+          "z": 24,
+          "style": {
+            "fontSize": 5.8,
+            "fontFamily": "NotoSans",
+            "color": "#979797"
+          }
+        },
+        {
+          "id": "date",
+          "type": "text",
+          "x": 0.74,
+          "y": 0.95,
+          "w": 0.2,
+          "h": 0.03,
+          "text": "2099.07.01",
+          "align": "right",
+          "z": 24,
+          "style": {
+            "fontSize": 7.8,
+            "fontFamily": "Cormorant",
+            "color": "#A2A2A2"
+          }
+        }
+      ]
+    }
+    ,
+    {
+      "id": "data_modern_neon_001",
+      "name": "모던 네온 매거진",
+      "category": "매거진",
+      "tags": ["모던", "네온", "타이포", "감성"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.992, "offsetY": 0.002 },
+        "landscape": { "scale": 0.86, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "tag", "type": "text", "x": 0.08, "y": 0.055, "w": 0.30, "h": 0.062, "text": "MAGAZINE", "textBackground": "labelSolidBlue", "align": "center", "z": 25,
+          "style": { "fontSize": 9.2, "fontFamily": "Raleway", "fontWeight": "w800", "color": "#F7FBFF", "letterSpacing": 1.0, "height": 1.05 } },
+        { "id": "main", "type": "image", "x": 0.10, "y": 0.15, "w": 0.80, "h": 0.53, "frame": "neon", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.10, "y": 0.68, "w": 0.80, "h": 0.06, "text": "NEON MEMORY", "align": "center", "z": 30,
+          "style": { "fontSize": 12.3, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#1E1E1E", "letterSpacing": 1.35, "height": 1.0 } },
+        { "id": "subL", "type": "image", "x": 0.10, "y": 0.74, "w": 0.36, "h": 0.18, "frame": "roundSoft", "z": 12 },
+        { "id": "subR", "type": "image", "x": 0.54, "y": 0.74, "w": 0.36, "h": 0.18, "frame": "roundSoft", "z": 12 },
+        { "id": "spark", "type": "decoration", "x": 0.82, "y": 0.11, "w": 0.09, "h": 0.08, "style": "stickerSparkleBlue", "z": 35 },
+        { "id": "scribble", "type": "decoration", "x": 0.06, "y": 0.64, "w": 0.15, "h": 0.08, "style": "stickerScribbleBlue", "rotation": -10, "z": 35 },
+        { "id": "note", "type": "text", "x": 0.58, "y": 0.06, "w": 0.32, "h": 0.06, "text": "2026 EDITION", "align": "right", "z": 24,
+          "style": { "fontSize": 8.4, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#6A6A6A", "letterSpacing": 1.15 } },
+        { "id": "tapeDots", "type": "decoration", "x": 0.62, "y": 0.13, "w": 0.20, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": 6, "z": 34 },
+        { "id": "gold", "type": "decoration", "x": 0.14, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerStarGold", "z": 36 }
+      ]
+    },
+    {
+      "id": "data_travel_postcard_001",
+      "name": "트래블 포스트카드",
+      "category": "여행",
+      "tags": ["여행", "포스트카드", "스탬프", "테이프"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.992, "offsetY": 0.002 },
+        "landscape": { "scale": 0.86, "offsetY": 0.04 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperBeige", "z": 0 },
+        { "id": "stamp", "type": "image", "x": 0.13, "y": 0.15, "w": 0.74, "h": 0.54, "frame": "postalStamp", "z": 10 },
+        { "id": "tape", "type": "decoration", "x": 0.09, "y": 0.145, "w": 0.22, "h": 0.05, "style": "stickerTapeBeige", "rotation": -12, "z": 22 },
+        { "id": "arrow", "type": "decoration", "x": 0.71, "y": 0.075, "w": 0.18, "h": 0.10, "style": "stickerArrowCoral", "rotation": 10, "z": 22 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.71, "w": 0.76, "h": 0.10, "text": "TRAVEL POSTCARD", "align": "center", "z": 25,
+          "style": { "fontSize": 13.6, "fontFamily": "Cormorant", "fontWeight": "w800", "color": "#5B4A3A", "letterSpacing": 1.28, "height": 1.05 } },
+        { "id": "meta", "type": "text", "x": 0.12, "y": 0.835, "w": 0.76, "h": 0.08, "text": "from our favorite place · 20XX", "align": "center", "z": 25,
+          "style": { "fontSize": 8.0, "fontFamily": "Cormorant", "fontWeight": "w600", "color": "#7A6A5C", "letterSpacing": 0.72 } },
+        { "id": "leafL", "type": "decoration", "x": -0.01, "y": -0.01, "w": 0.24, "h": 0.18, "style": "stickerLeafCornerLeft", "z": 30 },
+        { "id": "leafR", "type": "decoration", "x": 0.77, "y": -0.01, "w": 0.24, "h": 0.18, "style": "stickerLeafCornerRight", "z": 30 }
+      ]
+    },
+    {
+      "id": "data_wedding_ribbon_002",
+      "name": "웨딩 리본 프레임",
+      "category": "웨딩",
+      "tags": ["웨딩", "리본", "폴라로이드", "꽃"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "title", "type": "text", "x": 0.10, "y": 0.05, "w": 0.80, "h": 0.16, "text": "Our\nWedding Day", "rotation": -10, "align": "left", "z": 30,
+          "style": { "fontSize": 22.0, "fontFamily": "Run", "fontWeight": "w800", "color": "#4A7B44", "height": 0.9, "letterSpacing": 0.18 } },
+        { "id": "main", "type": "image", "x": 0.22, "y": 0.22, "w": 0.56, "h": 0.50, "frame": "ribbonPolaroid", "rotation": -6, "z": 10 },
+        { "id": "sub", "type": "image", "x": 0.60, "y": 0.60, "w": 0.28, "h": 0.22, "frame": "polaroidClassic", "rotation": 10, "z": 16 },
+        { "id": "ribbon", "type": "decoration", "x": 0.77, "y": 0.18, "w": 0.14, "h": 0.11, "style": "stickerRibbonBlue", "z": 36 },
+        { "id": "flower", "type": "decoration", "x": 0.08, "y": 0.36, "w": 0.10, "h": 0.10, "style": "stickerFlowerCoral", "z": 35 },
+        { "id": "date", "type": "text", "x": 0.18, "y": 0.84, "w": 0.64, "h": 0.06, "text": "Aug 24, 20XX · 4 PM", "align": "center", "z": 22,
+          "style": { "fontSize": 8.1, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#6C6C6C", "letterSpacing": 1.05 } },
+        { "id": "pin", "type": "text", "x": 0.70, "y": 0.76, "w": 0.10, "h": 0.06, "text": "🎀", "z": 40, "style": { "fontSize": 18 } },
+        { "id": "sparkGold", "type": "decoration", "x": 0.13, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 38 },
+        { "id": "heartPink", "type": "decoration", "x": 0.84, "y": 0.74, "w": 0.07, "h": 0.06, "style": "stickerHeartPink", "z": 38 }
+      ]
+    },
+    {
+      "id": "data_birthday_party_001",
+      "name": "버스데이 파티",
+      "category": "파티",
+      "tags": ["생일", "파티", "리본", "하트"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.045 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperPink", "z": 0 },
+        { "id": "tag", "type": "text", "x": 0.10, "y": 0.06, "w": 0.26, "h": 0.06, "text": "PARTY", "textBackground": "labelSolidPink", "z": 20,
+          "style": { "fontSize": 9.4, "fontFamily": "Poppins", "fontWeight": "w800", "color": "#FFEAFE", "letterSpacing": 0.6 } },
+        { "id": "main", "type": "image", "x": 0.12, "y": 0.15, "w": 0.76, "h": 0.53, "frame": "softGlow", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.70, "w": 0.76, "h": 0.10, "text": "HAPPY\nBIRTHDAY", "align": "center", "z": 30,
+          "style": { "fontSize": 18.6, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#2D2D2D", "height": 0.9, "letterSpacing": 0.55 } },
+        { "id": "heart", "type": "decoration", "x": 0.78, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerHeartRed", "z": 35 },
+        { "id": "spark", "type": "decoration", "x": 0.14, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerSparkleBlue", "z": 35 },
+        { "id": "ribbon", "type": "decoration", "x": 0.80, "y": 0.86, "w": 0.12, "h": 0.08, "style": "stickerRibbonBlue", "rotation": 8, "z": 36 },
+        { "id": "balloon", "type": "text", "x": 0.10, "y": 0.86, "w": 0.12, "h": 0.06, "text": "🎈", "z": 40, "style": { "fontSize": 18 } },
+        { "id": "tapePink", "type": "decoration", "x": 0.18, "y": 0.18, "w": 0.20, "h": 0.045, "style": "stickerTapeStripePink", "rotation": -14, "z": 34 },
+        { "id": "sparkGold", "type": "decoration", "x": 0.78, "y": 0.66, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 36 }
+      ]
+    },
+    {
+      "id": "data_cinema_vhs_001",
+      "name": "시네마 VHS 나이트",
+      "category": "시네마",
+      "tags": ["필름", "다크", "VHS", "레트로"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "darkVignette", "z": 0 },
+        { "id": "title", "type": "text", "x": 0.14, "y": 0.06, "w": 0.72, "h": 0.08, "text": "VHS NIGHT", "align": "center", "z": 25,
+          "style": { "fontSize": 13.0, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#F3F3F3", "letterSpacing": 1.6 } },
+        { "id": "main", "type": "image", "x": 0.16, "y": 0.16, "w": 0.68, "h": 0.62, "frame": "filmSquare", "z": 10 },
+        { "id": "caption", "type": "text", "x": 0.18, "y": 0.80, "w": 0.64, "h": 0.10, "text": "our favorite cuts · midnight edition", "align": "center", "z": 25,
+          "style": { "fontSize": 9.0, "fontFamily": "Cormorant", "fontWeight": "w600", "color": "#EAEAEA", "letterSpacing": 0.8 } },
+        { "id": "spark", "type": "decoration", "x": 0.78, "y": 0.78, "w": 0.10, "h": 0.08, "style": "stickerSparkleBlue", "z": 30 },
+        { "id": "gold", "type": "decoration", "x": 0.12, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerStarGold", "z": 31 },
+        { "id": "tapeBlue", "type": "decoration", "x": 0.18, "y": 0.15, "w": 0.22, "h": 0.05, "style": "stickerTapeDotsBlue", "rotation": -12, "z": 29 }
+      ]
+    },
+    {
+      "id": "data_daily_memo_001",
+      "name": "데일리 메모 보드",
+      "category": "데일리",
+      "tags": ["노트", "메모", "클립", "여백"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.84, "offsetY": 0.055 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "notebookPunchPage", "z": 0 },
+        { "id": "main", "type": "image", "x": 0.10, "y": 0.18, "w": 0.80, "h": 0.44, "frame": "paperClipCard", "z": 10 },
+        { "id": "clip", "type": "decoration", "x": 0.74, "y": 0.19, "w": 0.08, "h": 0.08, "style": "stickerPaperClip", "z": 25 },
+        { "id": "memo", "type": "text", "x": 0.12, "y": 0.64, "w": 0.76, "h": 0.14, "text": "오늘의 한 줄\n기억하고 싶은 순간", "textBackground": "noteTornBeige", "align": "left", "z": 22,
+          "style": { "fontSize": 11.5, "fontFamily": "SeoulNamsan", "fontWeight": "w600", "color": "#5E4B3A", "height": 1.18 } },
+        { "id": "subL", "type": "image", "x": 0.12, "y": 0.80, "w": 0.34, "h": 0.16, "frame": "softPaperCard", "rotation": -3, "z": 11 },
+        { "id": "subR", "type": "image", "x": 0.54, "y": 0.80, "w": 0.34, "h": 0.16, "frame": "roughPolaroid", "rotation": 3, "z": 11 },
+        { "id": "spark", "type": "decoration", "x": 0.14, "y": 0.12, "w": 0.08, "h": 0.07, "style": "stickerBlueStarSmall", "z": 26 },
+        { "id": "tape", "type": "decoration", "x": 0.64, "y": 0.61, "w": 0.18, "h": 0.05, "style": "stickerTapeBeige", "rotation": 6, "z": 26 },
+        { "id": "tapeBlue", "type": "decoration", "x": 0.16, "y": 0.58, "w": 0.20, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": -10, "z": 21 }
+      ]
+    },
+    {
+      "id": "data_minimal_typo_001",
+      "name": "미니멀 타이포",
+      "category": "포스터",
+      "tags": ["미니멀", "타이포", "여백", "클린"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.995, "offsetY": 0.002 },
+        "landscape": { "scale": 0.88, "offsetY": 0.04 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "title", "type": "text", "x": 0.10, "y": 0.07, "w": 0.80, "h": 0.14, "text": "SIMPLE\nMOMENT", "align": "left", "z": 20,
+          "style": { "fontSize": 34.0, "fontFamily": "BookMyungjo", "fontWeight": "w800", "color": "#1E1E1E", "height": 0.78, "letterSpacing": -0.2 } },
+        { "id": "main", "type": "image", "x": 0.10, "y": 0.26, "w": 0.80, "h": 0.52, "frame": "thinDoubleLine", "z": 10 },
+        { "id": "foot", "type": "text", "x": 0.10, "y": 0.82, "w": 0.80, "h": 0.10, "text": "make it clean, make it yours", "align": "left", "z": 20,
+          "style": { "fontSize": 10.0, "fontFamily": "Cormorant", "fontWeight": "w600", "color": "#5A5A5A", "letterSpacing": 0.8, "height": 1.1 } },
+        { "id": "gold", "type": "decoration", "x": 0.82, "y": 0.10, "w": 0.06, "h": 0.05, "style": "stickerSparkleGold", "z": 22 },
+        { "id": "tape", "type": "decoration", "x": 0.12, "y": 0.24, "w": 0.22, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": -10, "z": 12 }
+      ]
+    },
+    {
+      "id": "data_kids_playground_001",
+      "name": "키즈 플레이그라운드",
+      "category": "키즈",
+      "tags": ["키즈", "스티커", "밝은", "콜라주"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.009,
+      "variants": {
+        "square": { "scale": 0.995 },
+        "landscape": { "scale": 0.86, "offsetY": 0.04 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWarm", "z": 0 },
+        { "id": "a", "type": "image", "x": 0.06, "y": 0.10, "w": 0.40, "h": 0.30, "frame": "photoCard", "rotation": -4, "z": 10 },
+        { "id": "b", "type": "image", "x": 0.54, "y": 0.10, "w": 0.40, "h": 0.30, "frame": "photoCard", "rotation": 3, "z": 11 },
+        { "id": "c", "type": "image", "x": 0.14, "y": 0.50, "w": 0.72, "h": 0.34, "frame": "tornPaperCard", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.43, "w": 0.76, "h": 0.08, "text": "KIDS DAY", "textBackground": "labelSolidMint", "align": "center", "z": 30,
+          "style": { "fontSize": 12.0, "fontFamily": "Poppins", "fontWeight": "w800", "color": "#F6FFFD", "letterSpacing": 0.8 } },
+        { "id": "cat", "type": "decoration", "x": 0.08, "y": 0.83, "w": 0.16, "h": 0.10, "style": "stickerCatDoodle", "z": 35 },
+        { "id": "blob", "type": "decoration", "x": 0.78, "y": 0.82, "w": 0.16, "h": 0.08, "style": "stickerBlobGreen", "rotation": -8, "z": 35 },
+        { "id": "daisy", "type": "decoration", "x": 0.84, "y": 0.05, "w": 0.10, "h": 0.10, "style": "stickerDaisyWhite", "z": 35 },
+        { "id": "tapePink", "type": "decoration", "x": 0.18, "y": 0.12, "w": 0.22, "h": 0.045, "style": "stickerTapeStripePink", "rotation": -12, "z": 34 },
+        { "id": "sparkGold", "type": "decoration", "x": 0.72, "y": 0.46, "w": 0.07, "h": 0.06, "style": "stickerSparkleGold", "z": 34 }
+      ]
+    },
+    {
+      "id": "data_couple_loveletter_001",
+      "name": "러브 레터",
+      "category": "커플",
+      "tags": ["커플", "하트", "메모", "감성"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.992, "offsetY": 0.002 },
+        "landscape": { "scale": 0.86, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWarm", "z": 0 },
+        { "id": "main", "type": "image", "x": 0.14, "y": 0.14, "w": 0.72, "h": 0.52, "frame": "polaroidClassic", "rotation": -2, "z": 10 },
+        { "id": "note", "type": "decoration", "x": 0.10, "y": 0.70, "w": 0.46, "h": 0.16, "style": "stickerTornNoteBeige", "rotation": -7, "z": 20 },
+        { "id": "txt", "type": "text", "x": 0.12, "y": 0.72, "w": 0.42, "h": 0.12, "text": "love letter\nfor you", "rotation": -7, "align": "left", "z": 21,
+          "style": { "fontSize": 9.2, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#6B6053", "height": 1.12 } },
+        { "id": "heart", "type": "decoration", "x": 0.78, "y": 0.10, "w": 0.08, "h": 0.07, "style": "stickerHeartRed", "z": 24 },
+        { "id": "bow", "type": "decoration", "x": 0.14, "y": 0.08, "w": 0.08, "h": 0.07, "style": "stickerBowPink", "z": 24 },
+        { "id": "leaf", "type": "text", "x": 0.80, "y": 0.86, "w": 0.10, "h": 0.08, "text": "❧", "z": 30, "style": { "fontSize": 18, "color": "#78A05A" } },
+        { "id": "heartPink", "type": "decoration", "x": 0.84, "y": 0.08, "w": 0.07, "h": 0.06, "style": "stickerHeartPink", "z": 25 },
+        { "id": "gold", "type": "decoration", "x": 0.18, "y": 0.66, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 23 }
+      ]
+    },
+    {
+      "id": "data_cafe_day_001",
+      "name": "카페 데이",
+      "category": "일상",
+      "tags": ["카페", "따뜻함", "테이프", "무드"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperBeige", "z": 0 },
+        { "id": "main", "type": "image", "x": 0.12, "y": 0.18, "w": 0.76, "h": 0.48, "frame": "softPaperCard", "z": 10 },
+        { "id": "tape", "type": "decoration", "x": 0.62, "y": 0.16, "w": 0.18, "h": 0.05, "style": "stickerTapeBeige", "rotation": 12, "z": 22 },
+        { "id": "title", "type": "text", "x": 0.14, "y": 0.70, "w": 0.72, "h": 0.10, "text": "coffee & small talk", "align": "center", "z": 20,
+          "style": { "fontSize": 14.0, "fontFamily": "Cormorant", "fontWeight": "w800", "color": "#5A4A38", "letterSpacing": 0.7 } },
+        { "id": "sub", "type": "text", "x": 0.18, "y": 0.82, "w": 0.64, "h": 0.10, "text": "today is beautiful", "align": "center", "z": 20,
+          "style": { "fontSize": 9.0, "fontFamily": "Cormorant", "fontWeight": "w600", "color": "#6E6255", "letterSpacing": 0.4 } },
+        { "id": "cup", "type": "text", "x": 0.16, "y": 0.10, "w": 0.10, "h": 0.06, "text": "☕", "z": 30, "style": { "fontSize": 18 } },
+        { "id": "gold", "type": "decoration", "x": 0.82, "y": 0.12, "w": 0.07, "h": 0.06, "style": "stickerStarGold", "z": 24 },
+        { "id": "dots", "type": "decoration", "x": 0.18, "y": 0.66, "w": 0.18, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": -8, "z": 23 }
+      ]
+    },
+    {
+      "id": "data_pet_album_001",
+      "name": "반려동물 스냅",
+      "category": "반려동물",
+      "tags": ["반려동물", "귀여움", "스냅", "스티커"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "p1", "type": "image", "x": 0.08, "y": 0.14, "w": 0.40, "h": 0.34, "frame": "roughPolaroid", "rotation": -4, "z": 10 },
+        { "id": "p2", "type": "image", "x": 0.52, "y": 0.16, "w": 0.40, "h": 0.32, "frame": "polaroidClassic", "rotation": 5, "z": 10 },
+        { "id": "p3", "type": "image", "x": 0.18, "y": 0.52, "w": 0.64, "h": 0.38, "frame": "maskingTapeFrame", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.06, "w": 0.76, "h": 0.08, "text": "PET SNAP", "align": "center", "z": 20,
+          "style": { "fontSize": 13.0, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#2D2D2D", "letterSpacing": 1.4 } },
+        { "id": "cat", "type": "decoration", "x": 0.06, "y": 0.06, "w": 0.12, "h": 0.08, "style": "stickerCatDoodle", "z": 30 },
+        { "id": "paw", "type": "text", "x": 0.84, "y": 0.88, "w": 0.10, "h": 0.06, "text": "🐾", "z": 30, "style": { "fontSize": 18 } },
+        { "id": "heartPink", "type": "decoration", "x": 0.80, "y": 0.10, "w": 0.07, "h": 0.06, "style": "stickerHeartPink", "z": 22 },
+        { "id": "sparkGold", "type": "decoration", "x": 0.14, "y": 0.88, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 22 }
+      ]
+    },
+    {
+      "id": "data_premium_film_strip_001",
+      "name": "필름 스트립 럭스",
+      "category": "프리미엄",
+      "tags": ["프리미엄", "필름", "시네마", "컬러"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.985, "offsetY": 0.005 },
+        "landscape": { "scale": 0.86, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperGray", "z": 0 },
+        { "id": "film1", "type": "image", "x": 0.10, "y": 0.10, "w": 0.36, "h": 0.56, "frame": "film", "rotation": -3, "z": 10 },
+        { "id": "film2", "type": "image", "x": 0.54, "y": 0.12, "w": 0.36, "h": 0.54, "frame": "film", "rotation": 3, "z": 10 },
+        { "id": "strip", "type": "image", "x": 0.20, "y": 0.68, "w": 0.60, "h": 0.20, "frame": "filmSquare", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.10, "y": 0.88, "w": 0.80, "h": 0.10, "text": "CINEMA NOTES", "align": "center", "z": 22,
+          "style": { "fontSize": 12.4, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#1E1E1E", "letterSpacing": 1.6 } },
+        { "id": "sparkGold", "type": "decoration", "x": 0.14, "y": 0.08, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 26 },
+        { "id": "starGold", "type": "decoration", "x": 0.82, "y": 0.14, "w": 0.07, "h": 0.06, "style": "stickerStarGold", "z": 26 },
+        { "id": "tapeDots", "type": "decoration", "x": 0.58, "y": 0.08, "w": 0.20, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": 10, "z": 25 }
+      ]
+    },
+    {
+      "id": "data_premium_ticket_collage_001",
+      "name": "티켓 콜라주",
+      "category": "프리미엄",
+      "tags": ["프리미엄", "티켓", "콜라주", "감성"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.055 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWarm", "z": 0 },
+        { "id": "ticket", "type": "decoration", "x": 0.08, "y": 0.10, "w": 0.84, "h": 0.18, "style": "stickerTicketPaper", "rotation": -2, "z": 8 },
+        { "id": "main", "type": "image", "x": 0.12, "y": 0.30, "w": 0.76, "h": 0.44, "frame": "posterPolaroid", "z": 10 },
+        { "id": "sub1", "type": "image", "x": 0.10, "y": 0.74, "w": 0.38, "h": 0.20, "frame": "tornPaperCard", "rotation": -4, "z": 12 },
+        { "id": "sub2", "type": "image", "x": 0.52, "y": 0.76, "w": 0.38, "h": 0.18, "frame": "paperClipCard", "rotation": 4, "z": 12 },
+        { "id": "label", "type": "text", "x": 0.14, "y": 0.12, "w": 0.72, "h": 0.14, "text": "ADMIT ONE\nMEMORY SHOW", "align": "center", "z": 15,
+          "style": { "fontSize": 10.0, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#4A3E34", "letterSpacing": 1.0, "height": 1.05 } },
+        { "id": "arrow", "type": "decoration", "x": 0.80, "y": 0.26, "w": 0.10, "h": 0.08, "style": "stickerArrowCoral", "rotation": 14, "z": 26 },
+        { "id": "scribble", "type": "decoration", "x": 0.12, "y": 0.26, "w": 0.12, "h": 0.09, "style": "stickerScribbleBlue", "rotation": -10, "z": 26 },
+        { "id": "spark", "type": "decoration", "x": 0.46, "y": 0.26, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 26 }
+      ]
+    },
+    {
+      "id": "data_premium_blob_gallery_001",
+      "name": "블랍 갤러리",
+      "category": "프리미엄",
+      "tags": ["프리미엄", "블랍", "컬러", "모던"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.002 },
+        "landscape": { "scale": 0.86, "offsetY": 0.055 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "blob1", "type": "decoration", "x": 0.06, "y": 0.10, "w": 0.38, "h": 0.26, "style": "stickerBlobGreen", "rotation": -10, "z": 2 },
+        { "id": "blob2", "type": "decoration", "x": 0.56, "y": 0.18, "w": 0.36, "h": 0.22, "style": "stickerBrushPink", "rotation": 8, "z": 2 },
+        { "id": "a", "type": "image", "x": 0.10, "y": 0.14, "w": 0.34, "h": 0.32, "frame": "softGlow", "rotation": -2, "z": 10 },
+        { "id": "b", "type": "image", "x": 0.56, "y": 0.12, "w": 0.34, "h": 0.28, "frame": "round", "rotation": 2, "z": 10 },
+        { "id": "c", "type": "image", "x": 0.18, "y": 0.52, "w": 0.64, "h": 0.38, "frame": "collageTile", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.92, "w": 0.76, "h": 0.08, "text": "COLOR GALLERY", "align": "center", "z": 20,
+          "style": { "fontSize": 12.0, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#2B2B2B", "letterSpacing": 1.5 } },
+        { "id": "gold", "type": "decoration", "x": 0.82, "y": 0.86, "w": 0.07, "h": 0.06, "style": "stickerStarGold", "z": 24 }
+      ]
+    },
+    {
+      "id": "data_premium_round_portals_001",
+      "name": "라운드 포털",
+      "category": "프리미엄",
+      "tags": ["프리미엄", "라운드", "포털", "미니멀"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.988, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.06 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperBeige", "z": 0 },
+        { "id": "p1", "type": "image", "x": 0.10, "y": 0.14, "w": 0.36, "h": 0.36, "frame": "circle", "z": 10 },
+        { "id": "p2", "type": "image", "x": 0.54, "y": 0.14, "w": 0.36, "h": 0.36, "frame": "circle", "z": 10 },
+        { "id": "p3", "type": "image", "x": 0.18, "y": 0.54, "w": 0.64, "h": 0.32, "frame": "softGlow", "z": 10 },
+        { "id": "title", "type": "text", "x": 0.12, "y": 0.06, "w": 0.76, "h": 0.08, "text": "PORTALS", "align": "center", "z": 20,
+          "style": { "fontSize": 13.0, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#4E4336", "letterSpacing": 2.0 } },
+        { "id": "tape", "type": "decoration", "x": 0.26, "y": 0.52, "w": 0.20, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": -10, "z": 22 },
+        { "id": "spark", "type": "decoration", "x": 0.74, "y": 0.52, "w": 0.08, "h": 0.07, "style": "stickerSparkleGold", "z": 22 }
+      ]
+    },
+    {
+      "id": "data_premium_ribbon_stack_001",
+      "name": "리본 스택",
+      "category": "프리미엄",
+      "tags": ["프리미엄", "리본", "스택", "선물"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.012,
+      "variants": {
+        "square": { "scale": 0.99, "offsetY": 0.004 },
+        "landscape": { "scale": 0.86, "offsetY": 0.055 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperPink", "z": 0 },
+        { "id": "main", "type": "image", "x": 0.12, "y": 0.14, "w": 0.76, "h": 0.52, "frame": "ribbonPolaroid", "z": 10 },
+        { "id": "sub1", "type": "image", "x": 0.12, "y": 0.70, "w": 0.36, "h": 0.22, "frame": "polaroidWide", "rotation": -2, "z": 12 },
+        { "id": "sub2", "type": "image", "x": 0.52, "y": 0.70, "w": 0.36, "h": 0.22, "frame": "polaroidWide", "rotation": 2, "z": 12 },
+        { "id": "title", "type": "text", "x": 0.14, "y": 0.06, "w": 0.72, "h": 0.08, "text": "GIFT MOMENTS", "align": "center", "z": 20,
+          "style": { "fontSize": 12.6, "fontFamily": "Raleway", "fontWeight": "w900", "color": "#2D1F2A", "letterSpacing": 1.6 } },
+        { "id": "bow", "type": "decoration", "x": 0.12, "y": 0.10, "w": 0.10, "h": 0.08, "style": "stickerBowPink", "z": 26 },
+        { "id": "heart", "type": "decoration", "x": 0.82, "y": 0.10, "w": 0.08, "h": 0.07, "style": "stickerHeartPink", "z": 26 },
+        { "id": "tape", "type": "decoration", "x": 0.18, "y": 0.66, "w": 0.22, "h": 0.045, "style": "stickerTapeStripePink", "rotation": -12, "z": 25 }
+      ]
+    },
+    {
+      "id": "data_ref_scrapbook_memory_002",
+      "name": "레퍼런스 스크랩북 메모리",
+      "category": "스크랩북",
+      "tags": ["스크랩북", "다이어리", "콜라주", "스티커"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.995 },
+        "landscape": { "scale": 0.87, "offsetY": 0.05 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "title_d", "type": "text", "x": 0.10, "y": 0.03, "w": 0.10, "h": 0.06, "text": "D", "textBackground": "labelSolidLavender", "align": "center", "z": 30, "style": { "fontSize": 16, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "title_i", "type": "text", "x": 0.21, "y": 0.03, "w": 0.08, "h": 0.06, "text": "I", "textBackground": "labelSolidYellow", "align": "center", "z": 30, "style": { "fontSize": 16, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "title_a", "type": "text", "x": 0.30, "y": 0.03, "w": 0.10, "h": 0.06, "text": "A", "textBackground": "labelSolidPink", "align": "center", "z": 30, "style": { "fontSize": 16, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "title_r", "type": "text", "x": 0.41, "y": 0.03, "w": 0.10, "h": 0.06, "text": "R", "textBackground": "labelSolidBlue", "align": "center", "z": 30, "style": { "fontSize": 16, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "title_y", "type": "text", "x": 0.52, "y": 0.03, "w": 0.10, "h": 0.06, "text": "Y", "textBackground": "labelSolidMint", "align": "center", "z": 30, "style": { "fontSize": 16, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "main", "type": "image", "x": 0.29, "y": 0.20, "w": 0.42, "h": 0.54, "frame": "tornPaperCard", "z": 10 },
+        { "id": "left", "type": "image", "x": 0.08, "y": 0.46, "w": 0.28, "h": 0.24, "frame": "photoCard", "z": 12 },
+        { "id": "right", "type": "image", "x": 0.66, "y": 0.18, "w": 0.26, "h": 0.24, "frame": "polaroidFilm", "z": 12 },
+        { "id": "note", "type": "text", "x": 0.66, "y": 0.46, "w": 0.26, "h": 0.20, "text": "It was a fun trip!\nI miss that time.", "textBackground": "noteGrid", "align": "left", "z": 20, "style": { "fontSize": 8.0, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#5D5347", "height": 1.22 } },
+        { "id": "strip", "type": "decoration", "x": 0.57, "y": 0.11, "w": 0.18, "h": 0.045, "style": "stickerTapeDotsBlue", "rotation": -14, "z": 34 },
+        { "id": "star", "type": "decoration", "x": 0.05, "y": 0.60, "w": 0.09, "h": 0.08, "style": "stickerStarGold", "z": 34 },
+        { "id": "heart", "type": "decoration", "x": 0.92, "y": 0.79, "w": 0.07, "h": 0.07, "style": "stickerHeartPink", "z": 34 },
+        { "id": "bottom", "type": "text", "x": 0.30, "y": 0.86, "w": 0.50, "h": 0.08, "text": "SCRAPBOOK", "align": "center", "z": 30, "style": { "fontSize": 18, "fontFamily": "Maker", "fontWeight": "w800", "color": "#5A6BB0", "letterSpacing": 1.4 } }
+      ]
+    },
+    {
+      "id": "data_ref_ring_trip_story_002",
+      "name": "레퍼런스 링 트립 스토리",
+      "category": "커플",
+      "tags": ["링", "여행", "콜라주", "이벤트"],
+      "aspect": "any",
+      "autoFit": true,
+      "autoFitPadding": 0.01,
+      "variants": {
+        "square": { "scale": 0.995 },
+        "landscape": { "scale": 0.88, "offsetY": 0.04 }
+      },
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "paperWhite", "z": 0 },
+        { "id": "left", "type": "image", "x": 0.04, "y": 0.11, "w": 0.24, "h": 0.34, "frame": "collageTile", "z": 10 },
+        { "id": "right", "type": "image", "x": 0.76, "y": 0.10, "w": 0.20, "h": 0.24, "frame": "collageTile", "z": 10 },
+        { "id": "main", "type": "image", "x": 0.29, "y": 0.10, "w": 0.44, "h": 0.40, "frame": "film", "z": 12 },
+        { "id": "bottom_l", "type": "image", "x": 0.04, "y": 0.56, "w": 0.44, "h": 0.26, "frame": "collageTile", "z": 10 },
+        { "id": "bottom_r", "type": "image", "x": 0.50, "y": 0.52, "w": 0.46, "h": 0.34, "frame": "tornPaperCard", "z": 10 },
+        { "id": "ring_r", "type": "text", "x": 0.35, "y": 0.12, "w": 0.08, "h": 0.07, "text": "R", "textBackground": "labelSolidOrange", "z": 30, "style": { "fontSize": 18, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "ring_i", "type": "text", "x": 0.44, "y": 0.12, "w": 0.08, "h": 0.07, "text": "I", "textBackground": "labelSolidBlue", "z": 30, "style": { "fontSize": 18, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "ring_n", "type": "text", "x": 0.53, "y": 0.12, "w": 0.08, "h": 0.07, "text": "N", "textBackground": "labelSolidLavender", "z": 30, "style": { "fontSize": 18, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "ring_g", "type": "text", "x": 0.62, "y": 0.12, "w": 0.08, "h": 0.07, "text": "G", "textBackground": "labelSolidMint", "z": 30, "style": { "fontSize": 18, "fontFamily": "Maker", "fontWeight": "w800", "color": "#FFFFFF" } },
+        { "id": "travel", "type": "text", "x": 0.05, "y": 0.49, "w": 0.34, "h": 0.07, "text": "TRAVEL!", "align": "left", "z": 28, "style": { "fontSize": 19, "fontFamily": "Maker", "fontWeight": "w800", "color": "#D66AA0", "letterSpacing": 1.2 } },
+        { "id": "caption", "type": "text", "x": 0.42, "y": 0.43, "w": 0.46, "h": 0.08, "text": "OMG. He proposed to me during the trip !!", "align": "left", "z": 22, "style": { "fontSize": 7.8, "fontFamily": "Run", "fontWeight": "w700", "color": "#4F4B48", "height": 1.15 } },
+        { "id": "gift", "type": "text", "x": 0.24, "y": 0.05, "w": 0.08, "h": 0.06, "text": "🎁", "z": 34, "style": { "fontSize": 20 } },
+        { "id": "balloon", "type": "text", "x": 0.82, "y": 0.31, "w": 0.10, "h": 0.08, "text": "🎈", "z": 34, "style": { "fontSize": 20 } }
+      ]
+    },
+    {
+      "id": "data_ref_school_congrats_002",
+      "name": "레퍼런스 입학네컷",
+      "category": "키즈",
+      "tags": ["입학", "네컷", "축하", "학교"],
+      "aspect": "portrait",
+      "autoFit": true,
+      "autoFitPadding": 0.006,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "ivoryGridPaper", "z": 0 },
+        { "id": "title", "type": "text", "x": 0.30, "y": 0.08, "w": 0.40, "h": 0.08, "text": "입학네컷", "align": "center", "z": 25, "style": { "fontSize": 20, "fontFamily": "SeoulNamsan", "fontWeight": "w800", "color": "#7A776A" } },
+        { "id": "panel", "type": "decoration", "x": 0.14, "y": 0.20, "w": 0.72, "h": 0.68, "style": "paperYellow", "z": 6 },
+        { "id": "p1", "type": "image", "x": 0.18, "y": 0.26, "w": 0.30, "h": 0.24, "frame": "collageTile", "z": 10 },
+        { "id": "p2", "type": "image", "x": 0.52, "y": 0.26, "w": 0.30, "h": 0.24, "frame": "collageTile", "z": 10 },
+        { "id": "p3", "type": "image", "x": 0.18, "y": 0.54, "w": 0.30, "h": 0.24, "frame": "collageTile", "z": 10 },
+        { "id": "p4", "type": "image", "x": 0.52, "y": 0.54, "w": 0.30, "h": 0.24, "frame": "collageTile", "z": 10 },
+        { "id": "foot", "type": "text", "x": 0.30, "y": 0.82, "w": 0.40, "h": 0.06, "text": "Congratulations", "align": "center", "z": 20, "style": { "fontSize": 13, "fontFamily": "Run", "fontWeight": "w700", "color": "#FFFDF7" } },
+        { "id": "memo", "type": "text", "x": 0.15, "y": 0.48, "w": 0.22, "h": 0.06, "text": "입학을 축하합니다~!", "textBackground": "tapeYellow", "rotation": -12, "z": 22, "style": { "fontSize": 7.6, "fontFamily": "Run", "fontWeight": "w700", "color": "#473E33" } },
+        { "id": "star", "type": "decoration", "x": 0.82, "y": 0.10, "w": 0.08, "h": 0.07, "style": "stickerBlueStarSmall", "z": 30 },
+        { "id": "heart", "type": "decoration", "x": 0.06, "y": 0.34, "w": 0.08, "h": 0.07, "style": "stickerHeartRed", "z": 30 },
+        { "id": "tape", "type": "decoration", "x": 0.72, "y": 0.22, "w": 0.20, "h": 0.045, "style": "stickerTapeBeige", "rotation": -24, "z": 30 }
+      ]
+    },
+    {
+      "id": "data_ref_vintage_focus_cover_002",
+      "name": "레퍼런스 빈티지 포커스 커버",
+      "category": "빈티지",
+      "tags": ["빈티지", "커버", "여행", "포커스"],
+      "aspect": "portrait",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "cloudSkyBlue", "z": 0 },
+        { "id": "sub", "type": "text", "x": 0.26, "y": 0.09, "w": 0.48, "h": 0.05, "text": "Mood & Memory", "align": "center", "z": 22, "style": { "fontSize": 9.5, "fontFamily": "Run", "fontWeight": "w700", "color": "#F1D79D", "letterSpacing": 1.0 } },
+        { "id": "title", "type": "text", "x": 0.16, "y": 0.13, "w": 0.68, "h": 0.15, "text": "VINTAGE\nIN FOCUS", "align": "center", "z": 24, "style": { "fontSize": 24, "fontFamily": "BookMyungjo", "fontWeight": "w800", "color": "#F0D08B", "height": 0.95, "letterSpacing": 0.9 } },
+        { "id": "main", "type": "image", "x": 0.19, "y": 0.31, "w": 0.62, "h": 0.50, "frame": "posterPolaroid", "z": 10 },
+        { "id": "meta", "type": "text", "x": 0.22, "y": 0.74, "w": 0.52, "h": 0.08, "text": "SUMMER 2080\nPHOTOGRAPHY TOUR", "align": "left", "z": 20, "style": { "fontSize": 8.0, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#2E3033", "height": 1.15 } },
+        { "id": "tape", "type": "decoration", "x": 0.42, "y": 0.29, "w": 0.16, "h": 0.04, "style": "stickerTapeBeige", "rotation": -2, "z": 30 }
+      ]
+    },
+    {
+      "id": "data_ref_vintage_offer_note_002",
+      "name": "레퍼런스 빈티지 오퍼 노트",
+      "category": "빈티지",
+      "tags": ["빈티지", "노트", "여행", "브로슈어"],
+      "aspect": "portrait",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "cloudSkyBlue", "z": 0 },
+        { "id": "notePanel", "type": "decoration", "x": 0.12, "y": 0.16, "w": 0.64, "h": 0.46, "style": "paperYellow", "z": 6 },
+        { "id": "copy", "type": "text", "x": 0.16, "y": 0.21, "w": 0.54, "h": 0.19, "text": "From cobblestone alleys to neon diners —\ndiscover the retro charm of Brookhaven.", "align": "left", "z": 20, "style": { "fontSize": 8.3, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#2A2A2A", "height": 1.2 } },
+        { "id": "title", "type": "text", "x": 0.16, "y": 0.40, "w": 0.52, "h": 0.07, "text": "WHAT YOU GET", "align": "left", "z": 22, "style": { "fontSize": 14.8, "fontFamily": "BookMyungjo", "fontWeight": "w800", "color": "#181818" } },
+        { "id": "list", "type": "text", "x": 0.16, "y": 0.48, "w": 0.54, "h": 0.13, "text": "Hidden photo spots\nOptional vintage props\nRetro-style edits", "align": "left", "z": 22, "style": { "fontSize": 8.2, "fontFamily": "Cormorant", "fontWeight": "w600", "color": "#242424", "height": 1.35 } },
+        { "id": "stamp", "type": "text", "x": 0.62, "y": 0.34, "w": 0.18, "h": 0.10, "text": "◎", "z": 24, "style": { "fontSize": 44, "fontFamily": "Cormorant", "color": "#C96666" } },
+        { "id": "polaroid", "type": "image", "x": 0.52, "y": 0.62, "w": 0.34, "h": 0.24, "frame": "polaroid", "rotation": -7, "z": 12 },
+        { "id": "label", "type": "text", "x": 0.16, "y": 0.67, "w": 0.30, "h": 0.16, "text": "RETRO\nTOUR\nCHARM", "align": "left", "z": 22, "style": { "fontSize": 21, "fontFamily": "BookMyungjo", "fontWeight": "w700", "color": "#E7D18F", "height": 0.96 } },
+        { "id": "tape", "type": "decoration", "x": 0.43, "y": 0.14, "w": 0.16, "h": 0.04, "style": "stickerTapeBeige", "z": 24 }
+      ]
+    },
+    {
+      "id": "data_ref_vintage_grid_002",
+      "name": "레퍼런스 빈티지 무디 그리드",
+      "category": "빈티지",
+      "tags": ["빈티지", "그리드", "무드", "포토투어"],
+      "aspect": "portrait",
+      "autoFit": true,
+      "autoFitPadding": 0.008,
+      "layers": [
+        { "id": "bg", "type": "decoration", "x": 0, "y": 0, "w": 1, "h": 1, "style": "cloudSkyBlue", "z": 0 },
+        { "id": "title", "type": "text", "x": 0.14, "y": 0.08, "w": 0.72, "h": 0.12, "text": "Perfect for\nREELS, PORTRAITS &\nMOODY GRID POSTS.", "align": "center", "z": 22, "style": { "fontSize": 13.5, "fontFamily": "BookMyungjo", "fontWeight": "w700", "color": "#EFE2B5", "height": 1.0 } },
+        { "id": "a", "type": "image", "x": 0.14, "y": 0.24, "w": 0.32, "h": 0.24, "frame": "photoCard", "z": 10 },
+        { "id": "b", "type": "image", "x": 0.54, "y": 0.24, "w": 0.32, "h": 0.24, "frame": "photoCard", "z": 10 },
+        { "id": "c", "type": "image", "x": 0.14, "y": 0.54, "w": 0.32, "h": 0.24, "frame": "photoCard", "z": 10 },
+        { "id": "d", "type": "image", "x": 0.54, "y": 0.54, "w": 0.32, "h": 0.24, "frame": "photoCard", "z": 10 },
+        { "id": "cap1", "type": "text", "x": 0.18, "y": 0.49, "w": 0.24, "h": 0.03, "text": "2080 / TOUR", "align": "center", "z": 20, "style": { "fontSize": 6.5, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#F3F2EC", "letterSpacing": 0.7 } },
+        { "id": "cap2", "type": "text", "x": 0.58, "y": 0.49, "w": 0.24, "h": 0.03, "text": "2080 / TOUR", "align": "center", "z": 20, "style": { "fontSize": 6.5, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#F3F2EC", "letterSpacing": 0.7 } },
+        { "id": "cap3", "type": "text", "x": 0.18, "y": 0.79, "w": 0.24, "h": 0.03, "text": "2080 / TOUR", "align": "center", "z": 20, "style": { "fontSize": 6.5, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#F3F2EC", "letterSpacing": 0.7 } },
+        { "id": "cap4", "type": "text", "x": 0.58, "y": 0.79, "w": 0.24, "h": 0.03, "text": "2080 / TOUR", "align": "center", "z": 20, "style": { "fontSize": 6.5, "fontFamily": "Cormorant", "fontWeight": "w700", "color": "#F3F2EC", "letterSpacing": 0.7 } }
+      ]
+    }
+  ]
+}

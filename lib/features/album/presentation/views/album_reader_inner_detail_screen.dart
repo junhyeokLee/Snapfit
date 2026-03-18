@@ -9,6 +9,7 @@ import '../controllers/layer_interaction_manager.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
 import 'page_editor_screen.dart';
+import 'album_invite_screen.dart';
 
 class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
   final List<AlbumPage> innerPages;
@@ -97,6 +98,25 @@ class _AlbumReaderInnerDetailScreenState
           Navigator.pop(ctx);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
+          );
+        },
+        onInvite: () {
+          Navigator.pop(ctx);
+          final album = vm.album;
+          if (album == null || album.id <= 0) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')));
+            return;
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AlbumInviteScreen(
+                albumId: album.id,
+                albumTitle: album.title ?? 'SnapFit Album',
+              ),
+            ),
           );
         },
       ),
@@ -407,7 +427,9 @@ class _DetailInnerCard extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: interaction.sortByZ(page.layers).map((layer) {
-                      if (layer.type == LayerType.image) {
+                      if (layer.type == LayerType.image ||
+                          layer.type == LayerType.sticker ||
+                          layer.type == LayerType.decoration) {
                         return layerBuilder.buildImage(layer);
                       }
                       return layerBuilder.buildText(layer);

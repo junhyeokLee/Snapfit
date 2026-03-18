@@ -114,6 +114,11 @@ class PageListSelector extends ConsumerWidget {
       kCoverReferenceWidth,
       kCoverReferenceWidth / ratio,
     );
+    final coverInteraction = LayerInteractionManager.preview(
+      ref,
+      () => logicalCoverSize,
+    );
+    final coverBuilder = LayerBuilder(coverInteraction, () => logicalCoverSize);
 
     if (isCover) {
       // 커버: CoverLayout으로 테마 + 레이어 렌더링
@@ -130,9 +135,10 @@ class PageListSelector extends ConsumerWidget {
             isInteracting: false,
             leftSpine: 0, // 썸네일에서 spine 제거
             onCoverSizeChanged: (_) {},
-            buildImage: (layer) => buildStaticImage(layer),
-            buildText: (layer) => buildStaticText(layer),
-            sortedByZ: (list) => list..sort((a, b) => a.id.compareTo(b.id)),
+            buildImage: (layer) =>
+                coverBuilder.buildImage(layer, isCover: true),
+            buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+            sortedByZ: coverInteraction.sortByZ,
             theme: theme,
           ),
         ),

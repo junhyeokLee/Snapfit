@@ -39,25 +39,33 @@ class LayerExportMapper {
       'scale': layer.scale, // scale 별도 저장
       'rotation': layer.rotation,
       'opacity': layer.opacity,
-      'payload': layer.type == LayerType.image
-          ? {
-              'imageBackground': layer.imageBackground,
-              'imageTemplate': layer.imageTemplate,
-              // 운영급: original/preview 우선 저장 + 하위 호환 imageUrl 미러링
-              'originalUrl': layer.originalUrl,
-              'previewUrl': layer.previewUrl ?? layer.imageUrl,
-              'imageUrl': layer.previewUrl ?? layer.imageUrl,
-            }
-          : {
-              'text': layer.text,
-              'textAlign': layer.textAlign?.name,
-              'textStyleType': layer.textStyleType?.name,
-              'textBackground': layer.textBackground,
-              'bubbleColor': layer.bubbleColor != null
-                  ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
-                  : null,
-              'textStyle': _textStyleToJson(layer.textStyle, refWidth),
-            },
+      'payload': switch (layer.type) {
+        LayerType.image => {
+          'imageBackground': layer.imageBackground,
+          'imageTemplate': layer.imageTemplate,
+          // 운영급: original/preview 우선 저장 + 하위 호환 imageUrl 미러링
+          'originalUrl': layer.originalUrl,
+          'previewUrl': layer.previewUrl ?? layer.imageUrl,
+          'imageUrl': layer.previewUrl ?? layer.imageUrl,
+        },
+        LayerType.sticker || LayerType.decoration => {
+          'imageBackground': layer.imageBackground,
+          'imageTemplate': layer.imageTemplate,
+          'originalUrl': layer.originalUrl,
+          'previewUrl': layer.previewUrl ?? layer.imageUrl,
+          'imageUrl': layer.previewUrl ?? layer.imageUrl,
+        },
+        LayerType.text => {
+          'text': layer.text,
+          'textAlign': layer.textAlign?.name,
+          'textStyleType': layer.textStyleType?.name,
+          'textBackground': layer.textBackground,
+          'bubbleColor': layer.bubbleColor != null
+              ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
+              : null,
+          'textStyle': _textStyleToJson(layer.textStyle, refWidth),
+        },
+      },
     };
   }
 

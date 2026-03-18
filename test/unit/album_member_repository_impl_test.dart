@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/album/data/api/album_member_api.dart';
+import 'package:snap_fit/features/album/data/dto/album_member_response.dart';
 import 'package:snap_fit/features/album/data/dto/request/accept_invite_request.dart';
 import 'package:snap_fit/features/album/data/dto/request/invite_album_request.dart';
 import 'package:snap_fit/features/album/data/dto/response/invite_accept_response.dart';
@@ -71,5 +72,32 @@ void main() {
 
     expect(response.albumId, 2);
     verify(() => api.acceptInvite('token', any())).called(1);
+  });
+
+  test('fetchMembers uses userId from token storage', () async {
+    final api = MockAlbumMemberApi();
+    final storage = MockTokenStorage();
+    final repository = AlbumMemberRepositoryImpl(api, tokenStorage: storage);
+
+    when(() => storage.getUserId()).thenAnswer((_) async => '1958142146');
+    when(() => api.fetchMembers(170, '1958142146')).thenAnswer(
+      (_) async => const [
+        AlbumMemberResponse(
+          id: 1,
+          userId: 1958142146,
+          userName: 'me',
+          userEmail: 'me@snapfit.app',
+          profileImageUrl: null,
+          role: 'EDITOR',
+          status: 'ACCEPTED',
+        ),
+      ],
+    );
+
+    final members = await repository.fetchMembers(170);
+
+    expect(members, isNotEmpty);
+    expect(members.first.userId, 1958142146);
+    verify(() => api.fetchMembers(170, '1958142146')).called(1);
   });
 }

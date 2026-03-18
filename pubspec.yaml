@@ -49,6 +49,7 @@ dependencies:
   retrofit: ^4.9.1
   firebase_storage: ^13.0.6
   firebase_core: ^4.4.0
+  firebase_messaging: ^16.0.6
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
   flutter_secure_storage: ^9.2.4
@@ -57,6 +58,7 @@ dependencies:
   kakao_flutter_sdk_share: ^1.10.0
   connectivity_plus: ^6.1.0 # 네트워크 연결 상태를 위한 connectivity_plus
   url_launcher: ^6.3.1
+  share_plus: ^11.1.0
 
 
 dev_dependencies:
@@ -72,6 +74,9 @@ dev_dependencies:
   network_image_mock: ^2.1.1
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.1
+
+dependency_overrides:
+  shared_preferences_android: 2.4.21
 
 
 flutter:
@@ -100,6 +105,7 @@ flutter:
     - assets/splash.png
     - assets/empty_state.png
     - assets/sticker/
+    - assets/templates/
 
 
   fonts:

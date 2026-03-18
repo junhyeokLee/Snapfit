@@ -55,54 +55,7 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   /// 프로필 이미지를 서버에 업로드하고 로컬 유저 정보 갱신
   Future<void> updateProfileImage(File image) async {
     final api = ref.read(authApiProvider);
-
-    // 1. 이미지 압축 로직 (Nginx 기본 설정 1MB 이하로 맞추기 위해 강력하게 압축)
-    File fileToUpload = image;
-    try {
-      int sizeInBytes = await image.length();
-      // 1MB 보다는 조금 더 안전하게 0.9MB 기준으로 잡음
-      int targetSize = 900 * 1024;
-
-      if (sizeInBytes > targetSize) {
-        final tmpDir = await getTemporaryDirectory();
-
-        // 반복 압축을 위한 변수
-        int quality = 85;
-        int minWidth = 1920;
-        int minHeight = 1920;
-
-        // 최대 3번 시도
-        for (int i = 0; i < 3; i++) {
-          final targetPath =
-              '${tmpDir.path}/${DateTime.now().millisecondsSinceEpoch}_compressed_$i.jpg';
-
-          final compressedXFile = await FlutterImageCompress.compressAndGetFile(
-            image.absolute.path,
-            targetPath,
-            quality: quality,
-            minWidth: minWidth,
-            minHeight: minHeight,
-          );
-
-          if (compressedXFile != null) {
-            final compressedFile = File(compressedXFile.path);
-            final newSize = await compressedFile.length();
-
-            if (newSize < targetSize) {
-              fileToUpload = compressedFile;
-              break; // 성공하면 루프 종료
-            }
-
-            // 실패하면 설정 낮춰서 재시도
-            quality -= 15; // 85 -> 70 -> 55
-            minWidth = (minWidth * 0.8).toInt(); // 1920 -> 1536 -> 1228
-            minHeight = (minHeight * 0.8).toInt();
-          }
-        }
-      }
-    } catch (e) {
-      // 실패 시 원본 사용 (하지만 413 에러 가능성 있음)
-    }
+    final fileToUpload = await _normalizeImageForUpload(image);
 
     try {
       final userInfo = await api.updateProfile(profileImage: fileToUpload);
@@ -129,11 +82,56 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
         }
       }
 
-      if (e.response?.statusCode == 404) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 404) {
         throw Exception('서버에 프로필 저장 기능이 없습니다. 백엔드를 최신 버전으로 배포한 뒤 다시 시도해 주세요.');
+      }
+      if (statusCode == 413) {
+        throw Exception('이미지 용량이 너무 큽니다. 더 작은 이미지를 선택해 주세요.');
+      }
+      if (statusCode == 415) {
+        throw Exception('지원하지 않는 이미지 형식입니다. JPG/PNG 이미지를 선택해 주세요.');
+      }
+      if (statusCode == 500) {
+        throw Exception('서버 이미지 저장소 설정 문제로 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       }
       rethrow;
     }
+  }
+
+  Future<File> _normalizeImageForUpload(File image) async {
+    final tmpDir = await getTemporaryDirectory();
+    File result = image;
+    int quality = 88;
+    int minWidth = 1920;
+    int minHeight = 1920;
+    final targetSize = 900 * 1024;
+
+    for (int i = 0; i < 4; i++) {
+      final targetPath =
+          '${tmpDir.path}/${DateTime.now().millisecondsSinceEpoch}_profile_$i.jpg';
+      try {
+        final compressed = await FlutterImageCompress.compressAndGetFile(
+          result.absolute.path,
+          targetPath,
+          quality: quality,
+          minWidth: minWidth,
+          minHeight: minHeight,
+          format: CompressFormat.jpeg,
+        );
+        if (compressed == null) break;
+        result = File(compressed.path);
+        if (await result.length() <= targetSize) {
+          break;
+        }
+        quality = (quality - 14).clamp(45, 95).toInt();
+        minWidth = (minWidth * 0.82).toInt();
+        minHeight = (minHeight * 0.82).toInt();
+      } catch (_) {
+        break;
+      }
+    }
+    return result;
   }
 
   Future<void> logout() async {

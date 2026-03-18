@@ -254,6 +254,9 @@ class LayerInteractionManager {
 
     final byZ = List<LayerModel>.from(l)
       ..sort((a, b) {
+        final aBg = _isBackgroundLayer(a);
+        final bBg = _isBackgroundLayer(b);
+        if (aBg != bBg) return aBg ? -1 : 1;
         final za = _z[a.id] ?? a.zIndex;
         final zb = _z[b.id] ?? b.zIndex;
         if (za != zb) return za.compareTo(zb);
@@ -283,7 +286,9 @@ class LayerInteractionManager {
   void syncZOrder(List<LayerModel> orderedLayers) {
     _z.clear();
     _zCounter = 0;
-    for (final layer in orderedLayers) {
+    final backgrounds = orderedLayers.where(_isBackgroundLayer);
+    final nonBackgrounds = orderedLayers.where((l) => !_isBackgroundLayer(l));
+    for (final layer in [...backgrounds, ...nonBackgrounds]) {
       _z[layer.id] = ++_zCounter;
     }
     setState(() {});
@@ -523,12 +528,15 @@ class LayerInteractionManager {
     }
 
     if (_selectedLayerId != layer.id) {
+      final isBackground = _isBackgroundLayer(layer);
       setState(() {
         _selectedLayerId = layer.id;
         _editingLayerId = null;
-        _z[layer.id] = ++_zCounter;
+        if (!isBackground) {
+          _z[layer.id] = ++_zCounter;
+        }
       });
-      _bringLayerToFrontInPage(layer.id);
+      if (!isBackground) _bringLayerToFrontInPage(layer.id);
       onLayerTap?.call(layer);
     } else {
       if (layer.type == LayerType.text) {
@@ -553,12 +561,15 @@ class LayerInteractionManager {
       hasSnapped: false, // 스냅 햅틱 피드백 플래그 초기화
     );
 
+    final isBackground = _isBackgroundLayer(layer);
     setState(() {
       _selectedLayerId = layer.id;
       _editingLayerId = null;
-      _z[layer.id] = ++_zCounter; // 맨 앞으로 가져오기
+      if (!isBackground) {
+        _z[layer.id] = ++_zCounter; // 맨 앞으로 가져오기
+      }
     });
-    _bringLayerToFrontInPage(layer.id);
+    if (!isBackground) _bringLayerToFrontInPage(layer.id);
   }
 
   /// 선택된 레이어를 페이지 레이어 리스트에서 맨 위(맨 앞)로 올림 — 레이어 바텀시트 순서와 동기화
@@ -569,9 +580,25 @@ class LayerInteractionManager {
     if (layers.isEmpty) return;
     final idx = layers.indexWhere((l) => l.id == layerId);
     if (idx < 0 || idx >= layers.length - 1) return;
+    if (_isBackgroundLayer(layers[idx])) return;
     ref
         .read(albumEditorViewModelProvider.notifier)
         .reorderLayer(idx, layers.length - 1);
+  }
+
+  bool _isBackgroundLayer(LayerModel layer) {
+    if (layer.type != LayerType.decoration) return false;
+    final cover = getCoverSize();
+    final fillsCanvas =
+        layer.position.dx.abs() <= 0.1 &&
+        layer.position.dy.abs() <= 0.1 &&
+        (layer.width - cover.width).abs() <= 1.0 &&
+        (layer.height - cover.height).abs() <= 1.0;
+    if (fillsCanvas) return true;
+    final key = layer.imageBackground ?? '';
+    return key.startsWith('paper') ||
+        key == 'darkVignette' ||
+        key == 'notebookPunchPage';
   }
 
   /// 제스처 업데이트 이벤트 처리 (손가락을 움직이는 동안)

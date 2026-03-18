@@ -91,6 +91,8 @@ class AlbumPersistenceService {
     required String themeLabel,
     required String title,
     required double coverRatio,
+    required int targetPages,
+    bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {
     try {
@@ -157,7 +159,7 @@ class AlbumPersistenceService {
         CreateAlbumRequest(
           ratio: coverRatio.toString(),
           title: title,
-          targetPages: 0, // 백그라운드 업데이트 시엔 0 혹은 기존 값 유지
+          targetPages: targetPages,
           coverLayersJson: json,
           coverImageUrl: coverPreviewUrl ?? '',
           coverThumbnailUrl: coverPreviewUrl ?? '',
@@ -170,6 +172,9 @@ class AlbumPersistenceService {
       debugPrint('[Background] Upload Completed for Album $albumId');
     } catch (e) {
       debugPrint('[Background] Upload Failed: $e');
+      if (!swallowErrors) {
+        rethrow;
+      }
     }
   }
 

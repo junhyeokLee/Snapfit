@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,12 +7,15 @@ import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/theme/theme_mode_controller.dart';
 import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
-import '../../../album/data/api/album_provider.dart';
-import '../../../album/presentation/viewmodels/album_editor_view_model.dart';
 import '../../../album/presentation/viewmodels/gallery_notifier.dart'; // Add import
+import '../../../album/presentation/viewmodels/home_view_model.dart';
+import '../../../album/presentation/widgets/home/home_album_helpers.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
+import '../../../album/presentation/views/album_category_screen.dart';
+import 'notification_settings_screen.dart';
+import 'order_history_screen.dart';
+import 'terms_policy_screen.dart';
 
-/// 마이 페이지 (이미지 구조: 프로필, 주문/배송, 공유 앨범, 앱 설정·테마, 로그아웃)
 class MyPageScreen extends ConsumerWidget {
   const MyPageScreen({super.key});
 
@@ -27,69 +28,224 @@ class MyPageScreen extends ConsumerWidget {
       ScreenLogger.enter('MyPageScreen', '마이 · 테마 설정(라이트/다크) · 로그아웃');
     }
     final authAsync = ref.watch(authViewModelProvider);
+    final albumsAsync = ref.watch(homeViewModelProvider);
     final userInfo = authAsync.asData?.value;
     final themeMode = ref.watch(themeModeControllerProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
+    final currentUserId = userInfo?.id.toString() ?? '';
+    final albums = albumsAsync.asData?.value ?? const [];
+    final sharedAlbums = albums.where((a) {
+      if (currentUserId.isEmpty) return false;
+      return a.userId.trim().isNotEmpty && a.userId.trim() != currentUserId;
+    }).toList();
+    final completedAlbums = albums.where(isCompletedAlbum).toList();
+    final totalPhotos = albums.fold<int>(0, (sum, a) => sum + a.totalPages);
 
     return Scaffold(
-      backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: AppBar(
-        title: Text(
-          '마이페이지',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
-        ),
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings_outlined, color: textColor, size: 24.sp),
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('설정 화면은 준비 중입니다.')));
-            },
-          ),
-        ],
-      ),
+      backgroundColor: SnapFitColors.isDark(context)
+          ? SnapFitColors.backgroundOf(context)
+          : const Color(0xFFF7F8FA),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 32.h),
+        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
         children: [
-          // 1. 프로필 영역
-          _buildProfileSection(context, ref, userInfo, textColor, subColor),
+          SizedBox(height: MediaQuery.of(context).padding.top),
+          _buildTopBar(context, ref, textColor, themeMode),
+          SizedBox(height: 12.h),
+          _buildProfileHero(context, ref, userInfo, textColor, subColor),
+          SizedBox(height: 12.h),
+          _buildStatsRow(
+            context,
+            textColor: textColor,
+            subColor: subColor,
+            totalPhotos: totalPhotos,
+            sharedCount: sharedAlbums.length,
+            completedCount: completedAlbums.length,
+          ),
+          SizedBox(height: 12.h),
+          _buildOrderStatusCard(context),
+          SizedBox(height: 12.h),
+          _buildMenuCard(
+            context: context,
+            rows: [
+              _menuRow(
+                context: context,
+                icon: Icons.history_rounded,
+                title: '나의 주문 내역',
+                trailingDot: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const OrderHistoryScreen(),
+                    ),
+                  );
+                },
+              ),
+              _menuRow(
+                context: context,
+                icon: Icons.photo_library_outlined,
+                title: '공유된 앨범',
+                trailingDot: sharedAlbums.isNotEmpty,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AlbumCategoryScreen(
+                        category: AlbumCategory.shared,
+                        initialAlbums: sharedAlbums,
+                        currentUserId: currentUserId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _menuRow(
+                context: context,
+                icon: Icons.notifications_none_rounded,
+                title: '알림 설정',
+                trailingDot: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationSettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _menuRow(
+                context: context,
+                icon: Icons.description_outlined,
+                title: '약관 및 정책',
+                trailingDot: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TermsPolicyScreen(),
+                    ),
+                  );
+                },
+              ),
+              _menuRow(
+                context: context,
+                icon: Icons.help_outline_rounded,
+                title: '고객 센터',
+                trailingDot: false,
+                onTap: () {},
+              ),
+            ],
+          ),
           SizedBox(height: 24.h),
-
-          // 2. 주문 배송 조회
-          _buildSectionTitle(context, '주문 배송 조회', '전체보기', textColor, ref),
-          SizedBox(height: 8.h),
-          _buildOrderDeliveryCard(context, textColor, subColor),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () async {
+                  await ref.read(authViewModelProvider.notifier).logout();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('로그아웃되었습니다.')));
+                  }
+                },
+                child: Text(
+                  '로그아웃',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: subColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              TextButton(
+                onPressed: () {},
+                child: Text(
+                  '탈퇴하기',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: subColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 24.h),
-
-          // 3. 공유된 앨범
-          _buildSectionTitle(context, '공유된 앨범', null, textColor, ref),
-          SizedBox(height: 8.h),
-          _buildSharedAlbumCard(context, textColor, subColor),
+          Center(
+            child: Text(
+              'SnapFit Version 1.4.2 (2024)',
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: SnapFitColors.textMutedOf(context),
+              ),
+            ),
+          ),
           SizedBox(height: 24.h),
-
-          // 4. 앱 설정 및 지원 (테마 포함)
-          _buildSectionTitle(context, '앱 설정 및 지원', null, textColor, ref),
-          SizedBox(height: 8.h),
-          _buildAppSettingsCard(context, ref, themeMode, textColor, subColor),
-          SizedBox(height: 24.h),
-
-          // 5. 로그아웃
-          _buildLogoutButton(context, ref, textColor),
         ],
       ),
     );
   }
 
-  Widget _buildProfileSection(
+  Widget _buildTopBar(
+    BuildContext context,
+    WidgetRef ref,
+    Color textColor,
+    ThemeMode themeMode,
+  ) {
+    return Row(
+      children: [
+        Text(
+          '마이페이지',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w800,
+            color: textColor,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const Spacer(),
+        IconButton(
+          icon: Icon(Icons.settings_rounded, size: 20.sp, color: textColor),
+          onPressed: () => _showThemeBottomSheet(context, ref, themeMode),
+        ),
+        Stack(
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.notifications_rounded,
+                size: 20.sp,
+                color: textColor,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationSettingsScreen(),
+                  ),
+                );
+              },
+            ),
+            Positioned(
+              right: 10.w,
+              top: 10.h,
+              child: Container(
+                width: 7.w,
+                height: 7.w,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF10BEE2),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileHero(
     BuildContext context,
     WidgetRef ref,
     UserInfo? userInfo,
@@ -97,457 +253,412 @@ class MyPageScreen extends ConsumerWidget {
     Color subColor,
   ) {
     final name = userInfo?.name ?? '사용자';
-    final email = userInfo?.email ?? '';
+    final email = userInfo?.email ?? 'snapfit_user@example.com';
     final profileUrl = userInfo?.profileImageUrl;
 
-    return Row(
+    return Column(
       children: [
         Stack(
           clipBehavior: Clip.none,
           children: [
-            GestureDetector(
-              onTap: () {
-                if (profileUrl != null && profileUrl.isNotEmpty) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                      backgroundColor: Colors.transparent,
-                      insetPadding: EdgeInsets.zero,
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          InteractiveViewer(
-                            child: Image.network(
-                              profileUrl,
-                              fit: BoxFit.contain,
-                              width: double.infinity,
-                              height: double.infinity,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(16.w),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                              ),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: Container(
-                width: 72.w,
-                height: 72.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: SnapFitColors.accent, width: 2),
-                  color: SnapFitColors.surfaceOf(context),
-                ),
-                child: ClipOval(
+            Container(
+              width: 126.w,
+              height: 126.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFF3C6AD),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: ClipOval(
+                child: SizedBox(
+                  width: 126.w,
+                  height: 126.w,
                   child: profileUrl != null && profileUrl.isNotEmpty
                       ? Image.network(
                           profileUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
-                              Icon(Icons.person, size: 36.sp, color: subColor),
+                              Container(color: const Color(0xFFE9D8CE)),
                         )
-                      : Icon(Icons.person, size: 36.sp, color: subColor),
+                      : Container(color: const Color(0xFFE9D8CE)),
                 ),
               ),
             ),
             Positioned(
-              right: 0,
-              bottom: 0,
+              right: -2.w,
+              bottom: 6.h,
               child: GestureDetector(
                 onTap: () => _pickAndSaveProfileImage(context, ref, userInfo),
                 child: Container(
-                  width: 24.w,
-                  height: 24.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.accent,
+                  width: 34.w,
+                  height: 34.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF10BEE2),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: SnapFitColors.backgroundOf(context),
-                      width: 1.5,
-                    ),
                   ),
-                  child: Icon(Icons.edit, size: 12.sp, color: Colors.white),
+                  child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: SnapFitColors.accent.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Text(
-                      'OWNER',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                        color: SnapFitColors.accent,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (email.isNotEmpty) ...[
-                SizedBox(height: 4.h),
-                Text(
-                  email,
-                  style: TextStyle(fontSize: 13.sp, color: subColor),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ],
+        SizedBox(height: 12.h),
+        Text(
+          name,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w800,
+            color: textColor,
+            letterSpacing: -0.2,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE1F6FB),
+            borderRadius: BorderRadius.circular(999.r),
+          ),
+          child: Text(
+            '✪ Family Plan 멤버십',
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF10BEE2),
+            ),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          email,
+          style: TextStyle(
+            fontSize: 10.sp,
+            color: subColor,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(
-    BuildContext context,
-    String title,
-    String? actionLabel,
-    Color textColor,
-    WidgetRef ref,
-  ) {
+  Widget _buildStatsRow(
+    BuildContext context, {
+    required Color textColor,
+    required Color subColor,
+    required int totalPhotos,
+    required int sharedCount,
+    required int completedCount,
+  }) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _statItem('나의 사진', totalPhotos, textColor, subColor),
+        Container(
+          width: 1,
+          height: 38.h,
+          color: SnapFitColors.overlayLightOf(context),
+        ),
+        _statItem('공유된앨범', sharedCount, textColor, subColor),
+        Container(
+          width: 1,
+          height: 38.h,
+          color: SnapFitColors.overlayLightOf(context),
+        ),
+        _statItem('제작 완료', completedCount, textColor, subColor),
+      ],
+    );
+  }
+
+  Widget _statItem(String label, int value, Color textColor, Color subColor) {
+    return Column(
       children: [
         Text(
-          title,
+          '$value',
           style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w800,
             color: textColor,
           ),
         ),
-        if (actionLabel != null)
-          GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('전체보기 기능은 준비 중입니다.')),
-              );
-            },
-            child: Text(
-              actionLabel,
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-                color: SnapFitColors.accent,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCard({
-    required BuildContext context,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildOrderDeliveryCard(
-    BuildContext context,
-    Color textColor,
-    Color subColor,
-  ) {
-    final items = [('2', '결제완료'), ('1', '제작중'), ('1', '배송중'), ('12', '배송완료')];
-    return _buildCard(
-      context: context,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: items.asMap().entries.map((e) {
-              final isHighlight = e.key == 2;
-              return Column(
-                children: [
-                  Text(
-                    e.value.$1,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w800,
-                      color: isHighlight ? SnapFitColors.accent : textColor,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    e.value.$2,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: isHighlight ? SnapFitColors.accent : subColor,
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSharedAlbumCard(
-    BuildContext context,
-    Color textColor,
-    Color subColor,
-  ) {
-    return _buildCard(
-      context: context,
-      children: [
-        _listTile(
-          context: context,
-          icon: Icons.folder_outlined,
-          title: '초대받은 앨범',
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: SnapFitColors.accent,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Text(
-                  '3',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              SizedBox(width: 4.w),
-              Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-            ],
-          ),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
-        _listTile(
-          context: context,
-          icon: Icons.group_outlined,
-          title: '함께 편집중인 친구',
-          trailing: Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-          onTap: () {},
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAppSettingsCard(
-    BuildContext context,
-    WidgetRef ref,
-    ThemeMode themeMode,
-    Color textColor,
-    Color subColor,
-  ) {
-    return _buildCard(
-      context: context,
-      children: [
-        _listTile(
-          context: context,
-          icon: Icons.notifications_outlined,
-          title: '알림 설정',
-          trailing: Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
-        _listTile(
-          context: context,
-          icon: Icons.help_outline,
-          title: '고객 센터',
-          trailing: Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
-        _listTile(
-          context: context,
-          icon: Icons.info_outline,
-          title: '약관 및 정책',
-          trailing: Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
-        // 테마 (기존 유지)
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          child: Row(
-            children: [
-              Icon(Icons.palette_outlined, color: textColor, size: 22.sp),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '테마',
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                    SizedBox(height: 6.h),
-                    Row(
-                      children: [
-                        _themeChip(
-                          context,
-                          ref,
-                          label: '라이트',
-                          mode: ThemeMode.light,
-                          current: themeMode,
-                          onTap: () => ref
-                              .read(themeModeControllerProvider.notifier)
-                              .setLight(),
-                        ),
-                        SizedBox(width: 12.w),
-                        _themeChip(
-                          context,
-                          ref,
-                          label: '다크',
-                          mode: ThemeMode.dark,
-                          current: themeMode,
-                          onTap: () => ref
-                              .read(themeModeControllerProvider.notifier)
-                              .setDark(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _themeChip(
-    BuildContext context,
-    WidgetRef ref, {
-    required String label,
-    required ThemeMode mode,
-    required ThemeMode current,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = mode == current;
-    final textColor = SnapFitColors.textPrimaryOf(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? SnapFitColors.accent.withValues(alpha: 0.2)
-              : SnapFitColors.overlayLightOf(context),
-          borderRadius: BorderRadius.circular(12.r),
-          border: isSelected
-              ? Border.all(color: SnapFitColors.accent, width: 1.5)
-              : null,
-        ),
-        child: Text(
+        SizedBox(height: 2.h),
+        Text(
           label,
           style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? SnapFitColors.accent : textColor,
+            fontSize: 9.sp,
+            color: subColor,
+            fontWeight: FontWeight.w500,
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildOrderStatusCard(BuildContext context) {
+    final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
+    final statuses = const [
+      (Icons.credit_card_rounded, '결제대기', '1'),
+      (Icons.payments_rounded, '결제완료', '2'),
+      (Icons.auto_awesome_motion_rounded, '제작중', '1'),
+      (Icons.local_shipping_rounded, '배송중', '1'),
+      (Icons.task_alt_rounded, '배송완료', '3'),
+    ];
+    return Container(
+      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                '나의 주문 현황',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right, size: 20.sp, color: subColor),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: statuses.map((s) {
+                return Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: Column(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 48.w,
+                            height: 48.w,
+                            decoration: BoxDecoration(
+                              color: SnapFitColors.overlayLightOf(context),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Icon(s.$1, size: 20.sp, color: textColor),
+                          ),
+                          Positioned(
+                            right: -6.w,
+                            top: -6.h,
+                            child: Container(
+                              width: 20.w,
+                              height: 20.w,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10BEE2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                s.$3,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 7.h),
+                      Text(
+                        s.$2,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: textColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _listTile({
+  Widget _buildMenuCard({
+    required BuildContext context,
+    required List<Widget> rows,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < rows.length; i++) ...[
+            rows[i],
+            if (i != rows.length - 1)
+              Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _menuRow({
     required BuildContext context,
     required IconData icon,
     required String title,
-    required Widget trailing,
+    required bool trailingDot,
     required VoidCallback onTap,
   }) {
     final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
     return ListTile(
-      leading: Icon(icon, color: textColor, size: 22.sp),
+      onTap: onTap,
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 3.h),
+      leading: Container(
+        width: 34.w,
+        height: 34.w,
+        decoration: BoxDecoration(
+          color: SnapFitColors.overlayLightOf(context),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Icon(icon, size: 17.sp, color: textColor),
+      ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: 15.sp,
+          fontSize: 12.sp,
           fontWeight: FontWeight.w500,
           color: textColor,
         ),
       ),
-      trailing: trailing,
-      onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingDot)
+            Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFF10BEE2),
+                shape: BoxShape.circle,
+              ),
+            ),
+          SizedBox(width: trailingDot ? 10.w : 0),
+          Icon(Icons.chevron_right, color: subColor, size: 20.sp),
+        ],
+      ),
     );
   }
 
-  Widget _buildLogoutButton(
+  void _showThemeBottomSheet(
     BuildContext context,
     WidgetRef ref,
-    Color textColor,
+    ThemeMode themeMode,
   ) {
-    return Center(
-      child: TextButton(
-        onPressed: () async {
-          await ref.read(authViewModelProvider.notifier).logout();
-          if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('로그아웃되었습니다.')));
-          }
-        },
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: SnapFitColors.surfaceOf(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 14.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '테마 설정',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: SnapFitColors.textPrimaryOf(context),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _themeOptionButton(
+                        context: context,
+                        label: '라이트',
+                        selected: themeMode == ThemeMode.light,
+                        onTap: () {
+                          ref
+                              .read(themeModeControllerProvider.notifier)
+                              .setLight();
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: _themeOptionButton(
+                        context: context,
+                        label: '다크',
+                        selected: themeMode == ThemeMode.dark,
+                        onTap: () {
+                          ref
+                              .read(themeModeControllerProvider.notifier)
+                              .setDark();
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _themeOptionButton({
+    required BuildContext context,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? SnapFitColors.accent.withValues(alpha: 0.2)
+              : SnapFitColors.overlayLightOf(context),
+          borderRadius: BorderRadius.circular(12.r),
+          border: selected ? Border.all(color: SnapFitColors.accent) : null,
+        ),
         child: Text(
-          '로그아웃',
+          label,
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 12.sp,
+            color: selected
+                ? SnapFitColors.accent
+                : SnapFitColors.textPrimaryOf(context),
             fontWeight: FontWeight.w700,
-            color: Colors.red,
           ),
         ),
       ),

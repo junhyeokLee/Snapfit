@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../album/domain/entities/layer.dart';
 
 class TemplatePageRenderer extends StatelessWidget {
@@ -24,6 +24,9 @@ class TemplatePageRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ordered = [...layers]..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final bounds = _contentBounds(ordered);
+
     return Container(
       width: width,
       height: height,
@@ -35,25 +38,49 @@ class TemplatePageRenderer extends StatelessWidget {
         ],
       ),
       child: Stack(
-        children: layers
-            .map((layer) => _buildLayerWidget(layer, width, height))
+        clipBehavior: Clip.hardEdge,
+        children: ordered
+            .map((layer) => _buildLayerWidget(layer, width, height, bounds))
             .toList(),
       ),
     );
   }
 
-  Widget _buildLayerWidget(LayerModel layer, double canvasW, double canvasH) {
-    // Parsing base was 500x500
-    const double baseW = 500;
-    const double baseH = 500;
+  Rect _contentBounds(List<LayerModel> ordered) {
+    if (ordered.isEmpty) return const Rect.fromLTWH(0, 0, 500, 500);
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = -double.infinity;
+    double maxY = -double.infinity;
+    for (final l in ordered) {
+      minX = math.min(minX, l.position.dx);
+      minY = math.min(minY, l.position.dy);
+      maxX = math.max(maxX, l.position.dx + l.width);
+      maxY = math.max(maxY, l.position.dy + l.height);
+    }
+    if (!minX.isFinite || !minY.isFinite || !maxX.isFinite || !maxY.isFinite) {
+      return const Rect.fromLTWH(0, 0, 500, 500);
+    }
+    final w = math.max(1.0, maxX - minX);
+    final h = math.max(1.0, maxY - minY);
+    return Rect.fromLTWH(minX, minY, w, h);
+  }
 
-    final scaleX = canvasW / baseW;
-    final scaleY = canvasH / baseH;
+  Widget _buildLayerWidget(
+    LayerModel layer,
+    double canvasW,
+    double canvasH,
+    Rect bounds,
+  ) {
+    final x = ((layer.position.dx - bounds.left) / bounds.width) * canvasW;
+    final y = ((layer.position.dy - bounds.top) / bounds.height) * canvasH;
+    final w = (layer.width / bounds.width) * canvasW;
+    final h = (layer.height / bounds.height) * canvasH;
 
-    final x = layer.position.dx * scaleX;
-    final y = layer.position.dy * scaleY;
-    final w = layer.width * scaleX;
-    final h = layer.height * scaleY;
+    final safeW = w.clamp(8.0, canvasW).toDouble();
+    final safeH = h.clamp(8.0, canvasH).toDouble();
+    final safeX = x.clamp(0.0, canvasW - safeW).toDouble();
+    final safeY = y.clamp(0.0, canvasH - safeH).toDouble();
 
     if (layer.type == LayerType.image) {
       final localFile = localFiles?[layer.id];
@@ -77,12 +104,7 @@ class TemplatePageRenderer extends StatelessWidget {
       Widget layerWidget;
       if (frame == 'polaroid') {
         layerWidget = Container(
-          padding: EdgeInsets.fromLTRB(
-            5 * scaleX,
-            5 * scaleX,
-            5 * scaleX,
-            25 * scaleX,
-          ),
+          padding: EdgeInsets.fromLTRB(5, 5, 5, 25),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
@@ -95,10 +117,10 @@ class TemplatePageRenderer extends StatelessWidget {
         // Actually the code in detail screen manually adjusted rect.
         // Let's copy that logic:
         return Positioned(
-          left: x - 10 * scaleX,
-          top: y - 10 * scaleY,
-          width: w + 20 * scaleX,
-          height: h + 40 * scaleY,
+          left: (safeX - 6).clamp(0.0, canvasW - safeW),
+          top: (safeY - 6).clamp(0.0, canvasH - safeH),
+          width: (safeW + 12).clamp(8.0, canvasW),
+          height: (safeH + 24).clamp(8.0, canvasH),
           child: GestureDetector(
             onTap: onLayerTap != null
                 ? () => onLayerTap!(layer.id)
@@ -111,37 +133,86 @@ class TemplatePageRenderer extends StatelessWidget {
       }
 
       return Positioned(
-        left: x,
-        top: y,
-        width: w,
-        height: h,
+        left: safeX,
+        top: safeY,
+        width: safeW,
+        height: safeH,
         child: GestureDetector(
           onTap: onLayerTap != null ? () => onLayerTap!(layer.id) : onImageTap,
           child: layerWidget,
         ),
       );
+    } else if (layer.type == LayerType.decoration ||
+        layer.type == LayerType.sticker) {
+      return Positioned(
+        left: safeX,
+        top: safeY,
+        width: safeW,
+        height: safeH,
+        child: _buildDecorationWidget(layer),
+      );
     } else {
       // Text
       final style = layer.textStyle ?? const TextStyle();
       return Positioned(
-        left: x,
-        top: y,
-        width: w,
-        height: h,
+        left: safeX,
+        top: safeY,
+        width: safeW,
+        height: safeH,
         child: Container(
           // color: Colors.black12, // Debug
           alignment: _getAlignment(layer.textAlign),
           child: Text(
             layer.text ?? '',
             textAlign: layer.textAlign ?? TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
             style: style.copyWith(
-              fontSize: (style.fontSize ?? 14) * scaleX,
+              fontSize: (style.fontSize ?? 14) * (safeW / 500.0),
               color: style.color ?? Colors.black,
             ),
           ),
         ),
       );
     }
+  }
+
+  Widget _buildDecorationWidget(LayerModel layer) {
+    final bg = layer.imageBackground ?? '';
+    if (bg == 'paperWarm') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF6EDE0), Color(0xFFECDDCB)],
+          ),
+        ),
+      );
+    }
+    if (bg == 'paperWhite') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFAFAF7), Color(0xFFF0F0EC)],
+          ),
+        ),
+      );
+    }
+    if (bg == 'paperBeige') {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF1E8D7), Color(0xFFE5DCC9)],
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Alignment _getAlignment(TextAlign? align) {

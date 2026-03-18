@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album.dart';
@@ -45,6 +46,82 @@ CoverTheme resolveCoverTheme(String? label) {
   return CoverTheme.classic;
 }
 
+class AlbumProgressInfo {
+  final int completedPages;
+  final int targetPages;
+
+  const AlbumProgressInfo({
+    required this.completedPages,
+    required this.targetPages,
+  });
+
+  bool get hasTarget => targetPages > 0;
+
+  double get ratio =>
+      hasTarget ? (completedPages / targetPages).clamp(0.0, 1.0) : 0.0;
+
+  String get percentLabel => hasTarget ? '${(ratio * 100).round()}%' : '목표 없음';
+
+  String get pageProgressLabel => hasTarget
+      ? '$completedPages/$targetPages 페이지 진행 중'
+      : '$completedPages 페이지 진행 중';
+}
+
+AlbumProgressInfo calculateAlbumProgress(Album album) {
+  final int fallbackCompleted = _countCompletedInnerPagesFromCoverLayersJson(
+    album.coverLayersJson,
+  );
+  final int completed = math.max(album.totalPages, fallbackCompleted);
+  final int target = album.targetPages > 0 ? album.targetPages : 0;
+  final int clampedCompleted = target > 0
+      ? completed.clamp(0, target)
+      : completed;
+
+  return AlbumProgressInfo(
+    completedPages: clampedCompleted,
+    targetPages: target,
+  );
+}
+
+Color sharedAlbumCoverToneColor(Album album) {
+  final fallback = const Color(0xFFE8E2D0);
+
+  final theme = (album.coverTheme ?? '').toLowerCase();
+  if (theme.contains('classic2')) return const Color(0xFFDBDDE6);
+  if (theme.contains('nature')) return const Color(0xFFDDE9DA);
+  if (theme.contains('architecture')) return const Color(0xFFE5E1D6);
+  if (theme.contains('abstract')) return const Color(0xFFE4DFF1);
+  if (theme.contains('texture')) return const Color(0xFFE2DDD4);
+
+  final toneKey = _extractCoverToneKey(album.coverLayersJson);
+  if (toneKey != null) {
+    final k = toneKey.toLowerCase();
+    if (k.contains('pink') || k.contains('rose') || k.contains('coral')) {
+      return const Color(0xFFF0D9DA);
+    }
+    if (k.contains('blue') || k.contains('navy')) {
+      return const Color(0xFFD8E1F0);
+    }
+    if (k.contains('mint') || k.contains('green') || k.contains('teal')) {
+      return const Color(0xFFDDEADE);
+    }
+    if (k.contains('orange') || k.contains('yellow') || k.contains('gold')) {
+      return const Color(0xFFF0E2CB);
+    }
+    if (k.contains('lavender') || k.contains('purple')) {
+      return const Color(0xFFE5DEF2);
+    }
+    if (k.contains('gray') || k.contains('grey')) {
+      return const Color(0xFFE3E3E3);
+    }
+    if (k.contains('cream') || k.contains('beige') || k.contains('paper')) {
+      return const Color(0xFFE9E2D5);
+    }
+  }
+
+  return fallback;
+}
+
 /// 커버 레이어 파싱
 List<LayerModel>? parseCoverLayers(String raw, {required Size canvasSize}) {
   if (raw.isEmpty) return null;
@@ -72,6 +149,24 @@ List<LayerModel>? parseCoverLayers(String raw, {required Size canvasSize}) {
 /// 정적 이미지 빌드
 Widget buildStaticImage(LayerModel layer) {
   final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl ?? '';
+  final hasAssetUrl = url.startsWith('asset:');
+  final assetPath = hasAssetUrl ? url.substring('asset:'.length) : null;
+  final imageChild = url.isEmpty
+      ? (layer.asset != null
+            ? AssetEntityImage(layer.asset!, fit: BoxFit.cover)
+            : Container(
+                width: layer.width,
+                height: layer.height,
+                color: Colors.grey[300],
+              ))
+      : hasAssetUrl
+      ? Image.asset(assetPath!, fit: BoxFit.cover)
+      : SnapfitImage(
+          urlOrGs: url,
+          fit: BoxFit.cover,
+          cacheManager: snapfitImageCacheManager,
+        );
+
   if (url.isEmpty) {
     return Positioned(
       left: layer.position.dx,
@@ -82,10 +177,10 @@ Widget buildStaticImage(LayerModel layer) {
           scale: layer.scale,
           child: Opacity(
             opacity: layer.opacity,
-            child: Container(
+            child: SizedBox(
               width: layer.width,
               height: layer.height,
-              color: Colors.grey[300],
+              child: imageChild,
             ),
           ),
         ),
@@ -108,11 +203,7 @@ Widget buildStaticImage(LayerModel layer) {
             SizedBox(
               width: layer.width,
               height: layer.height,
-              child: SnapfitImage(
-                urlOrGs: url,
-                fit: BoxFit.cover,
-                cacheManager: snapfitImageCacheManager,
-              ),
+              child: imageChild,
             ),
           ),
         ),
@@ -163,17 +254,19 @@ bool isDraftAlbum(Album album) {
 
 bool isLiveEditingAlbum(Album album) {
   if (isDraftAlbum(album)) return false;
-  if (album.targetPages <= 0) {
+  final progress = calculateAlbumProgress(album);
+  if (!progress.hasTarget) {
     // 목표 페이지 미설정: 진행 중으로 간주
     return true;
   }
-  return album.totalPages < album.targetPages;
+  return progress.completedPages < progress.targetPages;
 }
 
 bool isCompletedAlbum(Album album) {
   if (isDraftAlbum(album)) return false;
-  if (album.targetPages <= 0) return false;
-  return album.totalPages >= album.targetPages;
+  final progress = calculateAlbumProgress(album);
+  if (!progress.hasTarget) return false;
+  return progress.completedPages >= progress.targetPages;
 }
 
 /// 앨범 상태 정보 (라벨, 배경색, 글자색) 반환
@@ -230,6 +323,85 @@ AlbumStatusInfo getAlbumStatusInfo(Album album, String currentUserId) {
     backgroundColor: const Color(0xFF00C2E0), // Cyan background
     foregroundColor: Colors.white, // White text
   );
+}
+
+int _countCompletedInnerPagesFromCoverLayersJson(String raw) {
+  if (raw.isEmpty) return 0;
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map<String, dynamic>) return 0;
+
+    final pages = decoded['pages'];
+    if (pages is! List) return 0;
+
+    var completed = 0;
+    for (final page in pages) {
+      if (page is! Map) continue;
+      final isCover = page['isCover'] == true || page['index'] == 0;
+      if (isCover) continue;
+
+      final layers = page['layers'];
+      if (layers is! List) continue;
+
+      final hasMeaningfulLayer = layers.any(_isMeaningfulProgressLayer);
+      if (hasMeaningfulLayer) completed++;
+    }
+    return completed;
+  } catch (_) {
+    return 0;
+  }
+}
+
+bool _isMeaningfulProgressLayer(dynamic rawLayer) {
+  if (rawLayer is! Map) return false;
+  final layer = rawLayer.cast<String, dynamic>();
+
+  final type = (layer['type'] as String? ?? '').toUpperCase();
+  final payload =
+      (layer['payload'] as Map?)?.cast<String, dynamic>() ?? const {};
+
+  if (type == 'TEXT') {
+    final text = payload['text'] as String?;
+    return text != null && text.trim().isNotEmpty;
+  }
+
+  final preview = payload['previewUrl'] as String?;
+  final image = payload['imageUrl'] as String?;
+  final original = payload['originalUrl'] as String?;
+  final url = preview ?? image ?? original;
+  return url != null && url.trim().isNotEmpty;
+}
+
+String? _extractCoverToneKey(String raw) {
+  if (raw.isEmpty) return null;
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map<String, dynamic>) return null;
+    final pages = decoded['pages'];
+    if (pages is! List || pages.isEmpty) return null;
+    final first = pages.first;
+    if (first is! Map) return null;
+    final layers = first['layers'];
+    if (layers is! List || layers.isEmpty) return null;
+
+    for (final rawLayer in layers.reversed) {
+      if (rawLayer is! Map) continue;
+      final layer = rawLayer.cast<String, dynamic>();
+      final payload =
+          (layer['payload'] as Map?)?.cast<String, dynamic>() ?? const {};
+      final imageBackground = payload['imageBackground'] as String?;
+      if (imageBackground != null && imageBackground.trim().isNotEmpty) {
+        return imageBackground;
+      }
+      final textBackground = payload['textBackground'] as String?;
+      if (textBackground != null && textBackground.trim().isNotEmpty) {
+        return textBackground;
+      }
+    }
+  } catch (_) {
+    return null;
+  }
+  return null;
 }
 
 /// 이미지 프레임 정적 렌더링 (LayerBuilder와 로직 동기화)

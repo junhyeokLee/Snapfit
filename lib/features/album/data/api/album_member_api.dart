@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import '../dto/request/invite_album_request.dart';
 import '../dto/request/accept_invite_request.dart';
+import '../dto/album_member_response.dart';
 import '../dto/response/invite_link_response.dart';
 import '../dto/response/invite_info_response.dart';
 import '../dto/response/invite_accept_response.dart';
@@ -29,5 +30,12 @@ abstract class AlbumMemberApi {
   Future<InviteAcceptResponse> acceptInvite(
     @Path('token') String token,
     @Body() AcceptInviteRequest request,
+  );
+
+  /// 앨범 멤버 목록 조회
+  @GET("/api/albums/{albumId}/members")
+  Future<List<AlbumMemberResponse>> fetchMembers(
+    @Path('albumId') int albumId,
+    @Query('userId') String userId,
   );
 }

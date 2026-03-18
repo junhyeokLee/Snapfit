@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -66,7 +68,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   final List<AlbumPage> _pages = [];
   int _currentPageIndex = 0;
   int? _editingAlbumId;
+  int _targetPagesHint = 0;
   String? _pendingCoverLayersJson;
+  List<List<LayerModel>>? _pendingTemplatePagesAfterLoad;
   String? _initialCoverImageUrl;
   String? _initialCoverThumbnailUrl;
   String? _initialAlbumTitle;
@@ -84,6 +88,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   final Map<int, List<AlbumPage>> _redoByPage = {};
   bool _historyLocked = false; // undo/redo 적용 중 기록 방지
   bool _hasUnsavedChanges = false;
+  static const int _saveNetworkRetryCount = 3;
 
   // ===== Selected getters =====
   CoverSize get selectedCover => _cover;
@@ -150,6 +155,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _initialCoverImageUrl = null;
     _initialCoverThumbnailUrl = null;
     _initialAlbumTitle = null;
+    _targetPagesHint = targetPageCount;
 
     // [Rescale Fix] 새 앨범 생성 시 트래커 초기화
     _lastCoverCanvasSize = Size.zero;
@@ -161,6 +167,195 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     final prev = state.value ?? const AlbumEditorState();
     state = AsyncData(prev.copyWith(coverCanvasSize: null));
+    _emit();
+  }
+
+  /// 스토어 로컬 템플릿(홈 피처드 등)을 에디터 페이지로 직접 시작
+  /// - 서버 앨범 생성 없이 임시 편집 세션으로 진입
+  void startLocalTemplateAlbum({
+    required String albumTitle,
+    required List<List<LayerModel>> pages,
+    CoverSize? initialCover,
+  }) {
+    final chosenCover =
+        initialCover ??
+        coverSizes.firstWhere(
+          (s) => s.name == '세로형',
+          orElse: () => coverSizes.first,
+        );
+
+    _clearAllHistory();
+    _pages.clear();
+    _cover = chosenCover;
+    _selectedTheme = CoverTheme.classic;
+
+    final coverCanvas = _coverReferenceSize;
+    final innerCanvas = _innerPageCanvasSize;
+
+    if (pages.isEmpty) {
+      _pages.add(_service.createPage(index: 0, isCover: true));
+      _pages.add(_service.createPage(index: 1));
+    } else {
+      for (int i = 0; i < pages.length; i++) {
+        final isCover = i == 0;
+        final source = pages[i];
+        final targetCanvas = isCover ? coverCanvas : innerCanvas;
+        final mapped = _remapTemplatePageLayers(
+          sourceLayers: source,
+          targetCanvas: targetCanvas,
+        );
+        final page = _service.createPage(index: i, isCover: isCover);
+        page.layers
+          ..clear()
+          ..addAll(mapped);
+        _pages.add(page);
+      }
+      if (_pages.length == 1) {
+        _pages.add(_service.createPage(index: 1));
+      }
+    }
+
+    _currentPageIndex = 0;
+    _editingAlbumId = null;
+    _pendingCoverLayersJson = null;
+    _initialCoverImageUrl = null;
+    _initialCoverThumbnailUrl = null;
+    _initialAlbumTitle = albumTitle;
+    _targetPagesHint = math.max(1, _pages.length - 1);
+
+    _lastCoverCanvasSize = coverCanvas;
+    _lastInnerCanvasSize = innerCanvas;
+
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
+    ref.read(coverViewModelProvider.notifier).updateTheme(_selectedTheme);
+
+    final prev = state.value ?? const AlbumEditorState();
+    state = AsyncData(
+      prev.copyWith(coverCanvasSize: coverCanvas, innerCanvasSize: innerCanvas),
+    );
+    _emit();
+  }
+
+  List<LayerModel> _remapTemplatePageLayers({
+    required List<LayerModel> sourceLayers,
+    required Size targetCanvas,
+  }) {
+    if (sourceLayers.isEmpty) return const [];
+
+    final content = sourceLayers
+        .where((l) => l.type != LayerType.decoration)
+        .toList();
+    if (content.isEmpty) {
+      return sourceLayers.map((l) => l.copyWith()).toList(growable: false);
+    }
+
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = -double.infinity;
+    double maxY = -double.infinity;
+    for (final l in content) {
+      minX = math.min(minX, l.position.dx);
+      minY = math.min(minY, l.position.dy);
+      maxX = math.max(maxX, l.position.dx + l.width);
+      maxY = math.max(maxY, l.position.dy + l.height);
+    }
+
+    final srcW = (maxX - minX).clamp(1.0, double.infinity);
+    final srcH = (maxY - minY).clamp(1.0, double.infinity);
+    final inset = math.min(targetCanvas.width, targetCanvas.height) * 0.02;
+    final usableW = (targetCanvas.width - inset * 2).clamp(
+      1.0,
+      double.infinity,
+    );
+    final usableH = (targetCanvas.height - inset * 2).clamp(
+      1.0,
+      double.infinity,
+    );
+    final scale = math.min(usableW / srcW, usableH / srcH);
+
+    final dstW = srcW * scale;
+    final dstH = srcH * scale;
+    final offsetX = (targetCanvas.width - dstW) / 2;
+    final offsetY = (targetCanvas.height - dstH) / 2;
+
+    return sourceLayers
+        .map((layer) {
+          final nx = offsetX + (layer.position.dx - minX) * scale;
+          final ny = offsetY + (layer.position.dy - minY) * scale;
+          final nw = layer.width * scale;
+          final nh = layer.height * scale;
+          final style = layer.textStyle;
+          final scaledStyle = style?.copyWith(
+            fontSize: style.fontSize == null ? null : style.fontSize! * scale,
+            letterSpacing: style.letterSpacing == null
+                ? null
+                : style.letterSpacing! * scale,
+          );
+
+          final clampedX = nx
+              .clamp(inset, math.max(inset, targetCanvas.width - nw - inset))
+              .toDouble();
+          final clampedY = ny
+              .clamp(inset, math.max(inset, targetCanvas.height - nh - inset))
+              .toDouble();
+
+          return layer.copyWith(
+            position: Offset(clampedX, clampedY),
+            width: nw,
+            height: nh,
+            textStyle: scaledStyle,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  /// 현재 로드된 앨범 페이지에 템플릿 페이지를 덮어쓴다.
+  /// - keepCurrentCover=true: 사용자가 만든 커버를 유지하고 내지부터 적용
+  void applyTemplatePagesToCurrentAlbum(
+    List<List<LayerModel>> templatePages, {
+    bool keepCurrentCover = true,
+  }) {
+    if (templatePages.isEmpty || _pages.isEmpty) return;
+
+    final start = keepCurrentCover ? 1 : 0;
+    final srcStart = keepCurrentCover ? 1 : 0;
+    var dstIndex = start;
+
+    for (int srcIndex = srcStart; srcIndex < templatePages.length; srcIndex++) {
+      final isCover = dstIndex == 0;
+      while (_pages.length <= dstIndex) {
+        _pages.add(_service.createPage(index: _pages.length, isCover: false));
+      }
+
+      final targetCanvas = isCover ? _coverReferenceSize : _innerPageCanvasSize;
+      final mapped = _remapTemplatePageLayers(
+        sourceLayers: templatePages[srcIndex],
+        targetCanvas: targetCanvas,
+      );
+
+      final page = _pages[dstIndex];
+      page.layers
+        ..clear()
+        ..addAll(mapped);
+      dstIndex++;
+    }
+
+    _currentPageIndex = _currentPageIndex.clamp(0, _pages.length - 1);
+    _emit();
+  }
+
+  /// 생성 플로우 Step2에서 템플릿 예시 커버를 미리 보여줄 때 사용
+  void applyTemplateCoverPreview(List<LayerModel> coverLayers) {
+    if (_pages.isEmpty || coverLayers.isEmpty) return;
+    final mapped = _remapTemplatePageLayers(
+      sourceLayers: coverLayers,
+      targetCanvas: _coverReferenceSize,
+    );
+    final cover = _pages.first;
+    cover.layers
+      ..clear()
+      ..addAll(mapped);
+    _currentPageIndex = 0;
     _emit();
   }
 
@@ -194,6 +389,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             .read(albumRepositoryProvider)
             .fetchAlbum(album.id.toString());
         await _loadAlbumForEdit(updatedAlbum);
+        final pendingPages = _pendingTemplatePagesAfterLoad;
+        if (pendingPages != null && pendingPages.isNotEmpty) {
+          applyTemplatePagesToCurrentAlbum(
+            pendingPages,
+            keepCurrentCover: false,
+          );
+        }
+        _pendingTemplatePagesAfterLoad = null;
       } else {
         state = const AsyncError('앨범 생성 확인 시간이 초과되었습니다.', StackTrace.empty);
       }
@@ -202,6 +405,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     // 일반 편집 모드
     await _loadAlbumForEdit(album);
+  }
+
+  /// 생성 직후 서버 로드가 끝나면 템플릿 페이지를 자동 적용하기 위한 큐
+  void queueTemplatePagesForNextLoad(List<List<LayerModel>> pages) {
+    if (pages.isEmpty) return;
+    _pendingTemplatePagesAfterLoad = pages;
   }
 
   /// 앨범 데이터를 로드하여 편집 준비
@@ -249,8 +458,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         ? '{"layers":[]}'
         : effective.coverLayersJson;
     _editingAlbumId = album.id > 0 ? album.id : null;
-    _initialCoverImageUrl = album.coverImageUrl;
-    _initialCoverThumbnailUrl = album.coverThumbnailUrl;
+    _initialCoverImageUrl = effective.coverImageUrl;
+    _initialCoverThumbnailUrl = effective.coverThumbnailUrl;
     _initialAlbumTitle = album.title; // 앨범 제목 저장
 
     // 이전 편집 상태 초기화: 페이지/커버 캔버스 정보 리셋
@@ -261,6 +470,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     // Step1에서 선택한 페이지 수(targetPages)만큼 빈 내지 페이지 미리 생성
     // targetPages가 0이면 기본 1페이지
     final targetPageCount = album.targetPages > 0 ? album.targetPages : 1;
+    _targetPagesHint = targetPageCount;
     for (int i = 1; i <= targetPageCount; i++) {
       _pages.add(_service.createPage(index: i));
     }
@@ -298,6 +508,21 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     final String pendingJson = _pendingCoverLayersJson!;
     _pendingCoverLayersJson = null;
+
+    // [Guard] 리더 화면 등에서 이미 커버 레이어가 있는 상태에서,
+    // 목록에서 coverLayersJson이 비어 넘어온 케이스(= {"layers":[]} 폴백)가
+    // 다시 덮어써서 "빈 커버"로 보이는 문제를 방지한다.
+    final bool pendingIsEmptyCoverOnly =
+        pendingJson.trim().contains('"layers"') &&
+        pendingJson.trim().contains('[]') &&
+        !pendingJson.trim().contains('"pages"');
+    final bool hasExistingCoverLayers =
+        _pages.isNotEmpty &&
+        _pages.first.isCover &&
+        _pages.first.layers.isNotEmpty;
+    if (pendingIsEmptyCoverOnly && hasExistingCoverLayers) {
+      return;
+    }
 
     // [10단계 Fix] 커버는 이제 항상 kCoverReferenceWidth(500px) 기준으로 복원합니다.
     // 실측 canvasSize에 의한 리스케일링은 UI 단에서 Transform.scale로 처리합니다.
@@ -407,6 +632,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }) async {
     final List<LayerModel> currentLayers =
         overrideLayers ?? List.of(state.value?.layers ?? []);
+    final resolvedTargetPages = (() {
+      if (targetPages != null && targetPages > 0) return targetPages;
+      if (_targetPagesHint > 0) return _targetPagesHint;
+      return math.max(1, _pages.where((p) => !p.isCover).length);
+    })();
     final albumVm = ref.read(albumViewModelProvider.notifier);
     final themeLabel = _selectedTheme.label;
 
@@ -432,7 +662,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         await albumVm.createAlbum(
           ratio: _cover.ratio.toString(),
           title: title ?? '',
-          targetPages: targetPages ?? 0,
+          targetPages: resolvedTargetPages,
           coverLayersJson: tempJson,
           coverImageUrl: '',
           coverThumbnailUrl: '',
@@ -447,7 +677,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
       // [STEP 2] 후(後) 업로드: 서비스로 이관 (진행률 콜백 포함)
       if (createdAlbumId != null) {
-        _persistence.performBackgroundUpload(
+        final uploadFuture = _persistence.performBackgroundUpload(
           albumId: createdAlbumId,
           canvasSize: canvasSize,
           currentLayers: currentLayers,
@@ -455,6 +685,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           themeLabel: themeLabel,
           title: title ?? '',
           coverRatio: _cover.ratio,
+          targetPages: resolvedTargetPages,
+          swallowErrors: _editingAlbumId == null,
           onProgress: (completed, total) {
             final prev = state.value;
             if (prev == null || total == 0) return;
@@ -464,6 +696,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             );
           },
         );
+        // 기존 앨범 수정은 "저장 완료" 시점에 실제 반영되도록 완료까지 대기
+        if (_editingAlbumId != null) {
+          await uploadFuture;
+        }
       }
       return createdAlbumId;
     } catch (e) {
@@ -495,12 +731,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (_pages.isEmpty) return;
     _recordUndo();
     final currentPage = _pages[_currentPageIndex];
+    final nextZ = _nextZIndex(currentPage);
 
-    // 에셋 자체에 맞춰 보이는 고정 크기 (너무 크게 키우지 않음)
-    // - scrap 시리즈는 에셋 사이즈 기준으로 디자인되어 있어서
-    //   캔버스 비율에 따라 과하게 확대하지 않고 적당한 고정값으로 둔다.
-    const double width = 260.0;
-    const double height = 220.0;
+    // 캔버스 비율에 따라 과도하게 잘리지 않도록 동적 크기 적용
+    // (내지/커버 모두 동일 체감 크기 유지)
+    final double width = (canvasSize.width * 0.54).clamp(150.0, 320.0);
+    final double height = (width * 0.84).clamp(120.0, 280.0);
 
     final pos = Offset(
       (canvasSize.width - width) / 2,
@@ -517,8 +753,40 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       // imageBackground를 지정하지 않아서 추가적인 흰 배경/테두리 없이
       // PNG 자체만 그대로 출력되도록 한다.
       opacity: 1.0,
+      zIndex: nextZ,
     );
 
+    currentPage.layers.add(layer);
+    _emit();
+  }
+
+  /// 벡터/도형 기반 데코 스티커 추가
+  void addDecorationSticker(
+    String styleKey,
+    Size canvasSize, {
+    double scale = 1.0,
+  }) {
+    if (_pages.isEmpty) return;
+    _recordUndo();
+    final currentPage = _pages[_currentPageIndex];
+    final nextZ = _nextZIndex(currentPage);
+    final base = (canvasSize.width * 0.18).clamp(42.0, 120.0) * scale;
+    final width = base.clamp(22.0, canvasSize.width * 0.36);
+    final height = (base * 0.9).clamp(20.0, canvasSize.height * 0.3);
+    final pos = Offset(
+      (canvasSize.width - width) / 2,
+      (canvasSize.height - height) / 2,
+    );
+    final layer = LayerModel(
+      id: UniqueKey().toString(),
+      type: LayerType.decoration,
+      position: pos,
+      width: width,
+      height: height,
+      imageBackground: styleKey,
+      opacity: 1.0,
+      zIndex: nextZ,
+    );
     currentPage.layers.add(layer);
     _emit();
   }
@@ -534,6 +802,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }) {
     _recordUndo();
     final currentPage = _pages[_currentPageIndex];
+    final nextZ = _nextZIndex(currentPage);
 
     // ✅ 텍스트 안전 여백 (descender 안전)
     const double horizontalPadding = 16;
@@ -559,9 +828,18 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       color: color,
       initialWidth: safeWidth,
       initialHeight: safeHeight,
+      zIndex: nextZ,
     );
 
     _emit();
+  }
+
+  int _nextZIndex(AlbumPage page) {
+    var maxZ = 0;
+    for (final layer in page.layers) {
+      if (layer.zIndex > maxZ) maxZ = layer.zIndex;
+    }
+    return maxZ + 1;
   }
 
   /// 레이어 업데이트
@@ -714,10 +992,95 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (page == null) return;
     _recordUndo();
     final layers = template.buildLayers(canvasSize);
+    final normalized = _normalizeTemplateLayers(layers, canvasSize);
     page.layers
       ..clear()
-      ..addAll(layers);
+      ..addAll(normalized);
     _emit();
+  }
+
+  List<LayerModel> _normalizeTemplateLayers(
+    List<LayerModel> layers,
+    Size canvas,
+  ) {
+    if (layers.isEmpty || canvas.width <= 0 || canvas.height <= 0) {
+      return layers;
+    }
+
+    final content = layers.where((l) {
+      if (l.type == LayerType.decoration &&
+          l.position == Offset.zero &&
+          (l.width - canvas.width).abs() <= 0.1 &&
+          (l.height - canvas.height).abs() <= 0.1) {
+        return false;
+      }
+      return true;
+    }).toList();
+    if (content.isEmpty) return layers;
+
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = -double.infinity;
+    double maxY = -double.infinity;
+    for (final l in content) {
+      minX = math.min(minX, l.position.dx);
+      minY = math.min(minY, l.position.dy);
+      maxX = math.max(maxX, l.position.dx + l.width);
+      maxY = math.max(maxY, l.position.dy + l.height);
+    }
+
+    final boundsW = maxX - minX;
+    final boundsH = maxY - minY;
+    if (boundsW <= 0 || boundsH <= 0) return layers;
+
+    final inset = math.min(canvas.width, canvas.height) * 0.01;
+    final targetW = canvas.width - (inset * 2);
+    final targetH = canvas.height - (inset * 2);
+    final scale = math.min(1.0, math.min(targetW / boundsW, targetH / boundsH));
+
+    final cx = (minX + maxX) / 2;
+    final cy = (minY + maxY) / 2;
+    final tx = canvas.width / 2 - cx;
+    final ty = canvas.height / 2 - cy;
+
+    return layers.map((l) {
+      if (l.type == LayerType.decoration &&
+          l.position == Offset.zero &&
+          (l.width - canvas.width).abs() <= 0.1 &&
+          (l.height - canvas.height).abs() <= 0.1) {
+        return l;
+      }
+
+      final center = Offset(
+        l.position.dx + l.width / 2,
+        l.position.dy + l.height / 2,
+      );
+      final movedCenter = Offset(center.dx + tx, center.dy + ty);
+      final canvasCenter = Offset(canvas.width / 2, canvas.height / 2);
+      final scaledCenter =
+          canvasCenter + ((movedCenter - canvasCenter) * scale);
+      final w = l.width * scale;
+      final h = l.height * scale;
+      final x = scaledCenter.dx - w / 2;
+      final y = scaledCenter.dy - h / 2;
+      final style = l.textStyle;
+      final scaledStyle = style?.copyWith(
+        fontSize: style.fontSize == null ? null : style.fontSize! * scale,
+        letterSpacing: style.letterSpacing == null
+            ? null
+            : style.letterSpacing! * scale,
+      );
+
+      final clampedX = x.clamp(inset, canvas.width - w - inset).toDouble();
+      final clampedY = y.clamp(inset, canvas.height - h - inset).toDouble();
+
+      return l.copyWith(
+        position: Offset(clampedX, clampedY),
+        width: w,
+        height: h,
+        textStyle: scaledStyle,
+      );
+    }).toList();
   }
 
   /// 템플릿으로 새 페이지 추가 후 해당 페이지로 이동
@@ -752,15 +1115,17 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
                 final uploaded = await _storage.uploadImageVariants(
                   layer.asset!,
                 );
-                final preview = uploaded.previewUrl;
-                final original = uploaded.originalUrl;
-                if (preview != null || original != null) {
-                  return layer.copyWith(
-                    previewUrl: preview,
-                    originalUrl: original,
-                    imageUrl: preview, // 하위 호환 미러링
-                  );
+                final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
+                final original =
+                    uploaded.originalGsPath ?? uploaded.originalUrl;
+                if (preview == null && original == null) {
+                  throw StateError('이미지 업로드에 실패했습니다. (layerId=${layer.id})');
                 }
+                return layer.copyWith(
+                  previewUrl: preview,
+                  originalUrl: original,
+                  imageUrl: preview, // 하위 호환 미러링
+                );
               }
               return layer;
             }),
@@ -796,48 +1161,62 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       final themeLabel = _selectedTheme.label;
 
       if (_editingAlbumId != null) {
-        // 커버 이미지 URL: 전달된 업로드 결과가 있으면 우선 사용
-        String coverImg =
-            coverUploaded?.previewGsPath ??
-            coverUploaded?.previewUrl ??
-            _initialCoverImageUrl ??
-            _initialCoverThumbnailUrl ??
-            '';
-        String coverThumb =
-            coverUploaded?.previewGsPath ??
-            coverUploaded?.previewUrl ??
-            _initialCoverThumbnailUrl ??
-            _initialCoverImageUrl ??
-            '';
-        if (coverImg.isEmpty && _pages.isNotEmpty) {
+        // 커버 URL 우선순위:
+        // 1) 현재 저장에서 새로 업로드한 커버 캡처
+        // 2) 현재 커버 페이지의 첫 이미지 레이어 URL (방금 편집한 결과)
+        // 3) 기존 커버 URL
+        final uploadedCoverUrl =
+            coverUploaded?.previewGsPath ?? coverUploaded?.previewUrl;
+        String? coverFromLayer;
+        if (_pages.isNotEmpty) {
           final coverPage = _pages.first;
           for (final layer in coverPage.layers) {
             if (layer.type == LayerType.image) {
               final url =
                   layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
               if (url != null && url.isNotEmpty) {
-                coverImg = url;
-                coverThumb = url;
+                coverFromLayer = url;
                 break;
               }
             }
           }
         }
-        await albumVm.updateAlbum(
-          albumId: _editingAlbumId!,
-          ratio: _cover.ratio.toString(),
-          title: _initialAlbumTitle ?? '', // 앨범 제목 유지
-          coverLayersJson: fullJson,
-          coverImageUrl: coverImg,
-          coverThumbnailUrl: coverThumb,
-          coverPreviewUrl: coverImg.isNotEmpty ? coverImg : null,
-          coverOriginalUrl: null,
-          coverTheme: themeLabel,
-        );
-        _editingAlbumId = null;
-        _initialCoverImageUrl = null;
-        _initialCoverThumbnailUrl = null;
-        _initialAlbumTitle = null; // 초기화
+
+        final coverImg =
+            uploadedCoverUrl ??
+            coverFromLayer ??
+            _initialCoverImageUrl ??
+            _initialCoverThumbnailUrl ??
+            '';
+        final coverThumb =
+            uploadedCoverUrl ??
+            coverFromLayer ??
+            _initialCoverThumbnailUrl ??
+            _initialCoverImageUrl ??
+            '';
+        await _runWithRetry(() async {
+          await albumVm.updateAlbum(
+            albumId: _editingAlbumId!,
+            ratio: _cover.ratio.toString(),
+            title: _initialAlbumTitle ?? '', // 앨범 제목 유지
+            targetPages: _targetPagesHint > 0
+                ? _targetPagesHint
+                : math.max(1, _pages.where((p) => !p.isCover).length),
+            coverLayersJson: fullJson,
+            coverImageUrl: coverImg,
+            coverThumbnailUrl: coverThumb,
+            coverPreviewUrl: coverImg.isNotEmpty ? coverImg : null,
+            coverOriginalUrl: null,
+            coverTheme: themeLabel,
+          );
+        }, maxAttempts: _saveNetworkRetryCount);
+        if (coverImg.isNotEmpty) {
+          _initialCoverImageUrl = coverImg;
+        }
+        if (coverThumb.isNotEmpty) {
+          _initialCoverThumbnailUrl = coverThumb;
+        }
+        // 편집 세션은 유지 (연속 저장/추가 수정 대응)
       }
 
       // 백그라운드 업로드 진행률 초기화
@@ -851,6 +1230,47 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       state = AsyncError(e, st);
       return false; // 실패 반환
     }
+  }
+
+  Future<T> _runWithRetry<T>(
+    Future<T> Function() action, {
+    int maxAttempts = 3,
+  }) async {
+    Object? lastError;
+    StackTrace? lastStack;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await action();
+      } catch (e, st) {
+        lastError = e;
+        lastStack = st;
+        final canRetry = _isRetriableError(e) && attempt < maxAttempts;
+        if (!canRetry) {
+          rethrow;
+        }
+        final delayMs = 250 * attempt;
+        await Future.delayed(Duration(milliseconds: delayMs));
+      }
+    }
+    Error.throwWithStackTrace(lastError!, lastStack!);
+  }
+
+  bool _isRetriableError(Object error) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return true;
+        case DioExceptionType.badResponse:
+          final code = error.response?.statusCode ?? 0;
+          return code >= 500 && code < 600;
+        default:
+          return false;
+      }
+    }
+    return false;
   }
 
   /// 페이지 전환
@@ -925,7 +1345,36 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     _recordUndo();
     final old = page.layers[idx];
-    final updated = old.copyWith(asset: asset);
+    // 템플릿 등 기존 URL이 있는 슬롯에 새 사진을 교체할 때
+    // 이전 URL을 반드시 비워야 저장 시 새 업로드 결과로 치환된다.
+    // (LayerModel.copyWith는 nullable 필드를 null로 명시 설정할 수 없어 새 객체로 교체)
+    final updated = LayerModel(
+      id: old.id,
+      type: old.type,
+      position: old.position,
+      asset: asset,
+      text: old.text,
+      textStyle: old.textStyle,
+      textStyleType: old.textStyleType,
+      bubbleColor: old.bubbleColor,
+      scale: old.scale,
+      rotation: old.rotation,
+      textAlign: old.textAlign,
+      width: old.width,
+      height: old.height,
+      textBackground: old.textBackground,
+      imageBackground: old.imageBackground,
+      imageTemplate: old.imageTemplate,
+      frameBaseWidth: old.frameBaseWidth,
+      frameBaseHeight: old.frameBaseHeight,
+      frameBasePosition: old.frameBasePosition,
+      imageOffset: old.imageOffset,
+      previewUrl: null,
+      imageUrl: null,
+      originalUrl: null,
+      opacity: old.opacity,
+      zIndex: old.zIndex,
+    );
 
     page.layers[idx] = updated;
     _emit();
