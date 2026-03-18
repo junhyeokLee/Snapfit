@@ -13,6 +13,10 @@ class PremiumTemplate {
   final int pageCount;
   final int likeCount;
   final int userCount;
+  final String? category;
+  final List<String>? tags;
+  final int weeklyScore;
+  final bool isNew;
   final bool isBest;
   final bool isPremium;
   final bool isLiked;
@@ -28,6 +32,10 @@ class PremiumTemplate {
     required this.pageCount,
     this.likeCount = 0,
     required this.userCount,
+    this.category,
+    this.tags,
+    this.weeklyScore = 0,
+    this.isNew = false,
     this.isBest = false,
     this.isPremium = true,
     this.isLiked = false,
@@ -48,6 +56,10 @@ class PremiumTemplate {
     int? pageCount,
     int? likeCount,
     int? userCount,
+    String? category,
+    List<String>? tags,
+    int? weeklyScore,
+    bool? isNew,
     bool? isBest,
     bool? isPremium,
     bool? isLiked,
@@ -63,6 +75,10 @@ class PremiumTemplate {
       pageCount: pageCount ?? this.pageCount,
       likeCount: likeCount ?? this.likeCount,
       userCount: userCount ?? this.userCount,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      weeklyScore: weeklyScore ?? this.weeklyScore,
+      isNew: isNew ?? this.isNew,
       isBest: isBest ?? this.isBest,
       isPremium: isPremium ?? this.isPremium,
       isLiked: isLiked ?? this.isLiked,

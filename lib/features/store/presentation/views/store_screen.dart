@@ -169,6 +169,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   Set<int> _resolveLatestTopIds(List<PremiumTemplate> templates) {
+    final serverNewIds = templates
+        .where((template) => template.isNew)
+        .map((template) => template.id)
+        .toSet();
+    if (serverNewIds.isNotEmpty) {
+      return serverNewIds;
+    }
     final copied = [...templates];
     copied.sort((a, b) => b.id.compareTo(a.id));
     return copied.take(_newBadgeCount).map((e) => e.id).toSet();
@@ -190,6 +197,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   int _weeklyScore(PremiumTemplate template, bool isNew) {
+    if (template.weeklyScore > 0) {
+      return template.weeklyScore + (isNew ? 40 : 0);
+    }
     final bestBonus = template.isBest ? 120 : 0;
     final newBonus = isNew ? 60 : 0;
     return (template.likeCount * 10) +
@@ -231,6 +241,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   String _inferCategory(PremiumTemplate template) {
+    final serverCategory = template.category?.trim();
+    if (serverCategory != null && serverCategory.isNotEmpty) {
+      return serverCategory;
+    }
     final content = [
       template.title,
       template.subTitle,
