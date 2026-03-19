@@ -19,7 +19,7 @@ class HomeHeaderNew extends StatelessWidget {
             Text(
               '스냅핏',
               style: TextStyle(
-                fontSize: 20.sp,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.w800,
                 color: SnapFitColors.textPrimaryOf(context),
               ),
@@ -33,7 +33,7 @@ class HomeHeaderNew extends StatelessWidget {
                       icon: Icon(
                         Icons.notifications_none_rounded,
                         color: SnapFitColors.textPrimaryOf(context),
-                        size: 26.sp,
+                        size: 22.sp,
                       ),
                     ),
                     Positioned(

@@ -25,7 +25,7 @@ class CompletedAlbumList extends StatelessWidget {
 
     return Container(
       color: SnapFitColors.backgroundOf(context),
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 30.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,12 +34,12 @@ class CompletedAlbumList extends StatelessWidget {
             subtitle: '추억으로 남겨진 완벽한 기록들',
             onViewAll: onViewAll,
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 14.h),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: albums.length,
-            separatorBuilder: (context, index) => SizedBox(height: 16.h),
+            separatorBuilder: (context, index) => SizedBox(height: 12.h),
             itemBuilder: (context, index) {
               final album = albums[index];
               return CompletedAlbumCard(

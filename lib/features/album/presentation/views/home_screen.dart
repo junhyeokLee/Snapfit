@@ -332,7 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Text(
               '내 앨범',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w800,
                 color: textPrimary,
               ),
@@ -371,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Text(
                       entry.value,
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w800,
                         color: selected ? textPrimary : textSecondary,
                       ),
@@ -390,7 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(
                   '$tabLabel 앨범',
                   style: TextStyle(
-                    fontSize: 15.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w800,
                     color: textPrimary,
                   ),
@@ -399,7 +399,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(
                   '${tabAlbums.length}개',
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 10.sp,
                     color: textSecondary,
                     fontWeight: FontWeight.w700,
                   ),
@@ -424,7 +424,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Text(
                     '더보기',
                     style: TextStyle(
-                      fontSize: 11.sp,
+                      fontSize: 10.sp,
                       color: SnapFitColors.accent,
                       fontWeight: FontWeight.w700,
                     ),
@@ -463,7 +463,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Text(
             '표시할 앨범이 없습니다.',
             style: TextStyle(
-              fontSize: 11.sp,
+              fontSize: 10.sp,
               color: SnapFitColors.textSecondaryOf(context),
             ),
           ),
@@ -479,9 +479,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: albums.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 12.w,
-          mainAxisSpacing: 12.h,
-          childAspectRatio: 0.7,
+          crossAxisSpacing: 10.w,
+          mainAxisSpacing: 10.h,
+          childAspectRatio: 0.74,
         ),
         itemBuilder: (context, index) {
           final album = albums[index];
@@ -504,7 +504,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(18.r),
+                borderRadius: BorderRadius.circular(15.r),
                 border: Border.all(
                   color: SnapFitColors.overlayLightOf(context),
                 ),
@@ -513,8 +513,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     color: Colors.black.withOpacity(
                       SnapFitColors.isDark(context) ? 0.24 : 0.06,
                     ),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    blurRadius: 9,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
@@ -530,8 +530,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Center(
                               child: HomeAlbumCoverThumbnail(
                                 album: album,
-                                height: 170.h,
-                                maxWidth: 130.w,
+                                height: 152.h,
+                                maxWidth: 120.w,
                                 showShadow: true,
                               ),
                             ),
@@ -543,7 +543,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: GestureDetector(
                             onTap: () => _toggleFavorite(album.id),
                             child: CircleAvatar(
-                              radius: 17.r,
+                              radius: 14.r,
                               backgroundColor: SnapFitColors.pureWhite
                                   .withOpacity(0.92),
                               child: Icon(
@@ -553,7 +553,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 color: isFav
                                     ? SnapFitColors.accent
                                     : SnapFitColors.textSecondaryOf(context),
-                                size: 20.sp,
+                                size: 16.sp,
                               ),
                             ),
                           ),
@@ -576,7 +576,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   chipText,
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11.sp,
+                                    fontSize: 9.5.sp,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -596,7 +596,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     '공유',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 11.sp,
+                                      fontSize: 9.5.sp,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -644,7 +644,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 )
                               : '수정됨',
                           style: TextStyle(
-                            fontSize: 12.sp,
+                            fontSize: 10.sp,
                             color: SnapFitColors.textSecondaryOf(context),
                             fontWeight: FontWeight.w500,
                           ),
@@ -670,7 +670,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               '${progress.completedPages}개 항목',
                               style: TextStyle(
                                 color: SnapFitColors.accent,
-                                fontSize: 12.sp,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),

@@ -17,7 +17,7 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.h),
+      padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -30,24 +30,24 @@ class SectionHeader extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: 19.sp,
                     fontWeight: FontWeight.w900,
                     color: SnapFitColors.textPrimaryOf(context),
-                    letterSpacing: -0.8,
+                    letterSpacing: -0.3,
                     height: 1.1,
                   ),
                 ),
                 if (subtitle != null) ...[
-                  SizedBox(height: 6.h),
+                  SizedBox(height: 4.h),
                   Text(
                     subtitle!,
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11.5.sp,
+                      fontWeight: FontWeight.w500,
                       color: SnapFitColors.textSecondaryOf(
                         context,
                       ).withOpacity(0.6),
-                      letterSpacing: -0.3,
+                      letterSpacing: -0.1,
                       height: 1.2,
                     ),
                   ),
@@ -68,7 +68,7 @@ class SectionHeader extends StatelessWidget {
                     Text(
                       '전체보기',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 12.sp,
                         color: const Color(
                           0xFF00C2E0,
                         ), // Accent color from mockup
@@ -78,7 +78,7 @@ class SectionHeader extends StatelessWidget {
                     SizedBox(width: 4.w),
                     Icon(
                       Icons.arrow_forward_ios,
-                      size: 10.sp,
+                      size: 9.sp,
                       color: const Color(0xFF00C2E0),
                     ),
                   ],

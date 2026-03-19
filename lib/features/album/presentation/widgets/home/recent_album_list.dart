@@ -25,7 +25,7 @@ class RecentAlbumList extends StatefulWidget {
 
 class _RecentAlbumListState extends State<RecentAlbumList> {
   late PageController _pageController;
-  final double _viewportFraction = 0.70;
+  final double _viewportFraction = 0.66;
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _RecentAlbumListState extends State<RecentAlbumList> {
     if (widget.albums.isEmpty) return const SizedBox.shrink();
 
     final displayAlbums = widget.albums.take(6).toList();
-    final listHeight = 440.w;
+    final listHeight = 380.w;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

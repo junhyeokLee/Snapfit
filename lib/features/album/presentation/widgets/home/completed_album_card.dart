@@ -43,18 +43,18 @@ class CompletedAlbumCard extends StatelessWidget {
                           album.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 17.sp,
+                        style: TextStyle(
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                             color: SnapFitColors.textPrimaryOf(context),
-                            letterSpacing: -0.5,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ),
                       Text(
                         '2일 전', // Dummy relative time
                         style: TextStyle(
-                          fontSize: 12.sp,
+                          fontSize: 10.sp,
                           color: SnapFitColors.textMutedOf(context),
                           fontWeight: FontWeight.w500,
                         ),
@@ -67,12 +67,12 @@ class CompletedAlbumCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 11.sp,
                       color: SnapFitColors.textSecondaryOf(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
                   _buildBottomRow(context),
                 ],
               ),
@@ -91,14 +91,14 @@ class CompletedAlbumCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+            blurRadius: 6,
+            offset: const Offset(1, 3),
           ),
         ],
       ),
       child: HomeAlbumCoverThumbnail(
         album: album,
-        height: 100.h, // Fixed height, width will adjust by ratio
+        height: 86.h, // Fixed height, width will adjust by ratio
         showShadow: false, // External shadow used
       ),
     );
@@ -111,7 +111,7 @@ class CompletedAlbumCard extends StatelessWidget {
         _buildAvatarGroup(context),
         Icon(
           Icons.more_horiz,
-          size: 20.sp,
+          size: 17.sp,
           color: SnapFitColors.textMutedOf(context),
         ),
       ],
@@ -121,8 +121,8 @@ class CompletedAlbumCard extends StatelessWidget {
   Widget _buildAvatarGroup(BuildContext context) {
     // Dummy avatars
     return SizedBox(
-      width: 60.w,
-      height: 24.w,
+      width: 52.w,
+      height: 20.w,
       child: Stack(
         children: [
           _avatar(0, const Color(0xFFE0E0E0)),
@@ -131,7 +131,7 @@ class CompletedAlbumCard extends StatelessWidget {
             left: 32.w,
             child: Container(
               width: 24.w,
-              height: 24.w,
+              height: 20.w,
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context),
                 shape: BoxShape.circle,
@@ -144,7 +144,7 @@ class CompletedAlbumCard extends StatelessWidget {
                 child: Text(
                   '+2',
                   style: TextStyle(
-                    fontSize: 9.sp,
+                    fontSize: 8.sp,
                     fontWeight: FontWeight.bold,
                     color: SnapFitColors.textSecondaryOf(context),
                   ),
@@ -161,14 +161,14 @@ class CompletedAlbumCard extends StatelessWidget {
     return Positioned(
       left: left,
       child: Container(
-        width: 24.w,
-        height: 24.w,
+        width: 20.w,
+        height: 20.w,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
           border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         ),
-        child: Icon(Icons.person, size: 14.sp, color: Colors.white),
+        child: Icon(Icons.person, size: 11.sp, color: Colors.white),
       ),
     );
   }

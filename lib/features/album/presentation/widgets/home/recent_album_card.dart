@@ -32,16 +32,16 @@ class RecentAlbumCard extends StatelessWidget {
 
     if (ratio < 0.9) {
       // Vertical (3:4)
-      width = 200.w;
-      height = 266.w;
+      width = 178.w;
+      height = 238.w;
     } else if (ratio > 1.1) {
       // Horizontal (4:3)
-      width = 266.w;
-      height = 200.w;
+      width = 238.w;
+      height = 180.w;
     } else {
       // Square (1:1)
-      width = 266.w;
-      height = 266.w;
+      width = 236.w;
+      height = 236.w;
     }
 
     return GestureDetector(
@@ -57,7 +57,7 @@ class RecentAlbumCard extends StatelessWidget {
               // Cover Image Container
               Container(
                 height:
-                    266.w, // Fixed height to max possible height for alignment
+                    238.w, // Fixed height to max possible height for alignment
                 alignment: Alignment.center,
                 child: Stack(
                   alignment: Alignment.center,
@@ -94,27 +94,27 @@ class RecentAlbumCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 36.w),
+              SizedBox(height: 18.w),
               // Title
               Text(
                 album.title.isEmpty ? '제목 없음' : album.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w800,
                   color: SnapFitColors.textPrimaryOf(context),
                   height: 1.2,
                 ),
               ),
-              SizedBox(height: 8.w),
+              SizedBox(height: 6.w),
               // Info Row (Avatars + Time)
               Row(
                 children: [
                   // Mock Avatars
                   SizedBox(
-                    width: 44.w,
-                    height: 24.w,
+                    width: 38.w,
+                    height: 20.w,
                     child: Stack(
                       children: [
                         Positioned(
@@ -126,10 +126,10 @@ class RecentAlbumCard extends StatelessWidget {
                           child: _buildAvatar(const Color(0xFFE5E5E5)),
                         ),
                         Positioned(
-                          left: 28.w,
+                          left: 22.w,
                           child: Container(
-                            width: 24.w,
-                            height: 24.w,
+                            width: 20.w,
+                            height: 20.w,
                             decoration: BoxDecoration(
                               color: const Color(0xFFF2F2F2),
                               shape: BoxShape.circle,
@@ -139,10 +139,10 @@ class RecentAlbumCard extends StatelessWidget {
                               ),
                             ),
                             alignment: Alignment.center,
-                            child: Text(
-                              '+2',
-                              style: TextStyle(
-                                fontSize: 10.sp,
+                              child: Text(
+                                '+2',
+                                style: TextStyle(
+                                fontSize: 8.5.sp,
                                 color: Colors.black54,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -157,7 +157,7 @@ class RecentAlbumCard extends StatelessWidget {
                     child: Text(
                       '최근 수정: ${formatAlbumDate(album.updatedAt.isEmpty ? album.createdAt : album.updatedAt)} 전',
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 10.5.sp,
                         color: SnapFitColors.textSecondaryOf(context),
                         fontWeight: FontWeight.w500,
                       ),
@@ -166,7 +166,7 @@ class RecentAlbumCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12.w),
+              SizedBox(height: 10.w),
               // Progress Bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -180,7 +180,7 @@ class RecentAlbumCard extends StatelessWidget {
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           Color(0xFF00C2E0),
                         ), // Cyan Blue
-                        minHeight: 6.w,
+                        minHeight: 5.w,
                       ),
                     ),
                   ),
@@ -188,7 +188,7 @@ class RecentAlbumCard extends StatelessWidget {
                   Text(
                     progressLabel,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 10.5.sp,
                       color: const Color(0xFF00C2E0),
                       fontWeight: FontWeight.w700,
                     ),
@@ -204,14 +204,14 @@ class RecentAlbumCard extends StatelessWidget {
 
   Widget _buildAvatar(Color color) {
     return Container(
-      width: 24.w,
-      height: 24.w,
+      width: 20.w,
+      height: 20.w,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2.0),
       ),
-      child: Icon(Icons.person, size: 14.sp, color: Colors.white),
+      child: Icon(Icons.person, size: 12.sp, color: Colors.white),
     );
   }
 
@@ -219,7 +219,7 @@ class RecentAlbumCard extends StatelessWidget {
     final info = getAlbumStatusInfo(album, currentUserId);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: info.backgroundColor.withOpacity(0.78),
         borderRadius: BorderRadius.circular(7.r),
@@ -235,7 +235,7 @@ class RecentAlbumCard extends StatelessWidget {
       child: Text(
         info.label,
         style: TextStyle(
-          fontSize: 10.sp,
+          fontSize: 9.sp,
           fontWeight: FontWeight.w700,
           color: info.foregroundColor,
         ),

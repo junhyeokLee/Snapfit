@@ -36,7 +36,7 @@ class SharedAlbumList extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: SnapFitColors.backgroundOf(context),
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -45,7 +45,7 @@ class SharedAlbumList extends StatelessWidget {
             subtitle: '함께 만들어가는 소중한 순간들',
             onViewAll: onViewAll,
           ),
-          SizedBox(height: 24.h), // 헤더와 리스트 사이 여백 확대
+          SizedBox(height: 16.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,7 +54,7 @@ class SharedAlbumList extends StatelessWidget {
                   children: leftCol.map((e) => _padding(e, true)).toList(),
                 ),
               ),
-              SizedBox(width: 20.w), // 컬럼 사이 간격 확대
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   children: rightCol.map((e) => _padding(e, false)).toList(),
@@ -70,7 +70,7 @@ class SharedAlbumList extends StatelessWidget {
   Widget _padding(MapEntry<int, Album> entry, bool isLeft) {
     return Padding(
       // 아래쪽 여백을 크게 주어 비정형 느낌 강조
-      padding: EdgeInsets.only(bottom: 32.h),
+      padding: EdgeInsets.only(bottom: 20.h),
       child: MasonryAlbumCard(
         album: entry.value,
         currentUserId: currentUserId,
