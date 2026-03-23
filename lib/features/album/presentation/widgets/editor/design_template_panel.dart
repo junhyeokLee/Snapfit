@@ -22,33 +22,16 @@ class DesignTemplatePanel extends ConsumerStatefulWidget {
 class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
   String? _selectedId;
   String _selectedCategory = '전체';
+  final Set<String> _warmedThumbs = <String>{};
 
   Size _effectiveLogicalCanvasSize({
     required AlbumEditorViewModel vm,
     required AlbumEditorState? stateVal,
   }) {
-    final currentPage = vm.currentPage;
-    final isCover = currentPage?.isCover ?? false;
-    final physical = isCover
-        ? stateVal?.coverCanvasSize
-        : stateVal?.innerCanvasSize;
-
-    final double aspect =
-        (physical != null &&
-            physical != Size.zero &&
-            physical.width > 0 &&
-            physical.height > 0)
-        ? (physical.width / physical.height)
-        : (vm.selectedCover.ratio > 0 ? vm.selectedCover.ratio : (3 / 4));
-
-    if (physical != null &&
-        physical != Size.zero &&
-        physical.width > 0 &&
-        physical.height > 0) {
-      return physical;
-    }
-
-    final double baseW = isCover ? kCoverReferenceWidth : 300.0;
+    final double aspect = vm.selectedCover.ratio > 0
+        ? vm.selectedCover.ratio
+        : (3 / 4);
+    final double baseW = kCoverReferenceWidth;
     return Size(baseW, baseW / aspect);
   }
 
@@ -56,13 +39,15 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
   Widget build(BuildContext context) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final stateVal = ref.watch(albumEditorViewModelProvider).value;
-    final currentPage = vm.currentPage;
     final Size canvasSize = _effectiveLogicalCanvasSize(
       vm: vm,
       stateVal: stateVal,
     );
-
-    final templateAspect = _resolveAspect(canvasSize);
+    final templateSourceSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth /
+          ((vm.selectedCover.ratio > 0) ? vm.selectedCover.ratio : (3 / 4)),
+    );
 
     final catalogAsync = ref.watch(designTemplateCatalogProvider);
     final hasCatalogData = catalogAsync.hasValue && catalogAsync.value != null;
@@ -74,6 +59,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
       '전체',
       ...allTemplates.map((t) => t.category).where((c) => c.trim().isNotEmpty),
     }.toList();
+
     int _countByCategory(String category) {
       if (category == '전체') {
         return allTemplates.length;
@@ -83,10 +69,8 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
 
     final templates =
         allTemplates
-            .where(
-              (t) =>
-                  t.aspect == TemplateAspect.any || t.aspect == templateAspect,
-            )
+            // 커버/페이지 모두 동일 템플릿 목록을 노출한다.
+            .where((_) => true)
             .where(
               (t) =>
                   _selectedCategory == '전체' || t.category == _selectedCategory,
@@ -96,11 +80,20 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
             .where((t) => !t.id.startsWith('cover_'))
             .toList()
           ..sort((a, b) {
+            if (a.isFeatured != b.isFeatured) {
+              return a.isFeatured ? -1 : 1;
+            }
+            final byPriority = b.priority.compareTo(a.priority);
+            if (byPriority != 0) return byPriority;
             final aRef = a.id.startsWith('data_ref_');
             final bRef = b.id.startsWith('data_ref_');
             if (aRef != bRef) return aRef ? -1 : 1;
+            final byCategory = a.category.compareTo(b.category);
+            if (byCategory != 0) return byCategory;
             return a.name.compareTo(b.name);
           });
+
+    _warmUpPreviewThumbs(templates);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -222,6 +215,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                             template: template,
                             isSelected: isSelected,
                             logicalCanvasSize: canvasSize,
+                            templateSourceSize: templateSourceSize,
                             ref: ref,
                             onTap: () {
                               setState(() => _selectedId = template.id);
@@ -243,35 +237,51 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     );
   }
 
+  void _warmUpPreviewThumbs(List<DesignTemplate> templates) {
+    if (templates.isEmpty) return;
+    final top = templates.take(8);
+    for (final t in top) {
+      final urls = templatePreviewImagesFor(t);
+      if (urls.isEmpty) continue;
+      final url = urls.first;
+      if (url.isEmpty || _warmedThumbs.contains(url)) continue;
+      _warmedThumbs.add(url);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        precacheImage(NetworkImage(url), context);
+      });
+    }
+  }
+
   Widget _buildTemplateCard(
     BuildContext context, {
     required DesignTemplate template,
     required bool isSelected,
     required Size logicalCanvasSize,
+    required Size templateSourceSize,
     required WidgetRef ref,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: isSelected
-                    ? SnapFitColors.accent
-                    : SnapFitColors.overlayLightOf(context),
-                width: isSelected ? 2 : 1,
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
-              child: Column(
-                children: [
-                  AspectRatio(
+      child: Container(
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected
+                ? SnapFitColors.accent
+                : SnapFitColors.overlayLightOf(context),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: AspectRatio(
                     aspectRatio:
                         logicalCanvasSize.width / logicalCanvasSize.height,
                     child: Container(
@@ -279,19 +289,62 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                         color: SnapFitColors.backgroundOf(context),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      child: _DesignTemplatePreview(
-                        template: template,
-                        ref: ref,
-                        logicalCanvasSize: logicalCanvasSize,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: _DesignTemplatePreview(
+                          template: template,
+                          ref: ref,
+                          logicalCanvasSize: logicalCanvasSize,
+                          sourceCanvasSize: templateSourceSize,
+                        ),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+              SizedBox(height: 8.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.r),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isSelected
+                        ? [
+                            const Color(0xFF1D3A52).withValues(alpha: 0.95),
+                            const Color(0xFF294D6B).withValues(alpha: 0.95),
+                          ]
+                        : [
+                            SnapFitColors.overlayLightOf(
+                              context,
+                            ).withValues(alpha: 0.85),
+                            SnapFitColors.overlayMediumOf(
+                              context,
+                            ).withValues(alpha: 0.78),
+                          ],
+                  ),
+                ),
+                child: Text(
+                  template.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected
+                        ? Colors.white
+                        : SnapFitColors.textPrimaryOf(context),
+                    height: 1.0,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 6.h),
-        ],
+        ),
       ),
     );
   }
@@ -385,23 +438,17 @@ class _FilterPill extends StatelessWidget {
   }
 }
 
-TemplateAspect _resolveAspect(Size canvasSize) {
-  final ratio = canvasSize.width / canvasSize.height;
-  if ((ratio - 1.0).abs() <= 0.08) {
-    return TemplateAspect.square;
-  }
-  return ratio > 1.0 ? TemplateAspect.landscape : TemplateAspect.portrait;
-}
-
 class _DesignTemplatePreview extends StatelessWidget {
   final DesignTemplate template;
   final WidgetRef ref;
   final Size logicalCanvasSize;
+  final Size sourceCanvasSize;
 
   const _DesignTemplatePreview({
     required this.template,
     required this.ref,
     required this.logicalCanvasSize,
+    required this.sourceCanvasSize,
   });
 
   @override
@@ -415,8 +462,14 @@ class _DesignTemplatePreview extends StatelessWidget {
       () => logicalCanvasSize,
     );
 
-    final layers = template.buildLayers(logicalCanvasSize);
-    final ordered = previewInteraction.sortByZ(layers);
+    final rawLayers = template.buildLayers(sourceCanvasSize);
+    final layers = _scaleTemplateLayersForPreview(
+      rawLayers,
+      from: sourceCanvasSize,
+      to: logicalCanvasSize,
+    );
+    final previewReady = injectTemplatePreviewImages(template, layers);
+    final ordered = previewInteraction.sortByZ(previewReady);
 
     return FittedBox(
       fit: BoxFit.contain,
@@ -438,4 +491,31 @@ class _DesignTemplatePreview extends StatelessWidget {
       ),
     );
   }
+}
+
+List<LayerModel> _scaleTemplateLayersForPreview(
+  List<LayerModel> layers, {
+  required Size from,
+  required Size to,
+}) {
+  if (layers.isEmpty || from.width <= 0 || from.height <= 0) return layers;
+  final sx = to.width / from.width;
+  final sy = to.height / from.height;
+  final sText = sx < sy ? sx : sy;
+
+  return layers.map((l) {
+    final style = l.textStyle;
+    final scaledStyle = style?.copyWith(
+      fontSize: style.fontSize == null ? null : style.fontSize! * sText,
+      letterSpacing: style.letterSpacing == null
+          ? null
+          : style.letterSpacing! * sText,
+    );
+    return l.copyWith(
+      position: Offset(l.position.dx * sx, l.position.dy * sy),
+      width: l.width * sx,
+      height: l.height * sy,
+      textStyle: scaledStyle,
+    );
+  }).toList();
 }

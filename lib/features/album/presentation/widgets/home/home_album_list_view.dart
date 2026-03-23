@@ -112,31 +112,37 @@ class HomeAlbumListView extends StatelessWidget {
         ],
         // 완료된 앨범: 그리드 모드
         if (completedAlbums.isNotEmpty)
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: completedAlbums.length,
-            clipBehavior: Clip.none,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16.h,
-              crossAxisSpacing: 14.w,
-              childAspectRatio: 0.6,
-            ),
-            itemBuilder: (context, i) {
-              final album = completedAlbums[i];
-              final index = albums.indexOf(album);
-              return HomeGridAlbumCard(
-                album: album,
-                onTap: () async {
-                  onSelect(index);
-                  await onOpen(album, index);
-                },
-                isEditMode: isEditMode,
-              );
-            },
-          ),
+          _buildCompletedGrid(context, completedAlbums),
       ],
+    );
+  }
+
+  Widget _buildCompletedGrid(BuildContext context, List<Album> completedAlbums) {
+    final crossSpacing = 14.w;
+    final mainSpacing = 16.h;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = (constraints.maxWidth - crossSpacing) / 2;
+        return Wrap(
+          spacing: crossSpacing,
+          runSpacing: mainSpacing,
+          children: [
+            for (final album in completedAlbums)
+              SizedBox(
+                width: itemWidth,
+                child: HomeGridAlbumCard(
+                  album: album,
+                  onTap: () async {
+                    final index = albums.indexOf(album);
+                    onSelect(index);
+                    await onOpen(album, index);
+                  },
+                  isEditMode: isEditMode,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

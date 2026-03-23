@@ -8,6 +8,8 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
+import '../../../billing/data/billing_provider.dart';
+import '../../../billing/presentation/views/subscription_management_screen.dart';
 import '../controllers/text_editor_manager.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../controllers/layer_builder.dart';
@@ -27,6 +29,7 @@ import '../viewmodels/home_view_model.dart';
 import '../controllers/toolbar_action_handler.dart';
 import '../widgets/editor/page_editor_overlays.dart';
 import '../viewmodels/gallery_notifier.dart'; // Add import
+import '../../data/api/storage_service.dart';
 
 class PageEditorScreen extends ConsumerStatefulWidget {
   /// 편집할 내지 페이지 인덱스 (1 이상). null이면 현재 선택된 페이지 유지.
@@ -104,8 +107,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           // [10단계 Fix] 커버 편집 시에도 500xH 논리 좌표계를 사용함
           return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
         }
-        // [Inner Page Fix] 내지의 경우 300xH 논리적 베이스 사이즈 계산
-        return Size(300.0, 300.0 / aspect);
+        // 페이지도 커버와 동일한 500xH 논리 좌표계를 사용
+        return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
       },
       onEditText: (layer) {
         final vm = ref.read(albumEditorViewModelProvider.notifier);
@@ -176,6 +179,13 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       }
 
       final isSuccess = await vm.saveFullAlbum(coverImageBytes: coverCapture);
+      if (!isSuccess) {
+        final error = ref.read(albumEditorViewModelProvider).error;
+        if (error is StorageQuotaExceededException) {
+          throw error;
+        }
+        throw StateError('앨범 저장에 실패했습니다.');
+      }
 
       if (isSuccess) {
         // 성공 시 진행률 100%
@@ -186,7 +196,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         await Future.delayed(const Duration(milliseconds: 300));
       }
 
-      if (context.mounted) {
+      if (context.mounted && isSuccess) {
         // 3. 홈 화면 갱신 및 이동
         await ref.read(homeViewModelProvider.notifier).refresh();
         if (!context.mounted) return;
@@ -198,6 +208,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         ).showSnackBar(const SnackBar(content: Text('앨범이 저장되었습니다!')));
       }
     } catch (e) {
+      if (e is StorageQuotaExceededException && context.mounted) {
+        setState(() => _isSaving = false);
+        await _showQuotaExceededSheet(context);
+        return;
+      }
       if (context.mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(
@@ -207,6 +222,66 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     } finally {
       _progressTimer?.cancel();
     }
+  }
+
+  Future<void> _showQuotaExceededSheet(BuildContext context) async {
+    final shouldSubscribe = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: SnapFitColors.surfaceOf(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '저장 공간이 부족합니다',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '무료 플랜 용량(1GB)을 초과했습니다. 구독 후 10GB까지 계속 저장할 수 있어요.',
+                  style: TextStyle(
+                    color: SnapFitColors.textSecondaryOf(context),
+                    fontSize: 13.5,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('구독하러 가기'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('닫기'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldSubscribe != true || !mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionManagementScreen()),
+    );
+    ref.invalidate(mySubscriptionProvider);
+    ref.invalidate(myStorageQuotaProvider);
   }
 
   @override
@@ -474,6 +549,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     EditorBottomMenu(
                       currentMode: _currentMode,
                       isCover: currentPageIndex == 0,
+                      showCoverMenuItem: false,
                       onModeChanged: (mode) => _handleModeChange(mode, layers),
                       onAddPhoto: () {
                         // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용

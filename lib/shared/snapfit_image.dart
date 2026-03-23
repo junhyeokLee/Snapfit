@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,10 @@ class SnapfitImage extends StatelessWidget {
   final Widget? placeholder;
   final Widget? error;
   final BaseCacheManager? cacheManager;
+  final int? memCacheWidth;
+  final int? memCacheHeight;
+  final int? maxWidthDiskCache;
+  final int? maxHeightDiskCache;
 
   const SnapfitImage({
     super.key,
@@ -21,29 +26,62 @@ class SnapfitImage extends StatelessWidget {
     this.placeholder,
     this.error,
     this.cacheManager,
+    this.memCacheWidth,
+    this.memCacheHeight,
+    this.maxWidthDiskCache,
+    this.maxHeightDiskCache,
   });
 
   /// gs:// → https:// 변환 Future 캐시
-  static final Map<String, Future<String>> _resolvedUrlFutures = {};
-  static final Map<String, String> _resolvedUrls = {};
+  static const int _maxResolvedUrlEntries = 500;
+  static const int _maxInFlightEntries = 120;
+  static final LinkedHashMap<String, Future<String>> _resolvedUrlFutures =
+      LinkedHashMap<String, Future<String>>();
+  static final LinkedHashMap<String, String> _resolvedUrls =
+      LinkedHashMap<String, String>();
+
+  static void _touchResolved(String key, String value) {
+    _resolvedUrls.remove(key);
+    _resolvedUrls[key] = value;
+    while (_resolvedUrls.length > _maxResolvedUrlEntries) {
+      _resolvedUrls.remove(_resolvedUrls.keys.first);
+    }
+  }
+
+  static void _touchInFlight(String key, Future<String> value) {
+    _resolvedUrlFutures.remove(key);
+    _resolvedUrlFutures[key] = value;
+    while (_resolvedUrlFutures.length > _maxInFlightEntries) {
+      _resolvedUrlFutures.remove(_resolvedUrlFutures.keys.first);
+    }
+  }
 
   Future<String> _resolveUrl() {
     final cached = _resolvedUrls[urlOrGs];
     if (cached != null && cached.isNotEmpty) {
+      _touchResolved(urlOrGs, cached);
       return Future.value(cached);
     }
-    // 한 번 요청한 gs://는 Future 자체를 캐싱해서, 스와이프/리빌드 시에
-    // 매번 Firebase getDownloadURL를 다시 호출하지 않도록 한다.
-    return _resolvedUrlFutures.putIfAbsent(urlOrGs, () async {
+    final inFlight = _resolvedUrlFutures[urlOrGs];
+    if (inFlight != null) {
+      _touchInFlight(urlOrGs, inFlight);
+      return inFlight;
+    }
+
+    final future = () async {
       if (urlOrGs.startsWith('gs://')) {
         final ref = FirebaseStorage.instance.refFromURL(urlOrGs);
         final url = await ref.getDownloadURL();
-        _resolvedUrls[urlOrGs] = url;
+        _touchResolved(urlOrGs, url);
         return url;
       }
-      _resolvedUrls[urlOrGs] = urlOrGs;
+      _touchResolved(urlOrGs, urlOrGs);
       return urlOrGs;
-    });
+    }();
+
+    _touchInFlight(urlOrGs, future);
+    future.whenComplete(() => _resolvedUrlFutures.remove(urlOrGs));
+    return future;
   }
 
   Widget _buildCachedNetwork(String url) {
@@ -52,6 +90,10 @@ class SnapfitImage extends StatelessWidget {
       fit: fit,
       alignment: alignment,
       cacheManager: cacheManager,
+      memCacheWidth: memCacheWidth,
+      memCacheHeight: memCacheHeight,
+      maxWidthDiskCache: maxWidthDiskCache,
+      maxHeightDiskCache: maxHeightDiskCache,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,
       placeholder: (_, __) =>

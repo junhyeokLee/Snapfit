@@ -11,7 +11,7 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
   ref,
 ) async {
   final merged = <String, DesignTemplate>{
-    for (final t in designTemplates) t.id: t,
+    for (final t in designTemplates) t.id: _hydratePreviewMeta(t),
   };
 
   // 1) Real-time supply from server (no app redeploy)
@@ -25,7 +25,9 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
     if (items is List) {
       for (final item in items) {
         if (item is! Map<String, dynamic>) continue;
-        final t = DataTemplateEngine.templateFromJson(item);
+        final t = _hydratePreviewMeta(
+          DataTemplateEngine.templateFromJson(item),
+        );
         if (t.id.isNotEmpty) merged[t.id] = t;
       }
     }
@@ -46,7 +48,9 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
     if (items is List) {
       for (final item in items) {
         if (item is! Map<String, dynamic>) continue;
-        final t = DataTemplateEngine.templateFromJson(item);
+        final t = _hydratePreviewMeta(
+          DataTemplateEngine.templateFromJson(item),
+        );
         if (t.id.isNotEmpty) merged[t.id] = t;
       }
     }
@@ -56,3 +60,33 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
 
   return merged.values.toList();
 });
+
+DesignTemplate _hydratePreviewMeta(DesignTemplate t) {
+  final slotUrls = t.previewImageUrls.isNotEmpty
+      ? t.previewImageUrls
+      : templatePreviewImagesForId(t.id);
+  final thumb = t.previewThumbUrl.isNotEmpty
+      ? t.previewThumbUrl
+      : templatePreviewThumbForId(t.id);
+  final detail = t.previewDetailUrl.isNotEmpty
+      ? t.previewDetailUrl
+      : templatePreviewDetailForId(t.id);
+
+  return DesignTemplate(
+    id: t.id,
+    name: t.name,
+    buildLayers: t.buildLayers,
+    forCover: t.forCover,
+    aspect: t.aspect,
+    category: t.category,
+    tags: t.tags,
+    style: t.style,
+    recommendedPhotoCount: t.recommendedPhotoCount,
+    difficulty: t.difficulty,
+    isFeatured: t.isFeatured,
+    priority: t.priority,
+    previewThumbUrl: thumb,
+    previewDetailUrl: detail,
+    previewImageUrls: slotUrls,
+  );
+}

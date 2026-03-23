@@ -18,6 +18,16 @@ class DataTemplateEngine {
     final aspect = _parseAspect((json['aspect'] ?? 'any').toString());
     final category = (json['category'] ?? '전체').toString();
     final tags = _parseStringList(json['tags']);
+    final style = (json['style'] ?? 'general').toString();
+    final recommendedPhotoCount = _toInt(json['recommendedPhotoCount'], 6);
+    final difficulty = _parseDifficulty(
+      (json['difficulty'] ?? 'normal').toString(),
+    );
+    final isFeatured = json['isFeatured'] == true;
+    final priority = _toInt(json['priority'], 0);
+    final previewThumbUrl = (json['previewThumbUrl'] ?? '').toString();
+    final previewDetailUrl = (json['previewDetailUrl'] ?? '').toString();
+    final previewImageUrls = _parseStringList(json['previewImageUrls']);
 
     return DesignTemplate(
       id: id,
@@ -26,6 +36,14 @@ class DataTemplateEngine {
       aspect: aspect,
       category: category,
       tags: tags,
+      style: style,
+      recommendedPhotoCount: recommendedPhotoCount,
+      difficulty: difficulty,
+      isFeatured: isFeatured,
+      priority: priority,
+      previewThumbUrl: previewThumbUrl,
+      previewDetailUrl: previewDetailUrl,
+      previewImageUrls: previewImageUrls,
       buildLayers: (canvas) => buildLayersFromJson(json, canvas),
     );
   }
@@ -446,6 +464,18 @@ class DataTemplateEngine {
         return TemplateAspect.landscape;
       default:
         return TemplateAspect.any;
+    }
+  }
+
+  static TemplateDifficulty _parseDifficulty(String raw) {
+    switch (raw.toLowerCase()) {
+      case 'easy':
+        return TemplateDifficulty.easy;
+      case 'hard':
+        return TemplateDifficulty.hard;
+      case 'normal':
+      default:
+        return TemplateDifficulty.normal;
     }
   }
 

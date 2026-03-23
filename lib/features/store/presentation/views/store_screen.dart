@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../data/api/template_provider.dart';
 import '../../domain/entities/premium_template.dart';
+import '../providers/store_filter_provider.dart';
 import 'template_detail_screen.dart';
 
 class StoreScreen extends ConsumerStatefulWidget {
@@ -20,8 +21,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _allTemplatesKey = GlobalKey();
-  String _selectedCategory = '전체';
-  bool _sortLatest = true;
 
   @override
   void dispose() {
@@ -33,6 +32,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   @override
   Widget build(BuildContext context) {
     final templatesAsync = ref.watch(templateListProvider);
+    final filterState = ref.watch(storeFilterProvider);
+    final filterNotifier = ref.read(storeFilterProvider.notifier);
+    if (_searchController.text != filterState.query) {
+      _searchController.value = TextEditingValue(
+        text: filterState.query,
+        selection: TextSelection.collapsed(offset: filterState.query.length),
+      );
+    }
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
@@ -43,10 +50,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             onRetry: () => ref.invalidate(templateListProvider),
           ),
           data: (templates) {
-            final filtered = _filterTemplates(templates);
+            final filtered = _filterTemplates(templates, filterState);
             final latestTopIds = _resolveLatestTopIds(filtered);
             final weeklyBest = _resolveWeeklyBest(filtered, latestTopIds);
-            final sorted = _sortTemplates(filtered);
+            final sorted = _sortTemplates(filtered, filterState);
 
             return CustomScrollView(
               controller: _scrollController,
@@ -60,7 +67,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       const SizedBox(height: 18),
                       _SearchField(
                         controller: _searchController,
-                        onChanged: (_) => setState(() {}),
+                        onChanged: (value) {
+                          final next = value.trim();
+                          if (next == filterState.query) return;
+                          filterNotifier.setQuery(next);
+                        },
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
@@ -72,13 +83,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                               const SizedBox(width: 10),
                           itemBuilder: (context, index) {
                             final category = _categories[index];
-                            final selected = category == _selectedCategory;
+                            final selected =
+                                category == filterState.selectedCategory;
                             return _CategoryChip(
                               label: category,
                               selected: selected,
                               onTap: () {
                                 if (selected) return;
-                                setState(() => _selectedCategory = category);
+                                filterNotifier.setCategory(category);
                               },
                             );
                           },
@@ -88,8 +100,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       _WeeklyHeader(
                         onMoreTap: weeklyBest.length > 2
                             ? () {
-                                if (_selectedCategory != '전체') {
-                                  setState(() => _selectedCategory = '전체');
+                                if (filterState.selectedCategory != '전체') {
+                                  filterNotifier.setCategory('전체');
                                 }
                                 _scrollToAllTemplates();
                               }
@@ -117,10 +129,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       ),
                       const SizedBox(height: 28),
                       _AllTemplatesHeader(
-                        sortLatest: _sortLatest,
+                        sortLatest: filterState.sortLatest,
                         onSortChanged: (latest) {
-                          if (_sortLatest == latest) return;
-                          setState(() => _sortLatest = latest);
+                          filterNotifier.setSortLatest(latest);
                         },
                       ),
                       const SizedBox(height: 14),
@@ -208,10 +219,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         newBonus;
   }
 
-  List<PremiumTemplate> _sortTemplates(List<PremiumTemplate> templates) {
+  List<PremiumTemplate> _sortTemplates(
+    List<PremiumTemplate> templates,
+    StoreFilterState filterState,
+  ) {
     final copied = [...templates];
     copied.sort((a, b) {
-      if (_sortLatest) {
+      if (filterState.sortLatest) {
         return b.id.compareTo(a.id);
       }
       final byLike = b.likeCount.compareTo(a.likeCount);
@@ -221,12 +235,16 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return copied;
   }
 
-  List<PremiumTemplate> _filterTemplates(List<PremiumTemplate> templates) {
-    final query = _searchController.text.trim().toLowerCase();
+  List<PremiumTemplate> _filterTemplates(
+    List<PremiumTemplate> templates,
+    StoreFilterState filterState,
+  ) {
+    final query = filterState.query.toLowerCase();
 
     return templates.where((template) {
       final category = _inferCategory(template);
-      if (_selectedCategory != '전체' && category != _selectedCategory) {
+      if (filterState.selectedCategory != '전체' &&
+          category != filterState.selectedCategory) {
         return false;
       }
       if (query.isEmpty) return true;
@@ -307,6 +325,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   void _openSortFilterSheet() {
+    final notifier = ref.read(storeFilterProvider.notifier);
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: SnapFitColors.surfaceOf(context),
@@ -314,75 +333,80 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '정렬 방식',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: SnapFitColors.textPrimaryOf(context),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
+        return Consumer(
+          builder: (context, sheetRef, _) {
+            final sheetState = sheetRef.watch(storeFilterProvider);
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _SheetOptionButton(
-                        label: '최신순',
-                        selected: _sortLatest,
-                        onTap: () {
-                          setState(() => _sortLatest = true);
-                          Navigator.pop(context);
-                        },
+                    Text(
+                      '정렬 방식',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textPrimaryOf(context),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _SheetOptionButton(
-                        label: '인기순',
-                        selected: !_sortLatest,
-                        onTap: () {
-                          setState(() => _sortLatest = false);
-                          Navigator.pop(context);
-                        },
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _SheetOptionButton(
+                            label: '최신순',
+                            selected: sheetState.sortLatest,
+                            onTap: () {
+                              notifier.setSortLatest(true);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _SheetOptionButton(
+                            label: '인기순',
+                            selected: !sheetState.sortLatest,
+                            onTap: () {
+                              notifier.setSortLatest(false);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '카테고리',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textPrimaryOf(context),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _categories.map((category) {
+                        final selected = sheetState.selectedCategory == category;
+                        return _BottomCategoryChip(
+                          label: category,
+                          selected: selected,
+                          onTap: () {
+                            notifier.setCategory(category);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  '카테고리',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: SnapFitColors.textPrimaryOf(context),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _categories.map((category) {
-                    final selected = _selectedCategory == category;
-                    return _BottomCategoryChip(
-                      label: category,
-                      selected: selected,
-                      onTap: () {
-                        setState(() => _selectedCategory = category);
-                        Navigator.pop(context);
-                      },
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

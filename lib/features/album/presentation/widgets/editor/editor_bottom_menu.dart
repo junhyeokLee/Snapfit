@@ -17,6 +17,7 @@ class EditorBottomMenu extends StatelessWidget {
   final VoidCallback? onAddPhoto;
   final bool isCover;
   final VoidCallback? onCover;
+  final bool showCoverMenuItem;
 
   const EditorBottomMenu({
     super.key,
@@ -25,6 +26,7 @@ class EditorBottomMenu extends StatelessWidget {
     this.onAddPhoto,
     this.isCover = false,
     this.onCover,
+    this.showCoverMenuItem = true,
   });
 
   @override
@@ -60,14 +62,15 @@ class EditorBottomMenu extends StatelessWidget {
                   isAction: true,
                   onAction: onAddPhoto,
                 ),
-                _buildMenuItem(
-                  context,
-                  '커버',
-                  Icons.photo_album_outlined,
-                  EditorMode.none,
-                  isAction: true,
-                  onAction: onCover,
-                ),
+                if (showCoverMenuItem)
+                  _buildMenuItem(
+                    context,
+                    '커버',
+                    Icons.photo_album_outlined,
+                    EditorMode.none,
+                    isAction: true,
+                    onAction: onCover,
+                  ),
                 _buildMenuItem(
                   context,
                   '레이아웃',

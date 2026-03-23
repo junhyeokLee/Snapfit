@@ -1,57 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
+import '../../data/order_repository.dart';
+import '../../domain/entities/order_history_item.dart';
 
-class OrderHistoryScreen extends StatefulWidget {
+class OrderHistoryScreen extends ConsumerStatefulWidget {
   const OrderHistoryScreen({super.key});
 
   @override
-  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
+  ConsumerState<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-class _OrderHistoryScreenState extends State<OrderHistoryScreen>
+class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController = TabController(
     length: 5,
     vsync: this,
   );
-
-  final List<_OrderItem> _orders = const [
-    _OrderItem(
-      id: 'SF-240319-001',
-      title: '성수동 카페 투어 포토북',
-      orderedAt: '2026.03.18',
-      amount: '34,900원',
-      status: '배송중',
-      progress: 0.82,
-    ),
-    _OrderItem(
-      id: 'SF-240318-184',
-      title: '한강 공원 피크닉 하드커버',
-      orderedAt: '2026.03.17',
-      amount: '29,000원',
-      status: '제작중',
-      progress: 0.56,
-    ),
-    _OrderItem(
-      id: 'SF-240316-072',
-      title: '여름 휴가 기록 포토북',
-      orderedAt: '2026.03.14',
-      amount: '41,500원',
-      status: '완료',
-      progress: 1,
-    ),
-    _OrderItem(
-      id: 'SF-240311-009',
-      title: '드라이브 코스 미니북',
-      orderedAt: '2026.03.10',
-      amount: '19,500원',
-      status: '취소',
-      progress: 0.12,
-    ),
-  ];
 
   @override
   void dispose() {
@@ -61,6 +29,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final ordersAsync = ref.watch(myOrderHistoryProvider);
+
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: AppBar(
@@ -75,6 +45,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
             color: SnapFitColors.textPrimaryOf(context),
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => ref.invalidate(myOrderHistoryProvider),
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: '새로고침',
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -96,33 +73,54 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildList(context, _orders),
-          _buildList(
-            context,
-            _orders
-                .where(
-                  (o) =>
-                      o.status == '결제대기' ||
-                      o.status == '결제완료' ||
-                      o.status == '제작준비',
-                )
-                .toList(),
+      body: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text(
+            '주문 내역을 불러오지 못했어요.',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
           ),
-          _buildList(context, _orders.where((o) => o.status == '제작중').toList()),
-          _buildList(context, _orders.where((o) => o.status == '배송중').toList()),
-          _buildList(
-            context,
-            _orders.where((o) => o.status == '완료' || o.status == '취소').toList(),
-          ),
-        ],
+        ),
+        data: (orders) => TabBarView(
+          controller: _tabController,
+          children: [
+            _buildList(context, orders),
+            _buildList(
+              context,
+              orders
+                  .where(
+                    (o) =>
+                        o.status == 'PAYMENT_PENDING' ||
+                        o.status == 'PAYMENT_COMPLETED',
+                  )
+                  .toList(),
+            ),
+            _buildList(
+              context,
+              orders.where((o) => o.status == 'IN_PRODUCTION').toList(),
+            ),
+            _buildList(
+              context,
+              orders.where((o) => o.status == 'SHIPPING').toList(),
+            ),
+            _buildList(
+              context,
+              orders
+                  .where(
+                    (o) => o.status == 'DELIVERED' || o.status == 'CANCELED',
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildList(BuildContext context, List<_OrderItem> items) {
+  Widget _buildList(BuildContext context, List<OrderHistoryItem> items) {
     if (items.isEmpty) {
       return Center(
         child: Text(
@@ -134,6 +132,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         ),
       );
     }
+
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 20.h),
       itemCount: items.length,
@@ -142,9 +141,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
     );
   }
 
-  Widget _orderCard(BuildContext context, _OrderItem order) {
+  Widget _orderCard(BuildContext context, OrderHistoryItem order) {
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
+    final amount = _formatAmount(order.amount);
+    final orderedAt = _formatDate(order.orderedAt);
+
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -157,10 +159,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         children: [
           Row(
             children: [
-              _statusChip(context, order.status),
+              _statusChip(context, order.statusLabel),
               const Spacer(),
               Text(
-                order.id,
+                order.orderId,
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: subColor,
@@ -182,7 +184,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           ),
           SizedBox(height: 4.h),
           Text(
-            '${order.orderedAt}  ·  ${order.amount}',
+            '$orderedAt  ·  $amount원',
             style: TextStyle(
               fontSize: 11.sp,
               color: subColor,
@@ -199,19 +201,21 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
               valueColor: AlwaysStoppedAnimation<Color>(SnapFitColors.accent),
             ),
           ),
+          SizedBox(height: 2.h),
         ],
       ),
     );
   }
 
-  Widget _statusChip(BuildContext context, String status) {
-    final isDone = status == '완료';
-    final isWarning = status == '취소';
+  Widget _statusChip(BuildContext context, String statusLabel) {
+    final isDone = statusLabel == '배송완료';
+    final isWarning = statusLabel == '취소';
     final color = isDone
         ? const Color(0xFF00A77E)
         : isWarning
         ? const Color(0xFFE45C5C)
         : SnapFitColors.accent;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
@@ -219,7 +223,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         borderRadius: BorderRadius.circular(999.r),
       ),
       child: Text(
-        status,
+        statusLabel,
         style: TextStyle(
           fontSize: 10.sp,
           fontWeight: FontWeight.w700,
@@ -228,22 +232,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
       ),
     );
   }
-}
 
-class _OrderItem {
-  final String id;
-  final String title;
-  final String orderedAt;
-  final String amount;
-  final String status;
-  final double progress;
+  String _formatAmount(int amount) {
+    final s = amount.toString();
+    return s.replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]},',
+    );
+  }
 
-  const _OrderItem({
-    required this.id,
-    required this.title,
-    required this.orderedAt,
-    required this.amount,
-    required this.status,
-    required this.progress,
-  });
+  String _formatDate(DateTime date) {
+    final y = date.year.toString();
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y.$m.$d';
+  }
 }

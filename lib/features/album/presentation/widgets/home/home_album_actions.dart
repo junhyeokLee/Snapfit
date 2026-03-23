@@ -89,8 +89,9 @@ class HomeAlbumActions {
   static Future<void> openAlbum(
     BuildContext context,
     WidgetRef ref,
-    dynamic album,
-  ) async {
+    dynamic album, {
+    void Function(int deletedAlbumId)? onAlbumDeleted,
+  }) async {
     // 짧은 시간 내 중복 탭 방지
     if (_isOpeningAlbum) {
       return;
@@ -155,10 +156,24 @@ class HomeAlbumActions {
     }
 
     // 3. 진입 (리더 화면으로 이동)
-    final needsRefresh = await Navigator.push<bool>(
+    final result = await Navigator.push<Object?>(
       context,
       MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
     );
+
+    var needsRefresh = false;
+    if (result is Map) {
+      final deletedAlbumId = result['deletedAlbumId'];
+      if (deletedAlbumId is int) {
+        onAlbumDeleted?.call(deletedAlbumId);
+        needsRefresh = true;
+      }
+      if (result['updated'] == true) {
+        needsRefresh = true;
+      }
+    } else if (result == true) {
+      needsRefresh = true;
+    }
 
     // 4. 복귀 시 잠금 해제 (항상 실행)
     try {
@@ -167,7 +182,7 @@ class HomeAlbumActions {
       debugPrint('HomeAlbumActions: Unlock failed: $e');
     } finally {
       _isOpeningAlbum = false;
-      // 수정사항이 있을 때(needsRefresh == true)만 홈 화면 갱신
+      // 수정/삭제 등 변경사항이 있을 때만 홈 화면 갱신
       if (context.mounted && needsRefresh == true) {
         ref.read(homeViewModelProvider.notifier).refresh();
       }

@@ -1,31 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/cache/snapfit_cache_manager.dart';
-import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/utils/app_logger.dart';
 import '../../../domain/entities/album.dart';
-import '../../../domain/entities/layer.dart';
-import '../../../domain/entities/layer_export_mapper.dart';
-import '../cover/cover.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
-import '../../views/album_reader_screen.dart';
 import 'home_focus_wrap.dart';
-import 'home_album_helpers.dart';
+import 'home_album_cover_thumbnail.dart';
 import 'home_paper_unfold_route.dart';
-
-const _coverRadius = BorderRadius.only(
-  topRight: Radius.circular(12),
-  bottomRight: Radius.circular(12),
-  bottomLeft: Radius.zero,
-);
 
 /// 슬라이더용 앨범 커버 카드
 class HomeAlbumSliderCard extends ConsumerStatefulWidget {
@@ -87,9 +73,6 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug(
-      '[HomeCard] Building card for album ${widget.album.id}, updatedAt: ${widget.album.updatedAt}',
-    );
     final coverSize = coverSizes.firstWhere(
       (s) => s.ratio.toString() == widget.album.ratio,
       orElse: () => coverSizes.first,
@@ -106,178 +89,18 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           final h = constraints.maxHeight;
           final base = w < h ? w : h;
           final ratio = coverSize.ratio;
-          final canvasSize = ratio <= 1
-              ? Size(base * ratio, base)
-              : Size(base, base / ratio);
-
-          Widget coverContent;
-
-          if (widget.album.coverLayersJson.isNotEmpty) {
-            AppLogger.debug(
-              '[HomeCard] Parsing coverLayersJson for album ${widget.album.id}',
-            );
-            List<LayerModel>? layers;
-            try {
-              final decoded =
-                  jsonDecode(widget.album.coverLayersJson)
-                      as Map<String, dynamic>;
-              // 새 형식: pages 배열 → 커버(0번) 레이어 추출. 기존: layers 직접
-              final pages = decoded['pages'] as List<dynamic>?;
-              final List<dynamic> layerList =
-                  (pages != null && pages.isNotEmpty)
-                  ? ((pages[0] as Map<String, dynamic>)['layers'] as List?) ??
-                        []
-                  : (decoded['layers'] as List?) ?? [];
-              layers = layerList
-                  .map(
-                    (l) => LayerExportMapper.fromJson(
-                      l as Map<String, dynamic>,
-                      canvasSize: canvasSize,
-                      isCover: true,
-                    ),
-                  )
-                  .toList();
-            } catch (e, st) {
-              AppLogger.error(
-                '[HomeCard] Error parsing coverLayersJson',
-                e,
-                st,
-              );
-              layers = null;
-            }
-            AppLogger.debug('[HomeCard] Parsed ${layers?.length ?? 0} layers');
-            if (layers != null && layers.isNotEmpty) {
-              coverContent = SizedBox(
-                width: base,
-                height: base,
-                child: CoverLayout(
-                  aspect: coverSize.ratio,
-                  layers: layers,
-                  isInteracting: false,
-                  leftSpine: 14.0,
-                  onCoverSizeChanged: (_) {},
-                  buildImage: (layer) => buildStaticImage(layer),
-                  buildText: (layer) => buildStaticText(layer),
-                  sortedByZ: (list) =>
-                      list..sort((a, b) => a.id.compareTo(b.id)),
-                  theme: CoverTheme.classic,
-                ),
-              );
-            } else if (widget.album.coverTheme?.isNotEmpty == true) {
-              // 레이어가 없어도 테마가 있으면 CoverLayout으로 테마 배경 렌더링
-              final theme = resolveCoverTheme(widget.album.coverTheme);
-              final cw = ratio >= 1 ? base : base * ratio;
-              final ch = ratio <= 1 ? base : base / ratio;
-              final shadowScale = cw / 180;
-              coverContent = SizedBox(
-                width: cw,
-                height: ch,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: _coverRadius,
-                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                      shadowScale,
-                      focus,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: _coverRadius,
-                    child: CoverLayout(
-                      aspect: coverSize.ratio,
-                      layers: const [],
-                      isInteracting: false,
-                      leftSpine: 14.0,
-                      onCoverSizeChanged: (_) {},
-                      buildImage: (layer) => buildStaticImage(layer),
-                      buildText: (layer) => buildStaticText(layer),
-                      sortedByZ: (list) => list,
-                      theme: theme,
-                    ),
-                  ),
-                ),
-              );
-            } else {
-              // 레이어도 없고 테마도 없음 → coverImageUrl 폴백
-              final imageUrl =
-                  widget.album.coverThumbnailUrl ??
-                  widget.album.coverPreviewUrl ??
-                  widget.album.coverImageUrl;
-              final hasUrl = imageUrl?.isNotEmpty == true;
-              final cw = ratio >= 1 ? base : base * ratio;
-              final ch = ratio <= 1 ? base : base / ratio;
-              final shadowScale = cw / 180;
-              coverContent = SizedBox(
-                width: cw,
-                height: ch,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: _coverRadius,
-                    boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                      shadowScale,
-                      focus,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: _coverRadius,
-                    child: hasUrl
-                        ? SnapfitImage(
-                            urlOrGs: imageUrl!,
-                            fit: BoxFit.cover,
-                            cacheManager: snapfitImageCacheManager,
-                          )
-                        : Container(
-                            color: Colors.grey[300],
-                            child: Icon(
-                              Icons.photo_album_outlined,
-                              size: 48.sp,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                  ),
-                ),
-              );
-            }
-          } else {
-            final imageUrl =
-                widget.album.coverThumbnailUrl ??
-                widget.album.coverPreviewUrl ??
-                widget.album.coverImageUrl;
-            final hasUrl = (imageUrl as String?)?.isNotEmpty == true;
-            final cw = ratio >= 1 ? base : base * ratio;
-            final ch = ratio <= 1 ? base : base / ratio;
-            final shadowScale = cw / 180;
-
-            coverContent = SizedBox(
-              width: cw,
+          final cw = ratio >= 1 ? base : base * ratio;
+          final ch = ratio <= 1 ? base : base / ratio;
+          final coverContent = SizedBox(
+            width: cw,
+            height: ch,
+            child: HomeAlbumCoverThumbnail(
+              album: widget.album,
               height: ch,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: _coverRadius,
-                  boxShadow: HomeFocusWrap.coverStyleShadowForScale(
-                    shadowScale,
-                    focus,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: _coverRadius,
-                  child: hasUrl
-                      ? SnapfitImage(
-                          urlOrGs: imageUrl as String,
-                          fit: BoxFit.cover,
-                          cacheManager: snapfitImageCacheManager,
-                        )
-                      : Container(
-                          color: Colors.grey[300],
-                          child: Icon(
-                            Icons.photo_album_outlined,
-                            size: 48.sp,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                ),
-              ),
-            );
-          }
+              maxWidth: cw,
+              showShadow: false,
+            ),
+          );
 
           final closedCover = RepaintBoundary(
             key: _coverRepaintKey,

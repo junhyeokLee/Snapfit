@@ -50,6 +50,7 @@ dependencies:
   firebase_storage: ^13.0.6
   firebase_core: ^4.4.0
   firebase_messaging: ^16.0.6
+  flutter_local_notifications: ^17.2.4
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
   flutter_secure_storage: ^9.2.4
@@ -59,6 +60,7 @@ dependencies:
   connectivity_plus: ^6.1.0 # 네트워크 연결 상태를 위한 connectivity_plus
   url_launcher: ^6.3.1
   share_plus: ^11.1.0
+  app_links: ^6.4.0
 
 
 dev_dependencies:

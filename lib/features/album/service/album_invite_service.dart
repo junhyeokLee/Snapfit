@@ -19,20 +19,23 @@ class AlbumInviteService {
     required int albumId,
     required String albumTitle,
     required bool allowEditing,
+    String? inviteLink,
     required BuildContext context,
   }) async {
     try {
-      final memberRepository = ref.read(albumMemberRepositoryProvider);
-
-      // 초대 링크 생성
-      final inviteResponse = await memberRepository.invite(
-        albumId,
-        role: allowEditing ? 'EDITOR' : 'VIEWER',
-      );
+      var resolvedInviteLink = inviteLink;
+      if (resolvedInviteLink == null || resolvedInviteLink.isEmpty) {
+        final memberRepository = ref.read(albumMemberRepositoryProvider);
+        final inviteResponse = await memberRepository.invite(
+          albumId,
+          role: allowEditing ? 'EDITOR' : 'VIEWER',
+        );
+        resolvedInviteLink = inviteResponse.link;
+      }
 
       // 카카오톡으로 공유 (실서비스 스타일 메시지)
       final success = await KakaoShareService.shareInviteLink(
-        inviteLink: inviteResponse.link,
+        inviteLink: resolvedInviteLink,
         albumTitle: albumTitle,
         description: '함께 소중한 추억을 담은 앨범을 만들어보세요.\n사진을 추가하고 예쁘게 꾸며보아요! ✨',
       );
@@ -40,7 +43,7 @@ class AlbumInviteService {
       if (!success) {
         // 카카오톡이 설치되어 있지 않으면 링크 복사 안내
         if (context.mounted) {
-          await Clipboard.setData(ClipboardData(text: inviteResponse.link));
+          await Clipboard.setData(ClipboardData(text: resolvedInviteLink));
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('카카오톡이 설치되어 있지 않습니다. 초대 링크가 클립보드에 복사되었습니다.'),

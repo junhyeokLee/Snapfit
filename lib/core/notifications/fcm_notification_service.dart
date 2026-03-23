@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_logger.dart';
@@ -37,7 +38,18 @@ class FcmNotificationService {
   static const String kNightMute = 'notify_night_mute';
 
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
+  static bool _localInitialized = false;
+
+  static const AndroidNotificationChannel _androidChannel =
+      AndroidNotificationChannel(
+        'snapfit_push',
+        'SnapFit Push',
+        description: 'SnapFit push notifications',
+        importance: Importance.high,
+      );
 
   static const Map<String, String> _topicByKey = {
     kOrder: 'snapfit_order_updates',
@@ -53,12 +65,14 @@ class FcmNotificationService {
 
     await _messaging.setAutoInitEnabled(true);
     await _requestPermissionIfNeeded();
+    await _initializeLocalNotifications();
     await _syncTopicsFromPrefs();
 
     final token = await _messaging.getToken();
     AppLogger.debug('[FCM] token: $token');
 
     FirebaseMessaging.onMessage.listen((message) {
+      _showForegroundNotification(message);
       AppLogger.debug(
         '[FCM] onMessage title=${message.notification?.title} body=${message.notification?.body}',
       );
@@ -161,6 +175,57 @@ class FcmNotificationService {
       announcement: false,
       carPlay: false,
       criticalAlert: false,
+    );
+  }
+
+  static Future<void> _initializeLocalNotifications() async {
+    if (_localInitialized) return;
+    _localInitialized = true;
+
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const iosSettings = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+
+    await _localNotifications.initialize(initSettings);
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(_androidChannel);
+  }
+
+  static Future<void> _showForegroundNotification(RemoteMessage message) async {
+    final title =
+        message.notification?.title ?? message.data['title']?.toString() ?? 'SnapFit';
+    final body =
+        message.notification?.body ??
+        message.data['body']?.toString() ??
+        '새 알림이 도착했어요.';
+
+    const androidDetails = AndroidNotificationDetails(
+      'snapfit_push',
+      'SnapFit Push',
+      channelDescription: 'SnapFit push notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails, iOS: iosDetails),
+      payload: message.data.toString(),
     );
   }
 }

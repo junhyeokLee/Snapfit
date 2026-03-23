@@ -10,6 +10,7 @@ import 'core/notifications/fcm_notification_service.dart';
 import 'core/theme/snapfit_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
+import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
 import 'features/auth/presentation/views/auth_gate.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
@@ -23,6 +24,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FrameTimingMonitor.start();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

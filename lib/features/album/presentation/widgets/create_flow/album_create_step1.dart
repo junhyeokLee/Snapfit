@@ -423,7 +423,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               ),
             ),
             Text(
-              '21p',
+              '50p',
               style: TextStyle(
                 fontSize: 12.sp,
                 color: SnapFitColors.textMutedOf(context),

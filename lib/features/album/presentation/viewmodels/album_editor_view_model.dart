@@ -991,12 +991,51 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final page = currentPage;
     if (page == null) return;
     _recordUndo();
-    final layers = template.buildLayers(canvasSize);
-    final normalized = _normalizeTemplateLayers(layers, canvasSize);
+    // 템플릿은 항상 커버 기준 논리 캔버스(500xH)에서 생성 후
+    // 현재 페이지 캔버스로 동일 비율 스케일해 적용한다.
+    final sourceCanvas = _coverReferenceSize;
+    final rawLayers = template.buildLayers(sourceCanvas);
+    final layers = _scaleTemplateLayers(
+      rawLayers,
+      from: sourceCanvas,
+      to: canvasSize,
+    );
+    final ready = injectTemplatePreviewImages(
+      template,
+      layers,
+      fillPersistentUrls: true,
+    );
     page.layers
       ..clear()
-      ..addAll(normalized);
+      ..addAll(ready);
     _emit();
+  }
+
+  List<LayerModel> _scaleTemplateLayers(
+    List<LayerModel> layers, {
+    required Size from,
+    required Size to,
+  }) {
+    if (layers.isEmpty || from.width <= 0 || from.height <= 0) return layers;
+    final sx = to.width / from.width;
+    final sy = to.height / from.height;
+    final sText = math.min(sx, sy);
+
+    return layers.map((l) {
+      final style = l.textStyle;
+      final scaledStyle = style?.copyWith(
+        fontSize: style.fontSize == null ? null : style.fontSize! * sText,
+        letterSpacing: style.letterSpacing == null
+            ? null
+            : style.letterSpacing! * sText,
+      );
+      return l.copyWith(
+        position: Offset(l.position.dx * sx, l.position.dy * sy),
+        width: l.width * sx,
+        height: l.height * sy,
+        textStyle: scaledStyle,
+      );
+    }).toList();
   }
 
   List<LayerModel> _normalizeTemplateLayers(
@@ -1541,8 +1580,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   // [Fix] 내지 캔버스 크기를 커버 비율에 맞춰 동적으로 계산 (일관성 확보)
   Size get _innerPageCanvasSize {
     final ratio = _cover.ratio > 0 ? _cover.ratio : (3 / 4);
-    // 너비 300을 기준으로 비율에 맞는 높이 계산 (예: 1:1이면 300x300, 3:4면 300x400)
-    return Size(300.0, 300.0 / ratio);
+    // 페이지도 커버와 동일한 500 기준 좌표계를 사용해 템플릿 체감을 맞춘다.
+    return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
   }
 
   /// [10단계] 커버 논리 고정 좌표계 크기 (500xH)

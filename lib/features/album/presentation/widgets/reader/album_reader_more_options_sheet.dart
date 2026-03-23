@@ -6,6 +6,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onConfirm;
+  final VoidCallback? onDelete; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onInvite; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onDetail; // null이면 메뉴에서 숨김 처리
 
@@ -13,6 +14,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
     super.key,
     required this.onEdit,
     required this.onConfirm,
+    this.onDelete,
     this.onInvite,
     this.onDetail,
   });
@@ -92,6 +94,22 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               labelColor: SnapFitColors.accent,
               onTap: onConfirm,
             ),
+
+            if (onDelete != null) ...[
+              Divider(
+                height: 1,
+                color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
+                indent: 20.w,
+                endIndent: 20.w,
+              ),
+              _SheetItem(
+                icon: Icons.delete_outline_rounded,
+                label: '삭제하기',
+                iconColor: Colors.redAccent,
+                labelColor: Colors.redAccent,
+                onTap: onDelete!,
+              ),
+            ],
 
             SizedBox(height: 8.h),
           ],

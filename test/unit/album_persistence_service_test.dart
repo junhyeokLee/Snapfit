@@ -41,6 +41,39 @@ class FakeStorageService implements StorageService {
   }
 }
 
+class QuotaFailStorageService implements StorageService {
+  @override
+  Future<String?> uploadProfileImage(File file, String userId) async => null;
+
+  @override
+  Future<String?> uploadFile(File file, String path) async => null;
+
+  @override
+  Future<UploadedUrls> uploadImageVariants(
+    AssetEntity asset, {
+    int previewMaxDimension = 1600,
+  }) async => throw const StorageQuotaExceededException(
+    hardLimitBytes: 1024,
+    usedBytes: 1024,
+    incomingBytes: 10,
+    projectedBytes: 1034,
+    reason: 'HARD_LIMIT_EXCEEDED',
+  );
+
+  @override
+  Future<UploadedUrls> uploadCoverVariants(
+    Uint8List pngBytes, {
+    int originalMaxDimension = 4096,
+    int previewMaxDimension = 1024,
+  }) async => throw const StorageQuotaExceededException(
+    hardLimitBytes: 1024,
+    usedBytes: 1024,
+    incomingBytes: 10,
+    projectedBytes: 1034,
+    reason: 'HARD_LIMIT_EXCEEDED',
+  );
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(
@@ -77,5 +110,24 @@ void main() {
     ).captured.single;
     expect(captured.coverPreviewUrl, 'gs://bucket/preview.jpg');
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
+  });
+
+  test('performBackgroundUpload rethrows quota exceeded even when swallowErrors=true', () async {
+    final mockRepo = MockAlbumRepository();
+    final service = AlbumPersistenceService(QuotaFailStorageService(), mockRepo);
+
+    expect(
+      () => service.performBackgroundUpload(
+        albumId: 1,
+        canvasSize: const Size(300, 400),
+        currentLayers: const <LayerModel>[],
+        coverImageBytes: Uint8List.fromList([0, 1, 2]),
+        themeLabel: 'classic',
+        title: 'title',
+        coverRatio: 1.0,
+        targetPages: 24,
+      ),
+      throwsA(isA<StorageQuotaExceededException>()),
+    );
   });
 }

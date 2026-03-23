@@ -4,8 +4,13 @@ import '../../../../../core/constants/snapfit_colors.dart';
 
 class HomeHeaderNew extends StatelessWidget {
   final VoidCallback onNotification;
+  final bool hasUnreadNotification;
 
-  const HomeHeaderNew({super.key, required this.onNotification});
+  const HomeHeaderNew({
+    super.key,
+    required this.onNotification,
+    required this.hasUnreadNotification,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,18 +41,19 @@ class HomeHeaderNew extends StatelessWidget {
                         size: 22.sp,
                       ),
                     ),
-                    Positioned(
-                      right: 12,
-                      top: 12,
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
+                    if (hasUnreadNotification)
+                      Positioned(
+                        right: 12,
+                        top: 12,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ],

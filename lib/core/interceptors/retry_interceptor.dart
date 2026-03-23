@@ -40,6 +40,13 @@ class RetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    final method = err.requestOptions.method.toUpperCase();
+    // 실서비스 안정성: 쓰기 요청(POST/PUT/PATCH/DELETE)은 자동 재시도하지 않음
+    // 중복 생성/중복 삭제/동시성 충돌을 유발할 수 있으므로 조회 요청(GET/HEAD)만 재시도
+    if (method != 'GET' && method != 'HEAD') {
+      return false;
+    }
+
     return err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.connectionError || // 인터넷 문제 포함

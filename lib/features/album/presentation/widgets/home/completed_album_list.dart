@@ -35,19 +35,13 @@ class CompletedAlbumList extends StatelessWidget {
             onViewAll: onViewAll,
           ),
           SizedBox(height: 14.h),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: albums.length,
-            separatorBuilder: (context, index) => SizedBox(height: 12.h),
-            itemBuilder: (context, index) {
-              final album = albums[index];
-              return CompletedAlbumCard(
-                album: album,
-                onTap: () => onTap(album),
-              );
-            },
-          ),
+          for (int index = 0; index < albums.length; index++) ...[
+            if (index > 0) SizedBox(height: 12.h),
+            CompletedAlbumCard(
+              album: albums[index],
+              onTap: () => onTap(albums[index]),
+            ),
+          ],
         ],
       ),
     );

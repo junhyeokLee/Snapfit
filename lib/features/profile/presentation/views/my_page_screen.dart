@@ -12,6 +12,10 @@ import '../../../album/presentation/viewmodels/home_view_model.dart';
 import '../../../album/presentation/widgets/home/home_album_helpers.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../album/presentation/views/album_category_screen.dart';
+import '../../../billing/data/billing_provider.dart';
+import '../../../billing/domain/entities/storage_quota.dart';
+import '../../../billing/presentation/views/subscription_management_screen.dart';
+import '../../../billing/domain/entities/subscription_status.dart';
 import 'notification_settings_screen.dart';
 import 'order_history_screen.dart';
 import 'terms_policy_screen.dart';
@@ -29,6 +33,8 @@ class MyPageScreen extends ConsumerWidget {
     }
     final authAsync = ref.watch(authViewModelProvider);
     final albumsAsync = ref.watch(homeViewModelProvider);
+    final subscriptionAsync = ref.watch(mySubscriptionProvider);
+    final storageQuotaAsync = ref.watch(myStorageQuotaProvider);
     final userInfo = authAsync.asData?.value;
     final themeMode = ref.watch(themeModeControllerProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
@@ -52,7 +58,14 @@ class MyPageScreen extends ConsumerWidget {
           SizedBox(height: MediaQuery.of(context).padding.top),
           _buildTopBar(context, ref, textColor, themeMode),
           SizedBox(height: 12.h),
-          _buildProfileHero(context, ref, userInfo, textColor, subColor),
+          _buildProfileHero(
+            context,
+            ref,
+            userInfo,
+            textColor,
+            subColor,
+            subscriptionAsync,
+          ),
           SizedBox(height: 12.h),
           _buildStatsRow(
             context,
@@ -62,6 +75,8 @@ class MyPageScreen extends ConsumerWidget {
             sharedCount: sharedAlbums.length,
             completedCount: completedAlbums.length,
           ),
+          SizedBox(height: 12.h),
+          _buildStorageUsageCard(context, storageQuotaAsync),
           SizedBox(height: 12.h),
           _buildOrderStatusCard(context),
           SizedBox(height: 12.h),
@@ -78,6 +93,20 @@ class MyPageScreen extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const OrderHistoryScreen(),
+                    ),
+                  );
+                },
+              ),
+              _menuRow(
+                context: context,
+                icon: Icons.credit_card_rounded,
+                title: '구독 및 결제 관리',
+                trailingDot: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SubscriptionManagementScreen(),
                     ),
                   );
                 },
@@ -251,10 +280,26 @@ class MyPageScreen extends ConsumerWidget {
     UserInfo? userInfo,
     Color textColor,
     Color subColor,
+    AsyncValue<SubscriptionStatusModel> subscriptionAsync,
   ) {
     final name = userInfo?.name ?? '사용자';
     final email = userInfo?.email ?? 'snapfit_user@example.com';
     final profileUrl = userInfo?.profileImageUrl;
+
+    final membershipLabel = subscriptionAsync.maybeWhen(
+      data: (sub) => sub.isActive ? '✪ SnapFit Pro 구독중' : '구독 미이용',
+      orElse: () => '구독 상태 확인중...',
+    );
+    final membershipBg = subscriptionAsync.maybeWhen(
+      data: (sub) =>
+          sub.isActive ? const Color(0xFFE1F6FB) : const Color(0xFFF1F3F5),
+      orElse: () => const Color(0xFFF1F3F5),
+    );
+    final membershipColor = subscriptionAsync.maybeWhen(
+      data: (sub) =>
+          sub.isActive ? const Color(0xFF10BEE2) : const Color(0xFF6B7280),
+      orElse: () => const Color(0xFF6B7280),
+    );
 
     return Column(
       children: [
@@ -323,15 +368,15 @@ class MyPageScreen extends ConsumerWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: const Color(0xFFE1F6FB),
+            color: membershipBg,
             borderRadius: BorderRadius.circular(999.r),
           ),
           child: Text(
-            '✪ Family Plan 멤버십',
+            membershipLabel,
             style: TextStyle(
               fontSize: 10.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF10BEE2),
+              color: membershipColor,
             ),
           ),
         ),
@@ -493,6 +538,149 @@ class MyPageScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStorageUsageCard(
+    BuildContext context,
+    AsyncValue<StorageQuotaStatus> storageQuotaAsync,
+  ) {
+    final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
+
+    String formatBytes(int bytes) {
+      const kb = 1024;
+      const mb = 1024 * kb;
+      const gb = 1024 * mb;
+      if (bytes >= gb) return '${(bytes / gb).toStringAsFixed(2)} GB';
+      if (bytes >= mb) return '${(bytes / mb).toStringAsFixed(1)} MB';
+      if (bytes >= kb) return '${(bytes / kb).toStringAsFixed(1)} KB';
+      return '$bytes B';
+    }
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: storageQuotaAsync.when(
+        loading: () => Row(
+          children: [
+            SizedBox(
+              width: 16.w,
+              height: 16.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              '저장 사용량 확인중...',
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: subColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        error: (_, __) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '저장 사용량',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              '운영상 무제한 · 사용량 데이터 수집중',
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: subColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        data: (quota) {
+          final hard = quota.hardLimitBytes <= 0 ? 1 : quota.hardLimitBytes;
+          final progress = (quota.usedBytes / hard).clamp(0.0, 1.0);
+          final usedText = formatBytes(quota.usedBytes);
+          final limitText = quota.hardLimitBytes > 0
+              ? formatBytes(quota.hardLimitBytes)
+              : '미정';
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '저장 사용량',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F3F5),
+                      borderRadius: BorderRadius.circular(999.r),
+                    ),
+                    child: Text(
+                      quota.planCode,
+                      style: TextStyle(
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                '$usedText / $limitText',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: subColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999.r),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 8.h,
+                  backgroundColor: const Color(0xFFE9ECEF),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF10BEE2),
+                  ),
+                ),
+              ),
+              SizedBox(height: 7.h),
+              Text(
+                '용량 초과 시 저장/업로드가 차단됩니다. FREE 1GB · PRO 10GB',
+                style: TextStyle(
+                  fontSize: 9.sp,
+                  color: subColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

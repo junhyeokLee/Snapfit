@@ -295,6 +295,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                   EditorBottomMenu(
                     currentMode: _currentMode,
                     isCover: true,
+                    showCoverMenuItem: false,
                     onModeChanged: (mode) => _handleModeChange(mode, layers),
                     onAddPhoto: () => _toolbarActionHandler.addPhoto(
                       coverCanvasBaseSize(_selectedCover),

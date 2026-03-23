@@ -6,6 +6,8 @@ import '../../features/album/domain/entities/layer.dart';
 
 enum TemplateAspect { portrait, square, landscape, any }
 
+enum TemplateDifficulty { easy, normal, hard }
+
 class DesignTemplate {
   final String id;
   final String name;
@@ -13,6 +15,14 @@ class DesignTemplate {
   final TemplateAspect aspect;
   final String category;
   final List<String> tags;
+  final String style;
+  final int recommendedPhotoCount;
+  final TemplateDifficulty difficulty;
+  final bool isFeatured;
+  final int priority;
+  final String previewThumbUrl;
+  final String previewDetailUrl;
+  final List<String> previewImageUrls;
   final List<LayerModel> Function(Size canvasSize) buildLayers;
 
   const DesignTemplate({
@@ -23,6 +33,14 @@ class DesignTemplate {
     this.aspect = TemplateAspect.any,
     this.category = '전체',
     this.tags = const [],
+    this.style = 'general',
+    this.recommendedPhotoCount = 6,
+    this.difficulty = TemplateDifficulty.normal,
+    this.isFeatured = false,
+    this.priority = 0,
+    this.previewThumbUrl = '',
+    this.previewDetailUrl = '',
+    this.previewImageUrls = const [],
   });
 }
 
@@ -63,6 +81,30 @@ LayerModel _bg(Size canvas, String id, String style, {int z = 0}) {
     position: Offset.zero,
     width: canvas.width,
     height: canvas.height,
+    imageBackground: style,
+    opacity: 1,
+    zIndex: z,
+  );
+}
+
+LayerModel _deco(
+  Size canvas,
+  String id,
+  double x,
+  double y,
+  double w,
+  double h,
+  String style, {
+  double rotation = 0,
+  int z = 50,
+}) {
+  return LayerModel(
+    id: id,
+    type: LayerType.decoration,
+    position: _p(canvas, x, y),
+    width: _s(canvas, w, h).width,
+    height: _s(canvas, w, h).height,
+    rotation: rotation,
     imageBackground: style,
     opacity: 1,
     zIndex: z,
@@ -504,6 +546,1856 @@ List<LayerModel> _buildLandscapeTriptych(Size canvas) {
       0.68,
       frame: 'thinDoubleLine',
       z: 10,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitFestivalPop(Size canvas) {
+  return [
+    _bg(canvas, 'pf_bg', 'cloudSkyBlue', z: 0),
+    _image(
+      canvas,
+      'pf_main',
+      0.08,
+      0.14,
+      0.84,
+      0.50,
+      frame: 'ribbonPolaroid',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'pf_left',
+      0.08,
+      0.68,
+      0.40,
+      0.20,
+      frame: 'paperTapeCard',
+      rotation: -4,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'pf_right',
+      0.52,
+      0.70,
+      0.40,
+      0.20,
+      frame: 'posterPolaroid',
+      rotation: 3,
+      z: 12,
+    ),
+    _text(
+      canvas,
+      'pf_title',
+      0.14,
+      0.06,
+      0.72,
+      0.08,
+      'HIGHLIGHT DAY',
+      'softPill2Coral',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'pf_sub',
+      0.24,
+      0.89,
+      0.52,
+      0.06,
+      '우리의 반짝이는 장면',
+      'noteGridBlue',
+      9,
+      weight: FontWeight.w700,
+      z: 30,
+    ),
+    _deco(canvas, 'pf_spark1', 0.03, 0.07, 0.08, 0.08, 'stickerSparkleGold'),
+    _deco(canvas, 'pf_spark2', 0.90, 0.10, 0.07, 0.07, 'stickerBlueStarSmall'),
+    _deco(canvas, 'pf_tape', 0.43, 0.11, 0.16, 0.05, 'stickerTapeDotsBlue'),
+    _deco(
+      canvas,
+      'pf_arrow',
+      0.84,
+      0.63,
+      0.10,
+      0.08,
+      'stickerArrowCoral',
+      rotation: -8,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitScrapbookDeluxe(Size canvas) {
+  return [
+    _bg(canvas, 'psd_bg', 'notebookPunchPage', z: 0),
+    _image(
+      canvas,
+      'psd_1',
+      0.08,
+      0.18,
+      0.44,
+      0.30,
+      frame: 'tornPaperCard',
+      rotation: -5,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'psd_2',
+      0.50,
+      0.18,
+      0.42,
+      0.30,
+      frame: 'paperClipCard',
+      rotation: 3,
+      z: 12,
+    ),
+    _image(
+      canvas,
+      'psd_3',
+      0.14,
+      0.54,
+      0.72,
+      0.30,
+      frame: 'maskingTapeFrame',
+      z: 10,
+    ),
+    _text(
+      canvas,
+      'psd_title',
+      0.10,
+      0.05,
+      0.80,
+      0.09,
+      'MEMORY SCRAPBOOK',
+      'tapeDoubleBlue',
+      11,
+      weight: FontWeight.w800,
+      color: Colors.black87,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'psd_stamp',
+      0.64,
+      0.86,
+      0.24,
+      0.07,
+      '2026',
+      'stampRed',
+      10,
+      weight: FontWeight.w700,
+      z: 30,
+    ),
+    _deco(canvas, 'psd_clip', 0.06, 0.14, 0.09, 0.09, 'stickerPaperClip'),
+    _deco(canvas, 'psd_ticket', 0.03, 0.50, 0.14, 0.08, 'stickerTicketPaper'),
+    _deco(canvas, 'psd_brush', 0.84, 0.49, 0.12, 0.08, 'stickerBrushPink'),
+    _deco(canvas, 'psd_ribbon', 0.86, 0.07, 0.10, 0.10, 'stickerRibbonBlue'),
+  ];
+}
+
+List<LayerModel> _buildSquareStickerParty(Size canvas) {
+  return [
+    _bg(canvas, 'ssp_bg', 'paperWarm', z: 0),
+    _image(
+      canvas,
+      'ssp_main',
+      0.10,
+      0.14,
+      0.80,
+      0.50,
+      frame: 'comicBubble',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'ssp_left',
+      0.10,
+      0.68,
+      0.36,
+      0.24,
+      frame: 'collageTile',
+      rotation: -4,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'ssp_right',
+      0.54,
+      0.66,
+      0.36,
+      0.24,
+      frame: 'collageTile',
+      rotation: 4,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'ssp_title',
+      0.18,
+      0.05,
+      0.64,
+      0.08,
+      'FUN MOMENTS',
+      'labelSolidPink',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'ssp_flower', 0.05, 0.08, 0.10, 0.10, 'stickerFlowerCoral'),
+    _deco(canvas, 'ssp_star', 0.88, 0.09, 0.08, 0.08, 'stickerStarGold'),
+    _deco(
+      canvas,
+      'ssp_scribble',
+      0.82,
+      0.84,
+      0.12,
+      0.08,
+      'stickerScribbleBlue',
+    ),
+    _deco(canvas, 'ssp_heart', 0.06, 0.88, 0.08, 0.08, 'stickerHeartPink'),
+  ];
+}
+
+List<LayerModel> _buildSquareNeonFestival(Size canvas) {
+  return [
+    _bg(canvas, 'snf_bg', 'darkVignette', z: 0),
+    _image(
+      canvas,
+      'snf_main',
+      0.10,
+      0.16,
+      0.80,
+      0.52,
+      frame: 'vaporStreet',
+      z: 10,
+    ),
+    _image(canvas, 'snf_strip1', 0.10, 0.72, 0.25, 0.20, frame: 'neon', z: 11),
+    _image(canvas, 'snf_strip2', 0.38, 0.72, 0.25, 0.20, frame: 'neon', z: 11),
+    _image(canvas, 'snf_strip3', 0.66, 0.72, 0.24, 0.20, frame: 'neon', z: 11),
+    _text(
+      canvas,
+      'snf_title',
+      0.17,
+      0.06,
+      0.66,
+      0.08,
+      'NIGHT FEVER',
+      'labelSolidBlue',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'snf_spark1', 0.04, 0.20, 0.08, 0.08, 'stickerSparkleBlue'),
+    _deco(canvas, 'snf_spark2', 0.89, 0.23, 0.07, 0.07, 'stickerSparkleGold'),
+    _deco(canvas, 'snf_blob', 0.03, 0.74, 0.10, 0.08, 'stickerBlobGreen'),
+  ];
+}
+
+List<LayerModel> _buildLandscapeCinematicPop(Size canvas) {
+  return [
+    _bg(canvas, 'lcp_bg', 'paperGray', z: 0),
+    _image(
+      canvas,
+      'lcp_main',
+      0.04,
+      0.18,
+      0.62,
+      0.68,
+      frame: 'oldNewspaper',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'lcp_top',
+      0.70,
+      0.18,
+      0.26,
+      0.30,
+      frame: 'postalStamp',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'lcp_bottom',
+      0.70,
+      0.56,
+      0.26,
+      0.30,
+      frame: 'kraftPaper',
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'lcp_title',
+      0.06,
+      0.05,
+      0.40,
+      0.10,
+      'CINEMA CUT',
+      'tagRed',
+      11,
+      weight: FontWeight.w800,
+      color: Colors.black87,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'lcp_date',
+      0.72,
+      0.88,
+      0.22,
+      0.08,
+      'MAR 24',
+      'labelSolidOrange',
+      9,
+      weight: FontWeight.w700,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'lcp_leaf', 0.00, 0.00, 0.13, 0.18, 'stickerLeafCornerLeft'),
+    _deco(
+      canvas,
+      'lcp_leaf2',
+      0.87,
+      0.82,
+      0.13,
+      0.18,
+      'stickerLeafCornerRight',
+    ),
+    _deco(canvas, 'lcp_clip', 0.69, 0.50, 0.08, 0.08, 'stickerPaperClip'),
+  ];
+}
+
+List<LayerModel> _buildLandscapeTapeBoard(Size canvas) {
+  return [
+    _bg(canvas, 'ltb_bg', 'ivoryGridPaper', z: 0),
+    _image(canvas, 'ltb_1', 0.05, 0.16, 0.28, 0.70, frame: 'tapeClip', z: 10),
+    _image(
+      canvas,
+      'ltb_2',
+      0.36,
+      0.16,
+      0.28,
+      0.70,
+      frame: 'tornNotebook',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'ltb_3',
+      0.67,
+      0.16,
+      0.28,
+      0.70,
+      frame: 'maskingTapeFrame',
+      z: 12,
+    ),
+    _text(
+      canvas,
+      'ltb_title',
+      0.08,
+      0.04,
+      0.44,
+      0.09,
+      'WEEKLY CUTS',
+      'tapeDotsPink',
+      11,
+      weight: FontWeight.w800,
+      z: 30,
+    ),
+    _deco(canvas, 'ltb_tape1', 0.02, 0.13, 0.12, 0.05, 'stickerTapeBeige'),
+    _deco(canvas, 'ltb_tape2', 0.44, 0.13, 0.14, 0.05, 'stickerTapeStripePink'),
+    _deco(canvas, 'ltb_tape3', 0.76, 0.13, 0.14, 0.05, 'stickerTapeDotsBlue'),
+    _deco(canvas, 'ltb_star', 0.92, 0.04, 0.07, 0.07, 'stickerBlueStarSmall'),
+  ];
+}
+
+List<LayerModel> _buildPortraitNeonScrap(Size canvas) {
+  return [
+    _bg(canvas, 'pns_bg', 'darkVignette', z: 0),
+    _image(canvas, 'pns_main', 0.10, 0.14, 0.80, 0.52, frame: 'neon', z: 10),
+    _image(
+      canvas,
+      'pns_left',
+      0.08,
+      0.70,
+      0.38,
+      0.20,
+      frame: 'vaporStreet',
+      rotation: -3,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'pns_right',
+      0.54,
+      0.70,
+      0.38,
+      0.20,
+      frame: 'midnightDrip',
+      rotation: 3,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'pns_title',
+      0.20,
+      0.05,
+      0.60,
+      0.08,
+      'NEON DIARY',
+      'labelSolidBlue',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'pns_s1', 0.04, 0.06, 0.08, 0.08, 'stickerSparkleBlue'),
+    _deco(canvas, 'pns_s2', 0.90, 0.08, 0.07, 0.07, 'stickerStarGold'),
+    _deco(canvas, 'pns_b', 0.03, 0.78, 0.10, 0.08, 'stickerBlobGreen'),
+  ];
+}
+
+List<LayerModel> _buildPortraitRomanceBloom(Size canvas) {
+  return [
+    _bg(canvas, 'prb_bg', 'paperPink', z: 0),
+    _image(
+      canvas,
+      'prb_main',
+      0.10,
+      0.16,
+      0.80,
+      0.50,
+      frame: 'goldFrame',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'prb_sub1',
+      0.10,
+      0.70,
+      0.36,
+      0.20,
+      frame: 'ribbonPolaroid',
+      rotation: -5,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'prb_sub2',
+      0.54,
+      0.70,
+      0.36,
+      0.20,
+      frame: 'paperTapeCard',
+      rotation: 4,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'prb_title',
+      0.16,
+      0.06,
+      0.68,
+      0.08,
+      'BLOOMING US',
+      'softPill2Pink',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'prb_f1', 0.05, 0.08, 0.09, 0.09, 'stickerFlowerPink'),
+    _deco(canvas, 'prb_f2', 0.88, 0.08, 0.09, 0.09, 'stickerFlowerCoral'),
+    _deco(canvas, 'prb_h', 0.90, 0.88, 0.07, 0.07, 'stickerHeartPink'),
+  ];
+}
+
+List<LayerModel> _buildPortraitTravelPostcard(Size canvas) {
+  return [
+    _bg(canvas, 'ptp_bg', 'paperBeige', z: 0),
+    _image(
+      canvas,
+      'ptp_main',
+      0.08,
+      0.14,
+      0.84,
+      0.50,
+      frame: 'postalStamp',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'ptp_sub1',
+      0.08,
+      0.68,
+      0.40,
+      0.20,
+      frame: 'oldNewspaper',
+      rotation: -4,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'ptp_sub2',
+      0.52,
+      0.68,
+      0.40,
+      0.20,
+      frame: 'kraftPaper',
+      rotation: 3,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'ptp_title',
+      0.16,
+      0.05,
+      0.68,
+      0.08,
+      'TRAVEL POST',
+      'tagOrange',
+      11,
+      weight: FontWeight.w800,
+      z: 30,
+    ),
+    _deco(canvas, 'ptp_ticket', 0.03, 0.52, 0.14, 0.08, 'stickerTicketPaper'),
+    _deco(canvas, 'ptp_tape', 0.44, 0.10, 0.14, 0.05, 'stickerTapeBeige'),
+    _deco(canvas, 'ptp_star', 0.90, 0.10, 0.07, 0.07, 'stickerBlueStarSmall'),
+  ];
+}
+
+List<LayerModel> _buildSquareRetroMagazine(Size canvas) {
+  return [
+    _bg(canvas, 'srm_bg', 'paperBrownLined', z: 0),
+    _image(
+      canvas,
+      'srm_main',
+      0.10,
+      0.14,
+      0.80,
+      0.48,
+      frame: 'oldNewspaper',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'srm_sub1',
+      0.10,
+      0.66,
+      0.36,
+      0.24,
+      frame: 'posterPolaroid',
+      rotation: -4,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'srm_sub2',
+      0.54,
+      0.66,
+      0.36,
+      0.24,
+      frame: 'kraftPaper',
+      rotation: 4,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'srm_title',
+      0.18,
+      0.05,
+      0.64,
+      0.08,
+      'RETRO MIX',
+      'labelSolidOrange',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'srm_clip', 0.05, 0.10, 0.08, 0.08, 'stickerPaperClip'),
+    _deco(canvas, 'srm_leaf', 0.87, 0.84, 0.12, 0.14, 'stickerLeafCornerRight'),
+  ];
+}
+
+List<LayerModel> _buildSquarePaperPop(Size canvas) {
+  return [
+    _bg(canvas, 'spp_bg', 'notebookPunchPage', z: 0),
+    _image(
+      canvas,
+      'spp_main',
+      0.10,
+      0.15,
+      0.80,
+      0.48,
+      frame: 'tornNotebook',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'spp_sub1',
+      0.10,
+      0.66,
+      0.25,
+      0.24,
+      frame: 'maskingTapeFrame',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'spp_sub2',
+      0.38,
+      0.66,
+      0.25,
+      0.24,
+      frame: 'paperClipCard',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'spp_sub3',
+      0.66,
+      0.66,
+      0.24,
+      0.24,
+      frame: 'paperTapeCard',
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'spp_title',
+      0.20,
+      0.05,
+      0.60,
+      0.08,
+      'PAPER POP',
+      'tapeDotsPink',
+      12,
+      weight: FontWeight.w800,
+      z: 30,
+    ),
+    _deco(canvas, 'spp_ticket', 0.02, 0.44, 0.14, 0.08, 'stickerTicketPaper'),
+    _deco(canvas, 'spp_rib', 0.88, 0.10, 0.09, 0.09, 'stickerRibbonBlue'),
+  ];
+}
+
+List<LayerModel> _buildSquareCandyCollage(Size canvas) {
+  return [
+    _bg(canvas, 'scc_bg', 'paperWarm', z: 0),
+    _image(
+      canvas,
+      'scc_main',
+      0.10,
+      0.14,
+      0.80,
+      0.46,
+      frame: 'pinkSplatter',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'scc_a',
+      0.10,
+      0.64,
+      0.36,
+      0.26,
+      frame: 'comicBubble',
+      rotation: -3,
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'scc_b',
+      0.54,
+      0.64,
+      0.36,
+      0.26,
+      frame: 'blob',
+      rotation: 3,
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'scc_title',
+      0.18,
+      0.05,
+      0.64,
+      0.08,
+      'CANDY SHOTS',
+      'softPill2Mint',
+      12,
+      weight: FontWeight.w800,
+      color: Colors.black87,
+      z: 30,
+    ),
+    _deco(canvas, 'scc_f', 0.04, 0.07, 0.09, 0.09, 'stickerFlowerCoral'),
+    _deco(canvas, 'scc_h', 0.90, 0.86, 0.07, 0.07, 'stickerHeartRed'),
+    _deco(canvas, 'scc_s', 0.88, 0.09, 0.08, 0.08, 'stickerStarGold'),
+  ];
+}
+
+List<LayerModel> _buildLandscapeRibbonBoard(Size canvas) {
+  return [
+    _bg(canvas, 'lrb_bg', 'paperWhite', z: 0),
+    _image(
+      canvas,
+      'lrb_main',
+      0.04,
+      0.18,
+      0.60,
+      0.68,
+      frame: 'ribbonPolaroid',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'lrb_top',
+      0.68,
+      0.18,
+      0.28,
+      0.30,
+      frame: 'paperTapeCard',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'lrb_bottom',
+      0.68,
+      0.56,
+      0.28,
+      0.30,
+      frame: 'posterPolaroid',
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'lrb_title',
+      0.06,
+      0.05,
+      0.42,
+      0.09,
+      'RIBBON BOARD',
+      'labelSolidPink',
+      11,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'lrb_r', 0.90, 0.05, 0.08, 0.08, 'stickerRibbonBlue'),
+    _deco(canvas, 'lrb_t', 0.66, 0.14, 0.14, 0.05, 'stickerTapeStripePink'),
+  ];
+}
+
+List<LayerModel> _buildLandscapeNightTape(Size canvas) {
+  return [
+    _bg(canvas, 'lnt_bg', 'darkVignette', z: 0),
+    _image(canvas, 'lnt_1', 0.04, 0.18, 0.28, 0.68, frame: 'vhs', z: 10),
+    _image(canvas, 'lnt_2', 0.35, 0.18, 0.28, 0.68, frame: 'neon', z: 11),
+    _image(canvas, 'lnt_3', 0.66, 0.18, 0.30, 0.68, frame: 'toxicGlow', z: 12),
+    _text(
+      canvas,
+      'lnt_title',
+      0.08,
+      0.05,
+      0.44,
+      0.09,
+      'NIGHT TAPE',
+      'labelSolidBlue',
+      11,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(canvas, 'lnt_s1', 0.93, 0.06, 0.06, 0.06, 'stickerSparkleGold'),
+    _deco(canvas, 'lnt_s2', 0.01, 0.84, 0.08, 0.08, 'stickerSparkleBlue'),
+  ];
+}
+
+List<LayerModel> _buildLandscapeBloomTrip(Size canvas) {
+  return [
+    _bg(canvas, 'lbt_bg', 'cloudSkyBlue', z: 0),
+    _image(
+      canvas,
+      'lbt_main',
+      0.04,
+      0.18,
+      0.62,
+      0.68,
+      frame: 'floatingGlass',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'lbt_sub1',
+      0.70,
+      0.18,
+      0.26,
+      0.30,
+      frame: 'roundSoft',
+      z: 11,
+    ),
+    _image(canvas, 'lbt_sub2', 0.70, 0.56, 0.26, 0.30, frame: 'round', z: 11),
+    _text(
+      canvas,
+      'lbt_title',
+      0.06,
+      0.05,
+      0.40,
+      0.09,
+      'BLOOM TRIP',
+      'softPill2Orange',
+      11,
+      weight: FontWeight.w800,
+      color: Colors.black87,
+      z: 30,
+    ),
+    _deco(canvas, 'lbt_f1', 0.90, 0.10, 0.08, 0.08, 'stickerFlowerPink'),
+    _deco(canvas, 'lbt_f2', 0.90, 0.84, 0.08, 0.08, 'stickerFlowerCoral'),
+  ];
+}
+
+List<LayerModel> _buildLandscapePosterMix(Size canvas) {
+  return [
+    _bg(canvas, 'lpm_bg', 'paperBrownPlain', z: 0),
+    _image(
+      canvas,
+      'lpm_main',
+      0.05,
+      0.18,
+      0.58,
+      0.68,
+      frame: 'posterPolaroid',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'lpm_a',
+      0.66,
+      0.18,
+      0.29,
+      0.20,
+      frame: 'stencilBlock',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'lpm_b',
+      0.66,
+      0.42,
+      0.29,
+      0.20,
+      frame: 'offsetColorBlock',
+      z: 11,
+    ),
+    _image(
+      canvas,
+      'lpm_c',
+      0.66,
+      0.66,
+      0.29,
+      0.20,
+      frame: 'gradientEdge',
+      z: 11,
+    ),
+    _text(
+      canvas,
+      'lpm_title',
+      0.08,
+      0.05,
+      0.42,
+      0.09,
+      'POSTER MIX',
+      'tagGreen',
+      11,
+      weight: FontWeight.w800,
+      z: 30,
+    ),
+    _deco(canvas, 'lpm_clip', 0.62, 0.14, 0.08, 0.08, 'stickerPaperClip'),
+    _deco(canvas, 'lpm_arrow', 0.90, 0.89, 0.08, 0.08, 'stickerArrowCoral'),
+  ];
+}
+
+List<LayerModel> _buildPortraitBlossomPoster(Size canvas) {
+  return [
+    _bg(canvas, 'pbp_bg', 'blossomPinkDust', z: 0),
+    _image(
+      canvas,
+      'pbp_main',
+      0.22,
+      0.26,
+      0.56,
+      0.56,
+      frame: 'polaroidClassic',
+      z: 10,
+    ),
+    _image(
+      canvas,
+      'pbp_left',
+      0.06,
+      0.44,
+      0.30,
+      0.26,
+      frame: 'posterPolaroid',
+      rotation: -7,
+      z: 9,
+    ),
+    _image(
+      canvas,
+      'pbp_right',
+      0.64,
+      0.42,
+      0.30,
+      0.26,
+      frame: 'posterPolaroid',
+      rotation: 6,
+      z: 9,
+    ),
+    _text(
+      canvas,
+      'pbp_title',
+      0.18,
+      0.06,
+      0.64,
+      0.15,
+      '꽃은 피고\n셔터는 터지고',
+      '',
+      20,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(
+      canvas,
+      'pbp_flower1',
+      0.84,
+      0.30,
+      0.10,
+      0.10,
+      'stickerCherryBlossom',
+    ),
+    _deco(
+      canvas,
+      'pbp_flower2',
+      0.05,
+      0.54,
+      0.10,
+      0.10,
+      'stickerCherryBlossom',
+    ),
+    _deco(
+      canvas,
+      'pbp_flower3',
+      0.80,
+      0.60,
+      0.10,
+      0.10,
+      'stickerCherryBlossom',
+    ),
+    _deco(canvas, 'pbp_cam', 0.77, 0.79, 0.17, 0.12, 'stickerInstantCamera'),
+  ];
+}
+
+List<LayerModel> _buildSquareKidsBookClub(Size canvas) {
+  return [
+    _bg(canvas, 'skb_bg', 'dreamyNightSky', z: 0),
+    _image(
+      canvas,
+      'skb_book',
+      0.28,
+      0.24,
+      0.44,
+      0.46,
+      frame: 'softPaperCard',
+      z: 10,
+    ),
+    _text(
+      canvas,
+      'skb_title',
+      0.18,
+      0.09,
+      0.64,
+      0.08,
+      '어린이 북클럽',
+      'tapeDoubleBlue',
+      13,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'skb_sub',
+      0.64,
+      0.54,
+      0.24,
+      0.08,
+      '키즈 베스트',
+      'tagMint',
+      9,
+      weight: FontWeight.w700,
+      z: 30,
+    ),
+    _deco(canvas, 'skb_cloud1', 0.08, 0.63, 0.22, 0.12, 'stickerCloudSoft'),
+    _deco(canvas, 'skb_cloud2', 0.70, 0.70, 0.22, 0.12, 'stickerCloudSoft'),
+    _deco(canvas, 'skb_star1', 0.08, 0.12, 0.08, 0.08, 'stickerSparkleGold'),
+    _deco(canvas, 'skb_star2', 0.88, 0.14, 0.07, 0.07, 'stickerSparkleBlue'),
+  ];
+}
+
+List<LayerModel> _buildSquareSummerLetter(Size canvas) {
+  return [
+    _bg(canvas, 'ssl_bg', 'softSkyBloom', z: 0),
+    _deco(
+      canvas,
+      'ssl_env',
+      0.24,
+      0.30,
+      0.52,
+      0.40,
+      'stickerEnvelopeBlue',
+      z: 15,
+    ),
+    _text(
+      canvas,
+      'ssl_title',
+      0.20,
+      0.10,
+      0.60,
+      0.10,
+      'Summer day',
+      '',
+      18,
+      weight: FontWeight.w500,
+      color: Colors.white,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'ssl_msg',
+      0.33,
+      0.40,
+      0.34,
+      0.12,
+      '무더운 날씨에도\n무너지지 말아요',
+      'note',
+      8,
+      weight: FontWeight.w600,
+      color: Colors.black87,
+      z: 35,
+    ),
+    _deco(canvas, 'ssl_clover1', 0.16, 0.34, 0.10, 0.10, 'stickerCloverGreen'),
+    _deco(canvas, 'ssl_clover2', 0.72, 0.56, 0.10, 0.10, 'stickerCloverGreen'),
+    _deco(canvas, 'ssl_cloud1', 0.04, 0.78, 0.24, 0.12, 'stickerCloudSoft'),
+    _deco(canvas, 'ssl_cloud2', 0.72, 0.80, 0.22, 0.12, 'stickerCloudSoft'),
+  ];
+}
+
+List<LayerModel> _buildPortraitRoseTypo(Size canvas) {
+  return [
+    _bg(canvas, 'prt_bg', 'softSkyBloom', z: 0),
+    _image(
+      canvas,
+      'prt_rose',
+      0.24,
+      0.42,
+      0.52,
+      0.44,
+      frame: 'softGlow',
+      z: 10,
+    ),
+    _text(
+      canvas,
+      'prt_t1',
+      0.12,
+      0.10,
+      0.76,
+      0.16,
+      '{ YOU\'RE\nROSE }',
+      '',
+      22,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'prt_t2',
+      0.16,
+      0.30,
+      0.68,
+      0.07,
+      '5월 14일, 당신과 함께하는 특별한 하루',
+      '',
+      8,
+      weight: FontWeight.w600,
+      color: const Color(0xFFE9EFFA),
+      z: 30,
+    ),
+    _deco(canvas, 'prt_s1', 0.08, 0.18, 0.07, 0.07, 'stickerSparkleBlue'),
+    _deco(canvas, 'prt_s2', 0.88, 0.20, 0.07, 0.07, 'stickerSparkleGold'),
+  ];
+}
+
+List<LayerModel> _buildPortraitSaveTheDate(Size canvas) {
+  return [
+    _bg(canvas, 'psd2_bg', 'softSkyBloom', z: 0),
+    _image(
+      canvas,
+      'psd2_main',
+      0.08,
+      0.12,
+      0.84,
+      0.74,
+      frame: 'floatingGlass',
+      z: 10,
+    ),
+    _text(
+      canvas,
+      'psd2_date',
+      0.30,
+      0.05,
+      0.40,
+      0.06,
+      '2025.10.12 SAT',
+      '',
+      10,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _text(
+      canvas,
+      'psd2_title',
+      0.30,
+      0.66,
+      0.40,
+      0.10,
+      'SAVE\nTHE DATE',
+      '',
+      18,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 30,
+    ),
+    _deco(
+      canvas,
+      'psd2_flower',
+      0.84,
+      0.74,
+      0.10,
+      0.10,
+      'stickerCherryBlossom',
+    ),
+    _deco(
+      canvas,
+      'psd2_flower2',
+      0.05,
+      0.74,
+      0.10,
+      0.10,
+      'stickerCherryBlossom',
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitFullBleedWeddingClassic(Size canvas) {
+  return [
+    _image(canvas, 'pfwc_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'pfwc_head',
+      0.30,
+      0.08,
+      0.40,
+      0.05,
+      'THE MARRIAGE OF',
+      '',
+      9,
+      weight: FontWeight.w700,
+      letterSpacing: 1.0,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfwc_names',
+      0.10,
+      0.16,
+      0.80,
+      0.20,
+      'Jiwon Park\nand Minji Kim',
+      '',
+      22,
+      weight: FontWeight.w500,
+      height: 1.2,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfwc_info',
+      0.10,
+      0.78,
+      0.80,
+      0.06,
+      '2025.10.12  |  SATURDAY  |  3PM  |  SEOUL',
+      '',
+      10,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfwc_desc',
+      0.14,
+      0.86,
+      0.72,
+      0.08,
+      'Together with their families, invite you\n to celebrate their love.',
+      '',
+      8,
+      weight: FontWeight.w500,
+      color: const Color(0xFFEAEAEA),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitFullBleedRoseDay(Size canvas) {
+  return [
+    _image(canvas, 'pfrd_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'pfrd_title',
+      0.22,
+      0.12,
+      0.56,
+      0.10,
+      'ROSE DAY',
+      '',
+      20,
+      weight: FontWeight.w800,
+      letterSpacing: 0.6,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfrd_sub',
+      0.22,
+      0.22,
+      0.56,
+      0.05,
+      'you are prettier than roses',
+      '',
+      8,
+      weight: FontWeight.w500,
+      color: const Color(0xFFEAF2FF),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfrd_date',
+      0.20,
+      0.30,
+      0.60,
+      0.05,
+      '5월 14일, 당신과 함께하는 특별한 날',
+      '',
+      8,
+      weight: FontWeight.w600,
+      color: const Color(0xFFDCE6F2),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitFullBleedTimeInvite(Size canvas) {
+  return [
+    _image(canvas, 'pfti_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'pfti_date',
+      0.38,
+      0.06,
+      0.24,
+      0.05,
+      '10/12',
+      '',
+      10,
+      weight: FontWeight.w700,
+      letterSpacing: 1.2,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfti_time',
+      0.24,
+      0.12,
+      0.52,
+      0.14,
+      '3:00',
+      '',
+      34,
+      weight: FontWeight.w800,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfti_names',
+      0.22,
+      0.30,
+      0.56,
+      0.07,
+      'Jiwon and Minji',
+      '',
+      11,
+      weight: FontWeight.w500,
+      color: const Color(0xFFF4F4F4),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'pfti_loc',
+      0.20,
+      0.84,
+      0.60,
+      0.05,
+      'MAISON DE BLOSSOM, SEOUL',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: const Color(0xFFEEEEEE),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildSquareFullBleedMarriageScript(Size canvas) {
+  return [
+    _image(canvas, 'sfbms_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'sfbms_top',
+      0.32,
+      0.07,
+      0.36,
+      0.05,
+      '10월 12일 토요일',
+      '',
+      8,
+      weight: FontWeight.w700,
+      color: const Color(0xFFE9E9E9),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'sfbms_title',
+      0.22,
+      0.20,
+      0.56,
+      0.18,
+      'The\nMarriage\nof',
+      '',
+      20,
+      weight: FontWeight.w500,
+      height: 1.05,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'sfbms_names',
+      0.22,
+      0.54,
+      0.56,
+      0.07,
+      'SANGWOO KANG & JISOO YOON',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 0.7,
+      color: const Color(0xFFF5F5F5),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildSquareFullBleedDateStack(Size canvas) {
+  return [
+    _image(canvas, 'sfbds_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'sfbds_date',
+      0.64,
+      0.24,
+      0.18,
+      0.28,
+      '26\n04\n25',
+      '',
+      20,
+      weight: FontWeight.w700,
+      height: 1.2,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'sfbds_names',
+      0.22,
+      0.78,
+      0.56,
+      0.07,
+      '박지준  &  김미리',
+      '',
+      10,
+      weight: FontWeight.w700,
+      color: const Color(0xFFF2F2F2),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildLandscapeFullBleedEditorialWedding(Size canvas) {
+  return [
+    _image(canvas, 'lfbew_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'lfbew_top',
+      0.32,
+      0.08,
+      0.36,
+      0.05,
+      'SANGWOO KANG  &  JISOO YOON',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lfbew_title',
+      0.24,
+      0.62,
+      0.52,
+      0.14,
+      'Our Wedding Day',
+      '',
+      28,
+      weight: FontWeight.w500,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lfbew_info',
+      0.32,
+      0.77,
+      0.36,
+      0.05,
+      '2025.9.7 SUN',
+      '',
+      8,
+      weight: FontWeight.w700,
+      color: const Color(0xFFECECEC),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildLandscapeFullBleedMinimalInvite(Size canvas) {
+  return [
+    _image(canvas, 'lfbmi_bg', 0, 0, 1, 1, z: 0),
+    _text(
+      canvas,
+      'lfbmi_names_l',
+      0.05,
+      0.24,
+      0.22,
+      0.30,
+      'JI\nWON',
+      '',
+      24,
+      weight: FontWeight.w500,
+      height: 1.0,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lfbmi_names_r',
+      0.73,
+      0.54,
+      0.22,
+      0.30,
+      'MIN\nJI',
+      '',
+      24,
+      weight: FontWeight.w500,
+      height: 1.0,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lfbmi_center',
+      0.42,
+      0.56,
+      0.16,
+      0.06,
+      'and',
+      '',
+      10,
+      weight: FontWeight.w600,
+      color: const Color(0xFFF0F0F0),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitPosterSummerCover(Size canvas) {
+  return [
+    _image(canvas, 'ppsc_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'ppsc_top', 0.00, 0.00, 1.00, 0.16, 'paperYellow', z: 8),
+    _deco(canvas, 'ppsc_bottom', 0.00, 0.92, 1.00, 0.08, 'paperYellow', z: 8),
+    _text(
+      canvas,
+      'ppsc_title',
+      0.05,
+      0.02,
+      0.90,
+      0.10,
+      'SUMMER',
+      '',
+      42,
+      weight: FontWeight.w900,
+      letterSpacing: 1.2,
+      align: TextAlign.left,
+      color: const Color(0xFF1F2E46),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppsc_open',
+      0.08,
+      0.18,
+      0.40,
+      0.07,
+      'Opening: 08.17 2:00\n08.17-09.20',
+      '',
+      8,
+      weight: FontWeight.w600,
+      align: TextAlign.left,
+      color: const Color(0xFFDFE6ED),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppsc_name',
+      0.64,
+      0.72,
+      0.30,
+      0.06,
+      'MIRI KIM',
+      '',
+      12,
+      weight: FontWeight.w800,
+      align: TextAlign.right,
+      color: const Color(0xFFFADE78),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppsc_foot',
+      0.20,
+      0.94,
+      0.60,
+      0.04,
+      'MIRIKIM 1ST ART EXHIBITION',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 1.2,
+      color: const Color(0xFF3D4660),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildPortraitPosterNoirCover(Size canvas) {
+  return [
+    _image(canvas, 'ppnc_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'ppnc_top', 0.00, 0.00, 1.00, 0.14, 'darkVignette', z: 8),
+    _deco(canvas, 'ppnc_bottom', 0.00, 0.88, 1.00, 0.12, 'darkVignette', z: 8),
+    _text(
+      canvas,
+      'ppnc_title',
+      0.08,
+      0.03,
+      0.84,
+      0.08,
+      'MIDNIGHT ISSUE',
+      '',
+      18,
+      weight: FontWeight.w900,
+      letterSpacing: 1.0,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppnc_sub',
+      0.10,
+      0.14,
+      0.40,
+      0.06,
+      'VOL. 02  |  NIGHT CITY',
+      '',
+      8,
+      weight: FontWeight.w700,
+      align: TextAlign.left,
+      color: const Color(0xFFD4D7E0),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppnc_quote',
+      0.10,
+      0.76,
+      0.80,
+      0.08,
+      'Silence is also a color.',
+      '',
+      11,
+      weight: FontWeight.w500,
+      align: TextAlign.left,
+      color: const Color(0xFFF2F2F2),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'ppnc_foot',
+      0.10,
+      0.92,
+      0.80,
+      0.05,
+      'EDITORIAL ARCHIVE / 2026',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 1.2,
+      align: TextAlign.center,
+      color: const Color(0xFFD9DDE8),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildSquarePosterBoldCover(Size canvas) {
+  return [
+    _image(canvas, 'spbc_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'spbc_top', 0.00, 0.00, 1.00, 0.18, 'paperWarm', z: 8),
+    _text(
+      canvas,
+      'spbc_title',
+      0.05,
+      0.03,
+      0.90,
+      0.10,
+      'WEEKEND',
+      '',
+      30,
+      weight: FontWeight.w900,
+      letterSpacing: 1.0,
+      align: TextAlign.left,
+      color: const Color(0xFF243047),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'spbc_mid',
+      0.08,
+      0.70,
+      0.84,
+      0.08,
+      'A SIMPLE COVER STORY',
+      '',
+      10,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'spbc_foot',
+      0.10,
+      0.84,
+      0.80,
+      0.06,
+      'MIRI MAGAZINE',
+      '',
+      9,
+      weight: FontWeight.w700,
+      letterSpacing: 1.0,
+      color: const Color(0xFFECECEC),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildSquarePosterDateCover(Size canvas) {
+  return [
+    _image(canvas, 'spdc_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'spdc_left', 0.00, 0.00, 0.20, 1.00, 'darkVignette', z: 8),
+    _text(
+      canvas,
+      'spdc_date',
+      0.03,
+      0.26,
+      0.14,
+      0.40,
+      '26\n04\n25',
+      '',
+      17,
+      weight: FontWeight.w800,
+      height: 1.15,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'spdc_title',
+      0.24,
+      0.08,
+      0.68,
+      0.12,
+      'COVER\nEDITION',
+      '',
+      20,
+      weight: FontWeight.w900,
+      align: TextAlign.left,
+      color: Colors.white,
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'spdc_names',
+      0.24,
+      0.82,
+      0.68,
+      0.07,
+      'JIWON  &  MINJI',
+      '',
+      10,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: const Color(0xFFF0F0F0),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildLandscapePosterExhibitionCover(Size canvas) {
+  return [
+    _image(canvas, 'lpec_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'lpec_top', 0.00, 0.00, 1.00, 0.17, 'paperYellow', z: 8),
+    _deco(canvas, 'lpec_bottom', 0.00, 0.90, 1.00, 0.10, 'paperYellow', z: 8),
+    _text(
+      canvas,
+      'lpec_title',
+      0.04,
+      0.03,
+      0.92,
+      0.10,
+      'EXHIBITION',
+      '',
+      34,
+      weight: FontWeight.w900,
+      letterSpacing: 1.2,
+      align: TextAlign.left,
+      color: const Color(0xFF20304A),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lpec_meta',
+      0.06,
+      0.20,
+      0.34,
+      0.08,
+      'Opening: 08.17\n08.17-09.20',
+      '',
+      8,
+      align: TextAlign.left,
+      weight: FontWeight.w700,
+      color: const Color(0xFFE4EAF1),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lpec_foot',
+      0.28,
+      0.93,
+      0.44,
+      0.05,
+      'MIRI 1ST ART EXHIBITION',
+      '',
+      8,
+      weight: FontWeight.w700,
+      letterSpacing: 1.1,
+      color: const Color(0xFF36415A),
+      z: 20,
+    ),
+  ];
+}
+
+List<LayerModel> _buildLandscapePosterSkyScriptCover(Size canvas) {
+  return [
+    _image(canvas, 'lpss_bg', 0, 0, 1, 1, z: 0),
+    _deco(canvas, 'lpss_top', 0.00, 0.00, 1.00, 0.15, 'softSkyBloom', z: 8),
+    _text(
+      canvas,
+      'lpss_title',
+      0.24,
+      0.05,
+      0.52,
+      0.08,
+      'Weddingday',
+      '',
+      26,
+      weight: FontWeight.w500,
+      color: const Color(0xFFFCF3DA),
+      z: 20,
+    ),
+    _text(
+      canvas,
+      'lpss_names',
+      0.24,
+      0.78,
+      0.52,
+      0.07,
+      'JIWON PARK  ·  MINJI KIM',
+      '',
+      10,
+      weight: FontWeight.w700,
+      letterSpacing: 0.8,
+      color: Colors.white,
+      z: 20,
     ),
   ];
 }
@@ -2376,7 +4268,688 @@ List<LayerModel> _buildTravelTapeTemplate(Size canvas) =>
 List<LayerModel> _buildSeasonsPosterTemplate(Size canvas) =>
     _buildPortraitReferenceTemplate(canvas, _buildSeasonsPosterPortrait);
 
-List<DesignTemplate> designTemplates = [
+typedef _TemplateLayerBuilder = List<LayerModel> Function(Size canvasSize);
+
+class _TemplateSeed {
+  final String id;
+  final String name;
+  final TemplateAspect aspect;
+  final String category;
+  final String style;
+  final int recommendedPhotoCount;
+  final TemplateDifficulty difficulty;
+  final bool isFeatured;
+  final int priority;
+  final List<String> tags;
+  final _TemplateLayerBuilder buildLayers;
+
+  const _TemplateSeed({
+    required this.id,
+    required this.name,
+    required this.aspect,
+    required this.category,
+    required this.style,
+    required this.recommendedPhotoCount,
+    required this.difficulty,
+    required this.buildLayers,
+    this.tags = const [],
+    this.isFeatured = false,
+    this.priority = 0,
+  });
+}
+
+List<String> templatePreviewImagesFor(DesignTemplate template) {
+  if (template.previewImageUrls.isNotEmpty) return template.previewImageUrls;
+  return templatePreviewImagesForId(template.id);
+}
+
+List<LayerModel> injectTemplatePreviewImages(
+  DesignTemplate template,
+  List<LayerModel> layers, {
+  bool fillPersistentUrls = false,
+}) {
+  final imageIndices = <int>[];
+  for (var i = 0; i < layers.length; i++) {
+    if (layers[i].type == LayerType.image) imageIndices.add(i);
+  }
+  if (imageIndices.isEmpty) return layers;
+
+  final urls = templatePreviewImagesFor(template);
+  if (urls.isEmpty) return layers;
+
+  final next = [...layers];
+  for (var i = 0; i < imageIndices.length; i++) {
+    final idx = imageIndices[i];
+    final layer = next[idx];
+    final hasImage =
+        (layer.previewUrl != null && layer.previewUrl!.isNotEmpty) ||
+        (layer.imageUrl != null && layer.imageUrl!.isNotEmpty) ||
+        (layer.originalUrl != null && layer.originalUrl!.isNotEmpty) ||
+        layer.asset != null;
+    if (hasImage) continue;
+    final url = urls[i % urls.length];
+    next[idx] = layer.copyWith(
+      previewUrl: url,
+      imageUrl: fillPersistentUrls ? url : layer.imageUrl,
+      originalUrl: fillPersistentUrls ? url : layer.originalUrl,
+    );
+  }
+  return next;
+}
+
+List<String> templatePreviewImagesForId(String templateId) {
+  final fixed = _templatePreviewFixedById[templateId];
+  if (fixed != null && fixed.isNotEmpty) return fixed;
+  return _templatePreviewFallback(templateId);
+}
+
+String templatePreviewThumbForId(String templateId) =>
+    templatePreviewImagesForId(templateId).first;
+
+String templatePreviewDetailForId(String templateId) {
+  final list = templatePreviewImagesForId(templateId);
+  return list.length > 1 ? list[1] : list.first;
+}
+
+List<String> _templatePreviewFallback(String templateId) =>
+    List.generate(8, (i) => _picsumSeed('$templateId-fallback', i + 1));
+
+String _picsumSeed(
+  String id,
+  int slot, {
+  bool grayscale = false,
+  int blur = 0,
+}) {
+  final base = 'https://picsum.photos/seed/snapfit_${id}_$slot/1200/1600';
+  final q = <String>[];
+  if (grayscale) q.add('grayscale');
+  if (blur > 0) q.add('blur=$blur');
+  if (q.isEmpty) return base;
+  return '$base?${q.join('&')}';
+}
+
+String _weddingSeed(int lock, {bool landscape = false}) {
+  final list = landscape ? _weddingLandscapeSamples : _weddingPortraitSamples;
+  return list[lock % list.length];
+}
+
+const List<String> _weddingPortraitSamples = [
+  'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1522673607350-04f725f60f4f?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1465495976277-4387d4b0d799?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1300&q=80',
+  'https://images.unsplash.com/photo-1525328437458-0c4d4db7cab4?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _weddingLandscapeSamples = [
+  'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1522673607350-04f725f60f4f?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1465495976277-4387d4b0d799?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1525328437458-0c4d4db7cab4?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1700&q=80',
+];
+
+String _floralSeed(int lock) => _floralSamples[lock % _floralSamples.length];
+String _partySeed(int lock) => _partySamples[lock % _partySamples.length];
+String _noirSeed(int lock, {bool landscape = false}) {
+  final list = landscape ? _noirLandscapeSamples : _noirPortraitSamples;
+  return list[lock % list.length];
+}
+
+String _minimalSeed(int lock, {bool landscape = false}) {
+  final list = landscape ? _minimalLandscapeSamples : _minimalPortraitSamples;
+  return list[lock % list.length];
+}
+
+String _coverSeed(int lock, {bool landscape = false}) {
+  final list = landscape ? _coverLandscapeSamples : _coverPortraitSamples;
+  return list[lock % list.length];
+}
+
+const List<String> _floralSamples = [
+  'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1468327768560-75b778cbb551?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1455659817273-f96807779a8a?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _partySamples = [
+  'https://images.unsplash.com/photo-1464349153735-7db50ed83c84?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1469594292607-7bd90f8d3ba4?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _noirPortraitSamples = [
+  'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _noirLandscapeSamples = [
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1494783367193-149034c05e8f?auto=format&fit=crop&w=1600&q=80',
+];
+
+const List<String> _minimalPortraitSamples = [
+  'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1516222338250-863216ce01ea?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _minimalLandscapeSamples = [
+  'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1600&q=80',
+];
+
+const List<String> _coverPortraitSamples = [
+  'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1300&q=80',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1200&q=80',
+];
+
+const List<String> _coverLandscapeSamples = [
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1493244040629-496f6d136cc3?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1464822759844-d150ad6d07ea?auto=format&fit=crop&w=1600&q=80',
+];
+
+final Map<String, List<String>> _templatePreviewFixedById = {
+  'pack_portrait_travel_journal_001': [
+    _weddingSeed(101),
+    _weddingSeed(102),
+    _weddingSeed(103),
+    _weddingSeed(104),
+  ],
+  'pack_portrait_couple_story_001': [
+    _weddingSeed(111),
+    _weddingSeed(112),
+    _weddingSeed(113),
+    _weddingSeed(114),
+  ],
+  'pack_portrait_family_daily_001': [
+    _noirSeed(201),
+    _noirSeed(202),
+    _noirSeed(203),
+    _noirSeed(204),
+  ],
+  'pack_portrait_birthday_party_001': [
+    _partySeed(211),
+    _partySeed(212),
+    _partySeed(213),
+    _partySeed(214),
+  ],
+  'pack_portrait_mood_book_001': [
+    _floralSeed(221),
+    _floralSeed(222),
+    _floralSeed(223),
+    _floralSeed(224),
+  ],
+  'pack_portrait_wedding_day_001': [
+    _weddingSeed(121),
+    _weddingSeed(122),
+    _weddingSeed(123),
+    _weddingSeed(124),
+  ],
+  'pack_portrait_glitter_night_002': [
+    _noirSeed(231),
+    _noirSeed(232),
+    _noirSeed(233),
+    _noirSeed(234),
+  ],
+  'pack_portrait_ticket_journey_002': [
+    _weddingSeed(131),
+    _weddingSeed(132),
+    _weddingSeed(133),
+    _weddingSeed(134),
+  ],
+  'pack_square_travel_grid_001': [
+    _coverSeed(301),
+    _coverSeed(302),
+    _coverSeed(303),
+    _coverSeed(304),
+  ],
+  'pack_square_family_memory_001': [
+    _coverSeed(311),
+    _coverSeed(312),
+    _coverSeed(313),
+    _coverSeed(314),
+  ],
+  'pack_square_birthday_snap_001': [
+    _weddingSeed(321),
+    _weddingSeed(322),
+    _weddingSeed(323),
+    _weddingSeed(324),
+  ],
+  'pack_square_graduation_book_001': [
+    _minimalSeed(331),
+    _minimalSeed(332),
+    _minimalSeed(333),
+    _minimalSeed(334),
+  ],
+  'pack_square_minimal_sheet_001': [
+    _minimalSeed(341),
+    _minimalSeed(342),
+    _minimalSeed(343),
+    _minimalSeed(344),
+  ],
+  'pack_square_mood_card_001': [
+    _weddingSeed(141),
+    _weddingSeed(142),
+    _weddingSeed(143),
+    _weddingSeed(144),
+  ],
+  'pack_square_retro_cut_002': [
+    _minimalSeed(351),
+    _minimalSeed(352),
+    _minimalSeed(353),
+    _minimalSeed(354),
+  ],
+  'pack_square_sugar_party_002': [
+    _coverSeed(361),
+    _coverSeed(362),
+    _coverSeed(363),
+    _coverSeed(364),
+  ],
+  'pack_landscape_travel_banner_001': [
+    _weddingSeed(151, landscape: true),
+    _weddingSeed(152, landscape: true),
+    _weddingSeed(153, landscape: true),
+    _weddingSeed(154, landscape: true),
+  ],
+  'pack_landscape_couple_film_001': [
+    _weddingSeed(161, landscape: true),
+    _weddingSeed(162, landscape: true),
+    _weddingSeed(163, landscape: true),
+    _weddingSeed(164, landscape: true),
+  ],
+  'pack_landscape_birthday_mix_001': [
+    _coverSeed(411, landscape: true),
+    _coverSeed(412, landscape: true),
+    _coverSeed(413, landscape: true),
+    _coverSeed(414, landscape: true),
+  ],
+  'pack_landscape_minimal_wide_001': [
+    _minimalSeed(421, landscape: true),
+    _minimalSeed(422, landscape: true),
+    _minimalSeed(423, landscape: true),
+    _minimalSeed(424, landscape: true),
+  ],
+  'pack_landscape_city_travel_001': [
+    _coverSeed(431, landscape: true),
+    _coverSeed(432, landscape: true),
+    _coverSeed(433, landscape: true),
+    _coverSeed(434, landscape: true),
+  ],
+  'pack_landscape_ribbon_story_002': [
+    _weddingSeed(171, landscape: true),
+    _weddingSeed(172, landscape: true),
+    _weddingSeed(173, landscape: true),
+    _weddingSeed(174, landscape: true),
+  ],
+  'pack_landscape_night_reel_002': [
+    _noirSeed(441, landscape: true),
+    _noirSeed(442, landscape: true),
+    _noirSeed(443, landscape: true),
+    _noirSeed(444, landscape: true),
+  ],
+  'pack_landscape_poster_board_002': [
+    _weddingSeed(181, landscape: true),
+    _weddingSeed(182, landscape: true),
+    _weddingSeed(183, landscape: true),
+    _weddingSeed(184, landscape: true),
+  ],
+};
+
+List<DesignTemplate> _buildExpandedTemplatePack() {
+  const seeds = <_TemplateSeed>[
+    _TemplateSeed(
+      id: 'pack_portrait_travel_journal_001',
+      name: '웨딩 클래식',
+      aspect: TemplateAspect.portrait,
+      category: '커플',
+      style: 'editorial',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 100,
+      tags: ['웨딩', '클래식', '초대장'],
+      buildLayers: _buildPortraitFullBleedWeddingClassic,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_couple_story_001',
+      name: '서머 커버',
+      aspect: TemplateAspect.portrait,
+      category: '커플',
+      style: 'soft',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 96,
+      tags: ['커버', '서머', '포스터'],
+      buildLayers: _buildPortraitPosterSummerCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_family_daily_001',
+      name: '누아르 커버',
+      aspect: TemplateAspect.portrait,
+      category: '감성',
+      style: 'editorial',
+      recommendedPhotoCount: 6,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['누아르', '매거진'],
+      buildLayers: _buildPortraitPosterNoirCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_birthday_party_001',
+      name: '생일 파티',
+      aspect: TemplateAspect.portrait,
+      category: '생일',
+      style: 'colorful',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['생일', '파티'],
+      buildLayers: _buildPortraitBlossomPoster,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_mood_book_001',
+      name: '로즈 데이',
+      aspect: TemplateAspect.portrait,
+      category: '감성',
+      style: 'emotional',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 90,
+      tags: ['로즈', '타이포', '포스터'],
+      buildLayers: _buildPortraitFullBleedRoseDay,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_wedding_day_001',
+      name: '타임 인비테이션',
+      aspect: TemplateAspect.portrait,
+      category: '커플',
+      style: 'romantic',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      isFeatured: true,
+      priority: 94,
+      tags: ['웨딩', '시간', '초대장'],
+      buildLayers: _buildPortraitFullBleedTimeInvite,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_glitter_night_002',
+      name: '글리터 이슈',
+      aspect: TemplateAspect.portrait,
+      category: '감성',
+      style: 'neon',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.normal,
+      isFeatured: true,
+      priority: 89,
+      tags: ['나이트', '커버', '이슈'],
+      buildLayers: _buildPortraitPosterNoirCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_portrait_ticket_journey_002',
+      name: '메리지 스크립트',
+      aspect: TemplateAspect.portrait,
+      category: '커플',
+      style: 'script',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['메리지', '스크립트', '포토'],
+      buildLayers: _buildPortraitSaveTheDate,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_travel_grid_001',
+      name: '위켄드 커버',
+      aspect: TemplateAspect.square,
+      category: '감성',
+      style: 'cover',
+      recommendedPhotoCount: 6,
+      difficulty: TemplateDifficulty.easy,
+      tags: ['커버', '매거진'],
+      buildLayers: _buildSquarePosterBoldCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_family_memory_001',
+      name: '커버 스토리',
+      aspect: TemplateAspect.square,
+      category: '감성',
+      style: 'cover',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['커버', '타이틀'],
+      buildLayers: _buildSquarePosterBoldCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_birthday_snap_001',
+      name: '데이트 커버',
+      aspect: TemplateAspect.square,
+      category: '커플',
+      style: 'minimal',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      tags: ['데이트', '날짜', '표지'],
+      buildLayers: _buildSquarePosterDateCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_graduation_book_001',
+      name: '모노 데이트',
+      aspect: TemplateAspect.square,
+      category: '감성',
+      style: 'minimal',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['모노', '데이트', '타이포'],
+      buildLayers: _buildSquarePosterDateCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_minimal_sheet_001',
+      name: '미니멀 시트',
+      aspect: TemplateAspect.square,
+      category: '미니멀',
+      style: 'minimal',
+      recommendedPhotoCount: 3,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 88,
+      tags: ['미니멀', '화이트'],
+      buildLayers: _buildSquareSummerLetter,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_mood_card_001',
+      name: '메리지 스퀘어',
+      aspect: TemplateAspect.square,
+      category: '커플',
+      style: 'script',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      tags: ['웨딩', '스크립트'],
+      buildLayers: _buildSquareFullBleedMarriageScript,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_retro_cut_002',
+      name: '데이트 스택',
+      aspect: TemplateAspect.square,
+      category: '감성',
+      style: 'minimal',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['데이트', '모노', '타이포'],
+      buildLayers: _buildSquareFullBleedDateStack,
+    ),
+    _TemplateSeed(
+      id: 'pack_square_sugar_party_002',
+      name: '포스터 커버',
+      aspect: TemplateAspect.square,
+      category: '감성',
+      style: 'cover',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 87,
+      tags: ['포스터', '커버'],
+      buildLayers: _buildSquarePosterBoldCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_travel_banner_001',
+      name: '웨딩 에디토리얼',
+      aspect: TemplateAspect.landscape,
+      category: '커플',
+      style: 'editorial',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 86,
+      tags: ['웨딩', '에디토리얼', '풀배경'],
+      buildLayers: _buildLandscapeFullBleedEditorialWedding,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_couple_film_001',
+      name: '스카이 웨딩',
+      aspect: TemplateAspect.landscape,
+      category: '커플',
+      style: 'cover',
+      recommendedPhotoCount: 3,
+      difficulty: TemplateDifficulty.easy,
+      tags: ['웨딩', '스카이', '표지'],
+      buildLayers: _buildLandscapePosterSkyScriptCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_birthday_mix_001',
+      name: '전시 포스터',
+      aspect: TemplateAspect.landscape,
+      category: '감성',
+      style: 'cover',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['전시', '포스터', '밴드'],
+      buildLayers: _buildLandscapePosterExhibitionCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_minimal_wide_001',
+      name: '스카이 인비테이션',
+      aspect: TemplateAspect.landscape,
+      category: '커플',
+      style: 'cover',
+      recommendedPhotoCount: 3,
+      difficulty: TemplateDifficulty.easy,
+      isFeatured: true,
+      priority: 84,
+      tags: ['스카이', '인비테이션'],
+      buildLayers: _buildLandscapePosterSkyScriptCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_city_travel_001',
+      name: '커버 에디션',
+      aspect: TemplateAspect.landscape,
+      category: '감성',
+      style: 'cover',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['커버', '에디션', '밴드'],
+      buildLayers: _buildLandscapePosterExhibitionCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_ribbon_story_002',
+      name: '웨딩 스크립트',
+      aspect: TemplateAspect.landscape,
+      category: '커플',
+      style: 'cover',
+      recommendedPhotoCount: 4,
+      difficulty: TemplateDifficulty.easy,
+      tags: ['웨딩', '스크립트', '표지'],
+      buildLayers: _buildLandscapePosterSkyScriptCover,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_night_reel_002',
+      name: '나이트 릴',
+      aspect: TemplateAspect.landscape,
+      category: '감성',
+      style: 'neon',
+      recommendedPhotoCount: 3,
+      difficulty: TemplateDifficulty.normal,
+      isFeatured: true,
+      priority: 85,
+      tags: ['나이트', '릴'],
+      buildLayers: _buildLandscapeNightTape,
+    ),
+    _TemplateSeed(
+      id: 'pack_landscape_poster_board_002',
+      name: '와이드 미니멀 표지',
+      aspect: TemplateAspect.landscape,
+      category: '커플',
+      style: 'cover',
+      recommendedPhotoCount: 5,
+      difficulty: TemplateDifficulty.normal,
+      tags: ['와이드', '미니멀', '타이포'],
+      buildLayers: _buildLandscapeFullBleedMinimalInvite,
+    ),
+  ];
+
+  return seeds
+      .map(
+        (seed) => DesignTemplate(
+          id: seed.id,
+          name: seed.name,
+          aspect: seed.aspect,
+          category: seed.category,
+          style: seed.style,
+          recommendedPhotoCount: seed.recommendedPhotoCount,
+          difficulty: seed.difficulty,
+          isFeatured: seed.isFeatured,
+          priority: seed.priority,
+          tags: seed.tags,
+          previewThumbUrl: templatePreviewThumbForId(seed.id),
+          previewDetailUrl: templatePreviewDetailForId(seed.id),
+          previewImageUrls: templatePreviewImagesForId(seed.id),
+          buildLayers: seed.buildLayers,
+        ),
+      )
+      .toList();
+}
+
+final List<DesignTemplate> _coreDesignTemplates = [
   DesignTemplate(
     id: 'portrait_magazine_001',
     name: '세로 매거진',
@@ -2587,4 +5160,9 @@ List<DesignTemplate> designTemplates = [
     buildLayers: _buildLandscapeStrip,
     aspect: TemplateAspect.landscape,
   ),
+];
+
+final List<DesignTemplate> designTemplates = [
+  ..._coreDesignTemplates,
+  ..._buildExpandedTemplatePack(),
 ];

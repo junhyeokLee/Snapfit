@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:dio/dio.dart';
+import 'dart:async';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
@@ -13,6 +15,8 @@ import '../widgets/reader/album_reader_thumbnail_strip.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
 import '../widgets/reader/album_frozen_screen.dart';
 import '../viewmodels/home_view_model.dart';
+import '../../data/api/album_provider.dart';
+import '../../../billing/data/billing_provider.dart';
 import 'page_editor_screen.dart';
 import 'album_reader_inner_detail_screen.dart';
 import 'album_invite_screen.dart';
@@ -33,6 +37,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   Size _baseCanvasSize = const Size(300, 400); // 초기값, initState에서 갱신됨
   Size _coverSize = Size.zero;
   bool _isFrozen = false; // 제작확정 여부
+  bool _isDeleting = false; // 삭제 진행 중 UI 잠금
 
   @override
   void initState() {
@@ -100,6 +105,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
   // ... 메뉴 (수정하기 / 제작확정)
   void _showMoreOptions() {
+    if (_isDeleting) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     showModalBottomSheet(
       context: context,
@@ -130,6 +136,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         onConfirm: () {
           Navigator.pop(ctx);
           _showConfirmDialog();
+        },
+        onDelete: () {
+          Navigator.pop(ctx);
+          _showDeleteConfirmDialog();
         },
         onInvite: () {
           Navigator.pop(ctx);
@@ -199,6 +209,119 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         },
       ),
     );
+  }
+
+  Future<void> _showDeleteConfirmDialog() async {
+    if (_isDeleting) return;
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: SnapFitColors.surfaceOf(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22.sp),
+            SizedBox(width: 8.w),
+            Text(
+              '앨범 삭제',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textPrimaryOf(context),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          '삭제하면 앨범 데이터와 연결된 이미지가\n스토리지/DB에서 함께 정리됩니다.\n\n이 작업은 되돌릴 수 없습니다.',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: SnapFitColors.textSecondaryOf(context),
+            height: 1.55,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: SnapFitColors.textMutedOf(context),
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              '삭제하기',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w800,
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true || !mounted) return;
+
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album == null || album.id <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('삭제할 앨범 정보를 찾을 수 없습니다.')));
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    if (!mounted) return;
+    setState(() => _isDeleting = true);
+
+    try {
+      await ref.read(albumRepositoryProvider).deleteAlbum(album.id);
+      if (!mounted) return;
+      // 실서비스 체감 개선: 삭제 성공 즉시 이전 화면으로 복귀
+      Navigator.pop(context, <String, dynamic>{'deletedAlbumId': album.id});
+      // 목록/사용량 갱신은 백그라운드에서 수행
+      unawaited(ref.read(homeViewModelProvider.notifier).refresh());
+      ref.invalidate(myStorageQuotaProvider);
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final body = e.response?.data?.toString() ?? '';
+      final alreadyDeleted = status == 400 && body.contains('앨범을 찾을 수 없습니다.');
+      if (alreadyDeleted) {
+        if (!mounted) return;
+        Navigator.pop(context, <String, dynamic>{'deletedAlbumId': album.id});
+        unawaited(ref.read(homeViewModelProvider.notifier).refresh());
+        ref.invalidate(myStorageQuotaProvider);
+        return;
+      }
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            status == 403
+                ? '인증이 만료되었거나 권한이 없습니다. 다시 로그인 후 시도해주세요.'
+                : '앨범 삭제에 실패했습니다: ${e.message}',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('앨범 삭제에 실패했습니다: $e')));
+    }
   }
 
   // 제작확정 확인 다이얼로그
@@ -332,203 +455,238 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
     final albumTitle = vm.album?.title ?? '';
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: SnapFitColors.readerGradientOf(context),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // ─── 1. 상단 헤더 ───
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                child: Row(
+    return WillPopScope(
+      onWillPop: () async => !_isDeleting,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: SnapFitColors.readerGradientOf(context),
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
                   children: [
-                    // 뒤로가기
-                    AlbumReaderCircleBtn(
-                      icon: Icons.arrow_back_ios_new_rounded,
-                      onTap: () => Navigator.pop(context),
-                    ),
-                    // 가운데 타이틀
-                    Expanded(
-                      child: Column(
+                    // ─── 1. 상단 헤더 ───
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                      child: Row(
                         children: [
-                          if (albumTitle.isNotEmpty)
-                            Text(
-                              albumTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: SnapFitColors.textSecondaryOf(context),
-                                // color: SnapFitColors.accent,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          // 뒤로가기
+                          AlbumReaderCircleBtn(
+                            icon: Icons.arrow_back_ios_new_rounded,
+                            onTap: _isDeleting
+                                ? () {}
+                                : () => Navigator.pop(context),
+                          ),
+                          // 가운데 타이틀
+                          Expanded(
+                            child: Column(
+                              children: [
+                                if (albumTitle.isNotEmpty)
+                                  Text(
+                                    albumTitle,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      color: SnapFitColors.textSecondaryOf(
+                                        context,
+                                      ),
+                                      // color: SnapFitColors.accent,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                              ],
                             ),
+                          ),
+                          // ... 메뉴
+                          AlbumReaderCircleBtn(
+                            icon: Icons.more_horiz_rounded,
+                            onTap: _showMoreOptions,
+                          ),
                         ],
                       ),
                     ),
-                    // ... 메뉴
-                    AlbumReaderCircleBtn(
-                      icon: Icons.more_horiz_rounded,
-                      onTap: _showMoreOptions,
+                    // ─── 2. 페이지 카운터 Pill ───
+                    AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, _) {
+                        // spreadIdx: 0=커버, 1=1-2페이지, 2=3-4페이지 ...
+                        final spreadIdx = _pageController.hasClients
+                            ? (_pageController.page?.round() ?? 0)
+                            : 0;
+                        final isCover = spreadIdx == 0;
+                        final int totalInner = allPages.length - 1; // 내지 페이지 수
+                        String label;
+                        if (isCover) {
+                          label = '커버';
+                        } else {
+                          // 스프레드 인덱스 → 실제 내지 페이지 번호
+                          final int leftPage = (spreadIdx - 1) * 2 + 1;
+                          final int rightPage = leftPage + 1;
+                          if (rightPage <= totalInner) {
+                            label = '$leftPage - $rightPage  /  $totalInner';
+                          } else {
+                            label = '$leftPage  /  $totalInner';
+                          }
+                        }
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    SizedBox(height: 12.h),
+
+                    // ─── 3. 단일 페이지 뷰어 (커버 포함) ───
+                    Expanded(
+                      child: allPages.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.menu_book_outlined,
+                                    size: 56.sp,
+                                    color: SnapFitColors.textMutedOf(
+                                      context,
+                                    ).withOpacity(0.4),
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Text(
+                                    '아직 페이지가 없어요.\n스냅핏 만들기에서 페이지를 추가해보세요!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: SnapFitColors.textMutedOf(context),
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : AlbumReaderSinglePageView(
+                              allPages: allPages,
+                              selectedCover: state.selectedCover,
+                              coverTheme: state.selectedTheme,
+                              pageController: _pageController,
+                              interaction: _interaction,
+                              layerBuilder: _layerBuilder,
+                              canvasKey: _coverKey,
+                              onCanvasSizeChanged: (size) {
+                                if (_coverSize == size) return;
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (!mounted) return;
+                                  debugPrint(
+                                    '[AlbumReaderScreen] Canvas Size Changed: $size',
+                                  );
+                                  setState(() {
+                                    _coverSize = size;
+                                  });
+                                  // 실제 캔버스 크기가 잡히면 레이어 좌표 리스케일링 트리거
+                                  vm.setCoverCanvasSize(size);
+                                });
+                              },
+                              onPageChanged: (index) {
+                                setState(() {});
+                              },
+                              onStateChanged: () {
+                                if (mounted) setState(() {});
+                              },
+                            ),
+                    ),
+
+                    SizedBox(height: 8.h),
+
+                    // ─── 4. 페이지 도트 인디케이터 (스프레드 단위) ───
+                    if (itemCount > 1)
+                      AnimatedBuilder(
+                        animation: _pageController,
+                        builder: (context, _) {
+                          // spreadIdx 기준으로 현재 활성 점 결정
+                          final current = _pageController.hasClients
+                              ? (_pageController.page?.round() ?? 0)
+                              : 0;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(itemCount, (i) {
+                              final isActive = i == current;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 250),
+                                margin: EdgeInsets.symmetric(horizontal: 3.w),
+                                width: isActive ? 20.w : 6.w,
+                                height: 6.w,
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? SnapFitColors.accent
+                                      : SnapFitColors.accent.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(3.r),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                    SizedBox(height: 12.h),
+
+                    // ─── 5. 하단 썸네일 스트립 ───
+                    AlbumReaderThumbnailStrip(
+                      pages: allPages,
+                      pageController: allPages.isNotEmpty ? _pageController : null,
+                      previewBuilder: _layerBuilder,
+                      baseCanvasSize: _baseCanvasSize,
+                      height: 64.h,
+                    ),
+                    SizedBox(height: 18.h),
                   ],
                 ),
               ),
-              // ─── 2. 페이지 카운터 Pill ───
-              AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, _) {
-                  // spreadIdx: 0=커버, 1=1-2페이지, 2=3-4페이지 ...
-                  final spreadIdx = _pageController.hasClients
-                      ? (_pageController.page?.round() ?? 0)
-                      : 0;
-                  final isCover = spreadIdx == 0;
-                  final int totalInner = allPages.length - 1; // 내지 페이지 수
-                  String label;
-                  if (isCover) {
-                    label = '커버';
-                  } else {
-                    // 스프레드 인덱스 → 실제 내지 페이지 번호
-                    final int leftPage = (spreadIdx - 1) * 2 + 1;
-                    final int rightPage = leftPage + 1;
-                    if (rightPage <= totalInner) {
-                      label = '$leftPage - $rightPage  /  $totalInner';
-                    } else {
-                      label = '$leftPage  /  $totalInner';
-                    }
-                  }
-                  return Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 18.w,
-                      vertical: 6.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.25),
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              SizedBox(height: 12.h),
-
-              // ─── 3. 단일 페이지 뷰어 (커버 포함) ───
-              Expanded(
-                child: allPages.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.menu_book_outlined,
-                              size: 56.sp,
-                              color: SnapFitColors.textMutedOf(
-                                context,
-                              ).withOpacity(0.4),
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              '아직 페이지가 없어요.\n스냅핏 만들기에서 페이지를 추가해보세요!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: SnapFitColors.textMutedOf(context),
-                                height: 1.6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : AlbumReaderSinglePageView(
-                        allPages: allPages,
-                        selectedCover: state.selectedCover,
-                        coverTheme: state.selectedTheme,
-                        pageController: _pageController,
-                        interaction: _interaction,
-                        layerBuilder: _layerBuilder,
-                        canvasKey: _coverKey,
-                        onCanvasSizeChanged: (size) {
-                          if (_coverSize == size) return;
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (!mounted) return;
-                            debugPrint(
-                              '[AlbumReaderScreen] Canvas Size Changed: $size',
-                            );
-                            setState(() {
-                              _coverSize = size;
-                            });
-                            // 실제 캔버스 크기가 잡히면 레이어 좌표 리스케일링 트리거
-                            vm.setCoverCanvasSize(size);
-                          });
-                        },
-                        onPageChanged: (index) {
-                          setState(() {});
-                        },
-                        onStateChanged: () {
-                          if (mounted) setState(() {});
-                        },
-                      ),
-              ),
-
-              SizedBox(height: 8.h),
-
-              // ─── 4. 페이지 도트 인디케이터 (스프레드 단위) ───
-              if (itemCount > 1)
-                AnimatedBuilder(
-                  animation: _pageController,
-                  builder: (context, _) {
-                    // spreadIdx 기준으로 현재 활성 점 결정
-                    final current = _pageController.hasClients
-                        ? (_pageController.page?.round() ?? 0)
-                        : 0;
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(itemCount, (i) {
-                        final isActive = i == current;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          margin: EdgeInsets.symmetric(horizontal: 3.w),
-                          width: isActive ? 20.w : 6.w,
-                          height: 6.w,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? SnapFitColors.accent
-                                : SnapFitColors.accent.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(3.r),
-                          ),
-                        );
-                      }),
-                    );
-                  },
+            ),
+            if (_isDeleting) ...[
+              Positioned.fill(
+                child: AbsorbPointer(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.34),
+                  ),
                 ),
-              SizedBox(height: 12.h),
-
-              // ─── 5. 하단 썸네일 스트립 ───
-              AlbumReaderThumbnailStrip(
-                pages: allPages,
-                pageController: allPages.isNotEmpty ? _pageController : null,
-                previewBuilder: _layerBuilder,
-                baseCanvasSize: _baseCanvasSize,
-                height: 64.h,
               ),
-              SizedBox(height: 18.h),
+              Positioned.fill(
+                child: Center(
+                  child: SizedBox(
+                    width: 34.w,
+                    height: 34.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.8,
+                      color: SnapFitColors.accent,
+                    ),
+                  ),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

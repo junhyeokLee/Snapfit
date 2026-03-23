@@ -39,8 +39,8 @@ class PageEditorCanvas extends StatelessWidget {
     // 최종적으로 현재 캔버스(물리적 크기)에 맞춰 스케일링합니다.
     final double physicalAspect = canvasW / canvasH;
 
-    // 1. 내지용 논리 사이즈 (300xH)
-    const double innerLogicalW = 300.0;
+    // 1. 페이지도 커버와 동일한 논리 사이즈(500xH)로 통일
+    const double innerLogicalW = kCoverReferenceWidth;
     final double innerLogicalH = innerLogicalW / physicalAspect;
 
     // 2. 커버용 논리 사이즈 (500xH)

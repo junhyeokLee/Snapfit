@@ -41,6 +41,9 @@ class AlbumPersistenceService {
         // 업로드는 성공했는데 URL이 없는 경우: 굳이 재시도하지 않고 원본 레이어 반환
         return layer;
       } catch (e) {
+        if (e is StorageQuotaExceededException) {
+          rethrow;
+        }
         attempt++;
         if (attempt > _maxUploadRetries) {
           debugPrint(
@@ -172,6 +175,9 @@ class AlbumPersistenceService {
       debugPrint('[Background] Upload Completed for Album $albumId');
     } catch (e) {
       debugPrint('[Background] Upload Failed: $e');
+      if (e is StorageQuotaExceededException) {
+        rethrow;
+      }
       if (!swallowErrors) {
         rethrow;
       }

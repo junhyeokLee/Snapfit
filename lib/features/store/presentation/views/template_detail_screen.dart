@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../billing/data/billing_provider.dart';
+import '../../../billing/presentation/views/subscription_management_screen.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
 import '../../../album/presentation/widgets/home/home_album_actions.dart';
@@ -195,6 +197,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _onUse() async {
     if (_isUsing) return;
+    if (_template.isPremium) {
+      final granted = await _ensureSubscriptionForPremium();
+      if (!granted) return;
+    }
+
     setState(() => _isUsing = true);
     final pages = _resolvePagesForCreateFlow();
     if (pages.isEmpty) {
@@ -221,6 +228,75 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     if (mounted) {
       setState(() => _isUsing = false);
     }
+  }
+
+  Future<bool> _ensureSubscriptionForPremium() async {
+    try {
+      final state = await ref.read(mySubscriptionProvider.future);
+      if (state.isActive) return true;
+    } catch (_) {}
+
+    if (!mounted) return false;
+    final shouldProceed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: SnapFitColors.surfaceOf(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '프리미엄 템플릿 잠금',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '이 템플릿은 구독자 전용입니다. PG 결제로 구독 후 바로 사용하실 수 있어요.',
+                  style: TextStyle(
+                    color: SnapFitColors.textSecondaryOf(context),
+                    fontSize: 13.5,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('PG로 구독하기'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('다음에 할게요'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldProceed != true) return false;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionManagementScreen()),
+    );
+
+    ref.invalidate(mySubscriptionProvider);
+    final latest = await ref.read(mySubscriptionProvider.future);
+    return latest.isActive;
   }
 
   Future<void> _onShareTemplate() async {

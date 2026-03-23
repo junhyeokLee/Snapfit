@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,8 +26,12 @@ import '../widgets/home/home_album_cover_thumbnail.dart';
 import 'album_create_flow_screen.dart';
 import '../../../search/presentation/views/search_screen.dart';
 import '../../../notification/presentation/views/notification_screen.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../store/presentation/views/store_screen.dart';
 import '../../data/api/album_provider.dart';
+import '../providers/home_ui_state_provider.dart';
+import '../utils/home_album_section_builder.dart';
+import '../utils/home_shared_membership_resolver.dart';
 import 'album_category_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -38,10 +43,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const String _favoriteKey = 'album_favorite_ids_v1';
-  int _bottomNavIndex = 0;
-  int _albumTabIndex = 0;
   String _sharedResolveKey = '';
   Future<List<Album>>? _sharedResolveFuture;
+  final HomeSharedMembershipResolver _sharedMembershipResolver =
+      HomeSharedMembershipResolver();
   Set<int> _favoriteAlbumIds = <int>{};
 
   @override
@@ -74,10 +79,152 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Color _albumCardTone(Album album) {
+    final bgTone = _extractCoverBackgroundTone(album.coverLayersJson);
+    if (bgTone != null) return bgTone;
+
+    const palette = <Color>[
+      Color(0xFFE8D6B8),
+      Color(0xFFD3D9EA),
+      Color(0xFFD2E6D3),
+      Color(0xFFE4D6EA),
+      Color(0xFFE7DCC8),
+      Color(0xFFD0E0EC),
+    ];
+    return palette[album.id.abs() % palette.length];
+  }
+
+  Color _readableAlbumCardTone(Color tone) {
+    final luminance = tone.computeLuminance();
+    final blendToWhite = luminance < 0.2
+        ? 0.84
+        : luminance < 0.35
+        ? 0.72
+        : 0.58;
+
+    final softened = Color.lerp(tone, Colors.white, blendToWhite) ?? tone;
+    final hsl = HSLColor.fromColor(softened);
+    final safeSaturation = (hsl.saturation * 0.72).clamp(0.06, 0.40);
+    final safeLightness = hsl.lightness.clamp(0.84, 0.94);
+
+    return hsl
+        .withSaturation(safeSaturation.toDouble())
+        .withLightness(safeLightness.toDouble())
+        .toColor();
+  }
+
+  Color? _extractCoverBackgroundTone(String raw) {
+    if (raw.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+
+      final coverPage = _extractCoverPage(decoded);
+      if (coverPage != null) {
+        final pageColor = _extractColorFromMap(coverPage, const [
+          'backgroundColor',
+          'canvasColor',
+          'bgColor',
+          'color',
+        ]);
+        if (pageColor != null) return pageColor;
+      }
+
+      final layers = _extractCoverLayers(decoded, coverPage: coverPage);
+      for (final rawLayer in layers.reversed) {
+        if (rawLayer is! Map) continue;
+        final layer = rawLayer.cast<String, dynamic>();
+        final payload = (layer['payload'] is Map)
+            ? (layer['payload'] as Map).cast<String, dynamic>()
+            : const <String, dynamic>{};
+
+        final layerColor = _extractColorFromMap(payload, const [
+          'backgroundColor',
+          'canvasColor',
+          'bgColor',
+          'fillColor',
+          'bubbleColor',
+          'color',
+        ]);
+        if (layerColor != null) return layerColor;
+      }
+    } catch (_) {
+      return null;
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _extractCoverPage(Map<String, dynamic> decoded) {
+    final pages = decoded['pages'];
+    if (pages is! List || pages.isEmpty) return null;
+    for (final p in pages) {
+      if (p is! Map) continue;
+      final page = p.cast<String, dynamic>();
+      final isCover = page['isCover'] == true;
+      final idx = (page['index'] as num?)?.toInt();
+      if (isCover || idx == 0) return page;
+    }
+    final first = pages.first;
+    if (first is Map) return first.cast<String, dynamic>();
+    return null;
+  }
+
+  List<dynamic> _extractCoverLayers(
+    Map<String, dynamic> decoded, {
+    Map<String, dynamic>? coverPage,
+  }) {
+    final fromCoverPage = coverPage?['layers'];
+    if (fromCoverPage is List) return fromCoverPage;
+    final fromRoot = decoded['layers'];
+    if (fromRoot is List) return fromRoot;
+    return const <dynamic>[];
+  }
+
+  Color? _extractColorFromMap(Map<String, dynamic> src, List<String> keys) {
+    for (final key in keys) {
+      final color = _parseDynamicColor(src[key]);
+      if (color != null) return color;
+    }
+    return null;
+  }
+
+  Color? _parseDynamicColor(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return Color(value);
+    if (value is String) {
+      final raw = value.trim();
+      if (raw.isEmpty) return null;
+      if (raw.startsWith('#')) return _parseHexColor(raw);
+
+      final noPrefix = raw.replaceAll(RegExp(r'^0x', caseSensitive: false), '');
+      if (RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(noPrefix) ||
+          RegExp(r'^[0-9a-fA-F]{8}$').hasMatch(noPrefix)) {
+        return _parseHexColor('#$noPrefix');
+      }
+      final numeric = int.tryParse(raw);
+      if (numeric != null) return Color(numeric);
+    }
+    return null;
+  }
+
+  Color? _parseHexColor(String hex) {
+    final cleaned = hex.replaceFirst('#', '').trim();
+    if (cleaned.length == 6) {
+      return Color(int.parse('FF$cleaned', radix: 16));
+    }
+    if (cleaned.length == 8) {
+      return Color(int.parse(cleaned, radix: 16));
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final albumsAsync = ref.watch(homeViewModelProvider);
+    final unreadCountAsync = ref.watch(notificationUnreadCountProvider);
     final authAsync = ref.watch(authViewModelProvider);
+    final uiState = ref.watch(homeUiStateProvider);
+    final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
     Future<void> handleCreateAlbum() async {
       final created = await Navigator.push(
         context,
@@ -91,15 +238,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       bottomNavigationBar: HomeBottomNavigationBar(
-        currentIndex: _bottomNavIndex,
+        currentIndex: uiState.bottomNavIndex,
         onTap: (index) {
-          setState(() => _bottomNavIndex = index);
+          uiStateNotifier.setBottomNavIndex(index);
         },
         onCreate: handleCreateAlbum,
       ),
       body: _buildBottomNavBody(
         context,
-        Container(
+        currentBottomNavIndex: uiState.bottomNavIndex,
+        homeBody: Container(
           color: SnapFitColors.backgroundOf(context),
           child: SafeArea(
             // SafeArea applied to the whole body
@@ -107,44 +255,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (albums) {
                 final currentUserId =
                     authAsync.asData?.value?.id.toString() ?? '';
-
-                // 1. filtering (Draft 제외)
-                final baseAlbums = albums
-                    .where((a) => !isDraftAlbum(a))
-                    .toList();
-
-                // 2. 섹션별 정렬/필터
-                // 나의 기록들: 내 앨범 + 최신순(완료/진행중 모두 포함)
-                final myOwnedAlbums = baseAlbums.where((a) {
-                  if (currentUserId.isEmpty) return true;
-                  return a.userId.trim() == currentUserId.trim();
-                }).toList();
-                final myRecordsSource = myOwnedAlbums.isNotEmpty
-                    ? myOwnedAlbums
-                    : baseAlbums;
-                final myRecordsAlbums = List<Album>.from(myRecordsSource)
-                  ..sort(_compareByLatestDesc);
-
-                // 완료된 앨범: "진짜 완료"만 + 최신순
-                final completedAlbums = List<Album>.from(
-                  baseAlbums.where((a) => isCompletedAlbum(a)),
-                )..sort(_compareByLatestDesc);
-                final completedPreviewAlbums = completedAlbums.take(3).toList();
-
-                // Shared: 실제 공유 앨범(내 소유 아님)만 노출
-                final sharedOwnerCandidates =
-                    currentUserId.trim().isEmpty
-                          ? <Album>[]
-                          : baseAlbums
-                                .where(
-                                  (a) =>
-                                      a.userId.trim().isNotEmpty &&
-                                      a.userId.trim() != currentUserId.trim(),
-                                )
-                                .toList()
-                      ..sort(_compareByLatestDesc);
-
-                if (baseAlbums.isEmpty) {
+                final prepared = buildHomeAlbumsData(
+                  albums: albums,
+                  currentUserId: currentUserId,
+                );
+                if (prepared.baseAlbums.isEmpty) {
                   return HomeEmptyState(onCreate: handleCreateAlbum);
                 }
 
@@ -158,6 +273,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           vertical: 12.w,
                         ),
                         child: HomeHeaderNew(
+                          hasUnreadNotification:
+                              (unreadCountAsync.asData?.value ?? 0) > 0,
                           onNotification: () {
                             Navigator.push(
                               context,
@@ -181,7 +298,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 3. My Records (Section 1: Masonry)
                     SliverToBoxAdapter(
                       child: RecentAlbumList(
-                        albums: myRecordsAlbums,
+                        albums: prepared.myRecordsAlbums,
                         currentUserId: currentUserId,
                         onTap: (album) async {
                           await HomeAlbumActions.openAlbum(context, ref, album);
@@ -192,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MaterialPageRoute(
                               builder: (_) => AlbumCategoryScreen(
                                 category: AlbumCategory.recent,
-                                initialAlbums: myRecordsAlbums,
+                                initialAlbums: prepared.myRecordsAlbums,
                                 currentUserId: currentUserId,
                               ),
                             ),
@@ -204,7 +321,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverToBoxAdapter(
                       child: FutureBuilder<List<Album>>(
                         future: _resolveSharedAlbums(
-                          sharedOwnerCandidates,
+                          prepared.sharedOwnerCandidates,
                           currentUserId,
                         ),
                         builder: (context, snapshot) {
@@ -238,7 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 5. Completed Albums (Section 3: List)
                     SliverToBoxAdapter(
                       child: CompletedAlbumList(
-                        albums: completedPreviewAlbums,
+                        albums: prepared.completedPreviewAlbums,
                         currentUserId: currentUserId,
                         onTap: (album) async {
                           await HomeAlbumActions.openAlbum(context, ref, album);
@@ -249,7 +366,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MaterialPageRoute(
                               builder: (_) => AlbumCategoryScreen(
                                 category: AlbumCategory.completed,
-                                initialAlbums: completedAlbums,
+                                initialAlbums: prepared.completedAlbums,
                                 currentUserId: currentUserId,
                               ),
                             ),
@@ -263,11 +380,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
 
                 final albumTabContent = _buildAlbumTabScreen(
-                  allAlbums: myRecordsAlbums,
+                  allAlbums: prepared.myRecordsAlbums,
                   currentUserId: currentUserId,
+                  albumTabIndex: uiState.albumTabIndex,
+                  onAlbumTabChanged: uiStateNotifier.setAlbumTabIndex,
                 );
 
-                return _bottomNavIndex == 1 ? albumTabContent : homeContent;
+                return uiState.bottomNavIndex == 1
+                    ? albumTabContent
+                    : homeContent;
               },
               loading: () => const Center(
                 child: CircularProgressIndicator(
@@ -282,8 +403,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildBottomNavBody(BuildContext context, Widget homeBody) {
-    switch (_bottomNavIndex) {
+  Widget _buildBottomNavBody(
+    BuildContext context, {
+    required int currentBottomNavIndex,
+    required Widget homeBody,
+  }) {
+    switch (currentBottomNavIndex) {
       case 0:
       case 1:
         return homeBody;
@@ -299,32 +424,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildAlbumTabScreen({
     required List<Album> allAlbums,
     required String currentUserId,
+    required int albumTabIndex,
+    required ValueChanged<int> onAlbumTabChanged,
   }) {
     final textPrimary = SnapFitColors.textPrimaryOf(context);
     final textSecondary = SnapFitColors.textSecondaryOf(context);
-    final inProgressAlbums = List<Album>.from(
-      allAlbums.where((a) => isLiveEditingAlbum(a)),
-    )..sort(_compareByLatestDesc);
-    final completedAlbums = List<Album>.from(
-      allAlbums.where((a) => isCompletedAlbum(a)),
-    )..sort(_compareByLatestDesc);
-    final favoriteAlbums = List<Album>.from(
-      allAlbums.where((a) => _favoriteAlbumIds.contains(a.id)),
-    )..sort(_compareByLatestDesc);
-
-    final tabAlbums = switch (_albumTabIndex) {
-      1 => completedAlbums,
-      2 => favoriteAlbums,
-      _ => inProgressAlbums,
-    };
-
-    final tabLabel = switch (_albumTabIndex) {
-      1 => '완료',
-      2 => '즐겨찾기',
-      _ => '진행중',
-    };
+    final tabData = buildHomeAlbumTabData(
+      allAlbums: allAlbums,
+      favoriteAlbumIds: _favoriteAlbumIds,
+      albumTabIndex: albumTabIndex,
+    );
 
     return CustomScrollView(
+      cacheExtent: 1000,
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
@@ -352,9 +464,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               children: ['진행중', '완료', '즐겨찾기'].asMap().entries.map((entry) {
                 final idx = entry.key;
-                final selected = idx == _albumTabIndex;
+                final selected = idx == albumTabIndex;
                 return GestureDetector(
-                  onTap: () => setState(() => _albumTabIndex = idx),
+                  onTap: () => onAlbumTabChanged(idx),
                   child: Container(
                     margin: EdgeInsets.only(right: 18.w),
                     padding: EdgeInsets.only(bottom: 10.h),
@@ -388,7 +500,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               children: [
                 Text(
-                  '$tabLabel 앨범',
+                  '앨범',
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w800,
@@ -397,7 +509,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '${tabAlbums.length}개',
+                  '${tabData.tabAlbums.length}개',
                   style: TextStyle(
                     fontSize: 10.sp,
                     color: textSecondary,
@@ -407,7 +519,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 SizedBox(width: 10.w),
                 GestureDetector(
                   onTap: () {
-                    final category = _albumTabIndex == 1
+                    final category = albumTabIndex == 1
                         ? AlbumCategory.completed
                         : AlbumCategory.recent;
                     Navigator.push(
@@ -415,7 +527,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       MaterialPageRoute(
                         builder: (_) => AlbumCategoryScreen(
                           category: category,
-                          initialAlbums: tabAlbums,
+                          initialAlbums: tabData.tabAlbums,
                           currentUserId: currentUserId,
                         ),
                       ),
@@ -434,271 +546,274 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: _buildAlbumGrid(
-            albums: tabAlbums,
-            currentUserId: currentUserId,
-          ),
+        _buildAlbumGridSliver(
+          albums: tabData.tabAlbums,
+          currentUserId: currentUserId,
         ),
         SliverToBoxAdapter(child: SizedBox(height: 90.h)),
       ],
     );
   }
 
-  Widget _buildAlbumGrid({
+  Widget _buildAlbumGridSliver({
     required List<Album> albums,
     required String currentUserId,
   }) {
     if (albums.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
-        child: Container(
-          height: 110.h,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: SnapFitColors.surfaceOf(context),
-            borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-          ),
-          child: Text(
-            '표시할 앨범이 없습니다.',
-            style: TextStyle(
-              fontSize: 10.sp,
-              color: SnapFitColors.textSecondaryOf(context),
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
+          child: Container(
+            height: 110.h,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: SnapFitColors.surfaceOf(context),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+            ),
+            child: Text(
+              '표시할 앨범이 없습니다.',
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: SnapFitColors.textSecondaryOf(context),
+              ),
             ),
           ),
         ),
       );
     }
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: albums.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10.w,
-          mainAxisSpacing: 10.h,
-          childAspectRatio: 0.74,
-        ),
-        itemBuilder: (context, index) {
-          final album = albums[index];
-          final progress = calculateAlbumProgress(album);
-          final isFav = _favoriteAlbumIds.contains(album.id);
-          final isShared =
-              currentUserId.trim().isNotEmpty &&
-              album.userId.trim().isNotEmpty &&
-              album.userId.trim() != currentUserId.trim();
-          final chipColor = isCompletedAlbum(album)
-              ? (album.id.isEven
-                    ? const Color(0xFF1BB57A)
-                    : const Color(0xFFF2A11A))
-              : const Color(0xFF16A8E3);
-          final chipText = isCompletedAlbum(album)
-              ? (album.id.isEven ? '인쇄' : '주문')
-              : '진행중';
-          return GestureDetector(
-            onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
-            child: Container(
-              decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(15.r),
-                border: Border.all(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(
-                      SnapFitColors.isDark(context) ? 0.24 : 0.06,
-                    ),
-                    blurRadius: 9,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
+    final List<MapEntry<int, Album>> leftCol = [];
+    final List<MapEntry<int, Album>> rightCol = [];
+    for (int i = 0; i < albums.length; i++) {
+      (i % 2 == 0 ? leftCol : rightCol).add(MapEntry(i, albums[i]));
+    }
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 0),
-                            child: Center(
-                              child: HomeAlbumCoverThumbnail(
-                                album: album,
-                                height: 152.h,
-                                maxWidth: 120.w,
-                                showShadow: true,
-                              ),
-                            ),
-                          ),
+                children: leftCol
+                    .map(
+                      (entry) => Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: SizedBox(
+                          height: _albumMasonryHeight(entry.value, entry.key),
+                          child: _buildAlbumGridCard(entry.value),
                         ),
-                        Positioned(
-                          top: 10.h,
-                          right: 10.w,
-                          child: GestureDetector(
-                            onTap: () => _toggleFavorite(album.id),
-                            child: CircleAvatar(
-                              radius: 14.r,
-                              backgroundColor: SnapFitColors.pureWhite
-                                  .withOpacity(0.92),
-                              child: Icon(
-                                isFav
-                                    ? Icons.star_rounded
-                                    : Icons.star_outline_rounded,
-                                color: isFav
-                                    ? SnapFitColors.accent
-                                    : SnapFitColors.textSecondaryOf(context),
-                                size: 16.sp,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 10.w,
-                          bottom: 8.h,
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 9.w,
-                                  vertical: 3.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: chipColor,
-                                  borderRadius: BorderRadius.circular(999.r),
-                                ),
-                                child: Text(
-                                  chipText,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9.5.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              if (isShared) ...[
-                                SizedBox(width: 6.w),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w,
-                                    vertical: 3.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF6E7F96),
-                                    borderRadius: BorderRadius.circular(999.r),
-                                  ),
-                                  child: Text(
-                                    '공유',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9.5.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                album.title.isEmpty ? '제목 없음' : album.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: SnapFitColors.textPrimaryOf(context),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.more_vert_rounded,
-                              size: 18.sp,
-                              color: SnapFitColors.textSecondaryOf(context),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 6.h),
-                        Text(
-                          isCompletedAlbum(album)
-                              ? formatAlbumDate(
-                                  album.updatedAt.isEmpty
-                                      ? album.createdAt
-                                      : album.updatedAt,
-                                )
-                              : '수정됨',
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: SnapFitColors.textSecondaryOf(context),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Container(
-                              width: 24.w,
-                              height: 24.w,
-                              decoration: BoxDecoration(
-                                color: SnapFitColors.overlayLightOf(context),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.person,
-                                size: 14.sp,
-                                color: SnapFitColors.textSecondaryOf(context),
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '${progress.completedPages}개 항목',
-                              style: TextStyle(
-                                color: SnapFitColors.accent,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-          );
-        },
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                children: rightCol
+                    .map(
+                      (entry) => Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: SizedBox(
+                          height: _albumMasonryHeight(entry.value, entry.key),
+                          child: _buildAlbumGridCard(entry.value),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  int _compareByLatestDesc(Album a, Album b) {
-    final aTime = _latestTimeOf(a);
-    final bTime = _latestTimeOf(b);
-    return bTime.compareTo(aTime);
+  double _albumMasonryHeight(Album album, int index) {
+    final columnWidth = (1.sw - 50.w) / 2;
+    final coverType = _coverTypeOf(album);
+    final baseAspect = switch (coverType) {
+      _CoverType.landscape => 0.76,
+      _CoverType.square => 0.67,
+      _CoverType.portrait => 0.59,
+    };
+    final microJitter = <double>[0.00, -0.01, 0.01, -0.015][index % 4];
+    return columnWidth / (baseAspect + microJitter);
   }
 
-  DateTime _latestTimeOf(Album album) {
-    final updated = DateTime.tryParse(album.updatedAt);
-    if (updated != null) return updated;
-    return DateTime.tryParse(album.createdAt) ??
-        DateTime.fromMillisecondsSinceEpoch(0);
+  Widget _buildAlbumGridCard(Album album) {
+    final progress = calculateAlbumProgress(album);
+    final isFav = _favoriteAlbumIds.contains(album.id);
+    final tone = _albumCardTone(album);
+    final cardBg = SnapFitColors.isDark(context)
+        ? SnapFitColors.surfaceOf(context)
+        : _readableAlbumCardTone(tone);
+    final coverType = _coverTypeOf(album);
+    final thumbnailHeight = switch (coverType) {
+      _CoverType.landscape => 126.h,
+      _CoverType.square => 142.h,
+      _CoverType.portrait => 160.h,
+    };
+    final thumbnailMaxWidth = switch (coverType) {
+      _CoverType.landscape => 132.w,
+      _CoverType.square => 124.w,
+      _CoverType.portrait => 114.w,
+    };
+
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(15.r),
+            border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(
+                  SnapFitColors.isDark(context) ? 0.24 : 0.06,
+                ),
+                blurRadius: 9,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 0),
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.26),
+                                  blurRadius: 22,
+                                  spreadRadius: 1.2,
+                                  offset: const Offset(0, 12),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.14),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: HomeAlbumCoverThumbnail(
+                              album: album,
+                              height: thumbnailHeight,
+                              maxWidth: thumbnailMaxWidth,
+                              showShadow: true,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 10.h,
+                      right: 10.w,
+                      child: GestureDetector(
+                        onTap: () => _toggleFavorite(album.id),
+                        child: CircleAvatar(
+                          radius: 14.r,
+                          backgroundColor: SnapFitColors.pureWhite.withOpacity(
+                            0.92,
+                          ),
+                          child: Icon(
+                            isFav
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            color: isFav
+                                ? SnapFitColors.accent
+                                : SnapFitColors.textSecondaryOf(context),
+                            size: 16.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      album.title.isEmpty ? '제목 없음' : album.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        height: 1.2,
+                        fontSize: 14.sp,
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      formatAlbumDate(
+                        album.updatedAt.isEmpty
+                            ? album.createdAt
+                            : album.updatedAt,
+                      ),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Row(
+                      children: [
+                        Container(
+                          width: 24.w,
+                          height: 24.w,
+                          decoration: BoxDecoration(
+                            color: SnapFitColors.overlayLightOf(context),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            size: 14.sp,
+                            color: SnapFitColors.textSecondaryOf(context),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${progress.completedPages} 페이지',
+                          style: TextStyle(
+                            color: SnapFitColors.accent,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _CoverType _coverTypeOf(Album album) {
+    final ratio = parseCoverRatio(album.ratio);
+    if (ratio > 1.12) return _CoverType.landscape;
+    if (ratio < 0.88) return _CoverType.portrait;
+    return _CoverType.square;
   }
 
   Future<List<Album>> _resolveSharedAlbums(
@@ -722,14 +837,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     List<Album> candidates,
     String currentUserId,
   ) async {
-    final current = currentUserId.trim();
-    if (current.isEmpty || candidates.isEmpty) return <Album>[];
     final memberRepo = ref.read(albumMemberRepositoryProvider);
-
-    final tasks = candidates.map((album) async {
-      try {
-        final members = await memberRepo.fetchMembers(album.id);
-        final isJoined = members.any((m) {
+    return _sharedMembershipResolver.resolve(
+      candidates: candidates,
+      currentUserId: currentUserId,
+      isJoinedLoader: (albumId, normalizedUserId) async {
+        final members = await memberRepo.fetchMembers(albumId);
+        return members.any((m) {
           final memberId = m.userId.toString();
           final status = m.status.trim().toUpperCase();
           final isActive =
@@ -737,17 +851,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               status == 'ACCEPTED' ||
               status == 'ACTIVE' ||
               status == 'JOINED';
-          return memberId == current && isActive;
+          return memberId == normalizedUserId && isActive;
         });
-        return isJoined ? album : null;
-      } catch (_) {
-        // 멤버 API 실패 시 owner 기반 폴백
-        return album.userId.trim() != current ? album : null;
-      }
-    });
-
-    final resolved = (await Future.wait(tasks)).whereType<Album>().toList()
-      ..sort(_compareByLatestDesc);
-    return resolved;
+      },
+      fallbackOnError: (album, normalizedUserId) =>
+          album.userId.trim() != normalizedUserId,
+      sortBy: compareAlbumByLatestDesc,
+    );
   }
 }
+
+enum _CoverType { landscape, square, portrait }

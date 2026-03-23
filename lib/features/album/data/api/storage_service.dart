@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:typed_data' as ui;
 import 'dart:ui' as ui;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import '../../../billing/data/billing_repository.dart';
 import '../../../../core/utils/app_logger.dart';
 
 class UploadedUrls {
@@ -26,8 +26,32 @@ class UploadedUrls {
   });
 }
 
+class StorageQuotaExceededException implements Exception {
+  final int hardLimitBytes;
+  final int usedBytes;
+  final int incomingBytes;
+  final int projectedBytes;
+  final String reason;
+
+  const StorageQuotaExceededException({
+    required this.hardLimitBytes,
+    required this.usedBytes,
+    required this.incomingBytes,
+    required this.projectedBytes,
+    required this.reason,
+  });
+
+  @override
+  String toString() =>
+      'StorageQuotaExceededException(reason: $reason, used: $usedBytes, incoming: $incomingBytes, limit: $hardLimitBytes)';
+}
+
 class StorageService {
+  StorageService({BillingRepository? billingRepository})
+    : _billingRepository = billingRepository;
+
   final _storage = FirebaseStorage.instance;
+  final BillingRepository? _billingRepository;
 
   /// 프로필 사진 업로드 — 리사이즈(512px, 품질 85) 후 Firebase 업로드 → 다운로드 URL 반환
   Future<String?> uploadProfileImage(File file, String userId) async {
@@ -69,6 +93,14 @@ class StorageService {
     try {
       final File? file = await asset.file;
       if (file == null) return const UploadedUrls();
+      final originalBytesSize = await file.length();
+      final bytes = await file.readAsBytes();
+      final resizedPreviewBytes = await _resizeImageBytesToJpeg(
+        bytes,
+        maxDimension: previewMaxDimension,
+      );
+      final incomingBytes = originalBytesSize + resizedPreviewBytes.length;
+      await _ensureStorageQuota(incomingBytes);
 
       // 파일명 중복 방지 (고유 ID 생성)
       final ts = DateTime.now().microsecondsSinceEpoch;
@@ -85,14 +117,9 @@ class StorageService {
       }
 
       Future<void> uploadPreview() async {
-        final bytes = await file.readAsBytes();
-        final resized = await _resizeImageBytesToJpeg(
-          bytes,
-          maxDimension: previewMaxDimension,
-        );
         final previewRef = _storage.ref().child('albums/images/$previewName');
         final previewSnap = await previewRef.putData(
-          resized,
+          resizedPreviewBytes,
           SettableMetadata(contentType: 'image/jpeg'),
         );
         previewUrl = await previewSnap.ref.getDownloadURL();
@@ -102,6 +129,8 @@ class StorageService {
 
       // 두 업로드를 동시에 시작하고 기다림
       await Future.wait([uploadOriginal(), uploadPreview()]);
+    } on StorageQuotaExceededException {
+      rethrow;
     } catch (e) {
       AppLogger.warn('Upload error: $e');
       // 에러 발생 시 부분 성공한 URL이라도 반환할지, 아니면 실패 처리할지는 정책에 따라 결정
@@ -134,20 +163,26 @@ class StorageService {
       // 인쇄 품질(95%)을 유지하면서 업로드 속도를 획기적으로 개선
       final originalName = '${ts}_orig.jpg';
       final previewName = '${ts}_preview.jpg';
+      final originalBytes = await FlutterImageCompress.compressWithList(
+        pngBytes,
+        quality: 85,
+        format: CompressFormat.jpeg,
+      );
+      final previewBytes = await FlutterImageCompress.compressWithList(
+        pngBytes,
+        minWidth: previewMaxDimension,
+        minHeight: previewMaxDimension,
+        quality: 80,
+        format: CompressFormat.jpeg,
+      );
+      await _ensureStorageQuota(originalBytes.length + previewBytes.length);
 
       Future<void> uploadOriginal() async {
         final sw = Stopwatch()..start();
-        AppLogger.debug(
+        AppLogger.perf(
           '[PERF] Original Input Size: ${(pngBytes.length / 1024).toStringAsFixed(2)} KB',
         );
-
-        // Native Compressor를 사용하여 빠르고 효율적으로 변환
-        final originalBytes = await FlutterImageCompress.compressWithList(
-          pngBytes,
-          quality: 85, // 95 -> 85 (인쇄 품질 유지하되 용량 대폭 감소)
-          format: CompressFormat.jpeg,
-        );
-        AppLogger.debug(
+        AppLogger.perf(
           '[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
@@ -156,7 +191,7 @@ class StorageService {
           originalBytes,
           SettableMetadata(contentType: 'image/jpeg'),
         );
-        AppLogger.debug('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
+        AppLogger.perf('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
         originalUrl = await originalSnap.ref.getDownloadURL();
         originalGsPath =
             'gs://${originalSnap.ref.bucket}/${originalSnap.ref.fullPath}';
@@ -164,15 +199,7 @@ class StorageService {
 
       Future<void> uploadPreview() async {
         final sw = Stopwatch()..start();
-        // 앱용 미리보기: 리사이징 + 적정 화질
-        final previewBytes = await FlutterImageCompress.compressWithList(
-          pngBytes,
-          minWidth: previewMaxDimension,
-          minHeight: previewMaxDimension,
-          quality: 80,
-          format: CompressFormat.jpeg,
-        );
-        AppLogger.debug(
+        AppLogger.perf(
           '[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
@@ -181,13 +208,15 @@ class StorageService {
           previewBytes,
           SettableMetadata(contentType: 'image/jpeg'),
         );
-        AppLogger.debug('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
+        AppLogger.perf('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
         previewUrl = await previewSnap.ref.getDownloadURL();
         previewGsPath =
             'gs://${previewSnap.ref.bucket}/${previewSnap.ref.fullPath}';
       }
 
       await Future.wait([uploadOriginal(), uploadPreview()]);
+    } on StorageQuotaExceededException {
+      rethrow;
     } catch (e) {
       AppLogger.warn('Upload cover error: $e');
     }
@@ -227,7 +256,7 @@ class StorageService {
       targetHeight: targetH,
     );
     final ui.FrameInfo resizedFrame = await resizedCodec.getNextFrame();
-    final ui.ByteData? out = await resizedFrame.image.toByteData(
+    final ByteData? out = await resizedFrame.image.toByteData(
       format: ui.ImageByteFormat.png,
     );
     return out?.buffer.asUint8List() ?? bytes;
@@ -252,5 +281,23 @@ class StorageService {
       AppLogger.warn('Native compress error: $e');
       return bytes;
     }
+  }
+
+  Future<void> _ensureStorageQuota(int incomingBytes) async {
+    if (_billingRepository == null) return;
+    if (incomingBytes <= 0) return;
+
+    final result = await _billingRepository.preflightStorage(
+      incomingBytes: incomingBytes,
+    );
+    if (result.allowed) return;
+
+    throw StorageQuotaExceededException(
+      hardLimitBytes: result.hardLimitBytes,
+      usedBytes: result.usedBytes,
+      incomingBytes: result.incomingBytes,
+      projectedBytes: result.projectedBytes,
+      reason: result.reason,
+    );
   }
 }

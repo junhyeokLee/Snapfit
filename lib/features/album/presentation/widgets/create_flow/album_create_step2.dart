@@ -40,7 +40,6 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
   int? _albumId;
   String? _inviteLink;
   bool _isCreatingInvite = false;
-  bool _hasInitiated = false;
 
   @override
   void initState() {
@@ -49,23 +48,6 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
     _allowEditing = widget.allowEditing;
     // 앨범 ID는 부모에서 전달받음
     _albumId = widget.albumId;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 초대 링크 생성은 한 번만 실행
-    if (!_hasInitiated &&
-        _albumId != null &&
-        _inviteLink == null &&
-        !_isCreatingInvite) {
-      _hasInitiated = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _createInviteLink();
-        }
-      });
-    }
   }
 
   @override
@@ -336,7 +318,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                         )
                       else
                         Text(
-                          '초대 링크 생성 중...',
+                          '공유 버튼을 누르면 초대 링크가 생성됩니다.',
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: SnapFitColors.textMutedOf(context),
@@ -571,6 +553,7 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       albumId: _albumId!,
       albumTitle: widget.albumTitle,
       allowEditing: _allowEditing,
+      inviteLink: _inviteLink,
       context: context,
     );
 

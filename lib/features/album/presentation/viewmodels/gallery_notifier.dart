@@ -33,27 +33,58 @@ class GalleryNotifier extends _$GalleryNotifier {
 
   /// 초기 데이터 로드 (권한 확인 및 첫 앨범 로딩)
   Future<void> fetchInitialData() async {
-    final permitted = await _repository.requestPermission();
-    if (!ref.mounted) return;
-    if (!permitted) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final permitted = await _repository.requestPermission();
+      if (!ref.mounted) return;
+      if (!permitted) {
+        state = state.copyWith(
+          isLoading: false,
+          albums: const [],
+          selectedAlbum: null,
+          images: const [],
+          hasMore: false,
+          error: '사진 접근 권한이 필요합니다. 권한을 허용해주세요.',
+        );
+        return;
+      }
 
-    final albums = await _repository.loadAlbums();
-    if (!ref.mounted) return;
-    if (albums.isEmpty) {
-      state = state.copyWith(albums: [], error: '이미지 앨범이 없습니다.');
-      return;
+      final albums = await _repository.loadAlbums();
+      if (!ref.mounted) return;
+      if (albums.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          albums: const [],
+          selectedAlbum: null,
+          images: const [],
+          hasMore: false,
+          error: '이미지 앨범이 없습니다.',
+        );
+        return;
+      }
+
+      final firstAlbum = albums.first;
+      state = state.copyWith(
+        albums: albums,
+        selectedAlbum: firstAlbum,
+        currentPage: 0,
+        images: const [],
+        hasMore: true,
+        isLoading: false,
+        error: null,
+      );
+
+      await loadMore();
+    } catch (e) {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoading: false,
+        selectedAlbum: null,
+        images: const [],
+        hasMore: false,
+        error: e,
+      );
     }
-
-    final firstAlbum = albums.first;
-    state = state.copyWith(
-      albums: albums,
-      selectedAlbum: firstAlbum,
-      currentPage: 0,
-      images: [],
-      hasMore: true,
-    );
-
-    await loadMore();
   }
 
   /// 앨범 선택 변경

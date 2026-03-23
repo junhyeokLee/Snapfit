@@ -144,6 +144,12 @@ Future<AssetEntity?> showPhotoSelectionSheet(
   WidgetRef ref, {
   void Function(AssetEntity asset)? onSelect,
 }) async {
+  final current = ref.read(galleryProvider);
+  if (current.selectedAlbum == null && !current.isLoading) {
+    // 호출부에서 초기화를 놓친 경우에도 시트 진입 시 안전하게 초기 로드
+    ref.read(galleryProvider.notifier).fetchInitialData();
+  }
+
   final result = await showModalBottomSheet<AssetEntity>(
     context: context,
     isScrollControlled: true,
@@ -440,7 +446,6 @@ Future<void> _showAlbumSelectionSheet(
               ),
               Flexible(
                 child: ListView.builder(
-                  shrinkWrap: true,
                   padding: EdgeInsets.only(bottom: 24.h),
                   itemCount: albums.length,
                   itemBuilder: (context, i) {
