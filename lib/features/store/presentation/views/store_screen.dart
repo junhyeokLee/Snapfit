@@ -1,11 +1,29 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/image_url_policy.dart';
+import '../../../album/domain/entities/layer.dart';
+import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../data/api/template_provider.dart';
 import '../../domain/entities/premium_template.dart';
 import '../providers/store_filter_provider.dart';
+import '../widgets/template_page_renderer.dart';
 import 'template_detail_screen.dart';
+
+String _storeCoverPreviewUrl(PremiumTemplate template) {
+  final cover = template.coverImageUrl.trim();
+  if (cover.isNotEmpty) return cover;
+  final previews = template.previewImages
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty)
+      .toList(growable: false);
+  if (previews.isNotEmpty) return previews.first;
+  return '';
+}
 
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
@@ -17,23 +35,61 @@ class StoreScreen extends ConsumerStatefulWidget {
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   static const List<String> _categories = ['전체', '여행', '가족', '연인', '졸업', '레트로'];
   static const int _newBadgeCount = 1;
+  DateTime? _lastAutoRefreshRequestAt;
 
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _allTemplatesKey = GlobalKey();
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final threshold = _scrollController.position.maxScrollExtent - 520;
+    if (_scrollController.position.pixels >= threshold) {
+      ref.read(storeTemplateFeedProvider.notifier).loadMore();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final templatesAsync = ref.watch(templateListProvider);
+    final feedState = ref.watch(storeTemplateFeedProvider);
     final filterState = ref.watch(storeFilterProvider);
     final filterNotifier = ref.read(storeFilterProvider.notifier);
+
+    // 화면이 다시 노출될 때 서버 최신 템플릿으로 자연스럽게 동기화한다.
+    if (!feedState.isInitialLoading && !feedState.isLoadingMore) {
+      final now = DateTime.now();
+      final shouldThrottle =
+          _lastAutoRefreshRequestAt != null &&
+          now.difference(_lastAutoRefreshRequestAt!) <
+              const Duration(seconds: 10);
+      if (!shouldThrottle) {
+        final isStale =
+            feedState.lastSyncedAt == null ||
+            now.difference(feedState.lastSyncedAt!) >=
+                const Duration(seconds: 45);
+        if (isStale) {
+          _lastAutoRefreshRequestAt = now;
+          Future.microtask(() {
+            ref.read(storeTemplateFeedProvider.notifier).refreshIfStale();
+          });
+        }
+      }
+    }
+
     if (_searchController.text != filterState.query) {
       _searchController.value = TextEditingValue(
         text: filterState.query,
@@ -44,134 +100,164 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       body: SafeArea(
-        child: templatesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => _StoreErrorView(
-            onRetry: () => ref.invalidate(templateListProvider),
-          ),
-          data: (templates) {
+        child: Builder(
+          builder: (_) {
+            if (feedState.isInitialLoading && feedState.items.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (feedState.items.isEmpty) {
+              return _StoreErrorView(
+                onRetry: () =>
+                    ref.read(storeTemplateFeedProvider.notifier).refresh(),
+              );
+            }
+            final templates = feedState.items;
             final filtered = _filterTemplates(templates, filterState);
             final latestTopIds = _resolveLatestTopIds(filtered);
             final weeklyBest = _resolveWeeklyBest(filtered, latestTopIds);
             final sorted = _sortTemplates(filtered, filterState);
 
-            return CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _TopBar(onFilterTap: _openSortFilterSheet),
-                      const SizedBox(height: 18),
-                      _SearchField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          final next = value.trim();
-                          if (next == filterState.query) return;
-                          filterNotifier.setQuery(next);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 42,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _categories.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 10),
-                          itemBuilder: (context, index) {
-                            final category = _categories[index];
-                            final selected =
-                                category == filterState.selectedCategory;
-                            return _CategoryChip(
-                              label: category,
-                              selected: selected,
-                              onTap: () {
-                                if (selected) return;
-                                filterNotifier.setCategory(category);
-                              },
-                            );
+            return RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(storeTemplateFeedProvider.notifier).refresh(),
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _TopBar(onFilterTap: _openSortFilterSheet),
+                        const SizedBox(height: 18),
+                        _SearchField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            final next = value.trim();
+                            if (next == filterState.query) return;
+                            filterNotifier.setQuery(next);
                           },
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      _WeeklyHeader(
-                        onMoreTap: weeklyBest.length > 2
-                            ? () {
-                                if (filterState.selectedCategory != '전체') {
-                                  filterNotifier.setCategory('전체');
-                                }
-                                _scrollToAllTemplates();
-                              }
-                            : null,
-                      ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        height: 246,
-                        child: weeklyBest.isEmpty
-                            ? const _EmptyState(message: '추천 템플릿을 준비 중입니다.')
-                            : ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: weeklyBest.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: 14),
-                                itemBuilder: (context, index) {
-                                  final template = weeklyBest[index];
-                                  return _WeeklyTemplateCard(
-                                    template: template,
-                                    isNew: latestTopIds.contains(template.id),
-                                    onTap: () => _openDetail(template),
-                                  );
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 42,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _categories.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 10),
+                            itemBuilder: (context, index) {
+                              final category = _categories[index];
+                              final selected =
+                                  category == filterState.selectedCategory;
+                              return _CategoryChip(
+                                label: category,
+                                selected: selected,
+                                onTap: () {
+                                  if (selected) return;
+                                  filterNotifier.setCategory(category);
                                 },
-                              ),
-                      ),
-                      const SizedBox(height: 28),
-                      _AllTemplatesHeader(
-                        sortLatest: filterState.sortLatest,
-                        onSortChanged: (latest) {
-                          filterNotifier.setSortLatest(latest);
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                    ]),
-                  ),
-                ),
-                SliverPadding(
-                  key: _allTemplatesKey,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                  sliver: sorted.isEmpty
-                      ? const SliverToBoxAdapter(
-                          child: _EmptyState(message: '조건에 맞는 템플릿이 없습니다.'),
-                        )
-                      : SliverGrid(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 16,
-                                crossAxisSpacing: 14,
-                                childAspectRatio: 0.62,
-                              ),
-                          delegate: SliverChildBuilderDelegate((
-                            context,
-                            index,
-                          ) {
-                            final template = sorted[index];
-                            return _TemplateGridCard(
-                              template: template,
-                              onTap: () => _openDetail(template),
-                            );
-                          }, childCount: sorted.length),
+                              );
+                            },
+                          ),
                         ),
-                ),
-              ],
+                        const SizedBox(height: 28),
+                        _WeeklyHeader(
+                          onMoreTap: weeklyBest.length > 2
+                              ? () {
+                                  if (filterState.selectedCategory != '전체') {
+                                    filterNotifier.setCategory('전체');
+                                  }
+                                  _scrollToAllTemplates();
+                                }
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          height: 246,
+                          child: weeklyBest.isEmpty
+                              ? const _EmptyState(message: '추천 템플릿을 준비 중입니다.')
+                              : ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: weeklyBest.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(width: 14),
+                                  itemBuilder: (context, index) {
+                                    final template = weeklyBest[index];
+                                    return _WeeklyTemplateCard(
+                                      template: template,
+                                      isNew: latestTopIds.contains(template.id),
+                                      onTap: () => _openDetail(template),
+                                    );
+                                  },
+                                ),
+                        ),
+                        const SizedBox(height: 28),
+                        _AllTemplatesHeader(
+                          sortLatest: filterState.sortLatest,
+                          onSortChanged: (latest) {
+                            filterNotifier.setSortLatest(latest);
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                      ]),
+                    ),
+                  ),
+                  SliverPadding(
+                    key: _allTemplatesKey,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                    sliver: sorted.isEmpty
+                        ? const SliverToBoxAdapter(
+                            child: _EmptyState(message: '조건에 맞는 템플릿이 없습니다.'),
+                          )
+                        : SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 16,
+                                  crossAxisSpacing: 14,
+                                  childAspectRatio: 0.62,
+                                ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final template = sorted[index];
+                              return _TemplateGridCard(
+                                template: template,
+                                onTap: () => _openDetail(template),
+                              );
+                            }, childCount: sorted.length),
+                          ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 100),
+                      child: Center(
+                        child: feedState.isLoadingMore
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : (feedState.hasNext
+                                  ? const SizedBox.shrink()
+                                  : const SizedBox.shrink()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF07B8DE),
+        backgroundColor: SnapFitColors.accent,
         elevation: 4,
         onPressed: _openSortFilterSheet,
         child: const Icon(Icons.tune_rounded, color: Colors.white),
@@ -391,7 +477,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: _categories.map((category) {
-                        final selected = sheetState.selectedCategory == category;
+                        final selected =
+                            sheetState.selectedCategory == category;
                         return _BottomCategoryChip(
                           label: category,
                           selected: selected,
@@ -505,7 +592,7 @@ class _CategoryChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: selected
-          ? const Color(0xFF08B8DF)
+          ? SnapFitColors.accent
           : SnapFitColors.overlayLightOf(context),
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
@@ -544,7 +631,7 @@ class _WeeklyHeader extends StatelessWidget {
         const Text(
           'WEEKLY BEST',
           style: TextStyle(
-            color: Color(0xFF07A9CD),
+            color: SnapFitColors.accent,
             fontSize: 14,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.4,
@@ -611,7 +698,7 @@ class _WeeklyTemplateCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      _NetworkImage(url: template.coverImageUrl),
+                      _StoreTemplateCoverPreview(template: template),
                       if (isNew)
                         const Positioned(
                           top: 12,
@@ -783,7 +870,7 @@ class _TemplateGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = template.isPremium ? 'PREMIUM' : 'FREE';
     final labelColor = template.isPremium
-        ? const Color(0xFF0596C8)
+        ? SnapFitColors.accent
         : SnapFitColors.textSecondaryOf(context);
 
     return GestureDetector(
@@ -797,7 +884,7 @@ class _TemplateGridCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  _NetworkImage(url: template.coverImageUrl),
+                  _StoreTemplateCoverPreview(template: template),
                   Positioned(
                     top: 10,
                     left: 10,
@@ -843,7 +930,7 @@ class _TemplateGridCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            '+${template.likeCount}',
+                            '${template.likeCount}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -895,7 +982,7 @@ class _SheetOptionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF08B8DF)
+              ? SnapFitColors.accent
               : (isDark
                     ? SnapFitColors.surfaceOf(context)
                     : SnapFitColors.overlayLightOf(context)),
@@ -939,11 +1026,11 @@ class _BottomCategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF08B8DF).withOpacity(0.14)
+              ? SnapFitColors.accent.withOpacity(0.14)
               : SnapFitColors.overlayLightOf(context),
           border: Border.all(
             color: selected
-                ? const Color(0xFF08B8DF)
+                ? SnapFitColors.accent
                 : (isDark
                       ? SnapFitColors.overlayStrongOf(context)
                       : SnapFitColors.overlayMediumOf(context)),
@@ -956,7 +1043,7 @@ class _BottomCategoryChip extends StatelessWidget {
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: selected
-                ? const Color(0xFF08B8DF)
+                ? SnapFitColors.accent
                 : (isDark
                       ? SnapFitColors.textPrimaryOf(context)
                       : SnapFitColors.textSecondaryOf(context)),
@@ -977,7 +1064,7 @@ class _MiniBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF08B8DF),
+        color: SnapFitColors.accent,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -1042,15 +1129,87 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _NetworkImage extends StatelessWidget {
-  final String url;
+class _StoreTemplateCoverPreview extends StatelessWidget {
+  final PremiumTemplate template;
 
-  const _NetworkImage({required this.url});
+  const _StoreTemplateCoverPreview({required this.template});
 
   @override
   Widget build(BuildContext context) {
+    final parsed = _parseFirstPage(template);
+    if (parsed != null) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final targetAspect = parsed.$2;
+          final maxWidth = constraints.maxWidth;
+          final maxHeight = constraints.maxHeight;
+          final drawWidth = math.min(maxWidth, maxHeight * targetAspect);
+          final drawHeight = drawWidth / targetAspect;
+          return Container(
+            color: SnapFitColors.overlayLightOf(context),
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: drawWidth,
+              height: drawHeight,
+              child: TemplatePageRenderer(
+                layers: parsed.$1,
+                width: drawWidth,
+                height: drawHeight,
+                designCanvasSize: parsed.$3,
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return _NetworkImage(
+      url: _storeCoverPreviewUrl(template),
+      variant: ImageVariant.thumb,
+    );
+  }
+}
+
+(List<LayerModel>, double, Size)? _parseFirstPage(PremiumTemplate template) {
+  final raw = template.templateJson;
+  if (raw == null || raw.trim().isEmpty) return null;
+  try {
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    final metadata = (data['metadata'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
+    final pages = data['pages'];
+    if (pages is! List || pages.isEmpty) return null;
+    final page = pages.first;
+    if (page is! Map<String, dynamic>) return null;
+    final layersJson = page['layers'];
+    if (layersJson is! List || layersJson.isEmpty) return null;
+
+    final designWidth = (metadata['designWidth'] as num?)?.toDouble() ?? 1080.0;
+    final designHeight =
+        (metadata['designHeight'] as num?)?.toDouble() ?? 1440.0;
+    final canvasSize = Size(designWidth, designHeight);
+    final layers = layersJson
+        .whereType<Map<String, dynamic>>()
+        .map((layer) => LayerExportMapper.fromJson(layer, canvasSize: canvasSize))
+        .toList(growable: false);
+    if (layers.isEmpty) return null;
+    final aspect = (designWidth / designHeight).clamp(0.6, 1.8);
+    return (layers, aspect, canvasSize);
+  } catch (_) {
+    return null;
+  }
+}
+
+class _NetworkImage extends StatelessWidget {
+  final String url;
+  final ImageVariant variant;
+
+  const _NetworkImage({required this.url, this.variant = ImageVariant.thumb});
+
+  @override
+  Widget build(BuildContext context) {
+    final transformed = imageUrlByVariant(url, variant: variant);
     return Image.network(
-      url,
+      transformed,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.medium,
       errorBuilder: (_, __, ___) => Container(

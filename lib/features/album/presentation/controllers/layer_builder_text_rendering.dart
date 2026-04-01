@@ -12,12 +12,24 @@ Widget _buildTextImpl(
   final TextStyle effectiveStyle = baseStyle;
 
   final coverSize = builder.getCoverSize();
+  final hasLayerFrame = layer.width.isFinite &&
+      layer.height.isFinite &&
+      layer.width > 1 &&
+      layer.height > 1;
+  final textMaxWidth = hasLayerFrame
+      ? math.max(1.0, layer.width)
+      : (coverSize.width * 0.8);
   final textSpan = TextSpan(text: layer.text ?? "", style: effectiveStyle);
   final textPainter = TextPainter(
     text: textSpan,
     textDirection: TextDirection.ltr,
     textAlign: layer.textAlign ?? TextAlign.center,
-  )..layout(minWidth: 0, maxWidth: coverSize.width * 0.8);
+  )..layout(minWidth: 0, maxWidth: textMaxWidth);
+  final naturalPainter = TextPainter(
+    text: textSpan,
+    textDirection: TextDirection.ltr,
+    textAlign: layer.textAlign ?? TextAlign.center,
+  )..layout(minWidth: 0, maxWidth: 100000);
 
   // ───────────────────────────────────────────────
   // 텍스트 스타일(textStyleType) 우선 적용
@@ -377,10 +389,11 @@ Widget _buildTextImpl(
       default:
         styled = Padding(
           padding: const EdgeInsets.all(4),
-          child: Text(
-            layer.text ?? "",
+          child: _buildPlainTextWithFill(
+            builder: builder,
+            layer: layer,
             style: effectiveStyle,
-            textAlign: layer.textAlign ?? TextAlign.center,
+            align: layer.textAlign ?? TextAlign.center,
           ),
         );
         break;
@@ -411,21 +424,51 @@ Widget _buildTextImpl(
   // 배경 모드 처리
   Widget content;
 
-  content = Padding(
-    // ✅ descender(y, g 등) 안전 여유 확보
-    padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
-    child: Text(
-      layer.text ?? "",
-      style: effectiveStyle,
-      textAlign: layer.textAlign ?? TextAlign.center,
-    ),
-  );
+  const double extraWidth = 36; // 16 + 16 + safety 4
+  const double extraHeight = 32; // 18 + 10 + safety 4
+  final minFrameWidth = naturalPainter.width + extraWidth;
+  final minFrameHeight = naturalPainter.height + extraHeight;
+  final resolvedFrameWidth = hasLayerFrame
+      ? math.max(layer.width, minFrameWidth)
+      : (textPainter.size.width + extraWidth);
+  final resolvedFrameHeight = hasLayerFrame
+      ? math.max(layer.height, minFrameHeight)
+      : (textPainter.size.height + extraHeight);
 
-  // ✅ 아래 잘림 방지를 위해 baseHeight를 실측보다 크게 확보
-  final realSize = Size(
-    textPainter.size.width + 55,
-    textPainter.size.height + 55,
+  final textWidget = _buildPlainTextWithFill(
+    builder: builder,
+    layer: layer,
+    style: effectiveStyle,
+    align: layer.textAlign ?? TextAlign.center,
   );
+  content = hasLayerFrame
+      ? SizedBox(
+          width: resolvedFrameWidth,
+          height: resolvedFrameHeight,
+          child: Align(
+            alignment: switch (layer.textAlign ?? TextAlign.center) {
+              TextAlign.left || TextAlign.start => Alignment.topLeft,
+              TextAlign.right || TextAlign.end => Alignment.topRight,
+              _ => Alignment.topCenter,
+            },
+            child: textWidget,
+          ),
+        )
+      : Padding(
+          // ✅ descender(y, g 등) 안전 여유 확보
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
+          child: textWidget,
+        );
+
+  // 텍스트 기본 스타일의 히트박스가 과도하게 커지면
+  // 아래/우측의 다른 레이어 선택을 가로채는 문제가 발생할 수 있으므로
+  // 실제 렌더 패딩(좌우 16, 상18, 하10) + 최소 안전 여유만 반영한다.
+  final realSize = hasLayerFrame
+      ? Size(resolvedFrameWidth, resolvedFrameHeight)
+      : Size(
+          textPainter.size.width + extraWidth,
+          textPainter.size.height + extraHeight,
+        );
   builder.interaction.setBaseSize(layer.id, realSize);
 
   return builder.interaction.buildInteractiveLayer(
@@ -435,4 +478,187 @@ Widget _buildTextImpl(
     isCover: isCover,
     child: Opacity(opacity: layer.opacity, child: content),
   );
+}
+
+Widget _buildPlainTextWithFill({
+  required LayerBuilder builder,
+  required LayerModel layer,
+  required TextStyle style,
+  required TextAlign align,
+}) {
+  // 피그마 정합 우선: 레이어 높이 기준 강제 축소를 하지 않고
+  // 템플릿에서 전달된 폰트 크기를 그대로 사용한다.
+  final renderStyle = style;
+  final mode = (layer.textFillMode ?? 'solid').trim().toLowerCase();
+  final imageUrl = _resolveTextFillUrl(builder, layer);
+  if (mode == 'textcutout') {
+    return _CutoutText(
+      text: layer.text ?? '',
+      style: renderStyle,
+      align: align,
+    );
+  }
+  if (mode == 'imageclip' && imageUrl.isNotEmpty) {
+    return _ImageClipText(
+      text: layer.text ?? '',
+      style: renderStyle,
+      align: align,
+      imageUrl: imageUrl,
+    );
+  }
+  return Text(layer.text ?? "", style: renderStyle, textAlign: align);
+}
+
+String _resolveTextFillUrl(LayerBuilder builder, LayerModel layer) {
+  final raw = (layer.textFillImageUrl ?? '').trim();
+  if (raw.isEmpty) return '';
+  if (!raw.startsWith('@')) return raw;
+
+  final key = raw.substring(1).toLowerCase();
+  final vmState = builder.interaction.ref.read(albumEditorViewModelProvider).value;
+  final layers = vmState?.layers ?? const <LayerModel>[];
+
+  LayerModel? linked;
+  for (final l in layers) {
+    if (l.id == layer.id || l.type != LayerType.image) continue;
+    final id = l.id.toLowerCase();
+    if (id.contains(key)) {
+      linked = l;
+      break;
+    }
+  }
+  linked ??= layers.firstWhere(
+    (l) => l.id != layer.id && l.type == LayerType.image,
+    orElse: () => layer,
+  );
+  if (linked.id == layer.id) return '';
+  return (linked.previewUrl ?? linked.imageUrl ?? linked.originalUrl ?? '').trim();
+}
+
+class _ImageClipText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+  final TextAlign align;
+  final String imageUrl;
+
+  const _ImageClipText({
+    required this.text,
+    required this.style,
+    required this.align,
+    required this.imageUrl,
+  });
+
+  @override
+  State<_ImageClipText> createState() => _ImageClipTextState();
+}
+
+class _ImageClipTextState extends State<_ImageClipText> {
+  ui.Image? _image;
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveImage();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ImageClipText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _removeListener();
+      _resolveImage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _removeListener();
+    super.dispose();
+  }
+
+  void _removeListener() {
+    if (_stream != null && _listener != null) {
+      _stream!.removeListener(_listener!);
+    }
+    _stream = null;
+    _listener = null;
+  }
+
+  void _resolveImage() {
+    final provider = widget.imageUrl.startsWith('asset:')
+        ? AssetImage(widget.imageUrl.substring('asset:'.length))
+        : NetworkImage(widget.imageUrl) as ImageProvider;
+    final stream = provider.resolve(const ImageConfiguration());
+    final listener = ImageStreamListener(
+      (info, _) {
+        if (!mounted) return;
+        setState(() => _image = info.image);
+      },
+      onError: (_, __) {
+        if (!mounted) return;
+        setState(() => _image = null);
+      },
+    );
+    stream.addListener(listener);
+    _stream = stream;
+    _listener = listener;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_image == null) {
+      return Text(
+        widget.text,
+        style: widget.style.copyWith(
+          color: widget.style.color?.withOpacity(0.92) ?? Colors.black87,
+        ),
+        textAlign: widget.align,
+      );
+    }
+    return ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (bounds) {
+        return ImageShader(
+          _image!,
+          TileMode.clamp,
+          TileMode.clamp,
+          Matrix4.identity().storage,
+        );
+      },
+      child: Text(
+        widget.text,
+        style: widget.style.copyWith(color: Colors.white),
+        textAlign: widget.align,
+      ),
+    );
+  }
+}
+
+class _CutoutText extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+  final TextAlign align;
+
+  const _CutoutText({
+    required this.text,
+    required this.style,
+    required this.align,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.dstOut,
+      shaderCallback: (_) => const LinearGradient(
+        colors: [Colors.white, Colors.white],
+      ).createShader(const Rect.fromLTWH(0, 0, 1, 1)),
+      child: Text(
+        text,
+        style: style.copyWith(color: Colors.white),
+        textAlign: align,
+      ),
+    );
+  }
 }

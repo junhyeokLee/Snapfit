@@ -4381,7 +4381,7 @@ const List<String> _weddingPortraitSamples = [
   'https://images.unsplash.com/photo-1522673607350-04f725f60f4f?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=1200&q=80',
-  'https://images.unsplash.com/photo-1465495976277-4387d4b0d799?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1494783367193-149034c05e8f?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1300&q=80',
@@ -4396,7 +4396,7 @@ const List<String> _weddingLandscapeSamples = [
   'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=1600&q=80',
-  'https://images.unsplash.com/photo-1465495976277-4387d4b0d799?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1494783367193-149034c05e8f?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1525328437458-0c4d4db7cab4?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1600&q=80',
@@ -4493,6 +4493,24 @@ const List<String> _coverLandscapeSamples = [
 ];
 
 final Map<String, List<String>> _templatePreviewFixedById = {
+  'data_ref_miricar_001': const [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
+  ],
+  'data_ref_seasons_001': const [
+    'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
+  ],
+  'data_premium_blob_gallery_001': const [
+    'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1514852451047-f8e1d1cd9b64?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1200&q=80',
+  ],
   'pack_portrait_travel_journal_001': [
     _weddingSeed(101),
     _weddingSeed(102),
@@ -4554,10 +4572,10 @@ final Map<String, List<String>> _templatePreviewFixedById = {
     _coverSeed(314),
   ],
   'pack_square_birthday_snap_001': [
-    _weddingSeed(321),
-    _weddingSeed(322),
-    _weddingSeed(323),
-    _weddingSeed(324),
+    'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21f?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1529635436167-b5f9b86f2f52?auto=format&fit=crop&w=1200&q=80',
   ],
   'pack_square_graduation_book_001': [
     _minimalSeed(331),
@@ -4572,10 +4590,10 @@ final Map<String, List<String>> _templatePreviewFixedById = {
     _minimalSeed(344),
   ],
   'pack_square_mood_card_001': [
-    _weddingSeed(141),
-    _weddingSeed(142),
-    _weddingSeed(143),
-    _weddingSeed(144),
+    'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
   ],
   'pack_square_retro_cut_002': [
     _minimalSeed(351),
@@ -4608,10 +4626,10 @@ final Map<String, List<String>> _templatePreviewFixedById = {
     _coverSeed(414, landscape: true),
   ],
   'pack_landscape_minimal_wide_001': [
-    _minimalSeed(421, landscape: true),
-    _minimalSeed(422, landscape: true),
-    _minimalSeed(423, landscape: true),
-    _minimalSeed(424, landscape: true),
+    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80',
   ],
   'pack_landscape_city_travel_001': [
     _coverSeed(431, landscape: true),
@@ -4632,10 +4650,10 @@ final Map<String, List<String>> _templatePreviewFixedById = {
     _noirSeed(444, landscape: true),
   ],
   'pack_landscape_poster_board_002': [
-    _weddingSeed(181, landscape: true),
-    _weddingSeed(182, landscape: true),
-    _weddingSeed(183, landscape: true),
-    _weddingSeed(184, landscape: true),
+    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1600&q=80',
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80',
   ],
 };
 

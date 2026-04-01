@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../domain/entities/album_page.dart';
 import '../../domain/entities/layer.dart';
@@ -341,7 +342,7 @@ class _AlbumReaderInnerDetailScreenState
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
-                    fontFamily: 'Inter', // 영문 폰트
+                    fontFamily: 'NotoSans',
                   ),
                   children: [
                     const TextSpan(text: 'Page  '),
@@ -386,8 +387,8 @@ class _DetailInnerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // 논리 좌표계 계산 (에디터 비율 일치)
     final ratio = pageW / pageH;
-    const logicalW = 300.0;
-    final logicalH = 300.0 / ratio;
+    const logicalW = kCoverReferenceWidth;
+    final logicalH = kCoverReferenceWidth / ratio;
     final logicalBaseSize = Size(logicalW, logicalH);
     final scale = pageW / logicalW;
 

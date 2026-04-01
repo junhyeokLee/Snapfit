@@ -51,6 +51,14 @@ class LayerExportMapper {
         LayerType.sticker || LayerType.decoration => {
           'imageBackground': layer.imageBackground,
           'imageTemplate': layer.imageTemplate,
+          if (layer.decorationFillColor != null)
+            'fillColor': layer.decorationFillColor,
+          if (layer.decorationBorderColor != null)
+            'borderColor': layer.decorationBorderColor,
+          if (layer.decorationBorderWidth != null)
+            'borderWidth': layer.decorationBorderWidth,
+          if (layer.decorationCornerRadius != null)
+            'cornerRadius': layer.decorationCornerRadius,
           'originalUrl': layer.originalUrl,
           'previewUrl': layer.previewUrl ?? layer.imageUrl,
           'imageUrl': layer.previewUrl ?? layer.imageUrl,
@@ -60,6 +68,8 @@ class LayerExportMapper {
           'textAlign': layer.textAlign?.name,
           'textStyleType': layer.textStyleType?.name,
           'textBackground': layer.textBackground,
+          'textFillMode': layer.textFillMode,
+          'textFillImageUrl': layer.textFillImageUrl,
           'bubbleColor': layer.bubbleColor != null
               ? '#${layer.bubbleColor!.value.toRadixString(16).padLeft(8, '0')}'
               : null,
@@ -125,6 +135,8 @@ class LayerExportMapper {
       textAlign: _parseTextAlign(payload['textAlign'] as String?),
       textStyleType: _parseTextStyleType(payload['textStyleType'] as String?),
       textBackground: payload['textBackground'] as String?,
+      textFillMode: payload['textFillMode'] as String?,
+      textFillImageUrl: payload['textFillImageUrl'] as String?,
       bubbleColor: _parseColor(payload['bubbleColor'] as String?),
       textStyle: _textStyleFromJson(
         payload['textStyle'] as Map<String, dynamic>?,
@@ -134,6 +146,10 @@ class LayerExportMapper {
       // 이미지 전용 데이터
       imageBackground: payload['imageBackground'] as String?,
       imageTemplate: payload['imageTemplate'] as String?,
+      decorationFillColor: payload['fillColor'] as String?,
+      decorationBorderColor: payload['borderColor'] as String?,
+      decorationBorderWidth: (payload['borderWidth'] as num?)?.toDouble(),
+      decorationCornerRadius: (payload['cornerRadius'] as num?)?.toDouble(),
     );
   }
 

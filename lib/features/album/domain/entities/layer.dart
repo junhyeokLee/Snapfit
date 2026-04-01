@@ -31,10 +31,18 @@ class LayerModel {
   final double width; // 레이어 기본 너비
   final double height; // 레이어 기본 높이
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
+  /// 텍스트 채움 모드 ("solid" | "imageClip")
+  final String? textFillMode;
+  /// textFillMode=imageClip 일 때 채움 이미지 URL
+  final String? textFillImageUrl;
   final String?
   imageBackground; // 이미지 프레임 스타일 키 ("polaroid", "shadow", "sticker", "tape", "film", "mat")
   final String?
   imageTemplate; // 이미지 슬롯 템플릿 ("free", "1:1", "4:3", ...) - null/ free면 원본 비율, 지정 시 contain으로 짤리지 않게
+  final String? decorationFillColor; // 장식 레이어 채움색(hex)
+  final String? decorationBorderColor; // 장식 레이어 테두리색(hex)
+  final double? decorationBorderWidth; // 장식 레이어 테두리 두께(비율/px)
+  final double? decorationCornerRadius; // 장식 레이어 라운드(비율/px)
   /// 프레임 적용 전 기본 상태(크기/위치)를 되돌리기 위한 베이스 값 (런타임 전용, 서버 저장 X)
   final double? frameBaseWidth;
   final double? frameBaseHeight;
@@ -68,8 +76,14 @@ class LayerModel {
     this.width = 120, // 기본값 (이미지 or 텍스트 크기)
     this.height = 120, // 기본값
     this.textBackground,
+    this.textFillMode,
+    this.textFillImageUrl,
     this.imageBackground,
     this.imageTemplate,
+    this.decorationFillColor,
+    this.decorationBorderColor,
+    this.decorationBorderWidth,
+    this.decorationCornerRadius,
     this.frameBaseWidth,
     this.frameBaseHeight,
     this.frameBasePosition,
@@ -96,8 +110,14 @@ class LayerModel {
     double? width,
     double? height,
     String? textBackground,
+    String? textFillMode,
+    String? textFillImageUrl,
     String? imageBackground,
     String? imageTemplate,
+    String? decorationFillColor,
+    String? decorationBorderColor,
+    double? decorationBorderWidth,
+    double? decorationCornerRadius,
     double? frameBaseWidth,
     double? frameBaseHeight,
     Offset? frameBasePosition,
@@ -125,8 +145,17 @@ class LayerModel {
       width: width ?? this.width,
       height: height ?? this.height,
       textBackground: textBackground ?? this.textBackground,
+      textFillMode: textFillMode ?? this.textFillMode,
+      textFillImageUrl: textFillImageUrl ?? this.textFillImageUrl,
       imageBackground: imageBackground ?? this.imageBackground,
       imageTemplate: imageTemplate ?? this.imageTemplate,
+      decorationFillColor: decorationFillColor ?? this.decorationFillColor,
+      decorationBorderColor:
+          decorationBorderColor ?? this.decorationBorderColor,
+      decorationBorderWidth:
+          decorationBorderWidth ?? this.decorationBorderWidth,
+      decorationCornerRadius:
+          decorationCornerRadius ?? this.decorationCornerRadius,
       frameBaseWidth: frameBaseWidth ?? this.frameBaseWidth,
       frameBaseHeight: frameBaseHeight ?? this.frameBaseHeight,
       frameBasePosition: frameBasePosition ?? this.frameBasePosition,

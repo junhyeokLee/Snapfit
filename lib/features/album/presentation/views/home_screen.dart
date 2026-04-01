@@ -218,6 +218,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return null;
   }
 
+  Future<void> _handlePullToRefresh() async {
+    ref.invalidate(notificationUnreadCountProvider);
+    await ref.read(homeViewModelProvider.notifier).refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final albumsAsync = ref.watch(homeViewModelProvider);
@@ -263,120 +268,135 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return HomeEmptyState(onCreate: handleCreateAlbum);
                 }
 
-                final homeContent = CustomScrollView(
-                  slivers: [
-                    // 1. Header
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 12.w,
+                final homeContent = RefreshIndicator(
+                  onRefresh: _handlePullToRefresh,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    slivers: [
+                      // 1. Header
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 12.w,
+                          ),
+                          child: HomeHeaderNew(
+                            hasUnreadNotification:
+                                (unreadCountAsync.asData?.value ?? 0) > 0,
+                            onNotification: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const NotificationScreen(),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                        child: HomeHeaderNew(
-                          hasUnreadNotification:
-                              (unreadCountAsync.asData?.value ?? 0) > 0,
-                          onNotification: () {
+                      ),
+                      // 2. Premium Templates (New Section)
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: [
+                            const PremiumTemplateList(maxItems: 3),
+                            SizedBox(height: 24.h),
+                          ],
+                        ),
+                      ),
+                      // 3. My Records (Section 1: Masonry)
+                      SliverToBoxAdapter(
+                        child: RecentAlbumList(
+                          albums: prepared.myRecordsAlbums,
+                          currentUserId: currentUserId,
+                          onTap: (album) async {
+                            await HomeAlbumActions.openAlbum(
+                              context,
+                              ref,
+                              album,
+                            );
+                          },
+                          onViewAll: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const NotificationScreen(),
+                                builder: (_) => AlbumCategoryScreen(
+                                  category: AlbumCategory.recent,
+                                  initialAlbums: prepared.myRecordsAlbums,
+                                  currentUserId: currentUserId,
+                                ),
                               ),
                             );
                           },
                         ),
                       ),
-                    ),
-                    // 2. Premium Templates (New Section)
-                    SliverToBoxAdapter(
-                      child: Column(
-                        children: [
-                          const PremiumTemplateList(maxItems: 3),
-                          SizedBox(height: 24.h),
-                        ],
-                      ),
-                    ),
-                    // 3. My Records (Section 1: Masonry)
-                    SliverToBoxAdapter(
-                      child: RecentAlbumList(
-                        albums: prepared.myRecordsAlbums,
-                        currentUserId: currentUserId,
-                        onTap: (album) async {
-                          await HomeAlbumActions.openAlbum(context, ref, album);
-                        },
-                        onViewAll: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AlbumCategoryScreen(
-                                category: AlbumCategory.recent,
-                                initialAlbums: prepared.myRecordsAlbums,
-                                currentUserId: currentUserId,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    // 4. Shared Albums (Section 2: Carousel)
-                    SliverToBoxAdapter(
-                      child: FutureBuilder<List<Album>>(
-                        future: _resolveSharedAlbums(
-                          prepared.sharedOwnerCandidates,
-                          currentUserId,
-                        ),
-                        builder: (context, snapshot) {
-                          final sharedAlbums = snapshot.data ?? const <Album>[];
-                          return SharedAlbumList(
-                            albums: sharedAlbums,
-                            currentUserId: currentUserId,
-                            onTap: (album) async {
-                              await HomeAlbumActions.openAlbum(
-                                context,
-                                ref,
-                                album,
-                              );
-                            },
-                            onViewAll: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AlbumCategoryScreen(
-                                    category: AlbumCategory.shared,
-                                    initialAlbums: sharedAlbums,
-                                    currentUserId: currentUserId,
+                      // 4. Shared Albums (Section 2: Carousel)
+                      SliverToBoxAdapter(
+                        child: FutureBuilder<List<Album>>(
+                          future: _resolveSharedAlbums(
+                            prepared.sharedOwnerCandidates,
+                            currentUserId,
+                          ),
+                          builder: (context, snapshot) {
+                            final sharedAlbums =
+                                snapshot.data ?? const <Album>[];
+                            return SharedAlbumList(
+                              albums: sharedAlbums,
+                              currentUserId: currentUserId,
+                              onTap: (album) async {
+                                await HomeAlbumActions.openAlbum(
+                                  context,
+                                  ref,
+                                  album,
+                                );
+                              },
+                              onViewAll: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AlbumCategoryScreen(
+                                      category: AlbumCategory.shared,
+                                      initialAlbums: sharedAlbums,
+                                      currentUserId: currentUserId,
+                                    ),
                                   ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      // 5. Completed Albums (Section 3: List)
+                      SliverToBoxAdapter(
+                        child: CompletedAlbumList(
+                          albums: prepared.completedPreviewAlbums,
+                          currentUserId: currentUserId,
+                          onTap: (album) async {
+                            await HomeAlbumActions.openAlbum(
+                              context,
+                              ref,
+                              album,
+                            );
+                          },
+                          onViewAll: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AlbumCategoryScreen(
+                                  category: AlbumCategory.completed,
+                                  initialAlbums: prepared.completedAlbums,
+                                  currentUserId: currentUserId,
                                 ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    // 5. Completed Albums (Section 3: List)
-                    SliverToBoxAdapter(
-                      child: CompletedAlbumList(
-                        albums: prepared.completedPreviewAlbums,
-                        currentUserId: currentUserId,
-                        onTap: (album) async {
-                          await HomeAlbumActions.openAlbum(context, ref, album);
-                        },
-                        onViewAll: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AlbumCategoryScreen(
-                                category: AlbumCategory.completed,
-                                initialAlbums: prepared.completedAlbums,
-                                currentUserId: currentUserId,
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    // Bottom Padding for FAB
-                    SliverToBoxAdapter(child: SizedBox(height: 80.w)),
-                  ],
+                      // Bottom Padding for FAB
+                      SliverToBoxAdapter(child: SizedBox(height: 80.w)),
+                    ],
+                  ),
                 );
 
                 final albumTabContent = _buildAlbumTabScreen(
@@ -435,123 +455,129 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       albumTabIndex: albumTabIndex,
     );
 
-    return CustomScrollView(
-      cacheExtent: 1000,
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
-            child: Text(
-              '내 앨범',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
+    return RefreshIndicator(
+      onRefresh: _handlePullToRefresh,
+      child: CustomScrollView(
+        cacheExtent: 1000,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
+              child: Text(
+                '내 앨범',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w800,
+                  color: textPrimary,
+                ),
               ),
             ),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: Container(
-            padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: SnapFitColors.overlayLightOf(context),
+          SliverToBoxAdapter(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: SnapFitColors.overlayLightOf(context),
+                  ),
                 ),
               ),
-            ),
-            child: Row(
-              children: ['진행중', '완료', '즐겨찾기'].asMap().entries.map((entry) {
-                final idx = entry.key;
-                final selected = idx == albumTabIndex;
-                return GestureDetector(
-                  onTap: () => onAlbumTabChanged(idx),
-                  child: Container(
-                    margin: EdgeInsets.only(right: 18.w),
-                    padding: EdgeInsets.only(bottom: 10.h),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: selected
-                              ? SnapFitColors.accent
-                              : Colors.transparent,
-                          width: 3,
+              child: Row(
+                children: ['진행중', '완료', '즐겨찾기'].asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final selected = idx == albumTabIndex;
+                  return GestureDetector(
+                    onTap: () => onAlbumTabChanged(idx),
+                    child: Container(
+                      margin: EdgeInsets.only(right: 18.w),
+                      padding: EdgeInsets.only(bottom: 10.h),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: selected
+                                ? SnapFitColors.accent
+                                : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        entry.value,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w800,
+                          color: selected ? textPrimary : textSecondary,
                         ),
                       ),
                     ),
-                    child: Text(
-                      entry.value,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w800,
-                        color: selected ? textPrimary : textSecondary,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
-            child: Row(
-              children: [
-                Text(
-                  '앨범',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w800,
-                    color: textPrimary,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+              child: Row(
+                children: [
+                  Text(
+                    '앨범',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w800,
+                      color: textPrimary,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                Text(
-                  '${tabData.tabAlbums.length}개',
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: textSecondary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                GestureDetector(
-                  onTap: () {
-                    final category = albumTabIndex == 1
-                        ? AlbumCategory.completed
-                        : AlbumCategory.recent;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AlbumCategoryScreen(
-                          category: category,
-                          initialAlbums: tabData.tabAlbums,
-                          currentUserId: currentUserId,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    '더보기',
+                  const Spacer(),
+                  Text(
+                    '${tabData.tabAlbums.length}개',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: SnapFitColors.accent,
+                      color: textSecondary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(width: 10.w),
+                  GestureDetector(
+                    onTap: () {
+                      final category = albumTabIndex == 1
+                          ? AlbumCategory.completed
+                          : AlbumCategory.recent;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AlbumCategoryScreen(
+                            category: category,
+                            initialAlbums: tabData.tabAlbums,
+                            currentUserId: currentUserId,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      '더보기',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: SnapFitColors.accent,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        _buildAlbumGridSliver(
-          albums: tabData.tabAlbums,
-          currentUserId: currentUserId,
-        ),
-        SliverToBoxAdapter(child: SizedBox(height: 90.h)),
-      ],
+          _buildAlbumGridSliver(
+            albums: tabData.tabAlbums,
+            currentUserId: currentUserId,
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 90.h)),
+        ],
+      ),
     );
   }
 

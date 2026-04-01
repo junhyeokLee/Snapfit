@@ -61,6 +61,8 @@ class LayerInteractionManager {
   bool _showVerticalGuide = false; // 세로 중앙선 표시 여부
   bool _showHorizontalGuide = false; // 가로 중앙선 표시 여부
   bool _showDiagonalGuide = false; // 대각선 표시 여부
+  final List<double> _activeVerticalGuides = <double>[];
+  final List<double> _activeHorizontalGuides = <double>[];
 
   // ==================== 애니메이션 ====================
   Ticker? _activeTicker; // 현재 실행 중인 애니메이션 티커
@@ -91,6 +93,8 @@ class LayerInteractionManager {
       0.12; // 각도 스냅 임계값 (~7도) — 너무 세지 않게 약간 완화
   // static const double _angleSnapStrength = 0.35; // 각도 스냅 강도 (0~1)
   static const double _angleSnapStrength = 0.25; // 각도 스냅 강도 — 0/90도 근처에서 확실히 스냅
+  static const double _layoutGuideBias = 1.5; // 레이어 기준선 우선 가중치(값이 클수록 우선)
+  static const double _spacingGuideBias = 2.2; // 균등 간격(미드포인트) 기준선 우선 가중치
 
   // 스냅 각도 목록 (0°, 45°, 90°, 135°, 180°, -45°, -90°, -135°)
   static const List<double> _snapAngles = [
@@ -143,9 +147,80 @@ class LayerInteractionManager {
   String? get selectedLayerId => _selectedLayerId;
 
   bool get isImagePanMode => _imagePanMode;
+  List<double> get activeVerticalGuides => List<double>.unmodifiable(_activeVerticalGuides);
+  List<double> get activeHorizontalGuides =>
+      List<double>.unmodifiable(_activeHorizontalGuides);
 
   GlobalKey _getLayerKey(String id) {
     return _layerKeys.putIfAbsent(id, () => GlobalKey());
+  }
+
+  Rect? _getLayerGlobalRect(String layerId) {
+    final key = _layerKeys[layerId];
+    if (key == null) return null;
+    final ctx = key.currentContext;
+    if (ctx == null) return null;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null || !box.attached) return null;
+
+    final size = box.size;
+    final points = <Offset>[
+      box.localToGlobal(Offset.zero),
+      box.localToGlobal(Offset(size.width, 0)),
+      box.localToGlobal(Offset(0, size.height)),
+      box.localToGlobal(Offset(size.width, size.height)),
+    ];
+
+    double minX = points.first.dx;
+    double maxX = points.first.dx;
+    double minY = points.first.dy;
+    double maxY = points.first.dy;
+    for (final p in points.skip(1)) {
+      minX = math.min(minX, p.dx);
+      maxX = math.max(maxX, p.dx);
+      minY = math.min(minY, p.dy);
+      maxY = math.max(maxY, p.dy);
+    }
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  LayerModel _resolveTopTouchTarget({
+    required LayerModel fallback,
+    required Offset globalPoint,
+  }) {
+    final vmState = ref.read(albumEditorViewModelProvider).value;
+    final layers = vmState?.layers;
+    if (layers == null || layers.isEmpty) return fallback;
+
+    final ordered = sortByZ(layers);
+    final hits = <LayerModel>[];
+    for (final layer in ordered) {
+      final rect = _getLayerGlobalRect(layer.id);
+      if (rect == null) continue;
+      // 얇은 텍스트도 안정적으로 잡히도록 약간의 히트 슬롭 추가
+      if (rect.inflate(6).contains(globalPoint)) {
+        hits.add(layer);
+      }
+    }
+    if (hits.isEmpty) return fallback;
+
+    // 겹치는 경우 배경보다 실제 편집 레이어(텍스트/장식/사진)를 우선한다.
+    for (final layer in hits.reversed) {
+      if (!_isBackgroundLayer(layer)) return layer;
+    }
+    return hits.last;
+  }
+
+  LayerModel _resolveActiveGestureLayer(LayerModel fallback) {
+    final selectedId = _selectedLayerId;
+    if (selectedId != null && _gestureStates.containsKey(selectedId)) {
+      final vmState = ref.read(albumEditorViewModelProvider).value;
+      final matched = vmState?.layers.where((l) => l.id == selectedId);
+      if (matched != null && matched.isNotEmpty) {
+        return matched.first;
+      }
+    }
+    return fallback;
   }
 
   /// 현재 선택된 레이어의 화면(Global) 좌표 Rect를 계산
@@ -204,9 +279,24 @@ class LayerInteractionManager {
     if (ctx == null) return null;
     final box = ctx.findRenderObject() as RenderBox?;
     if (box == null || !box.attached) return null;
-    final topLeft = box.localToGlobal(Offset.zero);
     final size = box.size;
-    return Rect.fromLTWH(topLeft.dx, topLeft.dy, size.width, size.height);
+    final points = <Offset>[
+      box.localToGlobal(Offset.zero),
+      box.localToGlobal(Offset(size.width, 0)),
+      box.localToGlobal(Offset(0, size.height)),
+      box.localToGlobal(Offset(size.width, size.height)),
+    ];
+    double minX = points.first.dx;
+    double maxX = points.first.dx;
+    double minY = points.first.dy;
+    double maxY = points.first.dy;
+    for (final p in points.skip(1)) {
+      minX = math.min(minX, p.dx);
+      maxX = math.max(maxX, p.dx);
+      minY = math.min(minY, p.dy);
+      maxY = math.max(maxY, p.dy);
+    }
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
   }
 
   /// 현재 선택된 이미지 레이어에 대해 사진 이동 모드를 토글
@@ -228,14 +318,24 @@ class LayerInteractionManager {
     if (ctx == null) return false;
     final box = ctx.findRenderObject() as RenderBox?;
     if (box == null || !box.attached) return false;
-    final topLeft = box.localToGlobal(Offset.zero);
     final size = box.size;
-    return Rect.fromLTWH(
-      topLeft.dx,
-      topLeft.dy,
-      size.width,
-      size.height,
-    ).contains(globalPosition);
+    final points = <Offset>[
+      box.localToGlobal(Offset.zero),
+      box.localToGlobal(Offset(size.width, 0)),
+      box.localToGlobal(Offset(0, size.height)),
+      box.localToGlobal(Offset(size.width, size.height)),
+    ];
+    double minX = points.first.dx;
+    double maxX = points.first.dx;
+    double minY = points.first.dy;
+    double maxY = points.first.dy;
+    for (final p in points.skip(1)) {
+      minX = math.min(minX, p.dx);
+      maxX = math.max(maxX, p.dx);
+      minY = math.min(minY, p.dy);
+      maxY = math.max(maxY, p.dy);
+    }
+    return Rect.fromLTRB(minX, minY, maxX, maxY).contains(globalPosition);
   }
 
   /// 레이어 위치를 커버 영역 내로 제한하지 않음 (자유 이동 가능)
@@ -248,6 +348,9 @@ class LayerInteractionManager {
   /// 에디터에서 순서를 바꾼 경우 _z 캐시를 사용한다.
   List<LayerModel> sortByZ(List<LayerModel> list) {
     final l = List<LayerModel>.from(list);
+    final originalIndex = <String, int>{
+      for (int i = 0; i < l.length; i++) l[i].id: i,
+    };
     for (final layer in l) {
       _z.putIfAbsent(layer.id, () => layer.zIndex);
     }
@@ -260,7 +363,11 @@ class LayerInteractionManager {
         final za = _z[a.id] ?? a.zIndex;
         final zb = _z[b.id] ?? b.zIndex;
         if (za != zb) return za.compareTo(zb);
-        return a.id.compareTo(b.id);
+        // 동일 zIndex에서는 레이어 원본 순서를 유지해
+        // 템플릿 JSON 배열 순서(디자이너 의도)가 깨지지 않게 한다.
+        final ia = originalIndex[a.id] ?? 0;
+        final ib = originalIndex[b.id] ?? 0;
+        return ia.compareTo(ib);
       });
 
     // 2) list 순서와 _z 순서가 다르면, 선택/드래그로 맨 앞 올린 직후 VM 반영이 한 프레임 늦을 수 있음.
@@ -313,6 +420,31 @@ class LayerInteractionManager {
       _showVerticalGuide = false;
       _showHorizontalGuide = false;
       _showDiagonalGuide = false;
+      _activeVerticalGuides.clear();
+      _activeHorizontalGuides.clear();
+    });
+  }
+
+  /// 페이지 전환 시 이전 페이지의 제스처/레이어 캐시를 정리한다.
+  /// 같은 layer id가 다른 페이지에 재사용될 때 선택/드래그 충돌을 방지한다.
+  void resetForPageChange() {
+    setState(() {
+      _selectedLayerId = null;
+      _editingLayerId = null;
+      _imagePanMode = false;
+      _showVerticalGuide = false;
+      _showHorizontalGuide = false;
+      _showDiagonalGuide = false;
+      _activeVerticalGuides.clear();
+      _activeHorizontalGuides.clear();
+      _gestureStates.clear();
+      _pos.clear();
+      _scale.clear();
+      _rot.clear();
+      _z.clear();
+      _refBaseSize.clear();
+      _layerKeys.clear();
+      _zCounter = 0;
     });
   }
 
@@ -417,7 +549,7 @@ class LayerInteractionManager {
             alignment: Alignment.center,
             child: SizedBox(
               width: baseWidth,
-              height: layer.type == LayerType.text ? null : baseHeight,
+              height: baseHeight,
               child: child,
             ),
           ),
@@ -437,7 +569,6 @@ class LayerInteractionManager {
           left: _pos[layer.id]!.dx,
           top: _pos[layer.id]!.dy,
           child: Transform.rotate(
-            key: _getLayerKey(layer.id),
             angle: _rot[layer.id]!,
             alignment: Alignment.center, // 명시적 중심축 설정
             child: Transform.scale(
@@ -447,34 +578,50 @@ class LayerInteractionManager {
                 clipBehavior: Clip.none,
                 children: [
                   SizedBox(
+                    key: _getLayerKey(layer.id),
                     width: baseWidth,
-                    height: layer.type == LayerType.text ? null : baseHeight,
+                    height: baseHeight,
                     child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () {
+                      // 페이지/커버 모두에서 레이어 hit-test를 안정적으로 고정:
+                      // translucent는 겹친 레이어가 동시에 제스처 경쟁을 만들어
+                      // 위치에 따라 선택/드래그 실패를 유발할 수 있어 opaque로 통일한다.
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown: (details) {
                         AppLogger.debug(
                           '[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})',
                         );
-                        AppLogger.debug(
-                          '[LayerInteraction] Layer Size: ${layer.width.toStringAsFixed(1)} x ${layer.height.toStringAsFixed(1)}',
+                        _handleTap(
+                          _resolveTopTouchTarget(
+                            fallback: layer,
+                            globalPoint: details.globalPosition,
+                          ),
                         );
-                        AppLogger.debug(
-                          '[LayerInteraction] RefBaseSize: ${_refBaseSize[layer.id]}',
-                        );
-                        AppLogger.debug(
-                          '[LayerInteraction] Scale: ${_scale[layer.id]}',
-                        );
-                        _handleTap(layer);
                       },
-                      onScaleStart: (d) => _handleScaleStart(layer, d),
+                      onDoubleTap: () {
+                        final target = _resolveActiveGestureLayer(layer);
+                        if (target.type != LayerType.text) return;
+                        if (_selectedLayerId != target.id) return;
+                        setState(() => _editingLayerId = target.id);
+                        onEditText(target);
+                      },
+                      onScaleStart: (d) {
+                        _handleScaleStart(
+                          _resolveTopTouchTarget(
+                            fallback: layer,
+                            globalPoint: d.focalPoint,
+                          ),
+                          d,
+                        );
+                      },
                       onScaleUpdate: (d) => _handleScaleUpdate(
-                        layer,
+                        _resolveActiveGestureLayer(layer),
                         d,
                         baseWidth,
                         baseHeight,
                         isCover: isCover,
                       ),
-                      onScaleEnd: (d) => _handleScaleEnd(layer, d),
+                      onScaleEnd: (d) =>
+                          _handleScaleEnd(_resolveActiveGestureLayer(layer), d),
                       child: SelectionFrame(
                         isSelected:
                             isSelected && !isEditing && showSelectionControls,
@@ -539,10 +686,7 @@ class LayerInteractionManager {
       if (!isBackground) _bringLayerToFrontInPage(layer.id);
       onLayerTap?.call(layer);
     } else {
-      if (layer.type == LayerType.text) {
-        setState(() => _editingLayerId = layer.id);
-        onEditText(layer);
-      } else {
+      if (layer.type != LayerType.text) {
         clearSelection();
       }
     }
@@ -587,14 +731,48 @@ class LayerInteractionManager {
   }
 
   bool _isBackgroundLayer(LayerModel layer) {
-    if (layer.type != LayerType.decoration) return false;
+    if (layer.type != LayerType.decoration && layer.type != LayerType.image) {
+      return false;
+    }
     final cover = getCoverSize();
-    final fillsCanvas =
-        layer.position.dx.abs() <= 0.1 &&
-        layer.position.dy.abs() <= 0.1 &&
-        (layer.width - cover.width).abs() <= 1.0 &&
-        (layer.height - cover.height).abs() <= 1.0;
-    if (fillsCanvas) return true;
+
+    // 페이지/커버 좌표계가 섞이는 구간(300 기준 템플릿 -> 500 기준 캔버스)에서도
+    // 전체 배경 레이어를 안정적으로 감지한다.
+    final nearOrigin =
+        layer.position.dx.abs() <= 2.0 && layer.position.dy.abs() <= 2.0;
+    final fillsCanvasStrict =
+        nearOrigin &&
+        (layer.width - cover.width).abs() <= 2.0 &&
+        (layer.height - cover.height).abs() <= 2.0;
+
+    // 내지에서 과거 300기준 템플릿이 들어온 경우를 위한 완화 판정
+    final refW = math.min(cover.width, 300.0);
+    final refH = math.min(cover.height, 400.0);
+    final fillsCanvasLoose =
+        nearOrigin &&
+        layer.width >= (refW * 0.92) &&
+        layer.height >= (refH * 0.92);
+
+    final fillsCanvas = fillsCanvasStrict || fillsCanvasLoose;
+    if (fillsCanvas) {
+      // 풀캔버스 이미지는 보통 배경 역할이므로 하단 고정
+      // (텍스트 선택/드래그 터치 가로채기 방지)
+      if (layer.type == LayerType.image) {
+        if (layer.id.contains('_bg')) return true;
+        final coverage =
+            (layer.width * layer.height) / (cover.width * cover.height);
+        if (coverage >= 0.80) return true;
+        final frame = layer.imageBackground ?? '';
+        final looksBackgroundFrame =
+            frame.isEmpty ||
+            frame == 'shadow' ||
+            frame == 'none' ||
+            frame == 'mat';
+        if (looksBackgroundFrame) return true;
+      } else {
+        return true;
+      }
+    }
     final key = layer.imageBackground ?? '';
     return key.startsWith('paper') ||
         key == 'darkVignette' ||
@@ -710,41 +888,94 @@ class LayerInteractionManager {
     final dynamicSnapStrength = baseSnap * 0.28;
 
     // ==================== 위치 스냅 처리 ====================
-    // [Spine fix] 스냅 기준점: 커버인 경우 Spine 제외 중앙
-    final centerX = isCover
-        ? kCoverSpineWidth + (coverSize.width - kCoverSpineWidth) / 2
-        : coverSize.width / 2;
-
+    final startX = isCover ? kCoverSpineWidth : 0.0;
+    final usableWidth = coverSize.width - startX;
+    final centerX = startX + (usableWidth / 2);
     final coverCenter = Offset(centerX, coverSize.height / 2);
 
     bool verticalSnap = false; // 세로 중앙선 스냅 여부
     bool horizontalSnap = false; // 가로 중앙선 스냅 여부
     bool diagonalSnap = false; // 대각선 스냅 여부
+    double? snappedGuideX;
+    double? snappedGuideY;
+    final layers = ref.read(albumEditorViewModelProvider).value?.layers ?? const <LayerModel>[];
+    final xCandidates = <_GuideCandidate>[
+      _GuideCandidate(value: startX, weight: 1.0),
+      _GuideCandidate(value: startX + usableWidth / 3, weight: 1.0),
+      _GuideCandidate(value: centerX, weight: 1.0),
+      _GuideCandidate(value: startX + (usableWidth * 2 / 3), weight: 1.0),
+      _GuideCandidate(value: coverSize.width, weight: 1.0),
+    ];
+    final yCandidates = <_GuideCandidate>[
+      _GuideCandidate(value: 0.0, weight: 1.0),
+      _GuideCandidate(value: coverSize.height / 3, weight: 1.0),
+      _GuideCandidate(value: coverCenter.dy, weight: 1.0),
+      _GuideCandidate(value: coverSize.height * 2 / 3, weight: 1.0),
+      _GuideCandidate(value: coverSize.height, weight: 1.0),
+    ];
+    final otherBounds = <Rect>[];
 
-    // 세로 중앙선 스냅 (X축)
-    final xDist = (newCenter.dx - coverCenter.dx).abs();
-    if (xDist < _snapThreshold) {
-      // 거리에 따라 스냅 강도 조절 (가까울수록 강하게)
-      final proximity = 1.0 - (xDist / _snapThreshold);
-      final strength =
-          dynamicSnapStrength * proximity * proximity; // 2차 함수로 부드럽게
-      newCenter = Offset(
-        newCenter.dx + (coverCenter.dx - newCenter.dx) * strength,
-        newCenter.dy,
-      );
-      verticalSnap = true;
+    for (final other in layers) {
+      if (other.id == layer.id) continue;
+      if (_isBackgroundLayer(other)) continue;
+      final bounds = _getLayerBoundsInCanvas(other);
+      if (bounds == null) continue;
+      otherBounds.add(bounds);
+      xCandidates.addAll([
+        _GuideCandidate(value: bounds.left, weight: _layoutGuideBias),
+        _GuideCandidate(value: bounds.center.dx, weight: _layoutGuideBias),
+        _GuideCandidate(value: bounds.right, weight: _layoutGuideBias),
+      ]);
+      yCandidates.addAll([
+        _GuideCandidate(value: bounds.top, weight: _layoutGuideBias),
+        _GuideCandidate(value: bounds.center.dy, weight: _layoutGuideBias),
+        _GuideCandidate(value: bounds.bottom, weight: _layoutGuideBias),
+      ]);
     }
 
-    // 가로 중앙선 스냅 (Y축)
-    final yDist = (newCenter.dy - coverCenter.dy).abs();
-    if (yDist < _snapThreshold) {
-      final proximity = 1.0 - (yDist / _snapThreshold);
-      final strength = dynamicSnapStrength * proximity * proximity;
-      newCenter = Offset(
-        newCenter.dx,
-        newCenter.dy + (coverCenter.dy - newCenter.dy) * strength,
-      );
-      horizontalSnap = true;
+    // 미리캔버스 스타일 보정: 인접한 2개 레이아웃의 중간점에도 스냅 후보 추가
+    // (가운데 배치 시 균등 간격 느낌을 강화)
+    if (otherBounds.length >= 2) {
+      final centerXs = otherBounds.map((r) => r.center.dx).toList()..sort();
+      final centerYs = otherBounds.map((r) => r.center.dy).toList()..sort();
+      for (int i = 0; i < centerXs.length - 1; i++) {
+        final mid = (centerXs[i] + centerXs[i + 1]) / 2;
+        xCandidates.add(_GuideCandidate(value: mid, weight: _spacingGuideBias));
+      }
+      for (int i = 0; i < centerYs.length - 1; i++) {
+        final mid = (centerYs[i] + centerYs[i + 1]) / 2;
+        yCandidates.add(_GuideCandidate(value: mid, weight: _spacingGuideBias));
+      }
+    }
+
+    final nearestX = _findBestGuideCandidate(newCenter.dx, xCandidates);
+    if (nearestX != null) {
+      final xDist = (newCenter.dx - nearestX.value).abs();
+      if (xDist < _snapThreshold) {
+        final proximity = 1.0 - (xDist / _snapThreshold);
+        final strength = dynamicSnapStrength * proximity * proximity;
+        newCenter = Offset(
+          newCenter.dx + (nearestX.value - newCenter.dx) * strength,
+          newCenter.dy,
+        );
+        verticalSnap = true;
+        snappedGuideX = nearestX.value;
+      }
+    }
+
+    final nearestY = _findBestGuideCandidate(newCenter.dy, yCandidates);
+    if (nearestY != null) {
+      final yDist = (newCenter.dy - nearestY.value).abs();
+      if (yDist < _snapThreshold) {
+        final proximity = 1.0 - (yDist / _snapThreshold);
+        final strength = dynamicSnapStrength * proximity * proximity;
+        newCenter = Offset(
+          newCenter.dx,
+          newCenter.dy + (nearestY.value - newCenter.dy) * strength,
+        );
+        horizontalSnap = true;
+        snappedGuideY = nearestY.value;
+      }
     }
 
     // 가로·세로 모두 스냅 중이고 중앙에 매우 가까우면 정확히 중앙으로 고정 (가이드라인과 일치)
@@ -752,6 +983,8 @@ class LayerInteractionManager {
       final distToCenter = (newCenter - coverCenter).distance;
       if (distToCenter < _snapCenterExactThreshold) {
         newCenter = coverCenter;
+        snappedGuideX = coverCenter.dx;
+        snappedGuideY = coverCenter.dy;
       }
     }
 
@@ -808,6 +1041,12 @@ class LayerInteractionManager {
       _showVerticalGuide = showVertical;
       _showHorizontalGuide = showHorizontal;
       _showDiagonalGuide = false;
+      _activeVerticalGuides
+        ..clear()
+        ..addAll(showVertical && snappedGuideX != null ? [snappedGuideX] : const <double>[]);
+      _activeHorizontalGuides
+        ..clear()
+        ..addAll(showHorizontal && snappedGuideY != null ? [snappedGuideY] : const <double>[]);
     });
 
     // 중심점을 좌상단 좌표로 변환
@@ -900,6 +1139,8 @@ class LayerInteractionManager {
       _showVerticalGuide = false;
       _showHorizontalGuide = false;
       _showDiagonalGuide = false;
+      _activeVerticalGuides.clear();
+      _activeHorizontalGuides.clear();
       _gestureStates.remove(layer.id);
     });
   }
@@ -1098,6 +1339,33 @@ class LayerInteractionManager {
       return 1.0;
     }
   }
+
+  Rect? _getLayerBoundsInCanvas(LayerModel layer) {
+    final pos = _pos[layer.id] ?? layer.position;
+    final base = _refBaseSize[layer.id] ?? Size(layer.width, layer.height);
+    final scale = _scale[layer.id] ?? layer.scale;
+    final width = base.width * scale;
+    final height = base.height * scale;
+    if (width <= 0 || height <= 0) return null;
+    return Rect.fromLTWH(pos.dx, pos.dy, width, height);
+  }
+
+  _GuideCandidate? _findBestGuideCandidate(
+    double target,
+    List<_GuideCandidate> candidates,
+  ) {
+    if (candidates.isEmpty) return null;
+    _GuideCandidate nearest = candidates.first;
+    double bestScore = (target - nearest.value).abs() / nearest.weight;
+    for (final candidate in candidates.skip(1)) {
+      final score = (target - candidate.value).abs() / candidate.weight;
+      if (score < bestScore) {
+        bestScore = score;
+        nearest = candidate;
+      }
+    }
+    return nearest;
+  }
 }
 
 /// Provider 전달용 파라미터 객체
@@ -1147,6 +1415,13 @@ class _ResizeState {
     required this.initialScale,
     required this.baseSize,
   });
+}
+
+class _GuideCandidate {
+  final double value;
+  final double weight;
+
+  const _GuideCandidate({required this.value, required this.weight});
 }
 
 /// 대각선 가이드라인을 그리는 CustomPainter

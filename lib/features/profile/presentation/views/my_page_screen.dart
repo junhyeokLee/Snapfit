@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../../core/utils/app_error_mapper.dart';
 import '../../../../core/theme/theme_mode_controller.dart';
 import '../../../auth/data/dto/auth_response.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../../splash/presentation/views/splash_screen.dart';
 import '../../../album/presentation/viewmodels/gallery_notifier.dart'; // Add import
 import '../../../album/presentation/viewmodels/home_view_model.dart';
 import '../../../album/presentation/widgets/home/home_album_helpers.dart';
@@ -14,19 +17,43 @@ import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../album/presentation/views/album_category_screen.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/storage_quota.dart';
-import '../../../billing/presentation/views/subscription_management_screen.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
+import '../../data/order_repository.dart';
+import '../../domain/entities/order_history_item.dart';
 import 'notification_settings_screen.dart';
 import 'order_history_screen.dart';
+import 'support_inquiry_screen.dart';
 import 'terms_policy_screen.dart';
 
-class MyPageScreen extends ConsumerWidget {
+class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
+
+  @override
+  ConsumerState<MyPageScreen> createState() => _MyPageScreenState();
+}
+
+class _MyPageScreenState extends ConsumerState<MyPageScreen> {
+  bool _isDeletingAccount = false;
 
   static bool _logged = false;
 
+  void _showToast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (!_logged) {
       _logged = true;
       ScreenLogger.enter('MyPageScreen', '마이 · 테마 설정(라이트/다크) · 로그아웃');
@@ -35,6 +62,8 @@ class MyPageScreen extends ConsumerWidget {
     final albumsAsync = ref.watch(homeViewModelProvider);
     final subscriptionAsync = ref.watch(mySubscriptionProvider);
     final storageQuotaAsync = ref.watch(myStorageQuotaProvider);
+    final orderSummaryAsync = ref.watch(myOrderSummaryProvider);
+    final unreadNotiAsync = ref.watch(notificationUnreadCountProvider);
     final userInfo = authAsync.asData?.value;
     final themeMode = ref.watch(themeModeControllerProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
@@ -48,171 +77,313 @@ class MyPageScreen extends ConsumerWidget {
     final completedAlbums = albums.where(isCompletedAlbum).toList();
     final totalPhotos = albums.fold<int>(0, (sum, a) => sum + a.totalPages);
 
-    return Scaffold(
-      backgroundColor: SnapFitColors.isDark(context)
-          ? SnapFitColors.backgroundOf(context)
-          : const Color(0xFFF7F8FA),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
-        children: [
-          SizedBox(height: MediaQuery.of(context).padding.top),
-          _buildTopBar(context, ref, textColor, themeMode),
-          SizedBox(height: 12.h),
-          _buildProfileHero(
-            context,
-            ref,
-            userInfo,
-            textColor,
-            subColor,
-            subscriptionAsync,
-          ),
-          SizedBox(height: 12.h),
-          _buildStatsRow(
-            context,
-            textColor: textColor,
-            subColor: subColor,
-            totalPhotos: totalPhotos,
-            sharedCount: sharedAlbums.length,
-            completedCount: completedAlbums.length,
-          ),
-          SizedBox(height: 12.h),
-          _buildStorageUsageCard(context, storageQuotaAsync),
-          SizedBox(height: 12.h),
-          _buildOrderStatusCard(context),
-          SizedBox(height: 12.h),
-          _buildMenuCard(
-            context: context,
-            rows: [
-              _menuRow(
-                context: context,
-                icon: Icons.history_rounded,
-                title: '나의 주문 내역',
-                trailingDot: false,
-                onTap: () {
-                  Navigator.push(
+    return PopScope(
+      canPop: !_isDeletingAccount,
+      child: Scaffold(
+        backgroundColor: SnapFitColors.isDark(context)
+            ? SnapFitColors.backgroundOf(context)
+            : SnapFitColors.surfaceLight,
+        body: Stack(
+          children: [
+            AbsorbPointer(
+              absorbing: _isDeletingAccount,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).padding.top),
+                  _buildTopBar(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const OrderHistoryScreen(),
+                    ref,
+                    textColor,
+                    themeMode,
+                    unreadNotiAsync.maybeWhen(
+                      data: (count) => count,
+                      orElse: () => 0,
                     ),
-                  );
-                },
-              ),
-              _menuRow(
-                context: context,
-                icon: Icons.credit_card_rounded,
-                title: '구독 및 결제 관리',
-                trailingDot: false,
-                onTap: () {
-                  Navigator.push(
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildProfileHero(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const SubscriptionManagementScreen(),
-                    ),
-                  );
-                },
-              ),
-              _menuRow(
-                context: context,
-                icon: Icons.photo_library_outlined,
-                title: '공유된 앨범',
-                trailingDot: sharedAlbums.isNotEmpty,
-                onTap: () {
-                  Navigator.push(
+                    ref,
+                    userInfo,
+                    textColor,
+                    subColor,
+                    subscriptionAsync,
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildStatsRow(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => AlbumCategoryScreen(
-                        category: AlbumCategory.shared,
-                        initialAlbums: sharedAlbums,
-                        currentUserId: currentUserId,
+                    textColor: textColor,
+                    subColor: subColor,
+                    totalPhotos: totalPhotos,
+                    sharedCount: sharedAlbums.length,
+                    completedCount: completedAlbums.length,
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildStorageUsageCard(context, storageQuotaAsync),
+                  SizedBox(height: 12.h),
+                  _buildOrderStatusCard(
+                    context,
+                    ref,
+                    currentUserId,
+                    orderSummaryAsync,
+                    ref.watch(myOrderStatusBadgesProvider),
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildMenuCard(
+                    context: context,
+                    rows: [
+                      _menuRow(
+                        context: context,
+                        icon: Icons.history_rounded,
+                        title: '나의 주문 내역',
+                        trailingDot: false,
+                        onTap: () async {
+                          final summary = orderSummaryAsync.maybeWhen(
+                            data: (s) => s,
+                            orElse: () => null,
+                          );
+                          if (summary != null && currentUserId.isNotEmpty) {
+                            await ref
+                                .read(orderRepositoryProvider)
+                                .markOrderSummarySeen(
+                                  userId: currentUserId,
+                                  summary: summary,
+                                );
+                            ref.invalidate(myOrderStatusBadgesProvider);
+                          }
+                          if (!context.mounted) return;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const OrderHistoryScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.credit_card_rounded,
+                        title: '구독 및 결제 관리',
+                        trailingDot: false,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                '구독/결제관리는 점검 중입니다. 잠시 후 다시 열릴 예정입니다.',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.photo_library_outlined,
+                        title: '공유된 앨범',
+                        trailingDot: sharedAlbums.isNotEmpty,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlbumCategoryScreen(
+                                category: AlbumCategory.shared,
+                                initialAlbums: sharedAlbums,
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.notifications_none_rounded,
+                        title: '알림 설정',
+                        trailingDot: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const NotificationSettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.description_outlined,
+                        title: '약관 및 정책',
+                        trailingDot: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const TermsPolicyScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.help_outline_rounded,
+                        title: '고객 센터',
+                        trailingDot: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SupportInquiryScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () async {
+                          await ref
+                              .read(authViewModelProvider.notifier)
+                              .logout();
+                          if (context.mounted) {
+                            _showToast('로그아웃되었습니다.');
+                          }
+                        },
+                        child: Text(
+                          '로그아웃',
+                          style: context.sfSub(
+                            size: 12.sp,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      TextButton(
+                        onPressed: _isDeletingAccount
+                            ? null
+                            : () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('회원 탈퇴'),
+                                    content: const Text(
+                                      '정말 탈퇴하시겠어요?\n앨범/주문/구독/프로필 정보가 모두 삭제되며 복구할 수 없습니다.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text('취소'),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, true),
+                                        child: const Text('탈퇴하기'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (ok != true) return;
+                                if (mounted) {
+                                  setState(() => _isDeletingAccount = true);
+                                }
+                                try {
+                                  await ref
+                                      .read(authViewModelProvider.notifier)
+                                      .deleteAccount();
+                                  if (!context.mounted) return;
+                                  _showToast('탈퇴가 완료되었습니다.');
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (_) => const SplashScreen(),
+                                    ),
+                                    (_) => false,
+                                  );
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  final errorText =
+                                      AppErrorMapper.toUserMessage(e);
+                                  final isAuthError =
+                                      errorText.contains('세션') ||
+                                      errorText.contains('권한') ||
+                                      errorText.contains('세션이 만료');
+                                  _showToast(
+                                    isAuthError
+                                        ? '세션이 만료되었거나 권한이 없습니다. 다시 로그인 후 탈퇴를 시도해주세요.'
+                                        : '탈퇴 처리 실패: $errorText',
+                                  );
+                                } finally {
+                                  if (context.mounted) {
+                                    setState(() => _isDeletingAccount = false);
+                                  }
+                                }
+                              },
+                        child: Text(
+                          '탈퇴하기',
+                          style: context.sfSub(
+                            size: 12.sp,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                  Center(
+                    child: Text(
+                      'SnapFit Version 1.4.2 (2024)',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: SnapFitColors.textMutedOf(context),
                       ),
                     ),
-                  );
-                },
-              ),
-              _menuRow(
-                context: context,
-                icon: Icons.notifications_none_rounded,
-                title: '알림 설정',
-                trailingDot: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-              _menuRow(
-                context: context,
-                icon: Icons.description_outlined,
-                title: '약관 및 정책',
-                trailingDot: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TermsPolicyScreen(),
-                    ),
-                  );
-                },
-              ),
-              _menuRow(
-                context: context,
-                icon: Icons.help_outline_rounded,
-                title: '고객 센터',
-                trailingDot: false,
-                onTap: () {},
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          Row(
-            children: [
-              TextButton(
-                onPressed: () async {
-                  await ref.read(authViewModelProvider.notifier).logout();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('로그아웃되었습니다.')));
-                  }
-                },
-                child: Text(
-                  '로그아웃',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: subColor,
-                    fontWeight: FontWeight.w600,
                   ),
-                ),
-              ),
-              SizedBox(width: 10.w),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  '탈퇴하기',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: subColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          Center(
-            child: Text(
-              'SnapFit Version 1.4.2 (2024)',
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: SnapFitColors.textMutedOf(context),
+                  SizedBox(height: 24.h),
+                ],
               ),
             ),
-          ),
-          SizedBox(height: 24.h),
-        ],
+            if (_isDeletingAccount)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black.withOpacity(0.32),
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 16.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.surfaceOf(context),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 22.w,
+                            height: 22.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2.6,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Text(
+                            '탈퇴 처리 중입니다...',
+                            style: context.sfSub(
+                              size: 12.sp,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -222,18 +393,11 @@ class MyPageScreen extends ConsumerWidget {
     WidgetRef ref,
     Color textColor,
     ThemeMode themeMode,
+    int unreadCount,
   ) {
     return Row(
       children: [
-        Text(
-          '마이페이지',
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w800,
-            color: textColor,
-            letterSpacing: -0.2,
-          ),
-        ),
+        Text('마이페이지', style: context.sfTitle(size: 16.sp)),
         const Spacer(),
         IconButton(
           icon: Icon(Icons.settings_rounded, size: 20.sp, color: textColor),
@@ -256,18 +420,19 @@ class MyPageScreen extends ConsumerWidget {
                 );
               },
             ),
-            Positioned(
-              right: 10.w,
-              top: 10.h,
-              child: Container(
-                width: 7.w,
-                height: 7.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10BEE2),
-                  shape: BoxShape.circle,
+            if (unreadCount > 0)
+              Positioned(
+                right: 10.w,
+                top: 10.h,
+                child: Container(
+                  width: 7.w,
+                  height: 7.w,
+                  decoration: const BoxDecoration(
+                    color: SnapFitColors.accent,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ],
@@ -283,7 +448,7 @@ class MyPageScreen extends ConsumerWidget {
     AsyncValue<SubscriptionStatusModel> subscriptionAsync,
   ) {
     final name = userInfo?.name ?? '사용자';
-    final email = userInfo?.email ?? 'snapfit_user@example.com';
+    final email = _displayEmail(userInfo);
     final profileUrl = userInfo?.profileImageUrl;
 
     final membershipLabel = subscriptionAsync.maybeWhen(
@@ -292,13 +457,14 @@ class MyPageScreen extends ConsumerWidget {
     );
     final membershipBg = subscriptionAsync.maybeWhen(
       data: (sub) =>
-          sub.isActive ? const Color(0xFFE1F6FB) : const Color(0xFFF1F3F5),
-      orElse: () => const Color(0xFFF1F3F5),
+          sub.isActive ? SnapFitColors.accentLight : SnapFitStylePalette.gray,
+      orElse: () => SnapFitStylePalette.gray,
     );
     final membershipColor = subscriptionAsync.maybeWhen(
-      data: (sub) =>
-          sub.isActive ? const Color(0xFF10BEE2) : const Color(0xFF6B7280),
-      orElse: () => const Color(0xFF6B7280),
+      data: (sub) => sub.isActive
+          ? SnapFitColors.accent
+          : SnapFitColors.textSecondaryOf(context),
+      orElse: () => SnapFitColors.textSecondaryOf(context),
     );
 
     return Column(
@@ -311,7 +477,7 @@ class MyPageScreen extends ConsumerWidget {
               height: 126.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF3C6AD),
+                color: SnapFitStylePalette.coral,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -330,9 +496,9 @@ class MyPageScreen extends ConsumerWidget {
                           profileUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
-                              Container(color: const Color(0xFFE9D8CE)),
+                              Container(color: SnapFitStylePalette.beige),
                         )
-                      : Container(color: const Color(0xFFE9D8CE)),
+                      : Container(color: SnapFitStylePalette.beige),
                 ),
               ),
             ),
@@ -345,7 +511,7 @@ class MyPageScreen extends ConsumerWidget {
                   width: 34.w,
                   height: 34.w,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF10BEE2),
+                    color: SnapFitColors.accent,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
@@ -391,6 +557,17 @@ class MyPageScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  String _displayEmail(UserInfo? userInfo) {
+    final raw = userInfo?.email?.trim() ?? '';
+    if (raw.isNotEmpty && raw.contains('@')) {
+      return raw;
+    }
+    final provider = (userInfo?.provider ?? '').toUpperCase();
+    if (provider == 'KAKAO') return '카카오 계정(이메일 미제공)';
+    if (provider == 'GOOGLE') return '구글 계정(이메일 미제공)';
+    return '이메일 정보 없음';
   }
 
   Widget _buildStatsRow(
@@ -445,15 +622,28 @@ class MyPageScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildOrderStatusCard(BuildContext context) {
+  Widget _buildOrderStatusCard(
+    BuildContext context,
+    WidgetRef ref,
+    String currentUserId,
+    AsyncValue<OrderSummaryResult> summaryAsync,
+    AsyncValue<OrderStatusBadges> badgeAsync,
+  ) {
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
-    final statuses = const [
-      (Icons.credit_card_rounded, '결제대기', '1'),
-      (Icons.payments_rounded, '결제완료', '2'),
-      (Icons.auto_awesome_motion_rounded, '제작중', '1'),
-      (Icons.local_shipping_rounded, '배송중', '1'),
-      (Icons.task_alt_rounded, '배송완료', '3'),
+
+    final summary = summaryAsync.maybeWhen(data: (s) => s, orElse: () => null);
+    final badges = badgeAsync.maybeWhen(
+      data: (b) => b,
+      orElse: () => const OrderStatusBadges.zero(),
+    );
+
+    final statuses = [
+      (Icons.credit_card_rounded, '결제대기', badges.paymentPending),
+      (Icons.payments_rounded, '결제완료', badges.paymentCompleted),
+      (Icons.auto_awesome_motion_rounded, '제작중', badges.inProduction),
+      (Icons.local_shipping_rounded, '배송중', badges.shipping),
+      (Icons.task_alt_rounded, '배송완료', badges.delivered),
     ];
     return Container(
       padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
@@ -464,21 +654,62 @@ class MyPageScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Text(
-                '나의 주문 현황',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
+          InkWell(
+            onTap: () async {
+              if (summary != null && currentUserId.isNotEmpty) {
+                await ref
+                    .read(orderRepositoryProvider)
+                    .markOrderSummarySeen(
+                      userId: currentUserId,
+                      summary: summary,
+                    );
+                ref.invalidate(myOrderStatusBadgesProvider);
+              }
+              if (!context.mounted) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
+              );
+            },
+            borderRadius: BorderRadius.circular(12.r),
+            child: Row(
+              children: [
+                Text(
+                  '나의 주문 현황',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Icon(Icons.chevron_right, size: 20.sp, color: subColor),
-            ],
+                const Spacer(),
+                Icon(Icons.chevron_right, size: 20.sp, color: subColor),
+              ],
+            ),
           ),
           SizedBox(height: 10.h),
+          if (summaryAsync.isLoading && !summaryAsync.hasValue)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 12.w,
+                    height: 12.w,
+                    child: const CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '주문 현황 동기화 중...',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: subColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -499,27 +730,29 @@ class MyPageScreen extends ConsumerWidget {
                             ),
                             child: Icon(s.$1, size: 20.sp, color: textColor),
                           ),
-                          Positioned(
-                            right: -6.w,
-                            top: -6.h,
-                            child: Container(
-                              width: 20.w,
-                              height: 20.w,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF10BEE2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                s.$3,
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                          if (s.$3 > 0)
+                            Positioned(
+                              right: -6.w,
+                              top: -6.h,
+                              child: Container(
+                                constraints: BoxConstraints(minWidth: 20.w),
+                                height: 20.w,
+                                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: SnapFitColors.accent,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  s.$3 > 99 ? '99+' : '${s.$3}',
+                                  style: TextStyle(
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       SizedBox(height: 7.h),
@@ -567,6 +800,7 @@ class MyPageScreen extends ConsumerWidget {
         border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: storageQuotaAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => Row(
           children: [
             SizedBox(
@@ -634,7 +868,7 @@ class MyPageScreen extends ConsumerWidget {
                       vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F3F5),
+                      color: SnapFitStylePalette.gray,
                       borderRadius: BorderRadius.circular(999.r),
                     ),
                     child: Text(
@@ -642,7 +876,7 @@ class MyPageScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 9.sp,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF6B7280),
+                        color: SnapFitColors.textSecondaryOf(context),
                       ),
                     ),
                   ),
@@ -663,9 +897,9 @@ class MyPageScreen extends ConsumerWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 8.h,
-                  backgroundColor: const Color(0xFFE9ECEF),
+                  backgroundColor: SnapFitColors.overlayLightOf(context),
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF10BEE2),
+                    SnapFitColors.accent,
                   ),
                 ),
               ),
@@ -744,7 +978,7 @@ class MyPageScreen extends ConsumerWidget {
               width: 8.w,
               height: 8.w,
               decoration: const BoxDecoration(
-                color: Color(0xFF10BEE2),
+                color: SnapFitColors.accent,
                 shape: BoxShape.circle,
               ),
             ),
@@ -902,11 +1136,7 @@ class MyPageScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '저장 실패: ${e is Exception ? e.toString().replaceFirst('Exception: ', '') : e}',
-            ),
-          ),
+          SnackBar(content: Text('저장 실패: ${AppErrorMapper.toUserMessage(e)}')),
         );
       }
     }

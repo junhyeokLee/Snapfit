@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../domain/entities/album.dart';
+import '../../data/api/album_provider.dart';
 import '../widgets/home/home_album_actions.dart';
 import '../widgets/home/home_album_cover_thumbnail.dart';
 import '../widgets/home/home_album_helpers.dart';
@@ -37,10 +38,13 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   String _searchQuery = '';
   int _selectedTab = 0;
   Set<int> _favoriteAlbumIds = <int>{};
+  late List<Album> _albums;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
+    _albums = List<Album>.from(widget.initialAlbums);
     _loadFavoriteAlbumIds();
   }
 
@@ -77,6 +81,21 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     await _persistFavoriteAlbumIds();
   }
 
+  Future<void> _handlePullToRefresh() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final repository = ref.read(albumRepositoryProvider);
+      final latest = await repository.fetchMyAlbums();
+      if (!mounted) return;
+      setState(() {
+        _albums = latest;
+      });
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
   String get _title {
     switch (widget.category) {
       case AlbumCategory.recent:
@@ -99,13 +118,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   Color get _tabAccent {
-    if (widget.category == AlbumCategory.recent) {
-      return SnapFitColors.accent;
-    }
-    if (widget.category == AlbumCategory.shared ||
-        widget.category == AlbumCategory.completed) {
-      return const Color(0xFFFF6B2C);
-    }
     return SnapFitColors.accent;
   }
 
@@ -117,8 +129,12 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   Color get _screenBackground {
-    if (SnapFitColors.isDark(context))
+    if (SnapFitColors.isDark(context)) {
       return SnapFitColors.backgroundOf(context);
+    }
+    if (widget.category == AlbumCategory.shared) {
+      return SnapFitColors.backgroundOf(context);
+    }
     if (widget.category == AlbumCategory.recent) {
       return const Color(0xFFF3F6FA);
     }
@@ -216,7 +232,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     final themedBg = _screenBackground;
     final textPrimary = SnapFitColors.textPrimaryOf(context);
     final textSecondary = SnapFitColors.textSecondaryOf(context);
-    final all = _applyFilter(widget.initialAlbums);
+    final all = _applyFilter(_albums);
 
     return Scaffold(
       backgroundColor: themedBg,
@@ -279,11 +295,11 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B2C),
+                    color: SnapFitColors.accent,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF6B2C).withOpacity(0.35),
+                        color: SnapFitColors.accent.withOpacity(0.35),
                         blurRadius: 12,
                         offset: const Offset(0, 6),
                       ),
@@ -304,27 +320,43 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
             onChanged: (index) => setState(() => _selectedTab = index),
           ),
           Expanded(
-            child: all.isEmpty
-                ? Center(
-                    child: Text(
-                      _searchQuery.isNotEmpty
-                          ? '검색 결과가 없습니다.'
-                          : '표시할 앨범이 없습니다.',
-                      style: TextStyle(color: textSecondary, fontSize: 14.sp),
+            child: RefreshIndicator(
+              onRefresh: _handlePullToRefresh,
+              child: all.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.42,
+                          child: Center(
+                            child: Text(
+                              _searchQuery.isNotEmpty
+                                  ? '검색 결과가 없습니다.'
+                                  : '표시할 앨범이 없습니다.',
+                              style: TextStyle(
+                                color: textSecondary,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Builder(
+                      builder: (context) {
+                        switch (widget.category) {
+                          case AlbumCategory.recent:
+                            return _buildRecentTimeline(all);
+                          case AlbumCategory.shared:
+                            return _buildSharedGrid(all);
+                          case AlbumCategory.completed:
+                            return _buildCompletedShowcase(all);
+                        }
+                      },
                     ),
-                  )
-                : Builder(
-                    builder: (context) {
-                      switch (widget.category) {
-                        case AlbumCategory.recent:
-                          return _buildRecentTimeline(all);
-                        case AlbumCategory.shared:
-                          return _buildSharedGrid(all);
-                        case AlbumCategory.completed:
-                          return _buildCompletedShowcase(all);
-                      }
-                    },
-                  ),
+            ),
           ),
         ],
       ),
@@ -515,20 +547,22 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         final album = albums[index];
         final progress = calculateAlbumProgress(album);
         final isEditing = progress.ratio < 1.0;
+        final isFavorite = _isFavorite(album);
 
         return GestureDetector(
           onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
           child: Container(
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(22.r),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(
-                    SnapFitColors.isDark(context) ? 0.18 : 0.035,
+                    SnapFitColors.isDark(context) ? 0.14 : 0.03,
                   ),
-                  blurRadius: 12,
-                  offset: const Offset(0, 5),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -541,7 +575,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                       Positioned.fill(
                         child: ClipRRect(
                           borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(22.r),
+                            top: Radius.circular(18.r),
                           ),
                           child: _coverImage(album),
                         ),
@@ -556,11 +590,11 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF7A2F),
+                              color: SnapFitColors.accent,
                               borderRadius: BorderRadius.circular(999.r),
                             ),
                             child: Text(
-                              '• 편집 중',
+                              '진행중',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10.sp,
@@ -579,16 +613,21 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                             width: 30.w,
                             height: 30.w,
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.24),
+                              color: SnapFitColors.surfaceOf(
+                                context,
+                              ).withOpacity(0.92),
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: SnapFitColors.overlayLightOf(context),
+                              ),
                             ),
                             child: Icon(
-                              _isFavorite(album)
+                              isFavorite
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
-                              color: _isFavorite(album)
-                                  ? const Color(0xFFFFE37D)
-                                  : Colors.white,
+                              color: isFavorite
+                                  ? SnapFitColors.accent
+                                  : SnapFitColors.textSecondaryOf(context),
                               size: 16,
                             ),
                           ),
@@ -642,23 +681,17 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFEFE6),
+                              color: SnapFitColors.accent.withOpacity(0.14),
                               borderRadius: BorderRadius.circular(999.r),
                             ),
                             child: Text(
                               '공유중',
                               style: TextStyle(
                                 fontSize: 10.sp,
-                                color: const Color(0xFFFF6B2C),
+                                color: SnapFitColors.accent,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          Icon(
-                            Icons.more_horiz,
-                            color: textSecondary,
-                            size: 18.sp,
                           ),
                         ],
                       ),

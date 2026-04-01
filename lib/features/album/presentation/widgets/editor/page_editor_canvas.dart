@@ -81,7 +81,6 @@ class PageEditorCanvas extends StatelessWidget {
     ];
 
     return Container(
-      key: canvasKey,
       width: canvasW,
       height: canvasH,
       decoration: BoxDecoration(
@@ -122,11 +121,13 @@ class PageEditorCanvas extends StatelessWidget {
                 ),
               );
             }
-            // 내지라면 300x400 영역을 스케일링하여 꽉 채움
-            return Transform.scale(
-              scale: scale,
+            // 커버(EditCover)와 동일하게 FittedBox 기반으로 스케일링해
+            // 하단 영역에서 발생하던 위치 의존 hit-test 오차를 줄인다.
+            return FittedBox(
+              fit: BoxFit.fill,
               alignment: Alignment.topLeft,
               child: SizedBox(
+                key: canvasKey,
                 width: effectiveBaseSize.width,
                 height: effectiveBaseSize.height,
                 child: Stack(
@@ -178,26 +179,44 @@ class PageEditorCanvas extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (interaction.isInteractingNow &&
+                        (interaction.activeVerticalGuides.isNotEmpty ||
+                            interaction.activeHorizontalGuides.isNotEmpty))
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: IgnorePointer(
+                          child: SizedBox(
+                            width: effectiveBaseSize.width,
+                            height: effectiveBaseSize.height,
+                            child: CustomPaint(
+                              painter: _SnapGuidePainter(
+                                verticalGuides: interaction.activeVerticalGuides,
+                                horizontalGuides: interaction.activeHorizontalGuides,
+                                leftSpine: isCover ? 14.0 : 0.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
                     if (isCover)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width:
-                              (14.0 *
-                              (isCover
-                                  ? 1.0
-                                  : scale)), // kCoverSpineWidth = 14.0
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.black.withOpacity(0.18),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 1.0],
+                      IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: 14.0, // kCoverSpineWidth = 14.0
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.black.withOpacity(0.18),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 1.0],
+                              ),
                             ),
                           ),
                         ),
@@ -210,5 +229,47 @@ class PageEditorCanvas extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SnapGuidePainter extends CustomPainter {
+  final List<double> verticalGuides;
+  final List<double> horizontalGuides;
+  final double leftSpine;
+
+  const _SnapGuidePainter({
+    required this.verticalGuides,
+    required this.horizontalGuides,
+    required this.leftSpine,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.45)
+      ..strokeWidth = 1.2;
+
+    for (final x in verticalGuides) {
+      if (x < leftSpine || x > size.width) continue;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (final y in horizontalGuides) {
+      if (y < 0 || y > size.height) continue;
+      canvas.drawLine(Offset(leftSpine, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnapGuidePainter oldDelegate) {
+    if (oldDelegate.leftSpine != leftSpine) return true;
+    if (oldDelegate.verticalGuides.length != verticalGuides.length) return true;
+    if (oldDelegate.horizontalGuides.length != horizontalGuides.length) return true;
+    for (int i = 0; i < verticalGuides.length; i++) {
+      if (oldDelegate.verticalGuides[i] != verticalGuides[i]) return true;
+    }
+    for (int i = 0; i < horizontalGuides.length; i++) {
+      if (oldDelegate.horizontalGuides[i] != horizontalGuides[i]) return true;
+    }
+    return false;
   }
 }

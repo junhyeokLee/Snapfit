@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://snapfit.app/schemas/figma_handoff.schema.json",
+  "title": "SnapFit Figma Handoff",
+  "description": "Figma 템플릿 handoff를 SnapFit 템플릿 변환 스크립트로 넘기기 위한 입력 스키마",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "category",
+      "tags",
+      "style",
+      "aspect",
+      "previewImages",
+      "layers"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1
+      },
+      "category": {
+        "type": "string"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "style": {
+        "type": "string"
+      },
+      "aspect": {
+        "type": "string",
+        "enum": [
+          "portrait",
+          "square",
+          "landscape"
+        ]
+      },
+      "difficulty": {
+        "type": "string",
+        "enum": [
+          "easy",
+          "normal",
+          "hard"
+        ],
+        "default": "normal"
+      },
+      "recommendedPhotoCount": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 24
+      },
+      "isFeatured": {
+        "type": "boolean",
+        "default": false
+      },
+      "priority": {
+        "type": "integer",
+        "default": 0
+      },
+      "previewImages": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "layers": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "type",
+            "x",
+            "y",
+            "w",
+            "h",
+            "z"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "image",
+                "text",
+                "decoration"
+              ]
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0
+            },
+            "w": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "h": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "z": {
+              "type": "integer"
+            },
+            "rotation": {
+              "type": "number",
+              "default": 0
+            },
+            "frame": {
+              "type": "string"
+            },
+            "style": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            },
+            "textStyle": {
+              "type": "object",
+              "properties": {
+                "fontSize": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "fontFamily": {
+                  "type": "string"
+                },
+                "fontWeight": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "letterSpacing": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "additionalProperties": true
+  }
+}

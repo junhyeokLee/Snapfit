@@ -26,4 +26,10 @@ abstract class AuthApi {
     @Part(name: "name") String? name,
     @Part(name: "profileImage") File? profileImage,
   });
+
+  @DELETE('/api/auth/account')
+  Future<void> deleteAccount();
+
+  @POST('/api/auth/consents')
+  Future<void> updateConsents(@Body() Map<String, dynamic> body);
 }

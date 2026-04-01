@@ -21,7 +21,19 @@ final billingPlansProvider = FutureProvider<List<BillingPlan>>((ref) async {
 final mySubscriptionProvider = FutureProvider<SubscriptionStatusModel>((
   ref,
 ) async {
-  return ref.read(billingRepositoryProvider).getMySubscription();
+  try {
+    return await ref
+        .read(billingRepositoryProvider)
+        .getMySubscription()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    return const SubscriptionStatusModel(
+      userId: '',
+      planCode: null,
+      status: 'INACTIVE',
+      isActive: false,
+    );
+  }
 });
 
 final isSubscribedProvider = FutureProvider<bool>((ref) async {
@@ -30,5 +42,21 @@ final isSubscribedProvider = FutureProvider<bool>((ref) async {
 });
 
 final myStorageQuotaProvider = FutureProvider<StorageQuotaStatus>((ref) async {
-  return ref.read(billingRepositoryProvider).getMyStorageQuota();
+  try {
+    return await ref
+        .read(billingRepositoryProvider)
+        .getMyStorageQuota()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    return const StorageQuotaStatus(
+      userId: '',
+      planCode: 'FREE',
+      usedBytes: 0,
+      softLimitBytes: 1073741824,
+      hardLimitBytes: 1073741824,
+      softExceeded: false,
+      hardExceeded: false,
+      usagePercent: 0,
+    );
+  }
 });

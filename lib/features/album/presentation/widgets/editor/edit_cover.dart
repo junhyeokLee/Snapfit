@@ -478,10 +478,10 @@ class EditCoverState extends ConsumerState<EditCover> {
         builder: (context, constraints) {
           return Stack(
             children: [
-              GestureDetector(
+              Listener(
                 behavior: HitTestBehavior.translucent,
-                onTapDown: (details) {
-                  if (!_interaction.isInCover(details.globalPosition)) {
+                onPointerDown: (event) {
+                  if (!_interaction.isInCover(event.position)) {
                     _interaction.clearSelection();
                   }
                 },
@@ -522,11 +522,8 @@ class EditCoverState extends ConsumerState<EditCover> {
                                     padding: EdgeInsets.symmetric(
                                       horizontal: coverSide,
                                     ),
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.translucent,
-                                      onTap: _interaction.clearSelection,
-                                      child: LayoutBuilder(
-                                        builder: (context, coverConstraints) {
+                                    child: LayoutBuilder(
+                                      builder: (context, coverConstraints) {
                                           final double availW =
                                               coverConstraints.maxWidth;
                                           final double availH =
@@ -574,6 +571,12 @@ class EditCoverState extends ConsumerState<EditCover> {
                                                   ),
                                                   isInteracting: _interaction
                                                       .isInteractingNow,
+                                                  activeVerticalGuides:
+                                                      _interaction
+                                                          .activeVerticalGuides,
+                                                  activeHorizontalGuides:
+                                                      _interaction
+                                                          .activeHorizontalGuides,
                                                   leftSpine: 14.0,
                                                   backgroundColor:
                                                       coverBackgroundColor,
@@ -624,7 +627,6 @@ class EditCoverState extends ConsumerState<EditCover> {
                                           );
                                         },
                                       ),
-                                    ),
                                   ),
                                 ),
                               ],

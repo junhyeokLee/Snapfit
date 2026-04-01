@@ -109,7 +109,10 @@ class PageListSelector extends ConsumerWidget {
     dynamic selectedCover,
   }) {
     final ratio = selectedCover?.ratio ?? 3 / 4;
-    final logicalInnerSize = Size(300.0, 300.0 / ratio);
+    final logicalInnerSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth / ratio,
+    );
     final logicalCoverSize = Size(
       kCoverReferenceWidth,
       kCoverReferenceWidth / ratio,

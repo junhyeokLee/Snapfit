@@ -38,6 +38,11 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
     _StickerItem.deco("stickerBlobGreen", scale: 0.95),
     _StickerItem.deco("stickerLeafCornerLeft", scale: 0.85),
     _StickerItem.deco("stickerLeafCornerRight", scale: 0.85),
+    _StickerItem.deco("stickerCloudSoft", scale: 1.05),
+    _StickerItem.deco("stickerCherryBlossom", scale: 1.0),
+    _StickerItem.deco("stickerEnvelopeBlue", scale: 1.0),
+    _StickerItem.deco("stickerCloverGreen", scale: 0.95),
+    _StickerItem.deco("stickerInstantCamera", scale: 1.0),
     _StickerItem.deco("stickerDaisyWhite", scale: 1.0),
     _StickerItem.deco("stickerFlowerPink", scale: 1.0),
     _StickerItem.deco("stickerFlowerCoral", scale: 0.9),
@@ -69,6 +74,11 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
     _StickerItem.deco("stickerArrowCoral", scale: 0.95),
     _StickerItem.deco("stickerLeafCornerLeft", scale: 0.85),
     _StickerItem.deco("stickerLeafCornerRight", scale: 0.85),
+    _StickerItem.deco("stickerCloudSoft", scale: 1.05),
+    _StickerItem.deco("stickerCherryBlossom", scale: 1.0),
+    _StickerItem.deco("stickerEnvelopeBlue", scale: 1.0),
+    _StickerItem.deco("stickerCloverGreen", scale: 0.95),
+    _StickerItem.deco("stickerInstantCamera", scale: 1.0),
     _StickerItem.deco("stickerTicketPaper", scale: 1.0),
     _StickerItem.deco("stickerTapeBeige", scale: 1.1),
     _StickerItem.deco("stickerTornNoteBeige", scale: 1.0),
@@ -407,11 +417,7 @@ class _DecoStickerPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 실제 캔버스 적용과 동일한 렌더 결과로 미리보기 표시
-    return DecoStickerVisual(
-      style: style,
-      width: 40.w,
-      height: 40.w,
-    );
+    return DecoStickerVisual(style: style, width: 40.w, height: 40.w);
   }
 }
 

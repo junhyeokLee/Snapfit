@@ -13,13 +13,11 @@ class AlbumRepositoryImpl implements AlbumRepository {
   AlbumRepositoryImpl(this.api, {required this.tokenStorage});
 
   Future<String> _getUserId() async {
-    final id = await tokenStorage.getUserId();
-    if (id == null || id.isEmpty) {
-      // 로그인이 안 된 상태라면 빈 문자열 반환 (API에서 처리하거나 401 유도)
-      // 혹은 예외를 던져서 진입을 막을 수도 있음
-      return '';
+    final id = await tokenStorage.getResolvedUserId();
+    if (id == null || id.trim().isEmpty) {
+      throw Exception('로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.');
     }
-    return id;
+    return id.trim();
   }
 
   @override

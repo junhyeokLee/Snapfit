@@ -139,6 +139,11 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     unawaited(ref.read(authServiceProvider).logout());
   }
 
+  Future<void> deleteAccount() async {
+    await ref.read(authServiceProvider).deleteAccount();
+    state = const AsyncData(null);
+  }
+
   Future<void> loginWithKakao() async {
     if (Env.kakaoNativeAppKey.isEmpty) {
       throw Exception('KAKAO_NATIVE_APP_KEY가 설정되지 않았습니다.');
@@ -172,5 +177,9 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
 
     await ref.read(authServiceProvider).loginWithGoogleIdToken(idToken);
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
+  Future<void> syncConsentIfPresent() async {
+    await ref.read(authServiceProvider).syncConsentIfPresent();
   }
 }

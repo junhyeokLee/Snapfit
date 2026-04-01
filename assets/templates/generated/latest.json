@@ -1,0 +1,100 @@
+[
+  {
+    "id": "figma_moa_frame1_cover",
+    "name": "여름 포스터 커버",
+    "category": "포스터",
+    "tags": [
+      "여름",
+      "포스터",
+      "전시",
+      "figma"
+    ],
+    "style": "poster_editorial",
+    "aspect": "portrait",
+    "designWidth": 1080.0,
+    "designHeight": 1440.0,
+    "difficulty": "normal",
+    "recommendedPhotoCount": 1,
+    "isFeatured": true,
+    "priority": 50,
+    "previewThumbUrl": "http://54.253.3.176/template-assets/figma/moa_frame1_cover.png",
+    "previewDetailUrl": "http://54.253.3.176/template-assets/figma/moa_frame1_cover.png",
+    "previewImageUrls": [
+      "http://54.253.3.176/template-assets/figma/moa_frame1_cover.png"
+    ],
+    "strictLayout": true,
+    "autoFit": false,
+    "autoFitPadding": 0.0,
+    "layers": [
+      {
+        "id": "top_banner_bg",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 0.167,
+        "z": 1,
+        "style": "paperYellow"
+      },
+      {
+        "id": "summer_title",
+        "type": "text",
+        "x": 0.083,
+        "y": 0.03,
+        "w": 0.84,
+        "h": 0.109,
+        "z": 10,
+        "text": "SUMMER",
+        "align": "left",
+        "textFillMode": "imageClip",
+        "textFillImageUrl": "@main_photo",
+        "style": {
+          "fontSize": 72,
+          "fontFamily": "Inter",
+          "fontWeight": "w800",
+          "color": "#FFFFFFFF",
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "main_photo",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.167,
+        "w": 1.0,
+        "h": 0.742,
+        "z": 3,
+        "frame": "none",
+        "imageUrl": "http://54.253.3.176/template-assets/figma/moa_frame1_main_photo_v2.png"
+      },
+      {
+        "id": "bottom_band_bg",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.909,
+        "w": 1.0,
+        "h": 0.091,
+        "z": 15,
+        "style": "paperYellow"
+      },
+      {
+        "id": "title_bottom",
+        "type": "text",
+        "x": 0.16,
+        "y": 0.938,
+        "w": 0.68,
+        "h": 0.04,
+        "z": 30,
+        "text": "SNAPKIM 1ST ART EXHIBITION",
+        "align": "center",
+        "style": {
+          "fontSize": 14,
+          "fontFamily": "Inter",
+          "fontWeight": "w600",
+          "color": "#000000",
+          "letterSpacing": 0
+        }
+      }
+    ]
+  }
+]

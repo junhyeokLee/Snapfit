@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../billing/data/billing_provider.dart';
-import '../../../billing/presentation/views/subscription_management_screen.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
 import '../../../album/presentation/widgets/home/home_album_actions.dart';
@@ -32,17 +32,82 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   // Parsed template data: List of pages, each page is a list of layers
   List<List<LayerModel>> _parsedPages = [];
+  Map<String, List<List<LayerModel>>> _parsedPagesByAspect = const {};
+  Size _designCanvasSize = const Size(500, 500);
 
   @override
   void initState() {
     super.initState();
     _template = widget.template;
     _parseTemplateJson();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precachePreviewImages();
+    });
     _refreshTemplate();
   }
 
   String _normalizeTitle(String value) {
-    return value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
+    String normalize(String raw) =>
+        raw.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
+
+    final key = normalize(value);
+    final aliases = <String, String>{
+      '웨딩무드북': '시그니처웨딩',
+      '썸머무드북': '썸머커버에디션',
+      '스카이무드북': '스카이인비테이션',
+      '로즈무드북': '로즈데이',
+      '북클럽무드북': '어린이북클럽',
+      '제주여름무드북': '우리들의여름제주',
+      '오션브리즈무드북': '오션브리즈',
+      '시티나이트무드북': '도시의밤',
+      '졸업무드북': '빛나는졸업장',
+      '패밀리트립무드북': '가족여행일기',
+      '이터널러브무드북': '이터널러브',
+      '빈티지무드북': '빈티지포커스',
+      '링트립무드북': '링트립스토리',
+    };
+
+    return aliases[key] ?? key;
+  }
+
+  String _coverPreviewUrl(PremiumTemplate template) {
+    final cover = template.coverImageUrl.trim();
+    if (cover.isNotEmpty) return cover;
+    final previews = template.previewImages
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
+    if (previews.isNotEmpty) return previews.first;
+    return '';
+  }
+
+  bool _shouldPreferLocalTemplateJson(
+    PremiumTemplate local,
+    PremiumTemplate server,
+  ) {
+    final localRaw = (local.templateJson ?? '').trim();
+    if (localRaw.isEmpty) return false;
+    try {
+      final decoded = jsonDecode(localRaw) as Map<String, dynamic>;
+      final metadata = decoded['metadata'];
+      final localTemplateId =
+          (decoded['templateId'] ??
+                  (metadata is Map ? metadata['templateId'] : null))
+              ?.toString();
+      final pageCount = (decoded['pages'] is List)
+          ? (decoded['pages'] as List).length
+          : 0;
+      final serverRaw = (server.templateJson ?? '').trim();
+      final serverTemplateId = serverRaw.isEmpty
+          ? null
+          : ((jsonDecode(serverRaw) as Map<String, dynamic>)['templateId']
+                ?.toString());
+      return localTemplateId == 'save_the_date_v1' &&
+          pageCount >= 13 &&
+          serverTemplateId == 'save_the_date_v1';
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<PremiumTemplate?> _findRemoteMatchByTitle() async {
@@ -54,16 +119,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       final key = _normalizeTitle(_template.title);
       for (final t in remoteList) {
         if (_normalizeTitle(t.title) == key) {
-          // 로컬 템플릿의 풍부한 미리보기/JSON이 있으면 우선 사용
+          final preferLocal = _shouldPreferLocalTemplateJson(_template, t);
           return t.copyWith(
             previewImages: _template.previewImages.isNotEmpty
                 ? _template.previewImages
                 : t.previewImages,
-            templateJson:
-                (_template.templateJson != null &&
-                    _template.templateJson!.isNotEmpty)
+            templateJson: preferLocal
                 ? _template.templateJson
-                : t.templateJson,
+                : ((t.templateJson != null && t.templateJson!.trim().isNotEmpty)
+                      ? t.templateJson
+                      : _template.templateJson),
           );
         }
       }
@@ -73,7 +138,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return null;
   }
 
-  void _parseTemplateJson() {
+  void _parseTemplateJson({int? maxPages}) {
     if (_template.templateJson == null || _template.templateJson!.isEmpty) {
       // 이미 파싱된 템플릿이 있으면 유지 (리프레시 시 빈 JSON으로 덮이지 않게)
       if (_parsedPages.isEmpty) {
@@ -84,14 +149,22 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     try {
       final Map<String, dynamic> data = jsonDecode(_template.templateJson!);
+      final metadata = (data['metadata'] is Map<String, dynamic>)
+          ? (data['metadata'] as Map<String, dynamic>)
+          : const <String, dynamic>{};
+      _designCanvasSize = Size(
+        (metadata['designWidth'] as num?)?.toDouble() ?? 500.0,
+        (metadata['designHeight'] as num?)?.toDouble() ?? 500.0,
+      );
       final List<dynamic>? pagesList = data['pages'] as List<dynamic>?;
 
       if (pagesList != null) {
-        // Assume preview canvas size (approx ratio)
-        // 500x500 for parsing normalization
-        const canvasSize = Size(500, 500);
+        final takeCount = maxPages == null
+            ? pagesList.length
+            : pagesList.take(maxPages).length;
+        final canvasSize = _designCanvasSize;
 
-        _parsedPages = pagesList.map((p) {
+        _parsedPages = pagesList.take(takeCount).map((p) {
           final map = p as Map<String, dynamic>;
           final layerList = (map['layers'] as List<dynamic>?) ?? [];
           return layerList.map((l) {
@@ -104,10 +177,67 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
         // Sort by pageNumber if needed, but array order usually matches
       }
+
+      final variants = data['variants'];
+      if (variants is Map) {
+        final parsed = <String, List<List<LayerModel>>>{};
+        for (final entry in variants.entries) {
+          final key = entry.key.toString().toLowerCase();
+          final node = entry.value;
+          if (node is! Map) continue;
+          final variantMap = Map<String, dynamic>.from(node);
+          final variantPages = variantMap['pages'] as List<dynamic>?;
+          if (variantPages == null || variantPages.isEmpty) continue;
+
+          final variantCanvas = Size(
+            (variantMap['designWidth'] as num?)?.toDouble() ??
+                (metadata['designWidth'] as num?)?.toDouble() ??
+                500.0,
+            (variantMap['designHeight'] as num?)?.toDouble() ??
+                (metadata['designHeight'] as num?)?.toDouble() ??
+                500.0,
+          );
+          final list = variantPages
+              .map((p) {
+                final page = p as Map<String, dynamic>;
+                final layers = (page['layers'] as List<dynamic>?) ?? const [];
+                return layers
+                    .map((l) {
+                      return LayerExportMapper.fromJson(
+                        l as Map<String, dynamic>,
+                        canvasSize: variantCanvas,
+                      );
+                    })
+                    .toList(growable: false);
+              })
+              .toList(growable: false);
+          if (list.isNotEmpty) parsed[key] = list;
+        }
+        _parsedPagesByAspect = parsed;
+      } else {
+        _parsedPagesByAspect = const {};
+      }
     } catch (e) {
       AppLogger.warn('Failed to parse templateJson: $e');
       if (_parsedPages.isEmpty) {
         _parsedPages = [];
+      }
+      _parsedPagesByAspect = const {};
+    }
+  }
+
+  Future<void> _precachePreviewImages({int maxCount = 4}) async {
+    if (!mounted) return;
+    final candidates = _template.previewImages
+        .where((url) => url.trim().isNotEmpty)
+        .take(maxCount)
+        .map((url) => imageUrlByVariant(url, variant: ImageVariant.detail))
+        .toList(growable: false);
+    for (final url in candidates) {
+      try {
+        await precacheImage(NetworkImage(url), context);
+      } catch (_) {
+        // ignore failed cache warmup
       }
     }
   }
@@ -128,9 +258,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       if (mounted) {
         setState(() {
           _template = updatedTemplate;
-          _parseTemplateJson(); // Re-parse on update
+          _parseTemplateJson();
         });
       }
+      await _precachePreviewImages();
     } catch (e) {
       // Ignore initial fetch error if offline or just rely on passed data
     }
@@ -182,6 +313,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
       // Invalidate list provider so the previous screen updates
       ref.invalidate(templateListProvider);
+      ref.invalidate(storeTemplateFeedProvider);
     } catch (e) {
       // 3. Rollback on failure
       if (mounted) {
@@ -203,6 +335,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     }
 
     setState(() => _isUsing = true);
+    if (_parsedPages.length < _template.pageCount) {
+      _parseTemplateJson();
+    }
     final pages = _resolvePagesForCreateFlow();
     if (pages.isEmpty) {
       if (mounted) {
@@ -220,6 +355,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       MaterialPageRoute(
         builder: (_) => AlbumCreateFlowScreen(
           initialTemplatePages: pages,
+          initialTemplatePagesByAspect: _parsedPagesByAspect.isEmpty
+              ? null
+              : _parsedPagesByAspect,
           initialAlbumTitle: _template.title,
           initialTemplatePreviewImages: _template.previewImages,
         ),
@@ -257,7 +395,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '이 템플릿은 구독자 전용입니다. PG 결제로 구독 후 바로 사용하실 수 있어요.',
+                  '프리미엄 템플릿은 현재 준비중입니다.\n구독/결제 기능이 다시 열리면 사용할 수 있어요.',
                   style: TextStyle(
                     color: SnapFitColors.textSecondaryOf(context),
                     fontSize: 13.5,
@@ -269,7 +407,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('PG로 구독하기'),
+                    child: const Text('준비중'),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -277,7 +415,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('다음에 할게요'),
+                    child: const Text('닫기'),
                   ),
                 ),
               ],
@@ -287,16 +425,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       },
     );
 
-    if (shouldProceed != true) return false;
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const SubscriptionManagementScreen()),
-    );
-
-    ref.invalidate(mySubscriptionProvider);
-    final latest = await ref.read(mySubscriptionProvider.future);
-    return latest.isActive;
+    if (shouldProceed == true && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('구독 및 결제 기능은 현재 준비중입니다.')));
+    }
+    return false;
   }
 
   Future<void> _onShareTemplate() async {
@@ -305,7 +439,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       'SnapFit 템플릿 공유',
       _template.title,
       if (subtitle != null && subtitle.isNotEmpty) subtitle,
-      _template.coverImageUrl,
+      _coverPreviewUrl(_template),
     ];
     final text = lines.join('\n');
 
@@ -320,12 +454,25 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   List<List<LayerModel>> _resolvePagesForCreateFlow() {
-    if (_parsedPages.isNotEmpty) return _parsedPages;
-    return _buildFallbackTemplatePages();
+    final fallback = _buildFallbackTemplatePages();
+    if (_parsedPages.isEmpty) return fallback;
+
+    // 상세 미리보기는 parsed + preview fallback 혼합으로 보이는데,
+    // 생성 플로우에서 parsed만 쓰면 페이지가 부족해 커버만 적용된 것처럼 보일 수 있다.
+    // 따라서 parsed 페이지 수가 pageCount보다 부족하면 fallback을 우선 사용해
+    // "미리보기에서 본 페이지 수"와 "실제 적용 페이지 수"를 일치시킨다.
+    final requiredPages = _template.pageCount < 2 ? 2 : _template.pageCount;
+    if (_parsedPages.length < requiredPages && fallback.isNotEmpty) {
+      return fallback;
+    }
+    return _parsedPages;
   }
 
   List<List<LayerModel>> _buildFallbackTemplatePages() {
-    final preview = _template.previewImages;
+    final preview = _template.previewImages
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
     if (preview.isEmpty) return const [];
     final pageCount = _template.pageCount < 2 ? 2 : _template.pageCount;
     final pages = <List<LayerModel>>[];
@@ -375,7 +522,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         textStyle: const TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF1F2937),
+          color: SnapFitColors.deepCharcoal,
         ),
         zIndex: 20,
       ),
@@ -385,23 +532,50 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       final left = preview[i % preview.length];
       final right = preview[(i + 1) % preview.length];
       pages.add([
+        LayerModel(
+          id: 'p${i}_title',
+          type: LayerType.text,
+          position: const Offset(74, 28),
+          width: 352,
+          height: 36,
+          text: _template.title,
+          textAlign: TextAlign.center,
+          textStyle: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: SnapFitColors.deepCharcoal,
+          ),
+          zIndex: 24,
+        ),
         imageLayer(
           id: 'p${i}_left',
           url: left,
-          x: 52,
-          y: 78,
-          w: 196,
-          h: 314,
-          frame: 'collageTile',
+          x: 44,
+          y: 86,
+          w: 210,
+          h: 294,
+          frame: 'paperClipCard',
+          z: 14,
         ),
         imageLayer(
           id: 'p${i}_right',
           url: right,
-          x: 252,
-          y: 78,
-          w: 196,
-          h: 314,
-          frame: 'collageTile',
+          x: 246,
+          y: 100,
+          w: 210,
+          h: 280,
+          frame: 'polaroidClassic',
+          z: 18,
+        ),
+        imageLayer(
+          id: 'p${i}_accent',
+          url: preview[(i + 2) % preview.length],
+          x: 168,
+          y: 316,
+          w: 166,
+          h: 128,
+          frame: 'softGlow',
+          z: 20,
         ),
       ]);
     }
@@ -582,7 +756,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       child: ListView.separated(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         scrollDirection: Axis.horizontal,
-                        itemCount: _template.pageCount,
+                        itemCount: _template.pageCount > 10
+                            ? 10
+                            : _template.pageCount,
                         separatorBuilder: (_, __) => SizedBox(width: 16.w),
                         itemBuilder: (context, index) {
                           // 1. Try to render parsed layout
@@ -630,7 +806,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? SnapFitColors.surfaceOf(context)
-                            : const Color(0xFFEBF8F9),
+                            : SnapFitColors.accentLight,
                         borderRadius: BorderRadius.circular(100.r),
                       ),
                       child: Row(
@@ -796,17 +972,18 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildHeroImage(BuildContext context) {
+    final coverLayers = _parsedPages.isNotEmpty ? _parsedPages.first : null;
+    final aspect = _resolveTemplateAspect();
+    final heroHeight = 380.h;
+    final heroWidth = (heroHeight * aspect).clamp(220.w, 320.w);
+
     return Center(
       child: Container(
-        width: 320.w,
-        height: 380.h,
+        width: heroWidth,
+        height: heroHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
           color: SnapFitColors.surfaceOf(context),
-          image: DecorationImage(
-            image: NetworkImage(_template.coverImageUrl),
-            fit: BoxFit.cover,
-          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -817,6 +994,53 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ),
         child: Stack(
           children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.r),
+                child: coverLayers != null
+                    ? TemplatePageRenderer(
+                        layers: coverLayers,
+                        width: heroWidth,
+                        height: heroHeight,
+                        designCanvasSize: _designCanvasSize,
+                      )
+                    : Image.network(
+                        imageUrlByVariant(
+                          _coverPreviewUrl(_template),
+                          variant: ImageVariant.detail,
+                        ),
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            color: SnapFitStylePalette.blue,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) => Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                SnapFitStylePalette.blue,
+                                SnapFitStylePalette.lavender,
+                              ],
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.photo_outlined,
+                            color: SnapFitStylePalette.charcoal,
+                            size: 34,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
             if (_template.isBest || _template.isPremium)
               Positioned(
                 top: 24.h,
@@ -827,7 +1051,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00C7D8),
+                    color: SnapFitColors.accent,
                     borderRadius: BorderRadius.circular(100.r),
                     boxShadow: [
                       BoxShadow(
@@ -902,7 +1126,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             decoration: BoxDecoration(
               color: isDark
                   ? SnapFitColors.accent.withOpacity(0.16)
-                  : const Color(0xFFEBF8F9),
+                  : SnapFitColors.accentLight,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
@@ -959,6 +1183,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildPagePreviewItem(BuildContext context, String imageUrl) {
+    final aspect = _resolveTemplateAspect();
+    final previewHeight = 200.h;
+    final previewWidth = (previewHeight * aspect).clamp(110.w, 180.w);
     return Container(
       width: 180.w,
       decoration: BoxDecoration(
@@ -968,13 +1195,33 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       ),
       child: Center(
         child: Container(
-          width: 140.w,
-          height: 200.h,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4.r),
-            image: DecorationImage(
-              image: NetworkImage(imageUrl),
-              fit: BoxFit.cover,
+          width: previewWidth,
+          height: previewHeight,
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4.r)),
+          child: Image.network(
+            imageUrlByVariant(imageUrl, variant: ImageVariant.thumb),
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return Container(
+                color: SnapFitStylePalette.gray,
+                alignment: Alignment.center,
+                child: const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 1.8),
+                ),
+              );
+            },
+            errorBuilder: (_, __, ___) => Container(
+              color: SnapFitStylePalette.blue,
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.photo_outlined,
+                size: 22,
+                color: SnapFitStylePalette.charcoal,
+              ),
             ),
           ),
         ),
@@ -988,6 +1235,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     List<LayerModel> layers,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final previewAspect = _estimatePreviewAspect(layers);
+    const basePreviewHeight = 140.0;
+    final previewHeight = basePreviewHeight.w;
+    final previewWidth = (previewHeight * previewAspect).clamp(
+      100.0.w,
+      200.0.w,
+    );
     return GestureDetector(
       onTap: () => _openFullScreenView(index),
       child: Container(
@@ -999,8 +1253,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         ),
         child: Center(
           child: Container(
-            width: 140.w,
-            height: 140.w,
+            width: previewWidth,
+            height: previewHeight,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
               color: SnapFitColors.backgroundOf(context),
@@ -1014,13 +1268,70 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             ),
             child: TemplatePageRenderer(
               layers: layers,
-              width: 140.w,
-              height: 140.w,
+              width: previewWidth,
+              height: previewHeight,
+              designCanvasSize: _designCanvasSize,
             ),
           ),
         ),
       ),
     );
+  }
+
+  double _estimatePreviewAspect(List<LayerModel> layers) {
+    if (layers.isEmpty) return 1.0;
+    // 풀 배경 레이어가 있으면 우선
+    for (final layer in layers) {
+      final nearOrigin =
+          layer.position.dx.abs() <= 1.0 && layer.position.dy.abs() <= 1.0;
+      if (!nearOrigin) continue;
+      if (layer.width > 80 && layer.height > 80) {
+        return (layer.width / layer.height).clamp(0.6, 1.8);
+      }
+    }
+
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = -double.infinity;
+    double maxY = -double.infinity;
+    for (final layer in layers) {
+      minX = minX < layer.position.dx ? minX : layer.position.dx;
+      minY = minY < layer.position.dy ? minY : layer.position.dy;
+      maxX = maxX > (layer.position.dx + layer.width)
+          ? maxX
+          : (layer.position.dx + layer.width);
+      maxY = maxY > (layer.position.dy + layer.height)
+          ? maxY
+          : (layer.position.dy + layer.height);
+    }
+    final w = (maxX - minX).abs();
+    final h = (maxY - minY).abs();
+    if (w <= 1 || h <= 1) return 1.0;
+    return (w / h).clamp(0.6, 1.8);
+  }
+
+  double _resolveTemplateAspect() {
+    if (_parsedPages.isNotEmpty) {
+      return (_designCanvasSize.width / _designCanvasSize.height).clamp(
+        0.6,
+        1.8,
+      );
+    }
+    try {
+      final raw = _template.templateJson;
+      if (raw != null && raw.isNotEmpty) {
+        final data = jsonDecode(raw) as Map<String, dynamic>;
+        final metadata = data['metadata'];
+        if (metadata is Map) {
+          final w = (metadata['designWidth'] as num?)?.toDouble();
+          final h = (metadata['designHeight'] as num?)?.toDouble();
+          if (w != null && h != null && w > 1 && h > 1) {
+            return (w / h).clamp(0.6, 1.8);
+          }
+        }
+      }
+    } catch (_) {}
+    return 1.0;
   }
 
   Widget _avatar(BuildContext context, double left, Color color) {

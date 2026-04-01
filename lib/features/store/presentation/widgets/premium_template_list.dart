@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/utils/image_url_policy.dart';
 import '../../domain/entities/premium_template.dart';
 import '../views/template_detail_screen.dart';
 import '../../data/api/template_provider.dart';
@@ -18,6 +19,17 @@ class PremiumTemplateList extends ConsumerStatefulWidget {
 class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+
+  String _coverPreviewUrl(PremiumTemplate template) {
+    final cover = template.coverImageUrl.trim();
+    if (cover.isNotEmpty) return cover;
+    final previews = template.previewImages
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
+    if (previews.isNotEmpty) return previews.first;
+    return '';
+  }
 
   @override
   void dispose() {
@@ -87,35 +99,45 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              // Background Image
                               Image.network(
-                                template.coverImageUrl,
+                                imageUrlByVariant(
+                                  _coverPreviewUrl(template),
+                                  variant: ImageVariant.thumb,
+                                ),
                                 fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        color: Colors.grey[300],
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                errorBuilder: (context, error, stackTrace) {
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
                                   return Container(
                                     color: Colors.grey[300],
-                                    child: const Icon(Icons.error),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                            : null,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFFE7EDF4),
+                                          Color(0xFFD8E3F0),
+                                        ],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.photo_outlined,
+                                        color: Color(0xFF7A8AA0),
+                                      ),
+                                    ),
                                   );
                                 },
                               ),

@@ -148,14 +148,14 @@ class _TemplateAssemblyScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: SnapFitColors.surfaceLight,
       appBar: AppBar(
         title: const Text(
           '나만의 사진 채우기',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: SnapFitColors.pureWhite,
+        foregroundColor: SnapFitColors.deepCharcoal,
         elevation: 0,
         actions: [
           TextButton(

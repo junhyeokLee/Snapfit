@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,7 +10,6 @@ import '../../../../core/constants/cover_size.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../billing/data/billing_provider.dart';
-import '../../../billing/presentation/views/subscription_management_screen.dart';
 import '../controllers/text_editor_manager.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../controllers/layer_builder.dart';
@@ -57,6 +57,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   bool _isSaving = false;
   double _saveProgress = 0.0;
   Timer? _progressTimer;
+  int? _lastSyncedPageIndex;
+  String? _lastLayerSyncSignature;
 
   void _simulateProgress() {
     _saveProgress = 0.0;
@@ -257,7 +259,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('구독하러 가기'),
+                    child: const Text('준비중'),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -276,12 +278,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     );
 
     if (shouldSubscribe != true || !mounted) return;
-    await Navigator.push(
+    ScaffoldMessenger.of(
       context,
-      MaterialPageRoute(builder: (_) => const SubscriptionManagementScreen()),
-    );
-    ref.invalidate(mySubscriptionProvider);
-    ref.invalidate(myStorageQuotaProvider);
+    ).showSnackBar(const SnackBar(content: Text('구독 및 결제 기능은 현재 준비중입니다.')));
   }
 
   @override
@@ -302,6 +301,23 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     final List<LayerModel> layers = (state != null && state.layers.isNotEmpty)
         ? state.layers
         : [];
+    final layerSyncSignature =
+        '$currentPageIndex:${layers.length}:${layers.map((e) => e.id).join('|')}';
+
+    if (_lastSyncedPageIndex != currentPageIndex) {
+      _lastSyncedPageIndex = currentPageIndex;
+      _lastLayerSyncSignature = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _interaction.resetForPageChange();
+      });
+    } else if (_lastLayerSyncSignature != layerSyncSignature) {
+      _lastLayerSyncSignature = layerSyncSignature;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _interaction.syncLayers(layers);
+      });
+    }
 
     final pages = vm.pages; // For the top selector
 
@@ -451,72 +467,80 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                                     size; // Sync size for Write/Photo actions
                               },
                             )
-                          : GestureDetector(
-                              onTap: () {
-                                if (_interaction.selectedLayerId != null) {
-                                  _interaction.clearSelection();
-                                  setState(() {});
-                                }
-                              },
-                              behavior: HitTestBehavior.translucent,
-                              // 커버와 동일한 수평 패딩(16px)을 적용해 내지 크기를 정확히 일치시킴
-                              child: LayoutBuilder(
+                          : LayoutBuilder(
                                 builder: (context, constraints) {
                                   const double sidePadding = 16.0;
-                                  final double innerW =
+                                  final double availW =
                                       constraints.maxWidth - sidePadding * 2;
-                                  final double innerH = innerW / aspect;
+                                  final double availH = constraints.maxHeight;
+                                  const double logicalW = kCoverReferenceWidth;
+                                  final double logicalH = logicalW / aspect;
+
+                                  // 커버와 동일하게 가로/세로 모두 고려해 캔버스 표시 크기를 계산한다.
+                                  // (일부 비율에서 하단/우측 터치 좌표가 어긋나는 현상 방지)
+                                  final double scaleByWidth = availW / logicalW;
+                                  final double scaleByHeight =
+                                      availH / logicalH;
+                                  final double scale = math.min(
+                                    scaleByWidth,
+                                    scaleByHeight,
+                                  );
+                                  final double innerW = logicalW * scale;
+                                  final double innerH = logicalH * scale;
 
                                   return Center(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: sidePadding,
                                       ),
-                                      child: PageEditorCanvas(
-                                        canvasKey: _canvasKey,
-                                        canvasW: innerW,
-                                        canvasH: innerH,
-                                        layers: layers,
-                                        interaction: _interaction,
-                                        layerBuilder: _layerBuilder,
-                                        onCanvasSizeChanged: (size) {
-                                          // 실제 측정된 캔버스 크기로 갱신
-                                          if (_canvasSize != size) {
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                                  if (!mounted) return;
-                                                  setState(
-                                                    () => _canvasSize = size,
-                                                  );
-                                                  vm.loadPendingEditAlbumIfNeeded(
-                                                    size,
-                                                  );
-                                                  vm.setCoverCanvasSize(
-                                                    size,
-                                                    isCover:
-                                                        vm.currentPageIndex ==
-                                                        0,
-                                                  );
-                                                });
-                                          }
-                                        },
-                                        backgroundColor:
-                                            vm.currentPage?.backgroundColor !=
-                                                null
-                                            ? Color(
-                                                vm
-                                                    .currentPage!
-                                                    .backgroundColor!,
-                                              )
-                                            : null,
-                                        isCover:
-                                            vm.currentPage?.isCover ?? false,
+                                      child: SizedBox(
+                                        width: innerW,
+                                        height: innerH,
+                                        child: PageEditorCanvas(
+                                          canvasKey: _canvasKey,
+                                          canvasW: innerW,
+                                          canvasH: innerH,
+                                          layers: layers,
+                                          interaction: _interaction,
+                                          layerBuilder: _layerBuilder,
+                                          onCanvasSizeChanged: (size) {
+                                            // 실제 측정된 캔버스 크기로 갱신
+                                            if (_canvasSize != size) {
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback((_) {
+                                                    if (!mounted) return;
+                                                    setState(
+                                                      () => _canvasSize = size,
+                                                    );
+                                                    vm.loadPendingEditAlbumIfNeeded(
+                                                      size,
+                                                    );
+                                                    vm.setCoverCanvasSize(
+                                                      size,
+                                                      isCover:
+                                                          vm.currentPageIndex ==
+                                                          0,
+                                                    );
+                                                  });
+                                            }
+                                          },
+                                          backgroundColor:
+                                              vm.currentPage?.backgroundColor !=
+                                                  null
+                                              ? Color(
+                                                  vm
+                                                      .currentPage!
+                                                      .backgroundColor!,
+                                                )
+                                              : null,
+                                          isCover:
+                                              vm.currentPage?.isCover ?? false,
+                                        ),
                                       ),
                                     ),
                                   );
                                 },
                               ),
-                            ),
                     ),
 
                     // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.

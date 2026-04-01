@@ -1,0 +1,31 @@
+{
+  "workspace": "template-only",
+  "defaultSizes": {
+    "square": { "width": 1440, "height": 1440 },
+    "portrait": { "width": 1080, "height": 1440 },
+    "landscape": { "width": 1440, "height": 1080 }
+  },
+  "rules": {
+    "strictLayout": true,
+    "autoFit": false,
+    "minPages": 12,
+    "recommendedMinPages": 14,
+    "recommendedMaxPages": 20,
+    "maxPages": 24,
+    "requireCoverAndPages": true,
+    "requireFigmaParity": true,
+    "masterAspect": "portrait",
+    "preferVariantsOverExtraFigmaFrames": true,
+    "requireExampleImages": true,
+    "requireCoverBackgroundImage": true,
+    "requireStrongVisualTheme": true,
+    "requirePhotoVisibility": true,
+    "requireLayoutDiversity": true,
+    "disallowCoverPageLayoutReuse": true,
+    "requireCopyrightSafeImageSources": true,
+    "requireCdnDeliveryForFinalImages": true,
+    "disallowFigmaMcpAssetInFinalJson": true,
+    "keepLocalAssetFallback": true,
+    "allowedExampleImageSources": ["figma_approved_export", "cdn_delivery", "local_fallback_only"]
+  }
+}

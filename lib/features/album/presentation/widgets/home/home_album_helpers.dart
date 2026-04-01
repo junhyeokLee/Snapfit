@@ -68,11 +68,23 @@ class AlbumProgressInfo {
 }
 
 AlbumProgressInfo calculateAlbumProgress(Album album) {
+  final int target = album.targetPages > 0 ? album.targetPages : 0;
+
   final int fallbackCompleted = _countCompletedInnerPagesFromCoverLayersJson(
     album.coverLayersJson,
   );
-  final int completed = math.max(album.totalPages, fallbackCompleted);
-  final int target = album.targetPages > 0 ? album.targetPages : 0;
+  // 서버 totalPages가 커버를 포함해 내려오는 경우가 있어(내지 target보다 +1)
+  // 진행률이 100%로 고정되는 문제를 막기 위해 내지 기준으로 보정한다.
+  final int normalizedServerCompleted = target > 0 && album.totalPages > target
+      ? math.max(0, album.totalPages - 1)
+      : math.max(0, album.totalPages);
+
+  // coverLayersJson 기반 실완성도(의미있는 레이어 존재)를 우선 사용하고,
+  // 파싱 불가/구형 데이터일 때만 서버 값을 사용한다.
+  final int completed = fallbackCompleted > 0
+      ? fallbackCompleted
+      : normalizedServerCompleted;
+
   final int clampedCompleted = target > 0
       ? completed.clamp(0, target)
       : completed;

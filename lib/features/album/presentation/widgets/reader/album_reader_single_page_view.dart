@@ -703,8 +703,8 @@ class _InnerPageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // [Inner Page Fix] 에디터와 동일하게 커버 비율을 반영한 논리적 베이스 사이즈 계산
     final ratio = pageW / pageH;
-    final logicalW = 300.0;
-    final logicalH = 300.0 / ratio;
+    final logicalW = kCoverReferenceWidth;
+    final logicalH = kCoverReferenceWidth / ratio;
     final logicalBaseSize = Size(logicalW, logicalH);
 
     final scale = pageW / logicalW;

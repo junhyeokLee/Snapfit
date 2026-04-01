@@ -10,8 +10,20 @@ Widget _buildFramedImageImpl(
     case "circle":
       framed = builder._frameCircle(image);
       break;
+    case "archSoft":
+      framed = builder._frameArchSoft(image);
+      break;
+    case "archOval":
+      framed = builder._frameArchOval(image);
+      break;
     case "round":
       framed = builder._frameRound(image);
+      break;
+    case "circleRing":
+      framed = builder._frameCircleRing(image);
+      break;
+    case "rounded28":
+      framed = builder._frameRounded28(image);
       break;
     case "polaroid":
       framed = builder._framePolaroid(image);
@@ -124,6 +136,9 @@ Widget _buildFramedImageImpl(
     case "goldFrame":
       framed = builder._frameGoldFrame(image);
       break;
+    case "ticketStub":
+      framed = builder._frameTicketStub(image);
+      break;
     case "blob":
       framed = builder._frameBlob(image);
       break;
@@ -149,7 +164,8 @@ Widget _buildFramedImageImpl(
 }
 
 Widget _fitFramedContentImpl(LayerModel layer, Widget child) {
-  if (layer.imageBackground == null || layer.imageBackground!.isEmpty) {
+  final bg = (layer.imageBackground ?? '').trim().toLowerCase();
+  if (bg.isEmpty || bg == 'none' || bg == 'free') {
     return SizedBox.expand(child: child);
   }
   return LayoutBuilder(

@@ -41,7 +41,7 @@ final class GalleryNotifierProvider
   }
 }
 
-String _$galleryNotifierHash() => r'ea1f8b47783d745d8bae6c7b4a32723c2dccb0bd';
+String _$galleryNotifierHash() => r'c113778471269c1ed96adfa4faaf4bef734df617';
 
 abstract class _$GalleryNotifier extends $Notifier<GalleryState> {
   GalleryState build();

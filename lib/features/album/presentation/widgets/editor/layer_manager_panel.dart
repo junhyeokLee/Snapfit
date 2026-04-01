@@ -7,6 +7,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/layer.dart';
+import '../../controllers/layer_builder.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_interaction_manager.dart';
 
@@ -248,6 +249,24 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
     LayerModel layer,
     int imageOrder,
   ) {
+    final style = layer.imageBackground ?? '';
+    final isDecoStickerStyle =
+        style.isNotEmpty && style.toLowerCase().startsWith('sticker');
+    final shouldRenderDecoStyle =
+        (layer.type == LayerType.decoration ||
+            layer.type == LayerType.sticker) &&
+        isDecoStickerStyle;
+
+    if (shouldRenderDecoStyle) {
+      return Center(
+        child: LayerBuilder.buildStickerDecoration(
+          style: style,
+          width: 28.w,
+          height: 28.w,
+        ),
+      );
+    }
+
     Widget thumbnailWidget;
     if (layer.asset != null) {
       final future = _thumbnailCache.putIfAbsent(
@@ -302,6 +321,11 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
       }
     }
     // 썸네일이 있으면 우하단에 작은 순서 뱃지 겹침 → 어떤 이미지인지 순서로 파악 가능
+    // 장식/스티커 타입은 실제 썸네일 자체가 의미이므로 숫자 뱃지는 노출하지 않는다.
+    final showOrderBadge = layer.type == LayerType.image;
+    if (!showOrderBadge) {
+      return thumbnailWidget;
+    }
     return Stack(
       fit: StackFit.expand,
       children: [

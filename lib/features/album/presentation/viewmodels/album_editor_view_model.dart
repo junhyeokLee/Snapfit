@@ -241,72 +241,148 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required Size targetCanvas,
   }) {
     if (sourceLayers.isEmpty) return const [];
+    final bounds = _templateBounds(sourceLayers);
+    final looksNormalized =
+        bounds.width <= 2.5 && bounds.height <= 2.5 && bounds.left >= -1.0;
 
-    final content = sourceLayers
-        .where((l) => l.type != LayerType.decoration)
-        .toList();
-    if (content.isEmpty) {
+    // 이미 타깃 캔버스와 거의 같으면 재스케일하지 않는다.
+    if (!looksNormalized &&
+        (bounds.width - targetCanvas.width).abs() <= 1.0 &&
+        (bounds.height - targetCanvas.height).abs() <= 1.0) {
       return sourceLayers.map((l) => l.copyWith()).toList(growable: false);
     }
 
+    final sourceCanvas = looksNormalized
+        ? _normalizedTemplateCanvasFor(targetCanvas)
+        : _estimateTemplateSourceCanvas(sourceLayers);
+    final sourceOrigin = looksNormalized
+        ? Offset.zero
+        : _estimateTemplateSourceOrigin(sourceLayers);
+    final sx = targetCanvas.width / math.max(1.0, sourceCanvas.width);
+    final sy = targetCanvas.height / math.max(1.0, sourceCanvas.height);
+    // 핵심: 피그마 원본 비율을 유지하기 위해 축별 스케일 대신 단일 스케일을 사용한다.
+    // 이렇게 하면 세로/정사각/가로에서도 레이아웃이 찌그러지지 않고 동일한 아트디렉션을 유지한다.
+    final uniformScale = math.min(sx, sy);
+    final fittedW = sourceCanvas.width * uniformScale;
+    final fittedH = sourceCanvas.height * uniformScale;
+    final offsetX = (targetCanvas.width - fittedW) / 2;
+    final offsetY = (targetCanvas.height - fittedH) / 2;
+
+    return sourceLayers.map((layer) {
+      final sourceX = looksNormalized
+          ? layer.position.dx * sourceCanvas.width
+          : (layer.position.dx - sourceOrigin.dx);
+      final sourceY = looksNormalized
+          ? layer.position.dy * sourceCanvas.height
+          : (layer.position.dy - sourceOrigin.dy);
+      final sourceW = looksNormalized
+          ? layer.width * sourceCanvas.width
+          : layer.width;
+      final sourceH = looksNormalized
+          ? layer.height * sourceCanvas.height
+          : layer.height;
+
+      final nx = (sourceX * uniformScale) + offsetX;
+      final ny = (sourceY * uniformScale) + offsetY;
+      final nw = sourceW * uniformScale;
+      final nh = sourceH * uniformScale;
+      final style = layer.textStyle;
+      final scaledStyle = style?.copyWith(
+        fontSize: style.fontSize == null
+            ? null
+            : (style.fontSize! * uniformScale).clamp(8.0, 220.0).toDouble(),
+        letterSpacing: style.letterSpacing == null
+            ? null
+            : style.letterSpacing! * uniformScale,
+      );
+
+      return layer.copyWith(
+        position: Offset(nx, ny),
+        width: nw,
+        height: nh,
+        textStyle: scaledStyle,
+      );
+    }).toList(growable: false);
+  }
+
+  Size _normalizedTemplateCanvasFor(Size targetCanvas) {
+    final aspect = targetCanvas.width <= 0 || targetCanvas.height <= 0
+        ? (3 / 4)
+        : (targetCanvas.width / targetCanvas.height);
+    const baseW = 1080.0;
+    return Size(baseW, baseW / aspect);
+  }
+
+  Size _estimateTemplateSourceCanvas(List<LayerModel> layers) {
+    if (layers.isEmpty) return const Size(500, 500);
+    final b = _templateBounds(layers);
+    // Figma 기반 템플릿은 페이지 외곽까지 레이어가 닿지 않는 경우가 잦다.
+    // bounds 자체를 캔버스로 쓰면 전체가 확대되어 피그마 대비 커져 보일 수 있어,
+    // 흔히 쓰는 디자인 캔버스(1080/1440 등)로 스냅해 원본 비율을 유지한다.
+    final right = (b.left + b.width).clamp(1.0, double.infinity);
+    final bottom = (b.top + b.height).clamp(1.0, double.infinity);
+    final snappedW = _snapTemplateDesignDimension(right);
+    final snappedH = _snapTemplateDesignDimension(bottom);
+    if (b.left >= -1.0 &&
+        b.top >= -1.0 &&
+        snappedW > 0 &&
+        snappedH > 0 &&
+        snappedW >= b.width &&
+        snappedH >= b.height) {
+      return Size(snappedW, snappedH);
+    }
+    return Size(
+      (b.right - b.left).clamp(1.0, double.infinity),
+      (b.bottom - b.top).clamp(1.0, double.infinity),
+    );
+  }
+
+  double _snapTemplateDesignDimension(double value) {
+    const candidates = <double>[
+      500,
+      667,
+      750,
+      1000,
+      1080,
+      1200,
+      1334,
+      1440,
+      1600,
+      1920,
+    ];
+    if (!value.isFinite || value <= 0) return value;
+    for (final c in candidates) {
+      if (value <= c && (c - value) <= (c * 0.12)) {
+        return c;
+      }
+    }
+    return value;
+  }
+
+  Offset _estimateTemplateSourceOrigin(List<LayerModel> layers) {
+    if (layers.isEmpty) return Offset.zero;
+    final b = _templateBounds(layers);
+    if (!b.left.isFinite || !b.top.isFinite) return Offset.zero;
+    return Offset(b.left, b.top);
+  }
+
+  Rect _templateBounds(List<LayerModel> layers) {
     double minX = double.infinity;
     double minY = double.infinity;
     double maxX = -double.infinity;
     double maxY = -double.infinity;
-    for (final l in content) {
+    for (final l in layers) {
       minX = math.min(minX, l.position.dx);
       minY = math.min(minY, l.position.dy);
       maxX = math.max(maxX, l.position.dx + l.width);
       maxY = math.max(maxY, l.position.dy + l.height);
     }
-
-    final srcW = (maxX - minX).clamp(1.0, double.infinity);
-    final srcH = (maxY - minY).clamp(1.0, double.infinity);
-    final inset = math.min(targetCanvas.width, targetCanvas.height) * 0.02;
-    final usableW = (targetCanvas.width - inset * 2).clamp(
-      1.0,
-      double.infinity,
-    );
-    final usableH = (targetCanvas.height - inset * 2).clamp(
-      1.0,
-      double.infinity,
-    );
-    final scale = math.min(usableW / srcW, usableH / srcH);
-
-    final dstW = srcW * scale;
-    final dstH = srcH * scale;
-    final offsetX = (targetCanvas.width - dstW) / 2;
-    final offsetY = (targetCanvas.height - dstH) / 2;
-
-    return sourceLayers
-        .map((layer) {
-          final nx = offsetX + (layer.position.dx - minX) * scale;
-          final ny = offsetY + (layer.position.dy - minY) * scale;
-          final nw = layer.width * scale;
-          final nh = layer.height * scale;
-          final style = layer.textStyle;
-          final scaledStyle = style?.copyWith(
-            fontSize: style.fontSize == null ? null : style.fontSize! * scale,
-            letterSpacing: style.letterSpacing == null
-                ? null
-                : style.letterSpacing! * scale,
-          );
-
-          final clampedX = nx
-              .clamp(inset, math.max(inset, targetCanvas.width - nw - inset))
-              .toDouble();
-          final clampedY = ny
-              .clamp(inset, math.max(inset, targetCanvas.height - nh - inset))
-              .toDouble();
-
-          return layer.copyWith(
-            position: Offset(clampedX, clampedY),
-            width: nw,
-            height: nh,
-            textStyle: scaledStyle,
-          );
-        })
-        .toList(growable: false);
+    if (!minX.isFinite || !minY.isFinite || !maxX.isFinite || !maxY.isFinite) {
+      return const Rect.fromLTWH(0, 0, 500, 500);
+    }
+    final w = (maxX - minX).clamp(1.0, double.infinity);
+    final h = (maxY - minY).clamp(1.0, double.infinity);
+    return Rect.fromLTWH(minX, minY, w, h);
   }
 
   /// 현재 로드된 앨범 페이지에 템플릿 페이지를 덮어쓴다.
@@ -332,11 +408,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         sourceLayers: templatePages[srcIndex],
         targetCanvas: targetCanvas,
       );
+      final normalized = _normalizeLayersForEditing(
+        mapped,
+        targetCanvas,
+        preserveLayout: true,
+      );
 
       final page = _pages[dstIndex];
       page.layers
         ..clear()
-        ..addAll(mapped);
+        ..addAll(normalized);
       dstIndex++;
     }
 
@@ -351,10 +432,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       sourceLayers: coverLayers,
       targetCanvas: _coverReferenceSize,
     );
+    final normalized = _normalizeLayersForEditing(
+      mapped,
+      _coverReferenceSize,
+      preserveLayout: true,
+    );
     final cover = _pages.first;
     cover.layers
       ..clear()
-      ..addAll(mapped);
+      ..addAll(normalized);
     _currentPageIndex = 0;
     _emit();
   }
@@ -395,6 +481,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             pendingPages,
             keepCurrentCover: false,
           );
+          // 템플릿 페이지를 메모리에 주입한 이후에는,
+          // 생성 직후 서버의 coverLayersJson(구형/부분 데이터)로 다시 복원되면
+          // 내지 템플릿이 덮어써질 수 있으므로 pending 복원을 비활성화한다.
+          _pendingCoverLayersJson = null;
         }
         _pendingTemplatePagesAfterLoad = null;
       } else {
@@ -587,12 +677,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             isCover: isCover,
           );
         }).toList();
+        final normalizedLayers = _normalizeLayersForEditing(
+          loadedLayers,
+          pageCanvasSize,
+        );
         final page = _service.createPage(
           index: index,
           isCover: isCover,
           backgroundColor: backgroundColor,
         );
-        page.layers.addAll(loadedLayers);
+        page.layers.addAll(normalizedLayers);
         _pages.add(page);
       }
       // 페이지 순서 보장 (index 기준 정렬)
@@ -607,8 +701,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           isCover: true,
         );
       }).toList();
+      final normalizedLayers = _normalizeLayersForEditing(
+        loadedLayers,
+        coverRefSize,
+      );
       final coverPage = _service.createPage(index: 0, isCover: true);
-      coverPage.layers.addAll(loadedLayers);
+      coverPage.layers.addAll(normalizedLayers);
       _pages.add(coverPage);
 
       // 구 형식 파일의 경우 내지 데이터가 coverLayersJson에 없으므로,
@@ -632,11 +730,17 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }) async {
     final List<LayerModel> currentLayers =
         overrideLayers ?? List.of(state.value?.layers ?? []);
+    final currentInnerPageCount = math.max(
+      1,
+      _pages.where((p) => !p.isCover).length,
+    );
     final resolvedTargetPages = (() {
       if (targetPages != null && targetPages > 0) return targetPages;
+      if (_editingAlbumId != null) return currentInnerPageCount;
       if (_targetPagesHint > 0) return _targetPagesHint;
-      return math.max(1, _pages.where((p) => !p.isCover).length);
+      return currentInnerPageCount;
     })();
+    _targetPagesHint = resolvedTargetPages;
     final albumVm = ref.read(albumViewModelProvider.notifier);
     final themeLabel = _selectedTheme.label;
 
@@ -846,8 +950,62 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void updateLayer(LayerModel updated) {
     _recordUndo();
     final currentPage = _pages[_currentPageIndex];
-    _service.updateLayer(page: currentPage, updated: updated);
+    var next = updated;
+    if (updated.type == LayerType.text) {
+      final old = currentPage.layers.where((l) => l.id == updated.id).firstOrNull;
+      final textAppearanceChanged =
+          old == null ||
+          old.text != updated.text ||
+          old.textStyle != updated.textStyle ||
+          old.textAlign != updated.textAlign ||
+          old.textBackground != updated.textBackground;
+      if (textAppearanceChanged) {
+        next = _expandTextLayerToFit(next);
+      }
+    }
+    _service.updateLayer(page: currentPage, updated: next);
     _emit();
+  }
+
+  LayerModel _expandTextLayerToFit(LayerModel layer) {
+    if (layer.type != LayerType.text) return layer;
+    final text = (layer.text ?? '').trim();
+    if (text.isEmpty) return layer;
+
+    final style = layer.textStyle ?? const TextStyle(fontSize: 18);
+    final isCoverPage = currentPage?.isCover == true;
+    final canvas = isCoverPage ? _coverReferenceSize : _innerPageCanvasSize;
+    final currentW =
+        layer.width.isFinite && layer.width > 1 ? layer.width : 1.0;
+    final naturalPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textAlign: layer.textAlign ?? TextAlign.center,
+      maxLines: null,
+    )..layout(minWidth: 0, maxWidth: 100000);
+
+    // 렌더러의 기본 텍스트 패딩과 맞춰 clipping을 방지한다.
+    const hPad = 36.0;
+    const vPad = 32.0;
+    final maxCanvasTextW = math.max(24.0, canvas.width - 8.0);
+    final naturalRequiredW = (naturalPainter.width + hPad)
+        .clamp(24.0, maxCanvasTextW)
+        .toDouble();
+    final nextW = math.max(layer.width, naturalRequiredW);
+
+    final fittedPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textAlign: layer.textAlign ?? TextAlign.center,
+      maxLines: null,
+    )..layout(minWidth: 0, maxWidth: nextW);
+    final requiredH = (fittedPainter.height + vPad).clamp(20.0, 5000.0).toDouble();
+    final nextH = math.max(layer.height, requiredH);
+
+    if ((nextW - layer.width).abs() < 0.1 && (nextH - layer.height).abs() < 0.1) {
+      return layer;
+    }
+    return layer.copyWith(width: nextW, height: nextH);
   }
 
   /// 텍스트 스타일 변경
@@ -962,6 +1120,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void addPage() {
     final nextIndex = _pages.length;
     _pages.add(_service.createPage(index: nextIndex));
+    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
     _currentPageIndex = nextIndex;
     _emit();
   }
@@ -977,9 +1136,13 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       canvasSize: canvasSize,
       isCover: page.isCover,
     );
+    final normalized = _normalizeLayersForEditing(
+      fromTemplate.layers,
+      canvasSize,
+    );
     page.layers
       ..clear()
-      ..addAll(fromTemplate.layers);
+      ..addAll(normalized);
     _emit();
   }
 
@@ -1005,9 +1168,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       layers,
       fillPersistentUrls: true,
     );
+    final normalized = _normalizeLayersForEditing(ready, canvasSize);
     page.layers
       ..clear()
-      ..addAll(ready);
+      ..addAll(normalized);
     _emit();
   }
 
@@ -1122,6 +1286,86 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     }).toList();
   }
 
+  bool _isFullCanvasBackgroundCandidate(LayerModel layer, Size canvas) {
+    if (layer.type != LayerType.decoration && layer.type != LayerType.image) {
+      return false;
+    }
+    final nearOrigin =
+        layer.position.dx.abs() <= 2.0 && layer.position.dy.abs() <= 2.0;
+    if (!nearOrigin) return false;
+    final targetW = canvas.width;
+    final targetH = canvas.height;
+    final nearFull =
+        layer.width >= targetW * 0.9 && layer.height >= targetH * 0.9;
+    return nearFull;
+  }
+
+  List<LayerModel> _normalizeLayersForEditing(
+    List<LayerModel> layers,
+    Size canvas,
+    {bool preserveLayout = false}
+  ) {
+    if (layers.isEmpty) return layers;
+
+    if (preserveLayout) {
+      return layers.map((layer) {
+        var w = layer.width;
+        var h = layer.height;
+        var x = layer.position.dx;
+        var y = layer.position.dy;
+        if (!w.isFinite || w <= 0) w = 8;
+        if (!h.isFinite || h <= 0) h = 8;
+        if (!x.isFinite) x = 0;
+        if (!y.isFinite) y = 0;
+        return layer.copyWith(position: Offset(x, y), width: w, height: h);
+      }).toList(growable: false);
+    }
+
+    final maxW = math.max(1.0, canvas.width * 2);
+    final maxH = math.max(1.0, canvas.height * 2);
+
+    final sanitized = <LayerModel>[];
+    for (final layer in layers) {
+      var w = layer.width;
+      var h = layer.height;
+      var x = layer.position.dx;
+      var y = layer.position.dy;
+
+      if (!w.isFinite || w <= 0) w = 48;
+      if (!h.isFinite || h <= 0) h = 48;
+      w = w.clamp(8.0, maxW);
+      h = h.clamp(8.0, maxH);
+
+      if (!x.isFinite) x = 0;
+      if (!y.isFinite) y = 0;
+      x = x.clamp(-w + 8, canvas.width - 8);
+      y = y.clamp(-h + 8, canvas.height - 8);
+
+      if (layer.type == LayerType.text) {
+        w = w.clamp(36.0, maxW);
+        h = h.clamp(24.0, maxH);
+      }
+
+      sanitized.add(
+        layer.copyWith(position: Offset(x, y), width: w, height: h),
+      );
+    }
+
+    final backgrounds = sanitized
+        .where((l) => _isFullCanvasBackgroundCandidate(l, canvas))
+        .toList(growable: false);
+    final foregrounds = sanitized
+        .where((l) => !_isFullCanvasBackgroundCandidate(l, canvas))
+        .toList(growable: false);
+
+    final ordered = <LayerModel>[...backgrounds, ...foregrounds];
+    final normalized = <LayerModel>[];
+    for (int i = 0; i < ordered.length; i++) {
+      normalized.add(ordered[i].copyWith(zIndex: i + 1));
+    }
+    return normalized;
+  }
+
   /// 템플릿으로 새 페이지 추가 후 해당 페이지로 이동
   void addPageFromTemplate(PageTemplate template, Size canvasSize) {
     final nextIndex = _pages.length;
@@ -1133,6 +1377,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         isCover: false,
       ),
     );
+    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
     _currentPageIndex = nextIndex;
     _emit();
   }
@@ -1198,6 +1443,11 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       );
       final fullJson = exportFullAlbumLayersJson(canvasSize);
       final themeLabel = _selectedTheme.label;
+      final resolvedTargetPages = math.max(
+        1,
+        _pages.where((p) => !p.isCover).length,
+      );
+      _targetPagesHint = resolvedTargetPages;
 
       if (_editingAlbumId != null) {
         // 커버 URL 우선순위:
@@ -1238,9 +1488,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             albumId: _editingAlbumId!,
             ratio: _cover.ratio.toString(),
             title: _initialAlbumTitle ?? '', // 앨범 제목 유지
-            targetPages: _targetPagesHint > 0
-                ? _targetPagesHint
-                : math.max(1, _pages.where((p) => !p.isCover).length),
+            targetPages: resolvedTargetPages,
             coverLayersJson: fullJson,
             coverImageUrl: coverImg,
             coverThumbnailUrl: coverThumb,

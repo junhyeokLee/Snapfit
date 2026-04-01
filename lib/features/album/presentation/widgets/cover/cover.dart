@@ -23,6 +23,8 @@ class CoverLayout extends StatelessWidget {
   final SortedByZ sortedByZ;
   final CoverTheme theme;
   final GlobalKey? contentKey;
+  final List<double> activeVerticalGuides;
+  final List<double> activeHorizontalGuides;
 
   const CoverLayout({
     super.key,
@@ -37,6 +39,8 @@ class CoverLayout extends StatelessWidget {
     required this.sortedByZ,
     required this.theme,
     this.contentKey,
+    this.activeVerticalGuides = const <double>[],
+    this.activeHorizontalGuides = const <double>[],
   });
 
   @override
@@ -109,20 +113,22 @@ class CoverLayout extends StatelessWidget {
                                           );
                                       }
                                     }),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: CustomPaint(
-                                        painter: SpinePainter(
-                                          baseStart: Colors.white.withOpacity(
-                                            0.1,
+                                    IgnorePointer(
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: CustomPaint(
+                                          painter: SpinePainter(
+                                            baseStart: Colors.white.withOpacity(
+                                              0.1,
+                                            ),
+                                            baseEnd: Colors.white.withOpacity(
+                                              0.1,
+                                            ),
                                           ),
-                                          baseEnd: Colors.white.withOpacity(
-                                            0.1,
+                                          size: Size(
+                                            kCoverSpineWidth,
+                                            MediaQuery.of(context).size.height,
                                           ),
-                                        ),
-                                        size: Size(
-                                          kCoverSpineWidth,
-                                          MediaQuery.of(context).size.height,
                                         ),
                                       ),
                                     ),
@@ -131,6 +137,20 @@ class CoverLayout extends StatelessWidget {
                                         ignoring: true,
                                         child: CustomPaint(
                                           painter: GridOverlayPainter(
+                                            leftSpine: leftSpine,
+                                          ),
+                                        ),
+                                      ),
+                                    if (isInteracting &&
+                                        (activeVerticalGuides.isNotEmpty ||
+                                            activeHorizontalGuides.isNotEmpty))
+                                      IgnorePointer(
+                                        ignoring: true,
+                                        child: CustomPaint(
+                                          painter: _SnapGuidePainter(
+                                            verticalGuides: activeVerticalGuides,
+                                            horizontalGuides:
+                                                activeHorizontalGuides,
                                             leftSpine: leftSpine,
                                           ),
                                         ),
@@ -151,6 +171,50 @@ class CoverLayout extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class _SnapGuidePainter extends CustomPainter {
+  final List<double> verticalGuides;
+  final List<double> horizontalGuides;
+  final double leftSpine;
+
+  const _SnapGuidePainter({
+    required this.verticalGuides,
+    required this.horizontalGuides,
+    required this.leftSpine,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.45)
+      ..strokeWidth = 1.2;
+
+    for (final x in verticalGuides) {
+      if (x < leftSpine || x > size.width) continue;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (final y in horizontalGuides) {
+      if (y < 0 || y > size.height) continue;
+      canvas.drawLine(Offset(leftSpine, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnapGuidePainter oldDelegate) {
+    if (oldDelegate.leftSpine != leftSpine) return true;
+    if (oldDelegate.verticalGuides.length != verticalGuides.length) return true;
+    if (oldDelegate.horizontalGuides.length != horizontalGuides.length) {
+      return true;
+    }
+    for (int i = 0; i < verticalGuides.length; i++) {
+      if (oldDelegate.verticalGuides[i] != verticalGuides[i]) return true;
+    }
+    for (int i = 0; i < horizontalGuides.length; i++) {
+      if (oldDelegate.horizontalGuides[i] != horizontalGuides[i]) return true;
+    }
+    return false;
   }
 }
 
@@ -191,16 +255,18 @@ class _CoverBackground extends StatelessWidget {
         ),
 
         // Spine 영역 어두운 그림자 (공통)
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            width: leftSpine,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Colors.black.withOpacity(0.18), Colors.transparent],
-                stops: const [0.0, 1.0],
+        IgnorePointer(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: leftSpine,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Colors.black.withOpacity(0.18), Colors.transparent],
+                  stops: const [0.0, 1.0],
+                ),
               ),
             ),
           ),

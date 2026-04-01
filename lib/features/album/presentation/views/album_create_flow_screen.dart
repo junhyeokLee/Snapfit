@@ -18,12 +18,14 @@ import '../../data/api/album_provider.dart';
 /// 앨범 생성 플로우 화면 (스텝1~3)
 class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final List<List<LayerModel>>? initialTemplatePages;
+  final Map<String, List<List<LayerModel>>>? initialTemplatePagesByAspect;
   final String? initialAlbumTitle;
   final List<String>? initialTemplatePreviewImages;
 
   const AlbumCreateFlowScreen({
     super.key,
     this.initialTemplatePages,
+    this.initialTemplatePagesByAspect,
     this.initialAlbumTitle,
     this.initialTemplatePreviewImages,
   });
@@ -49,6 +51,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
   List<List<LayerModel>>? _resolvedTemplatePages;
+  Map<String, List<List<LayerModel>>>? _templatePagesByAspect;
 
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
   VoidCallback? _onCompletePressed;
@@ -83,9 +86,46 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         .toList(growable: false);
   }
 
+  String _aspectKeyFromCover(CoverSize cover) {
+    final ratio = cover.ratio;
+    if (ratio >= 1.05) return 'landscape';
+    if (ratio <= 0.95) return 'portrait';
+    return 'square';
+  }
+
+  void _applyTemplateByCoverIfNeeded(CoverSize cover) {
+    final variants = _templatePagesByAspect;
+    if (variants == null || variants.isEmpty) return;
+    final key = _aspectKeyFromCover(cover);
+    final selected = variants[key];
+    if (selected == null || selected.isEmpty) return;
+    // 기존에 충분한 페이지가 이미 해석된 상태라면,
+    // 페이지 수가 부족한 variant로 덮어쓰지 않도록 방어한다.
+    final currentResolvedCount = _resolvedTemplatePages?.length ?? 0;
+    if (currentResolvedCount > 1 && selected.length <= 1) return;
+    _resolvedTemplatePages = _hydrateTemplatePages(selected);
+    _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
+      1,
+      _maxPageCount,
+    );
+    _selectedPageCount = _selectedPageCount.clamp(
+      _templateMinPageCount,
+      _maxPageCount,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    if (widget.initialTemplatePagesByAspect != null &&
+        widget.initialTemplatePagesByAspect!.isNotEmpty) {
+      _templatePagesByAspect = widget.initialTemplatePagesByAspect!.map((
+        k,
+        v,
+      ) {
+        return MapEntry(k.toLowerCase(), v);
+      });
+    }
     if (widget.initialTemplatePages != null &&
         widget.initialTemplatePages!.isNotEmpty) {
       _resolvedTemplatePages = _hydrateTemplatePages(
@@ -103,6 +143,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _maxPageCount,
       );
       _selectedPageCount = _templateMinPageCount;
+    }
+    // 초기 진입 시에도 현재 선택 커버 비율(기본: 정사각형)에 맞는 variant를 즉시 적용한다.
+    // 그래야 사용자가 정사각형을 한 번 더 탭하지 않아도 페이지/이미지 크기가 맞게 보인다.
+    if (_selectedCover != null) {
+      _applyTemplateByCoverIfNeeded(_selectedCover!);
     }
     ScreenLogger.enter(
       'AlbumCreateFlowScreen',
@@ -205,7 +250,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
           // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
           onTitleChanged: (title) => _albumTitle = title,
-          onCoverSelected: (cover) => setState(() => _selectedCover = cover),
+          onCoverSelected: (cover) => setState(() {
+            _selectedCover = cover;
+            _applyTemplateByCoverIfNeeded(cover);
+          }),
           onPageCountChanged: (count) => setState(
             () => _selectedPageCount = count.clamp(
               _templateMinPageCount,
@@ -213,9 +261,15 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             ),
           ),
           onNext: () {
-            if (_albumTitle.isNotEmpty && _selectedCover != null) {
+            final title = _albumTitle.trim();
+            if (title.isNotEmpty && _selectedCover != null) {
+              _albumTitle = title;
               setState(() => _currentStep = 1);
+              return;
             }
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('앨범 제목과 커버 비율을 확인해주세요.')),
+            );
           },
         );
       case 1:

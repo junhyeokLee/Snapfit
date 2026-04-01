@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import '../interceptors/token_storage.dart';
-import '../../config/env.dart';
 import '../utils/app_logger.dart';
 
 class AuthInterceptor extends Interceptor {
   final TokenStorage _tokenStorage;
   final Dio _dio;
+  Future<_RefreshResult?>? _refreshInFlight;
 
   AuthInterceptor(this._tokenStorage, this._dio);
 
@@ -38,63 +38,92 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
+    final path = err.requestOptions.path;
+    final isRefreshCall = path.contains('/api/auth/refresh');
+
     // 401 Unauthorized 에러이자, 아직 재시도하지 않은 요청인 경우
     if (err.response?.statusCode == 401 &&
-        err.requestOptions.headers['retry'] == null) {
-      try {
-        final refreshToken = await _tokenStorage.getRefreshToken();
-        if (refreshToken == null) {
-          // 리프레시 토큰 없음 -> 로그아웃
-          await _tokenStorage.clear();
-          return handler.next(err);
-        }
-
-        // FormData는 스트림이므로 재사용 불가 -> 뷰모델에서 수동 재시도하도록 401 그대로 반환
-        if (err.requestOptions.data is FormData) {
-          return handler.next(err);
-        }
-
-        // 토큰 갱신 요청 (이 요청은 인터셉터를 타지 않도록 독립된 Dio 사용 권장하지만, 임시로 같은 Dio 사용시 무한루프 주의)
-        // 여기서는 _dio를 사용하여 직접 호출하되, 인터셉터가 없는 순수 Dio를 쓰거나 경로를 잘 처리해야 함.
-        // 편의상 dio.post를 쓰되, /refresh 경로는 onRequest에서 제외하거나 헤더를 안 넣는 방식을 쓸 수 있음.
-        // 하지만 /refresh는 인증 헤더가 필요 없으므로 그냥 호출해도 무관.
-        final response = await _dio.post(
-          '${Env.baseUrl}/api/auth/refresh',
-          data: {'refreshToken': refreshToken},
-        );
-
-        if (response.statusCode == 200) {
-          final newAccessToken = response.data['accessToken'];
-          final newRefreshToken = response.data['refreshToken'];
-
-          // 새 토큰 저장 (기존 정보 유지하며 업데이트)
-          // 주의: AuthResponse 전체가 아니라 토큰만 올 수 있으므로 부분 업데이트 필요할 수 있음.
-          // 현재 백엔드는 AuthResponse 전체를 줌.
-          await _tokenStorage.updateTokens(
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-          );
-
-          // 실패했던 요청 재시도
-          final options = err.requestOptions;
-          options.headers['Authorization'] = 'Bearer $newAccessToken';
-          options.headers['retry'] = true; // 무한루프 방지용 플래그
-
-          // 데이터 복구 (FormData 등은 재사용 시 에러 날 수 있으므로 주의)
-          final clonedRequest = await _dio.request(
-            options.path,
-            options: Options(method: options.method, headers: options.headers),
-            data: options.data,
-            queryParameters: options.queryParameters,
-          );
-
-          return handler.resolve(clonedRequest);
-        }
-      } catch (e) {
-        // 리프레시 실패 -> 로그아웃
+        err.requestOptions.headers['retry'] == null &&
+        !isRefreshCall) {
+      final refreshToken = await _tokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
         await _tokenStorage.clear();
+        return handler.next(err);
+      }
+
+      // FormData는 스트림이므로 재사용 불가 -> 뷰모델에서 수동 재시도하도록 401 그대로 반환
+      if (err.requestOptions.data is FormData) {
+        return handler.next(err);
+      }
+
+      // 동시 다발 401에서 refresh 중복 요청을 방지한다.
+      _refreshInFlight ??= _refreshTokens(refreshToken).whenComplete(() {
+        _refreshInFlight = null;
+      });
+      final refreshed = await _refreshInFlight;
+
+      if (refreshed == null ||
+          refreshed.accessToken.isEmpty ||
+          refreshed.refreshToken.isEmpty) {
+        await _tokenStorage.clear();
+        return handler.next(err);
+      }
+
+      // 원 요청 재시도 실패는 세션 만료로 간주하지 않는다.
+      try {
+        final options = err.requestOptions;
+        options.headers['Authorization'] = 'Bearer ${refreshed.accessToken}';
+        options.headers['retry'] = true; // 무한루프 방지용 플래그
+
+        final clonedRequest = await _dio.request(
+          options.path,
+          options: Options(method: options.method, headers: options.headers),
+          data: options.data,
+          queryParameters: options.queryParameters,
+        );
+        return handler.resolve(clonedRequest);
+      } on DioException catch (retryErr) {
+        return handler.next(retryErr);
       }
     }
     return handler.next(err);
   }
+
+  Future<_RefreshResult?> _refreshTokens(String refreshToken) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+      if (response.statusCode != 200) return null;
+      final newAccessToken = response.data['accessToken'] as String?;
+      final newRefreshToken = response.data['refreshToken'] as String?;
+      if (newAccessToken == null ||
+          newAccessToken.isEmpty ||
+          newRefreshToken == null ||
+          newRefreshToken.isEmpty) {
+        return null;
+      }
+      await _tokenStorage.updateTokens(
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      );
+      return _RefreshResult(
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class _RefreshResult {
+  final String accessToken;
+  final String refreshToken;
+
+  const _RefreshResult({
+    required this.accessToken,
+    required this.refreshToken,
+  });
 }

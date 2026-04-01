@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/snapfit_colors.dart';
+import 'snapfit_design_tokens.dart';
 
 /// SnapFit 공통 테마 (라이트/다크)
 ///
@@ -27,7 +28,15 @@ class SnapFitTheme {
         foregroundColor: SnapFitColors.deepCharcoal,
         elevation: 0,
       ),
-      textTheme: _textThemeLight(base.textTheme),
+      cardTheme: CardThemeData(
+        color: SnapFitColors.surfaceLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(SnapFitRadius.md),
+        ),
+      ),
+      textTheme: _textThemeLight(base.textTheme).apply(
+        fontFamily: SnapFitFonts.body,
+      ),
       inputDecorationTheme: _inputDecorationThemeLight(colorScheme),
       elevatedButtonTheme: _elevatedButtonThemeLight(colorScheme),
       outlinedButtonTheme: _outlinedButtonTheme(colorScheme),
@@ -54,7 +63,15 @@ class SnapFitTheme {
         foregroundColor: SnapFitColors.pureWhite,
         elevation: 0,
       ),
-      textTheme: _textThemeDark(base.textTheme),
+      cardTheme: CardThemeData(
+        color: SnapFitColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(SnapFitRadius.md),
+        ),
+      ),
+      textTheme: _textThemeDark(base.textTheme).apply(
+        fontFamily: SnapFitFonts.body,
+      ),
       inputDecorationTheme: _inputDecorationThemeDark(colorScheme),
       elevatedButtonTheme: _elevatedButtonThemeDark(colorScheme),
       outlinedButtonTheme: _outlinedButtonTheme(colorScheme),
@@ -68,12 +85,14 @@ class SnapFitTheme {
           base.headlineLarge?.copyWith(
             fontSize: 32,
             fontWeight: FontWeight.w800,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.02,
             color: SnapFitColors.deepCharcoal,
           ) ??
           const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w800,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.02,
             color: SnapFitColors.deepCharcoal,
           ),
@@ -81,12 +100,14 @@ class SnapFitTheme {
           base.headlineMedium?.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.w700,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.015,
             color: SnapFitColors.deepCharcoal,
           ) ??
           const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.015,
             color: SnapFitColors.deepCharcoal,
           ),
@@ -126,12 +147,14 @@ class SnapFitTheme {
           base.headlineLarge?.copyWith(
             fontSize: 32,
             fontWeight: FontWeight.w800,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.02,
             color: SnapFitColors.pureWhite,
           ) ??
           const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w800,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.02,
             color: SnapFitColors.pureWhite,
           ),
@@ -139,12 +162,14 @@ class SnapFitTheme {
           base.headlineMedium?.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.w700,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.015,
             color: SnapFitColors.pureWhite,
           ) ??
           const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
+            fontFamily: SnapFitFonts.display,
             letterSpacing: -0.015,
             color: SnapFitColors.pureWhite,
           ),
@@ -215,6 +240,10 @@ class SnapFitTheme {
         backgroundColor: scheme.primary,
         foregroundColor: SnapFitColors.pureWhite,
         elevation: 0,
+        textStyle: const TextStyle(
+          fontFamily: SnapFitFonts.body,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
@@ -226,6 +255,10 @@ class SnapFitTheme {
         backgroundColor: scheme.primary,
         foregroundColor: SnapFitColors.pureWhite,
         elevation: 0,
+        textStyle: const TextStyle(
+          fontFamily: SnapFitFonts.body,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );

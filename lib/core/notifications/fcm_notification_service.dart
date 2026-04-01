@@ -160,6 +160,28 @@ class FcmNotificationService {
     }
   }
 
+  static Future<void> clearDevicePushState() async {
+    try {
+      for (final topic in _topicByKey.values) {
+        await _messaging.unsubscribeFromTopic(topic);
+      }
+    } catch (_) {}
+    try {
+      await _messaging.deleteToken();
+    } catch (_) {}
+  }
+
+  static Future<void> clearLocalNotificationPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(kAll);
+    await prefs.remove(kOrder);
+    await prefs.remove(kInvite);
+    await prefs.remove(kComment);
+    await prefs.remove(kMarketing);
+    await prefs.remove(kNewTemplate);
+    await prefs.remove(kNightMute);
+  }
+
   static Future<NotificationSettings> _requestPermissionIfNeeded() async {
     final current = await _messaging.getNotificationSettings();
     if (current.authorizationStatus == AuthorizationStatus.authorized ||
@@ -201,7 +223,9 @@ class FcmNotificationService {
 
   static Future<void> _showForegroundNotification(RemoteMessage message) async {
     final title =
-        message.notification?.title ?? message.data['title']?.toString() ?? 'SnapFit';
+        message.notification?.title ??
+        message.data['title']?.toString() ??
+        'SnapFit';
     final body =
         message.notification?.body ??
         message.data['body']?.toString() ??
@@ -226,6 +250,35 @@ class FcmNotificationService {
       body,
       const NotificationDetails(android: androidDetails, iOS: iosDetails),
       payload: message.data.toString(),
+    );
+  }
+
+  static Future<void> showLocalNotification({
+    required String title,
+    required String body,
+    Map<String, String>? data,
+  }) async {
+    await _initializeLocalNotifications();
+
+    const androidDetails = AndroidNotificationDetails(
+      'snapfit_push',
+      'SnapFit Push',
+      channelDescription: 'SnapFit push notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails, iOS: iosDetails),
+      payload: (data ?? const <String, String>{}).toString(),
     );
   }
 }

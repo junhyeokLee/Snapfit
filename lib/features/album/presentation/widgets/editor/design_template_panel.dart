@@ -248,7 +248,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
       _warmedThumbs.add(url);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        precacheImage(NetworkImage(url), context);
+        precacheImage(NetworkImage(url), context, onError: (_, __) {});
       });
     }
   }
@@ -303,43 +303,19 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 ),
               ),
               SizedBox(height: 8.h),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.r),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isSelected
-                        ? [
-                            const Color(0xFF1D3A52).withValues(alpha: 0.95),
-                            const Color(0xFF294D6B).withValues(alpha: 0.95),
-                          ]
-                        : [
-                            SnapFitColors.overlayLightOf(
-                              context,
-                            ).withValues(alpha: 0.85),
-                            SnapFitColors.overlayMediumOf(
-                              context,
-                            ).withValues(alpha: 0.78),
-                          ],
-                  ),
-                ),
-                child: Text(
-                  template.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w800,
-                    color: isSelected
-                        ? Colors.white
-                        : SnapFitColors.textPrimaryOf(context),
-                    height: 1.0,
-                    letterSpacing: 0.2,
-                  ),
+              Text(
+                template.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.8.sp,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                  color: isSelected
+                      ? SnapFitColors.accent
+                      : SnapFitColors.textSecondaryOf(context),
+                  height: 1.0,
+                  letterSpacing: 0.05,
                 ),
               ),
             ],

@@ -52,6 +52,12 @@ class DataTemplateEngine {
     Map<String, dynamic> spec,
     Size canvas,
   ) {
+    final strictLayout = spec['strictLayout'] == true;
+    final designWidth = _toDouble(spec['designWidth'], _defaultDesignWidth(spec));
+    final designHeight = _toDouble(
+      spec['designHeight'],
+      _defaultDesignHeight(spec),
+    );
     final layersRaw = spec['layers'];
     if (layersRaw is! List) return const [];
     final aspectKey = _aspectKey(canvas);
@@ -74,12 +80,18 @@ class DataTemplateEngine {
         raw,
         canvas: canvas,
         aspectKey: aspectKey,
+        strictLayout: strictLayout,
+        designWidth: designWidth,
+        designHeight: designHeight,
         globalScale: globalScale,
         globalOffsetX: globalOffsetX,
         globalOffsetY: globalOffsetY,
       );
       if (layer != null) out.add(layer);
     }
+    // strictLayout=true 는 Figma 원본 레이아웃을 그대로 렌더링한다.
+    if (strictLayout) return out;
+
     // Default-on: keep template contents centered and safe across ratios.
     // Explicit `autoFit: false` can disable this per template.
     final autoFit = spec['autoFit'] != false;
@@ -280,27 +292,52 @@ class DataTemplateEngine {
     Map<String, dynamic> baseLayer, {
     required Size canvas,
     required String aspectKey,
+    required bool strictLayout,
+    required double designWidth,
+    required double designHeight,
     required double globalScale,
     required double globalOffsetX,
     required double globalOffsetY,
   }) {
     final merged = _applyAspectOverrides(baseLayer, aspectKey);
+    final payload = (merged['payload'] is Map<String, dynamic>)
+        ? (merged['payload'] as Map<String, dynamic>)
+        : const <String, dynamic>{};
+    final payloadTextStyle = (payload['textStyle'] is Map<String, dynamic>)
+        ? (payload['textStyle'] as Map<String, dynamic>)
+        : const <String, dynamic>{};
     final id = (merged['id'] ?? '').toString();
     if (id.isEmpty) return null;
 
     final type = _parseLayerType((merged['type'] ?? 'image').toString());
     final x = _toDouble(merged['x'], 0);
     final y = _toDouble(merged['y'], 0);
-    final w = _toDouble(merged['w'], 1);
-    final h = _toDouble(merged['h'], 1);
+    final w = _toDouble(merged['w'] ?? merged['width'], 1);
+    final h = _toDouble(merged['h'] ?? merged['height'], 1);
     final rot = _toDouble(merged['rotation'], 0);
-    final z = _toInt(merged['z'], 0);
+    final z = _toInt(merged['z'] ?? merged['zIndex'], 0);
     final opacity = _toDouble(merged['opacity'], 1.0).clamp(0.0, 1.0);
 
-    final left = x * canvas.width;
-    final top = y * canvas.height;
-    final width = w * canvas.width;
-    final height = h * canvas.height;
+    final usesRatioCoords =
+        x.abs() <= 1.2 &&
+        y.abs() <= 1.2 &&
+        w.abs() <= 1.2 &&
+        h.abs() <= 1.2;
+    final safeDesignW = designWidth <= 0 ? canvas.width : designWidth;
+    final safeDesignH = designHeight <= 0 ? canvas.height : designHeight;
+
+    final left = usesRatioCoords
+        ? x * canvas.width
+        : (x / safeDesignW) * canvas.width;
+    final top = usesRatioCoords
+        ? y * canvas.height
+        : (y / safeDesignH) * canvas.height;
+    final width = usesRatioCoords
+        ? w * canvas.width
+        : (w / safeDesignW) * canvas.width;
+    final height = usesRatioCoords
+        ? h * canvas.height
+        : (h / safeDesignH) * canvas.height;
 
     var transformed = _applyGlobalTransform(
       left: left,
@@ -335,24 +372,53 @@ class DataTemplateEngine {
       final style = (merged['style'] is Map<String, dynamic>)
           ? (merged['style'] as Map<String, dynamic>)
           : const <String, dynamic>{};
-      final color = _parseColor(style['color']) ?? Colors.black87;
-      final fontSize = _toDouble(style['fontSize'], 14);
-      final family = style['fontFamily']?.toString();
-      final weight = _parseWeight(style['fontWeight']?.toString());
-      final letterSpacing = _toNullableDouble(style['letterSpacing']);
-      final heightMul = _toNullableDouble(style['height']);
-      final align = _parseAlign((merged['align'] ?? 'center').toString());
-
-      // Use shorter side as baseline to reduce ratio-dependent drift
-      // between preview and applied canvases.
-      final baseUnit = math.min(canvas.width, canvas.height);
-      final rawFontSize = fontSize * (baseUnit / 300.0) * globalScale;
-      final multiLine = ((merged['text'] ?? '').toString()).contains('\n');
-      final maxFontByBox = math.max(
-        8.0,
-        transformed.height * (multiLine ? 0.52 : 0.76),
+      final styleView = <String, dynamic>{
+        ...style,
+        ...payloadTextStyle,
+      };
+      final color =
+          _parseColor(styleView['color']) ??
+          _parseColor(payload['color']) ??
+          Colors.black87;
+      final fontSize = _toDouble(styleView['fontSize'], 14);
+      final family =
+          styleView['fontFamily']?.toString() ?? payload['fontFamily']?.toString();
+      final weight = _parseWeight(
+        (styleView['fontWeight'] ?? payload['fontWeight'])?.toString(),
       );
-      final fittedFontSize = math.min(rawFontSize, maxFontByBox);
+      final letterSpacing = _toNullableDouble(styleView['letterSpacing']);
+      final heightMul = _toNullableDouble(styleView['height']);
+      final align = _parseAlign(
+        (merged['align'] ?? payload['textAlign'] ?? 'center').toString(),
+      );
+      final textFillMode = (merged['textFillMode'] ??
+              payload['textFillMode'] ??
+              styleView['textFillMode'] ??
+              'solid')
+          .toString();
+      final textFillImageUrl = (merged['textFillImageUrl'] ??
+              payload['textFillImageUrl'] ??
+              style['textFillImageUrl'])
+          ?.toString();
+
+      final fittedFontSize = strictLayout
+          ? fontSize *
+                ((designHeight <= 0 ? 1.0 : canvas.height / designHeight)) *
+                globalScale
+          : () {
+              // Use shorter side as baseline to reduce ratio-dependent drift
+              // between preview and applied canvases.
+              final baseUnit = math.min(canvas.width, canvas.height);
+              final rawFontSize = fontSize * (baseUnit / 300.0) * globalScale;
+              final multiLine = ((merged['text'] ?? '').toString()).contains(
+                '\n',
+              );
+              final maxFontByBox = math.max(
+                8.0,
+                transformed.height * (multiLine ? 0.52 : 0.76),
+              );
+              return math.min(rawFontSize, maxFontByBox);
+            }();
 
       return LayerModel(
         id: id,
@@ -361,8 +427,11 @@ class DataTemplateEngine {
         width: transformed.width,
         height: transformed.height,
         rotation: rot,
-        text: (merged['text'] ?? '').toString(),
-        textBackground: merged['textBackground']?.toString(),
+        text: (merged['text'] ?? payload['text'] ?? '').toString(),
+        textBackground:
+            (merged['textBackground'] ?? payload['textBackground'])?.toString(),
+        textFillMode: textFillMode,
+        textFillImageUrl: textFillImageUrl,
         textAlign: align,
         textStyleType: TextStyleType.none,
         opacity: opacity,
@@ -383,10 +452,19 @@ class DataTemplateEngine {
     String? frame;
     String? imageUrl;
     if (type == LayerType.decoration) {
-      frame = (merged['style'] ?? merged['frame'])?.toString();
+      frame = (merged['style'] ??
+              merged['frame'] ??
+              payload['imageBackground'] ??
+              payload['imageTemplate'])
+          ?.toString();
     } else {
-      frame = merged['frame']?.toString();
-      imageUrl = merged['imageUrl']?.toString();
+      frame = (merged['frame'] ?? payload['imageBackground'])?.toString();
+      imageUrl = (merged['imageUrl'] ??
+              merged['previewUrl'] ??
+              payload['imageUrl'] ??
+              payload['previewUrl'] ??
+              payload['originalUrl'])
+          ?.toString();
       final asset = merged['asset']?.toString();
       if (asset != null && asset.isNotEmpty) {
         imageUrl = asset.startsWith('asset:') ? asset : 'asset:$asset';
@@ -486,7 +564,7 @@ class DataTemplateEngine {
   }
 
   static LayerType _parseLayerType(String raw) {
-    switch (raw) {
+    switch (raw.toLowerCase()) {
       case 'text':
         return LayerType.text;
       case 'sticker':
@@ -500,7 +578,7 @@ class DataTemplateEngine {
   }
 
   static TextAlign _parseAlign(String raw) {
-    switch (raw) {
+    switch (raw.toLowerCase()) {
       case 'left':
         return TextAlign.left;
       case 'right':
@@ -513,23 +591,42 @@ class DataTemplateEngine {
   }
 
   static FontWeight _parseWeight(String? raw) {
-    switch ((raw ?? '').toLowerCase()) {
+    final value = (raw ?? '').trim().toLowerCase();
+    switch (value) {
+      case '1':
+      case '100':
       case 'w100':
         return FontWeight.w100;
+      case '2':
+      case '200':
       case 'w200':
         return FontWeight.w200;
+      case '3':
+      case '300':
       case 'w300':
         return FontWeight.w300;
+      case '4':
+      case '400':
       case 'w400':
         return FontWeight.w400;
+      case '5':
+      case '500':
       case 'w500':
         return FontWeight.w500;
+      case '6':
+      case '600':
       case 'w600':
         return FontWeight.w600;
+      case '7':
+      case '700':
       case 'w700':
         return FontWeight.w700;
+      case '8':
+      case '800':
       case 'w800':
         return FontWeight.w800;
+      case '9':
+      case '900':
       case 'w900':
         return FontWeight.w900;
       default:
@@ -575,6 +672,32 @@ class DataTemplateEngine {
       return raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
     }
     return const [];
+  }
+
+  static double _defaultDesignWidth(Map<String, dynamic> spec) {
+    final aspect = (spec['aspect'] ?? 'portrait').toString().toLowerCase();
+    switch (aspect) {
+      case 'square':
+        return 1440.0;
+      case 'landscape':
+        return 1440.0;
+      case 'portrait':
+      default:
+        return 1080.0;
+    }
+  }
+
+  static double _defaultDesignHeight(Map<String, dynamic> spec) {
+    final aspect = (spec['aspect'] ?? 'portrait').toString().toLowerCase();
+    switch (aspect) {
+      case 'square':
+        return 1440.0;
+      case 'landscape':
+        return 1080.0;
+      case 'portrait':
+      default:
+        return 1440.0;
+    }
   }
 }
 

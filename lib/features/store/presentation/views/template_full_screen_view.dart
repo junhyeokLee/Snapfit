@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/image_url_policy.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../widgets/template_page_renderer.dart';
 
@@ -74,8 +76,28 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                         // Fallback Image
                         if (index < widget.previewImages.length) {
                           return Image.network(
-                            widget.previewImages[index],
+                            imageUrlByVariant(
+                              widget.previewImages[index],
+                              variant: ImageVariant.detail,
+                            ),
                             fit: BoxFit.contain,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
+                            errorBuilder: (_, __, ___) => Container(
+                              color: SnapFitColors.deepCharcoal,
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.photo_outlined,
+                                color: SnapFitStylePalette.charcoal,
+                                size: 36,
+                              ),
+                            ),
                           );
                         }
                         return const Center(child: CircularProgressIndicator());

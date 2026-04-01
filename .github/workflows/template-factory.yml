@@ -1,0 +1,75 @@
+name: Template Factory
+
+on:
+  schedule:
+    # KST Monday 09:00 == UTC Monday 00:00
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-templates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate non-overlapping template batch
+        run: dart run tool/template_factory.dart --count=3
+
+      - name: Build store templates from handoff
+        run: dart run tool/build_store_templates_from_handoff.dart --input=assets/templates/figma_handoff_example.json --output=assets/templates/generated/store_latest.json --pages=12
+
+      - name: Run template release gate (block on failure)
+        run: dart run tool/template_release_gate.dart --store-json=assets/templates/generated/store_latest.json
+
+      - name: Notify template update (push + inbox)
+        env:
+          SNAPFIT_API_BASE_URL: ${{ secrets.SNAPFIT_API_BASE_URL }}
+          SNAPFIT_PUSH_ADMIN_KEY: ${{ secrets.SNAPFIT_PUSH_ADMIN_KEY }}
+        run: |
+          if [ -z "$SNAPFIT_API_BASE_URL" ] || [ -z "$SNAPFIT_PUSH_ADMIN_KEY" ]; then
+            echo "Skip notification: SNAPFIT_API_BASE_URL or SNAPFIT_PUSH_ADMIN_KEY is missing"
+            exit 0
+          fi
+          COUNT=$(jq 'length' assets/templates/generated/latest.json)
+          if [ "$COUNT" -le 0 ]; then
+            echo "Skip notification: no generated templates"
+            exit 0
+          fi
+          TODAY=$(TZ=Asia/Seoul date +%Y.%m.%d)
+          curl -sS -X POST "$SNAPFIT_API_BASE_URL/api/notifications/topic" \
+            -H "Content-Type: application/json" \
+            -H "X-Admin-Key: $SNAPFIT_PUSH_ADMIN_KEY" \
+            -d "{
+              \"topic\": \"snapfit_template_new\",
+              \"title\": \"새 템플릿 업데이트\",
+              \"body\": \"${TODAY} 신규 템플릿 ${COUNT}개가 추가되었어요.\",
+              \"dryRun\": false,
+              \"data\": {
+                \"type\": \"template_new\",
+                \"source\": \"template_factory\",
+                \"count\": \"${COUNT}\"
+              }
+            }"
+
+      - name: Commit generated batch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/templates/generated/latest.json assets/templates/generated/template_factory_registry.json assets/templates/generated/store_latest.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(template): weekly auto-generated unique batch"
+          git push

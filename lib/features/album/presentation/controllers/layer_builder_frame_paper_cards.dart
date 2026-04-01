@@ -331,3 +331,88 @@ Widget _frameSoftPaperCardImpl(Widget image) {
     ),
   );
 }
+
+Widget _frameArchSoftImpl(Widget image) {
+  return ClipPath(
+    clipper: _ArchFrameClipper(),
+    child: SizedBox.expand(child: image),
+  );
+}
+
+Widget _frameArchOvalImpl(Widget image) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final radius =
+          (constraints.biggest.shortestSide * 0.41).clamp(120.0, 320.0);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: SizedBox.expand(child: image),
+      );
+    },
+  );
+}
+
+Widget _frameTicketStubImpl(Widget image) {
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      Positioned.fill(
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF243B53),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F0E6),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox.expand(child: image),
+            ),
+          ),
+        ),
+      ),
+      const Positioned(left: -8, top: 44, child: _TicketStubNotch()),
+      const Positioned(right: -8, top: 44, child: _TicketStubNotch()),
+      const Positioned(left: -8, bottom: 30, child: _TicketStubNotch()),
+      const Positioned(right: -8, bottom: 30, child: _TicketStubNotch()),
+    ],
+  );
+}
+
+class _ArchFrameClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final archBottom = size.height * 0.32;
+    final midX = size.width * 0.5;
+    return Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, archBottom)
+      ..quadraticBezierTo(midX, 0, size.width, archBottom)
+      ..lineTo(size.width, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _TicketStubNotch extends StatelessWidget {
+  const _TicketStubNotch();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F0E6),
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF243B53), width: 1.2),
+      ),
+    );
+  }
+}

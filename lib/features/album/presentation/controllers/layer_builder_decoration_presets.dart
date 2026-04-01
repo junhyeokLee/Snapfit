@@ -1,5 +1,57 @@
 part of 'layer_builder.dart';
 
+Color? _parseHexColor(String? raw) {
+  if (raw == null) return null;
+  var value = raw.trim();
+  if (value.isEmpty) return null;
+  if (!value.startsWith('#')) value = '#$value';
+  final hex = value.substring(1);
+  if (hex.length == 6) {
+    return Color(int.parse('FF$hex', radix: 16));
+  }
+  if (hex.length == 8) {
+    return Color(int.parse(hex, radix: 16));
+  }
+  return null;
+}
+
+Widget? _buildExplicitDecoration(LayerModel layer) {
+  final fill = _parseHexColor(layer.decorationFillColor);
+  final border = _parseHexColor(layer.decorationBorderColor);
+  final radiusRaw = layer.decorationCornerRadius;
+  final borderWidthRaw = layer.decorationBorderWidth;
+
+  if (fill == null &&
+      border == null &&
+      radiusRaw == null &&
+      borderWidthRaw == null) {
+    return null;
+  }
+
+  final radius = radiusRaw == null
+      ? 0.0
+      : (radiusRaw <= 1.0
+            ? radiusRaw * math.min(layer.width, layer.height)
+            : radiusRaw);
+  final borderWidth = borderWidthRaw == null
+      ? 1.0
+      : (borderWidthRaw <= 1.0 ? borderWidthRaw * layer.width : borderWidthRaw);
+
+  return SizedBox(
+    width: layer.width,
+    height: layer.height,
+    child: Container(
+      decoration: BoxDecoration(
+        color: fill ?? Colors.transparent,
+        borderRadius: radius > 0 ? BorderRadius.circular(radius) : null,
+        border: border != null
+            ? Border.all(color: border, width: borderWidth)
+            : null,
+      ),
+    ),
+  );
+}
+
 Widget? _buildPresetDecoration(LayerModel layer) {
   if (layer.imageBackground == 'notebookPunchPage') {
     return Stack(
@@ -83,48 +135,23 @@ Widget? _buildPresetDecoration(LayerModel layer) {
     return SizedBox(
       width: layer.width,
       height: layer.height,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFAED1F3), Color(0xFFBFD9F6)],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: -layer.width * 0.08,
-            bottom: -layer.height * 0.03,
-            child: Container(
-              width: layer.width * 0.42,
-              height: layer.height * 0.22,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.24),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          Positioned(
-            right: -layer.width * 0.1,
-            bottom: layer.height * 0.08,
-            child: Container(
-              width: layer.width * 0.5,
-              height: layer.height * 0.26,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.20),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: CustomPaint(painter: _PaperNoisePainter(opacity: 0.04)),
-          ),
-        ],
-      ),
+      child: Container(color: const Color(0xFFDCE7EF)),
+    );
+  }
+
+  if (layer.imageBackground == 'deepNavy') {
+    return SizedBox(
+      width: layer.width,
+      height: layer.height,
+      child: Container(color: const Color(0xFF24374A)),
+    );
+  }
+
+  if (layer.imageBackground == 'minimalGray') {
+    return SizedBox(
+      width: layer.width,
+      height: layer.height,
+      child: Container(color: const Color(0xFFD8DEE6)),
     );
   }
 
@@ -152,6 +179,66 @@ Widget? _buildPresetDecoration(LayerModel layer) {
             stops: const [0.0, 0.55],
           ),
         ),
+      ),
+    );
+  }
+
+  if (layer.imageBackground == 'saveDateHeroGradient') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF6B92B3), Color(0xFFA98276)],
+        ),
+      ),
+    );
+  }
+  if (layer.imageBackground == 'saveDateTopTint') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      color: const Color(0x338EC5E8),
+    );
+  }
+  if (layer.imageBackground == 'saveDateBottomTint') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      color: const Color(0x2EE8A580),
+    );
+  }
+  if (layer.imageBackground == 'saveDateHaze') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(220),
+      ),
+    );
+  }
+
+  if (layer.imageBackground == 'chipPill' ||
+      layer.imageBackground == 'chipPillDark') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827).withOpacity(0.42),
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+  if (layer.imageBackground == 'chipPillLight') {
+    return Container(
+      width: layer.width,
+      height: layer.height,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -270,76 +357,37 @@ Widget? _buildPresetDecoration(LayerModel layer) {
 
 Widget _buildPaperTextureDecoration(LayerModel layer) {
   final Color color;
-  final Gradient? gradient;
   switch (layer.imageBackground) {
     case 'paperBeige':
-      color = const Color(0xFFE9E0CF);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF1E8D7), Color(0xFFE5DCC9)],
-      );
+      color = const Color(0xFFE9DDCB);
       break;
     case 'paperBrown':
     case 'paperBrownLined':
-      color = const Color(0xFFD2B295);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFDCC3A8), Color(0xFFC6A585)],
-      );
+      color = const Color(0xFFD8C7B5);
       break;
     case 'paperBrownPlain':
       color = const Color(0xFFCDB08E);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFD6BA99), Color(0xFFC19F7C)],
-      );
       break;
     case 'paperYellow':
-      color = const Color(0xFFF6E18E);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF0DE89), Color(0xFFE8D476)],
-      );
+      color = const Color(0xFFF6E6B0);
       break;
     case 'paperPink':
-      color = const Color(0xFFF1C5B4);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF3D0C3), Color(0xFFE7B6A4)],
-      );
+      color = const Color(0xFFF1DDE2);
       break;
     case 'paperWarm':
-      color = const Color(0xFFF4EBDD);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF6EDE0), Color(0xFFECDDCB)],
-      );
+      color = const Color(0xFFF1E6D8);
+      break;
+    case 'paperWhiteWarm':
+      color = const Color(0xFFF7F1E8);
       break;
     case 'paperWhite':
-      color = const Color(0xFFF7F7F3);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFAFAF7), Color(0xFFF0F0EC)],
-      );
+      color = const Color(0xFFFFFFFF);
       break;
     case 'paperGray':
-      color = const Color(0xFFEDEDED);
-      gradient = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF1F1F1), Color(0xFFE3E3E3)],
-      );
+      color = const Color(0xFFE9EDF2);
       break;
     default:
       color = Colors.white;
-      gradient = null;
   }
 
   final bool linedBrown =
@@ -360,7 +408,7 @@ Widget _buildPaperTextureDecoration(LayerModel layer) {
       children: [
         Positioned.fill(
           child: Container(
-            decoration: BoxDecoration(color: color, gradient: gradient),
+            decoration: BoxDecoration(color: color),
           ),
         ),
         if (texturedPaper)

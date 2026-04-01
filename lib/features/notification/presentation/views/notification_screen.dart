@@ -211,7 +211,7 @@ class _NotificationCard extends StatelessWidget {
           border: Border.all(
             color: isRead
                 ? SnapFitColors.overlayLightOf(context)
-                : const Color(0xFF9CEBFF),
+                : SnapFitColors.accentLight,
             width: isRead ? 1 : 1.4,
           ),
         ),
@@ -224,7 +224,7 @@ class _NotificationCard extends StatelessWidget {
                   child: Container(
                     width: 22,
                     height: 22,
-                    color: const Color(0xFFEAF7FB),
+                    color: SnapFitColors.accentLight,
                     padding: const EdgeInsets.all(3),
                     child: Image.asset(
                       'assets/snapfit_logo.png',
@@ -239,7 +239,7 @@ class _NotificationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isRead
                         ? Colors.transparent
-                        : const Color(0xFF08B7DD),
+                        : SnapFitColors.accent,
                     shape: BoxShape.circle,
                   ),
                 ),

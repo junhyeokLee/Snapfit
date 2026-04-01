@@ -35,7 +35,9 @@ class _TemplateSelectionPanelState
         ? vm.selectedCover.ratio
         : (3 / 4);
 
-    final double baseW = isCover ? kCoverReferenceWidth : 300.0;
+    // 페이지 에디터는 커버/내지 모두 500 기준 논리 좌표계를 사용하므로
+    // 템플릿 생성도 동일 기준으로 맞춰야 터치/이동 체감이 일관된다.
+    final double baseW = kCoverReferenceWidth;
     final Size canvasSize = Size(baseW, baseW / aspect);
 
     final templates = pageTemplates;
@@ -347,6 +349,11 @@ class _ImageFramePreview extends StatelessWidget {
         switch (frameKey) {
           case 'circle':
             return ClipOval(child: photo);
+          case 'archSoft':
+            return ClipPath(
+              clipper: _TemplatePreviewArchClipper(),
+              child: photo,
+            );
           case 'round':
             return ClipRRect(
               borderRadius: BorderRadius.circular(18 * s),
@@ -454,6 +461,49 @@ class _ImageFramePreview extends StatelessWidget {
                   ],
                 ),
               ),
+            );
+          case 'ticketStub':
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10 * s),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF243B53),
+                    borderRadius: BorderRadius.circular(18 * s),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F0E6),
+                      borderRadius: BorderRadius.circular(14 * s),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12 * s),
+                      child: photo,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -6 * s,
+                  top: 38 * s,
+                  child: _templateTicketNotch(s),
+                ),
+                Positioned(
+                  right: -6 * s,
+                  top: 38 * s,
+                  child: _templateTicketNotch(s),
+                ),
+                Positioned(
+                  left: -6 * s,
+                  bottom: 24 * s,
+                  child: _templateTicketNotch(s),
+                ),
+                Positioned(
+                  right: -6 * s,
+                  bottom: 24 * s,
+                  child: _templateTicketNotch(s),
+                ),
+              ],
             );
           case 'win95':
             return Container(
@@ -698,6 +748,33 @@ class _MiniSketchPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _MiniSketchPainter oldDelegate) =>
       oldDelegate.strokeWidth != strokeWidth;
+}
+
+Widget _templateTicketNotch(double s) => Container(
+  width: 12 * s,
+  height: 12 * s,
+  decoration: BoxDecoration(
+    color: const Color(0xFFF7F0E6),
+    shape: BoxShape.circle,
+    border: Border.all(color: const Color(0xFF243B53), width: 1 * s),
+  ),
+);
+
+class _TemplatePreviewArchClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final archBottom = size.height * 0.32;
+    final midX = size.width * 0.5;
+    return Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, archBottom)
+      ..quadraticBezierTo(midX, 0, size.width, archBottom)
+      ..lineTo(size.width, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _TextBgPreview extends StatelessWidget {

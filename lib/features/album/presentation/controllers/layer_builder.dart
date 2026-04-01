@@ -1,10 +1,12 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../domain/entities/layer.dart';
+import '../viewmodels/album_editor_view_model.dart';
 import 'layer_interaction_manager.dart';
 part 'layer_builder_sticker_decorations.dart';
 part 'layer_builder_decoration_presets.dart';
@@ -115,6 +117,8 @@ class LayerBuilder {
   Widget _buildDecoration(LayerModel layer) {
     final sticker = _buildStickerDecoration(layer);
     if (sticker != null) return sticker;
+    final explicit = _buildExplicitDecoration(layer);
+    if (explicit != null) return explicit;
     final preset = _buildPresetDecoration(layer);
     if (preset != null) return preset;
 
@@ -123,6 +127,18 @@ class LayerBuilder {
 
   /// 기본 원형 – 바텀시트 디자인대로 원형
   Widget _frameCircle(Widget image) => _frameCircleImpl(image);
+
+  /// 소프트 아치 – 웨딩 에디토리얼용 아치형 프레임
+  Widget _frameArchSoft(Widget image) => _frameArchSoftImpl(image);
+
+  /// 캡슐형 아치/오벌 – SAVE THE DATE 피그마 정합용
+  Widget _frameArchOval(Widget image) => _frameArchOvalImpl(image);
+
+  /// 원형 링 카드 – SAVE THE DATE 피그마 정합용
+  Widget _frameCircleRing(Widget image) => _frameCircleRingImpl(image);
+
+  /// 피그마 원본의 28px rounded image clip
+  Widget _frameRounded28(Widget image) => _frameRounded28Impl(image);
 
   /// 소프트 라운드 – 바텀시트와 동일: 카드 없이 18px 둥글게
   Widget _frameRound(Widget image) => _frameRoundImpl(image);
@@ -236,6 +252,9 @@ class LayerBuilder {
 
   /// 골드 프레임
   Widget _frameGoldFrame(Widget image) => _frameGoldFrameImpl(image);
+
+  /// RSVP 티켓형 프레임
+  Widget _frameTicketStub(Widget image) => _frameTicketStubImpl(image);
 
   /// 블롭 프레임
   Widget _frameBlob(Widget image) => _frameBlobImpl(image);

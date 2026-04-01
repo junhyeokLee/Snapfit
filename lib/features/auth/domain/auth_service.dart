@@ -1,11 +1,13 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
     hide AuthApi;
+import 'package:dio/dio.dart';
 
 import 'dart:async';
 
 import '../../../config/env.dart';
 import '../../../core/interceptors/token_storage.dart';
+import '../../../core/notifications/fcm_notification_service.dart';
 import '../data/api/auth_api.dart' as backend;
 import '../data/dto/auth_response.dart';
 
@@ -36,6 +38,8 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    await FcmNotificationService.clearDevicePushState();
+    await FcmNotificationService.clearLocalNotificationPrefs();
     // 1) 로컬 토큰/유저정보 삭제 (즉시 반영)
     await tokenStorage.clear();
 
@@ -44,6 +48,55 @@ class AuthService {
     unawaited(_logoutFromKakao());
     unawaited(disconnectGoogle());
     unawaited(unlinkKakao());
+  }
+
+  Future<void> deleteAccount() async {
+    Future<void> deleteCall() async {
+      final accessToken = await tokenStorage.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
+      }
+      await api.deleteAccount();
+    }
+
+    Future<void> refreshIfPossible() async {
+      final refreshToken = await tokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
+      }
+      try {
+        await refresh(refreshToken);
+      } catch (_) {
+        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
+      }
+    }
+
+    try {
+      await deleteCall();
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode != 401 && statusCode != 403) rethrow;
+      await refreshIfPossible();
+      await deleteCall();
+    }
+
+    await logout();
+  }
+
+  Future<void> syncConsentIfPresent() async {
+    final consent = await tokenStorage.getConsent();
+    if (consent == null) return;
+    try {
+      await api.updateConsents({
+        'termsVersion': consent.termsVersion,
+        'privacyVersion': consent.privacyVersion,
+        'marketingOptIn': consent.marketingOptIn,
+        'agreedAt': consent.agreedAtIso,
+      });
+    } catch (_) {
+      // 동의 동기화 실패가 로그인 실패로 이어지지 않도록 비차단 처리.
+      // 다음 로그인 시 재동기화된다.
+    }
   }
 
   Future<void> _logoutFromGoogle() async {

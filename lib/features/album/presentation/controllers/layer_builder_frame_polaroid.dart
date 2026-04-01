@@ -17,8 +17,41 @@ Widget _frameCircleImpl(Widget image) {
   );
 }
 
+Widget _frameCircleRingImpl(Widget image) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final size = constraints.biggest;
+      final side = size.shortestSide;
+      final ringPadding = (side * 0.054).clamp(10.0, 42.0);
+      final borderWidth = (side * 0.0027).clamp(1.0, 2.0);
+
+      return Center(
+        child: SizedBox(
+          width: side,
+          height: side,
+          child: Container(
+            padding: EdgeInsets.all(ringPadding),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFFC9D2DA),
+                width: borderWidth,
+              ),
+            ),
+            child: ClipOval(child: SizedBox.expand(child: image)),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 Widget _frameRoundImpl(Widget image) {
   return ClipRRect(borderRadius: BorderRadius.circular(18), child: image);
+}
+
+Widget _frameRounded28Impl(Widget image) {
+  return ClipRRect(borderRadius: BorderRadius.circular(28), child: image);
 }
 
 Widget _polaroidBottomLineImpl() {

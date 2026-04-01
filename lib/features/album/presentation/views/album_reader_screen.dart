@@ -20,6 +20,7 @@ import '../../../billing/data/billing_provider.dart';
 import 'page_editor_screen.dart';
 import 'album_reader_inner_detail_screen.dart';
 import 'album_invite_screen.dart';
+import 'print_order_checkout_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   const AlbumReaderScreen({super.key});
@@ -34,7 +35,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   late final GlobalKey _coverKey;
   late final LayerInteractionManager _interaction;
   late final LayerBuilder _layerBuilder;
-  Size _baseCanvasSize = const Size(300, 400); // 초기값, initState에서 갱신됨
+  Size _baseCanvasSize = const Size(
+    kCoverReferenceWidth,
+    kCoverReferenceWidth,
+  ); // 초기값, initState에서 갱신됨
   Size _coverSize = Size.zero;
   bool _isFrozen = false; // 제작확정 여부
   bool _isDeleting = false; // 삭제 진행 중 UI 잠금
@@ -62,7 +66,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         if (page < 0.5) {
           return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
         }
-        return Size(300.0, 300.0 / aspect);
+        return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
       },
       isPreviewMode: true,
       showSelectionControls: false,
@@ -80,7 +84,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       if (page < 0.5) {
         return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
       }
-      return Size(300.0, 300.0 / aspect);
+      return Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -91,7 +95,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
         final aspect = vm.selectedCover.ratio;
         setState(() {
-          _baseCanvasSize = Size(300.0, 300.0 / aspect);
+          _baseCanvasSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
         });
       }
     });
@@ -217,10 +221,16 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: SnapFitColors.surfaceOf(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Row(
           children: [
-            Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22.sp),
+            Icon(
+              Icons.delete_outline_rounded,
+              color: Colors.redAccent,
+              size: 22.sp,
+            ),
             SizedBox(width: 8.w),
             Text(
               '앨범 삭제',
@@ -436,9 +446,34 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           ref.read(homeViewModelProvider.notifier).refresh();
         },
         onOrder: () {
-          ScaffoldMessenger.of(
+          final album = vm.album;
+          if (album == null || album.id <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('주문할 앨범 정보를 찾을 수 없습니다.')),
+            );
+            return;
+          }
+
+          Navigator.push<bool>(
             context,
-          ).showSnackBar(const SnackBar(content: Text('주문 기능은 준비 중입니다.')));
+            MaterialPageRoute(
+              builder: (_) => PrintOrderCheckoutScreen(
+                albumId: album.id,
+                albumTitle: (album.title ?? '').trim().isEmpty
+                    ? '스냅핏 앨범'
+                    : album.title!,
+                pageCount: vm.pages.length,
+              ),
+            ),
+          ).then((ordered) {
+            if (ordered == true && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('주문이 접수되었습니다. 주문내역에서 진행 상태를 확인해주세요.'),
+                ),
+              );
+            }
+          });
         },
       );
     }
@@ -598,7 +633,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                               canvasKey: _coverKey,
                               onCanvasSizeChanged: (size) {
                                 if (_coverSize == size) return;
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
                                   if (!mounted) return;
                                   debugPrint(
                                     '[AlbumReaderScreen] Canvas Size Changed: $size',
@@ -655,7 +692,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                     // ─── 5. 하단 썸네일 스트립 ───
                     AlbumReaderThumbnailStrip(
                       pages: allPages,
-                      pageController: allPages.isNotEmpty ? _pageController : null,
+                      pageController: allPages.isNotEmpty
+                          ? _pageController
+                          : null,
                       previewBuilder: _layerBuilder,
                       baseCanvasSize: _baseCanvasSize,
                       height: 64.h,
@@ -668,9 +707,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             if (_isDeleting) ...[
               Positioned.fill(
                 child: AbsorbPointer(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.34),
-                  ),
+                  child: Container(color: Colors.black.withOpacity(0.34)),
                 ),
               ),
               Positioned.fill(

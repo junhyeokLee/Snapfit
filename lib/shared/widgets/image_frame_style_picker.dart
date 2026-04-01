@@ -28,6 +28,12 @@ const List<ImageFrameStyle> imageFrameStyles = [
     category: 'basic',
   ),
   ImageFrameStyle(
+    key: 'archSoft',
+    label: '소프트 아치',
+    subtitle: 'Editorial Arch',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
     key: 'round',
     label: '소프트 라운드',
     subtitle: 'Pastel Dream',
@@ -142,6 +148,12 @@ const List<ImageFrameStyle> imageFrameStyles = [
     label: '뉴포스트 블랍',
     subtitle: 'Organic Mask',
     category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'ticketStub',
+    label: '티켓 카드',
+    subtitle: 'RSVP Ticket',
+    category: 'classic',
   ),
   // 미니멀 & 기하학
   ImageFrameStyle(
@@ -532,6 +544,9 @@ class _FrameStyleItem extends StatelessWidget {
         // 기본 원형: 바텀시트 디자인대로 원형 클리핑
         content = ClipOval(child: placeholder);
         break;
+      case 'archSoft':
+        content = ClipPath(clipper: _ArchPreviewClipper(), child: placeholder);
+        break;
       case 'round':
         // 소프트 라운드: 카드 없이 사진만 둥글게 (바텀시트와 동일 18.r)
         content = ClipRRect(
@@ -668,6 +683,34 @@ class _FrameStyleItem extends StatelessWidget {
       case 'goldFrame':
         content = _previewGoldFrame(placeholder);
         break;
+      case 'ticketStub':
+        content = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF243B53),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F0E6),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: placeholder,
+                ),
+              ),
+            ),
+            Positioned(left: -6.w, top: 38.h, child: _ticketNotch()),
+            Positioned(right: -6.w, top: 38.h, child: _ticketNotch()),
+            Positioned(left: -6.w, bottom: 24.h, child: _ticketNotch()),
+            Positioned(right: -6.w, bottom: 24.h, child: _ticketNotch()),
+          ],
+        );
+        break;
       case 'pinkSplatter':
         content = _previewPinkSplatter(placeholder);
         break;
@@ -697,6 +740,16 @@ class _FrameStyleItem extends StatelessWidget {
       },
     );
   }
+
+  Widget _ticketNotch() => Container(
+    width: 12.w,
+    height: 12.w,
+    decoration: BoxDecoration(
+      color: const Color(0xFFF7F0E6),
+      shape: BoxShape.circle,
+      border: Border.all(color: const Color(0xFF243B53), width: 1.w),
+    ),
+  );
 
   /// 레퍼런스: 클래식 폴라로이드 - 실제 적용된 프레임과 동일 비율/사진 영역
   Widget _previewPolaroidStandard(Widget child) {
@@ -1720,6 +1773,23 @@ class _TornPaperEdgeClipper extends CustomClipper<Path> {
     path.lineTo(0, size.height - 8);
     path.close();
     return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _ArchPreviewClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final archBottom = size.height * 0.32;
+    final midX = size.width * 0.5;
+    return Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, archBottom)
+      ..quadraticBezierTo(midX, 0, size.width, archBottom)
+      ..lineTo(size.width, size.height)
+      ..close();
   }
 
   @override

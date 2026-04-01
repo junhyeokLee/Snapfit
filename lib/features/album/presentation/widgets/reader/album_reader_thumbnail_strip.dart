@@ -68,7 +68,10 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     }
 
     final double aspect = baseCanvasSize.width / baseCanvasSize.height;
-    final Size logicalInnerSize = Size(300.0, 300.0 / aspect);
+    final Size logicalInnerSize = Size(
+      kCoverReferenceWidth,
+      kCoverReferenceWidth / aspect,
+    );
     final Size logicalCoverSize = Size(
       kCoverReferenceWidth,
       kCoverReferenceWidth / aspect,

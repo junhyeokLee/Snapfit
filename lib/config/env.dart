@@ -27,4 +27,11 @@ class Env {
     defaultValue:
         '991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com',
   );
+
+  /// 주문 상태 관리자 전환 키(개발/QA용)
+  /// - --dart-define=ORDER_ADMIN_KEY=...
+  static const String orderAdminKey = String.fromEnvironment(
+    'ORDER_ADMIN_KEY',
+    defaultValue: '',
+  );
 }

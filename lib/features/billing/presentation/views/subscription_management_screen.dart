@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../data/billing_provider.dart';
+import '../../data/billing_repository.dart';
 import '../../domain/entities/billing_plan.dart';
 import '../../domain/entities/payment_prepare_result.dart';
-import '../../domain/entities/subscription_status.dart';
 
 class SubscriptionManagementScreen extends ConsumerStatefulWidget {
   const SubscriptionManagementScreen({super.key});
@@ -25,10 +26,8 @@ class _SubscriptionManagementScreenState
   StreamSubscription<Uri>? _linkSub;
   final Set<String> _handledOrderIds = <String>{};
 
-  String _provider = 'TOSS_NAVERPAY';
-  bool _isProcessing = false;
-  bool _waitingCallback = false;
-  PaymentPrepareResult? _latestPrepared;
+  bool _isBusy = false;
+  PaymentPrepareResult? _prepared;
 
   @override
   void initState() {
@@ -42,585 +41,551 @@ class _SubscriptionManagementScreenState
     super.dispose();
   }
 
+  Future<void> _initBillingDeepLinkListener() async {
+    try {
+      final initial = await _appLinks.getInitialLink();
+      if (initial != null) {
+        unawaited(_handleIncomingUri(initial));
+      }
+    } catch (_) {
+      // no-op: 초기 링크는 실패해도 스트림에서 후속 처리 가능
+    }
+
+    _linkSub = _appLinks.uriLinkStream.listen((uri) {
+      unawaited(_handleIncomingUri(uri));
+    });
+  }
+
+  Future<void> _handleIncomingUri(Uri uri) async {
+    if (!mounted) return;
+    if (uri.scheme.toLowerCase() != 'snapfit' ||
+        uri.host.toLowerCase() != 'billing') {
+      return;
+    }
+
+    final path = uri.path.toLowerCase();
+    final orderId = uri.queryParameters['orderId']?.trim() ?? '';
+    if (orderId.isEmpty) return;
+    if (_handledOrderIds.contains(orderId)) return;
+    _handledOrderIds.add(orderId);
+
+    if (path.contains('success')) {
+      final paymentKey = uri.queryParameters['paymentKey']?.trim();
+      final amount = _safeInt(uri.queryParameters['amount']);
+      await _approveFromCallback(
+        orderId: orderId,
+        paymentKey: paymentKey,
+        amount: amount,
+      );
+    } else if (path.contains('fail')) {
+      final message = uri.queryParameters['message']?.trim();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message?.isNotEmpty == true ? message! : '결제가 취소되거나 실패했습니다.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _approveFromCallback({
+    required String orderId,
+    String? paymentKey,
+    int? amount,
+  }) async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+    try {
+      final repo = ref.read(billingRepositoryProvider);
+      await repo.approveOrder(
+        orderId: orderId,
+        paymentKey: paymentKey,
+        amount: amount,
+      );
+
+      ref.invalidate(mySubscriptionProvider);
+      ref.invalidate(myStorageQuotaProvider);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('결제가 완료되어 구독 상태가 반영되었습니다.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('결제 승인 자동 반영 실패: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
+  Future<void> _prepareAndOpenCheckout(BillingPlan plan) async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+
+    try {
+      final repo = ref.read(billingRepositoryProvider);
+      final prepared = await repo.preparePayment(
+        planCode: plan.planCode,
+        provider: plan.provider,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _prepared = prepared;
+      });
+
+      if (prepared.checkoutUrl.isNotEmpty) {
+        final uri = Uri.tryParse(prepared.checkoutUrl);
+        if (uri != null) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '결제창을 열었습니다. 결제 후 아래 "승인 완료 반영" 버튼을 눌러 상태를 반영하세요. 주문번호: ${prepared.orderId}',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('결제 준비 실패: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
+  Future<void> _approvePreparedOrder() async {
+    final prepared = _prepared;
+    if (prepared == null || _isBusy) return;
+
+    setState(() => _isBusy = true);
+    try {
+      final repo = ref.read(billingRepositoryProvider);
+      await repo.approveOrder(
+        orderId: prepared.orderId,
+        amount: prepared.amount,
+      );
+
+      ref.invalidate(mySubscriptionProvider);
+      ref.invalidate(myStorageQuotaProvider);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('구독 결제가 반영되었습니다.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('승인 반영 실패: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
+  Future<void> _cancelSubscription() async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+
+    try {
+      final repo = ref.read(billingRepositoryProvider);
+      await repo.cancelSubscription();
+
+      ref.invalidate(mySubscriptionProvider);
+      ref.invalidate(myStorageQuotaProvider);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('구독이 취소되었습니다.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('구독 취소 실패: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final plansAsync = ref.watch(billingPlansProvider);
     final subscriptionAsync = ref.watch(mySubscriptionProvider);
+    final plansAsync = ref.watch(billingPlansProvider);
+    final quotaAsync = ref.watch(myStorageQuotaProvider);
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: AppBar(
-        backgroundColor: SnapFitColors.backgroundOf(context),
+        title: const Text('구독 및 결제 관리'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          '구독 및 결제 관리',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 26),
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
         children: [
-          _heroCard(context, subscriptionAsync),
-          const SizedBox(height: 12),
-          _paymentMethodCard(context),
-          const SizedBox(height: 12),
-          _planCard(context, plansAsync),
-        ],
-      ),
-    );
-  }
-
-  Widget _heroCard(
-    BuildContext context,
-    AsyncValue<SubscriptionStatusModel> subscriptionAsync,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0A2027), Color(0xFF123D49)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: subscriptionAsync.when(
-        loading: () => const SizedBox(
-          height: 72,
-          child: Center(child: CircularProgressIndicator(color: Colors.white)),
-        ),
-        error: (e, _) => const Text(
-          '구독 상태를 가져오지 못했습니다.',
-          style: TextStyle(color: Colors.white),
-        ),
-        data: (sub) {
-          final active = sub.isActive;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: active
-                          ? const Color(0xFF23D1A0)
-                          : Colors.white.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      active ? 'ACTIVE' : 'INACTIVE',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_waitingCallback)
-                    const Text(
-                      '결제 승인 대기중...',
-                      style: TextStyle(
-                        color: Color(0xFFC7E8F1),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                active ? 'SnapFit Pro 구독 중' : '구독이 필요합니다',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '플랜: ${sub.planCode ?? '-'}\n만료일: ${_fmt(sub.expiresAt)}',
+          _card(
+            context,
+            child: subscriptionAsync.when(
+              loading: () => const _LoadingRow(text: '구독 상태 확인중...'),
+              error: (e, _) => Text(
+                '구독 상태 조회 실패: $e',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.86),
-                  fontSize: 12,
-                  height: 1.4,
+                  fontSize: 12.sp,
+                  color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isProcessing ? null : _startSubscribe,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09B8DF),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
+              data: (sub) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sub.isActive ? '현재 Pro 구독중' : '현재 Free 플랜',
+                      style: TextStyle(
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w900,
+                        color: SnapFitColors.textPrimaryOf(context),
                       ),
-                      child: const Text('구독하기'),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isProcessing
-                          ? null
-                          : () => _cancelSubscriptionWithConfirm(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.45)),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '상태: ${sub.status} · 플랜: ${sub.planCode ?? '-'}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: SnapFitColors.textSecondaryOf(context),
                       ),
-                      child: const Text('구독취소'),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _paymentMethodCard(BuildContext context) {
-    return _cardShell(
-      context,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle(context, '결제 수단'),
-          const SizedBox(height: 10),
-          _paymentOptionTile(
-            context,
-            provider: 'TOSS_NAVERPAY',
-            title: '토스페이먼츠',
-            subtitle: '토스 결제창에서 카드/간편결제 선택',
-            badge: '권장',
-          ),
-          const SizedBox(height: 8),
-          _paymentOptionTile(
-            context,
-            provider: 'INICIS_NAVERPAY',
-            title: 'KG이니시스',
-            subtitle: '이니시스 결제창에서 카드/간편결제 선택',
-            badge: '보조',
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: SnapFitColors.overlayLightOf(context),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '네이버페이는 PG 결제창 내부에서 결제수단으로 선택됩니다.',
-              style: TextStyle(
-                fontSize: 12,
-                color: SnapFitColors.textSecondaryOf(context),
-                fontWeight: FontWeight.w600,
-              ),
+                    if (sub.nextBillingAt != null) ...[
+                      SizedBox(height: 4.h),
+                      Text(
+                        '다음 결제일: ${_fmtDate(sub.nextBillingAt!)}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: SnapFitColors.textSecondaryOf(context),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _paymentOptionTile(
-    BuildContext context, {
-    required String provider,
-    required String title,
-    required String subtitle,
-    required String badge,
-  }) {
-    final selected = _provider == provider;
-    return InkWell(
-      onTap: () => setState(() => _provider = provider),
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFDDF6FC)
-              : SnapFitColors.backgroundOf(context),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? const Color(0xFF08B8DF)
-                : SnapFitColors.overlayLightOf(context),
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A2027),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                provider == 'TOSS_NAVERPAY' ? 'T' : 'K',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20,
+          SizedBox(height: 12.h),
+          _card(
+            context,
+            child: quotaAsync.when(
+              loading: () => const _LoadingRow(text: '저장 사용량 확인중...'),
+              error: (e, _) => Text(
+                '저장 사용량 조회 실패: $e',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
+              data: (quota) {
+                final hard = quota.hardLimitBytes <= 0
+                    ? 1
+                    : quota.hardLimitBytes;
+                final progress = (quota.usedBytes / hard).clamp(0.0, 1.0);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '저장 용량',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w800,
+                        color: SnapFitColors.textPrimaryOf(context),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '${_fmtBytes(quota.usedBytes)} / ${_fmtBytes(quota.hardLimitBytes)}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: SnapFitColors.textSecondaryOf(context),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999.r),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8.h,
+                        backgroundColor: const Color(0xFFE9ECEF),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10BEE2),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'FREE 1GB · PRO 10GB (초과 시 저장 차단)',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: SnapFitColors.textMutedOf(context),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            const SizedBox(width: 10),
-            Expanded(
+          ),
+          SizedBox(height: 12.h),
+          _card(
+            context,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '구독 상품',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w800,
+                    color: SnapFitColors.textPrimaryOf(context),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                plansAsync.when(
+                  loading: () => const _LoadingRow(text: '상품 불러오는 중...'),
+                  error: (e, _) => Text(
+                    '상품 조회 실패: $e',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  data: (plans) {
+                    if (plans.isEmpty) {
+                      return Text(
+                        '등록된 구독 상품이 없습니다.',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: SnapFitColors.textSecondaryOf(context),
+                        ),
+                      );
+                    }
+                    return Column(
+                      children: plans.map((plan) {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 8.h),
+                          child: _planTile(context, plan),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (_prepared != null) ...[
+            SizedBox(height: 12.h),
+            _card(
+              context,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    '결제 진행 정보',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w800,
                       color: SnapFitColors.textPrimaryOf(context),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 8.h),
                   Text(
-                    subtitle,
+                    '주문번호: ${_prepared!.orderId}',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
                       color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '결제수단: ${_prepared!.provider} · ${_prepared!.amount}원',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isBusy ? null : _approvePreparedOrder,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: SnapFitColors.accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: const Text('승인 완료 반영'),
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0xFF08B8DF)
-                    : SnapFitColors.overlayLightOf(context),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                badge,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: selected
-                      ? Colors.white
-                      : SnapFitColors.textMutedOf(context),
+          ],
+          SizedBox(height: 12.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _isBusy ? null : _cancelSubscription,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                side: const BorderSide(color: Colors.redAccent),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
+              child: const Text('구독 취소'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _planCard(
-    BuildContext context,
-    AsyncValue<List<BillingPlan>> plansAsync,
-  ) {
-    return _cardShell(
-      context,
-      child: plansAsync.when(
-        loading: () => const SizedBox(
-          height: 68,
-          child: Center(child: CircularProgressIndicator()),
-        ),
-        error: (e, _) => Text(
-          '플랜 정보를 불러오지 못했습니다.',
-          style: TextStyle(color: SnapFitColors.textSecondaryOf(context)),
-        ),
-        data: (plans) {
-          if (plans.isEmpty) {
-            return Text(
-              '플랜이 없습니다.',
-              style: TextStyle(color: SnapFitColors.textSecondaryOf(context)),
-            );
-          }
-          final plan = plans.first;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle(context, '요금제'),
-              const SizedBox(height: 8),
-              Text(
-                plan.title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: SnapFitColors.textPrimaryOf(context),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                '${_comma(plan.amount)}원 / ${plan.periodDays}일 · ${plan.currency}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-              ),
-              if (_latestPrepared != null) ...[
-                const SizedBox(height: 8),
+  Widget _planTile(BuildContext context, BillingPlan plan) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  '최근 결제 시도: ${_latestPrepared!.orderId}',
+                  plan.title,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w800,
+                    color: SnapFitColors.textPrimaryOf(context),
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  '${plan.amount}원 / ${plan.periodDays}일  ·  ${plan.provider}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: SnapFitColors.textMutedOf(context),
+                    color: SnapFitColors.textSecondaryOf(context),
                   ),
                 ),
               ],
-            ],
-          );
-        },
+            ),
+          ),
+          SizedBox(width: 10.w),
+          ElevatedButton(
+            onPressed: _isBusy ? null : () => _prepareAndOpenCheckout(plan),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: SnapFitColors.accent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+            child: const Text('구독하기'),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _cardShell(BuildContext context, {required Widget child}) {
+  Widget _card(BuildContext context, {required Widget child}) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: child,
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w800,
-        color: SnapFitColors.textPrimaryOf(context),
-      ),
-    );
+  String _fmtDate(DateTime dt) {
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    return '${dt.year}.$m.$d';
   }
 
-  Future<void> _startSubscribe() async {
-    setState(() {
-      _isProcessing = true;
-      _waitingCallback = false;
-    });
-
-    try {
-      final repository = ref.read(billingRepositoryProvider);
-      final prepared = await repository.preparePayment(provider: _provider);
-      _latestPrepared = prepared;
-
-      final uri = Uri.tryParse(prepared.checkoutUrl);
-      if (uri != null) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-
-      if (prepared.isMock) {
-        await repository.approveOrder(
-          orderId: prepared.orderId,
-          amount: prepared.amount,
-          paymentKey: 'MOCK-PAY-${prepared.orderId}',
-          transactionId: 'MOCK-TX-${DateTime.now().millisecondsSinceEpoch}',
-        );
-        _waitingCallback = false;
-      } else {
-        _waitingCallback = true;
-      }
-
-      ref.invalidate(mySubscriptionProvider);
-      ref.invalidate(myStorageQuotaProvider);
-      _show(prepared.isMock ? '구독 결제가 완료되었습니다.' : '결제 완료 후 앱으로 자동 복귀합니다.');
-    } catch (e) {
-      _show('구독 결제 실패: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
+  String _fmtBytes(int bytes) {
+    const kb = 1024;
+    const mb = 1024 * kb;
+    const gb = 1024 * mb;
+    if (bytes >= gb) return '${(bytes / gb).toStringAsFixed(2)} GB';
+    if (bytes >= mb) return '${(bytes / mb).toStringAsFixed(1)} MB';
+    if (bytes >= kb) return '${(bytes / kb).toStringAsFixed(1)} KB';
+    return '$bytes B';
   }
 
-  Future<void> _cancelSubscriptionWithConfirm(BuildContext context) async {
-    final ok = await _confirmDialog(
-      context,
-      title: '구독을 취소할까요?',
-      body: '현재 구독이 즉시 비활성화되고, 프리미엄 템플릿 사용이 제한됩니다.',
-      confirmText: '취소하기',
-    );
-    if (!ok) return;
-
-    setState(() => _isProcessing = true);
-    try {
-      await ref.read(billingRepositoryProvider).cancelSubscription();
-      ref.invalidate(mySubscriptionProvider);
-      ref.invalidate(myStorageQuotaProvider);
-      _show('구독이 취소되었습니다.');
-    } catch (e) {
-      _show('구독 취소 실패: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
+  int? _safeInt(String? raw) {
+    if (raw == null) return null;
+    return int.tryParse(raw);
   }
+}
 
-  Future<void> _initBillingDeepLinkListener() async {
-    try {
-      final initial = await _appLinks.getInitialLink();
-      if (initial != null) {
-        await _handleBillingDeepLink(initial);
-      }
-    } catch (_) {}
+class _LoadingRow extends StatelessWidget {
+  const _LoadingRow({required this.text});
 
-    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
-      await _handleBillingDeepLink(uri);
-    });
-  }
+  final String text;
 
-  Future<void> _handleBillingDeepLink(Uri uri) async {
-    if (uri.scheme != 'snapfit') return;
-    if (uri.host != 'billing') return;
-
-    final path = uri.path.toLowerCase();
-    final orderId = uri.queryParameters['orderId'];
-    if (orderId == null || orderId.isEmpty) return;
-
-    if (path.contains('success')) {
-      if (_handledOrderIds.contains(orderId)) return;
-      _handledOrderIds.add(orderId);
-
-      final paymentKey = uri.queryParameters['paymentKey'];
-      final amountRaw = uri.queryParameters['amount'];
-      final amount = amountRaw == null ? null : int.tryParse(amountRaw);
-
-      setState(() {
-        _isProcessing = true;
-        _waitingCallback = false;
-      });
-
-      try {
-        await ref
-            .read(billingRepositoryProvider)
-            .approveOrder(
-              orderId: orderId,
-              paymentKey: paymentKey,
-              amount: amount,
-              transactionId: paymentKey,
-            );
-        ref.invalidate(mySubscriptionProvider);
-        ref.invalidate(myStorageQuotaProvider);
-        _show('결제가 승인되어 구독이 활성화되었습니다.');
-      } catch (e) {
-        _show('결제 승인 처리 실패: $e');
-      } finally {
-        if (mounted) {
-          setState(() => _isProcessing = false);
-        }
-      }
-      return;
-    }
-
-    if (path.contains('fail')) {
-      setState(() => _waitingCallback = false);
-      final message = uri.queryParameters['message'] ?? '결제에 실패했습니다.';
-      _show(message);
-    }
-  }
-
-  Future<bool> _confirmDialog(
-    BuildContext context, {
-    required String title,
-    required String body,
-    required String confirmText,
-  }) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: SnapFitColors.surfaceOf(context),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: SnapFitColors.textPrimaryOf(context),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  body,
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.4,
-                    color: SnapFitColors.textSecondaryOf(context),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD64B4B),
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Text(confirmText),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('닫기'),
-                  ),
-                ),
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 14,
+          height: 14,
+          child: const CircularProgressIndicator(strokeWidth: 2),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textSecondaryOf(context),
           ),
-        );
-      },
+        ),
+      ],
     );
-
-    return result == true;
-  }
-
-  String _fmt(DateTime? date) {
-    if (date == null) return '-';
-    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
-  }
-
-  String _comma(int value) {
-    final s = value.toString();
-    return s.replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
-  }
-
-  void _show(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }

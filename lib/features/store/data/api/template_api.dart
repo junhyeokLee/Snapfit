@@ -12,6 +12,13 @@ abstract class TemplateApi {
   @GET('/api/templates')
   Future<List<PremiumTemplate>> getTemplates(@Query('userId') String? userId);
 
+  @GET('/api/templates/summary')
+  Future<dynamic> getTemplateSummaries(
+    @Query('userId') String? userId,
+    @Query('page') int page,
+    @Query('size') int size,
+  );
+
   @GET('/api/templates/{id}')
   Future<PremiumTemplate> getTemplate(
     @Path('id') int id,
