@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-09T00:00:00Z",
+  "templates": [
+    {
+      "slug": "save_the_date",
+      "templateId": "save_the_date_v1",
+      "title": "SAVE THE DATE",
+      "status": "approved",
+      "locked": true,
+      "category": "wedding"
+    },
+    {
+      "slug": "jeju_travel",
+      "templateId": "jeju_travel_v1",
+      "title": "제주의 기록",
+      "status": "approved",
+      "locked": true,
+      "category": "travel"
+    },
+    {
+      "slug": "family_weekend",
+      "templateId": "family_weekend_v1",
+      "title": "가족의 주말",
+      "status": "approved",
+      "locked": true,
+      "category": "family"
+    },
+    {
+      "slug": "anniversary_days",
+      "templateId": "anniversary_days_v1",
+      "title": "우리의 기념일",
+      "status": "approved",
+      "locked": true,
+      "category": "anniversary"
+    }
+  ]
+}

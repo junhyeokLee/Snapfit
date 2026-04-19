@@ -1,0 +1,24 @@
+{
+  "templateId": "scrapbook_v1",
+  "templateSlug": "scrapbook",
+  "fileKey": "DT3qiN54Z9o5ZSCfNpx9zP",
+  "sectionNodeId": "358:3",
+  "pages": [
+    { "pageNumber": 1, "frameName": "COVER_MEMORY_BOARD", "nodeId": "358:4" },
+    { "pageNumber": 2, "frameName": "P01_POLAROID_COLLAGE", "nodeId": "358:5" },
+    { "pageNumber": 3, "frameName": "P02_TORN_NOTE_PAGE", "nodeId": "358:6" },
+    { "pageNumber": 4, "frameName": "P03_WASHI_GRID", "nodeId": "358:7" },
+    { "pageNumber": 5, "frameName": "P04_FILM_STRIP", "nodeId": "358:8" },
+    { "pageNumber": 6, "frameName": "P05_DIARY_SPREAD", "nodeId": "358:9" },
+    { "pageNumber": 7, "frameName": "P06_TICKET_AND_PHOTOS", "nodeId": "358:10" },
+    { "pageNumber": 8, "frameName": "P07_BIG_MEMORY", "nodeId": "358:11" },
+    { "pageNumber": 9, "frameName": "P08_POSTCARD_STACK", "nodeId": "358:12" },
+    { "pageNumber": 10, "frameName": "P09_STAMP_NOTE", "nodeId": "358:13" },
+    { "pageNumber": 11, "frameName": "P10_FOUR_CUT", "nodeId": "358:14" },
+    { "pageNumber": 12, "frameName": "P11_TAPE_WALL", "nodeId": "358:15" },
+    { "pageNumber": 13, "frameName": "P12_WEEKEND_NOTE", "nodeId": "358:16" },
+    { "pageNumber": 14, "frameName": "P13_SOUVENIR_PAGE", "nodeId": "358:17" },
+    { "pageNumber": 15, "frameName": "P14_ENDING_MEMORY", "nodeId": "358:18" },
+    { "pageNumber": 16, "frameName": "P15_BACK_COVER", "nodeId": "358:19" }
+  ]
+}

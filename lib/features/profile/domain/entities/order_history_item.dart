@@ -19,7 +19,12 @@ class OrderHistoryItem {
   final String? trackingNumber;
   final String? printVendor;
   final String? printVendorOrderId;
+  final String? printPackageJsonUrl;
+  final String? printFilePdfUrl;
+  final String? printFileZipUrl;
+  final int? printAssetCount;
   final DateTime? paymentConfirmedAt;
+  final DateTime? printPackageGeneratedAt;
   final DateTime? printSubmittedAt;
   final DateTime? shippedAt;
   final DateTime? deliveredAt;
@@ -45,7 +50,12 @@ class OrderHistoryItem {
     this.trackingNumber,
     this.printVendor,
     this.printVendorOrderId,
+    this.printPackageJsonUrl,
+    this.printFilePdfUrl,
+    this.printFileZipUrl,
+    this.printAssetCount,
     this.paymentConfirmedAt,
+    this.printPackageGeneratedAt,
     this.printSubmittedAt,
     this.shippedAt,
     this.deliveredAt,
@@ -63,8 +73,8 @@ class OrderHistoryItem {
       status: json['status']?.toString() ?? 'PAYMENT_PENDING',
       statusLabel: json['statusLabel']?.toString() ?? '결제대기',
       progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
-      orderedAt: _parseServerDateTime(json['orderedAt']?.toString()) ??
-          DateTime.now(),
+      orderedAt:
+          _parseServerDateTime(json['orderedAt']?.toString()) ?? DateTime.now(),
       albumId: (json['albumId'] as num?)?.toInt(),
       recipientName: json['recipientName']?.toString(),
       recipientPhone: json['recipientPhone']?.toString(),
@@ -77,7 +87,12 @@ class OrderHistoryItem {
       trackingNumber: json['trackingNumber']?.toString(),
       printVendor: json['printVendor']?.toString(),
       printVendorOrderId: json['printVendorOrderId']?.toString(),
+      printPackageJsonUrl: json['printPackageJsonUrl']?.toString(),
+      printFilePdfUrl: json['printFilePdfUrl']?.toString(),
+      printFileZipUrl: json['printFileZipUrl']?.toString(),
+      printAssetCount: (json['printAssetCount'] as num?)?.toInt(),
       paymentConfirmedAt: parseOptionalDate('paymentConfirmedAt'),
+      printPackageGeneratedAt: parseOptionalDate('printPackageGeneratedAt'),
       printSubmittedAt: parseOptionalDate('printSubmittedAt'),
       shippedAt: parseOptionalDate('shippedAt'),
       deliveredAt: parseOptionalDate('deliveredAt'),

@@ -137,6 +137,9 @@ class LayerBuilder {
   /// 원형 링 카드 – SAVE THE DATE 피그마 정합용
   Widget _frameCircleRing(Widget image) => _frameCircleRingImpl(image);
 
+  /// 하트 이미지 프레임 – 기념일 템플릿용
+  Widget _frameHeart(Widget image) => _frameHeartImpl(image);
+
   /// 피그마 원본의 28px rounded image clip
   Widget _frameRounded28(Widget image) => _frameRounded28Impl(image);
 

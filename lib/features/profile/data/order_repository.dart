@@ -239,6 +239,32 @@ class OrderRepository {
     );
   }
 
+  Future<OrderHistoryItem> preparePrintPackage({
+    required String orderId,
+    required String adminKey,
+  }) async {
+    final response = await dio.post(
+      '/api/orders/admin/$orderId/print-package/prepare',
+      options: Options(headers: {'X-Admin-Key': adminKey}),
+    );
+    return OrderHistoryItem.fromJson(
+      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+    );
+  }
+
+  String buildAdminPrintPackageUrl(String printPackageJsonUrl) {
+    final raw = printPackageJsonUrl.trim();
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+    final base = dio.options.baseUrl.trim();
+    final normalized = base.endsWith('/')
+        ? base.substring(0, base.length - 1)
+        : base;
+    return raw.startsWith('/') ? '$normalized$raw' : '$normalized/$raw';
+  }
+
   Future<OrderStatusBadges> computeUnreadStatusBadges({
     required String userId,
     required OrderSummaryResult summary,
@@ -605,7 +631,9 @@ class OrderSummaryResult {
       shipping: parse(json['shipping']),
       delivered: parse(json['delivered']),
       canceled: parse(json['canceled']),
-      latestUpdatedAt: _parseServerDateTime(json['latestUpdatedAt']?.toString()),
+      latestUpdatedAt: _parseServerDateTime(
+        json['latestUpdatedAt']?.toString(),
+      ),
     );
   }
 

@@ -1,0 +1,61 @@
+{
+  "templateSlug": "wedding_editorial",
+  "version": "v1",
+  "provider": "firebase_storage",
+  "bucket": "snapfit-c719d.firebasestorage.app",
+  "cdnBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "generatedAt": "2026-04-11T07:25:24.525181Z",
+  "dryRun": false,
+  "mappings": [
+    {
+      "fileName": "ceremony_moment.png",
+      "filePath": "assets/templates/wedding_editorial/images/sources/ceremony_moment.png",
+      "assetPath": "asset:assets/templates/wedding_editorial/images/sources/ceremony_moment.png",
+      "firebaseStoragePath": "templates/wedding_editorial/v1/ceremony_moment.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fceremony_moment.png?alt=media&token=7206cd84-6a88-45b5-b0f8-59456c6e3739",
+      "downloadToken": "7206cd84-6a88-45b5-b0f8-59456c6e3739",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "sunset_pair.png",
+      "filePath": "assets/templates/wedding_editorial/images/sources/sunset_pair.png",
+      "assetPath": "asset:assets/templates/wedding_editorial/images/sources/sunset_pair.png",
+      "firebaseStoragePath": "templates/wedding_editorial/v1/sunset_pair.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fsunset_pair.png?alt=media&token=4b504ed6-bf40-4fe5-8a10-d8d887f18adc",
+      "downloadToken": "4b504ed6-bf40-4fe5-8a10-d8d887f18adc",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "flower_table.png",
+      "filePath": "assets/templates/wedding_editorial/images/sources/flower_table.png",
+      "assetPath": "asset:assets/templates/wedding_editorial/images/sources/flower_table.png",
+      "firebaseStoragePath": "templates/wedding_editorial/v1/flower_table.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fflower_table.png?alt=media&token=8ec0dae8-639f-40e5-9e12-94693b2762f9",
+      "downloadToken": "8ec0dae8-639f-40e5-9e12-94693b2762f9",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "city_weekend.png",
+      "filePath": "assets/templates/wedding_editorial/images/sources/city_weekend.png",
+      "assetPath": "asset:assets/templates/wedding_editorial/images/sources/city_weekend.png",
+      "firebaseStoragePath": "templates/wedding_editorial/v1/city_weekend.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fcity_weekend.png?alt=media&token=bf8ee275-aebb-4cc7-8146-c8185846852a",
+      "downloadToken": "bf8ee275-aebb-4cc7-8146-c8185846852a",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "hands_bw.png",
+      "filePath": "assets/templates/wedding_editorial/images/sources/hands_bw.png",
+      "assetPath": "asset:assets/templates/wedding_editorial/images/sources/hands_bw.png",
+      "firebaseStoragePath": "templates/wedding_editorial/v1/hands_bw.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fhands_bw.png?alt=media&token=438a0597-dd50-4a06-9530-e78c9c86734b",
+      "downloadToken": "438a0597-dd50-4a06-9530-e78c9c86734b",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    }
+  ]
+}

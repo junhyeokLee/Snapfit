@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "templates": {
+    "save_the_date_v1": {
+      "requiredExplicitWraps": [
+        "p02_circle_card::desc",
+        "p04_type_invitation::title"
+      ],
+      "forbiddenDarkPageBackgroundLayouts": [
+        "p04_type_invitation",
+        "p12_closing_photo"
+      ],
+      "coverTextGapChecks": [
+        {
+          "upper": "title_p1",
+          "lower": "subtitle_p1",
+          "minGap": 0.05
+        },
+        {
+          "upper": "subtitle_p1",
+          "lower": "names_p1",
+          "minGap": 0.025
+        }
+      ]
+    },
+    "jeju_travel_v1": {
+      "requiredExplicitWraps": [
+        "cover_full_bleed::title",
+        "p06_quote_break::quote",
+        "p10_sunset_poster::title",
+        "p12_ending_full_bleed::title"
+      ],
+      "forbiddenDarkPageBackgroundLayouts": [
+        "p02_map_and_title",
+        "p11_memories_notes"
+      ],
+      "coverTextGapChecks": [
+        {
+          "layoutId": "cover_full_bleed",
+          "upperLayerId": "title",
+          "lowerLayerId": "subtitle",
+          "minimumGapRatio": 0.022
+        },
+        {
+          "layoutId": "cover_full_bleed",
+          "upperLayerId": "subtitle",
+          "lowerLayerId": "meta",
+          "minimumGapRatio": 0.018
+        }
+      ]
+    },
+    "family_weekend_v1": {
+      "requiredExplicitWraps": [],
+      "forbiddenDarkPageBackgroundLayouts": [],
+      "coverTextGapChecks": [],
+      "styleSignature": {
+        "tone": "bright_family_scrapbook",
+        "primaryColors": ["#FBF5EE", "#F0917E", "#2F333B"],
+        "motifs": ["small_collage", "memory_wall", "bright_note", "soft_label"],
+        "forbiddenSimilarityWith": ["jeju_travel_v1", "anniversary_days_v1"],
+        "forbiddenMotifs": ["dark_editorial_frame", "hanging_line", "ticket_coupon"]
+      }
+    },
+    "anniversary_days_v1": {
+      "requiredExplicitWraps": [],
+      "forbiddenDarkPageBackgroundLayouts": [],
+      "coverTextGapChecks": [],
+      "styleSignature": {
+        "tone": "romantic_anniversary_book",
+        "primaryColors": ["#FBE8E0", "#C65E6A", "#3C3435", "#F9EFE8"],
+        "motifs": ["date_badge", "coupon_card", "ribbon_note", "letter_envelope", "romantic_quote_card"],
+        "forbiddenSimilarityWith": ["family_weekend_v1", "jeju_travel_v1", "save_the_date_v1"],
+        "forbiddenMotifs": [
+          "family_memory_wall",
+          "family_scrap_grid",
+          "jeju_editorial_band",
+          "wedding_invitation_card",
+          "dark_editorial_frame",
+          "hanging_photo_line",
+          "four_cut_grid"
+        ]
+      }
+    }
+  }
+}

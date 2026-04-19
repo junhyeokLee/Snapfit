@@ -22,6 +22,9 @@ Widget _buildFramedImageImpl(
     case "circleRing":
       framed = builder._frameCircleRing(image);
       break;
+    case "heartFrame":
+      framed = builder._frameHeart(image);
+      break;
     case "rounded28":
       framed = builder._frameRounded28(image);
       break;

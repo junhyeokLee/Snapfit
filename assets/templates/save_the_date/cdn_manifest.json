@@ -1,0 +1,151 @@
+{
+  "templateSlug": "save_the_date",
+  "version": "v1",
+  "provider": "firebase_storage",
+  "bucket": "snapfit-c719d.firebasestorage.app",
+  "cdnBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "generatedAt": "2026-04-08T18:02:25.281389Z",
+  "dryRun": false,
+  "mappings": [
+    {
+      "fileName": "cover_full_bleed.png",
+      "filePath": "assets/templates/save_the_date/images/cover_full_bleed.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/cover_full_bleed.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fcover_full_bleed.png?alt=media&token=dfbfc603-e56e-40cb-9c0f-86d8b7e29c12",
+      "downloadToken": "dfbfc603-e56e-40cb-9c0f-86d8b7e29c12",
+      "sourcePageNodeId": "59:2",
+      "sourceImageNodeId": "152:32"
+    },
+    {
+      "fileName": "p01_arch_editorial.png",
+      "filePath": "assets/templates/save_the_date/images/p01_arch_editorial.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p01_arch_editorial.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp01_arch_editorial.png?alt=media&token=3c1ea43f-bfbd-4a86-b385-bd283ad0572e",
+      "downloadToken": "3c1ea43f-bfbd-4a86-b385-bd283ad0572e",
+      "sourcePageNodeId": "59:10",
+      "sourceImageNodeId": "65:2"
+    },
+    {
+      "fileName": "p02_circle_card.png",
+      "filePath": "assets/templates/save_the_date/images/p02_circle_card.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p02_circle_card.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp02_circle_card.png?alt=media&token=b99c914c-c69a-4003-b606-cd866cb70b8c",
+      "downloadToken": "b99c914c-c69a-4003-b606-cd866cb70b8c",
+      "sourcePageNodeId": "59:19",
+      "sourceImageNodeId": "59:24"
+    },
+    {
+      "fileName": "p02_circle_ring_overlay.png",
+      "filePath": "assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p02_circle_ring_overlay.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp02_circle_ring_overlay.png?alt=media&token=6afe6780-cb83-4c10-adc9-5d7379843c4d",
+      "downloadToken": "6afe6780-cb83-4c10-adc9-5d7379843c4d",
+      "sourcePageNodeId": "59:19",
+      "sourceImageNodeId": "153:3"
+    },
+    {
+      "fileName": "p03_strip_editorial.png",
+      "filePath": "assets/templates/save_the_date/images/p03_strip_editorial.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p03_strip_editorial.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp03_strip_editorial.png?alt=media&token=b9d3df17-724a-402d-bc69-99a1992cf84a",
+      "downloadToken": "b9d3df17-724a-402d-bc69-99a1992cf84a",
+      "sourcePageNodeId": "59:31",
+      "sourceImageNodeId": "65:3"
+    },
+    {
+      "fileName": "p04_type_invitation_bg.png",
+      "filePath": "assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p04_type_invitation_bg.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp04_type_invitation_bg.png?alt=media&token=71ecf050-6c13-401e-8ca6-4e64698bacd5",
+      "downloadToken": "71ecf050-6c13-401e-8ca6-4e64698bacd5",
+      "sourcePageNodeId": "59:42",
+      "sourceImageNodeId": "152:30"
+    },
+    {
+      "fileName": "p10_photo_notes_left.png",
+      "filePath": "assets/templates/save_the_date/images/p10_photo_notes_left.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_left.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp10_photo_notes_left.png?alt=media&token=adb144a0-0a85-4ada-8a4d-95f3ce33dd03",
+      "downloadToken": "adb144a0-0a85-4ada-8a4d-95f3ce33dd03",
+      "sourcePageNodeId": "68:9",
+      "sourceImageNodeId": "152:35"
+    },
+    {
+      "fileName": "p10_photo_notes_center.png",
+      "filePath": "assets/templates/save_the_date/images/p10_photo_notes_center.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_center.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp10_photo_notes_center.png?alt=media&token=8b92bf3a-ff17-497f-9044-ef8e91a8a808",
+      "downloadToken": "8b92bf3a-ff17-497f-9044-ef8e91a8a808",
+      "sourcePageNodeId": "68:9",
+      "sourceImageNodeId": "152:37"
+    },
+    {
+      "fileName": "p10_photo_notes_bottom.png",
+      "filePath": "assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_bottom.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp10_photo_notes_bottom.png?alt=media&token=8ca1bb3b-82ca-4037-b955-3dcd7f830571",
+      "downloadToken": "8ca1bb3b-82ca-4037-b955-3dcd7f830571",
+      "sourcePageNodeId": "68:9",
+      "sourceImageNodeId": "68:14"
+    },
+    {
+      "fileName": "p12_closing_photo.png",
+      "filePath": "assets/templates/save_the_date/images/p12_closing_photo.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p12_closing_photo.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp12_closing_photo.png?alt=media&token=e98eaaed-9faf-45ec-856b-be541ac09e91",
+      "downloadToken": "e98eaaed-9faf-45ec-856b-be541ac09e91",
+      "sourcePageNodeId": "68:25",
+      "sourceImageNodeId": "68:27"
+    },
+    {
+      "fileName": "p08_stamp_tl.png",
+      "filePath": "assets/templates/save_the_date/images/p08_stamp_tl.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_tl.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp08_stamp_tl.png?alt=media&token=d4eaf5bc-76bb-4a8c-b6b2-144dc5ae0473",
+      "downloadToken": "d4eaf5bc-76bb-4a8c-b6b2-144dc5ae0473",
+      "sourcePageNodeId": "59:98",
+      "sourceImageNodeId": "60:19"
+    },
+    {
+      "fileName": "p08_stamp_tr.png",
+      "filePath": "assets/templates/save_the_date/images/p08_stamp_tr.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_tr.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp08_stamp_tr.png?alt=media&token=23f7c890-6e06-4179-ba90-ea95bb4a85f9",
+      "downloadToken": "23f7c890-6e06-4179-ba90-ea95bb4a85f9",
+      "sourcePageNodeId": "59:98",
+      "sourceImageNodeId": "60:20"
+    },
+    {
+      "fileName": "p08_stamp_bl.png",
+      "filePath": "assets/templates/save_the_date/images/p08_stamp_bl.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_bl.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp08_stamp_bl.png?alt=media&token=6d865865-4751-4695-9742-605bd6cd20d2",
+      "downloadToken": "6d865865-4751-4695-9742-605bd6cd20d2",
+      "sourcePageNodeId": "59:98",
+      "sourceImageNodeId": "60:21"
+    },
+    {
+      "fileName": "p08_stamp_br.png",
+      "filePath": "assets/templates/save_the_date/images/p08_stamp_br.png",
+      "assetPath": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_br.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp08_stamp_br.png?alt=media&token=0e7bc91e-78f9-42b8-9636-db945b0c36a5",
+      "downloadToken": "0e7bc91e-78f9-42b8-9636-db945b0c36a5",
+      "sourcePageNodeId": "59:98",
+      "sourceImageNodeId": "60:22"
+    }
+  ]
+}

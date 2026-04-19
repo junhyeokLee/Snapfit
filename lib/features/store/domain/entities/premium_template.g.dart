@@ -27,6 +27,12 @@ PremiumTemplate _$PremiumTemplateFromJson(Map<String, dynamic> json) =>
       isPremium: json['isPremium'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
       templateJson: json['templateJson'] as String?,
+      createdAt:
+          (json['createdAt'] ??
+                  json['created_at'] ??
+                  json['registeredAt'] ??
+                  json['registered_at'])
+              ?.toString(),
     );
 
 Map<String, dynamic> _$PremiumTemplateToJson(PremiumTemplate instance) =>
@@ -48,4 +54,5 @@ Map<String, dynamic> _$PremiumTemplateToJson(PremiumTemplate instance) =>
       'isPremium': instance.isPremium,
       'isLiked': instance.isLiked,
       'templateJson': instance.templateJson,
+      'createdAt': instance.createdAt,
     };

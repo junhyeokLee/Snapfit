@@ -7,6 +7,7 @@ cd "$ROOT_DIR"
 HANDOFF_JSON="assets/templates/figma_handoff_example.json"
 GENERATED_JSON="assets/templates/generated/latest.json"
 STORE_JSON="assets/templates/generated/store_latest.json"
+CDN_MANIFEST=""
 PAGES="12"
 BASE_URL="${SNAPFIT_API_BASE_URL:-http://54.253.3.176}"
 PUBLISH="true"
@@ -29,6 +30,7 @@ Options:
   --generated=PATH          Generated design template JSON output path
   --store=PATH              Generated store template JSON output path
   --pages=N                 Page count (12~24)
+  --cdn-manifest=PATH       Optional manifest to rewrite asset URLs to CDN URLs
   --base-url=URL            Backend base URL
   --publish=true|false      Publish to server
   --notify=true|false       Send template-new push notification
@@ -52,6 +54,7 @@ for arg in "$@"; do
     --handoff=*) HANDOFF_JSON="${arg#*=}" ;;
     --generated=*) GENERATED_JSON="${arg#*=}" ;;
     --store=*) STORE_JSON="${arg#*=}" ;;
+    --cdn-manifest=*) CDN_MANIFEST="${arg#*=}" ;;
     --pages=*) PAGES="${arg#*=}" ;;
     --base-url=*) BASE_URL="${arg#*=}" ;;
     --publish=*) PUBLISH="${arg#*=}" ;;
@@ -99,6 +102,15 @@ dart run tool/build_store_templates_from_handoff.dart \
   --input="$HANDOFF_JSON" \
   --output="$STORE_JSON" \
   --pages="$PAGES"
+
+if [[ -n "${CDN_MANIFEST}" ]]; then
+  echo ""
+  echo "[2.5/5] Rewrite store JSON asset URLs to CDN URLs"
+  dart run tool/replace_template_asset_urls_with_cdn.dart \
+    --input="$STORE_JSON" \
+    --manifest="$CDN_MANIFEST" \
+    --output="$STORE_JSON"
+fi
 
 echo ""
 echo "[3/5] Run release gate"

@@ -247,8 +247,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onTap: (index) {
           uiStateNotifier.setBottomNavIndex(index);
         },
-        onCreate: handleCreateAlbum,
       ),
+      floatingActionButton: uiState.bottomNavIndex == 0
+          ? _HomeCreateAlbumButton(onTap: handleCreateAlbum)
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: _buildBottomNavBody(
         context,
         currentBottomNavIndex: uiState.bottomNavIndex,
@@ -888,3 +891,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 enum _CoverType { landscape, square, portrait }
+
+class _HomeCreateAlbumButton extends StatelessWidget {
+  const _HomeCreateAlbumButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+
+    return Padding(
+      padding: EdgeInsets.only(right: 4.w, bottom: 4.h),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22.r),
+          child: Ink(
+            width: 50.w,
+            height: 50.w,
+            decoration: BoxDecoration(
+              color: SnapFitColors.accent,
+              borderRadius: BorderRadius.circular(22.r),
+              boxShadow: [
+                BoxShadow(
+                  color: SnapFitColors.accent.withOpacity(isDark ? 0.18 : 0.14),
+                  blurRadius: 12.r,
+                  spreadRadius: -4.r,
+                  offset: Offset(0, 6.h),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.add_rounded,
+              color: SnapFitColors.pureWhite,
+              size: 27.sp,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

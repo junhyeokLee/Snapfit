@@ -81,7 +81,8 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     'SeoulNamsan', // 모던 고딕 본문
     'Book', // 책 느낌 타이틀/본문
     'BookMyungjo', // 책 명조 스타일
-    'Cormorant', // 영문 타이틀/본문
+    'Cormorant Garamond', // 영문 타이틀/본문
+    'Figma Hand', // 손글씨 느낌 보조 카피
     'Roboto',
     'Raleway',
     'Poppins',

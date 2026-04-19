@@ -10,7 +10,6 @@ import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
 import '../repositories/template_repository_impl.dart';
 import 'template_api.dart';
-import '../local/local_featured_templates.dart';
 
 String _safeTemplateText(String? raw, {String fallback = ''}) {
   final value = (raw ?? '').trim();
@@ -20,33 +19,20 @@ String _safeTemplateText(String? raw, {String fallback = ''}) {
 String _toneKey(String value) =>
     value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
 
+bool _hasLocalOnlyImagePath(String value) {
+  final trimmed = value.trim().toLowerCase();
+  return trimmed.startsWith('asset:') ||
+      trimmed.contains('figma.com/api/mcp/asset/');
+}
+
 bool _shouldPreferLocalTemplateJsonForSaveTheDate(
   PremiumTemplate local,
   PremiumTemplate server,
 ) {
-  final localRaw = (local.templateJson ?? '').trim();
-  if (localRaw.isEmpty) return false;
-  try {
-    final decoded = jsonDecode(localRaw) as Map<String, dynamic>;
-    final metadata = decoded['metadata'];
-    final localTemplateId =
-        (decoded['templateId'] ??
-                (metadata is Map ? metadata['templateId'] : null))
-            ?.toString();
-    final pageCount = (decoded['pages'] is List)
-        ? (decoded['pages'] as List).length
-        : 0;
-    final serverRaw = (server.templateJson ?? '').trim();
-    final serverTemplateId = serverRaw.isEmpty
-        ? null
-        : ((jsonDecode(serverRaw) as Map<String, dynamic>)['templateId']
-              ?.toString());
-    return localTemplateId == 'save_the_date_v1' &&
-        pageCount >= 13 &&
-        serverTemplateId == 'save_the_date_v1';
-  } catch (_) {
-    return false;
-  }
+  // SAVE_THE_DATE는 이제 서버가 단일 소스 오브 트루스다.
+  // 로컬 번들 템플릿이 오래된 상태로 남아 상세/스토어/생성 화면을 덮지 않도록
+  // 더 이상 로컬 templateJson을 우선하지 않는다.
+  return false;
 }
 
 String _coverModeForTemplate(PremiumTemplate template) {
@@ -503,8 +489,8 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
 
   final coverCandidate =
       (template.coverImageUrl.trim().isNotEmpty
-              ? template.coverImageUrl.trim()
-              : null) ??
+          ? template.coverImageUrl.trim()
+          : null) ??
       coverFromJson ??
       (normalizedPreview.isNotEmpty ? normalizedPreview.first.trim() : null) ??
       resolvedFallbackCover;
@@ -558,11 +544,52 @@ String _normalizeTemplateTitleKey(String value) {
   return aliases[base] ?? base;
 }
 
+PremiumTemplate _mergeServerWithLocalTemplate(
+  PremiumTemplate server,
+  PremiumTemplate local,
+) {
+  final localSub = (local.subTitle ?? '').trim();
+  final localDesc = (local.description ?? '').trim();
+  final localCover = local.coverImageUrl.trim();
+  final localJson = (local.templateJson ?? '').trim();
+  final localPreview = local.previewImages
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty)
+      .toList(growable: false);
+
+  return server.copyWith(
+    subTitle: localSub.isNotEmpty ? local.subTitle : server.subTitle,
+    description: localDesc.isNotEmpty ? local.description : server.description,
+    coverImageUrl: localCover.isNotEmpty ? localCover : server.coverImageUrl,
+    previewImages: localPreview.isNotEmpty ? localPreview : server.previewImages,
+    pageCount: local.pageCount > 0 ? local.pageCount : server.pageCount,
+    category: (local.category ?? '').trim().isNotEmpty
+        ? local.category
+        : server.category,
+    tags: (local.tags != null && local.tags!.isNotEmpty) ? local.tags : server.tags,
+    templateJson: localJson.isNotEmpty ? local.templateJson : server.templateJson,
+  );
+}
+
+Future<List<PremiumTemplate>> _loadGeneratedStoreLatestTemplates() async {
+  try {
+    final raw = await rootBundle.loadString(
+      'assets/templates/generated/store_latest.json',
+    );
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) return const <PremiumTemplate>[];
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(PremiumTemplate.fromJson)
+        .map(_normalizeStoreTemplateRuntime)
+        .toList(growable: false);
+  } catch (_) {
+    return const <PremiumTemplate>[];
+  }
+}
+
 bool _isStoreAllowedTemplate(PremiumTemplate template) {
-  // 운영 정책 변경:
-  // 스토어는 서버 DB에 active=true 로 등록된 템플릿을 전부 노출한다.
-  // (이전에는 특정 3종만 허용하는 하드코딩 필터가 있었다.)
-  return true;
+  return template.title.trim().isNotEmpty;
 }
 
 final templateApiProvider = Provider<TemplateApi>((ref) {
@@ -576,370 +603,38 @@ final templateRepositoryProvider = Provider<TemplateRepository>((ref) {
   return TemplateRepositoryImpl(api, tokenStorage: tokenStorage);
 });
 
+List<PremiumTemplate> _visibleServerTemplates(
+  Iterable<PremiumTemplate> items,
+) {
+  final visible = items
+      .where(_isStoreAllowedTemplate)
+      .map(_normalizeStoreTemplateRuntime)
+      .toList(growable: false);
+  final sorted = [...visible]..sort((a, b) => b.id.compareTo(a.id));
+  final pinnedSaveTheDate = sorted.where((t) {
+    final title = t.title.trim().toLowerCase();
+    final raw = (t.templateJson ?? '').toLowerCase();
+    return title == 'save the date' || raw.contains('save_the_date_v1');
+  }).toList(growable: false);
+  final others = sorted
+      .where((t) => !pinnedSaveTheDate.any((p) => p.id == t.id))
+      .toList(growable: false);
+  return <PremiumTemplate>[
+    ...pinnedSaveTheDate.take(1),
+    ...others,
+  ];
+}
+
 final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
   final repository = ref.watch(templateRepositoryProvider);
-  final localCode = localFeaturedTemplates();
-
-  PremiumTemplate normalizePreviewImages(PremiumTemplate template) =>
-      _normalizeStoreTemplateRuntime(template);
-
-  String normalizeTitle(String value) => _normalizeTemplateTitleKey(value);
-
-  bool shouldPreferLocalTemplateJson(
-    PremiumTemplate local,
-    PremiumTemplate server,
-  ) => _shouldPreferLocalTemplateJsonForSaveTheDate(local, server);
-
-  PremiumTemplate pickBetter(PremiumTemplate a, PremiumTemplate b) {
-    int score(PremiumTemplate t) {
-      var s = 0;
-      if (t.templateJson != null && t.templateJson!.trim().isNotEmpty) s += 5;
-      if (t.previewImages.isNotEmpty) s += 3;
-      if (t.coverImageUrl.trim().isNotEmpty) s += 1;
-      if (t.id >= 0) s += 1; // server id slightly preferred for like/use sync
-      return s;
-    }
-
-    final sa = score(a);
-    final sb = score(b);
-    if (sb > sa) return b;
-    if (sa > sb) return a;
-    return a.id >= 0 ? a : b;
-  }
-
-  PremiumTemplate mergeWithServerPriority(
-    PremiumTemplate current,
-    PremiumTemplate incoming,
-  ) {
-    final server = current.id >= 0
-        ? current
-        : (incoming.id >= 0 ? incoming : null);
-    final local = identical(server, current) ? incoming : current;
-    if (server == null) {
-      return pickBetter(current, incoming);
-    }
-
-    if (_shouldPreferLocalTemplateJsonForSaveTheDate(local, server)) {
-      return server.copyWith(
-        subTitle: local.subTitle,
-        description: local.description,
-        coverImageUrl: local.coverImageUrl,
-        previewImages: local.previewImages,
-        pageCount: local.pageCount,
-        category: local.category,
-        tags: local.tags,
-        isNew: server.isNew || local.isNew,
-        isBest: server.isBest || local.isBest,
-        isPremium: server.isPremium,
-        templateJson: local.templateJson,
-      );
-    }
-
-    final mergedPreview = local.previewImages.isNotEmpty
-        ? local.previewImages
-        : server.previewImages;
-    final mergedCover = local.coverImageUrl.trim().isNotEmpty
-        ? local.coverImageUrl.trim()
-        : (server.coverImageUrl.trim().isNotEmpty
-              ? server.coverImageUrl.trim()
-              : (mergedPreview.isNotEmpty ? mergedPreview.first : ''));
-
-    return server.copyWith(
-      // 서버 id/좋아요/사용자수/isLiked는 유지해서 like/use API와 상태가 항상 동기화되게 한다.
-      subTitle: (server.subTitle ?? '').trim().isNotEmpty
-          ? server.subTitle
-          : local.subTitle,
-      description: (server.description ?? '').trim().isNotEmpty
-          ? server.description
-          : local.description,
-      coverImageUrl: mergedCover,
-      previewImages: mergedPreview,
-      pageCount: _shouldPreferLocalTemplateJsonForSaveTheDate(local, server)
-          ? local.pageCount
-          : (server.pageCount > 0 ? server.pageCount : local.pageCount),
-      category: (server.category ?? '').trim().isNotEmpty
-          ? server.category
-          : local.category,
-      tags: (server.tags != null && server.tags!.isNotEmpty)
-          ? server.tags
-          : local.tags,
-      weeklyScore: server.weeklyScore > 0
-          ? server.weeklyScore
-          : local.weeklyScore,
-      isNew: server.isNew || local.isNew,
-      isBest: server.isBest || local.isBest,
-      isPremium: server.isPremium,
-      templateJson: _shouldPreferLocalTemplateJsonForSaveTheDate(local, server)
-          ? local.templateJson
-          : ((server.templateJson ?? '').trim().isNotEmpty
-                ? server.templateJson
-                : local.templateJson),
-    );
-  }
-
-  List<PremiumTemplate> dedupeByTitle(List<PremiumTemplate> items) {
-    final byTitle = <String, PremiumTemplate>{};
-    for (final t in items) {
-      final key = normalizeTitle(t.title);
-      if (key.isEmpty) {
-        byTitle['id:${t.id}'] = t;
-        continue;
-      }
-      final prev = byTitle[key];
-      if (prev == null) {
-        byTitle[key] = t;
-      } else {
-        byTitle[key] = mergeWithServerPriority(prev, t);
-      }
-    }
-    return byTitle.values.toList();
-  }
-
-  bool isBlockedTemplate(PremiumTemplate template) {
-    if (!_isStoreAllowedTemplate(template)) return true;
-    final normalized = normalizeTitle(template.title);
-    final blockedKeywords = <String>[
-      '성수동 카페투어',
-      '성수동 카페 투어',
-      '미니멀포커스',
-      '미니멀 포커스',
-      '오션브리즈',
-      '오션 브리즈',
-      '링모먼트',
-      '링 모먼트',
-      '링 트립 스토리',
-      '우리의결혼1주년',
-      '우리의 결혼 1주년',
-      '웨딩에디토리얼',
-      '웨딩 에디토리얼',
-      '썸머포스터',
-      '썸머 포스터',
-      '스카이레더',
-      '스카이 레더',
-      '스카이레터',
-      '스카이 레터',
-      '브랜드이벤트커버',
-      '브랜드 이벤트 커버',
-    ];
-    for (final keyword in blockedKeywords) {
-      if (normalized.contains(normalizeTitle(keyword))) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool isRenderableStoreTemplate(PremiumTemplate template) {
-    final raw = template.templateJson;
-    if (raw == null || raw.trim().isEmpty) return false;
-    try {
-      final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      final pages = decoded['pages'];
-      if (pages is! List) return false;
-      if (pages.length < 12 || pages.length > 24) return false;
-      final schemaVersion = (decoded['schemaVersion'] as num?)?.toInt() ?? 1;
-      for (final page in pages) {
-        if (page is! Map) return false;
-        if (schemaVersion >= 2) {
-          final layoutId = page['layoutId']?.toString() ?? '';
-          final role = page['role']?.toString() ?? '';
-          final photoCount = page['recommendedPhotoCount'];
-          if (layoutId.trim().isEmpty) return false;
-          if (!{'cover', 'inner', 'chapter', 'end'}.contains(role))
-            return false;
-          if (photoCount is! num || photoCount < 0 || photoCount > 12) {
-            return false;
-          }
-        }
-        final layers = page['layers'];
-        if (layers is! List || layers.isEmpty) return false;
-        final hasImageLayer = layers.any(
-          (layer) =>
-              layer is Map &&
-              (layer['type']?.toString().toUpperCase() == 'IMAGE'),
-        );
-        final photoCount =
-            (page['recommendedPhotoCount'] as num?)?.toInt() ?? 1;
-        if (photoCount > 0 && !hasImageLayer) return false;
-      }
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  bool hasRequiredTemplateMetadata(PremiumTemplate template) {
-    final raw = template.templateJson;
-    if (raw == null || raw.trim().isEmpty) return false;
-    try {
-      final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      final metadata = decoded['metadata'];
-      if (metadata is! Map) return false;
-      final schemaVersion = (decoded['schemaVersion'] as num?)?.toInt() ?? 1;
-      final style = metadata['style']?.toString() ?? '';
-      final mood = metadata['mood']?.toString() ?? '';
-      final tags = metadata['tags'];
-      final difficulty = metadata['difficulty'];
-      final recommendedPhotoCount = metadata['recommendedPhotoCount'];
-      final safeArea = metadata['heroTextSafeArea'];
-      final sourceBottomSheetTemplateIds =
-          metadata['sourceBottomSheetTemplateIds'];
-      final applyScope = metadata['applyScope']?.toString() ?? '';
-      if (schemaVersion >= 2) {
-        final templateId = (decoded['templateId'] ?? metadata['templateId'])
-            ?.toString();
-        final version = decoded['version'] ?? metadata['version'];
-        final lifecycle =
-            (decoded['lifecycleStatus'] ?? metadata['lifecycleStatus'])
-                ?.toString();
-        if (templateId == null || templateId.trim().isEmpty) return false;
-        if (version is! num || version < 1) return false;
-        if (!{
-          'draft',
-          'qa_passed',
-          'published',
-          'deprecated',
-        }.contains(lifecycle)) {
-          return false;
-        }
-      }
-      if (style.trim().isEmpty || mood.trim().isEmpty) return false;
-      if (difficulty is! num || difficulty < 1 || difficulty > 5) return false;
-      if (recommendedPhotoCount is! num ||
-          recommendedPhotoCount < 1 ||
-          recommendedPhotoCount > 24) {
-        return false;
-      }
-      if (tags is! List || tags.isEmpty) return false;
-      if (safeArea is! Map) return false;
-      if (sourceBottomSheetTemplateIds is! List ||
-          sourceBottomSheetTemplateIds.isEmpty) {
-        return false;
-      }
-      if (applyScope != 'cover_and_pages') return false;
-      for (final key in ['x', 'y', 'width', 'height']) {
-        final value = safeArea[key];
-        if (value is! num) return false;
-      }
-      final width = (safeArea['width'] as num).toDouble();
-      final height = (safeArea['height'] as num).toDouble();
-      if (width <= 0 || height <= 0 || width > 1.0 || height > 1.0) {
-        return false;
-      }
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  double liveOpsScore(PremiumTemplate t) {
-    var score = 0.0;
-    score += (t.weeklyScore.toDouble() * 1.2);
-    score += (t.likeCount * 2.0);
-    score += (t.userCount * 3.0);
-    if (t.isBest) score += 120;
-    if (t.isNew) score += 50;
-    if (hasRequiredTemplateMetadata(t)) score += 80;
-    if (t.pageCount >= 12 && t.pageCount <= 24) score += 30;
-    if (!t.isPremium) score -= 20; // free 템플릿은 노출은 하되 살짝 하향
-    return score;
-  }
-
-  List<PremiumTemplate> applyLiveOpsRanking(List<PremiumTemplate> items) {
-    final sorted = [...items]
-      ..sort((a, b) => liveOpsScore(b).compareTo(liveOpsScore(a)));
-    final topQuality = sorted.take(12).toList();
-    final topIds = topQuality.map((e) => e.id).toSet();
-    final rest = sorted.where((e) => !topIds.contains(e.id)).toList();
-    return [...topQuality, ...rest];
-  }
-
-  Future<List<PremiumTemplate>> loadStoreTemplatesFromAssets() async {
-    const paths = [
-      'assets/templates/generated/store_latest.json',
-      'assets/templates/store_templates_v1.json',
-    ];
-    final loaded = <PremiumTemplate>[];
-    for (final path in paths) {
-      try {
-        final raw = await rootBundle.loadString(path);
-        final decoded = jsonDecode(raw);
-        final items = decoded is List
-            ? decoded
-            : (decoded is Map<String, dynamic> ? decoded['templates'] : null);
-        if (items is! List) continue;
-        for (final item in items) {
-          if (item is! Map<String, dynamic>) continue;
-          loaded.add(PremiumTemplate.fromJson(item));
-        }
-      } catch (_) {
-        // optional asset path
-      }
-    }
-    return loaded;
-  }
-
-  final localAsset = await loadStoreTemplatesFromAssets();
-  final local = localAsset.isNotEmpty
-      ? dedupeByTitle([
-          ...localCode.map(normalizePreviewImages),
-          ...localAsset.map(normalizePreviewImages),
-        ])
-      : localCode.map(normalizePreviewImages).toList();
-
-  try {
-    final remote = await repository.getTemplates();
-    final localByTitle = <String, PremiumTemplate>{};
-    for (final t in local) {
-      final key = normalizeTitle(t.title);
-      if (key.isEmpty) continue;
-      final prev = localByTitle[key];
-      localByTitle[key] = prev == null ? t : mergeWithServerPriority(prev, t);
-    }
-
-    final serverAnchored = remote.map((remoteTemplate) {
-      final normalizedRemote = normalizePreviewImages(remoteTemplate);
-      final key = normalizeTitle(normalizedRemote.title);
-      final localMatch = key.isEmpty ? null : localByTitle[key];
-      if (localMatch == null) return normalizedRemote;
-      return mergeWithServerPriority(localMatch, normalizedRemote);
-    }).toList();
-
-    final serverTitleKeys = serverAnchored
-        .map((t) => normalizeTitle(t.title))
-        .where((k) => k.isNotEmpty)
-        .toSet();
-    final localExtras = local.where((t) {
-      final key = normalizeTitle(t.title);
-      if (key.isEmpty) return true;
-      return !serverTitleKeys.contains(key);
-    }).toList();
-
-    final deduped = dedupeByTitle([...serverAnchored, ...localExtras]);
-    final visible = deduped
-        .where((t) => _isStoreAllowedTemplate(t))
-        .where((t) => !isBlockedTemplate(t))
-        .toList();
-    final valid = visible
-        .where(isRenderableStoreTemplate)
-        .where(hasRequiredTemplateMetadata)
-        .toList();
-    final renderable = visible.where(isRenderableStoreTemplate).toList();
-
-    // 서버 + 로컬(중복 제목은 서버 우선)로 노출한다.
-    // 품질 필터가 너무 엄격해 비어버리면 단계적으로 완화해 빈 화면을 방지한다.
-    if (valid.isNotEmpty) return applyLiveOpsRanking(valid);
-    if (renderable.isNotEmpty) return applyLiveOpsRanking(renderable);
-    return applyLiveOpsRanking(visible);
-  } catch (_) {
-    return applyLiveOpsRanking(
-      dedupeByTitle(local.map(normalizePreviewImages).toList())
-          .where((t) => !isBlockedTemplate(t))
-          .where(isRenderableStoreTemplate)
-          .where(hasRequiredTemplateMetadata)
-          .toList(),
-    );
-  }
+  final remote = await repository.getTemplates();
+  final local = await _loadGeneratedStoreLatestTemplates();
+  return _visibleServerTemplates(
+    StoreTemplateFeedNotifier.mergeServerSummaryWithLocalStatic(
+      server: remote,
+      local: local,
+    ),
+  );
 });
 
 class StoreTemplateFeedState {
@@ -1007,92 +702,40 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
   String _normalizeTitle(String value) => _normalizeTemplateTitleKey(value);
 
   Future<List<PremiumTemplate>> _loadLocalTemplates() {
-    return _localTemplatesFuture ??= () async {
-      final localCode = localFeaturedTemplates();
-      final loaded = <PremiumTemplate>[...localCode];
-      const paths = [
-        'assets/templates/generated/store_latest.json',
-        'assets/templates/store_templates_v1.json',
-      ];
-      for (final path in paths) {
-        try {
-          final raw = await rootBundle.loadString(path);
-          final decoded = jsonDecode(raw);
-          final items = decoded is List
-              ? decoded
-              : (decoded is Map<String, dynamic> ? decoded['templates'] : null);
-          if (items is! List) continue;
-          for (final item in items) {
-            if (item is! Map<String, dynamic>) continue;
-            loaded.add(PremiumTemplate.fromJson(item));
-          }
-        } catch (_) {
-          // optional asset path
-        }
-      }
-
-      final byTitle = <String, PremiumTemplate>{};
-      for (final t in loaded) {
-        final key = _normalizeTitle(t.title);
-        if (key.isEmpty) continue;
-        byTitle[key] = t;
-      }
-      return byTitle.values.toList(growable: false);
-    }();
+    return _localTemplatesFuture ??= _loadGeneratedStoreLatestTemplates();
   }
 
   List<PremiumTemplate> _mergeServerSummaryWithLocal({
     required List<PremiumTemplate> server,
     required List<PremiumTemplate> local,
   }) {
-    final localByTitle = <String, PremiumTemplate>{
-      for (final l in local) _normalizeTitle(l.title): l,
-    };
+    return mergeServerSummaryWithLocalStatic(server: server, local: local);
+  }
 
-    final mergedServer = server
-        .map((s) {
-          final key = _normalizeTitle(s.title);
-          final localMatch = key.isEmpty ? null : localByTitle[key];
-          if (localMatch == null) return s;
-          if (_shouldPreferLocalTemplateJsonForSaveTheDate(localMatch, s)) {
-            return s.copyWith(
-              subTitle: localMatch.subTitle,
-              description: localMatch.description,
-              coverImageUrl: localMatch.coverImageUrl,
-              previewImages: localMatch.previewImages,
-              pageCount: localMatch.pageCount,
-              category: localMatch.category,
-              tags: localMatch.tags,
-              templateJson: localMatch.templateJson,
-            );
-          }
-          return s.copyWith(
-            subTitle: localMatch.subTitle,
-            description: localMatch.description,
-            coverImageUrl: localMatch.coverImageUrl.trim().isNotEmpty
-                ? localMatch.coverImageUrl
-                : s.coverImageUrl,
-            previewImages: localMatch.previewImages,
-            pageCount: localMatch.pageCount,
-            category: localMatch.category,
-            tags: (s.tags != null && s.tags!.isNotEmpty)
-                ? s.tags
-                : localMatch.tags,
-            // 서버 등록본을 우선 신뢰하고, 서버 요약에 templateJson이 비어있을 때만 로컬 fallback 사용
-            templateJson:
-                (s.templateJson != null && s.templateJson!.trim().isNotEmpty)
-                ? s.templateJson
-                : localMatch.templateJson,
-          );
-        })
-        .toList(growable: false);
+  static List<PremiumTemplate> mergeServerSummaryWithLocalStatic({
+    required List<PremiumTemplate> server,
+    required List<PremiumTemplate> local,
+  }) {
+    final byKey = <String, PremiumTemplate>{};
 
-    // Rule: 스토어 화면에는 서버 DB에 등록된 템플릿만 노출한다.
-    // 로컬 템플릿은 서버 summary 아이템을 보강(hydration)하는 용도로만 사용한다.
-    return mergedServer
-        .where(_isStoreAllowedTemplate)
-        .map(_normalizeStoreTemplateRuntime)
-        .toList(growable: false);
+    for (final item in server) {
+      final normalized = _normalizeStoreTemplateRuntime(item);
+      final key = _normalizeTemplateTitleKey(normalized.title);
+      byKey[key] = normalized;
+    }
+
+    for (final localItem in local) {
+      final normalizedLocal = _normalizeStoreTemplateRuntime(localItem);
+      final key = _normalizeTemplateTitleKey(normalizedLocal.title);
+      final current = byKey[key];
+      if (current == null) {
+        byKey[key] = normalizedLocal;
+      } else {
+        byKey[key] = _mergeServerWithLocalTemplate(current, normalizedLocal);
+      }
+    }
+
+    return _visibleServerTemplates(byKey.values);
   }
 
   Future<void> loadInitial() async {
@@ -1150,15 +793,14 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
         items: merged,
         isInitialLoading: false,
         isLoadingMore: false,
-        hasNext: result.hasNext,
+        hasNext: false,
         page: result.page,
         lastSyncedAt: DateTime.now(),
         error: null,
       );
     } catch (e) {
-      final localFallback = await _loadLocalTemplates();
       state = state.copyWith(
-        items: replace && state.items.isEmpty ? localFallback : state.items,
+        items: state.items,
         isInitialLoading: false,
         isLoadingMore: false,
         hasNext: false,

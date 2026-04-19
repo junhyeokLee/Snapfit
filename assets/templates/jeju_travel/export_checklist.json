@@ -1,0 +1,112 @@
+{
+  "templateId": "jeju_travel_v1",
+  "templateSlug": "jeju_travel",
+  "figmaFileKey": "",
+  "figmaMasterNodeId": "",
+  "firebaseStorageVersion": "v1",
+  "requiredExports": [
+    {
+      "fileName": "cover_full_bleed.png",
+      "pageNodeId": "",
+      "pageName": "COVER_FULL_BLEED",
+      "imageNodeId": "",
+      "usage": [
+        "coverImageUrl",
+        "previewImages[0]",
+        "cover layer image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/cover_full_bleed.png"
+    },
+    {
+      "fileName": "p01_opening_editorial.png",
+      "pageNodeId": "",
+      "pageName": "P01_OPENING_EDITORIAL",
+      "imageNodeId": "",
+      "usage": [
+        "page 2 hero image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p01_opening_editorial.png"
+    },
+    {
+      "fileName": "p03_coastal_frame.png",
+      "pageNodeId": "",
+      "pageName": "P03_COASTAL_PHOTO_FRAME",
+      "imageNodeId": "",
+      "usage": [
+        "page 4 hero image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p03_coastal_frame.png"
+    },
+    {
+      "fileName": "p05_postcard_grid_a.png",
+      "pageNodeId": "",
+      "pageName": "P05_POSTCARD_GRID",
+      "imageNodeId": "",
+      "usage": [
+        "page 6 top-left image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p05_postcard_grid_a.png"
+    },
+    {
+      "fileName": "p05_postcard_grid_b.png",
+      "pageNodeId": "",
+      "pageName": "P05_POSTCARD_GRID",
+      "imageNodeId": "",
+      "usage": [
+        "page 6 top-right image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p05_postcard_grid_b.png"
+    },
+    {
+      "fileName": "p07_spotlight_place.png",
+      "pageNodeId": "",
+      "pageName": "P07_SPOTLIGHT_PLACE",
+      "imageNodeId": "",
+      "usage": [
+        "page 8 spotlight image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p07_spotlight_place.png"
+    },
+    {
+      "fileName": "p08_photo_strip_a.png",
+      "pageNodeId": "",
+      "pageName": "P08_PHOTO_STRIP",
+      "imageNodeId": "",
+      "usage": [
+        "page 9 strip image A"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p08_photo_strip_a.png"
+    },
+    {
+      "fileName": "p08_photo_strip_b.png",
+      "pageNodeId": "",
+      "pageName": "P08_PHOTO_STRIP",
+      "imageNodeId": "",
+      "usage": [
+        "page 9 strip image B"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p08_photo_strip_b.png"
+    },
+    {
+      "fileName": "p10_sunset_poster.png",
+      "pageNodeId": "",
+      "pageName": "P10_SUNSET_POSTER",
+      "imageNodeId": "",
+      "usage": [
+        "page 11 sunset image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p10_sunset_poster.png"
+    },
+    {
+      "fileName": "p12_ending_full_bleed.png",
+      "pageNodeId": "",
+      "pageName": "P12_ENDING_FULL_BLEED",
+      "imageNodeId": "",
+      "usage": [
+        "page 13 ending image",
+        "preview image"
+      ],
+      "firebaseStoragePath": "templates/jeju_travel/v1/p12_ending_full_bleed.png"
+    }
+  ]
+}

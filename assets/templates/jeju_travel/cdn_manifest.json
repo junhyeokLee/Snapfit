@@ -1,0 +1,61 @@
+{
+  "templateSlug": "jeju_travel",
+  "version": "v1",
+  "provider": "firebase_storage",
+  "bucket": "snapfit-c719d.firebasestorage.app",
+  "cdnBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "generatedAt": "2026-04-10T10:45:26.499774Z",
+  "dryRun": false,
+  "mappings": [
+    {
+      "fileName": "jeju_aerial.jpg",
+      "filePath": "assets/templates/jeju_travel/images/sources/jeju_aerial.jpg",
+      "assetPath": "asset:assets/templates/jeju_travel/images/sources/jeju_aerial.jpg",
+      "firebaseStoragePath": "templates/jeju_travel/v1/jeju_aerial.jpg",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_aerial.jpg?alt=media&token=db0d66a4-b6a1-498d-a79c-f41582a68cd2",
+      "downloadToken": "db0d66a4-b6a1-498d-a79c-f41582a68cd2",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "jeju_seongsan.jpg",
+      "filePath": "assets/templates/jeju_travel/images/sources/jeju_seongsan.jpg",
+      "assetPath": "asset:assets/templates/jeju_travel/images/sources/jeju_seongsan.jpg",
+      "firebaseStoragePath": "templates/jeju_travel/v1/jeju_seongsan.jpg",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_seongsan.jpg?alt=media&token=3e444f31-41bb-4fe5-9843-5193f6065b72",
+      "downloadToken": "3e444f31-41bb-4fe5-9843-5193f6065b72",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "jeju_ocean.jpg",
+      "filePath": "assets/templates/jeju_travel/images/sources/jeju_ocean.jpg",
+      "assetPath": "asset:assets/templates/jeju_travel/images/sources/jeju_ocean.jpg",
+      "firebaseStoragePath": "templates/jeju_travel/v1/jeju_ocean.jpg",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_ocean.jpg?alt=media&token=ea599666-206d-4681-b09f-fcaea17bc0fc",
+      "downloadToken": "ea599666-206d-4681-b09f-fcaea17bc0fc",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "jeju_rocky_coast.jpg",
+      "filePath": "assets/templates/jeju_travel/images/sources/jeju_rocky_coast.jpg",
+      "assetPath": "asset:assets/templates/jeju_travel/images/sources/jeju_rocky_coast.jpg",
+      "firebaseStoragePath": "templates/jeju_travel/v1/jeju_rocky_coast.jpg",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_rocky_coast.jpg?alt=media&token=5b020ed9-a332-41d4-8c8a-75486cd21825",
+      "downloadToken": "5b020ed9-a332-41d4-8c8a-75486cd21825",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "jeju_sunset.jpg",
+      "filePath": "assets/templates/jeju_travel/images/sources/jeju_sunset.jpg",
+      "assetPath": "asset:assets/templates/jeju_travel/images/sources/jeju_sunset.jpg",
+      "firebaseStoragePath": "templates/jeju_travel/v1/jeju_sunset.jpg",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_sunset.jpg?alt=media&token=bf8d8119-0b27-4863-80e9-031bea950d1a",
+      "downloadToken": "bf8d8119-0b27-4863-80e9-031bea950d1a",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    }
+  ]
+}

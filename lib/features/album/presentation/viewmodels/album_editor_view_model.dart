@@ -315,6 +315,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   Size _estimateTemplateSourceCanvas(List<LayerModel> layers) {
     if (layers.isEmpty) return const Size(500, 500);
+    final bleedCanvas = _estimateFullBleedCanvas(layers);
+    if (bleedCanvas != null) return bleedCanvas;
     final b = _templateBounds(layers);
     // Figma 기반 템플릿은 페이지 외곽까지 레이어가 닿지 않는 경우가 잦다.
     // bounds 자체를 캔버스로 쓰면 전체가 확대되어 피그마 대비 커져 보일 수 있어,
@@ -335,6 +337,34 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       (b.right - b.left).clamp(1.0, double.infinity),
       (b.bottom - b.top).clamp(1.0, double.infinity),
     );
+  }
+
+  Size? _estimateFullBleedCanvas(List<LayerModel> layers) {
+    LayerModel? candidate;
+    var largestArea = 0.0;
+    for (final layer in layers) {
+      if (layer.type != LayerType.image) continue;
+      if (layer.position.dx < -4 || layer.position.dy < -4) continue;
+      final area = layer.width * layer.height;
+      if (area <= largestArea) continue;
+      candidate = layer;
+      largestArea = area;
+    }
+    if (candidate == null) return null;
+    final width = candidate.width;
+    final height = candidate.height;
+    if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0) {
+      return null;
+    }
+    // 풀블리드 이미지가 있으면 bounds보다 이쪽이 실제 디자인 캔버스일 가능성이 높다.
+    // 하단 패널/배지 등이 바닥을 살짝 넘는 경우에도 커버가 축소되지 않도록 우선한다.
+    if (candidate.position.dx <= 4 &&
+        candidate.position.dy <= 4 &&
+        width >= 900 &&
+        height >= 900) {
+      return Size(width, height);
+    }
+    return null;
   }
 
   double _snapTemplateDesignDimension(double value) {
@@ -363,6 +393,21 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (layers.isEmpty) return Offset.zero;
     final b = _templateBounds(layers);
     if (!b.left.isFinite || !b.top.isFinite) return Offset.zero;
+    // 템플릿이 이미 "0,0 기준 디자인 캔버스" 안에서 절대좌표로 정의된 경우에는
+    // bounds.left/top 만큼 다시 당겨버리면 피그마가 의도한 여백이 사라진다.
+    // 이 경우 원점을 유지해야 비율이 달라져도 페이지 구성이 SAVE THE DATE처럼 안정적으로 보인다.
+    final right = (b.left + b.width).clamp(1.0, double.infinity);
+    final bottom = (b.top + b.height).clamp(1.0, double.infinity);
+    final snappedW = _snapTemplateDesignDimension(right);
+    final snappedH = _snapTemplateDesignDimension(bottom);
+    final looksAbsoluteOnCanvas =
+        b.left >= -1.0 &&
+        b.top >= -1.0 &&
+        snappedW > 0 &&
+        snappedH > 0 &&
+        snappedW >= b.width &&
+        snappedH >= b.height;
+    if (looksAbsoluteOnCanvas) return Offset.zero;
     return Offset(b.left, b.top);
   }
 
@@ -455,6 +500,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     bool waitForCreation = false,
   }) async {
     _editingAlbumId = album.id > 0 ? album.id : null;
+    final requestedRatio = album.ratio;
 
     // 앨범 생성 대기 모드 (신규 생성 후 폴링)
     if (waitForCreation && album.id > 0) {
@@ -471,11 +517,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
       if (success) {
         // 폴링 성공 시 앨범 로드
-        final updatedAlbum = await ref
+        var updatedAlbum = await ref
             .read(albumRepositoryProvider)
             .fetchAlbum(album.id.toString());
-        await _loadAlbumForEdit(updatedAlbum);
         final pendingPages = _pendingTemplatePagesAfterLoad;
+        if (requestedRatio.isNotEmpty &&
+            pendingPages != null &&
+            pendingPages.isNotEmpty) {
+          updatedAlbum = updatedAlbum.copyWith(ratio: requestedRatio);
+        }
+        await _loadAlbumForEdit(updatedAlbum);
         if (pendingPages != null && pendingPages.isNotEmpty) {
           applyTemplatePagesToCurrentAlbum(
             pendingPages,
@@ -515,10 +566,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       }
     }
 
-    final coverSize = coverSizes.firstWhere(
-      (s) => s.ratio.toString() == effective.ratio,
-      orElse: () => coverSizes.first,
-    );
+    final parsedRatio = double.tryParse(effective.ratio);
+    final coverSize = parsedRatio == null
+        ? coverSizes.first
+        : coverSizes.reduce((best, candidate) {
+            final bestDelta = (best.ratio - parsedRatio).abs();
+            final candidateDelta = (candidate.ratio - parsedRatio).abs();
+            return candidateDelta < bestDelta ? candidate : best;
+          });
     _cover = coverSize;
 
     // 테마 초기화 (전 상태 유출 방지)

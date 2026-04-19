@@ -642,6 +642,65 @@ class _BlobClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
+class _HeartClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path();
+    path.moveTo(w * 0.5, h * 0.97);
+    path.cubicTo(w * 0.16, h * 0.78, w * 0.03, h * 0.50, w * 0.05, h * 0.28);
+    path.cubicTo(w * 0.07, h * 0.10, w * 0.20, h * 0.02, w * 0.33, h * 0.02);
+    path.cubicTo(w * 0.42, h * 0.02, w * 0.49, h * 0.10, w * 0.50, h * 0.20);
+    path.cubicTo(w * 0.51, h * 0.10, w * 0.58, h * 0.02, w * 0.67, h * 0.02);
+    path.cubicTo(w * 0.80, h * 0.02, w * 0.93, h * 0.10, w * 0.95, h * 0.28);
+    path.cubicTo(w * 0.97, h * 0.50, w * 0.84, h * 0.78, w * 0.50, h * 0.97);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _HeartFramePainter extends CustomPainter {
+  final Color fillColor;
+  final Color strokeColor;
+  final double strokeWidth;
+  final double shadowBlur;
+
+  _HeartFramePainter({
+    required this.fillColor,
+    required this.strokeColor,
+    required this.strokeWidth,
+    required this.shadowBlur,
+  });
+
+  Path _heartPath(Size size) => _HeartClipper().getClip(size);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _heartPath(size);
+    canvas.drawShadow(path, const Color(0x22000000), shadowBlur, false);
+    final fill = Paint()..color = fillColor;
+    final stroke =
+        Paint()
+          ..color = strokeColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth;
+    canvas.drawPath(path, fill);
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeartFramePainter oldDelegate) {
+    return fillColor != oldDelegate.fillColor ||
+        strokeColor != oldDelegate.strokeColor ||
+        strokeWidth != oldDelegate.strokeWidth ||
+        shadowBlur != oldDelegate.shadowBlur;
+  }
+}
+
 class _PaperNoisePainter extends CustomPainter {
   final double opacity;
 

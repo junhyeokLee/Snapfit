@@ -106,6 +106,12 @@ class TemplateRepositoryImpl implements TemplateRepository {
             isNew: item['isNew'] == true,
             isLiked: item['isLiked'] == true,
             templateJson: (item['templateJson'])?.toString(),
+            createdAt:
+                (item['createdAt'] ??
+                        item['created_at'] ??
+                        item['registeredAt'] ??
+                        item['registered_at'])
+                    ?.toString(),
           ),
         );
       }

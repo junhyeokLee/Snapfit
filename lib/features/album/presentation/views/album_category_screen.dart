@@ -96,6 +96,23 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     }
   }
 
+  void _removeAlbumLocally(int albumId) {
+    if (!mounted) return;
+    setState(() {
+      _albums = _albums.where((album) => album.id != albumId).toList();
+      _favoriteAlbumIds.remove(albumId);
+    });
+  }
+
+  Future<void> _openAlbumAndSync(Album album) async {
+    await HomeAlbumActions.openAlbum(
+      context,
+      ref,
+      album,
+      onAlbumDeleted: _removeAlbumLocally,
+    );
+  }
+
   String get _title {
     switch (widget.category) {
       case AlbumCategory.recent:
@@ -443,7 +460,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
 
   Widget _buildRecentCard(Album album, Color textPrimary, Color textSecondary) {
     return GestureDetector(
-      onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
+      onTap: () => _openAlbumAndSync(album),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -550,7 +567,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         final isFavorite = _isFavorite(album);
 
         return GestureDetector(
-          onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
+          onTap: () => _openAlbumAndSync(album),
           child: Container(
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context),
@@ -740,7 +757,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
             itemBuilder: (context, index) {
               final album = rest[index];
               return GestureDetector(
-                onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
+                onTap: () => _openAlbumAndSync(album),
                 child: Container(
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
@@ -844,7 +861,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     final statusText = label == 'PRINTED' ? '완료됨' : '배송중';
 
     return GestureDetector(
-      onTap: () => HomeAlbumActions.openAlbum(context, ref, album),
+      onTap: () => _openAlbumAndSync(album),
       child: Container(
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(context),
@@ -954,8 +971,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () =>
-                          HomeAlbumActions.openAlbum(context, ref, album),
+                      onPressed: () => _openAlbumAndSync(album),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF7A2F),
                         foregroundColor: Colors.white,

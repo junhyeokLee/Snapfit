@@ -1,0 +1,29 @@
+{
+  "templateId": "scrapbook_v1",
+  "templateSlug": "scrapbook",
+  "exampleSources": [
+    "ceremony_moment.png",
+    "sunset_pair.png",
+    "city_weekend.png",
+    "flower_table.png",
+    "hands_bw.png"
+  ],
+  "pageAssignments": {
+    "COVER_MEMORY_BOARD": ["ceremony_moment.png", "sunset_pair.png", "hands_bw.png"],
+    "P01_POLAROID_COLLAGE": ["ceremony_moment.png", "flower_table.png", "city_weekend.png"],
+    "P02_TORN_NOTE_PAGE": ["sunset_pair.png", "hands_bw.png"],
+    "P03_WASHI_GRID": ["ceremony_moment.png", "city_weekend.png", "flower_table.png"],
+    "P04_FILM_STRIP": ["city_weekend.png", "hands_bw.png", "flower_table.png"],
+    "P05_DIARY_SPREAD": ["ceremony_moment.png", "sunset_pair.png"],
+    "P06_TICKET_AND_PHOTOS": ["flower_table.png", "city_weekend.png", "hands_bw.png"],
+    "P07_BIG_MEMORY": ["sunset_pair.png"],
+    "P08_POSTCARD_STACK": ["ceremony_moment.png", "flower_table.png"],
+    "P09_STAMP_NOTE": ["hands_bw.png", "city_weekend.png"],
+    "P10_FOUR_CUT": ["flower_table.png", "city_weekend.png", "sunset_pair.png", "ceremony_moment.png"],
+    "P11_TAPE_WALL": ["hands_bw.png", "ceremony_moment.png", "sunset_pair.png"],
+    "P12_WEEKEND_NOTE": ["flower_table.png", "city_weekend.png"],
+    "P13_SOUVENIR_PAGE": ["ceremony_moment.png", "hands_bw.png", "flower_table.png"],
+    "P14_ENDING_MEMORY": ["sunset_pair.png"],
+    "P15_BACK_COVER": ["city_weekend.png"]
+  }
+}

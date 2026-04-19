@@ -11,6 +11,35 @@ import '../../features/album/domain/entities/layer.dart';
 class DataTemplateEngine {
   const DataTemplateEngine._();
 
+  static String? _normalizeFontFamily(String? family) {
+    final raw = family?.trim();
+    if (raw == null || raw.isEmpty) return raw;
+    switch (raw) {
+      case 'NotoSansKR':
+      case 'Noto Sans KR':
+        return 'NotoSans';
+      case 'NotoSerifKR':
+      case 'Noto Serif KR':
+        return 'BookMyungjo';
+      case 'Cormorant_Garamond':
+      case 'Cormorant Garamond':
+      case 'CormorantGaramond':
+        return 'Cormorant Garamond';
+      case 'Cormorant':
+        return 'Cormorant Garamond';
+      case 'Nanum_Myeongjo':
+      case 'Nanum Myeongjo':
+        return 'BookMyungjo';
+      case 'Figma Hand':
+      case 'FigmaHand':
+      case 'Hakgyoansim GongryongalR':
+      case 'Hakgyoansim_GongryongalR':
+        return 'Figma Hand';
+      default:
+        return raw;
+    }
+  }
+
   static DesignTemplate templateFromJson(Map<String, dynamic> json) {
     final id = (json['id'] ?? '').toString();
     final name = (json['name'] ?? id).toString();
@@ -62,12 +91,7 @@ class DataTemplateEngine {
     if (layersRaw is! List) return const [];
     final aspectKey = _aspectKey(canvas);
 
-    final variants = (spec['variants'] is Map<String, dynamic>)
-        ? (spec['variants'] as Map<String, dynamic>)
-        : const <String, dynamic>{};
-    final variant = (variants[aspectKey] is Map<String, dynamic>)
-        ? (variants[aspectKey] as Map<String, dynamic>)
-        : const <String, dynamic>{};
+    final variant = _extractVariantForAspect(spec['variants'], aspectKey);
 
     final globalScale = _toDouble(variant['scale'], 1.0);
     final globalOffsetX = _toDouble(variant['offsetX'], 0.0) * canvas.width;
@@ -381,13 +405,16 @@ class DataTemplateEngine {
           _parseColor(payload['color']) ??
           Colors.black87;
       final fontSize = _toDouble(styleView['fontSize'], 14);
-      final family =
-          styleView['fontFamily']?.toString() ?? payload['fontFamily']?.toString();
+      final family = _normalizeFontFamily(
+        styleView['fontFamily']?.toString() ?? payload['fontFamily']?.toString(),
+      );
       final weight = _parseWeight(
         (styleView['fontWeight'] ?? payload['fontWeight'])?.toString(),
       );
       final letterSpacing = _toNullableDouble(styleView['letterSpacing']);
-      final heightMul = _toNullableDouble(styleView['height']);
+      final heightMul =
+          _toNullableDouble(styleView['height']) ??
+          _toNullableDouble(styleView['lineHeight']);
       final align = _parseAlign(
         (merged['align'] ?? payload['textAlign'] ?? 'center').toString(),
       );
@@ -402,9 +429,20 @@ class DataTemplateEngine {
           ?.toString();
 
       final fittedFontSize = strictLayout
-          ? fontSize *
-                ((designHeight <= 0 ? 1.0 : canvas.height / designHeight)) *
-                globalScale
+          ? () {
+              final raw =
+                  fontSize *
+                  ((designHeight <= 0 ? 1.0 : canvas.height / designHeight)) *
+                  globalScale;
+              final multiLine = ((merged['text'] ?? '').toString()).contains(
+                '\n',
+              );
+              final maxFontByBox = math.max(
+                8.0,
+                transformed.height * (multiLine ? 0.58 : 0.82),
+              );
+              return math.min(raw, maxFontByBox);
+            }()
           : () {
               // Use shorter side as baseline to reduce ratio-dependent drift
               // between preview and applied canvases.
@@ -480,6 +518,24 @@ class DataTemplateEngine {
       rotation: rot,
       imageBackground: frame,
       imageUrl: imageUrl,
+      decorationFillColor: type == LayerType.decoration
+          ? (merged['fillColor']?.toString() ??
+                payload['fillColor']?.toString() ??
+                payload['fill']?.toString())
+          : null,
+      decorationBorderColor: type == LayerType.decoration
+          ? (merged['borderColor']?.toString() ??
+                payload['borderColor']?.toString() ??
+                payload['border']?.toString())
+          : null,
+      decorationBorderWidth: type == LayerType.decoration
+          ? (_toNullableDouble(merged['borderWidth']) ??
+                _toNullableDouble(payload['borderWidth']))
+          : null,
+      decorationCornerRadius: type == LayerType.decoration
+          ? (_toNullableDouble(merged['cornerRadius']) ??
+                _toNullableDouble(payload['cornerRadius']))
+          : null,
       opacity: opacity,
       zIndex: z,
     );
@@ -530,6 +586,33 @@ class DataTemplateEngine {
       }
     }
     return merged;
+  }
+
+  static Map<String, dynamic> _extractVariantForAspect(
+    Object? rawVariants,
+    String aspectKey,
+  ) {
+    if (rawVariants is Map<String, dynamic>) {
+      final selected = rawVariants[aspectKey];
+      if (selected is Map<String, dynamic>) {
+        return selected;
+      }
+    }
+    if (rawVariants is List) {
+      for (final item in rawVariants) {
+        if (item is! Map) continue;
+        final map = Map<String, dynamic>.from(item as Map);
+        final aspect = (map['aspect'] ?? map['variantId'] ?? '')
+            .toString()
+            .toLowerCase();
+        if (aspect == aspectKey ||
+            aspect.endsWith('_$aspectKey') ||
+            aspect.contains(aspectKey)) {
+          return map;
+        }
+      }
+    }
+    return const <String, dynamic>{};
   }
 
   static TemplateAspect _parseAspect(String raw) {

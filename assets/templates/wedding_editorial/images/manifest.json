@@ -1,0 +1,34 @@
+{
+  "templateId": "wedding_editorial_v1",
+  "templateSlug": "wedding_editorial",
+  "exampleSources": [
+    "ceremony_moment.png",
+    "sunset_pair.png",
+    "city_weekend.png",
+    "flower_table.png",
+    "hands_bw.png"
+  ],
+  "pageAssignments": {
+    "P02_DATE_COLLAGE": ["ceremony_moment.png", "sunset_pair.png", "city_weekend.png"],
+    "P03_FULL_PHOTO_META": ["ceremony_moment.png"],
+    "P04_FULL_PHOTO_THIS_LOVE": ["ceremony_moment.png"],
+    "P05_EDITORIAL_THEY_LIVED": ["sunset_pair.png"],
+    "P06_WARM_FULL_BLEED": ["flower_table.png"],
+    "P07_CENTER_CARD_CAPTION": ["flower_table.png"],
+    "P08_GRASS_FULL_BLEED": ["sunset_pair.png"],
+    "P09_BROWN_FIVE_GRID": ["city_weekend.png", "sunset_pair.png", "ceremony_moment.png"],
+    "P10_BROWN_ARCH_PORTRAIT": ["flower_table.png"],
+    "P11_THREE_STRIP_ALWAYS": ["ceremony_moment.png", "hands_bw.png", "sunset_pair.png"],
+    "P12_EDITORIAL_COLLAGE_ALWAYS": ["city_weekend.png", "flower_table.png", "hands_bw.png"],
+    "P13_SIMPLE_CENTER_PHOTO": ["hands_bw.png"],
+    "P14_LOVE_SIMPLY": ["ceremony_moment.png", "hands_bw.png"],
+    "P15_SIMPLE_CORNER_CAPTION": ["hands_bw.png"],
+    "P16_BROWN_CAKE_FULL": ["flower_table.png"],
+    "P17_BROWN_CAKE_GRID": ["flower_table.png"],
+    "P18_DOUBLE_VERTICAL_NIGHT": ["city_weekend.png"],
+    "P19_BW_PROPOSAL": ["hands_bw.png"],
+    "P20_SOFT_VEIL": ["ceremony_moment.png"],
+    "P21_SIMPLE_BACK_VIEW": ["sunset_pair.png"],
+    "P22_CLASSIC_STAIRS": ["ceremony_moment.png"]
+  }
+}

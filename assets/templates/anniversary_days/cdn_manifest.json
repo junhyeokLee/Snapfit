@@ -1,0 +1,21 @@
+{
+  "templateSlug": "anniversary_days",
+  "version": "v1",
+  "provider": "firebase_storage",
+  "bucket": "snapfit-c719d.firebasestorage.app",
+  "cdnBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "generatedAt": "2026-04-09T16:13:02.849662Z",
+  "dryRun": false,
+  "mappings": [
+    {
+      "fileName": "anniversary_sample.png",
+      "filePath": "assets/templates/anniversary_days/images/sources/anniversary_sample.png",
+      "assetPath": "asset:assets/templates/anniversary_days/images/sources/anniversary_sample.png",
+      "firebaseStoragePath": "templates/anniversary_days/v1/anniversary_sample.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fanniversary_days%2Fv1%2Fanniversary_sample.png?alt=media&token=59dd742d-6a21-4284-bdfd-3981d34b06b0",
+      "downloadToken": "59dd742d-6a21-4284-bdfd-3981d34b06b0",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    }
+  ]
+}

@@ -238,7 +238,7 @@ class LayerExportMapper {
 
     final fontWeightIdx = json['fontWeight'] as int?;
     final fontStyleIdx = json['fontStyle'] as int?;
-    final fontFamily = json['fontFamily'] as String?;
+    final fontFamily = _normalizeFontFamily(json['fontFamily'] as String?);
     final color = _parseColor(json['color'] as String?);
     final letterSpacing = json['letterSpacing'] as num?;
     return TextStyle(
@@ -254,5 +254,34 @@ class LayerExportMapper {
       color: color,
       letterSpacing: letterSpacing?.toDouble(),
     );
+  }
+
+  static String? _normalizeFontFamily(String? family) {
+    final raw = family?.trim();
+    if (raw == null || raw.isEmpty) return raw;
+    switch (raw) {
+      case 'NotoSansKR':
+      case 'Noto Sans KR':
+        return 'NotoSans';
+      case 'NotoSerifKR':
+      case 'Noto Serif KR':
+        return 'BookMyungjo';
+      case 'Cormorant_Garamond':
+      case 'Cormorant Garamond':
+      case 'CormorantGaramond':
+        return 'Cormorant Garamond';
+      case 'Cormorant':
+        return 'Cormorant Garamond';
+      case 'Nanum_Myeongjo':
+      case 'Nanum Myeongjo':
+        return 'BookMyungjo';
+      case 'Figma Hand':
+      case 'FigmaHand':
+      case 'Hakgyoansim GongryongalR':
+      case 'Hakgyoansim_GongryongalR':
+        return 'Figma Hand';
+      default:
+        return raw;
+    }
   }
 }

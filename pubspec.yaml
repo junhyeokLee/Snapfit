@@ -104,7 +104,6 @@ flutter:
     - assets/cover/cover15.png
     - assets/cover/cover16.png
     - assets/snapfit_logo.png
-    - assets/snapfit_logo2.png
     - assets/splash.png
     - assets/empty_state.png
     - assets/sticker/
@@ -131,6 +130,20 @@ flutter:
         - asset: assets/fonts/Cormorant-Regular.ttf
         - asset: assets/fonts/Cormorant-SemiBold.ttf
           weight: 800
+
+    - family: "Cormorant Garamond"
+      fonts:
+        - asset: assets/fonts/Cormorant-Regular.ttf
+        - asset: assets/fonts/Cormorant-SemiBold.ttf
+          weight: 800
+
+    - family: FigmaHand
+      fonts:
+        - asset: assets/fonts/Hakgyoansim_GongryongalR.ttf
+
+    - family: "Figma Hand"
+      fonts:
+        - asset: assets/fonts/Hakgyoansim_GongryongalR.ttf
 
     - family: NotoSans
       fonts:

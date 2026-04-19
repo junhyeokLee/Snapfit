@@ -1,0 +1,152 @@
+{
+  "templateId": "save_the_date_v1",
+  "templateSlug": "save_the_date",
+  "figmaFileKey": "DT3qiN54Z9o5ZSCfNpx9zP",
+  "figmaMasterNodeId": "37:2",
+  "firebaseStorageVersion": "v1",
+  "requiredExports": [
+    {
+      "fileName": "cover_full_bleed.png",
+      "pageNodeId": "59:2",
+      "pageName": "COVER_FULL_BLEED",
+      "imageNodeId": "152:32",
+      "usage": [
+        "coverImageUrl",
+        "previewImages[0]",
+        "cover layer image"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/cover_full_bleed.png"
+    },
+    {
+      "fileName": "p01_arch_editorial.png",
+      "pageNodeId": "59:10",
+      "pageName": "P01_ARCH_EDITORIAL",
+      "imageNodeId": "65:2",
+      "usage": [
+        "page 2 image layer"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p01_arch_editorial.png"
+    },
+    {
+      "fileName": "p02_circle_card.png",
+      "pageNodeId": "59:19",
+      "pageName": "P02_CIRCLE_CARD",
+      "imageNodeId": "59:24",
+      "usage": [
+        "page 3 image layer"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p02_circle_card.png"
+    },
+    {
+      "fileName": "p02_circle_ring_overlay.png",
+      "pageNodeId": "59:19",
+      "pageName": "P02_CIRCLE_CARD",
+      "imageNodeId": "153:3",
+      "usage": [
+        "page 3 ring overlay"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p02_circle_ring_overlay.png"
+    },
+    {
+      "fileName": "p03_strip_editorial.png",
+      "pageNodeId": "59:31",
+      "pageName": "P03_STRIP_EDITORIAL",
+      "imageNodeId": "65:3",
+      "usage": [
+        "page 4 image layer"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p03_strip_editorial.png"
+    },
+    {
+      "fileName": "p04_type_invitation_bg.png",
+      "pageNodeId": "59:42",
+      "pageName": "P04_TYPE_INVITATION",
+      "imageNodeId": "152:30",
+      "usage": [
+        "page 5 background photo"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p04_type_invitation_bg.png"
+    },
+    {
+      "fileName": "p10_photo_notes_left.png",
+      "pageNodeId": "68:9",
+      "pageName": "P10_PHOTO_NOTES",
+      "imageNodeId": "152:35",
+      "usage": [
+        "page 11 left image"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_left.png"
+    },
+    {
+      "fileName": "p10_photo_notes_center.png",
+      "pageNodeId": "68:9",
+      "pageName": "P10_PHOTO_NOTES",
+      "imageNodeId": "152:37",
+      "usage": [
+        "page 11 center image"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_center.png"
+    },
+    {
+      "fileName": "p10_photo_notes_bottom.png",
+      "pageNodeId": "68:9",
+      "pageName": "P10_PHOTO_NOTES",
+      "imageNodeId": "68:14",
+      "usage": [
+        "page 11 bottom image"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p10_photo_notes_bottom.png"
+    },
+    {
+      "fileName": "p12_closing_photo.png",
+      "pageNodeId": "68:25",
+      "pageName": "P12_CLOSING_PHOTO",
+      "imageNodeId": "68:27",
+      "usage": [
+        "page 13 closing image",
+        "preview image"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p12_closing_photo.png"
+    },
+    {
+      "fileName": "p08_stamp_tl.png",
+      "pageNodeId": "59:98",
+      "pageName": "P08_RSVP_CARD",
+      "imageNodeId": "60:19",
+      "usage": [
+        "page 9 top-left stamp"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_tl.png"
+    },
+    {
+      "fileName": "p08_stamp_tr.png",
+      "pageNodeId": "59:98",
+      "pageName": "P08_RSVP_CARD",
+      "imageNodeId": "60:20",
+      "usage": [
+        "page 9 top-right stamp"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_tr.png"
+    },
+    {
+      "fileName": "p08_stamp_bl.png",
+      "pageNodeId": "59:98",
+      "pageName": "P08_RSVP_CARD",
+      "imageNodeId": "60:21",
+      "usage": [
+        "page 9 bottom-left stamp"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_bl.png"
+    },
+    {
+      "fileName": "p08_stamp_br.png",
+      "pageNodeId": "59:98",
+      "pageName": "P08_RSVP_CARD",
+      "imageNodeId": "60:22",
+      "usage": [
+        "page 9 bottom-right stamp"
+      ],
+      "firebaseStoragePath": "templates/save_the_date/v1/p08_stamp_br.png"
+    }
+  ]
+}

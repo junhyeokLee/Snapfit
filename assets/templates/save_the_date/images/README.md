@@ -20,3 +20,4 @@
 
 - 최종 운영 반영 전에는 이 폴더를 모두 채우는 것을 원칙으로 한다.
 - 최종 검수 전 `store_latest.json` 과 `save_the_date_store.json` 안에 `figma.com/api/mcp/asset` 가 남아 있으면 안 된다.
+- Firebase Storage 업로드 대상 경로와 Figma 노드 목록은 `assets/templates/save_the_date/export_checklist.json` 를 기준으로 관리한다.

@@ -46,6 +46,45 @@ Widget _frameCircleRingImpl(Widget image) {
   );
 }
 
+Widget _frameHeartImpl(Widget image) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final size = constraints.biggest;
+      final side = size.shortestSide;
+      final shadowBlur = (side * 0.06).clamp(4.0, 12.0);
+      return Center(
+        child: SizedBox(
+          width: side,
+          height: side * 0.93,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: Transform.translate(
+                  offset: const Offset(0, 3),
+                  child: Opacity(
+                    opacity: 0.12,
+                    child: ClipPath(
+                      clipper: _HeartClipper(),
+                      child: Container(color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: ClipPath(
+                  clipper: _HeartClipper(),
+                  child: SizedBox.expand(child: image),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 Widget _frameRoundImpl(Widget image) {
   return ClipRRect(borderRadius: BorderRadius.circular(18), child: image);
 }

@@ -1,0 +1,30 @@
+{
+  "templateId": "wedding_editorial_v1",
+  "templateSlug": "wedding_editorial",
+  "fileKey": "DT3qiN54Z9o5ZSCfNpx9zP",
+  "sectionNodeId": "293:2",
+  "pages": [
+    { "pageNumber": 1, "frameName": "P01_COVER_BROWN_TITLE", "nodeId": "293:3" },
+    { "pageNumber": 2, "frameName": "P02_DATE_COLLAGE", "nodeId": "293:7" },
+    { "pageNumber": 3, "frameName": "P03_FULL_PHOTO_META", "nodeId": "293:27" },
+    { "pageNumber": 4, "frameName": "P04_FULL_PHOTO_THIS_LOVE", "nodeId": "293:32" },
+    { "pageNumber": 5, "frameName": "P05_EDITORIAL_THEY_LIVED", "nodeId": "293:40" },
+    { "pageNumber": 6, "frameName": "P06_WARM_FULL_BLEED", "nodeId": "293:48" },
+    { "pageNumber": 7, "frameName": "P07_CENTER_CARD_CAPTION", "nodeId": "293:50" },
+    { "pageNumber": 8, "frameName": "P08_GRASS_FULL_BLEED", "nodeId": "293:54" },
+    { "pageNumber": 9, "frameName": "P09_BROWN_FIVE_GRID", "nodeId": "293:56" },
+    { "pageNumber": 10, "frameName": "P10_BROWN_ARCH_PORTRAIT", "nodeId": "293:63" },
+    { "pageNumber": 11, "frameName": "P11_THREE_STRIP_ALWAYS", "nodeId": "293:67" },
+    { "pageNumber": 12, "frameName": "P12_EDITORIAL_COLLAGE_ALWAYS", "nodeId": "293:76" },
+    { "pageNumber": 13, "frameName": "P13_SIMPLE_CENTER_PHOTO", "nodeId": "293:86" },
+    { "pageNumber": 14, "frameName": "P14_LOVE_SIMPLY", "nodeId": "293:92" },
+    { "pageNumber": 15, "frameName": "P15_SIMPLE_CORNER_CAPTION", "nodeId": "293:100" },
+    { "pageNumber": 16, "frameName": "P16_BROWN_CAKE_FULL", "nodeId": "293:106" },
+    { "pageNumber": 17, "frameName": "P17_BROWN_CAKE_GRID", "nodeId": "293:111" },
+    { "pageNumber": 18, "frameName": "P18_DOUBLE_VERTICAL_NIGHT", "nodeId": "293:117" },
+    { "pageNumber": 19, "frameName": "P19_BW_PROPOSAL", "nodeId": "293:120" },
+    { "pageNumber": 20, "frameName": "P20_SOFT_VEIL", "nodeId": "293:122" },
+    { "pageNumber": 21, "frameName": "P21_SIMPLE_BACK_VIEW", "nodeId": "293:126" },
+    { "pageNumber": 22, "frameName": "P22_CLASSIC_STAIRS", "nodeId": "293:130" }
+  ]
+}

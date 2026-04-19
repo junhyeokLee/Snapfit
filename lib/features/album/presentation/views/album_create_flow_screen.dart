@@ -21,6 +21,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final Map<String, List<List<LayerModel>>>? initialTemplatePagesByAspect;
   final String? initialAlbumTitle;
   final List<String>? initialTemplatePreviewImages;
+  final CoverSize? initialCoverSize;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -28,6 +29,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialTemplatePagesByAspect,
     this.initialAlbumTitle,
     this.initialTemplatePreviewImages,
+    this.initialCoverSize,
   });
 
   @override
@@ -40,17 +42,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   int _currentStep = 0;
   String _albumTitle = '';
 
-  /// 최초 진입 시 정사각형이 기본 선택되도록 설정
-  CoverSize? _selectedCover = coverSizes.firstWhere(
-    (s) => s.name == '정사각형',
-    orElse: () => coverSizes.first,
-  );
+  CoverSize? _selectedCover;
   int _selectedPageCount = 10;
   int _templateMinPageCount = 10;
   bool _allowEditing = true;
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
   List<List<LayerModel>>? _resolvedTemplatePages;
+  List<List<LayerModel>>? _baseTemplatePages;
   Map<String, List<List<LayerModel>>>? _templatePagesByAspect;
 
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
@@ -93,11 +92,56 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     return 'square';
   }
 
-  void _applyTemplateByCoverIfNeeded(CoverSize cover) {
+  CoverSize _coverForAspectKey(String key) {
+    final normalized = key.toLowerCase();
+    if (normalized == 'portrait') {
+      return coverSizes.firstWhere(
+        (s) => s.name == '세로형',
+        orElse: () => coverSizes.first,
+      );
+    }
+    if (normalized == 'landscape') {
+      return coverSizes.firstWhere(
+        (s) => s.name == '가로형',
+        orElse: () => coverSizes.last,
+      );
+    }
+    return coverSizes.firstWhere(
+      (s) => s.name == '정사각형',
+      orElse: () => coverSizes.first,
+    );
+  }
+
+  CoverSize _resolveInitialCover() {
+    if (widget.initialCoverSize != null) {
+      return widget.initialCoverSize!;
+    }
     final variants = _templatePagesByAspect;
-    if (variants == null || variants.isEmpty) return;
+    if (variants != null && variants.isNotEmpty) {
+      if (variants['portrait']?.isNotEmpty ?? false) {
+        return _coverForAspectKey('portrait');
+      }
+      if (variants['square']?.isNotEmpty ?? false) {
+        return _coverForAspectKey('square');
+      }
+      if (variants['landscape']?.isNotEmpty ?? false) {
+        return _coverForAspectKey('landscape');
+      }
+    }
+    return coverSizes.firstWhere(
+      (s) => s.name == '정사각형',
+      orElse: () => coverSizes.first,
+    );
+  }
+
+  void _applyTemplateByCoverIfNeeded(CoverSize cover) {
     final key = _aspectKeyFromCover(cover);
-    final selected = variants[key];
+    final variants = _templatePagesByAspect;
+    final selected = key == 'portrait'
+        ? _baseTemplatePages
+        : variants == null
+        ? null
+        : variants[key];
     if (selected == null || selected.isEmpty) return;
     // 기존에 충분한 페이지가 이미 해석된 상태라면,
     // 페이지 수가 부족한 variant로 덮어쓰지 않도록 방어한다.
@@ -128,14 +172,18 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     }
     if (widget.initialTemplatePages != null &&
         widget.initialTemplatePages!.isNotEmpty) {
-      _resolvedTemplatePages = _hydrateTemplatePages(
+      _baseTemplatePages = _hydrateTemplatePages(
         widget.initialTemplatePages!,
       );
+      _resolvedTemplatePages = _baseTemplatePages;
+      (_templatePagesByAspect ??= <String, List<List<LayerModel>>>{})['portrait'] =
+          _baseTemplatePages!;
     }
     if (widget.initialAlbumTitle != null &&
         widget.initialAlbumTitle!.trim().isNotEmpty) {
       _albumTitle = widget.initialAlbumTitle!.trim();
     }
+    _selectedCover = _resolveInitialCover();
     if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
       // cover 제외 내지 페이지 수
       _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(

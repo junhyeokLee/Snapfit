@@ -21,6 +21,7 @@ class PremiumTemplate {
   final bool isPremium;
   final bool isLiked;
   final String? templateJson;
+  final String? createdAt;
 
   const PremiumTemplate({
     required this.id,
@@ -40,6 +41,7 @@ class PremiumTemplate {
     this.isPremium = true,
     this.isLiked = false,
     this.templateJson,
+    this.createdAt,
   });
 
   factory PremiumTemplate.fromJson(Map<String, dynamic> json) =>
@@ -64,6 +66,7 @@ class PremiumTemplate {
     bool? isPremium,
     bool? isLiked,
     String? templateJson,
+    String? createdAt,
   }) {
     return PremiumTemplate(
       id: id ?? this.id,
@@ -83,6 +86,7 @@ class PremiumTemplate {
       isPremium: isPremium ?? this.isPremium,
       isLiked: isLiked ?? this.isLiked,
       templateJson: templateJson ?? this.templateJson,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

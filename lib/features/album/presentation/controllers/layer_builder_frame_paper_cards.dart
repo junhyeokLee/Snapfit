@@ -342,8 +342,10 @@ Widget _frameArchSoftImpl(Widget image) {
 Widget _frameArchOvalImpl(Widget image) {
   return LayoutBuilder(
     builder: (context, constraints) {
-      final radius =
-          (constraints.biggest.shortestSide * 0.41).clamp(120.0, 320.0);
+      final radius = (constraints.biggest.width * 0.376344).clamp(
+        24.0,
+        constraints.biggest.width * 0.5,
+      );
       return ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: SizedBox.expand(child: image),

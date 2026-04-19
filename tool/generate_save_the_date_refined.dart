@@ -5,12 +5,18 @@ const _assetDir = 'assets/templates/save_the_date/images';
 
 final _imageSources = <String, String>{
   'cover_full_bleed': 'https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0',
-  'p01_arch_editorial': 'https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c',
-  'p02_circle_card': 'https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631',
-  'p03_strip_editorial': 'https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc',
-  'p10_photo_notes_left': 'https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6',
-  'p10_photo_notes_center': 'https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11',
-  'p10_photo_notes_bottom': 'https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a',
+  'p01_arch_editorial': 'https://www.figma.com/api/mcp/asset/f0daab34-35bc-4432-b244-607ed0a95f09',
+  'p02_circle_card': 'https://www.figma.com/api/mcp/asset/abde0ede-b437-4a65-97df-fee895e01bb7',
+  'p02_circle_ring_overlay': 'https://www.figma.com/api/mcp/asset/214f1915-5d89-4dcf-97e0-5e4d92a8c223',
+  'p03_strip_editorial': 'https://www.figma.com/api/mcp/asset/895f637f-a64e-438d-b560-50b404484749',
+  'p04_type_invitation_bg': 'https://www.figma.com/api/mcp/asset/57f1628a-e722-41d2-a9a2-f34fe8eaa561',
+  'p08_stamp_tl': 'https://www.figma.com/api/mcp/asset/b35c5f07-26af-482a-b330-b548a6a2d095',
+  'p08_stamp_tr': 'https://www.figma.com/api/mcp/asset/7ec9ba4b-b816-4b82-97e0-1634fa04f512',
+  'p08_stamp_bl': 'https://www.figma.com/api/mcp/asset/5075f331-2a16-4053-af9e-052184711110',
+  'p08_stamp_br': 'https://www.figma.com/api/mcp/asset/74e1e7d9-dd1d-4fe8-be13-b1970e66f016',
+  'p10_photo_notes_left': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
+  'p10_photo_notes_center': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
+  'p10_photo_notes_bottom': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
   'p12_closing_photo': 'https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5',
 };
 
@@ -44,7 +50,6 @@ void main() async {
   final handoff = _buildHandoff();
   const handoffPath = 'assets/templates/save_the_date_handoff.json';
   const storePath = 'assets/templates/generated/save_the_date_store.json';
-  const storeLatestPath = 'assets/templates/generated/store_latest.json';
 
   await File(
     handoffPath,
@@ -65,15 +70,13 @@ void main() async {
     exit(result.exitCode);
   }
 
-  await _syncIntoStoreLatest(
-    generatedStorePath: storePath,
-    storeLatestPath: storeLatestPath,
-  );
-
   stdout.writeln('Generated save_the_date template');
   stdout.writeln('Handoff: $handoffPath');
   stdout.writeln('Store: $storePath');
-  stdout.writeln('Synced: $storeLatestPath');
+  stdout.writeln(
+    'next=./scripts/template_asset_pipeline.sh --template-slug=save_the_date '
+    '--template-store-json=$storePath',
+  );
 }
 
 Map<String, dynamic> _buildHandoff() {
@@ -120,8 +123,9 @@ Map<String, dynamic> _buildHandoff() {
           'florals, vows, and a little ocean light',
           fontSize: 26,
           fontFamily: 'Inter',
-          fontWeight: 5,
+          fontWeight: 4,
           color: '#FF6E7A86',
+          lineHeight: 1.3077,
         ),
         _image(
           'arch_photo',
@@ -154,8 +158,9 @@ Map<String, dynamic> _buildHandoff() {
           'A design note with a softer editorial mood.',
           fontSize: 34,
           fontFamily: 'Inter',
-          fontWeight: 6,
+          fontWeight: 5,
           color: '#FF24374A',
+          lineHeight: 1.2353,
         ),
         _text(
           'footer',
@@ -166,9 +171,9 @@ Map<String, dynamic> _buildHandoff() {
           'Save the date for an intimate celebration\nOctober 12, 2025',
           fontSize: 24,
           fontFamily: 'Inter',
-          fontWeight: 5,
+          fontWeight: 3,
           color: '#FF6E7A86',
-          lineHeight: 1.42,
+          lineHeight: 1.4167,
         ),
       ],
     ),
@@ -190,13 +195,23 @@ Map<String, dynamic> _buildHandoff() {
         ),
         _image(
           'circle_photo',
+          0.1944,
+          0.1639,
+          0.6111,
+          0.4583,
+          _previewImages[2],
+          z: 8,
+          frame: 'circle',
+        ),
+        _image(
+          'circle_ring_overlay',
           0.1574,
           0.1361,
           0.6852,
           0.5139,
-          _previewImages[2],
-          z: 8,
-          frame: 'circleRing',
+          _resolveTemplateImage('p02_circle_ring_overlay'),
+          z: 9,
+          frame: 'free',
         ),
         _deco(
           'caption_card',
@@ -213,15 +228,16 @@ Map<String, dynamic> _buildHandoff() {
         _text(
           'desc',
           0.1407,
-          0.6944,
+          0.6890,
           0.7185,
-          0.0306,
-          'We are getting married and would love for you to mark the date with us.',
-          fontSize: 34,
+          0.0700,
+          'We are getting married and would love for you\nto mark the date with us.',
+          fontSize: 32,
           fontFamily: 'Inter',
           fontWeight: 6,
           color: '#FF24374A',
-          lineHeight: 1.29,
+          align: 'center',
+          lineHeight: 1.22,
         ),
         _text(
           'footer',
@@ -232,9 +248,9 @@ Map<String, dynamic> _buildHandoff() {
           'Keep this card close. Formal invitation to follow.',
           fontSize: 24,
           fontFamily: 'Inter',
-          fontWeight: 5,
+          fontWeight: 3,
           color: '#FF6E7A86',
-          lineHeight: 1.42,
+          lineHeight: 1.4167,
         ),
         _deco(
           'cta_bg',
@@ -255,8 +271,9 @@ Map<String, dynamic> _buildHandoff() {
           'SAVE THIS WEEKEND',
           fontSize: 18,
           fontFamily: 'Inter',
-          fontWeight: 6,
+          fontWeight: 5,
           color: '#FFF7F1E8',
+          lineHeight: 1.3333,
           letterSpacing: 1.8,
         ),
       ],
@@ -368,9 +385,21 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       5,
       layoutId: 'p04_type_invitation',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 1,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperWhiteWarm', z: 0),
+        _deco(
+          'outer_frame',
+          0.0407,
+          0.0403,
+          0.9185,
+          0.9194,
+          'paperWhiteWarm',
+          z: 1,
+          radius: 0.040,
+          borderColor: '#FFD7DDE3',
+          borderWidth: 0.0012,
+        ),
         _deco(
           'border_frame',
           0.0537,
@@ -378,10 +407,21 @@ Map<String, dynamic> _buildHandoff() {
           0.8926,
           0.9194,
           'paperWhiteWarm',
-          z: 1,
+          z: 2,
           radius: 0.035,
         ),
-        _deco('line_top', 0.1481, 0.1472, 0.7037, 0.0014, 'minimalGray', z: 3),
+        _image(
+          'photo_fill',
+          0.0537,
+          0.1708,
+          0.8926,
+          0.6694,
+          _resolveTemplateImage('p04_type_invitation_bg'),
+          z: 3,
+          frame: 'free',
+          opacity: 0.50,
+        ),
+        _deco('line_top', 0.1481, 0.1472, 0.7037, 0.0014, 'minimalGray', z: 4),
         _deco(
           'line_bottom',
           0.1481,
@@ -389,7 +429,7 @@ Map<String, dynamic> _buildHandoff() {
           0.7037,
           0.0014,
           'minimalGray',
-          z: 3,
+          z: 4,
         ),
         _text(
           'eyebrow',
@@ -398,7 +438,7 @@ Map<String, dynamic> _buildHandoff() {
           0.7037,
           0.0153,
           'INVITATION PREVIEW',
-          fontSize: 14,
+          fontSize: 18,
           fontFamily: 'Inter',
           fontWeight: 6,
           color: '#FF6E7A86',
@@ -408,16 +448,16 @@ Map<String, dynamic> _buildHandoff() {
         _text(
           'title',
           0.1481,
-          0.2208,
+          0.2080,
           0.7037,
-          0.1833,
-          'Save the date for a wedding weekend full of quiet joy, old songs, good food, and the people who feel like home.',
-          fontSize: 54,
+          0.2450,
+          'Save the date for a wedding\nweekend full of quiet joy, old\nsongs, good food, and the\npeople who feel like home.',
+          fontSize: 44,
           fontFamily: 'Inter',
           fontWeight: 8,
           color: '#FF24374A',
-          align: 'left',
-          lineHeight: 1.12,
+          align: 'center',
+          lineHeight: 1.24,
         ),
         _text(
           'names',
@@ -428,9 +468,10 @@ Map<String, dynamic> _buildHandoff() {
           'JULIA KIM\nand\nMINHO PARK',
           fontSize: 42,
           fontFamily: 'Inter',
-          fontWeight: 8,
+          fontWeight: 5,
           color: '#FF24374A',
-          lineHeight: 1.12,
+          align: 'center',
+          lineHeight: 1.5238,
         ),
         _text(
           'footer',
@@ -439,20 +480,31 @@ Map<String, dynamic> _buildHandoff() {
           0.7037,
           0.025,
           'Formal invitation and RSVP details will arrive soon.',
-          fontSize: 20,
+          fontSize: 26,
           fontFamily: 'Inter',
-          fontWeight: 5,
+          fontWeight: 4,
           color: '#FF6E7A86',
           align: 'center',
+          lineHeight: 1.3846,
         ),
       ],
     ),
     _pageSpec(
       6,
       layoutId: 'p05_detail_grid',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 2,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperWhiteWarm', z: 0),
+        _image(
+          'top_circle',
+          0.7315,
+          0.0530,
+          0.1667,
+          0.1250,
+          _previewImages[1],
+          z: 2,
+          frame: 'circleRing',
+        ),
         _text(
           'eyebrow',
           0.0833,
@@ -516,12 +568,22 @@ Map<String, dynamic> _buildHandoff() {
           'Gift note',
           'Your presence means the most',
         ),
+        _image(
+          'bottom_banner',
+          0.0833,
+          0.8028,
+          0.8333,
+          0.1167,
+          _previewImages[3],
+          z: 2,
+          frame: 'rounded28',
+        ),
       ],
     ),
     _pageSpec(
       7,
       layoutId: 'p06_timeline',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 5,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperWhite', z: 0),
         _text(
@@ -553,6 +615,56 @@ Map<String, dynamic> _buildHandoff() {
           lineHeight: 1.18,
         ),
         _deco('line', 0.1741, 0.2194, 0.0037, 0.5694, 'minimalGray', z: 2),
+        _image(
+          'cameo_1',
+          0.1315,
+          0.2300,
+          0.0889,
+          0.0667,
+          _previewImages[2],
+          z: 5,
+          frame: 'circleRing',
+        ),
+        _image(
+          'cameo_2',
+          0.1315,
+          0.3369,
+          0.0889,
+          0.0667,
+          _previewImages[1],
+          z: 5,
+          frame: 'circleRing',
+        ),
+        _image(
+          'cameo_3',
+          0.1315,
+          0.4438,
+          0.0889,
+          0.0667,
+          _previewImages[6],
+          z: 5,
+          frame: 'circleRing',
+        ),
+        _image(
+          'cameo_4',
+          0.1315,
+          0.5507,
+          0.0889,
+          0.0667,
+          _previewImages[5],
+          z: 5,
+          frame: 'circleRing',
+        ),
+        _image(
+          'cameo_5',
+          0.1315,
+          0.6577,
+          0.0889,
+          0.0667,
+          _previewImages[7],
+          z: 5,
+          frame: 'circleRing',
+        ),
         ..._timelineRow(
           0.1481,
           0.2361,
@@ -593,7 +705,7 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       8,
       layoutId: 'p07_quote_poster',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 1,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperPink', z: 0),
         _deco(
@@ -605,6 +717,16 @@ Map<String, dynamic> _buildHandoff() {
           'paperPink',
           z: 1,
           radius: 0.04,
+        ),
+        _image(
+          'right_cameo',
+          0.7056,
+          0.1486,
+          0.1667,
+          0.1250,
+          _previewImages[4],
+          z: 2,
+          frame: 'circleRing',
         ),
         _text(
           'eyebrow',
@@ -664,90 +786,130 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       9,
       layoutId: 'p08_rsvp_card',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 4,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperWhiteWarm', z: 0),
-        _deco('outer', 0.08, 0.12, 0.84, 0.56, 'deepNavy', z: 2, radius: 0.04),
+        _image(
+          'stamp_tl',
+          0.0667,
+          0.3611,
+          0.0556,
+          0.0417,
+          _resolveTemplateImage('p08_stamp_tl'),
+          z: 1,
+          frame: 'free',
+        ),
+        _image(
+          'stamp_tr',
+          0.8778,
+          0.3611,
+          0.0556,
+          0.0417,
+          _resolveTemplateImage('p08_stamp_tr'),
+          z: 1,
+          frame: 'free',
+        ),
+        _image(
+          'stamp_bl',
+          0.0667,
+          0.6389,
+          0.0556,
+          0.0417,
+          _resolveTemplateImage('p08_stamp_bl'),
+          z: 1,
+          frame: 'free',
+        ),
+        _image(
+          'stamp_br',
+          0.8778,
+          0.6389,
+          0.0556,
+          0.0417,
+          _resolveTemplateImage('p08_stamp_br'),
+          z: 1,
+          frame: 'free',
+        ),
+        _deco('outer', 0.0944, 0.1111, 0.8111, 0.7778, 'deepNavy', z: 2, radius: 0.0352),
         _text(
           'eyebrow',
-          0.34,
-          0.16,
-          0.32,
-          0.02,
+          0.1667,
+          0.1708,
+          0.6667,
+          0.0236,
           'RSVP TICKET',
-          fontSize: 16,
+          fontSize: 28,
           fontFamily: 'Inter',
           fontWeight: 6,
-          color: '#FFF8FAFC',
-          letterSpacing: 1.8,
+          color: '#FF6E7A86',
+          letterSpacing: 3.2,
         ),
         _deco(
           'inner',
-          0.12,
-          0.16,
-          0.76,
-          0.48,
+          0.1222,
+          0.1319,
+          0.7556,
+          0.7361,
           'paperWhiteWarm',
           z: 3,
-          radius: 0.03,
+          radius: 0.0259,
         ),
         _text(
           'title',
-          0.20,
-          0.26,
-          0.60,
-          0.10,
+          0.1944,
+          0.25,
+          0.6111,
+          0.1222,
           'Please reply by\nSeptember 15',
-          fontSize: 34,
+          fontSize: 72,
           fontFamily: 'Inter',
           fontWeight: 8,
           color: '#FF24374A',
-          lineHeight: 1.12,
+          lineHeight: 1.2222,
         ),
         _deco(
           'link_chip',
-          0.20,
-          0.46,
-          0.60,
-          0.05,
+          0.1833,
+          0.4583,
+          0.6333,
+          0.0778,
           'cloudSkyBlue',
           z: 4,
-          radius: 0.04,
+          radius: 0.0519,
         ),
         _text(
           'link',
-          0.25,
-          0.474,
-          0.50,
-          0.02,
+          0.2111,
+          0.4840,
+          0.5778,
+          0.0250,
           'snapfit.app/rsvp/julia-minho',
-          fontSize: 14,
+          fontSize: 28,
           fontFamily: 'Inter',
-          fontWeight: 7,
+          fontWeight: 6,
           color: '#FF24374A',
         ),
-        _deco('line', 0.20, 0.56, 0.60, 0.002, 'minimalGray', z: 4),
+        _deco('line', 0.1759, 0.5764, 0.6481, 0.0014, 'minimalGray', z: 4),
         _text(
           'contact',
-          0.22,
-          0.60,
-          0.56,
-          0.06,
+          0.1944,
+          0.6194,
+          0.6111,
+          0.0722,
           'Planner 010-1234-5678\nBride 010-2345-6789',
-          fontSize: 18,
+          fontSize: 34,
           fontFamily: 'Inter',
-          fontWeight: 7,
+          fontWeight: 6,
           color: '#FF24374A',
-          lineHeight: 1.32,
+          lineHeight: 1.5294,
         ),
         _text(
           'footer',
-          0.22,
-          0.76,
-          0.56,
-          0.03,
+          0.1944,
+          0.75,
+          0.6111,
+          0.0222,
           'Formal invitation follows soon',
-          fontSize: 14,
+          fontSize: 24,
           fontFamily: 'Inter',
           color: '#FF6E7A86',
         ),
@@ -756,9 +918,11 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       10,
       layoutId: 'p09_end_poster',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 1,
       layers: [
+        _image('poster_bg', 0, 0, 1, 1, _previewImages[3], z: 0, frame: 'free'),
         _deco('bg', 0, 0, 1, 1, 'deepNavy', z: 0),
+        _deco('overlay', 0, 0, 1, 1, 'deepNavy', z: 1, opacity: 0.68),
         _text(
           'title',
           0.0889,
@@ -819,7 +983,7 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       11,
       layoutId: 'p10_photo_notes',
-      recommendedPhotoCount: 3,
+      recommendedPhotoCount: 4,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'paperWhiteWarm', z: 0),
         _text(
@@ -852,9 +1016,9 @@ Map<String, dynamic> _buildHandoff() {
         _image(
           'left_photo',
           0.0833,
-          0.2083,
+          0.2361,
           0.3889,
-          0.3611,
+          0.1667,
           _previewImages[4],
           z: 10,
           frame: 'rounded28',
@@ -862,7 +1026,7 @@ Map<String, dynamic> _buildHandoff() {
         _image(
           'center_photo',
           0.5278,
-          0.2083,
+          0.2361,
           0.3889,
           0.1667,
           _previewImages[5],
@@ -870,9 +1034,19 @@ Map<String, dynamic> _buildHandoff() {
           frame: 'rounded28',
         ),
         _image(
+          'bottom_left_photo',
+          0.0833,
+          0.4236,
+          0.3889,
+          0.1667,
+          _previewImages[4],
+          z: 10,
+          frame: 'rounded28',
+        ),
+        _image(
           'bottom_photo',
           0.5278,
-          0.4028,
+          0.4236,
           0.3889,
           0.1667,
           _previewImages[6],
@@ -882,7 +1056,7 @@ Map<String, dynamic> _buildHandoff() {
         _text(
           'caption',
           0.0833,
-          0.6056,
+          0.6556,
           0.8333,
           0.0556,
           'Ceremony details, intimate portraits, and warm editorial accents can be mixed across later pages.',
@@ -897,7 +1071,7 @@ Map<String, dynamic> _buildHandoff() {
     _pageSpec(
       12,
       layoutId: 'p11_dress_code',
-      recommendedPhotoCount: 0,
+      recommendedPhotoCount: 3,
       layers: [
         _deco('bg', 0, 0, 1, 1, 'cloudSkyBlue', z: 0),
         _deco(
@@ -937,35 +1111,35 @@ Map<String, dynamic> _buildHandoff() {
           color: '#FF243B53',
           lineHeight: 0.95,
         ),
-        _deco(
+        _image(
           'tone_a',
           0.1926,
           0.4375,
           0.1760,
           0.1319,
-          'paperPink',
+          _previewImages[1],
           z: 5,
-          radius: 0.09,
+          frame: 'circleRing',
         ),
-        _deco(
+        _image(
           'tone_b',
           0.4130,
           0.4375,
           0.1760,
           0.1319,
-          'cloudSkyBlue',
+          _previewImages[5],
           z: 5,
-          radius: 0.09,
+          frame: 'circleRing',
         ),
-        _deco(
+        _image(
           'tone_c',
           0.6333,
           0.4375,
           0.1760,
           0.1319,
-          'deepNavy',
+          _previewImages[7],
           z: 5,
-          radius: 0.09,
+          frame: 'circleRing',
         ),
         _text(
           'desc',
@@ -999,7 +1173,7 @@ Map<String, dynamic> _buildHandoff() {
       layoutId: 'p12_closing_photo',
       recommendedPhotoCount: 1,
       layers: [
-        _deco('bg', 0, 0, 1, 1, 'deepNavy', z: 0),
+        _deco('bg', 0, 0, 1, 1, 'paperWhiteWarm', z: 0),
         _deco(
           'card',
           0.0648,
@@ -1009,6 +1183,8 @@ Map<String, dynamic> _buildHandoff() {
           'paperWhiteWarm',
           z: 2,
           radius: 0.035,
+          borderColor: '#FFD7DDE3',
+          borderWidth: 0.0012,
         ),
         _image(
           'main',
@@ -1023,40 +1199,43 @@ Map<String, dynamic> _buildHandoff() {
         _text(
           'title',
           0.1204,
-          0.6611,
+          0.6640,
           0.7593,
-          0.0917,
+          0.1030,
           'We cannot wait to celebrate\ntogether.',
-          fontSize: 44,
+          fontSize: 50,
           fontFamily: 'Inter',
           fontWeight: 8,
           color: '#FF24374A',
-          lineHeight: 1.08,
+          align: 'center',
+          lineHeight: 1.16,
         ),
         _text(
           'body',
           0.2130,
-          0.7556,
+          0.8050,
           0.5741,
-          0.0556,
+          0.0740,
           'Invitation and RSVP details will follow soon. Thank you for saving the date with us.',
-          fontSize: 18,
+          fontSize: 22,
           fontFamily: 'Inter',
           color: '#FF6E7A86',
-          lineHeight: 1.4,
+          align: 'center',
+          lineHeight: 1.32,
         ),
         _text(
           'footer',
           0.3130,
-          0.8667,
+          0.8970,
           0.3741,
-          0.0194,
+          0.0310,
           'JULIA + MINHO  ·  OCT 12',
           fontSize: 18,
           fontFamily: 'Inter',
-          fontWeight: 7,
+          fontWeight: 6,
           color: '#FF24374A',
-          letterSpacing: 1.2,
+          align: 'center',
+          letterSpacing: 2.0,
         ),
       ],
     ),
@@ -1095,7 +1274,7 @@ Map<String, dynamic> _buildHandoff() {
     'ratio': '0.75',
     'designWidth': 1080,
     'designHeight': 1440,
-    'recommendedPhotoCount': 13,
+    'recommendedPhotoCount': 25,
     'strictLayout': true,
     'autoFit': false,
     'cover': {'theme': 'auto', 'layers': cover},
@@ -1165,8 +1344,11 @@ Map<String, dynamic> _buildVariant({
   required List<Map<String, dynamic>> cover,
   required List<Map<String, dynamic>> pages,
 }) {
+  final ratio = (width / height).toStringAsFixed(4);
   return {
+    'variantId': aspect,
     'aspect': aspect,
+    'ratio': ratio,
     'designWidth': width,
     'designHeight': height,
     'cover': {
@@ -1181,6 +1363,10 @@ Map<String, dynamic> _buildVariant({
         .map(
           (page) => {
             ...page,
+            'aspect': aspect,
+            'ratio': ratio,
+            'designWidth': width,
+            'designHeight': height,
             'layers': _transformLayersForAspect(
               (page['layers'] as List<dynamic>)
                   .whereType<Map>()
@@ -1217,24 +1403,36 @@ List<Map<String, dynamic>> _transformLayersForAspect(
             ? Map<String, dynamic>.from(layer['payload'] as Map)
             : null;
 
+        final xRatio = (layer['x'] as num?)?.toDouble() ?? 0;
+        final yRatio = (layer['y'] as num?)?.toDouble() ?? 0;
+        final wRatio = (layer['width'] as num?)?.toDouble() ?? 0;
+        final hRatio = (layer['height'] as num?)?.toDouble() ?? 0;
+        final isCanvasSized =
+            xRatio == 0 && yRatio == 0 && wRatio == 1 && hRatio == 1;
+        final type = (layer['type'] as String? ?? '').toUpperCase();
+        final frameKey = (payload?['imageBackground'] as String? ?? '')
+            .trim()
+            .toLowerCase();
         final isFullBleed =
-            (layer['type'] == 'DECORATION' || layer['type'] == 'decoration') &&
-            ((layer['x'] as num?)?.toDouble() ?? 0) == 0 &&
-            ((layer['y'] as num?)?.toDouble() ?? 0) == 0 &&
-            ((layer['width'] as num?)?.toDouble() ?? 0) == 1 &&
-            ((layer['height'] as num?)?.toDouble() ?? 0) == 1;
+            isCanvasSized &&
+            ((type == 'DECORATION') ||
+                (type == 'IMAGE' && (frameKey.isEmpty || frameKey == 'free')));
 
         if (!isFullBleed) {
-          final x = ((layer['x'] as num?)?.toDouble() ?? 0) * portraitWidth;
-          final y = ((layer['y'] as num?)?.toDouble() ?? 0) * portraitHeight;
-          final w = ((layer['width'] as num?)?.toDouble() ?? 0) * portraitWidth;
-          final h =
-              ((layer['height'] as num?)?.toDouble() ?? 0) * portraitHeight;
+          final x = xRatio * portraitWidth;
+          final y = yRatio * portraitHeight;
+          final w = wRatio * portraitWidth;
+          final h = hRatio * portraitHeight;
 
           next['x'] = ((x * scale) + offsetX) / targetWidth;
           next['y'] = ((y * scale) + offsetY) / targetHeight;
           next['width'] = (w * scale) / targetWidth;
           next['height'] = (h * scale) / targetHeight;
+        } else {
+          next['x'] = 0.0;
+          next['y'] = 0.0;
+          next['width'] = 1.0;
+          next['height'] = 1.0;
         }
 
         if (payload != null && payload['textStyle'] is Map) {
@@ -1289,23 +1487,24 @@ List<Map<String, dynamic>> _coverLayers() => [
     '2025.10.12 SAT',
     fontSize: 20,
     fontFamily: 'Inter',
-    fontWeight: 6,
+    fontWeight: 5,
     color: '#FF24374A',
     letterSpacing: 1.2,
+    lineHeight: 1.2,
     z: 4,
   ),
   _text(
     'title',
     0.0778,
-    0.6556,
+    0.6170,
     0.8444,
-    0.1444,
+    0.1520,
     'SAVE THE\nDATE',
     fontSize: 116,
     fontFamily: 'Inter',
-    fontWeight: 8,
+    fontWeight: 6,
     color: '#FFF7F1E8',
-    lineHeight: 0.90,
+    lineHeight: 0.8966,
     align: 'left',
     letterSpacing: 1.4,
     z: 4,
@@ -1313,31 +1512,32 @@ List<Map<String, dynamic>> _coverLayers() => [
   _text(
     'subtitle',
     0.0778,
-    0.8431,
+    0.8360,
     0.6481,
     0.0264,
     'A floral aisle, sea light, and one October promise.',
     fontSize: 28,
     fontFamily: 'Inter',
-    fontWeight: 5,
+    fontWeight: 4,
     color: '#FFF7F1E8',
     align: 'left',
-    lineHeight: 1.1,
+    lineHeight: 1.3571,
     z: 4,
   ),
   _text(
     'names',
     0.0778,
-    0.9056,
+    0.9000,
     0.50,
     0.0236,
     'JULIA + MINHO',
     fontSize: 28,
     fontFamily: 'Inter',
-    fontWeight: 6,
+    fontWeight: 5,
     color: '#FFF7F1E8',
     align: 'left',
     letterSpacing: 3.0,
+    lineHeight: 1.2143,
     z: 4,
   ),
 ];

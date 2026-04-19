@@ -7,13 +7,11 @@ import '../../../../../core/utils/screen_logger.dart';
 class HomeBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
-  final VoidCallback onCreate;
 
   const HomeBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    required this.onCreate,
   });
 
   static bool _logged = false;
@@ -22,32 +20,29 @@ class HomeBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_logged) {
       _logged = true;
-      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범만들기');
+      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범/스토어/설정');
     }
-    return SafeArea(
-      top: false,
+    final isDark = SnapFitColors.isDark(context);
+    final barColor = isDark ? const Color(0xF21C1F22) : SnapFitColors.pureWhite;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.08)
+        : const Color(0xFFECEFF3);
+
+    return MediaQuery.removePadding(
+      context: context,
+      removeBottom: true,
       child: Container(
-        margin: EdgeInsets.fromLTRB(10.w, 0, 10.w, 6.h),
-        padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 6.h),
+        height: 58.h,
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: SnapFitColors.isDark(context)
-              ? SnapFitColors.surfaceOf(context)
-              : SnapFitColors.pureWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border(
-            top: BorderSide(
-              color: SnapFitColors.isDark(context)
-                  ? SnapFitColors.overlayLightOf(context)
-                  : SnapFitColors.overlayStrongOf(context),
-            ),
-          ),
+          color: barColor,
+          border: Border(top: BorderSide(color: borderColor)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.12 : 0.045,
-              ),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(isDark ? 0.18 : 0.045),
+              blurRadius: 14.r,
+              spreadRadius: -8.r,
+              offset: Offset(0, -4.h),
             ),
           ],
         ),
@@ -63,15 +58,12 @@ class HomeBottomNavigationBar extends StatelessWidget {
             ),
             Expanded(
               child: _BottomNavItem(
-                icon: Icons.photo_album_rounded,
+                icon: Icons.photo_library_rounded,
                 label: '앨범',
                 isSelected: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
             ),
-            SizedBox(width: 4.w),
-            _CreateNavButton(onTap: onCreate),
-            SizedBox(width: 4.w),
             Expanded(
               child: _BottomNavItem(
                 icon: Icons.explore_rounded,
@@ -95,66 +87,6 @@ class HomeBottomNavigationBar extends StatelessWidget {
   }
 }
 
-/// 바텀 네비게이션 중앙 액션 버튼
-class _CreateNavButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _CreateNavButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final buttonColor = isDark
-        ? const Color(0xFF1987AB)
-        : const Color(0xFF10A4D1);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22.r),
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: buttonColor.withOpacity(isDark ? 0.18 : 0.16),
-                blurRadius: 7.r,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: buttonColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(isDark ? 0.08 : 0.5),
-                    width: 1.0,
-                  ),
-                ),
-                child: Icon(
-                  Icons.add,
-                  size: 20.sp,
-                  color: SnapFitColors.pureWhite,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// 바텀 네비게이션 아이템
 class _BottomNavItem extends StatelessWidget {
   final IconData icon;
@@ -172,43 +104,53 @@ class _BottomNavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
-    final color = isSelected
-        ? (isDark ? SnapFitColors.accent : SnapFitColors.accent)
-        : (isDark
-              ? SnapFitColors.textMutedOf(context)
-              : SnapFitColors.deepCharcoal.withOpacity(0.7));
+    final selectedColor = SnapFitColors.accent;
+    final unselectedColor = isDark
+        ? Colors.white.withOpacity(0.56)
+        : SnapFitColors.deepCharcoal.withOpacity(0.58);
+    final color = isSelected ? selectedColor : unselectedColor;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10.r),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 2.h),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          height: 48.h,
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
+              AnimatedScale(
                 duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? SnapFitColors.accent.withOpacity(isDark ? 0.14 : 0.1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(999.r),
+                curve: Curves.easeOutBack,
+                scale: isSelected ? 1.06 : 1.0,
+                child: Icon(
+                  icon,
+                  size: isSelected ? 20.sp : 19.sp,
+                  color: color,
                 ),
-                child: Icon(icon, size: 17.sp, color: color),
               ),
               SizedBox(height: 2.h),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
                 style:
                     (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
                         .copyWith(
-                          fontSize: 9.sp,
+                          fontSize: 9.5.sp,
                           fontWeight: isSelected
-                              ? FontWeight.w600
+                              ? FontWeight.w700
                               : FontWeight.w500,
+                          height: 1.0,
                           color: color,
                         ),
               ),

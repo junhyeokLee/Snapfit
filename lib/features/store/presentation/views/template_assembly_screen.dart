@@ -98,16 +98,13 @@ class _TemplateAssemblyScreenState
             })
             .toList(growable: false);
 
-        final portraitCover = coverSizes.firstWhere(
-          (s) => s.name == '세로형',
-          orElse: () => coverSizes.first,
-        );
+        final inferredCover = _inferredCoverSize(pageLayers);
         ref
             .read(albumEditorViewModelProvider.notifier)
             .startLocalTemplateAlbum(
               albumTitle: widget.template.title,
               pages: pageLayers,
-              initialCover: portraitCover,
+              initialCover: inferredCover,
             );
 
         if (!mounted) return;
@@ -143,6 +140,26 @@ class _TemplateAssemblyScreenState
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
+  }
+
+  CoverSize _inferredCoverSize(List<List<LayerModel>> pages) {
+    final ratio = pages.isEmpty ? (3 / 4) : _pageAspect(pages.first);
+    if (ratio >= 1.05) {
+      return coverSizes.firstWhere(
+        (s) => s.name == '가로형',
+        orElse: () => coverSizes.last,
+      );
+    }
+    if (ratio <= 0.95) {
+      return coverSizes.firstWhere(
+        (s) => s.name == '세로형',
+        orElse: () => coverSizes.first,
+      );
+    }
+    return coverSizes.firstWhere(
+      (s) => s.name == '정사각형',
+      orElse: () => coverSizes.first,
+    );
   }
 
   @override

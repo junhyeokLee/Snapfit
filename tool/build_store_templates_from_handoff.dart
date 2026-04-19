@@ -48,11 +48,6 @@ int _stableHash(String input) {
   return hash;
 }
 
-String _safeImage(String seed, {int w = 1200, int h = 900}) {
-  final clean = seed.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
-  return 'https://picsum.photos/seed/$clean/$w/$h';
-}
-
 String _normalizeArgbColor(String raw, {String fallback = '#FF1F2937'}) {
   final s = raw.trim();
   if (s.isEmpty) return fallback;
@@ -83,7 +78,10 @@ List<String> _previewImages(Map<String, dynamic> src) {
           .toList();
   if (fromPreviewImageUrls.isNotEmpty) return fromPreviewImageUrls;
 
-  return [_safeImage((src['id'] ?? 'tpl').toString())];
+  final cover = (src['coverImageUrl'] ?? '').toString().trim();
+  if (cover.isNotEmpty) return [cover];
+
+  return const <String>[];
 }
 
 Map<String, dynamic> _toStoreTemplate(
@@ -99,6 +97,12 @@ Map<String, dynamic> _toStoreTemplate(
       .map((e) => e.toString())
       .toList();
   final preview = _previewImages(src);
+  if (preview.isEmpty) {
+    throw StateError(
+      'Template $sourceId is missing previewImages/previewImageUrls/coverImageUrl. '
+      'Placeholder image fallbacks are not allowed.',
+    );
+  }
   final aspect = (src['aspect'] ?? 'portrait').toString();
   final designSize = _defaultDesignSize(aspect);
   final designWidth = (src['designWidth'] as num?)?.toDouble() ?? designSize.$1;
@@ -151,6 +155,9 @@ Map<String, dynamic> _toStoreTemplate(
       if (vPages.isEmpty) continue;
 
       variants[key] = {
+        'variantId': (variant['variantId'] ?? key).toString(),
+        'aspect': vAspect,
+        'ratio': (variant['ratio'] ?? _aspectToRatio(vAspect)).toString(),
         'designWidth': vWidth,
         'designHeight': vHeight,
         'cover': {'theme': 'auto', 'layers': vCoverLayers},
@@ -201,6 +208,9 @@ Map<String, dynamic> _toStoreTemplate(
     'strictLayout': true,
     'autoFit': false,
     'autoFitPadding': 0.0,
+    'aspect': aspect,
+    'designWidth': designWidth,
+    'designHeight': designHeight,
     'templateId': templateId,
     'version': templateVersion,
     'lifecycleStatus': lifecycleStatus,

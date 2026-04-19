@@ -1,0 +1,61 @@
+{
+  "templateSlug": "scrapbook",
+  "version": "v1",
+  "provider": "firebase_storage",
+  "bucket": "snapfit-c719d.firebasestorage.app",
+  "cdnBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "generatedAt": "2026-04-11T06:51:28.973168Z",
+  "dryRun": false,
+  "mappings": [
+    {
+      "fileName": "ceremony_moment.png",
+      "filePath": "assets/templates/scrapbook/images/sources/ceremony_moment.png",
+      "assetPath": "asset:assets/templates/scrapbook/images/sources/ceremony_moment.png",
+      "firebaseStoragePath": "templates/scrapbook/v1/ceremony_moment.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fceremony_moment.png?alt=media&token=ed55bc8d-9144-4072-bcc4-c8c1f4bf59a5",
+      "downloadToken": "ed55bc8d-9144-4072-bcc4-c8c1f4bf59a5",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "sunset_pair.png",
+      "filePath": "assets/templates/scrapbook/images/sources/sunset_pair.png",
+      "assetPath": "asset:assets/templates/scrapbook/images/sources/sunset_pair.png",
+      "firebaseStoragePath": "templates/scrapbook/v1/sunset_pair.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fsunset_pair.png?alt=media&token=3a41d69d-1aab-4836-bb97-ba2da69450de",
+      "downloadToken": "3a41d69d-1aab-4836-bb97-ba2da69450de",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "hands_bw.png",
+      "filePath": "assets/templates/scrapbook/images/sources/hands_bw.png",
+      "assetPath": "asset:assets/templates/scrapbook/images/sources/hands_bw.png",
+      "firebaseStoragePath": "templates/scrapbook/v1/hands_bw.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fhands_bw.png?alt=media&token=01171c9a-c9b2-4814-b3fd-3a4720e65a0d",
+      "downloadToken": "01171c9a-c9b2-4814-b3fd-3a4720e65a0d",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "flower_table.png",
+      "filePath": "assets/templates/scrapbook/images/sources/flower_table.png",
+      "assetPath": "asset:assets/templates/scrapbook/images/sources/flower_table.png",
+      "firebaseStoragePath": "templates/scrapbook/v1/flower_table.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fflower_table.png?alt=media&token=11937d27-6c81-48b2-93b5-9a25a24dacbb",
+      "downloadToken": "11937d27-6c81-48b2-93b5-9a25a24dacbb",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    },
+    {
+      "fileName": "city_weekend.png",
+      "filePath": "assets/templates/scrapbook/images/sources/city_weekend.png",
+      "assetPath": "asset:assets/templates/scrapbook/images/sources/city_weekend.png",
+      "firebaseStoragePath": "templates/scrapbook/v1/city_weekend.png",
+      "cdnUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fcity_weekend.png?alt=media&token=f89a66b5-9fe4-4ed1-94a4-5db08889bc41",
+      "downloadToken": "f89a66b5-9fe4-4ed1-94a4-5db08889bc41",
+      "sourcePageNodeId": "",
+      "sourceImageNodeId": ""
+    }
+  ]
+}

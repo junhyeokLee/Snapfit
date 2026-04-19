@@ -10,16 +10,16 @@
     "모던",
     "리파인"
   ],
-  "coverImageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
+  "coverImageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
   "previewImages": [
-    "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-    "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-    "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-    "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-    "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-    "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-    "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-    "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5"
+    "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+    "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+    "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+    "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+    "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+    "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+    "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+    "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
   ],
   "templateId": "save_the_date_v1",
   "version": 1,
@@ -28,7 +28,7 @@
   "ratio": "0.75",
   "designWidth": 1080,
   "designHeight": 1440,
-  "recommendedPhotoCount": 13,
+  "recommendedPhotoCount": 25,
   "strictLayout": true,
   "autoFit": false,
   "cover": {
@@ -48,9 +48,9 @@
         "payload": {
           "imageBackground": "free",
           "imageTemplate": "free",
-          "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-          "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-          "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+          "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+          "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+          "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
         }
       },
       {
@@ -106,11 +106,12 @@
           "textStyle": {
             "fontSize": 20.0,
             "fontSizeRatio": 0.018518518518518517,
-            "fontWeight": 6,
+            "fontWeight": 5,
             "fontStyle": 0,
             "fontFamily": "Inter",
             "color": "#FF24374A",
-            "letterSpacing": 1.2
+            "letterSpacing": 1.2,
+            "height": 1.2
           }
         }
       },
@@ -118,9 +119,9 @@
         "id": "title",
         "type": "TEXT",
         "x": 0.0778,
-        "y": 0.6556,
+        "y": 0.617,
         "width": 0.8444,
-        "height": 0.1444,
+        "height": 0.152,
         "zIndex": 4,
         "scale": 1.0,
         "rotation": 0.0,
@@ -134,12 +135,12 @@
           "textStyle": {
             "fontSize": 116.0,
             "fontSizeRatio": 0.10740740740740741,
-            "fontWeight": 8,
+            "fontWeight": 6,
             "fontStyle": 0,
             "fontFamily": "Inter",
             "color": "#FFF7F1E8",
             "letterSpacing": 1.4,
-            "height": 0.9
+            "height": 0.8966
           }
         }
       },
@@ -147,7 +148,7 @@
         "id": "subtitle",
         "type": "TEXT",
         "x": 0.0778,
-        "y": 0.8431,
+        "y": 0.836,
         "width": 0.6481,
         "height": 0.0264,
         "zIndex": 4,
@@ -163,12 +164,12 @@
           "textStyle": {
             "fontSize": 28.0,
             "fontSizeRatio": 0.025925925925925925,
-            "fontWeight": 5,
+            "fontWeight": 4,
             "fontStyle": 0,
             "fontFamily": "Inter",
             "color": "#FFF7F1E8",
             "letterSpacing": 0.0,
-            "height": 1.1
+            "height": 1.3571
           }
         }
       },
@@ -176,7 +177,7 @@
         "id": "names",
         "type": "TEXT",
         "x": 0.0778,
-        "y": 0.9056,
+        "y": 0.9,
         "width": 0.5,
         "height": 0.0236,
         "zIndex": 4,
@@ -192,11 +193,12 @@
           "textStyle": {
             "fontSize": 28.0,
             "fontSizeRatio": 0.025925925925925925,
-            "fontWeight": 6,
+            "fontWeight": 5,
             "fontStyle": 0,
             "fontFamily": "Inter",
             "color": "#FFF7F1E8",
-            "letterSpacing": 3.0
+            "letterSpacing": 3.0,
+            "height": 1.2143
           }
         }
       }
@@ -223,9 +225,9 @@
           "payload": {
             "imageBackground": "free",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+            "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
           }
         },
         {
@@ -281,11 +283,12 @@
             "textStyle": {
               "fontSize": 20.0,
               "fontSizeRatio": 0.018518518518518517,
-              "fontWeight": 6,
+              "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
-              "letterSpacing": 1.2
+              "letterSpacing": 1.2,
+              "height": 1.2
             }
           }
         },
@@ -293,9 +296,9 @@
           "id": "title",
           "type": "TEXT",
           "x": 0.0778,
-          "y": 0.6556,
+          "y": 0.617,
           "width": 0.8444,
-          "height": 0.1444,
+          "height": 0.152,
           "zIndex": 4,
           "scale": 1.0,
           "rotation": 0.0,
@@ -309,12 +312,12 @@
             "textStyle": {
               "fontSize": 116.0,
               "fontSizeRatio": 0.10740740740740741,
-              "fontWeight": 8,
+              "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FFF7F1E8",
               "letterSpacing": 1.4,
-              "height": 0.9
+              "height": 0.8966
             }
           }
         },
@@ -322,7 +325,7 @@
           "id": "subtitle",
           "type": "TEXT",
           "x": 0.0778,
-          "y": 0.8431,
+          "y": 0.836,
           "width": 0.6481,
           "height": 0.0264,
           "zIndex": 4,
@@ -338,12 +341,12 @@
             "textStyle": {
               "fontSize": 28.0,
               "fontSizeRatio": 0.025925925925925925,
-              "fontWeight": 5,
+              "fontWeight": 4,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FFF7F1E8",
               "letterSpacing": 0.0,
-              "height": 1.1
+              "height": 1.3571
             }
           }
         },
@@ -351,7 +354,7 @@
           "id": "names",
           "type": "TEXT",
           "x": 0.0778,
-          "y": 0.9056,
+          "y": 0.9,
           "width": 0.5,
           "height": 0.0236,
           "zIndex": 4,
@@ -367,11 +370,12 @@
             "textStyle": {
               "fontSize": 28.0,
               "fontSizeRatio": 0.025925925925925925,
-              "fontWeight": 6,
+              "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FFF7F1E8",
-              "letterSpacing": 3.0
+              "letterSpacing": 3.0,
+              "height": 1.2143
             }
           }
         }
@@ -437,11 +441,12 @@
             "textStyle": {
               "fontSize": 26.0,
               "fontSizeRatio": 0.024074074074074074,
-              "fontWeight": 5,
+              "fontWeight": 4,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF6E7A86",
-              "letterSpacing": 0.0
+              "letterSpacing": 0.0,
+              "height": 1.3077
             }
           }
         },
@@ -459,9 +464,9 @@
           "payload": {
             "imageBackground": "archOval",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
           }
         },
         {
@@ -503,11 +508,12 @@
             "textStyle": {
               "fontSize": 34.0,
               "fontSizeRatio": 0.03148148148148148,
-              "fontWeight": 6,
+              "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
-              "letterSpacing": 0.0
+              "letterSpacing": 0.0,
+              "height": 1.2353
             }
           }
         },
@@ -531,12 +537,12 @@
             "textStyle": {
               "fontSize": 24.0,
               "fontSizeRatio": 0.022222222222222223,
-              "fontWeight": 5,
+              "fontWeight": 3,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF6E7A86",
               "letterSpacing": 0.0,
-              "height": 1.42
+              "height": 1.4167
             }
           }
         }
@@ -584,20 +590,39 @@
         {
           "id": "circle_photo",
           "type": "IMAGE",
-          "x": 0.1574,
-          "y": 0.1361,
-          "width": 0.6852,
-          "height": 0.5139,
+          "x": 0.1944,
+          "y": 0.1639,
+          "width": 0.6111,
+          "height": 0.4583,
           "zIndex": 8,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "imageBackground": "circleRing",
+            "imageBackground": "circle",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+          }
+        },
+        {
+          "id": "circle_ring_overlay",
+          "type": "IMAGE",
+          "x": 0.1574,
+          "y": 0.1361,
+          "width": 0.6852,
+          "height": 0.5139,
+          "zIndex": 9,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png"
           }
         },
         {
@@ -623,28 +648,28 @@
           "id": "desc",
           "type": "TEXT",
           "x": 0.1407,
-          "y": 0.6944,
+          "y": 0.689,
           "width": 0.7185,
-          "height": 0.0306,
+          "height": 0.07,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "text": "We are getting married and would love for you to mark the date with us.",
+            "text": "We are getting married and would love for you\nto mark the date with us.",
             "textAlign": "center",
             "textStyleType": "none",
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 34.0,
-              "fontSizeRatio": 0.03148148148148148,
+              "fontSize": 32.0,
+              "fontSizeRatio": 0.02962962962962963,
               "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.29
+              "height": 1.22
             }
           }
         },
@@ -668,12 +693,12 @@
             "textStyle": {
               "fontSize": 24.0,
               "fontSizeRatio": 0.022222222222222223,
-              "fontWeight": 5,
+              "fontWeight": 3,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF6E7A86",
               "letterSpacing": 0.0,
-              "height": 1.42
+              "height": 1.4167
             }
           }
         },
@@ -714,11 +739,12 @@
             "textStyle": {
               "fontSize": 18.0,
               "fontSizeRatio": 0.016666666666666666,
-              "fontWeight": 6,
+              "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FFF7F1E8",
-              "letterSpacing": 1.8
+              "letterSpacing": 1.8,
+              "height": 1.3333
             }
           }
         }
@@ -817,9 +843,9 @@
           "payload": {
             "imageBackground": "free",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
           }
         },
         {
@@ -969,7 +995,7 @@
       "pageNumber": 5,
       "role": "inner",
       "layoutId": "p04_type_invitation",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 1,
       "layers": [
         {
           "id": "bg",
@@ -988,13 +1014,32 @@
           }
         },
         {
+          "id": "outer_frame",
+          "type": "DECORATION",
+          "x": 0.0407,
+          "y": 0.0403,
+          "width": 0.9185,
+          "height": 0.9194,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "paperWhiteWarm",
+            "imageTemplate": "free",
+            "cornerRadius": 0.04,
+            "borderColor": "#FFD7DDE3",
+            "borderWidth": 0.0012
+          }
+        },
+        {
           "id": "border_frame",
           "type": "DECORATION",
           "x": 0.0537,
           "y": 0.0403,
           "width": 0.8926,
           "height": 0.9194,
-          "zIndex": 1,
+          "zIndex": 2,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
@@ -1005,13 +1050,32 @@
           }
         },
         {
+          "id": "photo_fill",
+          "type": "IMAGE",
+          "x": 0.0537,
+          "y": 0.1708,
+          "width": 0.8926,
+          "height": 0.6694,
+          "zIndex": 3,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 0.5,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png"
+          }
+        },
+        {
           "id": "line_top",
           "type": "DECORATION",
           "x": 0.1481,
           "y": 0.1472,
           "width": 0.7037,
           "height": 0.0014,
-          "zIndex": 3,
+          "zIndex": 4,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
@@ -1027,7 +1091,7 @@
           "y": 0.8042,
           "width": 0.7037,
           "height": 0.0014,
-          "zIndex": 3,
+          "zIndex": 4,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
@@ -1054,8 +1118,8 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 14.0,
-              "fontSizeRatio": 0.012962962962962963,
+              "fontSize": 18.0,
+              "fontSizeRatio": 0.016666666666666666,
               "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
@@ -1068,28 +1132,28 @@
           "id": "title",
           "type": "TEXT",
           "x": 0.1481,
-          "y": 0.2208,
+          "y": 0.208,
           "width": 0.7037,
-          "height": 0.1833,
+          "height": 0.245,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "text": "Save the date for a wedding weekend full of quiet joy, old songs, good food, and the people who feel like home.",
-            "textAlign": "left",
+            "text": "Save the date for a wedding\nweekend full of quiet joy, old\nsongs, good food, and the\npeople who feel like home.",
+            "textAlign": "center",
             "textStyleType": "none",
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 54.0,
-              "fontSizeRatio": 0.05,
+              "fontSize": 44.0,
+              "fontSizeRatio": 0.040740740740740744,
               "fontWeight": 8,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.12
+              "height": 1.24
             }
           }
         },
@@ -1113,12 +1177,12 @@
             "textStyle": {
               "fontSize": 42.0,
               "fontSizeRatio": 0.03888888888888889,
-              "fontWeight": 8,
+              "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.12
+              "height": 1.5238
             }
           }
         },
@@ -1140,13 +1204,14 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 20.0,
-              "fontSizeRatio": 0.018518518518518517,
-              "fontWeight": 5,
+              "fontSize": 26.0,
+              "fontSizeRatio": 0.024074074074074074,
+              "fontWeight": 4,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF6E7A86",
-              "letterSpacing": 0.0
+              "letterSpacing": 0.0,
+              "height": 1.3846
             }
           }
         }
@@ -1156,7 +1221,7 @@
       "pageNumber": 6,
       "role": "inner",
       "layoutId": "p05_detail_grid",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 2,
       "layers": [
         {
           "id": "bg",
@@ -1172,6 +1237,25 @@
           "payload": {
             "imageBackground": "paperWhiteWarm",
             "imageTemplate": "free"
+          }
+        },
+        {
+          "id": "top_circle",
+          "type": "IMAGE",
+          "x": 0.7315,
+          "y": 0.053,
+          "width": 0.1667,
+          "height": 0.125,
+          "zIndex": 2,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
           }
         },
         {
@@ -1673,6 +1757,25 @@
               "height": 1.22
             }
           }
+        },
+        {
+          "id": "bottom_banner",
+          "type": "IMAGE",
+          "x": 0.0833,
+          "y": 0.8028,
+          "width": 0.8333,
+          "height": 0.1167,
+          "zIndex": 2,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "rounded28",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+          }
         }
       ]
     },
@@ -1680,7 +1783,7 @@
       "pageNumber": 7,
       "role": "inner",
       "layoutId": "p06_timeline",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 5,
       "layers": [
         {
           "id": "bg",
@@ -1769,6 +1872,101 @@
           "payload": {
             "imageBackground": "minimalGray",
             "imageTemplate": "free"
+          }
+        },
+        {
+          "id": "cameo_1",
+          "type": "IMAGE",
+          "x": 0.1315,
+          "y": 0.23,
+          "width": 0.0889,
+          "height": 0.0667,
+          "zIndex": 5,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+          }
+        },
+        {
+          "id": "cameo_2",
+          "type": "IMAGE",
+          "x": 0.1315,
+          "y": 0.3369,
+          "width": 0.0889,
+          "height": 0.0667,
+          "zIndex": 5,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
+          }
+        },
+        {
+          "id": "cameo_3",
+          "type": "IMAGE",
+          "x": 0.1315,
+          "y": 0.4438,
+          "width": 0.0889,
+          "height": 0.0667,
+          "zIndex": 5,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
+          }
+        },
+        {
+          "id": "cameo_4",
+          "type": "IMAGE",
+          "x": 0.1315,
+          "y": 0.5507,
+          "width": 0.0889,
+          "height": 0.0667,
+          "zIndex": 5,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+          }
+        },
+        {
+          "id": "cameo_5",
+          "type": "IMAGE",
+          "x": 0.1315,
+          "y": 0.6577,
+          "width": 0.0889,
+          "height": 0.0667,
+          "zIndex": 5,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
           }
         },
         {
@@ -2142,7 +2340,7 @@
       "pageNumber": 8,
       "role": "inner",
       "layoutId": "p07_quote_poster",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 1,
       "layers": [
         {
           "id": "bg",
@@ -2175,6 +2373,25 @@
             "imageBackground": "paperPink",
             "imageTemplate": "free",
             "cornerRadius": 0.04
+          }
+        },
+        {
+          "id": "right_cameo",
+          "type": "IMAGE",
+          "x": 0.7056,
+          "y": 0.1486,
+          "width": 0.1667,
+          "height": 0.125,
+          "zIndex": 2,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "circleRing",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
           }
         },
         {
@@ -2296,7 +2513,7 @@
       "pageNumber": 9,
       "role": "inner",
       "layoutId": "p08_rsvp_card",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 4,
       "layers": [
         {
           "id": "bg",
@@ -2315,12 +2532,88 @@
           }
         },
         {
+          "id": "stamp_tl",
+          "type": "IMAGE",
+          "x": 0.0667,
+          "y": 0.3611,
+          "width": 0.0556,
+          "height": 0.0417,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png"
+          }
+        },
+        {
+          "id": "stamp_tr",
+          "type": "IMAGE",
+          "x": 0.8778,
+          "y": 0.3611,
+          "width": 0.0556,
+          "height": 0.0417,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png"
+          }
+        },
+        {
+          "id": "stamp_bl",
+          "type": "IMAGE",
+          "x": 0.0667,
+          "y": 0.6389,
+          "width": 0.0556,
+          "height": 0.0417,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png"
+          }
+        },
+        {
+          "id": "stamp_br",
+          "type": "IMAGE",
+          "x": 0.8778,
+          "y": 0.6389,
+          "width": 0.0556,
+          "height": 0.0417,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png"
+          }
+        },
+        {
           "id": "outer",
           "type": "DECORATION",
-          "x": 0.08,
-          "y": 0.12,
-          "width": 0.84,
-          "height": 0.56,
+          "x": 0.0944,
+          "y": 0.1111,
+          "width": 0.8111,
+          "height": 0.7778,
           "zIndex": 2,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2328,16 +2621,16 @@
           "payload": {
             "imageBackground": "deepNavy",
             "imageTemplate": "free",
-            "cornerRadius": 0.04
+            "cornerRadius": 0.0352
           }
         },
         {
           "id": "eyebrow",
           "type": "TEXT",
-          "x": 0.34,
-          "y": 0.16,
-          "width": 0.32,
-          "height": 0.02,
+          "x": 0.1667,
+          "y": 0.1708,
+          "width": 0.6667,
+          "height": 0.0236,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2349,23 +2642,23 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 16.0,
-              "fontSizeRatio": 0.014814814814814815,
+              "fontSize": 28.0,
+              "fontSizeRatio": 0.025925925925925925,
               "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
-              "color": "#FFF8FAFC",
-              "letterSpacing": 1.8
+              "color": "#FF6E7A86",
+              "letterSpacing": 3.2
             }
           }
         },
         {
           "id": "inner",
           "type": "DECORATION",
-          "x": 0.12,
-          "y": 0.16,
-          "width": 0.76,
-          "height": 0.48,
+          "x": 0.1222,
+          "y": 0.1319,
+          "width": 0.7556,
+          "height": 0.7361,
           "zIndex": 3,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2373,16 +2666,16 @@
           "payload": {
             "imageBackground": "paperWhiteWarm",
             "imageTemplate": "free",
-            "cornerRadius": 0.03
+            "cornerRadius": 0.0259
           }
         },
         {
           "id": "title",
           "type": "TEXT",
-          "x": 0.2,
-          "y": 0.26,
-          "width": 0.6,
-          "height": 0.1,
+          "x": 0.1944,
+          "y": 0.25,
+          "width": 0.6111,
+          "height": 0.1222,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2394,24 +2687,24 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 34.0,
-              "fontSizeRatio": 0.03148148148148148,
+              "fontSize": 72.0,
+              "fontSizeRatio": 0.06666666666666667,
               "fontWeight": 8,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.12
+              "height": 1.2222
             }
           }
         },
         {
           "id": "link_chip",
           "type": "DECORATION",
-          "x": 0.2,
-          "y": 0.46,
-          "width": 0.6,
-          "height": 0.05,
+          "x": 0.1833,
+          "y": 0.4583,
+          "width": 0.6333,
+          "height": 0.0778,
           "zIndex": 4,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2419,16 +2712,16 @@
           "payload": {
             "imageBackground": "cloudSkyBlue",
             "imageTemplate": "free",
-            "cornerRadius": 0.04
+            "cornerRadius": 0.0519
           }
         },
         {
           "id": "link",
           "type": "TEXT",
-          "x": 0.25,
-          "y": 0.474,
-          "width": 0.5,
-          "height": 0.02,
+          "x": 0.2111,
+          "y": 0.484,
+          "width": 0.5778,
+          "height": 0.025,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2440,9 +2733,9 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 14.0,
-              "fontSizeRatio": 0.012962962962962963,
-              "fontWeight": 7,
+              "fontSize": 28.0,
+              "fontSizeRatio": 0.025925925925925925,
+              "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
@@ -2453,10 +2746,10 @@
         {
           "id": "line",
           "type": "DECORATION",
-          "x": 0.2,
-          "y": 0.56,
-          "width": 0.6,
-          "height": 0.002,
+          "x": 0.1759,
+          "y": 0.5764,
+          "width": 0.6481,
+          "height": 0.0014,
           "zIndex": 4,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2469,10 +2762,10 @@
         {
           "id": "contact",
           "type": "TEXT",
-          "x": 0.22,
-          "y": 0.6,
-          "width": 0.56,
-          "height": 0.06,
+          "x": 0.1944,
+          "y": 0.6194,
+          "width": 0.6111,
+          "height": 0.0722,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2484,24 +2777,24 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 18.0,
-              "fontSizeRatio": 0.016666666666666666,
-              "fontWeight": 7,
+              "fontSize": 34.0,
+              "fontSizeRatio": 0.03148148148148148,
+              "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.32
+              "height": 1.5294
             }
           }
         },
         {
           "id": "footer",
           "type": "TEXT",
-          "x": 0.22,
-          "y": 0.76,
-          "width": 0.56,
-          "height": 0.03,
+          "x": 0.1944,
+          "y": 0.75,
+          "width": 0.6111,
+          "height": 0.0222,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2513,8 +2806,8 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 14.0,
-              "fontSizeRatio": 0.012962962962962963,
+              "fontSize": 24.0,
+              "fontSizeRatio": 0.022222222222222223,
               "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
@@ -2529,8 +2822,27 @@
       "pageNumber": 10,
       "role": "inner",
       "layoutId": "p09_end_poster",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 1,
       "layers": [
+        {
+          "id": "poster_bg",
+          "type": "IMAGE",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1.0,
+          "height": 1.0,
+          "zIndex": 0,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "free",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+          }
+        },
         {
           "id": "bg",
           "type": "DECORATION",
@@ -2542,6 +2854,22 @@
           "scale": 1.0,
           "rotation": 0.0,
           "opacity": 1.0,
+          "payload": {
+            "imageBackground": "deepNavy",
+            "imageTemplate": "free"
+          }
+        },
+        {
+          "id": "overlay",
+          "type": "DECORATION",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1.0,
+          "height": 1.0,
+          "zIndex": 1,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 0.68,
           "payload": {
             "imageBackground": "deepNavy",
             "imageTemplate": "free"
@@ -2683,7 +3011,7 @@
       "pageNumber": 11,
       "role": "inner",
       "layoutId": "p10_photo_notes",
-      "recommendedPhotoCount": 3,
+      "recommendedPhotoCount": 4,
       "layers": [
         {
           "id": "bg",
@@ -2761,9 +3089,9 @@
           "id": "left_photo",
           "type": "IMAGE",
           "x": 0.0833,
-          "y": 0.2083,
+          "y": 0.2361,
           "width": 0.3889,
-          "height": 0.3611,
+          "height": 0.1667,
           "zIndex": 10,
           "scale": 1.0,
           "rotation": 0.0,
@@ -2771,16 +3099,16 @@
           "payload": {
             "imageBackground": "rounded28",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
           }
         },
         {
           "id": "center_photo",
           "type": "IMAGE",
           "x": 0.5278,
-          "y": 0.2083,
+          "y": 0.2361,
           "width": 0.3889,
           "height": 0.1667,
           "zIndex": 10,
@@ -2790,16 +3118,35 @@
           "payload": {
             "imageBackground": "rounded28",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+          }
+        },
+        {
+          "id": "bottom_left_photo",
+          "type": "IMAGE",
+          "x": 0.0833,
+          "y": 0.4236,
+          "width": 0.3889,
+          "height": 0.1667,
+          "zIndex": 10,
+          "scale": 1.0,
+          "rotation": 0.0,
+          "opacity": 1.0,
+          "payload": {
+            "imageBackground": "rounded28",
+            "imageTemplate": "free",
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
           }
         },
         {
           "id": "bottom_photo",
           "type": "IMAGE",
           "x": 0.5278,
-          "y": 0.4028,
+          "y": 0.4236,
           "width": 0.3889,
           "height": 0.1667,
           "zIndex": 10,
@@ -2809,16 +3156,16 @@
           "payload": {
             "imageBackground": "rounded28",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
           }
         },
         {
           "id": "caption",
           "type": "TEXT",
           "x": 0.0833,
-          "y": 0.6056,
+          "y": 0.6556,
           "width": 0.8333,
           "height": 0.0556,
           "zIndex": 20,
@@ -2849,7 +3196,7 @@
       "pageNumber": 12,
       "role": "inner",
       "layoutId": "p11_dress_code",
-      "recommendedPhotoCount": 0,
+      "recommendedPhotoCount": 3,
       "layers": [
         {
           "id": "bg",
@@ -2943,7 +3290,7 @@
         },
         {
           "id": "tone_a",
-          "type": "DECORATION",
+          "type": "IMAGE",
           "x": 0.1926,
           "y": 0.4375,
           "width": 0.176,
@@ -2953,14 +3300,16 @@
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "imageBackground": "paperPink",
+            "imageBackground": "circleRing",
             "imageTemplate": "free",
-            "cornerRadius": 0.09
+            "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
           }
         },
         {
           "id": "tone_b",
-          "type": "DECORATION",
+          "type": "IMAGE",
           "x": 0.413,
           "y": 0.4375,
           "width": 0.176,
@@ -2970,14 +3319,16 @@
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "imageBackground": "cloudSkyBlue",
+            "imageBackground": "circleRing",
             "imageTemplate": "free",
-            "cornerRadius": 0.09
+            "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
           }
         },
         {
           "id": "tone_c",
-          "type": "DECORATION",
+          "type": "IMAGE",
           "x": 0.6333,
           "y": 0.4375,
           "width": 0.176,
@@ -2987,9 +3338,11 @@
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "imageBackground": "deepNavy",
+            "imageBackground": "circleRing",
             "imageTemplate": "free",
-            "cornerRadius": 0.09
+            "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
           }
         },
         {
@@ -3070,7 +3423,7 @@
           "rotation": 0.0,
           "opacity": 1.0,
           "payload": {
-            "imageBackground": "deepNavy",
+            "imageBackground": "paperWhiteWarm",
             "imageTemplate": "free"
           }
         },
@@ -3088,7 +3441,9 @@
           "payload": {
             "imageBackground": "paperWhiteWarm",
             "imageTemplate": "free",
-            "cornerRadius": 0.035
+            "cornerRadius": 0.035,
+            "borderColor": "#FFD7DDE3",
+            "borderWidth": 0.0012
           }
         },
         {
@@ -3105,18 +3460,18 @@
           "payload": {
             "imageBackground": "rounded28",
             "imageTemplate": "free",
-            "imageUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-            "previewUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-            "originalUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5"
+            "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+            "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
           }
         },
         {
           "id": "title",
           "type": "TEXT",
           "x": 0.1204,
-          "y": 0.6611,
+          "y": 0.664,
           "width": 0.7593,
-          "height": 0.0917,
+          "height": 0.103,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -3128,14 +3483,14 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 44.0,
-              "fontSizeRatio": 0.040740740740740744,
+              "fontSize": 50.0,
+              "fontSizeRatio": 0.046296296296296294,
               "fontWeight": 8,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
               "letterSpacing": 0.0,
-              "height": 1.08
+              "height": 1.16
             }
           }
         },
@@ -3143,9 +3498,9 @@
           "id": "body",
           "type": "TEXT",
           "x": 0.213,
-          "y": 0.7556,
+          "y": 0.805,
           "width": 0.5741,
-          "height": 0.0556,
+          "height": 0.074,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -3157,14 +3512,14 @@
             "textBackground": null,
             "bubbleColor": null,
             "textStyle": {
-              "fontSize": 18.0,
-              "fontSizeRatio": 0.016666666666666666,
+              "fontSize": 22.0,
+              "fontSizeRatio": 0.020370370370370372,
               "fontWeight": 5,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF6E7A86",
               "letterSpacing": 0.0,
-              "height": 1.4
+              "height": 1.32
             }
           }
         },
@@ -3172,9 +3527,9 @@
           "id": "footer",
           "type": "TEXT",
           "x": 0.313,
-          "y": 0.8667,
+          "y": 0.897,
           "width": 0.3741,
-          "height": 0.0194,
+          "height": 0.031,
           "zIndex": 20,
           "scale": 1.0,
           "rotation": 0.0,
@@ -3188,11 +3543,11 @@
             "textStyle": {
               "fontSize": 18.0,
               "fontSizeRatio": 0.016666666666666666,
-              "fontWeight": 7,
+              "fontWeight": 6,
               "fontStyle": 0,
               "fontFamily": "Inter",
               "color": "#FF24374A",
-              "letterSpacing": 1.2
+              "letterSpacing": 2.0
             }
           }
         }
@@ -3201,7 +3556,9 @@
   ],
   "variants": {
     "square": {
+      "variantId": "square",
       "aspect": "square",
+      "ratio": "1.0000",
       "designWidth": 1440.0,
       "designHeight": 1440.0,
       "cover": {
@@ -3210,9 +3567,9 @@
           {
             "id": "cover_bg",
             "type": "IMAGE",
-            "x": 0.125,
+            "x": 0.0,
             "y": 0.0,
-            "width": 0.75,
+            "width": 1.0,
             "height": 1.0,
             "zIndex": 0,
             "scale": 1.0,
@@ -3221,9 +3578,9 @@
             "payload": {
               "imageBackground": "free",
               "imageTemplate": "free",
-              "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-              "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-              "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+              "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+              "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+              "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
             }
           },
           {
@@ -3279,11 +3636,12 @@
               "textStyle": {
                 "fontSize": 20.0,
                 "fontSizeRatio": 0.013888888888888888,
-                "fontWeight": 6,
+                "fontWeight": 5,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FF24374A",
-                "letterSpacing": 1.2
+                "letterSpacing": 1.2,
+                "height": 1.2
               }
             }
           },
@@ -3291,9 +3649,9 @@
             "id": "title",
             "type": "TEXT",
             "x": 0.18335,
-            "y": 0.6556,
+            "y": 0.617,
             "width": 0.6333,
-            "height": 0.1444,
+            "height": 0.152,
             "zIndex": 4,
             "scale": 1.0,
             "rotation": 0.0,
@@ -3307,12 +3665,12 @@
               "textStyle": {
                 "fontSize": 116.0,
                 "fontSizeRatio": 0.08055555555555556,
-                "fontWeight": 8,
+                "fontWeight": 6,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
                 "letterSpacing": 1.4,
-                "height": 0.9
+                "height": 0.8966
               }
             }
           },
@@ -3320,7 +3678,7 @@
             "id": "subtitle",
             "type": "TEXT",
             "x": 0.18335,
-            "y": 0.8430999999999998,
+            "y": 0.836,
             "width": 0.486075,
             "height": 0.0264,
             "zIndex": 4,
@@ -3336,12 +3694,12 @@
               "textStyle": {
                 "fontSize": 28.0,
                 "fontSizeRatio": 0.019444444444444445,
-                "fontWeight": 5,
+                "fontWeight": 4,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
                 "letterSpacing": 0.0,
-                "height": 1.1
+                "height": 1.3571
               }
             }
           },
@@ -3349,7 +3707,7 @@
             "id": "names",
             "type": "TEXT",
             "x": 0.18335,
-            "y": 0.9055999999999998,
+            "y": 0.9,
             "width": 0.375,
             "height": 0.023600000000000003,
             "zIndex": 4,
@@ -3365,11 +3723,12 @@
               "textStyle": {
                 "fontSize": 28.0,
                 "fontSizeRatio": 0.019444444444444445,
-                "fontWeight": 6,
+                "fontWeight": 5,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
-                "letterSpacing": 3.0
+                "letterSpacing": 3.0,
+                "height": 1.2143
               }
             }
           }
@@ -3385,9 +3744,9 @@
             {
               "id": "cover_bg",
               "type": "IMAGE",
-              "x": 0.125,
+              "x": 0.0,
               "y": 0.0,
-              "width": 0.75,
+              "width": 1.0,
               "height": 1.0,
               "zIndex": 0,
               "scale": 1.0,
@@ -3396,9 +3755,9 @@
               "payload": {
                 "imageBackground": "free",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+                "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
               }
             },
             {
@@ -3454,11 +3813,12 @@
                 "textStyle": {
                   "fontSize": 20.0,
                   "fontSizeRatio": 0.013888888888888888,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 1.2
+                  "letterSpacing": 1.2,
+                  "height": 1.2
                 }
               }
             },
@@ -3466,9 +3826,9 @@
               "id": "title",
               "type": "TEXT",
               "x": 0.18335,
-              "y": 0.6556,
+              "y": 0.617,
               "width": 0.6333,
-              "height": 0.1444,
+              "height": 0.152,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -3482,12 +3842,12 @@
                 "textStyle": {
                   "fontSize": 116.0,
                   "fontSizeRatio": 0.08055555555555556,
-                  "fontWeight": 8,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
                   "letterSpacing": 1.4,
-                  "height": 0.9
+                  "height": 0.8966
                 }
               }
             },
@@ -3495,7 +3855,7 @@
               "id": "subtitle",
               "type": "TEXT",
               "x": 0.18335,
-              "y": 0.8430999999999998,
+              "y": 0.836,
               "width": 0.486075,
               "height": 0.0264,
               "zIndex": 4,
@@ -3511,12 +3871,12 @@
                 "textStyle": {
                   "fontSize": 28.0,
                   "fontSizeRatio": 0.019444444444444445,
-                  "fontWeight": 5,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
                   "letterSpacing": 0.0,
-                  "height": 1.1
+                  "height": 1.3571
                 }
               }
             },
@@ -3524,7 +3884,7 @@
               "id": "names",
               "type": "TEXT",
               "x": 0.18335,
-              "y": 0.9055999999999998,
+              "y": 0.9,
               "width": 0.375,
               "height": 0.023600000000000003,
               "zIndex": 4,
@@ -3540,15 +3900,20 @@
                 "textStyle": {
                   "fontSize": 28.0,
                   "fontSizeRatio": 0.019444444444444445,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
-                  "letterSpacing": 3.0
+                  "letterSpacing": 3.0,
+                  "height": 1.2143
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 2,
@@ -3610,11 +3975,12 @@
                 "textStyle": {
                   "fontSize": 26.0,
                   "fontSizeRatio": 0.018055555555555554,
-                  "fontWeight": 5,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.3077
                 }
               }
             },
@@ -3632,9 +3998,9 @@
               "payload": {
                 "imageBackground": "archOval",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
@@ -3676,11 +4042,12 @@
                 "textStyle": {
                   "fontSize": 34.0,
                   "fontSizeRatio": 0.02361111111111111,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.2353
                 }
               }
             },
@@ -3704,16 +4071,20 @@
                 "textStyle": {
                   "fontSize": 24.0,
                   "fontSizeRatio": 0.016666666666666666,
-                  "fontWeight": 5,
+                  "fontWeight": 3,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.42
+                  "height": 1.4167
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 3,
@@ -3757,20 +4128,39 @@
             {
               "id": "circle_photo",
               "type": "IMAGE",
-              "x": 0.24305000000000002,
-              "y": 0.1361,
-              "width": 0.5139,
-              "height": 0.5139,
+              "x": 0.2708,
+              "y": 0.1639,
+              "width": 0.458325,
+              "height": 0.4583,
               "zIndex": 8,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "circleRing",
+                "imageBackground": "circle",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+              }
+            },
+            {
+              "id": "circle_ring_overlay",
+              "type": "IMAGE",
+              "x": 0.24305000000000002,
+              "y": 0.1361,
+              "width": 0.5139,
+              "height": 0.5139,
+              "zIndex": 9,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png"
               }
             },
             {
@@ -3796,28 +4186,28 @@
               "id": "desc",
               "type": "TEXT",
               "x": 0.230525,
-              "y": 0.6944,
+              "y": 0.689,
               "width": 0.538875,
-              "height": 0.0306,
+              "height": 0.07,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "text": "We are getting married and would love for you to mark the date with us.",
+                "text": "We are getting married and would love for you\nto mark the date with us.",
                 "textAlign": "center",
                 "textStyleType": "none",
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 34.0,
-                  "fontSizeRatio": 0.02361111111111111,
+                  "fontSize": 32.0,
+                  "fontSizeRatio": 0.022222222222222223,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.29
+                  "height": 1.22
                 }
               }
             },
@@ -3841,12 +4231,12 @@
                 "textStyle": {
                   "fontSize": 24.0,
                   "fontSizeRatio": 0.016666666666666666,
-                  "fontWeight": 5,
+                  "fontWeight": 3,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.42
+                  "height": 1.4167
                 }
               }
             },
@@ -3887,15 +4277,20 @@
                 "textStyle": {
                   "fontSize": 18.0,
                   "fontSizeRatio": 0.0125,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
-                  "letterSpacing": 1.8
+                  "letterSpacing": 1.8,
+                  "height": 1.3333
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 4,
@@ -3990,9 +4385,9 @@
               "payload": {
                 "imageBackground": "free",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
               }
             },
             {
@@ -4136,13 +4531,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 5,
           "role": "inner",
           "layoutId": "p04_type_invitation",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
             {
               "id": "bg",
@@ -4161,13 +4560,32 @@
               }
             },
             {
+              "id": "outer_frame",
+              "type": "DECORATION",
+              "x": 0.15552500000000002,
+              "y": 0.0403,
+              "width": 0.688875,
+              "height": 0.9194,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "paperWhiteWarm",
+                "imageTemplate": "free",
+                "cornerRadius": 0.04,
+                "borderColor": "#FFD7DDE3",
+                "borderWidth": 0.0012
+              }
+            },
+            {
               "id": "border_frame",
               "type": "DECORATION",
               "x": 0.16527499999999998,
               "y": 0.0403,
               "width": 0.66945,
               "height": 0.9194,
-              "zIndex": 1,
+              "zIndex": 2,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -4178,13 +4596,32 @@
               }
             },
             {
+              "id": "photo_fill",
+              "type": "IMAGE",
+              "x": 0.16527499999999998,
+              "y": 0.1708,
+              "width": 0.66945,
+              "height": 0.6694,
+              "zIndex": 3,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 0.5,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png"
+              }
+            },
+            {
               "id": "line_top",
               "type": "DECORATION",
               "x": 0.23607499999999998,
               "y": 0.1472,
               "width": 0.527775,
               "height": 0.0014,
-              "zIndex": 3,
+              "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -4200,7 +4637,7 @@
               "y": 0.8042,
               "width": 0.527775,
               "height": 0.0014,
-              "zIndex": 3,
+              "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -4227,8 +4664,8 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 14.0,
-                  "fontSizeRatio": 0.009722222222222222,
+                  "fontSize": 18.0,
+                  "fontSizeRatio": 0.0125,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
@@ -4241,28 +4678,28 @@
               "id": "title",
               "type": "TEXT",
               "x": 0.23607499999999998,
-              "y": 0.2208,
+              "y": 0.208,
               "width": 0.527775,
-              "height": 0.1833,
+              "height": 0.245,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "text": "Save the date for a wedding weekend full of quiet joy, old songs, good food, and the people who feel like home.",
-                "textAlign": "left",
+                "text": "Save the date for a wedding\nweekend full of quiet joy, old\nsongs, good food, and the\npeople who feel like home.",
+                "textAlign": "center",
                 "textStyleType": "none",
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 54.0,
-                  "fontSizeRatio": 0.0375,
+                  "fontSize": 44.0,
+                  "fontSizeRatio": 0.030555555555555555,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.24
                 }
               }
             },
@@ -4286,12 +4723,12 @@
                 "textStyle": {
                   "fontSize": 42.0,
                   "fontSizeRatio": 0.029166666666666667,
-                  "fontWeight": 8,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.5238
                 }
               }
             },
@@ -4313,23 +4750,28 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 20.0,
-                  "fontSizeRatio": 0.013888888888888888,
-                  "fontWeight": 5,
+                  "fontSize": 26.0,
+                  "fontSizeRatio": 0.018055555555555554,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.3846
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 6,
           "role": "inner",
           "layoutId": "p05_detail_grid",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 2,
           "layers": [
             {
               "id": "bg",
@@ -4345,6 +4787,25 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "top_circle",
+              "type": "IMAGE",
+              "x": 0.673625,
+              "y": 0.053,
+              "width": 0.12502499999999997,
+              "height": 0.125,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
@@ -4846,14 +5307,37 @@
                   "height": 1.22
                 }
               }
+            },
+            {
+              "id": "bottom_banner",
+              "type": "IMAGE",
+              "x": 0.187475,
+              "y": 0.8028,
+              "width": 0.6249750000000001,
+              "height": 0.1167,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "rounded28",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+              }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 7,
           "role": "inner",
           "layoutId": "p06_timeline",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 5,
           "layers": [
             {
               "id": "bg",
@@ -4942,6 +5426,101 @@
               "payload": {
                 "imageBackground": "minimalGray",
                 "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "cameo_1",
+              "type": "IMAGE",
+              "x": 0.223625,
+              "y": 0.22999999999999998,
+              "width": 0.066675,
+              "height": 0.0667,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+              }
+            },
+            {
+              "id": "cameo_2",
+              "type": "IMAGE",
+              "x": 0.223625,
+              "y": 0.3369,
+              "width": 0.066675,
+              "height": 0.0667,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
+              }
+            },
+            {
+              "id": "cameo_3",
+              "type": "IMAGE",
+              "x": 0.223625,
+              "y": 0.44380000000000003,
+              "width": 0.066675,
+              "height": 0.0667,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
+              }
+            },
+            {
+              "id": "cameo_4",
+              "type": "IMAGE",
+              "x": 0.223625,
+              "y": 0.5507,
+              "width": 0.066675,
+              "height": 0.0667,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+              }
+            },
+            {
+              "id": "cameo_5",
+              "type": "IMAGE",
+              "x": 0.223625,
+              "y": 0.6577,
+              "width": 0.066675,
+              "height": 0.0667,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
@@ -5309,13 +5888,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 8,
           "role": "inner",
           "layoutId": "p07_quote_poster",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
             {
               "id": "bg",
@@ -5348,6 +5931,25 @@
                 "imageBackground": "paperPink",
                 "imageTemplate": "free",
                 "cornerRadius": 0.04
+              }
+            },
+            {
+              "id": "right_cameo",
+              "type": "IMAGE",
+              "x": 0.6542,
+              "y": 0.1486,
+              "width": 0.12502499999999997,
+              "height": 0.125,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
@@ -5463,13 +6065,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 9,
           "role": "inner",
           "layoutId": "p08_rsvp_card",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 4,
           "layers": [
             {
               "id": "bg",
@@ -5488,12 +6094,88 @@
               }
             },
             {
+              "id": "stamp_tl",
+              "type": "IMAGE",
+              "x": 0.17502500000000001,
+              "y": 0.3610999999999999,
+              "width": 0.041699999999999994,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png"
+              }
+            },
+            {
+              "id": "stamp_tr",
+              "type": "IMAGE",
+              "x": 0.7833499999999999,
+              "y": 0.3610999999999999,
+              "width": 0.041699999999999994,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png"
+              }
+            },
+            {
+              "id": "stamp_bl",
+              "type": "IMAGE",
+              "x": 0.17502500000000001,
+              "y": 0.6389,
+              "width": 0.041699999999999994,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png"
+              }
+            },
+            {
+              "id": "stamp_br",
+              "type": "IMAGE",
+              "x": 0.7833499999999999,
+              "y": 0.6389,
+              "width": 0.041699999999999994,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png"
+              }
+            },
+            {
               "id": "outer",
               "type": "DECORATION",
-              "x": 0.185,
-              "y": 0.11999999999999998,
-              "width": 0.63,
-              "height": 0.56,
+              "x": 0.1958,
+              "y": 0.1111,
+              "width": 0.608325,
+              "height": 0.7778000000000002,
               "zIndex": 2,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5501,16 +6183,16 @@
               "payload": {
                 "imageBackground": "deepNavy",
                 "imageTemplate": "free",
-                "cornerRadius": 0.04
+                "cornerRadius": 0.0352
               }
             },
             {
               "id": "eyebrow",
               "type": "TEXT",
-              "x": 0.38,
-              "y": 0.16,
-              "width": 0.24000000000000002,
-              "height": 0.02,
+              "x": 0.25002499999999994,
+              "y": 0.1708,
+              "width": 0.5000249999999999,
+              "height": 0.023600000000000003,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5522,23 +6204,23 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 16.0,
-                  "fontSizeRatio": 0.011111111111111112,
+                  "fontSize": 28.0,
+                  "fontSizeRatio": 0.019444444444444445,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
-                  "color": "#FFF8FAFC",
-                  "letterSpacing": 1.8
+                  "color": "#FF6E7A86",
+                  "letterSpacing": 3.2
                 }
               }
             },
             {
               "id": "inner",
               "type": "DECORATION",
-              "x": 0.21500000000000002,
-              "y": 0.16,
-              "width": 0.57,
-              "height": 0.4799999999999999,
+              "x": 0.21665,
+              "y": 0.1319,
+              "width": 0.5667,
+              "height": 0.7361,
               "zIndex": 3,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5546,16 +6228,16 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free",
-                "cornerRadius": 0.03
+                "cornerRadius": 0.0259
               }
             },
             {
               "id": "title",
               "type": "TEXT",
-              "x": 0.275,
-              "y": 0.26,
-              "width": 0.45,
-              "height": 0.1,
+              "x": 0.2708,
+              "y": 0.25,
+              "width": 0.458325,
+              "height": 0.12220000000000002,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5567,24 +6249,24 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 34.0,
-                  "fontSizeRatio": 0.02361111111111111,
+                  "fontSize": 72.0,
+                  "fontSizeRatio": 0.05,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.2222
                 }
               }
             },
             {
               "id": "link_chip",
               "type": "DECORATION",
-              "x": 0.275,
-              "y": 0.45999999999999996,
-              "width": 0.45,
-              "height": 0.05,
+              "x": 0.262475,
+              "y": 0.4583,
+              "width": 0.474975,
+              "height": 0.0778,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5592,16 +6274,16 @@
               "payload": {
                 "imageBackground": "cloudSkyBlue",
                 "imageTemplate": "free",
-                "cornerRadius": 0.04
+                "cornerRadius": 0.0519
               }
             },
             {
               "id": "link",
               "type": "TEXT",
-              "x": 0.3125,
-              "y": 0.474,
-              "width": 0.375,
-              "height": 0.02,
+              "x": 0.283325,
+              "y": 0.48400000000000004,
+              "width": 0.43335,
+              "height": 0.025,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5613,9 +6295,9 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 14.0,
-                  "fontSizeRatio": 0.009722222222222222,
-                  "fontWeight": 7,
+                  "fontSize": 28.0,
+                  "fontSizeRatio": 0.019444444444444445,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
@@ -5626,10 +6308,10 @@
             {
               "id": "line",
               "type": "DECORATION",
-              "x": 0.275,
-              "y": 0.56,
-              "width": 0.45,
-              "height": 0.002,
+              "x": 0.25692499999999996,
+              "y": 0.5764,
+              "width": 0.486075,
+              "height": 0.0014,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5642,10 +6324,10 @@
             {
               "id": "contact",
               "type": "TEXT",
-              "x": 0.29000000000000004,
-              "y": 0.6,
-              "width": 0.42000000000000004,
-              "height": 0.05999999999999999,
+              "x": 0.2708,
+              "y": 0.6194,
+              "width": 0.458325,
+              "height": 0.0722,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5657,24 +6339,24 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 18.0,
-                  "fontSizeRatio": 0.0125,
-                  "fontWeight": 7,
+                  "fontSize": 34.0,
+                  "fontSizeRatio": 0.02361111111111111,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.32
+                  "height": 1.5294
                 }
               }
             },
             {
               "id": "footer",
               "type": "TEXT",
-              "x": 0.29000000000000004,
-              "y": 0.76,
-              "width": 0.42000000000000004,
-              "height": 0.029999999999999995,
+              "x": 0.2708,
+              "y": 0.75,
+              "width": 0.458325,
+              "height": 0.0222,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5686,8 +6368,8 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 14.0,
-                  "fontSizeRatio": 0.009722222222222222,
+                  "fontSize": 24.0,
+                  "fontSizeRatio": 0.016666666666666666,
                   "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
@@ -5696,14 +6378,37 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 10,
           "role": "inner",
           "layoutId": "p09_end_poster",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
+            {
+              "id": "poster_bg",
+              "type": "IMAGE",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 1.0,
+              "height": 1.0,
+              "zIndex": 0,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+              }
+            },
             {
               "id": "bg",
               "type": "DECORATION",
@@ -5715,6 +6420,22 @@
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
+              "payload": {
+                "imageBackground": "deepNavy",
+                "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "overlay",
+              "type": "DECORATION",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 1.0,
+              "height": 1.0,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 0.68,
               "payload": {
                 "imageBackground": "deepNavy",
                 "imageTemplate": "free"
@@ -5850,13 +6571,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 11,
           "role": "inner",
           "layoutId": "p10_photo_notes",
-          "recommendedPhotoCount": 3,
+          "recommendedPhotoCount": 4,
           "layers": [
             {
               "id": "bg",
@@ -5934,9 +6659,9 @@
               "id": "left_photo",
               "type": "IMAGE",
               "x": 0.187475,
-              "y": 0.20829999999999999,
+              "y": 0.23609999999999998,
               "width": 0.291675,
-              "height": 0.3610999999999999,
+              "height": 0.1667,
               "zIndex": 10,
               "scale": 1.0,
               "rotation": 0.0,
@@ -5944,16 +6669,16 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
               "id": "center_photo",
               "type": "IMAGE",
               "x": 0.52085,
-              "y": 0.20829999999999999,
+              "y": 0.23609999999999998,
               "width": 0.291675,
               "height": 0.1667,
               "zIndex": 10,
@@ -5963,16 +6688,35 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+              }
+            },
+            {
+              "id": "bottom_left_photo",
+              "type": "IMAGE",
+              "x": 0.187475,
+              "y": 0.4235999999999999,
+              "width": 0.291675,
+              "height": 0.1667,
+              "zIndex": 10,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "rounded28",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
               "id": "bottom_photo",
               "type": "IMAGE",
               "x": 0.52085,
-              "y": 0.40280000000000005,
+              "y": 0.4235999999999999,
               "width": 0.291675,
               "height": 0.1667,
               "zIndex": 10,
@@ -5982,16 +6726,16 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
               }
             },
             {
               "id": "caption",
               "type": "TEXT",
               "x": 0.187475,
-              "y": 0.6056,
+              "y": 0.6556,
               "width": 0.6249750000000001,
               "height": 0.0556,
               "zIndex": 20,
@@ -6016,13 +6760,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 12,
           "role": "inner",
           "layoutId": "p11_dress_code",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 3,
           "layers": [
             {
               "id": "bg",
@@ -6116,7 +6864,7 @@
             },
             {
               "id": "tone_a",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.26944999999999997,
               "y": 0.4375,
               "width": 0.13199999999999998,
@@ -6126,14 +6874,16 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "paperPink",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
               "id": "tone_b",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.43474999999999997,
               "y": 0.4375,
               "width": 0.13199999999999998,
@@ -6143,14 +6893,16 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "cloudSkyBlue",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
               }
             },
             {
               "id": "tone_c",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.5999749999999999,
               "y": 0.4375,
               "width": 0.13199999999999998,
@@ -6160,9 +6912,11 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "deepNavy",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
@@ -6223,7 +6977,11 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         },
         {
           "pageNumber": 13,
@@ -6243,7 +7001,7 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "deepNavy",
+                "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free"
               }
             },
@@ -6261,7 +7019,9 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free",
-                "cornerRadius": 0.035
+                "cornerRadius": 0.035,
+                "borderColor": "#FFD7DDE3",
+                "borderWidth": 0.0012
               }
             },
             {
@@ -6278,18 +7038,18 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
               "id": "title",
               "type": "TEXT",
               "x": 0.2153,
-              "y": 0.6611,
+              "y": 0.664,
               "width": 0.569475,
-              "height": 0.0917,
+              "height": 0.103,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -6301,14 +7061,14 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 44.0,
-                  "fontSizeRatio": 0.030555555555555555,
+                  "fontSize": 50.0,
+                  "fontSizeRatio": 0.034722222222222224,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.08
+                  "height": 1.16
                 }
               }
             },
@@ -6316,9 +7076,9 @@
               "id": "body",
               "type": "TEXT",
               "x": 0.28474999999999995,
-              "y": 0.7556,
+              "y": 0.805,
               "width": 0.43057500000000004,
-              "height": 0.0556,
+              "height": 0.074,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -6330,14 +7090,14 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 18.0,
-                  "fontSizeRatio": 0.0125,
+                  "fontSize": 22.0,
+                  "fontSizeRatio": 0.015277777777777777,
                   "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.4
+                  "height": 1.32
                 }
               }
             },
@@ -6345,9 +7105,9 @@
               "id": "footer",
               "type": "TEXT",
               "x": 0.35974999999999996,
-              "y": 0.8667,
+              "y": 0.897,
               "width": 0.28057499999999996,
-              "height": 0.0194,
+              "height": 0.031,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -6361,20 +7121,26 @@
                 "textStyle": {
                   "fontSize": 18.0,
                   "fontSizeRatio": 0.0125,
-                  "fontWeight": 7,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 1.2
+                  "letterSpacing": 2.0
                 }
               }
             }
-          ]
+          ],
+          "aspect": "square",
+          "ratio": "1.0000",
+          "designWidth": 1440.0,
+          "designHeight": 1440.0
         }
       ]
     },
     "landscape": {
+      "variantId": "landscape",
       "aspect": "landscape",
+      "ratio": "1.3333",
       "designWidth": 1440.0,
       "designHeight": 1080.0,
       "cover": {
@@ -6383,9 +7149,9 @@
           {
             "id": "cover_bg",
             "type": "IMAGE",
-            "x": 0.21875,
+            "x": 0.0,
             "y": 0.0,
-            "width": 0.5625,
+            "width": 1.0,
             "height": 1.0,
             "zIndex": 0,
             "scale": 1.0,
@@ -6394,9 +7160,9 @@
             "payload": {
               "imageBackground": "free",
               "imageTemplate": "free",
-              "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-              "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-              "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+              "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+              "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+              "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
             }
           },
           {
@@ -6452,11 +7218,12 @@
               "textStyle": {
                 "fontSize": 15.0,
                 "fontSizeRatio": 0.010416666666666666,
-                "fontWeight": 6,
+                "fontWeight": 5,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FF24374A",
-                "letterSpacing": 1.2
+                "letterSpacing": 1.2,
+                "height": 1.2
               }
             }
           },
@@ -6464,9 +7231,9 @@
             "id": "title",
             "type": "TEXT",
             "x": 0.2625125,
-            "y": 0.6556,
+            "y": 0.617,
             "width": 0.474975,
-            "height": 0.1444,
+            "height": 0.152,
             "zIndex": 4,
             "scale": 1.0,
             "rotation": 0.0,
@@ -6480,12 +7247,12 @@
               "textStyle": {
                 "fontSize": 87.0,
                 "fontSizeRatio": 0.06041666666666667,
-                "fontWeight": 8,
+                "fontWeight": 6,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
                 "letterSpacing": 1.4,
-                "height": 0.9
+                "height": 0.8966
               }
             }
           },
@@ -6493,7 +7260,7 @@
             "id": "subtitle",
             "type": "TEXT",
             "x": 0.2625125,
-            "y": 0.8430999999999998,
+            "y": 0.8359999999999999,
             "width": 0.36455625,
             "height": 0.0264,
             "zIndex": 4,
@@ -6509,12 +7276,12 @@
               "textStyle": {
                 "fontSize": 21.0,
                 "fontSizeRatio": 0.014583333333333334,
-                "fontWeight": 5,
+                "fontWeight": 4,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
                 "letterSpacing": 0.0,
-                "height": 1.1
+                "height": 1.3571
               }
             }
           },
@@ -6522,7 +7289,7 @@
             "id": "names",
             "type": "TEXT",
             "x": 0.2625125,
-            "y": 0.9055999999999998,
+            "y": 0.9,
             "width": 0.28125,
             "height": 0.0236,
             "zIndex": 4,
@@ -6538,11 +7305,12 @@
               "textStyle": {
                 "fontSize": 21.0,
                 "fontSizeRatio": 0.014583333333333334,
-                "fontWeight": 6,
+                "fontWeight": 5,
                 "fontStyle": 0,
                 "fontFamily": "Inter",
                 "color": "#FFF7F1E8",
-                "letterSpacing": 3.0
+                "letterSpacing": 3.0,
+                "height": 1.2143
               }
             }
           }
@@ -6558,9 +7326,9 @@
             {
               "id": "cover_bg",
               "type": "IMAGE",
-              "x": 0.21875,
+              "x": 0.0,
               "y": 0.0,
-              "width": 0.5625,
+              "width": 1.0,
               "height": 1.0,
               "zIndex": 0,
               "scale": 1.0,
@@ -6569,9 +7337,9 @@
               "payload": {
                 "imageBackground": "free",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0"
+                "imageUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/cover_full_bleed.png"
               }
             },
             {
@@ -6627,11 +7395,12 @@
                 "textStyle": {
                   "fontSize": 15.0,
                   "fontSizeRatio": 0.010416666666666666,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 1.2
+                  "letterSpacing": 1.2,
+                  "height": 1.2
                 }
               }
             },
@@ -6639,9 +7408,9 @@
               "id": "title",
               "type": "TEXT",
               "x": 0.2625125,
-              "y": 0.6556,
+              "y": 0.617,
               "width": 0.474975,
-              "height": 0.1444,
+              "height": 0.152,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -6655,12 +7424,12 @@
                 "textStyle": {
                   "fontSize": 87.0,
                   "fontSizeRatio": 0.06041666666666667,
-                  "fontWeight": 8,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
                   "letterSpacing": 1.4,
-                  "height": 0.9
+                  "height": 0.8966
                 }
               }
             },
@@ -6668,7 +7437,7 @@
               "id": "subtitle",
               "type": "TEXT",
               "x": 0.2625125,
-              "y": 0.8430999999999998,
+              "y": 0.8359999999999999,
               "width": 0.36455625,
               "height": 0.0264,
               "zIndex": 4,
@@ -6684,12 +7453,12 @@
                 "textStyle": {
                   "fontSize": 21.0,
                   "fontSizeRatio": 0.014583333333333334,
-                  "fontWeight": 5,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
                   "letterSpacing": 0.0,
-                  "height": 1.1
+                  "height": 1.3571
                 }
               }
             },
@@ -6697,7 +7466,7 @@
               "id": "names",
               "type": "TEXT",
               "x": 0.2625125,
-              "y": 0.9055999999999998,
+              "y": 0.9,
               "width": 0.28125,
               "height": 0.0236,
               "zIndex": 4,
@@ -6713,15 +7482,20 @@
                 "textStyle": {
                   "fontSize": 21.0,
                   "fontSizeRatio": 0.014583333333333334,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
-                  "letterSpacing": 3.0
+                  "letterSpacing": 3.0,
+                  "height": 1.2143
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 2,
@@ -6783,11 +7557,12 @@
                 "textStyle": {
                   "fontSize": 19.5,
                   "fontSizeRatio": 0.013541666666666667,
-                  "fontWeight": 5,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.3077
                 }
               }
             },
@@ -6805,9 +7580,9 @@
               "payload": {
                 "imageBackground": "archOval",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/5c78e48f-cfbf-43b9-99be-2ba4bf14665c"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
@@ -6849,11 +7624,12 @@
                 "textStyle": {
                   "fontSize": 25.5,
                   "fontSizeRatio": 0.017708333333333333,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.2353
                 }
               }
             },
@@ -6877,16 +7653,20 @@
                 "textStyle": {
                   "fontSize": 18.0,
                   "fontSizeRatio": 0.0125,
-                  "fontWeight": 5,
+                  "fontWeight": 3,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.42
+                  "height": 1.4167
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 3,
@@ -6930,20 +7710,39 @@
             {
               "id": "circle_photo",
               "type": "IMAGE",
-              "x": 0.30728750000000005,
-              "y": 0.1361,
-              "width": 0.385425,
-              "height": 0.5139,
+              "x": 0.3281,
+              "y": 0.1639,
+              "width": 0.34374375,
+              "height": 0.4583,
               "zIndex": 8,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "circleRing",
+                "imageBackground": "circle",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/235d2996-9a02-4764-a909-8df2ef77a631"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+              }
+            },
+            {
+              "id": "circle_ring_overlay",
+              "type": "IMAGE",
+              "x": 0.30728750000000005,
+              "y": 0.1361,
+              "width": 0.385425,
+              "height": 0.5139,
+              "zIndex": 9,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_ring_overlay.png"
               }
             },
             {
@@ -6969,28 +7768,28 @@
               "id": "desc",
               "type": "TEXT",
               "x": 0.29789375,
-              "y": 0.6944,
+              "y": 0.6890000000000001,
               "width": 0.40415625,
-              "height": 0.030600000000000002,
+              "height": 0.07,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "text": "We are getting married and would love for you to mark the date with us.",
+                "text": "We are getting married and would love for you\nto mark the date with us.",
                 "textAlign": "center",
                 "textStyleType": "none",
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 25.5,
-                  "fontSizeRatio": 0.017708333333333333,
+                  "fontSize": 24.0,
+                  "fontSizeRatio": 0.016666666666666666,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.29
+                  "height": 1.22
                 }
               }
             },
@@ -7014,12 +7813,12 @@
                 "textStyle": {
                   "fontSize": 18.0,
                   "fontSizeRatio": 0.0125,
-                  "fontWeight": 5,
+                  "fontWeight": 3,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.42
+                  "height": 1.4167
                 }
               }
             },
@@ -7060,15 +7859,20 @@
                 "textStyle": {
                   "fontSize": 13.5,
                   "fontSizeRatio": 0.009375,
-                  "fontWeight": 6,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FFF7F1E8",
-                  "letterSpacing": 1.8
+                  "letterSpacing": 1.8,
+                  "height": 1.3333
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 4,
@@ -7163,9 +7967,9 @@
               "payload": {
                 "imageBackground": "free",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/4fd79b87-da91-484b-a3f0-a5b3ee849ccc"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
               }
             },
             {
@@ -7309,13 +8113,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 5,
           "role": "inner",
           "layoutId": "p04_type_invitation",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
             {
               "id": "bg",
@@ -7334,13 +8142,32 @@
               }
             },
             {
+              "id": "outer_frame",
+              "type": "DECORATION",
+              "x": 0.24164375,
+              "y": 0.0403,
+              "width": 0.51665625,
+              "height": 0.9194,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "paperWhiteWarm",
+                "imageTemplate": "free",
+                "cornerRadius": 0.04,
+                "borderColor": "#FFD7DDE3",
+                "borderWidth": 0.0012
+              }
+            },
+            {
               "id": "border_frame",
               "type": "DECORATION",
               "x": 0.24895625000000002,
               "y": 0.0403,
               "width": 0.5020875,
               "height": 0.9194,
-              "zIndex": 1,
+              "zIndex": 2,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -7351,13 +8178,32 @@
               }
             },
             {
+              "id": "photo_fill",
+              "type": "IMAGE",
+              "x": 0.24895625000000002,
+              "y": 0.1708,
+              "width": 0.5020875,
+              "height": 0.6694,
+              "zIndex": 3,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 0.5,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p04_type_invitation_bg.png"
+              }
+            },
+            {
               "id": "line_top",
               "type": "DECORATION",
               "x": 0.30205625,
               "y": 0.1472,
               "width": 0.39583124999999997,
               "height": 0.0014,
-              "zIndex": 3,
+              "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -7373,7 +8219,7 @@
               "y": 0.8042,
               "width": 0.39583124999999997,
               "height": 0.0014,
-              "zIndex": 3,
+              "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
@@ -7400,8 +8246,8 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 10.5,
-                  "fontSizeRatio": 0.007291666666666667,
+                  "fontSize": 13.5,
+                  "fontSizeRatio": 0.009375,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
@@ -7414,28 +8260,28 @@
               "id": "title",
               "type": "TEXT",
               "x": 0.30205625,
-              "y": 0.2208,
+              "y": 0.208,
               "width": 0.39583124999999997,
-              "height": 0.1833,
+              "height": 0.24500000000000002,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "text": "Save the date for a wedding weekend full of quiet joy, old songs, good food, and the people who feel like home.",
-                "textAlign": "left",
+                "text": "Save the date for a wedding\nweekend full of quiet joy, old\nsongs, good food, and the\npeople who feel like home.",
+                "textAlign": "center",
                 "textStyleType": "none",
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 40.5,
-                  "fontSizeRatio": 0.028125,
+                  "fontSize": 33.0,
+                  "fontSizeRatio": 0.022916666666666665,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.24
                 }
               }
             },
@@ -7459,12 +8305,12 @@
                 "textStyle": {
                   "fontSize": 31.5,
                   "fontSizeRatio": 0.021875,
-                  "fontWeight": 8,
+                  "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.5238
                 }
               }
             },
@@ -7486,23 +8332,28 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 15.0,
-                  "fontSizeRatio": 0.010416666666666666,
-                  "fontWeight": 5,
+                  "fontSize": 19.5,
+                  "fontSizeRatio": 0.013541666666666667,
+                  "fontWeight": 4,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
-                  "letterSpacing": 0.0
+                  "letterSpacing": 0.0,
+                  "height": 1.3846
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 6,
           "role": "inner",
           "layoutId": "p05_detail_grid",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 2,
           "layers": [
             {
               "id": "bg",
@@ -7518,6 +8369,25 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "top_circle",
+              "type": "IMAGE",
+              "x": 0.63021875,
+              "y": 0.053,
+              "width": 0.09376874999999998,
+              "height": 0.125,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
@@ -8019,14 +8889,37 @@
                   "height": 1.22
                 }
               }
+            },
+            {
+              "id": "bottom_banner",
+              "type": "IMAGE",
+              "x": 0.26560625,
+              "y": 0.8027999999999998,
+              "width": 0.46873125000000004,
+              "height": 0.1167,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "rounded28",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+              }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 7,
           "role": "inner",
           "layoutId": "p06_timeline",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 5,
           "layers": [
             {
               "id": "bg",
@@ -8115,6 +9008,101 @@
               "payload": {
                 "imageBackground": "minimalGray",
                 "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "cameo_1",
+              "type": "IMAGE",
+              "x": 0.29271874999999997,
+              "y": 0.22999999999999998,
+              "width": 0.05000625,
+              "height": 0.06669999999999998,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p02_circle_card.png"
+              }
+            },
+            {
+              "id": "cameo_2",
+              "type": "IMAGE",
+              "x": 0.29271874999999997,
+              "y": 0.3369,
+              "width": 0.05000625,
+              "height": 0.06669999999999998,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
+              }
+            },
+            {
+              "id": "cameo_3",
+              "type": "IMAGE",
+              "x": 0.29271874999999997,
+              "y": 0.4438,
+              "width": 0.05000625,
+              "height": 0.06669999999999998,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
+              }
+            },
+            {
+              "id": "cameo_4",
+              "type": "IMAGE",
+              "x": 0.29271874999999997,
+              "y": 0.5507,
+              "width": 0.05000625,
+              "height": 0.06669999999999998,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+              }
+            },
+            {
+              "id": "cameo_5",
+              "type": "IMAGE",
+              "x": 0.29271874999999997,
+              "y": 0.6577000000000001,
+              "width": 0.05000625,
+              "height": 0.06669999999999998,
+              "zIndex": 5,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
@@ -8482,13 +9470,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 8,
           "role": "inner",
           "layoutId": "p07_quote_poster",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
             {
               "id": "bg",
@@ -8521,6 +9513,25 @@
                 "imageBackground": "paperPink",
                 "imageTemplate": "free",
                 "cornerRadius": 0.04
+              }
+            },
+            {
+              "id": "right_cameo",
+              "type": "IMAGE",
+              "x": 0.61565,
+              "y": 0.1486,
+              "width": 0.09376874999999998,
+              "height": 0.125,
+              "zIndex": 2,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "circleRing",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
@@ -8636,13 +9647,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 9,
           "role": "inner",
           "layoutId": "p08_rsvp_card",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 4,
           "layers": [
             {
               "id": "bg",
@@ -8661,12 +9676,88 @@
               }
             },
             {
+              "id": "stamp_tl",
+              "type": "IMAGE",
+              "x": 0.25626875,
+              "y": 0.3610999999999999,
+              "width": 0.031275,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tl.png"
+              }
+            },
+            {
+              "id": "stamp_tr",
+              "type": "IMAGE",
+              "x": 0.7125125,
+              "y": 0.3610999999999999,
+              "width": 0.031275,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_tr.png"
+              }
+            },
+            {
+              "id": "stamp_bl",
+              "type": "IMAGE",
+              "x": 0.25626875,
+              "y": 0.6389,
+              "width": 0.031275,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_bl.png"
+              }
+            },
+            {
+              "id": "stamp_br",
+              "type": "IMAGE",
+              "x": 0.7125125,
+              "y": 0.6389,
+              "width": 0.031275,
+              "height": 0.0417,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p08_stamp_br.png"
+              }
+            },
+            {
               "id": "outer",
               "type": "DECORATION",
-              "x": 0.26375,
-              "y": 0.12,
-              "width": 0.4725,
-              "height": 0.56,
+              "x": 0.27185,
+              "y": 0.1111,
+              "width": 0.45624375,
+              "height": 0.7778000000000002,
               "zIndex": 2,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8674,16 +9765,16 @@
               "payload": {
                 "imageBackground": "deepNavy",
                 "imageTemplate": "free",
-                "cornerRadius": 0.04
+                "cornerRadius": 0.0352
               }
             },
             {
               "id": "eyebrow",
               "type": "TEXT",
-              "x": 0.4100000000000001,
-              "y": 0.16,
-              "width": 0.18000000000000002,
-              "height": 0.02,
+              "x": 0.31251875,
+              "y": 0.1708,
+              "width": 0.37501874999999996,
+              "height": 0.0236,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8695,23 +9786,23 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 12.0,
-                  "fontSizeRatio": 0.008333333333333333,
+                  "fontSize": 21.0,
+                  "fontSizeRatio": 0.014583333333333334,
                   "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
-                  "color": "#FFF8FAFC",
-                  "letterSpacing": 1.8
+                  "color": "#FF6E7A86",
+                  "letterSpacing": 3.2
                 }
               }
             },
             {
               "id": "inner",
               "type": "DECORATION",
-              "x": 0.28625,
-              "y": 0.16,
-              "width": 0.42749999999999994,
-              "height": 0.48,
+              "x": 0.2874875,
+              "y": 0.1319,
+              "width": 0.42502500000000004,
+              "height": 0.7361,
               "zIndex": 3,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8719,16 +9810,16 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free",
-                "cornerRadius": 0.03
+                "cornerRadius": 0.0259
               }
             },
             {
               "id": "title",
               "type": "TEXT",
-              "x": 0.33125,
-              "y": 0.26,
-              "width": 0.3375,
-              "height": 0.1,
+              "x": 0.3281,
+              "y": 0.25,
+              "width": 0.34374375,
+              "height": 0.1222,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8740,24 +9831,24 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 25.5,
-                  "fontSizeRatio": 0.017708333333333333,
+                  "fontSize": 54.0,
+                  "fontSizeRatio": 0.0375,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.12
+                  "height": 1.2222
                 }
               }
             },
             {
               "id": "link_chip",
               "type": "DECORATION",
-              "x": 0.33125,
-              "y": 0.45999999999999996,
-              "width": 0.3375,
-              "height": 0.05,
+              "x": 0.32185625,
+              "y": 0.4583,
+              "width": 0.35623124999999994,
+              "height": 0.0778,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8765,16 +9856,16 @@
               "payload": {
                 "imageBackground": "cloudSkyBlue",
                 "imageTemplate": "free",
-                "cornerRadius": 0.04
+                "cornerRadius": 0.0519
               }
             },
             {
               "id": "link",
               "type": "TEXT",
-              "x": 0.359375,
-              "y": 0.474,
-              "width": 0.28125,
-              "height": 0.02,
+              "x": 0.33749375,
+              "y": 0.48400000000000004,
+              "width": 0.32501250000000004,
+              "height": 0.025,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8786,9 +9877,9 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 10.5,
-                  "fontSizeRatio": 0.007291666666666667,
-                  "fontWeight": 7,
+                  "fontSize": 21.0,
+                  "fontSizeRatio": 0.014583333333333334,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
@@ -8799,10 +9890,10 @@
             {
               "id": "line",
               "type": "DECORATION",
-              "x": 0.33125,
-              "y": 0.56,
-              "width": 0.3375,
-              "height": 0.002,
+              "x": 0.31769375000000005,
+              "y": 0.5764,
+              "width": 0.36455625,
+              "height": 0.0014,
               "zIndex": 4,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8815,10 +9906,10 @@
             {
               "id": "contact",
               "type": "TEXT",
-              "x": 0.34249999999999997,
-              "y": 0.6,
-              "width": 0.315,
-              "height": 0.06,
+              "x": 0.3281,
+              "y": 0.6194,
+              "width": 0.34374375,
+              "height": 0.0722,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8830,24 +9921,24 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 13.5,
-                  "fontSizeRatio": 0.009375,
-                  "fontWeight": 7,
+                  "fontSize": 25.5,
+                  "fontSizeRatio": 0.017708333333333333,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.32
+                  "height": 1.5294
                 }
               }
             },
             {
               "id": "footer",
               "type": "TEXT",
-              "x": 0.34249999999999997,
-              "y": 0.76,
-              "width": 0.315,
-              "height": 0.03,
+              "x": 0.3281,
+              "y": 0.75,
+              "width": 0.34374375,
+              "height": 0.022199999999999998,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -8859,8 +9950,8 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 10.5,
-                  "fontSizeRatio": 0.007291666666666667,
+                  "fontSize": 18.0,
+                  "fontSizeRatio": 0.0125,
                   "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
@@ -8869,14 +9960,37 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 10,
           "role": "inner",
           "layoutId": "p09_end_poster",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 1,
           "layers": [
+            {
+              "id": "poster_bg",
+              "type": "IMAGE",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 1.0,
+              "height": 1.0,
+              "zIndex": 0,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "free",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p03_strip_editorial.png"
+              }
+            },
             {
               "id": "bg",
               "type": "DECORATION",
@@ -8888,6 +10002,22 @@
               "scale": 1.0,
               "rotation": 0.0,
               "opacity": 1.0,
+              "payload": {
+                "imageBackground": "deepNavy",
+                "imageTemplate": "free"
+              }
+            },
+            {
+              "id": "overlay",
+              "type": "DECORATION",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 1.0,
+              "height": 1.0,
+              "zIndex": 1,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 0.68,
               "payload": {
                 "imageBackground": "deepNavy",
                 "imageTemplate": "free"
@@ -9023,13 +10153,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 11,
           "role": "inner",
           "layoutId": "p10_photo_notes",
-          "recommendedPhotoCount": 3,
+          "recommendedPhotoCount": 4,
           "layers": [
             {
               "id": "bg",
@@ -9107,9 +10241,9 @@
               "id": "left_photo",
               "type": "IMAGE",
               "x": 0.26560625,
-              "y": 0.20829999999999999,
+              "y": 0.2361,
               "width": 0.21875625,
-              "height": 0.3610999999999999,
+              "height": 0.1667,
               "zIndex": 10,
               "scale": 1.0,
               "rotation": 0.0,
@@ -9117,16 +10251,16 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/fd893845-f6a1-4f78-9266-7cd12066a0d6"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
               "id": "center_photo",
               "type": "IMAGE",
               "x": 0.5156375,
-              "y": 0.20829999999999999,
+              "y": 0.2361,
               "width": 0.21875625,
               "height": 0.1667,
               "zIndex": 10,
@@ -9136,16 +10270,35 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/db83fa8f-2b18-4d2e-a47e-c19329188a11"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
+              }
+            },
+            {
+              "id": "bottom_left_photo",
+              "type": "IMAGE",
+              "x": 0.26560625,
+              "y": 0.4235999999999999,
+              "width": 0.21875625,
+              "height": 0.1667,
+              "zIndex": 10,
+              "scale": 1.0,
+              "rotation": 0.0,
+              "opacity": 1.0,
+              "payload": {
+                "imageBackground": "rounded28",
+                "imageTemplate": "free",
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_left.png"
               }
             },
             {
               "id": "bottom_photo",
               "type": "IMAGE",
               "x": 0.5156375,
-              "y": 0.4028,
+              "y": 0.4235999999999999,
               "width": 0.21875625,
               "height": 0.1667,
               "zIndex": 10,
@@ -9155,16 +10308,16 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/5fc2c110-f498-4098-a04c-bbd78b43df8a"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_bottom.png"
               }
             },
             {
               "id": "caption",
               "type": "TEXT",
               "x": 0.26560625,
-              "y": 0.6056,
+              "y": 0.6556,
               "width": 0.46873125000000004,
               "height": 0.0556,
               "zIndex": 20,
@@ -9189,13 +10342,17 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 12,
           "role": "inner",
           "layoutId": "p11_dress_code",
-          "recommendedPhotoCount": 0,
+          "recommendedPhotoCount": 3,
           "layers": [
             {
               "id": "bg",
@@ -9289,7 +10446,7 @@
             },
             {
               "id": "tone_a",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.3270875,
               "y": 0.4375,
               "width": 0.099,
@@ -9299,14 +10456,16 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "paperPink",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p01_arch_editorial.png"
               }
             },
             {
               "id": "tone_b",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.4510625,
               "y": 0.4375,
               "width": 0.099,
@@ -9316,14 +10475,16 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "cloudSkyBlue",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p10_photo_notes_center.png"
               }
             },
             {
               "id": "tone_c",
-              "type": "DECORATION",
+              "type": "IMAGE",
               "x": 0.57498125,
               "y": 0.4375,
               "width": 0.099,
@@ -9333,9 +10494,11 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "deepNavy",
+                "imageBackground": "circleRing",
                 "imageTemplate": "free",
-                "cornerRadius": 0.09
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
@@ -9396,7 +10559,11 @@
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         },
         {
           "pageNumber": 13,
@@ -9416,7 +10583,7 @@
               "rotation": 0.0,
               "opacity": 1.0,
               "payload": {
-                "imageBackground": "deepNavy",
+                "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free"
               }
             },
@@ -9434,7 +10601,9 @@
               "payload": {
                 "imageBackground": "paperWhiteWarm",
                 "imageTemplate": "free",
-                "cornerRadius": 0.035
+                "cornerRadius": 0.035,
+                "borderColor": "#FFD7DDE3",
+                "borderWidth": 0.0012
               }
             },
             {
@@ -9451,18 +10620,18 @@
               "payload": {
                 "imageBackground": "rounded28",
                 "imageTemplate": "free",
-                "imageUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-                "previewUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5",
-                "originalUrl": "https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5"
+                "imageUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "previewUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png",
+                "originalUrl": "asset:assets/templates/save_the_date/images/p12_closing_photo.png"
               }
             },
             {
               "id": "title",
               "type": "TEXT",
               "x": 0.286475,
-              "y": 0.6611,
+              "y": 0.6640000000000001,
               "width": 0.42710625,
-              "height": 0.0917,
+              "height": 0.103,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -9474,14 +10643,14 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 33.0,
-                  "fontSizeRatio": 0.022916666666666665,
+                  "fontSize": 37.5,
+                  "fontSizeRatio": 0.026041666666666668,
                   "fontWeight": 8,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
                   "letterSpacing": 0.0,
-                  "height": 1.08
+                  "height": 1.16
                 }
               }
             },
@@ -9489,9 +10658,9 @@
               "id": "body",
               "type": "TEXT",
               "x": 0.3385625,
-              "y": 0.7556,
+              "y": 0.805,
               "width": 0.32293125,
-              "height": 0.0556,
+              "height": 0.07399999999999998,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -9503,14 +10672,14 @@
                 "textBackground": null,
                 "bubbleColor": null,
                 "textStyle": {
-                  "fontSize": 13.5,
-                  "fontSizeRatio": 0.009375,
+                  "fontSize": 16.5,
+                  "fontSizeRatio": 0.011458333333333333,
                   "fontWeight": 5,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF6E7A86",
                   "letterSpacing": 0.0,
-                  "height": 1.4
+                  "height": 1.32
                 }
               }
             },
@@ -9518,9 +10687,9 @@
               "id": "footer",
               "type": "TEXT",
               "x": 0.39481249999999996,
-              "y": 0.8667,
+              "y": 0.897,
               "width": 0.21043124999999996,
-              "height": 0.019399999999999997,
+              "height": 0.031000000000000003,
               "zIndex": 20,
               "scale": 1.0,
               "rotation": 0.0,
@@ -9534,15 +10703,19 @@
                 "textStyle": {
                   "fontSize": 13.5,
                   "fontSizeRatio": 0.009375,
-                  "fontWeight": 7,
+                  "fontWeight": 6,
                   "fontStyle": 0,
                   "fontFamily": "Inter",
                   "color": "#FF24374A",
-                  "letterSpacing": 1.2
+                  "letterSpacing": 2.0
                 }
               }
             }
-          ]
+          ],
+          "aspect": "landscape",
+          "ratio": "1.3333",
+          "designWidth": 1440.0,
+          "designHeight": 1080.0
         }
       ]
     }

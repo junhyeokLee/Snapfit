@@ -28,6 +28,12 @@ const List<ImageFrameStyle> imageFrameStyles = [
     category: 'basic',
   ),
   ImageFrameStyle(
+    key: 'heartFrame',
+    label: '하트 프레임',
+    subtitle: 'Lovely Heart',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
     key: 'archSoft',
     label: '소프트 아치',
     subtitle: 'Editorial Arch',
@@ -544,6 +550,9 @@ class _FrameStyleItem extends StatelessWidget {
         // 기본 원형: 바텀시트 디자인대로 원형 클리핑
         content = ClipOval(child: placeholder);
         break;
+      case 'heartFrame':
+        content = _previewHeartFrame(placeholder);
+        break;
       case 'archSoft':
         content = ClipPath(clipper: _ArchPreviewClipper(), child: placeholder);
         break;
@@ -750,6 +759,38 @@ class _FrameStyleItem extends StatelessWidget {
       border: Border.all(color: const Color(0xFF243B53), width: 1.w),
     ),
   );
+
+  Widget _previewHeartFrame(Widget child) {
+    return Center(
+      child: SizedBox(
+        width: 76.w,
+        height: 70.w,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: Transform.translate(
+                offset: Offset(0, 3.h),
+                child: Opacity(
+                  opacity: 0.12,
+                  child: ClipPath(
+                    clipper: _HeartPreviewClipper(),
+                    child: Container(color: Colors.black),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: ClipPath(
+                clipper: _HeartPreviewClipper(),
+                child: child,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   /// 레퍼런스: 클래식 폴라로이드 - 실제 적용된 프레임과 동일 비율/사진 영역
   Widget _previewPolaroidStandard(Widget child) {
@@ -1847,4 +1888,25 @@ class _DashedRectPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _HeartPreviewClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path();
+    path.moveTo(w * 0.5, h * 0.97);
+    path.cubicTo(w * 0.16, h * 0.78, w * 0.03, h * 0.50, w * 0.05, h * 0.28);
+    path.cubicTo(w * 0.07, h * 0.10, w * 0.20, h * 0.02, w * 0.33, h * 0.02);
+    path.cubicTo(w * 0.42, h * 0.02, w * 0.49, h * 0.10, w * 0.50, h * 0.20);
+    path.cubicTo(w * 0.51, h * 0.10, w * 0.58, h * 0.02, w * 0.67, h * 0.02);
+    path.cubicTo(w * 0.80, h * 0.02, w * 0.93, h * 0.10, w * 0.95, h * 0.28);
+    path.cubicTo(w * 0.97, h * 0.50, w * 0.84, h * 0.78, w * 0.50, h * 0.97);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

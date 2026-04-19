@@ -1,0 +1,20 @@
+{
+  "provider": "firebase_storage",
+  "projectId": "snapfit-c719d",
+  "storageBucket": "snapfit-c719d.firebasestorage.app",
+  "publicBaseUrl": "https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o",
+  "cdnPathPrefix": "templates",
+  "versioningStrategy": "path_versioning",
+  "requireFallbackAssets": true,
+  "forbiddenFinalUrlPatterns": [
+    "figma.com/api/mcp/asset/",
+    "picsum.photos",
+    "unsplash.com",
+    "pexels.com"
+  ],
+  "allowedFinalUrlKinds": [
+    "firebase_download_url",
+    "custom_cdn_url",
+    "asset_fallback_only_for_local_dev"
+  ]
+}

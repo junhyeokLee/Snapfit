@@ -20,6 +20,16 @@ Future<int> _checkUrl(String url) async {
   }
 }
 
+bool _isForbiddenFinalImageUrl(String value) {
+  final lower = value.trim().toLowerCase();
+  if (lower.isEmpty) return false;
+  return lower.startsWith('asset:') ||
+      lower.contains('figma.com/api/mcp/asset/') ||
+      lower.contains('picsum.photos') ||
+      lower.contains('unsplash.com') ||
+      lower.contains('pexels.com');
+}
+
 bool _isTextOverflowRisk(Map<String, dynamic> layer) {
   final payload = layer['payload'];
   if (payload is! Map) return false;
@@ -36,6 +46,115 @@ bool _isTextOverflowRisk(Map<String, dynamic> layer) {
       ((width * 100) / (fontSize / 18)).floor() *
       (height >= 0.10 ? 3 : (height >= 0.06 ? 2 : 1));
   return text.length > (maxChars + 8);
+}
+
+Map<String, dynamic> _loadParityRules() {
+  const path = 'assets/templates/workspace/template_parity_rules.json';
+  final file = File(path);
+  if (!file.existsSync()) return const <String, dynamic>{};
+  try {
+    final raw = jsonDecode(file.readAsStringSync());
+    return raw is Map<String, dynamic> ? raw : const <String, dynamic>{};
+  } catch (_) {
+    return const <String, dynamic>{};
+  }
+}
+
+Map<String, dynamic>? _templateParityRule(
+  Map<String, dynamic> parityRules,
+  String templateId,
+  String title,
+) {
+  final templates = parityRules['templates'];
+  if (templates is! Map) return null;
+  final byId = templates[templateId];
+  if (byId is Map<String, dynamic>) return byId;
+  final byTitle = templates[_normalizeKey(title)];
+  if (byTitle is Map<String, dynamic>) return byTitle;
+  return null;
+}
+
+Set<String> _explicitWrapKeys(Map<String, dynamic>? rule) {
+  final raw = rule?['requiredExplicitWraps'];
+  if (raw is! List) return const <String>{};
+  return raw.map((e) => e.toString()).toSet();
+}
+
+bool _hasMissingExplicitWrap(
+  Set<String> explicitWrapKeys,
+  String layoutId,
+  Map<String, dynamic> layer,
+) {
+  final layerId = (layer['id'] ?? '').toString();
+  if (!explicitWrapKeys.contains('$layoutId::$layerId')) return false;
+  final payload = layer['payload'];
+  if (payload is! Map) return false;
+  final text = (payload['text'] ?? '').toString();
+  return !text.contains('\n');
+}
+
+Set<String> _forbiddenDarkPageLayouts(Map<String, dynamic>? rule) {
+  final raw = rule?['forbiddenDarkPageBackgroundLayouts'];
+  if (raw is! List) return const <String>{};
+  return raw.map((e) => e.toString()).toSet();
+}
+
+bool _hasForbiddenDarkPageBg(
+  Set<String> forbiddenLayouts,
+  String layoutId,
+  List<dynamic> layers,
+) {
+  if (!forbiddenLayouts.contains(layoutId)) return false;
+  for (final raw in layers) {
+    if (raw is! Map<String, dynamic>) continue;
+    if ((raw['type'] ?? '').toString().toUpperCase() != 'DECORATION') continue;
+    if ((raw['id'] ?? '').toString() != 'bg') continue;
+    final payload = raw['payload'];
+    if (payload is! Map) continue;
+    final bg = (payload['imageBackground'] ?? '').toString();
+    final fill = (payload['fillColor'] ?? '').toString().toUpperCase();
+    if (bg == 'deepNavy' || fill == '#FF24374A') return true;
+  }
+  return false;
+}
+
+List<Map<String, dynamic>> _coverGapChecks(Map<String, dynamic>? rule) {
+  final raw = rule?['coverTextGapChecks'];
+  if (raw is! List) return const <Map<String, dynamic>>[];
+  return raw
+      .whereType<Map>()
+      .map((e) => Map<String, dynamic>.from(e))
+      .toList(growable: false);
+}
+
+String? _validateCoverTextGaps(
+  List<dynamic> layers,
+  List<Map<String, dynamic>> checks,
+) {
+  if (checks.isEmpty) return null;
+  final byId = <String, Map<String, dynamic>>{};
+  for (final raw in layers) {
+    if (raw is! Map<String, dynamic>) continue;
+    final id = (raw['id'] ?? '').toString();
+    if (id.isNotEmpty) byId[id] = raw;
+  }
+  for (final check in checks) {
+    final upperId = (check['upper'] ?? '').toString();
+    final lowerId = (check['lower'] ?? '').toString();
+    final minGap = (check['minGap'] as num?)?.toDouble();
+    if (upperId.isEmpty || lowerId.isEmpty || minGap == null) continue;
+    final upper = byId[upperId];
+    final lower = byId[lowerId];
+    if (upper == null || lower == null) continue;
+    final upperBottom =
+        ((upper['y'] as num?)?.toDouble() ?? 0.0) +
+        ((upper['height'] as num?)?.toDouble() ?? 0.0);
+    final lowerTop = (lower['y'] as num?)?.toDouble() ?? 0.0;
+    if ((lowerTop - upperBottom) < minGap) {
+      return 'cover text gap too small: $upperId -> $lowerId';
+    }
+  }
+  return null;
 }
 
 Map<String, dynamic>? _decodeTemplateJson(String? raw) {
@@ -124,9 +243,9 @@ Set<String> _extractCaseKeys(String filePath) {
   final caseRe = RegExp(r"""case\s+['"]([^'"]+)['"]""");
   keys.addAll(
     caseRe
-      .allMatches(text)
-      .map((m) => _normalizeKey(m.group(1) ?? ''))
-      .where((e) => e.isNotEmpty),
+        .allMatches(text)
+        .map((m) => _normalizeKey(m.group(1) ?? ''))
+        .where((e) => e.isNotEmpty),
   );
   // if (layer.imageBackground == 'foo') 패턴도 허용 키로 추출
   final ifEqRe = RegExp(r"""==\s*['"]([^'"]+)['"]""");
@@ -213,7 +332,7 @@ List<String> _validatePageLayoutMetadata(
     if (!const {'cover', 'inner', 'chapter', 'end'}.contains(role)) {
       issues.add('$prefix page ${i + 1} role invalid: $role');
     }
-    if (rpc is! num || rpc < 1 || rpc > 12) {
+    if (rpc is! num || rpc < 0 || rpc > 12) {
       issues.add('$prefix page ${i + 1} recommendedPhotoCount invalid');
     }
   }
@@ -237,12 +356,12 @@ String? _validateTextStylePayload(Map<String, dynamic> layer) {
 Future<void> main(List<String> args) async {
   final storeJsonPath = _arg(args, '--store-json');
 
-  final templates =
-      (storeJsonPath != null && storeJsonPath.trim().isNotEmpty)
+  final templates = (storeJsonPath != null && storeJsonPath.trim().isNotEmpty)
       ? _loadTemplatesFromJsonFile(storeJsonPath.trim())
       : <PremiumTemplate>[...localFeaturedTemplates()];
   final hardFails = <String>[];
   final softWarnings = <String>[];
+  final parityRules = _loadParityRules();
   final allowedFrames = _buildAllowedFrameKeys();
   final allowedStyles = _buildAllowedDecorationStyleKeys();
 
@@ -267,11 +386,21 @@ Future<void> main(List<String> args) async {
     }
 
     final templateId = (root['templateId'] ?? '').toString();
+    final templateRule = _templateParityRule(parityRules, templateId, t.title);
+    final explicitWrapKeys = _explicitWrapKeys(templateRule);
+    final forbiddenDarkLayouts = _forbiddenDarkPageLayouts(templateRule);
+    final coverGapChecks = _coverGapChecks(templateRule);
     final version = root['version'];
     final lifecycle = (root['lifecycleStatus'] ?? '').toString();
     if (templateId.trim().isEmpty) hardFails.add('$prefix templateId missing');
-    if (version is! num || version < 1) hardFails.add('$prefix version invalid');
-    if (!const {'draft', 'qa_passed', 'published', 'deprecated'}.contains(lifecycle)) {
+    if (version is! num || version < 1)
+      hardFails.add('$prefix version invalid');
+    if (!const {
+      'draft',
+      'qa_passed',
+      'published',
+      'deprecated',
+    }.contains(lifecycle)) {
       hardFails.add('$prefix lifecycleStatus invalid');
     }
 
@@ -284,6 +413,14 @@ Future<void> main(List<String> args) async {
       hardFails.add(
         '$prefix pages length ${pages.length} out of range(12..24)',
       );
+    }
+    final cover = root['cover'];
+    final coverLayers = cover is Map ? cover['layers'] : null;
+    if (coverLayers is List) {
+      final coverGapIssue = _validateCoverTextGaps(coverLayers, coverGapChecks);
+      if (coverGapIssue != null) {
+        hardFails.add('$prefix $coverGapIssue');
+      }
     }
     hardFails.addAll(_validatePageLayoutMetadata(root, prefix));
 
@@ -299,10 +436,19 @@ Future<void> main(List<String> args) async {
         hardFails.add('$prefix page ${i + 1} layers missing');
         continue;
       }
+      final rpc = (p['recommendedPhotoCount'] as num?)?.toInt() ?? 0;
+      final layoutId = (p['layoutId'] ?? '').toString();
       final hasImage = layers.any(
         (l) => l is Map && (l['type']?.toString().toUpperCase() == 'IMAGE'),
       );
-      if (!hasImage) hardFails.add('$prefix page ${i + 1} has no IMAGE layer');
+      if (rpc > 0 && !hasImage) {
+        hardFails.add('$prefix page ${i + 1} has no IMAGE layer');
+      }
+      if (_hasForbiddenDarkPageBg(forbiddenDarkLayouts, layoutId, layers)) {
+        hardFails.add(
+          '$prefix page ${i + 1} $layoutId has forbidden dark page background',
+        );
+      }
 
       for (final rawLayer in layers) {
         if (rawLayer is! Map<String, dynamic>) continue;
@@ -333,7 +479,9 @@ Future<void> main(List<String> args) async {
         if (type == 'IMAGE') {
           final payload = rawLayer['payload'];
           if (payload is Map) {
-            final frame = _normalizeKey((payload['imageBackground'] ?? '').toString());
+            final frame = _normalizeKey(
+              (payload['imageBackground'] ?? '').toString(),
+            );
             if (frame.isNotEmpty && !allowedFrames.contains(frame)) {
               hardFails.add(
                 '$prefix page ${i + 1} ${rawLayer['id'] ?? '(no-id)'} unsupported frame: $frame',
@@ -344,14 +492,27 @@ Future<void> main(List<String> args) async {
                         payload['imageUrl'] ??
                         payload['originalUrl'])
                     ?.toString();
-            if (url != null && url.trim().isNotEmpty)
+            if (url != null && url.trim().isNotEmpty) {
               layerImages.add(url.trim());
+              if (_isForbiddenFinalImageUrl(url)) {
+                hardFails.add(
+                  '$prefix page ${i + 1} ${rawLayer['id'] ?? '(no-id)'} forbidden final image url: ${url.trim()}',
+                );
+              }
+            }
           }
         }
         if (type == 'DECORATION') {
           final payload = rawLayer['payload'];
           if (payload is Map) {
-            final style = _normalizeKey((payload['imageBackground'] ?? '').toString());
+            final style = _normalizeKey(
+              (payload['imageBackground'] ?? '').toString(),
+            );
+            final hasExplicitFill =
+                payload['fillColor'] != null || payload['fill'] != null;
+            if (style == 'free' && hasExplicitFill) {
+              continue;
+            }
             if (!allowedStyles.contains(style)) {
               hardFails.add(
                 '$prefix page ${i + 1} ${rawLayer['id'] ?? '(no-id)'} unsupported style: $style',
@@ -362,6 +523,12 @@ Future<void> main(List<String> args) async {
         if (type == 'TEXT' && _isTextOverflowRisk(rawLayer)) {
           softWarnings.add(
             '$prefix page ${i + 1} text overflow risk at ${rawLayer['id']}',
+          );
+        }
+        if (type == 'TEXT' &&
+            _hasMissingExplicitWrap(explicitWrapKeys, layoutId, rawLayer)) {
+          hardFails.add(
+            '$prefix page ${i + 1} ${rawLayer['id']} requires explicit line breaks',
           );
         }
       }
@@ -383,24 +550,47 @@ Future<void> main(List<String> args) async {
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
         .toSet();
+    final coverUrl = t.coverImageUrl.trim();
+    if (coverUrl.isEmpty) {
+      hardFails.add('$prefix coverImageUrl empty');
+    }
     if (previewSet.isEmpty) {
       hardFails.add('$prefix previewImages empty');
     } else {
+      final firstPreview = t.previewImages.first.trim();
+      if (coverUrl.isNotEmpty &&
+          firstPreview.isNotEmpty &&
+          coverUrl != firstPreview) {
+        hardFails.add('$prefix coverImageUrl must match previewImages[0]');
+      }
       final intersect = previewSet.intersection(layerImages);
       if (intersect.isEmpty) {
         softWarnings.add(
           '$prefix preview mismatch: none of previewImages exist in template pages',
         );
       }
+      if (previewSet.length < math.min(4, pages.length)) {
+        softWarnings.add(
+          '$prefix previewImages count too small for stable store/detail QA',
+        );
+      }
     }
 
     final urlCandidates = <String>{
-      t.coverImageUrl.trim(),
+      coverUrl,
       ...previewSet,
       ...layerImages.take(10),
-    }..removeWhere((e) => e.isEmpty || !e.startsWith('http'));
+    }..removeWhere((e) => e.isEmpty);
 
     for (final url in urlCandidates) {
+      if (_isForbiddenFinalImageUrl(url)) {
+        hardFails.add('$prefix forbidden final image url: $url');
+      }
+    }
+
+    final httpCandidates = urlCandidates.where((e) => e.startsWith('http'));
+
+    for (final url in httpCandidates) {
       final code = await _checkUrl(url);
       if (code < 200 || code >= 400) {
         hardFails.add('$prefix url failed ($code): $url');

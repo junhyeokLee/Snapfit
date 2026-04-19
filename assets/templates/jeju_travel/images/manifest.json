@@ -1,0 +1,17 @@
+{
+  "templateId": "jeju_travel_v1",
+  "templateSlug": "jeju_travel",
+  "version": "v1",
+  "files": [
+    "cover_full_bleed.png",
+    "p01_opening_editorial.png",
+    "p03_coastal_frame.png",
+    "p05_postcard_grid_a.png",
+    "p05_postcard_grid_b.png",
+    "p07_spotlight_place.png",
+    "p08_photo_strip_a.png",
+    "p08_photo_strip_b.png",
+    "p10_sunset_poster.png",
+    "p12_ending_full_bleed.png"
+  ]
+}

@@ -145,6 +145,11 @@ class TemplatePageRenderer extends StatelessWidget {
       Widget imageContent;
       if (localFile != null) {
         imageContent = Image.file(localFile, fit: BoxFit.cover);
+      } else if (url != null && bundledTemplateAssetPath(url) != null) {
+        imageContent = Image.asset(
+          bundledTemplateAssetPath(url)!,
+          fit: BoxFit.cover,
+        );
       } else if (url != null && url.startsWith('asset:')) {
         imageContent = Image.asset(
           url.substring('asset:'.length),
@@ -231,9 +236,17 @@ class TemplatePageRenderer extends StatelessWidget {
         top: drawY,
         width: drawW,
         height: drawH,
-        child: GestureDetector(
-          onTap: onLayerTap != null ? () => onLayerTap!(layer.id) : onImageTap,
-          child: layerWidget,
+        child: _applyRotation(
+          _applyLayerOpacity(
+            GestureDetector(
+              onTap: onLayerTap != null
+                  ? () => onLayerTap!(layer.id)
+                  : onImageTap,
+              child: layerWidget,
+            ),
+            layer.opacity,
+          ),
+          layer.rotation,
         ),
       );
     } else if (layer.type == LayerType.decoration ||
@@ -243,22 +256,51 @@ class TemplatePageRenderer extends StatelessWidget {
         top: drawY,
         width: drawW,
         height: drawH,
-        child: _buildDecorationWidget(
-          layer: layer,
-          drawWidth: drawW,
-          drawHeight: drawH,
-          canvasWidth: canvasW,
-          canvasHeight: canvasH,
+        child: _applyRotation(
+          _applyLayerOpacity(
+            _buildDecorationWidget(
+              layer: layer,
+              drawWidth: drawW,
+              drawHeight: drawH,
+              canvasWidth: canvasW,
+              canvasHeight: canvasH,
+            ),
+            layer.opacity,
+          ),
+          layer.rotation,
         ),
       );
     } else {
       // Text
       final style = layer.textStyle ?? const TextStyle();
       final baseFont = style.fontSize ?? 14.0;
-      // 피그마 정합 우선: 높이 기준 강제 축소 대신 원본 폰트를 동일 비율로만 스케일
-      final scaledFont = normalizeToContentBounds
+      final textValue = layer.text ?? '';
+      final isMultiLine = textValue.contains('\n');
+      // 피그마 정합 우선:
+      // 단순 비율 스케일만 하면 상세/미리보기에서 글자가 박스를 뚫고 커지는 경우가 있어
+      // 텍스트 박스 높이 기준 상한을 같이 둔다.
+      final rawScaledFont = normalizeToContentBounds
           ? math.min(baseFont, (drawH * 0.82).clamp(10.0, 220.0))
           : (baseFont * scaleY).clamp(6.0, 260.0).toDouble();
+      final maxFontByBox = math.max(8.0, drawH * (isMultiLine ? 0.42 : 0.82));
+      final scaledFont = math.min(rawScaledFont, maxFontByBox);
+      final effectiveHeight = math.max(
+        style.height ?? (isMultiLine ? 1.15 : 1.0),
+        isMultiLine ? 0.82 : 1.0,
+      );
+      final effectiveStyle = style.copyWith(
+        fontSize: scaledFont,
+        color: style.color ?? Colors.black,
+        height: effectiveHeight,
+      );
+      final effectiveStrut = StrutStyle(
+        fontFamily: effectiveStyle.fontFamily,
+        fontSize: scaledFont,
+        fontWeight: effectiveStyle.fontWeight,
+        fontStyle: effectiveStyle.fontStyle,
+        height: effectiveStyle.height,
+        forceStrutHeight: true,
+      );
       final textFillMode = (layer.textFillMode ?? '').toLowerCase();
       final textFillImageUrl = _resolveTextFillUrl(layer);
       return Positioned(
@@ -266,38 +308,64 @@ class TemplatePageRenderer extends StatelessWidget {
         top: drawY,
         width: drawW,
         height: drawH,
-        child: Container(
-          // color: Colors.black12, // Debug
-          alignment: _getAlignment(layer.textAlign),
-          child: (textFillMode == 'textcutout')
-              ? _StoreCutoutText(
-                  text: layer.text ?? '',
-                  textAlign: layer.textAlign ?? TextAlign.center,
-                  style: style.copyWith(fontSize: scaledFont),
-                )
-              : (textFillMode == 'imageclip' && textFillImageUrl.isNotEmpty)
-              ? _StoreImageClipText(
-                  text: layer.text ?? '',
-                  textAlign: layer.textAlign ?? TextAlign.center,
-                  style: style.copyWith(
-                    fontSize: scaledFont,
-                    color: Colors.white,
-                  ),
-                  imageUrl: textFillImageUrl,
-                )
-              : Text(
-                  layer.text ?? '',
-                  textAlign: layer.textAlign ?? TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: style.copyWith(
-                    fontSize: scaledFont,
-                    color: style.color ?? Colors.black,
-                  ),
-                ),
+        child: _applyRotation(
+          _applyLayerOpacity(
+            Container(
+              alignment: _getAlignment(layer.textAlign),
+              child: (textFillMode == 'textcutout')
+                  ? _StoreCutoutText(
+                      text: layer.text ?? '',
+                      textAlign: layer.textAlign ?? TextAlign.center,
+                      style: effectiveStyle,
+                      strutStyle: effectiveStrut,
+                    )
+                  : (textFillMode == 'imageclip' && textFillImageUrl.isNotEmpty)
+                  ? _StoreImageClipText(
+                      text: layer.text ?? '',
+                      textAlign: layer.textAlign ?? TextAlign.center,
+                      style: effectiveStyle.copyWith(color: Colors.white),
+                      strutStyle: effectiveStrut,
+                      imageUrl: textFillImageUrl,
+                    )
+                  : Text(
+                      textValue,
+                      textAlign: layer.textAlign ?? TextAlign.center,
+                      softWrap: true,
+                      strutStyle: effectiveStrut,
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: true,
+                        applyHeightToLastDescent: true,
+                      ),
+                      style: effectiveStyle,
+                    ),
+            ),
+            layer.opacity,
+          ),
+          layer.rotation,
         ),
       );
     }
+  }
+
+  Widget _applyRotation(Widget child, double rotationDegrees) {
+    if (!rotationDegrees.isFinite || rotationDegrees.abs() < 0.01) {
+      return child;
+    }
+    return Transform.rotate(
+      angle: rotationDegrees * math.pi / 180.0,
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _applyLayerOpacity(Widget child, double opacity) {
+    final clamped = opacity.clamp(0.0, 1.0);
+    if (clamped >= 0.999) return child;
+    // Safety guard: if a child with Stack parent data slips through here,
+    // wrapping it in Opacity causes a ParentDataWidget crash and blanks
+    // the whole preview strip.
+    if (child is Positioned) return child;
+    return Opacity(opacity: clamped, child: child);
   }
 
   Widget _buildDecorationWidget({
@@ -579,8 +647,11 @@ class TemplatePageRenderer extends StatelessWidget {
       case 'archOval':
         return LayoutBuilder(
           builder: (context, constraints) {
-            final radius =
-                math.min(constraints.maxWidth, constraints.maxHeight) * 0.41;
+            final width = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : 0.0;
+            final maxRadius = math.max(24.0, width * 0.5);
+            final radius = (width * 0.376344).clamp(24.0, maxRadius).toDouble();
             return ClipRRect(
               borderRadius: BorderRadius.circular(radius),
               child: child,
@@ -606,6 +677,44 @@ class TemplatePageRenderer extends StatelessWidget {
               ),
               padding: EdgeInsets.all(ringPadding),
               child: ClipOval(child: child),
+            );
+          },
+        );
+      case 'heartFrame':
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final side = math.min(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            return Center(
+              child: SizedBox(
+                width: side,
+                height: side * 0.93,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      child: Transform.translate(
+                        offset: const Offset(0, 3),
+                        child: Opacity(
+                          opacity: 0.12,
+                          child: ClipPath(
+                            clipper: _StoreHeartClipper(),
+                            child: Container(color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: ClipPath(
+                        clipper: _StoreHeartClipper(),
+                        child: child,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
@@ -772,6 +881,62 @@ class _StoreArchClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
+class _StoreHeartClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path();
+    path.moveTo(w * 0.5, h * 0.97);
+    path.cubicTo(w * 0.16, h * 0.78, w * 0.03, h * 0.50, w * 0.05, h * 0.28);
+    path.cubicTo(w * 0.07, h * 0.10, w * 0.20, h * 0.02, w * 0.33, h * 0.02);
+    path.cubicTo(w * 0.42, h * 0.02, w * 0.49, h * 0.10, w * 0.50, h * 0.20);
+    path.cubicTo(w * 0.51, h * 0.10, w * 0.58, h * 0.02, w * 0.67, h * 0.02);
+    path.cubicTo(w * 0.80, h * 0.02, w * 0.93, h * 0.10, w * 0.95, h * 0.28);
+    path.cubicTo(w * 0.97, h * 0.50, w * 0.84, h * 0.78, w * 0.50, h * 0.97);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _StoreHeartFramePainter extends CustomPainter {
+  final Color fillColor;
+  final Color strokeColor;
+  final double strokeWidth;
+
+  _StoreHeartFramePainter({
+    required this.fillColor,
+    required this.strokeColor,
+    required this.strokeWidth,
+  });
+
+  Path _heartPath(Size size) => _StoreHeartClipper().getClip(size);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _heartPath(size);
+    canvas.drawShadow(path, const Color(0x22000000), 10, false);
+    final fill = Paint()..color = fillColor;
+    final stroke =
+        Paint()
+          ..color = strokeColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth;
+    canvas.drawPath(path, fill);
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StoreHeartFramePainter oldDelegate) {
+    return fillColor != oldDelegate.fillColor ||
+        strokeColor != oldDelegate.strokeColor ||
+        strokeWidth != oldDelegate.strokeWidth;
+  }
+}
+
 class _StoreTicketNotch extends StatelessWidget {
   const _StoreTicketNotch();
 
@@ -793,12 +958,14 @@ class _StoreImageClipText extends StatefulWidget {
   final String text;
   final TextAlign textAlign;
   final TextStyle style;
+  final StrutStyle? strutStyle;
   final String imageUrl;
 
   const _StoreImageClipText({
     required this.text,
     required this.textAlign,
     required this.style,
+    this.strutStyle,
     required this.imageUrl,
   });
 
@@ -872,6 +1039,11 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
       return Text(
         widget.text,
         textAlign: widget.textAlign,
+        strutStyle: widget.strutStyle,
+        textHeightBehavior: const TextHeightBehavior(
+          applyHeightToFirstAscent: true,
+          applyHeightToLastDescent: true,
+        ),
         style: widget.style.copyWith(color: Colors.black87),
       );
     }
@@ -886,6 +1058,11 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
       child: Text(
         widget.text,
         textAlign: widget.textAlign,
+        strutStyle: widget.strutStyle,
+        textHeightBehavior: const TextHeightBehavior(
+          applyHeightToFirstAscent: true,
+          applyHeightToLastDescent: true,
+        ),
         style: widget.style,
       ),
     );
@@ -896,11 +1073,13 @@ class _StoreCutoutText extends StatelessWidget {
   final String text;
   final TextAlign textAlign;
   final TextStyle style;
+  final StrutStyle? strutStyle;
 
   const _StoreCutoutText({
     required this.text,
     required this.textAlign,
     required this.style,
+    this.strutStyle,
   });
 
   @override
@@ -913,6 +1092,11 @@ class _StoreCutoutText extends StatelessWidget {
       child: Text(
         text,
         textAlign: textAlign,
+        strutStyle: strutStyle,
+        textHeightBehavior: const TextHeightBehavior(
+          applyHeightToFirstAscent: true,
+          applyHeightToLastDescent: true,
+        ),
         style: style.copyWith(color: Colors.white),
       ),
     );

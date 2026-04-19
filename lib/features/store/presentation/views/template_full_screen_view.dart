@@ -9,12 +9,14 @@ class TemplateFullScreenView extends StatefulWidget {
   final List<List<LayerModel>> parsedPages;
   final List<String> previewImages; // Fallback
   final int initialIndex;
+  final Size designCanvasSize;
 
   const TemplateFullScreenView({
     super.key,
     required this.parsedPages,
     required this.previewImages,
     this.initialIndex = 0,
+    this.designCanvasSize = const Size(3, 4),
   });
 
   @override
@@ -24,6 +26,50 @@ class TemplateFullScreenView extends StatefulWidget {
 class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
   late PageController _pageController;
   late int _currentIndex;
+
+  Color? _parseHexColor(String? raw) {
+    final value = raw?.trim();
+    if (value == null || value.isEmpty) return null;
+    var hex = value.replaceFirst('#', '');
+    if (hex.length == 6) hex = 'FF$hex';
+    if (hex.length != 8) return null;
+    final parsed = int.tryParse(hex, radix: 16);
+    if (parsed == null) return null;
+    return Color(parsed);
+  }
+
+  Color _inferredTemplateSurfaceColor(List<LayerModel>? layers) {
+    if (layers == null || layers.isEmpty) {
+      return Colors.white;
+    }
+
+    final canvasW = widget.designCanvasSize.width <= 0
+        ? 1.0
+        : widget.designCanvasSize.width;
+    final canvasH = widget.designCanvasSize.height <= 0
+        ? 1.0
+        : widget.designCanvasSize.height;
+
+    LayerModel? best;
+    double bestScore = -1;
+
+    for (final layer in layers) {
+      if (layer.type != LayerType.decoration) continue;
+      final fill = _parseHexColor(layer.decorationFillColor);
+      if (fill == null || fill.opacity <= 0.02) continue;
+
+      final areaScore = (layer.width * layer.height) / (canvasW * canvasH);
+      if (areaScore < 0.82) continue;
+      final zBonus = (1000 - layer.zIndex).clamp(0, 1000) / 1000.0;
+      final score = areaScore * 10 + zBonus;
+      if (score > bestScore) {
+        best = layer;
+        bestScore = score;
+      }
+    }
+
+    return _parseHexColor(best?.decorationFillColor) ?? Colors.white;
+  }
 
   @override
   void initState() {
@@ -45,6 +91,12 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
         ? widget.parsedPages.length
         : widget.previewImages.length;
 
+    final safeAspect =
+        widget.designCanvasSize.height > 0
+        ? (widget.designCanvasSize.width / widget.designCanvasSize.height)
+              .clamp(0.6, 1.8)
+        : 0.75;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -58,19 +110,23 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
             itemBuilder: (context, index) {
               return Center(
                 child: AspectRatio(
-                  aspectRatio: 1.0, // Assuming 1:1 or dynamic?
-                  // Let's use fitting box
+                  aspectRatio: safeAspect,
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 0),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         // Render Parsed Page
                         if (index < widget.parsedPages.length) {
-                          return TemplatePageRenderer(
-                            layers: widget.parsedPages[index],
-                            width: constraints.maxWidth,
-                            height: constraints
-                                .maxWidth, // 1:1 ratio forced for now
+                          return ColoredBox(
+                            color: _inferredTemplateSurfaceColor(
+                              widget.parsedPages[index],
+                            ),
+                            child: TemplatePageRenderer(
+                              layers: widget.parsedPages[index],
+                              width: constraints.maxWidth,
+                              height: constraints.maxHeight,
+                              designCanvasSize: widget.designCanvasSize,
+                            ),
                           );
                         }
                         // Fallback Image

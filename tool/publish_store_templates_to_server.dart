@@ -39,6 +39,19 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  final assetIssues = <String>[];
+  for (final item in templates) {
+    final title = (item['title'] ?? '').toString().trim();
+    _collectAssetPaths(item, assetIssues, title.isEmpty ? 'unknown' : title);
+  }
+  if (assetIssues.isNotEmpty) {
+    stderr.writeln('Publish blocked: asset paths remain in input JSON.');
+    for (final issue in assetIssues.take(30)) {
+      stderr.writeln('- $issue');
+    }
+    exit(2);
+  }
+
   final existingTemplates = await _fetchServerTemplates(baseUrl);
   var created = 0;
   var updated = 0;
@@ -166,22 +179,30 @@ Future<bool> _postUpsert(
   String adminKey,
   Map<String, dynamic> payload,
 ) async {
-  final uri = Uri.parse('$baseUrl/api/templates/admin/upsert');
+  final uris = <Uri>[
+    Uri.parse('$baseUrl/api/admin/templates/upsert'),
+    Uri.parse('$baseUrl/api/templates/admin/upsert'),
+  ];
   final client = HttpClient();
   try {
-    final req = await client.postUrl(uri);
-    req.headers.contentType = ContentType.json;
-    req.headers.set('X-Admin-Key', adminKey);
-    req.add(utf8.encode(jsonEncode(payload)));
-    final resp = await req.close();
-    if (resp.statusCode < 200 || resp.statusCode >= 300) {
+    for (final uri in uris) {
+      final req = await client.postUrl(uri);
+      req.headers.contentType = ContentType.json;
+      req.headers.set('X-Admin-Key', adminKey);
+      req.add(utf8.encode(jsonEncode(payload)));
+      final resp = await req.close();
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        return true;
+      }
       final body = await utf8.decodeStream(resp);
       stderr.writeln(
-        'Upsert failed: ${payload['title']} (${resp.statusCode}) $body',
+        'Upsert failed via ${uri.path}: ${payload['title']} (${resp.statusCode}) $body',
       );
-      return false;
+      if (resp.statusCode != 401 && resp.statusCode != 403 && resp.statusCode != 404) {
+        return false;
+      }
     }
-    return true;
+    return false;
   } catch (e) {
     stderr.writeln('Upsert exception: ${payload['title']} $e');
     return false;
@@ -211,4 +232,37 @@ String? _arg(List<String> args, String name) {
     }
   }
   return null;
+}
+
+void _collectAssetPaths(dynamic value, List<String> issues, String context) {
+  if (value is Map) {
+    for (final entry in value.entries) {
+      if (entry.key == 'templateJson' && entry.value is String) {
+        final raw = (entry.value as String).trim();
+        if (raw.isEmpty) continue;
+        try {
+          _collectAssetPaths(jsonDecode(raw), issues, '$context.templateJson');
+        } catch (_) {
+          if (raw.startsWith('asset:')) {
+            issues.add('$context.templateJson -> $raw');
+          }
+        }
+        continue;
+      }
+      _collectAssetPaths(entry.value, issues, '$context.${entry.key}');
+    }
+    return;
+  }
+  if (value is List) {
+    for (var i = 0; i < value.length; i++) {
+      _collectAssetPaths(value[i], issues, '$context[$i]');
+    }
+    return;
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.startsWith('asset:')) {
+      issues.add('$context -> $trimmed');
+    }
+  }
 }
