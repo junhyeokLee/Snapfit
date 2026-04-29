@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/platform_ui.dart';
 import '../../domain/entities/album_page.dart';
 import '../../domain/entities/layer.dart';
 import '../controllers/layer_builder.dart';
@@ -115,7 +116,7 @@ class _AlbumReaderInnerDetailScreenState
             MaterialPageRoute(
               builder: (_) => AlbumInviteScreen(
                 albumId: album.id,
-                albumTitle: album.title ?? 'SnapFit Album',
+                albumTitle: album.title.isEmpty ? 'SnapFit Album' : album.title,
               ),
             ),
           );
@@ -176,7 +177,7 @@ class _AlbumReaderInnerDetailScreenState
                   // 닫기/뒤로가기
                   IconButton(
                     icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
+                      platformBackIcon(),
                       color: Colors.white,
                       size: 24.sp,
                     ),

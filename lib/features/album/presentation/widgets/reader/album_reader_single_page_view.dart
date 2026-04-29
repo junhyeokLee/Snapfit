@@ -667,6 +667,9 @@ class _CoverPageCard extends StatelessWidget {
               layers: interaction.sortByZ(page.layers),
               isInteracting: false,
               leftSpine: 14.0,
+              backgroundColor: page.backgroundColor != null
+                  ? Color(page.backgroundColor!).withAlpha(0xFF)
+                  : null,
               onCoverSizeChanged: onCoverSizeChanged,
               buildImage: (layer) =>
                   layerBuilder.buildImage(layer, isCover: true),

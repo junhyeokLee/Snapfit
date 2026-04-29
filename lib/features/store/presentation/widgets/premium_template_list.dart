@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/utils/image_url_policy.dart';
+import '../../../album/domain/entities/layer.dart';
+import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../domain/entities/premium_template.dart';
 import '../views/template_detail_screen.dart';
+import 'template_page_renderer.dart';
 import '../../data/api/template_provider.dart';
 
 class PremiumTemplateList extends ConsumerStatefulWidget {
@@ -29,6 +34,63 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
         .toList(growable: false);
     if (previews.isNotEmpty) return previews.first;
     return '';
+  }
+
+  Widget _buildCoverImage(BuildContext context, String rawUrl) {
+    if (rawUrl.trim().isEmpty) {
+      return _fallbackCover();
+    }
+    final bundledAsset = bundledTemplateAssetPath(rawUrl);
+    if (bundledAsset != null) {
+      return Image.asset(
+        bundledAsset,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackCover(),
+      );
+    }
+    final transformed = imageUrlByVariant(rawUrl, variant: ImageVariant.thumb);
+    if (transformed.startsWith('asset:')) {
+      return Image.asset(
+        transformed.substring('asset:'.length),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackCover(),
+      );
+    }
+    return Image.network(
+      transformed,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.grey[300],
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                  : null,
+              color: Colors.white,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (_, __, ___) => _fallbackCover(),
+    );
+  }
+
+  Widget _fallbackCover() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE7EDF4), Color(0xFFD8E3F0)],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.photo_outlined, color: Color(0xFF7A8AA0)),
+      ),
+    );
   }
 
   @override
@@ -86,6 +148,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                       },
                       itemBuilder: (context, index) {
                         final template = visibleTemplates[index];
+                        final previewUrl = _coverPreviewUrl(template);
+                        final parsed = _parseFirstPage(template);
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -99,48 +163,30 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.network(
-                                imageUrlByVariant(
-                                  _coverPreviewUrl(template),
-                                  variant: ImageVariant.thumb,
-                                ),
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    color: Colors.grey[300],
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                            : null,
-                                        color: Colors.white,
+                              if (previewUrl.isNotEmpty)
+                                _buildCoverImage(context, previewUrl)
+                              else if (parsed != null)
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final aspect = parsed.$2;
+                                    final maxHeight = constraints.maxHeight;
+                                    final drawWidth = maxHeight * aspect;
+                                    return Center(
+                                      child: SizedBox(
+                                        width: drawWidth,
+                                        height: maxHeight,
+                                        child: TemplatePageRenderer(
+                                          layers: parsed.$1,
+                                          width: drawWidth,
+                                          height: maxHeight,
+                                          designCanvasSize: parsed.$3,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Color(0xFFE7EDF4),
-                                          Color(0xFFD8E3F0),
-                                        ],
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.photo_outlined,
-                                        color: Color(0xFF7A8AA0),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                                    );
+                                  },
+                                )
+                              else
+                                _fallbackCover(),
                               // Premium Gradient Overlay (Deep and smooth)
                               Container(
                                 decoration: BoxDecoration(
@@ -274,5 +320,43 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
         child: Center(child: Text('템플릿을 불러올 수 없습니다.')), // Simple error message
       ),
     );
+  }
+}
+
+(List<LayerModel>, double, Size)? _parseFirstPage(PremiumTemplate template) {
+  final raw = template.templateJson;
+  if (raw == null || raw.trim().isEmpty) return null;
+  try {
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    final metadata =
+        (data['metadata'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
+    final pages = data['pages'];
+    if (pages is! List || pages.isEmpty) return null;
+    final page = pages.first;
+    if (page is! Map<String, dynamic>) return null;
+    final layersJson = page['layers'];
+    if (layersJson is! List || layersJson.isEmpty) return null;
+
+    final designWidth =
+        (data['designWidth'] as num?)?.toDouble() ??
+        (metadata['designWidth'] as num?)?.toDouble() ??
+        1080.0;
+    final designHeight =
+        (data['designHeight'] as num?)?.toDouble() ??
+        (metadata['designHeight'] as num?)?.toDouble() ??
+        1440.0;
+    final canvasSize = Size(designWidth, designHeight);
+    final layers = layersJson
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (layer) => LayerExportMapper.fromJson(layer, canvasSize: canvasSize),
+        )
+        .toList(growable: false);
+    if (layers.isEmpty) return null;
+    final aspect = (designWidth / designHeight).clamp(0.6, 1.8);
+    return (layers, aspect, canvasSize);
+  } catch (_) {
+    return null;
   }
 }

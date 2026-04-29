@@ -2,7 +2,6 @@ import '../../domain/repositories/album_repository.dart';
 import '../api/album_api.dart';
 import '../dto/request/create_album_request.dart';
 import '../../domain/entities/album.dart';
-import '../../domain/entities/album.dart';
 
 import '../../../../core/interceptors/token_storage.dart';
 

@@ -1146,85 +1146,6 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         });
   }
 
-  Widget _buildSection({
-    required String titleKo,
-    required String titleEn,
-    required List<_TextStyleItem> items,
-    bool showSeeAll = true,
-    VoidCallback? onSeeAll,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '$titleKo ($titleEn)',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (showSeeAll && onSeeAll != null)
-                GestureDetector(
-                  onTap: onSeeAll,
-                  child: Text(
-                    '모두 보기',
-                    style: TextStyle(
-                      color: SnapFitColors.accent,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            height: 100.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: items.length,
-              separatorBuilder: (_, __) => SizedBox(width: 12.w),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final isSelected = (widget.selectedKey ?? '') == item.key;
-                return GestureDetector(
-                  onTap: () => widget.onSelect(item.key),
-                  child: Container(
-                    width: 88.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: isSelected
-                            ? SnapFitColors.accent
-                            : SnapFitColors.overlayStrongOf(context),
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(child: _buildStylePreview(item.previewType)),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 디자인 그룹별 카드 + 색상 선택 행 (그룹 탭 시 펼침)
   Widget _buildSectionWithColorPicker({
     required String titleKo,
@@ -2742,32 +2663,6 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     );
   }
 
-  /// 끝짤림 스트라이프 테이프 미리보기 (기본색)
-  Widget _previewTapeTornStripe() {
-    return _previewTapeTornStripeWithColor(
-      SnapFitStylePalette.stripeSkyBase,
-      SnapFitStylePalette.stripeSkyStripe,
-    );
-  }
-
-  /// 끝짤림 스트라이프 테이프 미리보기 (오른쪽 비스듬 절단)
-  Widget _previewTapeTornStripeWithColor(Color baseColor, Color stripeColor) {
-    return SizedBox(
-      width: 54.w,
-      height: 30.h,
-      child: ClipPath(
-        clipper: _TapeTornPreviewClipper(),
-        child: CustomPaint(
-          painter: _StripeTapePainter(
-            baseColor: baseColor,
-            stripeColor: stripeColor,
-          ),
-          size: Size(54.w, 30.h),
-        ),
-      ),
-    );
-  }
-
   /// 끝짤림 단색 테이프 미리보기 (오른쪽 비스듬 절단)
   Widget _previewTapeTornSolidWithColor(Color color) {
     return SizedBox(
@@ -3002,14 +2897,6 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     );
   }
 
-  /// 마스킹 테이프 – 사선 스트라이프 (기본 하늘색)
-  Widget _previewTapeStripe() {
-    return _previewTapeStripeWithColor(
-      SnapFitStylePalette.stripeSkyBase,
-      SnapFitStylePalette.stripeSkyStripe,
-    );
-  }
-
   /// 마스킹 테이프 – 사선 스트라이프 색상 변형 (미리보기에서 스트라이프 패턴 표시)
   Widget _previewTapeStripeWithColor(Color baseColor, Color stripeColor) {
     return Container(
@@ -3145,25 +3032,6 @@ class _PreviewDotsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 프리뷰용 리본 클리퍼
-class _PreviewRibbonClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    const cut = 10.0;
-    return Path()
-      ..moveTo(cut, 0)
-      ..lineTo(size.width - cut, 0)
-      ..lineTo(size.width, size.height / 2)
-      ..lineTo(size.width - cut, size.height)
-      ..lineTo(cut, size.height)
-      ..lineTo(0, size.height / 2)
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 /// 프리뷰용 격자 (전체 채움 + 테두리)

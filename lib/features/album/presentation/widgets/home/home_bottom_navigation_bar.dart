@@ -7,11 +7,13 @@ import '../../../../../core/utils/screen_logger.dart';
 class HomeBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool hasUnreadNotification;
 
   const HomeBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.hasUnreadNotification = false,
   });
 
   static bool _logged = false;
@@ -20,7 +22,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_logged) {
       _logged = true;
-      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범/스토어/설정');
+      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범/스토어/알림/설정');
     }
     final isDark = SnapFitColors.isDark(context);
     final barColor = isDark ? const Color(0xF21C1F22) : SnapFitColors.pureWhite;
@@ -74,10 +76,19 @@ class HomeBottomNavigationBar extends StatelessWidget {
             ),
             Expanded(
               child: _BottomNavItem(
-                icon: Icons.person_rounded,
-                label: '설정',
+                icon: Icons.notifications_rounded,
+                label: '알림',
                 isSelected: currentIndex == 3,
                 onTap: () => onTap(3),
+                showBadge: hasUnreadNotification,
+              ),
+            ),
+            Expanded(
+              child: _BottomNavItem(
+                icon: Icons.person_rounded,
+                label: '설정',
+                isSelected: currentIndex == 4,
+                onTap: () => onTap(4),
               ),
             ),
           ],
@@ -93,12 +104,14 @@ class _BottomNavItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool showBadge;
 
   const _BottomNavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.showBadge = false,
   });
 
   @override
@@ -121,40 +134,63 @@ class _BottomNavItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          height: 48.h,
           padding: EdgeInsets.symmetric(horizontal: 4.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedScale(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutBack,
-                scale: isSelected ? 1.06 : 1.0,
-                child: Icon(
-                  icon,
-                  size: isSelected ? 20.sp : 19.sp,
-                  color: color,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style:
-                    (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
-                        .copyWith(
-                          fontSize: 9.5.sp,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          height: 1.0,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      AnimatedScale(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutBack,
+                        scale: isSelected ? 1.06 : 1.0,
+                        child: Icon(
+                          icon,
+                          size: isSelected ? 20.sp : 19.sp,
                           color: color,
                         ),
+                      ),
+                      if (showBadge)
+                        Positioned(
+                          right: -2.w,
+                          top: -2.h,
+                          child: Container(
+                            width: 7.w,
+                            height: 7.w,
+                            decoration: const BoxDecoration(
+                              color: SnapFitColors.accent,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                    style:
+                        (Theme.of(context).textTheme.bodySmall ??
+                                const TextStyle())
+                            .copyWith(
+                              fontSize: 9.5.sp,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              height: 1.0,
+                              color: color,
+                            ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

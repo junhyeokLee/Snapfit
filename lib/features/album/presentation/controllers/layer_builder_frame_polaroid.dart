@@ -51,7 +51,6 @@ Widget _frameHeartImpl(Widget image) {
     builder: (context, constraints) {
       final size = constraints.biggest;
       final side = size.shortestSide;
-      final shadowBlur = (side * 0.06).clamp(4.0, 12.0);
       return Center(
         child: SizedBox(
           width: side,
@@ -91,17 +90,6 @@ Widget _frameRoundImpl(Widget image) {
 
 Widget _frameRounded28Impl(Widget image) {
   return ClipRRect(borderRadius: BorderRadius.circular(28), child: image);
-}
-
-Widget _polaroidBottomLineImpl() {
-  return Container(
-    height: 3,
-    width: 48,
-    decoration: BoxDecoration(
-      color: const Color(0xFFD0D3DC),
-      borderRadius: BorderRadius.circular(999),
-    ),
-  );
 }
 
 Widget _framePolaroidImpl(Widget image) {

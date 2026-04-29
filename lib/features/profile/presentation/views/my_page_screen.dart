@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../config/env.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/utils/app_error_mapper.dart';
@@ -18,10 +19,9 @@ import '../../../album/presentation/views/album_category_screen.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/storage_quota.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
-import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../data/order_repository.dart';
-import '../../domain/entities/order_history_item.dart';
 import 'notification_settings_screen.dart';
+import 'admin_order_management_screen.dart';
 import 'order_history_screen.dart';
 import 'support_inquiry_screen.dart';
 import 'terms_policy_screen.dart';
@@ -63,11 +63,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final subscriptionAsync = ref.watch(mySubscriptionProvider);
     final storageQuotaAsync = ref.watch(myStorageQuotaProvider);
     final orderSummaryAsync = ref.watch(myOrderSummaryProvider);
-    final unreadNotiAsync = ref.watch(notificationUnreadCountProvider);
     final userInfo = authAsync.asData?.value;
     final themeMode = ref.watch(themeModeControllerProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
+    final hasAdminOrderAccess = Env.orderAdminKey.trim().isNotEmpty;
     final currentUserId = userInfo?.id.toString() ?? '';
     final albums = albumsAsync.asData?.value ?? const [];
     final sharedAlbums = albums.where((a) {
@@ -93,13 +93,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   SizedBox(height: MediaQuery.of(context).padding.top),
                   _buildTopBar(
                     context,
-                    ref,
                     textColor,
-                    themeMode,
-                    unreadNotiAsync.maybeWhen(
-                      data: (count) => count,
-                      orElse: () => 0,
-                    ),
                   ),
                   SizedBox(height: 12.h),
                   _buildProfileHero(
@@ -161,6 +155,21 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                           );
                         },
                       ),
+                      if (hasAdminOrderAccess)
+                        _menuRow(
+                          context: context,
+                          icon: Icons.admin_panel_settings_outlined,
+                          title: '주문 관리',
+                          trailingDot: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AdminOrderManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
                       _menuRow(
                         context: context,
                         icon: Icons.credit_card_rounded,
@@ -170,7 +179,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                '구독/결제관리는 점검 중입니다. 잠시 후 다시 열릴 예정입니다.',
+                                '구독 및 결제 관리는 현재 준비 중입니다.',
                               ),
                             ),
                           );
@@ -208,6 +217,14 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             ),
                           );
                         },
+                      ),
+                      _menuRow(
+                        context: context,
+                        icon: Icons.palette_outlined,
+                        title: '테마 설정',
+                        trailingDot: false,
+                        onTap: () =>
+                            _showThemeBottomSheet(context, ref, themeMode),
                       ),
                       _menuRow(
                         context: context,
@@ -390,51 +407,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   Widget _buildTopBar(
     BuildContext context,
-    WidgetRef ref,
     Color textColor,
-    ThemeMode themeMode,
-    int unreadCount,
   ) {
     return Row(
       children: [
         Text('마이페이지', style: context.sfTitle(size: 16.sp)),
-        const Spacer(),
-        IconButton(
-          icon: Icon(Icons.settings_rounded, size: 20.sp, color: textColor),
-          onPressed: () => _showThemeBottomSheet(context, ref, themeMode),
-        ),
-        Stack(
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.notifications_rounded,
-                size: 20.sp,
-                color: textColor,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const NotificationSettingsScreen(),
-                  ),
-                );
-              },
-            ),
-            if (unreadCount > 0)
-              Positioned(
-                right: 10.w,
-                top: 10.h,
-                child: Container(
-                  width: 7.w,
-                  height: 7.w,
-                  decoration: const BoxDecoration(
-                    color: SnapFitColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-          ],
-        ),
       ],
     );
   }

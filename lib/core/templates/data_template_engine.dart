@@ -54,6 +54,9 @@ class DataTemplateEngine {
     );
     final isFeatured = json['isFeatured'] == true;
     final priority = _toInt(json['priority'], 0);
+    final backgroundColor = _parseColor(
+      (json['backgroundColor'] ?? '').toString(),
+    );
     final previewThumbUrl = (json['previewThumbUrl'] ?? '').toString();
     final previewDetailUrl = (json['previewDetailUrl'] ?? '').toString();
     final previewImageUrls = _parseStringList(json['previewImageUrls']);
@@ -70,6 +73,7 @@ class DataTemplateEngine {
       difficulty: difficulty,
       isFeatured: isFeatured,
       priority: priority,
+      backgroundColor: backgroundColor,
       previewThumbUrl: previewThumbUrl,
       previewDetailUrl: previewDetailUrl,
       previewImageUrls: previewImageUrls,
@@ -82,7 +86,10 @@ class DataTemplateEngine {
     Size canvas,
   ) {
     final strictLayout = spec['strictLayout'] == true;
-    final designWidth = _toDouble(spec['designWidth'], _defaultDesignWidth(spec));
+    final designWidth = _toDouble(
+      spec['designWidth'],
+      _defaultDesignWidth(spec),
+    );
     final designHeight = _toDouble(
       spec['designHeight'],
       _defaultDesignHeight(spec),
@@ -343,10 +350,7 @@ class DataTemplateEngine {
     final opacity = _toDouble(merged['opacity'], 1.0).clamp(0.0, 1.0);
 
     final usesRatioCoords =
-        x.abs() <= 1.2 &&
-        y.abs() <= 1.2 &&
-        w.abs() <= 1.2 &&
-        h.abs() <= 1.2;
+        x.abs() <= 1.2 && y.abs() <= 1.2 && w.abs() <= 1.2 && h.abs() <= 1.2;
     final safeDesignW = designWidth <= 0 ? canvas.width : designWidth;
     final safeDesignH = designHeight <= 0 ? canvas.height : designHeight;
 
@@ -396,17 +400,15 @@ class DataTemplateEngine {
       final style = (merged['style'] is Map<String, dynamic>)
           ? (merged['style'] as Map<String, dynamic>)
           : const <String, dynamic>{};
-      final styleView = <String, dynamic>{
-        ...style,
-        ...payloadTextStyle,
-      };
+      final styleView = <String, dynamic>{...style, ...payloadTextStyle};
       final color =
           _parseColor(styleView['color']) ??
           _parseColor(payload['color']) ??
           Colors.black87;
       final fontSize = _toDouble(styleView['fontSize'], 14);
       final family = _normalizeFontFamily(
-        styleView['fontFamily']?.toString() ?? payload['fontFamily']?.toString(),
+        styleView['fontFamily']?.toString() ??
+            payload['fontFamily']?.toString(),
       );
       final weight = _parseWeight(
         (styleView['fontWeight'] ?? payload['fontWeight'])?.toString(),
@@ -418,15 +420,17 @@ class DataTemplateEngine {
       final align = _parseAlign(
         (merged['align'] ?? payload['textAlign'] ?? 'center').toString(),
       );
-      final textFillMode = (merged['textFillMode'] ??
-              payload['textFillMode'] ??
-              styleView['textFillMode'] ??
-              'solid')
-          .toString();
-      final textFillImageUrl = (merged['textFillImageUrl'] ??
-              payload['textFillImageUrl'] ??
-              style['textFillImageUrl'])
-          ?.toString();
+      final textFillMode =
+          (merged['textFillMode'] ??
+                  payload['textFillMode'] ??
+                  styleView['textFillMode'] ??
+                  'solid')
+              .toString();
+      final textFillImageUrl =
+          (merged['textFillImageUrl'] ??
+                  payload['textFillImageUrl'] ??
+                  style['textFillImageUrl'])
+              ?.toString();
 
       final fittedFontSize = strictLayout
           ? () {
@@ -466,8 +470,8 @@ class DataTemplateEngine {
         height: transformed.height,
         rotation: rot,
         text: (merged['text'] ?? payload['text'] ?? '').toString(),
-        textBackground:
-            (merged['textBackground'] ?? payload['textBackground'])?.toString(),
+        textBackground: (merged['textBackground'] ?? payload['textBackground'])
+            ?.toString(),
         textFillMode: textFillMode,
         textFillImageUrl: textFillImageUrl,
         textAlign: align,
@@ -490,19 +494,21 @@ class DataTemplateEngine {
     String? frame;
     String? imageUrl;
     if (type == LayerType.decoration) {
-      frame = (merged['style'] ??
-              merged['frame'] ??
-              payload['imageBackground'] ??
-              payload['imageTemplate'])
-          ?.toString();
+      frame =
+          (merged['style'] ??
+                  merged['frame'] ??
+                  payload['imageBackground'] ??
+                  payload['imageTemplate'])
+              ?.toString();
     } else {
       frame = (merged['frame'] ?? payload['imageBackground'])?.toString();
-      imageUrl = (merged['imageUrl'] ??
-              merged['previewUrl'] ??
-              payload['imageUrl'] ??
-              payload['previewUrl'] ??
-              payload['originalUrl'])
-          ?.toString();
+      imageUrl =
+          (merged['imageUrl'] ??
+                  merged['previewUrl'] ??
+                  payload['imageUrl'] ??
+                  payload['previewUrl'] ??
+                  payload['originalUrl'])
+              ?.toString();
       final asset = merged['asset']?.toString();
       if (asset != null && asset.isNotEmpty) {
         imageUrl = asset.startsWith('asset:') ? asset : 'asset:$asset';

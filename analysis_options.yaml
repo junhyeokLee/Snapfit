@@ -17,18 +17,12 @@ analyzer:
     invalid_annotation_target: ignore
     deprecated_member_use: ignore
     deprecated_member_use_from_same_package: ignore
-    unnecessary_import: ignore
-    unused_import: ignore
-    unused_element: ignore
     unused_field: ignore
-    unused_local_variable: ignore
-    dead_code: ignore
     dead_null_aware_expression: ignore
     unnecessary_null_comparison: ignore
     unreachable_switch_case: ignore
     unrelated_type_equality_checks: ignore
     depend_on_referenced_packages: ignore
-    duplicate_import: ignore
     unnecessary_non_null_assertion: ignore
     unnecessary_cast: ignore
 

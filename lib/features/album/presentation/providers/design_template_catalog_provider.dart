@@ -27,7 +27,9 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
         if (item is! Map<String, dynamic>) continue;
         final converted = _toDesignTemplateJson(item);
         if (converted == null) continue;
-        final t = _hydratePreviewMeta(DataTemplateEngine.templateFromJson(converted));
+        final t = _hydratePreviewMeta(
+          DataTemplateEngine.templateFromJson(converted),
+        );
         if (t.id.isNotEmpty) {
           merged[t.id] = t;
         }
@@ -99,7 +101,9 @@ Map<String, dynamic>? _toDesignTemplateJson(Map<String, dynamic> apiItem) {
   }
 }
 
-Map<String, dynamic> _normalizeTemplateSpecForEditor(Map<String, dynamic> decoded) {
+Map<String, dynamic> _normalizeTemplateSpecForEditor(
+  Map<String, dynamic> decoded,
+) {
   final out = Map<String, dynamic>.from(decoded);
   if (out['layers'] is List) return out;
 
@@ -110,7 +114,9 @@ Map<String, dynamic> _normalizeTemplateSpecForEditor(Map<String, dynamic> decode
   }
   if (layers == null || layers.isEmpty) {
     final pages = out['pages'];
-    if (pages is List && pages.isNotEmpty && pages.first is Map<String, dynamic>) {
+    if (pages is List &&
+        pages.isNotEmpty &&
+        pages.first is Map<String, dynamic>) {
       final first = pages.first as Map<String, dynamic>;
       if (first['layers'] is List) {
         layers = first['layers'] as List<dynamic>;
@@ -167,6 +173,7 @@ DesignTemplate _hydratePreviewMeta(DesignTemplate t) {
     difficulty: t.difficulty,
     isFeatured: t.isFeatured,
     priority: t.priority,
+    backgroundColor: t.backgroundColor,
     previewThumbUrl: thumb,
     previewDetailUrl: detail,
     previewImageUrls: slotUrls,

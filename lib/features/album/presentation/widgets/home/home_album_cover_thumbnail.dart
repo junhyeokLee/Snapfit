@@ -8,6 +8,7 @@ import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
+import '../../utils/cover_background_color.dart';
 import '../cover/cover.dart';
 import 'home_cover_frame.dart';
 import 'home_album_helpers.dart';
@@ -18,6 +19,7 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
   final double height;
   final double? maxWidth;
   final bool showShadow;
+  final double shadowScaleMultiplier;
 
   const HomeAlbumCoverThumbnail({
     super.key,
@@ -25,6 +27,7 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
     required this.height,
     this.maxWidth,
     this.showShadow = true,
+    this.shadowScaleMultiplier = 1.0,
   });
 
   @override
@@ -63,8 +66,15 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
       canvasSize: refCanvasSize,
     );
 
-    final shadowScale = (targetH / 280).clamp(0.35, 0.7);
+    final shadowScale =
+        ((targetH / 280).clamp(0.25, 1.15) * shadowScaleMultiplier).clamp(
+          0.2,
+          18.0,
+        );
     final theme = resolveCoverTheme(album.coverTheme);
+    final coverBackgroundColor = extractCoverBackgroundColor(
+      album.coverLayersJson,
+    );
 
     // 커버 썸네일은 LayerBuilder(프레임 포함)로 동일 렌더링
     final coverInteraction = LayerInteractionManager.preview(
@@ -90,6 +100,7 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
               layers: layers,
               isInteracting: false,
               leftSpine: kCoverSpineWidth,
+              backgroundColor: coverBackgroundColor,
               onCoverSizeChanged: (_) {},
               buildImage: (layer) =>
                   coverBuilder.buildImage(layer, isCover: true),

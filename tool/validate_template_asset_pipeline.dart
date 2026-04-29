@@ -15,9 +15,7 @@ void main(List<String> args) {
           : 'assets/templates/$templateSlug/cdn_manifest.json');
   final imageDir =
       _arg(args, '--image-dir') ??
-      (templateSlug == null
-          ? null
-          : 'assets/templates/$templateSlug/images');
+      (templateSlug == null ? null : 'assets/templates/$templateSlug/images');
   final storeJsonPath =
       _arg(args, '--store-json') ??
       (templateSlug == null
@@ -117,7 +115,9 @@ void main(List<String> args) {
           cdnUrl.isNotEmpty &&
           !cdnUrl.contains(storagePath) &&
           !decodedUrl.contains(storagePath)) {
-        manifestMismatches.add('$fileName -> expected path fragment $storagePath');
+        manifestMismatches.add(
+          '$fileName -> expected path fragment $storagePath',
+        );
       }
     }
   }
@@ -212,7 +212,9 @@ List<Map<String, dynamic>> _resolveRequiredExports({
   required String? storeJsonPath,
 }) {
   final assetPaths = _discoverAssetPaths(templateSlug, storeJsonPath);
-  final version = (checklist['firebaseStorageVersion'] ?? 'v1').toString().trim();
+  final version = (checklist['firebaseStorageVersion'] ?? 'v1')
+      .toString()
+      .trim();
 
   if (assetPaths.isNotEmpty) {
     return assetPaths

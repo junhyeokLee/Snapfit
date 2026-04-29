@@ -48,7 +48,6 @@ class RetryInterceptor extends Interceptor {
     }
 
     return err.type == DioExceptionType.connectionTimeout ||
-        err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.connectionError || // 인터넷 문제 포함
         err.response?.statusCode == 503;
   }

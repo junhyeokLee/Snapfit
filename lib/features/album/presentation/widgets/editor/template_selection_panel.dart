@@ -29,8 +29,6 @@ class _TemplateSelectionPanelState
   @override
   Widget build(BuildContext context) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    final currentPage = vm.currentPage;
-    final isCover = currentPage?.isCover ?? false;
     final aspect = vm.selectedCover.ratio > 0
         ? vm.selectedCover.ratio
         : (3 / 4);
@@ -42,8 +40,11 @@ class _TemplateSelectionPanelState
 
     final templates = pageTemplates;
 
+    final maxSheetHeight =
+        (MediaQuery.sizeOf(context).height * 0.78).clamp(420.0, 620.0);
+
     return Container(
-      height: 620.h,
+      height: maxSheetHeight,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(
@@ -91,7 +92,7 @@ class _TemplateSelectionPanelState
                     crossAxisSpacing: 12.w,
                     mainAxisSpacing: 12.h,
                     // 카드가 더 커지고 미리보기가 더 꽉 차 보이도록 살짝 더 세로로
-                    childAspectRatio: 1 / 1.18,
+                    childAspectRatio: 1 / 1.12,
                   ),
                   itemCount: templates.length,
                   itemBuilder: (context, index) {
@@ -130,79 +131,85 @@ class _TemplateSelectionPanelState
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: isSelected
-                    ? SnapFitColors.accent
-                    : SnapFitColors.overlayLightOf(context),
-                width: isSelected ? 2 : 1,
-              ),
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
-                  child: Column(
-                    children: [
-                      AspectRatio(
-                        aspectRatio: pageRatio,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: SnapFitColors.backgroundOf(context),
-                            borderRadius: BorderRadius.circular(12.r),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: SnapFitColors.surfaceOf(context),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? SnapFitColors.accent
+                        : SnapFitColors.overlayLightOf(context),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: AspectRatio(
+                              aspectRatio: pageRatio,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: template.backgroundColor,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: _TemplatePreview(
+                                  template: template,
+                                  pageRatio: pageRatio,
+                                  ref: ref,
+                                  logicalCanvasSize: logicalCanvasSize,
+                                ),
+                              ),
+                            ),
                           ),
-                          child: _TemplatePreview(
-                            template: template,
-                            pageRatio: pageRatio,
-                            ref: ref,
-                            logicalCanvasSize: logicalCanvasSize,
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      Positioned(
+                        top: 6.h,
+                        left: 6.w,
+                        child: Container(
+                          padding: EdgeInsets.all(3.w),
+                          decoration: const BoxDecoration(
+                            color: SnapFitColors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            size: 12.sp,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-                if (isSelected)
-                  Positioned(
-                    top: 6.h,
-                    left: 6.w,
-                    child: Container(
-                      padding: EdgeInsets.all(3.w),
-                      decoration: const BoxDecoration(
-                        color: SnapFitColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.check,
-                        size: 12.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-              ],
+              ),
             ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            template.name,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: isSelected
-                  ? SnapFitColors.accent
-                  : SnapFitColors.textMutedOf(context),
+            SizedBox(height: 6.h),
+            Text(
+              template.name,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? SnapFitColors.accent
+                    : SnapFitColors.textMutedOf(context),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -305,7 +312,11 @@ class _TemplatePreview extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // 배경은 카드 컨테이너의 backgroundOf(context)가 보이게 투명 처리
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: template.backgroundColor),
+              ),
+            ),
             for (final layer in layers)
               layer.type == LayerType.text
                   ? layerBuilder.buildText(layer)
@@ -313,531 +324,6 @@ class _TemplatePreview extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ImageFramePreview extends StatelessWidget {
-  final String frameKey;
-  final Color fallbackColor;
-
-  const _ImageFramePreview({
-    required this.frameKey,
-    required this.fallbackColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // 내지 템플릿 논리 캔버스(300w) 기준으로 스케일링 → 실제 적용 시 체감 여백과 최대한 동일
-        final base = constraints.biggest.shortestSide;
-        final s = (base / 300.0).clamp(0.18, 1.0);
-
-        // 실제 적용에서는 이미지가 BoxFit.cover로 들어가므로, 미리보기에서도 cover 동작을 동일하게 맞춘다.
-        final photoCore = Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFE6E9F0),
-            borderRadius: BorderRadius.zero,
-          ),
-        );
-        final photo = FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(width: 220 * s, height: 220 * s, child: photoCore),
-        );
-
-        switch (frameKey) {
-          case 'circle':
-            return ClipOval(child: photo);
-          case 'archSoft':
-            return ClipPath(
-              clipper: _TemplatePreviewArchClipper(),
-              child: photo,
-            );
-          case 'round':
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(18 * s),
-              child: photo,
-            );
-          case 'polaroid':
-          case 'polaroidClassic':
-          case 'polaroidFilm':
-            final bg = frameKey == 'polaroidClassic'
-                ? const Color(0xFFFFFEF5)
-                : (frameKey == 'polaroidFilm' ? Colors.black : Colors.white);
-            final border = frameKey == 'polaroidClassic'
-                ? const Color(0xFFE8E4D8)
-                : (frameKey == 'polaroidFilm'
-                      ? Colors.white.withOpacity(0.3)
-                      : const Color(0xFFE0E3EC));
-            final borderWidth = frameKey == 'polaroidClassic' ? 1.1 : 1.0;
-            final radius = frameKey == 'polaroidClassic' ? 12.0 : 10.0;
-            return Center(
-              child: AspectRatio(
-                aspectRatio: 3 / 4,
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(20 * s, 40 * s, 20 * s, 80 * s),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(radius * s),
-                    border: Border.all(color: border, width: borderWidth * s),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(
-                          frameKey == 'polaroidClassic' ? 0.1 : 0.08,
-                        ),
-                        blurRadius: 6 * s,
-                        offset: Offset(0, 3 * s),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6 * s),
-                    child: SizedBox.expand(child: photo),
-                  ),
-                ),
-              ),
-            );
-          case 'polaroidWide':
-            return Container(
-              padding: EdgeInsets.fromLTRB(2 * s, 6 * s, 2 * s, 14 * s),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6 * s),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
-                    blurRadius: 6 * s,
-                    offset: Offset(0, 2 * s),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.35),
-                  width: 0.8 * s,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(3 * s),
-                child: photo,
-              ),
-            );
-          case 'film':
-            return AspectRatio(
-              aspectRatio: 3 / 4,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF151B2C),
-                  borderRadius: BorderRadius.circular(10 * s),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 8 * s,
-                      offset: Offset(0, 3 * s),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 5 * s,
-                  vertical: 8 * s,
-                ),
-                child: Row(
-                  children: [
-                    _filmHoles(s),
-                    SizedBox(width: 4 * s),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E2433),
-                          borderRadius: BorderRadius.circular(6 * s),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6 * s),
-                          child: photo,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 4 * s),
-                    _filmHoles(s),
-                  ],
-                ),
-              ),
-            );
-          case 'ticketStub':
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10 * s),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF243B53),
-                    borderRadius: BorderRadius.circular(18 * s),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF7F0E6),
-                      borderRadius: BorderRadius.circular(14 * s),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12 * s),
-                      child: photo,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: -6 * s,
-                  top: 38 * s,
-                  child: _templateTicketNotch(s),
-                ),
-                Positioned(
-                  right: -6 * s,
-                  top: 38 * s,
-                  child: _templateTicketNotch(s),
-                ),
-                Positioned(
-                  left: -6 * s,
-                  bottom: 24 * s,
-                  child: _templateTicketNotch(s),
-                ),
-                Positioned(
-                  right: -6 * s,
-                  bottom: 24 * s,
-                  child: _templateTicketNotch(s),
-                ),
-              ],
-            );
-          case 'win95':
-            return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFC0C0C0),
-                border: Border.all(
-                  color: const Color(0xFF808080),
-                  width: 1 * s,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(height: 22 * s, color: const Color(0xFF000080)),
-                  Expanded(
-                    child: Container(
-                      color: Colors.white,
-                      padding: EdgeInsets.all(4 * s),
-                      child: photo,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          case 'pixel8':
-            return Container(
-              padding: EdgeInsets.all(2 * s),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border.all(color: Colors.black, width: 2 * s),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black, width: 1 * s),
-                ),
-                child: Center(
-                  child: Container(
-                    margin: EdgeInsets.all(4 * s),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black54, width: 1 * s),
-                    ),
-                    child: photo,
-                  ),
-                ),
-              ),
-            );
-          case 'neon':
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(4 * s),
-                border: Border.all(
-                  color: const Color(0xFF00FFFF),
-                  width: 2 * s,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00FFFF).withOpacity(0.6),
-                    blurRadius: 8 * s,
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(3 * s),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(2 * s),
-                child: photo,
-              ),
-            );
-          case 'tornNotebook':
-            return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBF0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.brown.withOpacity(0.1),
-                    blurRadius: 6 * s,
-                    offset: Offset(0, 2 * s),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.fromLTRB(10 * s, 10 * s, 8 * s, 12 * s),
-              child: Padding(
-                padding: EdgeInsets.all(12 * s),
-                child: ClipRect(child: photo),
-              ),
-            );
-          case 'oldNewspaper':
-            return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F0E6),
-                borderRadius: BorderRadius.circular(4 * s),
-                border: Border.all(
-                  color: const Color(0xFFE0D8C8),
-                  width: 1 * s,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(height: 12 * s, color: const Color(0xFFE8E0D4)),
-                  Expanded(
-                    child: Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 4 * s,
-                        vertical: 2 * s,
-                      ),
-                      color: const Color(0xFFF8F4EC),
-                      child: photo,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          case 'postalStamp':
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(2 * s),
-                border: Border.all(
-                  color: const Color(0xFFC0C0C0),
-                  width: 1 * s,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 4 * s,
-                    offset: Offset(0, 2 * s),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(8 * s),
-              child: ClipRect(child: photo),
-            );
-          case 'kraftPaper':
-            return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFB8956E),
-                borderRadius: BorderRadius.circular(4 * s),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.brown.withOpacity(0.2),
-                    blurRadius: 6 * s,
-                    offset: Offset(0, 2 * s),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(6 * s),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC9A86C),
-                  borderRadius: BorderRadius.circular(2 * s),
-                  border: Border.all(
-                    color: const Color(0xFFA08050),
-                    width: 1.5 * s,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(1 * s),
-                  child: photo,
-                ),
-              ),
-            );
-          case 'softGlow':
-            return Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFFFF5FB), Color(0xFFE9F4FF)],
-                ),
-                borderRadius: BorderRadius.circular(24 * s),
-              ),
-              padding: EdgeInsets.all(10 * s),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20 * s),
-                child: photo,
-              ),
-            );
-          case 'sketch':
-            return CustomPaint(
-              painter: _MiniSketchPainter(strokeWidth: 1.5 * s),
-              child: Padding(padding: EdgeInsets.all(4 * s), child: photo),
-            );
-          case 'sticker':
-            return Container(
-              padding: EdgeInsets.all(4 * s),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10 * s),
-                border: Border.all(color: Colors.black, width: 2 * s),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6 * s),
-                child: photo,
-              ),
-            );
-          default:
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                color: fallbackColor,
-                borderRadius: BorderRadius.zero,
-              ),
-              child: ClipRect(child: photo),
-            );
-        }
-      },
-    );
-  }
-
-  Widget _filmHoles(double s) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(4, (_) {
-        return Container(
-          width: 5 * s,
-          height: 5 * s,
-          margin: EdgeInsets.symmetric(vertical: 2 * s),
-          decoration: BoxDecoration(
-            color: const Color(0xFF3D4556),
-            borderRadius: BorderRadius.circular(1 * s),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-class _MiniSketchPainter extends CustomPainter {
-  final double strokeWidth;
-
-  _MiniSketchPainter({required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black87
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    canvas.drawRect(rect, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _MiniSketchPainter oldDelegate) =>
-      oldDelegate.strokeWidth != strokeWidth;
-}
-
-Widget _templateTicketNotch(double s) => Container(
-  width: 12 * s,
-  height: 12 * s,
-  decoration: BoxDecoration(
-    color: const Color(0xFFF7F0E6),
-    shape: BoxShape.circle,
-    border: Border.all(color: const Color(0xFF243B53), width: 1 * s),
-  ),
-);
-
-class _TemplatePreviewArchClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final archBottom = size.height * 0.32;
-    final midX = size.width * 0.5;
-    return Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, archBottom)
-      ..quadraticBezierTo(midX, 0, size.width, archBottom)
-      ..lineTo(size.width, size.height)
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _TextBgPreview extends StatelessWidget {
-  final String bgKey;
-  final Color fallbackColor;
-
-  const _TextBgPreview({required this.bgKey, required this.fallbackColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // 텍스트 배경도 내지 논리 캔버스(300w) 기준으로 스케일링
-        final base = constraints.biggest.shortestSide;
-        final s = (base / 300.0).clamp(0.18, 1.0);
-
-        // 실제 텍스트는 들어가지 않아도 “패딩/여백”이 동일하게 보이도록 내부 콘텐츠 영역만 표현
-        final content = Container(color: fallbackColor);
-
-        switch (bgKey) {
-          case 'tag':
-            return Container(
-              color: SnapFitColors.accent.withOpacity(0.14),
-              padding: EdgeInsets.symmetric(
-                horizontal: 12 * s,
-                vertical: 8 * s,
-              ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: 44 * s,
-                  height: 10 * s,
-                  color: SnapFitColors.accent.withOpacity(0.45),
-                ),
-              ),
-            );
-          case 'tape':
-            return Container(
-              color: const Color(0xFFFFF3C4),
-              padding: EdgeInsets.symmetric(
-                horizontal: 14 * s,
-                vertical: 10 * s,
-              ),
-              child: content,
-            );
-          case 'bubble':
-            return Container(
-              color: Colors.white,
-              padding: EdgeInsets.all(10 * s),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8 * s),
-                child: content,
-              ),
-            );
-          case 'note':
-          default:
-            return Container(
-              color: const Color(0xFFFFFBF0),
-              padding: EdgeInsets.all(12 * s),
-              child: content,
-            );
-        }
-      },
     );
   }
 }

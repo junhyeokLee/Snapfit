@@ -73,45 +73,11 @@ class LayerBuilder {
     return _buildStickerDecoration(layer) ?? const SizedBox.shrink();
   }
 
-  /// 스타일별 가로 패딩 합(좌+우) — 텍스트 레이아웃 시 콘텐츠 너비 계산용
-  static double _styleHorizontalPadding(String type) =>
-      _styleHorizontalPaddingImpl(type);
-
-  /// 찢어진 메모지(아래 톱니) step/amp – 키에 따라 일반(8, 2.5), 거친(12, 4), 부드러운(5, 1.2)
-  static (double, double) _tornEdgeParams(String key) =>
-      _tornEdgeParamsImpl(key);
-
-  /// 찢어진 테이프 키 → 단색 테이프 키 (tapeTorn*/tapeTornSolid* → tapeSolid*)
-  static String? _tapeTornToSolidKey(String? key) =>
-      _tapeTornToSolidKeyImpl(key);
-
-  Size _calculateStyleSize(
-    String type,
-    LayerModel layer,
-    TextPainter painter,
-  ) => _calculateStyleSizeImpl(type, layer, painter);
-
-  /// 템플릿 적용 시 템플릿 비율 슬롯에 사진이 꽉 차게 cover, 자유 비율이면 cover
-  static BoxFit _imageFitForLayer(LayerModel layer) =>
-      _imageFitForLayerImpl(layer);
-
-  /// 사진 위치 조정용 imageOffset(픽셀)을 Image alignment(-1.0~1.0)로 변환
-  static Alignment _imageAlignmentForLayer(LayerModel layer) =>
-      _imageAlignmentForLayerImpl(layer);
-
   /// 이미지 레이어 빌드
   Widget buildImage(LayerModel layer, {bool isCover = false}) =>
       _buildImageImpl(this, layer, isCover: isCover);
-
-  /// 빈 이미지 슬롯(플레이스홀더) – 템플릿 적용 후 사진을 넣을 자리
-  Widget _buildImagePlaceholder(LayerModel layer) =>
-      _buildImagePlaceholderImpl(this, layer);
   Widget _buildFramedImage(LayerModel layer, Widget image) {
     return _buildFramedImageImpl(this, layer, image);
-  }
-
-  Widget _fitFramedContent(LayerModel layer, Widget child) {
-    return _fitFramedContentImpl(layer, child);
   }
 
   Widget _buildDecoration(LayerModel layer) {
@@ -145,9 +111,6 @@ class LayerBuilder {
 
   /// 소프트 라운드 – 바텀시트와 동일: 카드 없이 18px 둥글게
   Widget _frameRound(Widget image) => _frameRoundImpl(image);
-
-  /// 공통: 폴라로이드 하단 가로선 (클래식/카드 동일)
-  static Widget _polaroidBottomLine() => _polaroidBottomLineImpl();
 
   /// 클래식 폴라로이드 – 세로로 길고 가로는 더 좁은 카드 (좌우·위 20, 아래 80 여백)
   Widget _framePolaroid(Widget image) => _framePolaroidImpl(image);
@@ -203,8 +166,6 @@ class LayerBuilder {
   /// Win95 창 느낌 프레임
   Widget _frameWin95(Widget image) => _frameWin95Impl(image);
 
-  Widget _win95Button({double size = 12}) => _win95ButtonImpl(size: size);
-
   /// 픽셀 8-bit 프레임
   Widget _framePixel8(Widget image) => _framePixel8Impl(image);
 
@@ -219,8 +180,6 @@ class LayerBuilder {
 
   /// 노트북 메모 프레임
   Widget _frameNotebook(Widget image) => _frameNotebookImpl(image);
-
-  Widget _notebookMarginDots() => _notebookMarginDotsImpl();
 
   /// 테이프 + 클립 포토 카드
   Widget _frameTapeClip(Widget image) => _frameTapeClipImpl(image);

@@ -6,7 +6,7 @@ import 'dart:async';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
-import '../controllers/cover_size_controller.dart';
+import '../../../../core/utils/platform_ui.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -95,7 +95,10 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         // [Fix] 앨범 비율에 맞게 내지 베이스 사이즈 동적 초기화
         final aspect = vm.selectedCover.ratio;
         setState(() {
-          _baseCanvasSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect);
+          _baseCanvasSize = Size(
+            kCoverReferenceWidth,
+            kCoverReferenceWidth / aspect,
+          );
         });
       }
     });
@@ -159,7 +162,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             MaterialPageRoute(
               builder: (_) => AlbumInviteScreen(
                 albumId: album.id,
-                albumTitle: album.title ?? 'SnapFit Album',
+                albumTitle: album.title.isEmpty ? 'SnapFit Album' : album.title,
               ),
             ),
           );
@@ -188,9 +191,6 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ).showSnackBar(const SnackBar(content: Text('보여줄 페이지가 없습니다.')));
             return;
           }
-
-          final screenW = MediaQuery.sizeOf(context).width;
-          final screenH = MediaQuery.sizeOf(context).height;
 
           Navigator.push(
             context,
@@ -362,7 +362,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           ],
         ),
         content: Text(
-          '제작을 확정하면 더 이상 앨범을\n수정할 수 없습니다.\n\n정말 확정하시겠습니까?',
+          '제작 확정 후 주문 화면으로 이동할 수 있습니다.\n앨범 수정은 이후에도 계속 가능합니다.\n\n지금 제작을 확정하시겠습니까?',
           style: TextStyle(
             fontSize: 14.sp,
             color: SnapFitColors.textSecondaryOf(context),
@@ -459,9 +459,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             MaterialPageRoute(
               builder: (_) => PrintOrderCheckoutScreen(
                 albumId: album.id,
-                albumTitle: (album.title ?? '').trim().isEmpty
-                    ? '스냅핏 앨범'
-                    : album.title!,
+                albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
                 pageCount: vm.pages.length,
               ),
             ),
@@ -516,7 +514,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                         children: [
                           // 뒤로가기
                           AlbumReaderCircleBtn(
-                            icon: Icons.arrow_back_ios_new_rounded,
+                            icon: platformBackIcon(),
                             onTap: _isDeleting
                                 ? () {}
                                 : () => Navigator.pop(context),

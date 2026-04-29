@@ -1,18 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeUiState {
-  const HomeUiState({
-    this.bottomNavIndex = 0,
-    this.albumTabIndex = 0,
-  });
+  const HomeUiState({this.bottomNavIndex = 0, this.albumTabIndex = 0});
 
   final int bottomNavIndex;
   final int albumTabIndex;
 
-  HomeUiState copyWith({
-    int? bottomNavIndex,
-    int? albumTabIndex,
-  }) {
+  HomeUiState copyWith({int? bottomNavIndex, int? albumTabIndex}) {
     return HomeUiState(
       bottomNavIndex: bottomNavIndex ?? this.bottomNavIndex,
       albumTabIndex: albumTabIndex ?? this.albumTabIndex,

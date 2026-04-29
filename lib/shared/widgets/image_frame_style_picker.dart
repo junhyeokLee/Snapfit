@@ -781,10 +781,7 @@ class _FrameStyleItem extends StatelessWidget {
               ),
             ),
             Positioned.fill(
-              child: ClipPath(
-                clipper: _HeartPreviewClipper(),
-                child: child,
-              ),
+              child: ClipPath(clipper: _HeartPreviewClipper(), child: child),
             ),
           ],
         ),

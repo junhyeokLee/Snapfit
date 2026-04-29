@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
+import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
@@ -56,7 +57,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('아직 참여 중인 앨범이 없습니다.'), findsOneWidget);
+    expect(find.textContaining('지금은 참여 중인 앨범이 없어요.'), findsOneWidget);
   });
 
   testWidgets('앨범이 있으면 앨범 슬라이더 표시', (WidgetTester tester) async {
@@ -83,7 +84,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(CustomScrollView), findsOneWidget);
+    expect(find.byType(HomeAlbumSlider), findsOneWidget);
   });
 
   testWidgets('앨범 만들기 버튼 탭 시 생성 플로우로 이동', (WidgetTester tester) async {
@@ -109,7 +110,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.ensureVisible(find.text('앨범 시작하기'));
+    await tester.tap(find.text('앨범 시작하기'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);

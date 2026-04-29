@@ -3,17 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../viewmodels/album_editor_view_model.dart';
-import '../viewmodels/cover_view_model.dart';
-import 'album_reader_screen.dart';
 import 'add_cover_screen.dart';
 import 'page_editor_screen.dart';
-import '../../data/api/album_provider.dart';
 
 /// 앨범 생성 플로우 화면 (스텝1~3)
 class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
@@ -163,20 +161,16 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     super.initState();
     if (widget.initialTemplatePagesByAspect != null &&
         widget.initialTemplatePagesByAspect!.isNotEmpty) {
-      _templatePagesByAspect = widget.initialTemplatePagesByAspect!.map((
-        k,
-        v,
-      ) {
+      _templatePagesByAspect = widget.initialTemplatePagesByAspect!.map((k, v) {
         return MapEntry(k.toLowerCase(), v);
       });
     }
     if (widget.initialTemplatePages != null &&
         widget.initialTemplatePages!.isNotEmpty) {
-      _baseTemplatePages = _hydrateTemplatePages(
-        widget.initialTemplatePages!,
-      );
+      _baseTemplatePages = _hydrateTemplatePages(widget.initialTemplatePages!);
       _resolvedTemplatePages = _baseTemplatePages;
-      (_templatePagesByAspect ??= <String, List<List<LayerModel>>>{})['portrait'] =
+      (_templatePagesByAspect ??=
+              <String, List<List<LayerModel>>>{})['portrait'] =
           _baseTemplatePages!;
     }
     if (widget.initialAlbumTitle != null &&
@@ -219,7 +213,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
+              platformBackIcon(),
               color: SnapFitColors.textPrimaryOf(context),
               size: 18.sp,
             ),

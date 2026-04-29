@@ -112,22 +112,28 @@ void main() {
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
   });
 
-  test('performBackgroundUpload rethrows quota exceeded even when swallowErrors=true', () async {
-    final mockRepo = MockAlbumRepository();
-    final service = AlbumPersistenceService(QuotaFailStorageService(), mockRepo);
+  test(
+    'performBackgroundUpload rethrows quota exceeded even when swallowErrors=true',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      final service = AlbumPersistenceService(
+        QuotaFailStorageService(),
+        mockRepo,
+      );
 
-    expect(
-      () => service.performBackgroundUpload(
-        albumId: 1,
-        canvasSize: const Size(300, 400),
-        currentLayers: const <LayerModel>[],
-        coverImageBytes: Uint8List.fromList([0, 1, 2]),
-        themeLabel: 'classic',
-        title: 'title',
-        coverRatio: 1.0,
-        targetPages: 24,
-      ),
-      throwsA(isA<StorageQuotaExceededException>()),
-    );
-  });
+      expect(
+        () => service.performBackgroundUpload(
+          albumId: 1,
+          canvasSize: const Size(300, 400),
+          currentLayers: const <LayerModel>[],
+          coverImageBytes: Uint8List.fromList([0, 1, 2]),
+          themeLabel: 'classic',
+          title: 'title',
+          coverRatio: 1.0,
+          targetPages: 24,
+        ),
+        throwsA(isA<StorageQuotaExceededException>()),
+      );
+    },
+  );
 }

@@ -28,7 +28,7 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => storage.getUserId()).thenAnswer((_) async => 'user-1');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => 'user-1');
     when(() => api.createAlbum(any())).thenAnswer((_) async => const Album());
 
     await repository.createAlbum(
@@ -51,7 +51,7 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => storage.getUserId()).thenAnswer((_) async => 'user-2');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => 'user-2');
     when(() => api.fetchMyAlbums('user-2')).thenAnswer((_) async => <Album>[]);
 
     await repository.fetchMyAlbums();
@@ -64,7 +64,7 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => storage.getUserId()).thenAnswer((_) async => 'user-3');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => 'user-3');
     when(() => api.reorderAlbums(any(), 'user-3')).thenAnswer((_) async {});
 
     await repository.reorderAlbums([1, 2]);
@@ -81,7 +81,9 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => storage.getUserId()).thenAnswer((_) async => 'user-lock');
+    when(
+      () => storage.getResolvedUserId(),
+    ).thenAnswer((_) async => 'user-lock');
     when(() => api.lockAlbum(170, 'user-lock')).thenAnswer((_) async {});
 
     await repository.lockAlbum(170);
@@ -94,7 +96,9 @@ void main() {
     final storage = MockTokenStorage();
     final repository = AlbumRepositoryImpl(api, tokenStorage: storage);
 
-    when(() => storage.getUserId()).thenAnswer((_) async => 'user-unlock');
+    when(
+      () => storage.getResolvedUserId(),
+    ).thenAnswer((_) async => 'user-unlock');
     when(() => api.unlockAlbum(170, 'user-unlock')).thenAnswer((_) async {});
 
     await repository.unlockAlbum(170);

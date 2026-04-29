@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
 
 /// 폰트 리스트 (옵션 영역)

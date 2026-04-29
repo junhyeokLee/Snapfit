@@ -185,7 +185,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: canAgree ? () => Navigator.pop(ctx, true) : null,
+                        onPressed: canAgree
+                            ? () => Navigator.pop(ctx, true)
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: SnapFitColors.accent,
                           foregroundColor: Colors.white,

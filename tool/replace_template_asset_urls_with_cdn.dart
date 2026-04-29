@@ -5,7 +5,8 @@ void main(List<String> args) {
   final input = _arg(args, '--input');
   final manifestPath = _arg(args, '--manifest');
   final output = _arg(args, '--output') ?? input;
-  final failOnForbidden = (_arg(args, '--fail-on-forbidden') ?? 'true') != 'false';
+  final failOnForbidden =
+      (_arg(args, '--fail-on-forbidden') ?? 'true') != 'false';
 
   if (input == null || input.trim().isEmpty) {
     stderr.writeln('Missing --input');

@@ -70,14 +70,6 @@ String _sampleImageForId(String id) {
   return urls[hash % urls.length];
 }
 
-int _stableHash(String input) {
-  var hash = 0;
-  for (final unit in input.codeUnits) {
-    hash = (hash * 31 + unit) & 0x7fffffff;
-  }
-  return hash;
-}
-
 String _stablePicsum(String seed, {int width = 1200, int height = 900}) {
   final safeSeed = seed.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
   return 'https://picsum.photos/seed/$safeSeed/$width/$height';

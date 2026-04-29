@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/utils/image_url_policy.dart';
+import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/templates/data_template_engine.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
-import '../../../album/presentation/widgets/home/home_album_actions.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../widgets/template_page_renderer.dart';
 import 'template_full_screen_view.dart';
@@ -75,6 +74,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     final key = normalize(value);
     final aliases = <String, String>{
+      '제주의기록': 'jejutravel',
+      '가족의주말': 'familyweekend',
+      '우리의기념일': 'anniversarydays',
+      'savethedate': 'savethedate',
+      'scrapbook': 'scrapbook',
+      'weddingeditorial': 'weddingeditorial',
       '웨딩무드북': '시그니처웨딩',
       '썸머무드북': '썸머커버에디션',
       '스카이무드북': '스카이인비테이션',
@@ -138,26 +143,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     );
   }
 
-  bool _hasLocalOnlyImagePath(String value) {
-    final trimmed = value.trim().toLowerCase();
-    return trimmed.startsWith('asset:') ||
-        trimmed.contains('figma.com/api/mcp/asset/');
-  }
-
-  bool _shouldPreferLocalTemplateJson(
-    PremiumTemplate local,
-    PremiumTemplate server,
-  ) {
-    return false;
-  }
-
   PremiumTemplate _mergeWithLocalPriorityForSaveTheDate(
     PremiumTemplate local,
     PremiumTemplate remote,
   ) {
-    final preferLocal = _shouldPreferLocalTemplateJson(local, remote);
-    if (!preferLocal) return remote;
-
     return remote.copyWith(
       subTitle: (local.subTitle ?? '').trim().isNotEmpty
           ? local.subTitle
@@ -211,16 +200,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<PremiumTemplate?> _findLocalGeneratedMatchByTitle() async {
     try {
-      final raw = await rootBundle.loadString(
-        'assets/templates/generated/store_latest.json',
-      );
-      final decoded = jsonDecode(raw);
-      if (decoded is! List) return null;
-
       final key = _normalizeTitle(_template.title);
-      for (final item in decoded) {
-        if (item is! Map<String, dynamic>) continue;
-        final t = PremiumTemplate.fromJson(item);
+      final templates = await loadCanonicalStoreTemplatesForRuntime();
+      for (final t in templates) {
         if (_normalizeTitle(t.title) == key) {
           return t;
         }
@@ -246,18 +228,25 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     return remote.copyWith(
       subTitle: localSub.isNotEmpty ? local.subTitle : remote.subTitle,
-      description: localDesc.isNotEmpty ? local.description : remote.description,
+      description: localDesc.isNotEmpty
+          ? local.description
+          : remote.description,
       coverImageUrl: localCover.isNotEmpty ? localCover : remote.coverImageUrl,
-      previewImages: localPreview.isNotEmpty ? localPreview : remote.previewImages,
+      previewImages: localPreview.isNotEmpty
+          ? localPreview
+          : remote.previewImages,
       pageCount: local.pageCount > 0 ? local.pageCount : remote.pageCount,
       category: (local.category ?? '').trim().isNotEmpty
           ? local.category
           : remote.category,
-      tags: (local.tags != null && local.tags!.isNotEmpty) ? local.tags : remote.tags,
-      templateJson: localJson.isNotEmpty ? local.templateJson : remote.templateJson,
+      tags: (local.tags != null && local.tags!.isNotEmpty)
+          ? local.tags
+          : remote.tags,
+      templateJson: localJson.isNotEmpty
+          ? local.templateJson
+          : remote.templateJson,
     );
   }
-
 
   void _parseTemplateJson({int? maxPages}) {
     if (_template.templateJson == null || _template.templateJson!.isEmpty) {
@@ -281,10 +270,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           (data['designHeight'] as num?)?.toDouble() ??
           (metadata['designHeight'] as num?)?.toDouble() ??
           500.0;
-      _designCanvasSize = Size(
-        rootDesignWidth,
-        rootDesignHeight,
-      );
+      _designCanvasSize = Size(rootDesignWidth, rootDesignHeight);
       final List<dynamic>? pagesList = data['pages'] as List<dynamic>?;
 
       if (pagesList != null) {
@@ -428,6 +414,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _refreshTemplate() async {
     try {
+      final localGenerated = await _findLocalGeneratedMatchByTitle();
       PremiumTemplate? updated;
       if (_template.id < 0) {
         updated = await _findRemoteMatchByTitle();
@@ -437,7 +424,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             .getTemplate(_template.id);
       }
 
-      final localGenerated = await _findLocalGeneratedMatchByTitle();
       if (updated == null && localGenerated == null) return;
       if (updated == null && localGenerated != null) {
         updated = localGenerated;
@@ -666,11 +652,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return _parsedPages;
   }
 
-  List<({
-    IconData icon,
-    String title,
-    String description,
-  })> _detailFeatureCards() {
+  List<({IconData icon, String title, String description})>
+  _detailFeatureCards() {
     final category = (_template.category ?? '').toLowerCase();
     final tags = (_template.tags ?? const <String>[])
         .map((e) => e.toLowerCase())
@@ -831,8 +814,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       return Colors.white;
     }
 
-    final canvasW = _designCanvasSize.width <= 0 ? 1.0 : _designCanvasSize.width;
-    final canvasH = _designCanvasSize.height <= 0 ? 1.0 : _designCanvasSize.height;
+    final canvasW = _designCanvasSize.width <= 0
+        ? 1.0
+        : _designCanvasSize.width;
+    final canvasH = _designCanvasSize.height <= 0
+        ? 1.0
+        : _designCanvasSize.height;
 
     LayerModel? best;
     double bestScore = -1;
@@ -1013,7 +1000,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.arrow_back_ios_new,
+                          platformBackIcon(),
                           size: 20,
                           color: titleColor,
                         ),
@@ -1085,7 +1072,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                Icons.arrow_back_ios_new,
+                                platformBackIcon(),
                                 size: 20,
                                 color: titleColor,
                               ),
@@ -1308,7 +1295,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                       color: SnapFitColors.accent,
                                     ),
                                   ),
-                                  const TextSpan(text: '이 이 템플릿에 관심을 보이고 있습니다.'),
+                                  const TextSpan(
+                                    text: '이 이 템플릿에 관심을 보이고 있습니다.',
+                                  ),
                                 ],
                               ),
                             ),
@@ -1721,38 +1710,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     }
 
     return errorWidget();
-  }
-
-  double _estimatePreviewAspect(List<LayerModel> layers) {
-    if (layers.isEmpty) return 1.0;
-    // 풀 배경 레이어가 있으면 우선
-    for (final layer in layers) {
-      final nearOrigin =
-          layer.position.dx.abs() <= 1.0 && layer.position.dy.abs() <= 1.0;
-      if (!nearOrigin) continue;
-      if (layer.width > 80 && layer.height > 80) {
-        return (layer.width / layer.height).clamp(0.6, 1.8);
-      }
-    }
-
-    double minX = double.infinity;
-    double minY = double.infinity;
-    double maxX = -double.infinity;
-    double maxY = -double.infinity;
-    for (final layer in layers) {
-      minX = minX < layer.position.dx ? minX : layer.position.dx;
-      minY = minY < layer.position.dy ? minY : layer.position.dy;
-      maxX = maxX > (layer.position.dx + layer.width)
-          ? maxX
-          : (layer.position.dx + layer.width);
-      maxY = maxY > (layer.position.dy + layer.height)
-          ? maxY
-          : (layer.position.dy + layer.height);
-    }
-    final w = (maxX - minX).abs();
-    final h = (maxY - minY).abs();
-    if (w <= 1 || h <= 1) return 1.0;
-    return (w / h).clamp(0.6, 1.8);
   }
 
   double _resolveTemplateAspect() {

@@ -22,6 +22,7 @@ class HomeAlbumTabPreparedData {
     required this.inProgressAlbums,
     required this.completedAlbums,
     required this.favoriteAlbums,
+    required this.sharedAlbums,
     required this.tabAlbums,
     required this.tabLabel,
   });
@@ -29,6 +30,7 @@ class HomeAlbumTabPreparedData {
   final List<Album> inProgressAlbums;
   final List<Album> completedAlbums;
   final List<Album> favoriteAlbums;
+  final List<Album> sharedAlbums;
   final List<Album> tabAlbums;
   final String tabLabel;
 }
@@ -39,18 +41,12 @@ HomeAlbumsPreparedData buildHomeAlbumsData({
 }) {
   final normalizedUserId = currentUserId.trim();
   final baseAlbums = albums.where((a) => !isDraftAlbum(a)).toList();
-
-  final myOwnedAlbums = baseAlbums.where((a) {
-    if (normalizedUserId.isEmpty) return true;
-    return a.userId.trim() == normalizedUserId;
-  }).toList();
-  final myRecordsSource = myOwnedAlbums.isNotEmpty ? myOwnedAlbums : baseAlbums;
-  final myRecordsAlbums = List<Album>.from(myRecordsSource)
+  final myRecordsAlbums = List<Album>.from(baseAlbums)
     ..sort(compareAlbumByLatestDesc);
 
-  final completedAlbums =
-      List<Album>.from(baseAlbums.where((a) => isCompletedAlbum(a)))
-        ..sort(compareAlbumByLatestDesc);
+  final completedAlbums = List<Album>.from(
+    baseAlbums.where((a) => isCompletedAlbum(a)),
+  )..sort(compareAlbumByLatestDesc);
 
   final sharedOwnerCandidates = normalizedUserId.isEmpty
       ? <Album>[]
@@ -61,7 +57,7 @@ HomeAlbumsPreparedData buildHomeAlbumsData({
                   a.userId.trim() != normalizedUserId,
             )
             .toList()
-        ..sort(compareAlbumByLatestDesc));
+          ..sort(compareAlbumByLatestDesc));
 
   return HomeAlbumsPreparedData(
     baseAlbums: baseAlbums,
@@ -74,28 +70,40 @@ HomeAlbumsPreparedData buildHomeAlbumsData({
 
 HomeAlbumTabPreparedData buildHomeAlbumTabData({
   required List<Album> allAlbums,
+  required String currentUserId,
   required Set<int> favoriteAlbumIds,
   required int albumTabIndex,
 }) {
-  final inProgressAlbums =
-      List<Album>.from(allAlbums.where((a) => isLiveEditingAlbum(a)))
-        ..sort(compareAlbumByLatestDesc);
-  final completedAlbums =
-      List<Album>.from(allAlbums.where((a) => isCompletedAlbum(a)))
-        ..sort(compareAlbumByLatestDesc);
-  final favoriteAlbums =
-      List<Album>.from(allAlbums.where((a) => favoriteAlbumIds.contains(a.id)))
-        ..sort(compareAlbumByLatestDesc);
+  final normalizedUserId = currentUserId.trim();
+  final inProgressAlbums = List<Album>.from(
+    allAlbums.where((a) => isLiveEditingAlbum(a)),
+  )..sort(compareAlbumByLatestDesc);
+  final completedAlbums = List<Album>.from(
+    allAlbums.where((a) => isCompletedAlbum(a)),
+  )..sort(compareAlbumByLatestDesc);
+  final favoriteAlbums = List<Album>.from(
+    allAlbums.where((a) => favoriteAlbumIds.contains(a.id)),
+  )..sort(compareAlbumByLatestDesc);
+  final sharedAlbums = normalizedUserId.isEmpty
+      ? <Album>[]
+      : (List<Album>.from(
+          allAlbums.where(
+            (a) =>
+                a.userId.trim().isNotEmpty && a.userId.trim() != normalizedUserId,
+          ),
+        )..sort(compareAlbumByLatestDesc));
 
   final tabAlbums = switch (albumTabIndex) {
     1 => completedAlbums,
     2 => favoriteAlbums,
+    3 => sharedAlbums,
     _ => inProgressAlbums,
   };
 
   final tabLabel = switch (albumTabIndex) {
     1 => '완료',
     2 => '즐겨찾기',
+    3 => '공유',
     _ => '진행중',
   };
 
@@ -103,6 +111,7 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
     inProgressAlbums: inProgressAlbums,
     completedAlbums: completedAlbums,
     favoriteAlbums: favoriteAlbums,
+    sharedAlbums: sharedAlbums,
     tabAlbums: tabAlbums,
     tabLabel: tabLabel,
   );
@@ -113,8 +122,6 @@ int compareAlbumByLatestDesc(Album a, Album b) {
 }
 
 DateTime latestAlbumTimeOf(Album album) {
-  final updated = DateTime.tryParse(album.updatedAt);
-  if (updated != null) return updated;
   return DateTime.tryParse(album.createdAt) ??
       DateTime.fromMillisecondsSinceEpoch(0);
 }

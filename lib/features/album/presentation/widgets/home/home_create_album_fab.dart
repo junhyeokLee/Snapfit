@@ -17,26 +17,34 @@ class HomeCreateAlbumFab extends StatelessWidget {
       _logged = true;
       ScreenLogger.widget('HomeCreateAlbumFab', '앨범 만들기 FAB');
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        FloatingActionButton(
-          heroTag: 'create_album_fab',
-          onPressed: onPressed,
-          backgroundColor: SnapFitColors.accent,
-          elevation: 6,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-        SizedBox(height: 6.h),
-        Text(
-          '앨범 만들기',
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: SnapFitColors.accentLight,
-            fontWeight: FontWeight.w600,
+    return SizedBox(
+      width: 58.w,
+      height: 58.w,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: SnapFitColors.accent,
+          border: Border.all(
+            color: SnapFitColors.pureWhite.withOpacity(0.28),
+            width: 1,
           ),
         ),
-      ],
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onPressed,
+            child: Center(
+              child: Icon(
+                Icons.add_rounded,
+                color: SnapFitColors.pureWhite,
+                size: 30.sp,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

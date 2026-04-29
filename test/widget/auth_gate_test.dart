@@ -57,7 +57,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(LoginScreen), findsOneWidget);
-    expect(find.text('카카오로 시작'), findsOneWidget);
+    expect(find.text('카카오로 계속하기'), findsOneWidget);
   });
 
   testWidgets('AuthGate shows HomeScreen when user exists', (tester) async {

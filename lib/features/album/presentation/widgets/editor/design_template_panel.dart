@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/design_templates.dart';
+import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../providers/design_template_catalog_provider.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
+import '../cover/cover.dart';
 import '../../../domain/entities/layer.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
@@ -445,7 +447,6 @@ class _DesignTemplatePreview extends StatelessWidget {
       to: logicalCanvasSize,
     );
     final previewReady = injectTemplatePreviewImages(template, layers);
-    final ordered = previewInteraction.sortByZ(previewReady);
 
     return FittedBox(
       fit: BoxFit.contain,
@@ -453,16 +454,17 @@ class _DesignTemplatePreview extends StatelessWidget {
       child: SizedBox(
         width: logicalCanvasSize.width,
         height: logicalCanvasSize.height,
-        child: ClipRect(
-          child: Stack(
-            clipBehavior: Clip.hardEdge,
-            children: [
-              for (final layer in ordered)
-                layer.type == LayerType.text
-                    ? layerBuilder.buildText(layer)
-                    : layerBuilder.buildImage(layer),
-            ],
-          ),
+        child: CoverLayout(
+          aspect: logicalCanvasSize.width / logicalCanvasSize.height,
+          layers: previewReady,
+          isInteracting: false,
+          leftSpine: 0,
+          backgroundColor: template.backgroundColor,
+          onCoverSizeChanged: (_) {},
+          buildImage: (layer) => layerBuilder.buildImage(layer, isCover: true),
+          buildText: (layer) => layerBuilder.buildText(layer, isCover: true),
+          sortedByZ: previewInteraction.sortByZ,
+          theme: CoverTheme.classic,
         ),
       ),
     );

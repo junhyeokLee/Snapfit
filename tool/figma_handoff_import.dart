@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 void main(List<String> args) {
-  final inputPath = _arg(args, '--input') ?? 'assets/templates/figma_handoff_example.json';
-  final outputPath = _arg(args, '--output') ?? 'assets/templates/generated/latest.json';
+  final inputPath =
+      _arg(args, '--input') ?? 'assets/templates/figma_handoff_example.json';
+  final outputPath =
+      _arg(args, '--output') ?? 'assets/templates/generated/latest.json';
 
   final inFile = File(inputPath);
   if (!inFile.existsSync()) {
@@ -22,7 +24,9 @@ void main(List<String> args) {
 
   final outFile = File(outputPath);
   outFile.parent.createSync(recursive: true);
-  outFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(templates));
+  outFile.writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert(templates),
+  );
 
   stdout.writeln('Imported ${templates.length} template(s) from Figma handoff');
   stdout.writeln('Output: $outputPath');
@@ -54,10 +58,13 @@ Map<String, dynamic> _convert(Map<String, dynamic> src) {
   final designHeight = _n(src['designHeight'], designSize.$2);
 
   return {
-    'id': (src['id'] ?? 'figma_import_${DateTime.now().millisecondsSinceEpoch}').toString(),
+    'id': (src['id'] ?? 'figma_import_${DateTime.now().millisecondsSinceEpoch}')
+        .toString(),
     'name': (src['name'] ?? '피그마 템플릿').toString(),
     'category': (src['category'] ?? '감성').toString(),
-    'tags': (src['tags'] as List<dynamic>? ?? const ['피그마']).map((e) => e.toString()).toList(),
+    'tags': (src['tags'] as List<dynamic>? ?? const ['피그마'])
+        .map((e) => e.toString())
+        .toList(),
     'style': (src['style'] ?? 'editorial').toString(),
     'aspect': aspect,
     'designWidth': designWidth,
@@ -69,7 +76,9 @@ Map<String, dynamic> _convert(Map<String, dynamic> src) {
     'isFeatured': src['isFeatured'] == true,
     'priority': (src['priority'] is num) ? (src['priority'] as num).toInt() : 0,
     'previewThumbUrl': previewImages.isNotEmpty ? previewImages.first : '',
-    'previewDetailUrl': previewImages.length > 1 ? previewImages[1] : (previewImages.isNotEmpty ? previewImages.first : ''),
+    'previewDetailUrl': previewImages.length > 1
+        ? previewImages[1]
+        : (previewImages.isNotEmpty ? previewImages.first : ''),
     'previewImageUrls': previewImages,
     // Figma handoff는 원본 위치/크기 유지가 핵심이라 자동 보정 비활성화
     'strictLayout': true,
@@ -127,19 +136,20 @@ Map<String, dynamic> _convertLayer(Map<String, dynamic> src) {
     base['text'] = (src['text'] ?? '').toString();
     base['align'] = (src['align'] ?? 'center').toString();
     final textFillMode = (src['textFillMode'] ?? '').toString().trim();
-    final textFillImageUrl = (src['textFillImageUrl'] ?? '')
-        .toString()
-        .trim();
+    final textFillImageUrl = (src['textFillImageUrl'] ?? '').toString().trim();
     if (textFillMode.isNotEmpty) base['textFillMode'] = textFillMode;
     if (textFillImageUrl.isNotEmpty) {
       base['textFillImageUrl'] = textFillImageUrl;
     }
-    base['style'] = Map<String, dynamic>.from(src['textStyle'] as Map? ?? const {
-      'fontSize': 14.0,
-      'fontFamily': 'NotoSans',
-      'fontWeight': 'w600',
-      'color': '#1F2937',
-    });
+    base['style'] = Map<String, dynamic>.from(
+      src['textStyle'] as Map? ??
+          const {
+            'fontSize': 14.0,
+            'fontFamily': 'NotoSans',
+            'fontWeight': 'w600',
+            'color': '#1F2937',
+          },
+    );
   } else {
     base['style'] = (src['style'] ?? 'paperWhite').toString();
   }

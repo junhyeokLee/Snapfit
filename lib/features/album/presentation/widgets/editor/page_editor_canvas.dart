@@ -51,10 +51,6 @@ class PageEditorCanvas extends StatelessWidget {
         ? Size(coverLogicalW, coverLogicalH)
         : Size(innerLogicalW, innerLogicalH);
 
-    final double scale = isCover
-        ? (canvasW / coverLogicalW)
-        : (canvasW / innerLogicalW);
-
     // 커버·내지 공통 스타일 (책 형태 동일하게)
     // 오른쪽 모서리만 둥글게 (왼쪽은 spine/제본 부분이므로 직각)
     const sharedRadius = BorderRadius.only(
@@ -191,8 +187,10 @@ class PageEditorCanvas extends StatelessWidget {
                             height: effectiveBaseSize.height,
                             child: CustomPaint(
                               painter: _SnapGuidePainter(
-                                verticalGuides: interaction.activeVerticalGuides,
-                                horizontalGuides: interaction.activeHorizontalGuides,
+                                verticalGuides:
+                                    interaction.activeVerticalGuides,
+                                horizontalGuides:
+                                    interaction.activeHorizontalGuides,
                                 leftSpine: isCover ? 14.0 : 0.0,
                               ),
                             ),
@@ -263,7 +261,8 @@ class _SnapGuidePainter extends CustomPainter {
   bool shouldRepaint(covariant _SnapGuidePainter oldDelegate) {
     if (oldDelegate.leftSpine != leftSpine) return true;
     if (oldDelegate.verticalGuides.length != verticalGuides.length) return true;
-    if (oldDelegate.horizontalGuides.length != horizontalGuides.length) return true;
+    if (oldDelegate.horizontalGuides.length != horizontalGuides.length)
+      return true;
     for (int i = 0; i < verticalGuides.length; i++) {
       if (oldDelegate.verticalGuides[i] != verticalGuides[i]) return true;
     }

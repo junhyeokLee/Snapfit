@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../domain/entities/album.dart';
 import '../../data/api/album_provider.dart';
@@ -194,7 +195,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   String _relativeTime(Album album) {
-    final raw = album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt;
+    final raw = album.createdAt;
     final dt = DateTime.tryParse(raw);
     if (dt == null) return '';
     final now = DateTime.now();
@@ -214,9 +215,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   }
 
   DateTime _dateOf(Album album) {
-    return DateTime.tryParse(
-          album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt,
-        ) ??
+    return DateTime.tryParse(album.createdAt) ??
         DateTime.fromMillisecondsSinceEpoch(0);
   }
 
@@ -259,7 +258,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         elevation: 0,
         centerTitle: widget.category != AlbumCategory.shared,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: textPrimary, size: 20.w),
+          icon: Icon(platformBackIcon(), color: textPrimary, size: 20.w),
           onPressed: () => Navigator.pop(context),
         ),
         title: _isSearching
@@ -341,9 +340,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
               onRefresh: _handlePullToRefresh,
               child: all.isEmpty
                   ? ListView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
+                      physics: platformScrollPhysics(alwaysScrollable: true),
                       children: [
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.42,
@@ -828,11 +825,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              formatAlbumDate(
-                                album.updatedAt.isNotEmpty
-                                    ? album.updatedAt
-                                    : album.createdAt,
-                              ),
+                              formatAlbumDate(album.createdAt),
                               style: TextStyle(
                                 fontSize: 11.sp,
                                 color: textSecondary,
@@ -960,7 +953,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                   ),
                   SizedBox(height: 6.h),
                   Text(
-                    '${formatAlbumDate(album.updatedAt.isNotEmpty ? album.updatedAt : album.createdAt)}  ·  $statusText',
+                    '${formatAlbumDate(album.createdAt)}  ·  $statusText',
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: textSecondary,

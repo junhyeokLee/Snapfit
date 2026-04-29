@@ -4,11 +4,9 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
 import '../../views/add_cover_screen.dart';
-import '../../views/page_editor_screen.dart';
 import '../../views/album_reader_screen.dart';
 import 'home_delete_album_dialog.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../core/utils/screen_logger.dart';
 import '../../../data/api/album_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -32,7 +30,6 @@ class HomeAlbumActions {
       await ref.read(coverViewModelProvider.future);
       // 최종 확인: editorState와 coverState가 동기화되었는지 확인하고 수동으로 동기화
       final editorState = ref.read(albumEditorViewModelProvider).asData?.value;
-      final coverState = ref.read(coverViewModelProvider).asData?.value;
       if (editorState != null) {
         // 확실하게 동기화 (항상 실행하여 상태가 반영되도록 보장)
         ref
@@ -158,7 +155,12 @@ class HomeAlbumActions {
     // 3. 진입 (리더 화면으로 이동)
     final result = await Navigator.push<Object?>(
       context,
-      MaterialPageRoute(builder: (_) => const AlbumReaderScreen()),
+      PageRouteBuilder<Object?>(
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => const AlbumReaderScreen(),
+        transitionsBuilder: (_, __, ___, child) => child,
+      ),
     );
 
     var needsRefresh = false;

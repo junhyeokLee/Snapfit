@@ -407,9 +407,7 @@ Widget _buildPaperTextureDecoration(LayerModel layer) {
     child: Stack(
       children: [
         Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(color: color),
-          ),
+          child: Container(decoration: BoxDecoration(color: color)),
         ),
         if (texturedPaper)
           Positioned.fill(

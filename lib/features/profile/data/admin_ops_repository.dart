@@ -243,7 +243,9 @@ class AdminTemplatePage {
     final list =
         (json['items'] as List?)
             ?.whereType<Map>()
-            .map((e) => AdminTemplateSummary.fromJson(e.cast<String, dynamic>()))
+            .map(
+              (e) => AdminTemplateSummary.fromJson(e.cast<String, dynamic>()),
+            )
             .toList() ??
         const <AdminTemplateSummary>[];
     return AdminTemplatePage(

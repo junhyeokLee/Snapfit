@@ -125,7 +125,7 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                         ),
                         SizedBox(height: 12.h),
                         Text(
-                          '이제 이 앨범은 누구도 수정할 수 없는\n소중한 기록이 되었습니다.',
+                          '이제 주문 화면으로 이동할 수 있습니다.\n앨범 수정은 이후에도 계속 가능합니다.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14.sp,

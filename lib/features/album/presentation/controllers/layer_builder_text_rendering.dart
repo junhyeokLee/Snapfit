@@ -12,7 +12,8 @@ Widget _buildTextImpl(
   final TextStyle effectiveStyle = baseStyle;
 
   final coverSize = builder.getCoverSize();
-  final hasLayerFrame = layer.width.isFinite &&
+  final hasLayerFrame =
+      layer.width.isFinite &&
       layer.height.isFinite &&
       layer.width > 1 &&
       layer.height > 1;
@@ -515,7 +516,9 @@ String _resolveTextFillUrl(LayerBuilder builder, LayerModel layer) {
   if (!raw.startsWith('@')) return raw;
 
   final key = raw.substring(1).toLowerCase();
-  final vmState = builder.interaction.ref.read(albumEditorViewModelProvider).value;
+  final vmState = builder.interaction.ref
+      .read(albumEditorViewModelProvider)
+      .value;
   final layers = vmState?.layers ?? const <LayerModel>[];
 
   LayerModel? linked;
@@ -532,7 +535,8 @@ String _resolveTextFillUrl(LayerBuilder builder, LayerModel layer) {
     orElse: () => layer,
   );
   if (linked.id == layer.id) return '';
-  return (linked.previewUrl ?? linked.imageUrl ?? linked.originalUrl ?? '').trim();
+  return (linked.previewUrl ?? linked.imageUrl ?? linked.originalUrl ?? '')
+      .trim();
 }
 
 class _ImageClipText extends StatefulWidget {

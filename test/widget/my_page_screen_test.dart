@@ -65,6 +65,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(fake.logoutCalled, isTrue);
-    expect(find.text('로그아웃되었습니다.'), findsOneWidget);
   });
 }

@@ -1,6 +1,4 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 
 enum ResizeHandlePosition { topLeft, topRight, bottomLeft, bottomRight }
@@ -102,28 +100,6 @@ class SelectionFrame extends StatelessWidget {
             border: Border.all(color: SnapFitColors.accent, width: 2),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHandle({
-    required IconData icon,
-    Function(DragUpdateDetails)? onPanUpdate,
-  }) {
-    return GestureDetector(
-      onPanUpdate: onPanUpdate,
-      child: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: SnapFitColors.accent, width: 1.5),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4),
-          ],
-        ),
-        child: Icon(icon, size: 14, color: SnapFitColors.accent),
       ),
     );
   }

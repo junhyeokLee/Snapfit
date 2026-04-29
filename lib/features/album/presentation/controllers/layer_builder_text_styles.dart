@@ -789,13 +789,6 @@ Color _noteStyleBackgroundColor(String? key) {
   }
 }
 
-String? _normalizeTornTapeKey(String? key) {
-  if (key == null) return null;
-  return key
-      .replaceFirst('tapeTornRough', 'tapeTorn')
-      .replaceFirst('tapeTornSoft', 'tapeTorn');
-}
-
 /// 메모지 – 찢어짐 없음, 스티커노트 느낌, 여러 색상 (테두리 없음)
 Widget _buildNoteStyle(
   LayerModel layer,
@@ -907,15 +900,6 @@ Widget _buildTapeTornStyle(
       ),
     ),
   );
-}
-
-/// 찢어진 단색 테이프 – 동일 빌더(단색 + 오른쪽 톱니)
-Widget _buildTapeTornSolidStyle(
-  LayerModel layer,
-  TextPainter painter,
-  TextStyle effectiveStyle,
-) {
-  return _buildTapeTornStyle(layer, painter, effectiveStyle);
 }
 
 Widget _buildCalligraphyStyle(
@@ -1465,7 +1449,6 @@ Widget _buildTapeStyle(
   ];
   if (dotsKeys.contains(bg)) {
     final colors = _tapeDotsColors(bg);
-    const dotSpacing = 8.0;
     const padH = 16.0;
     const padV = 8.0;
     return IntrinsicWidth(

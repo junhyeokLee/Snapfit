@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// 페이지 템플릿 내 하나의 슬롯(이미지/텍스트) 정의
 /// 좌표는 캔버스 대비 비율(0.0~1.0)로 정의. 슬롯 간 여백을 두려면 left/top/width/height에 여백 반영.
 class PageTemplateSlot {
@@ -33,12 +35,14 @@ class PageTemplate {
   final String name;
   final String? thumbnailAsset;
   final List<PageTemplateSlot> slots;
+  final Color backgroundColor;
 
   const PageTemplate({
     required this.id,
     required this.name,
     this.thumbnailAsset,
     required this.slots,
+    this.backgroundColor = Colors.white,
   });
 }
 
@@ -346,6 +350,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'basic',
     name: 'Current',
+    backgroundColor: const Color(0xFFFFFBF5),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -377,6 +382,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'collage',
     name: 'Collage',
+    backgroundColor: const Color(0xFFF8F5EF),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -416,6 +422,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'focus',
     name: 'Focus',
+    backgroundColor: const Color(0xFFFFF8F0),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -452,19 +459,31 @@ List<PageTemplate> get pageTemplates => [
     ],
   ),
   // 4. The Journey – 상단 1칸 가로 넓게, 하단 5칸 동일
-  PageTemplate(id: 'journey', name: 'The Journey', slots: _journeySlots),
+  PageTemplate(
+    id: 'journey',
+    name: 'The Journey',
+    backgroundColor: const Color(0xFFF7FBFF),
+    slots: _journeySlots,
+  ),
   // 5. Grid Mosaic – 3x3 (9칸)
-  PageTemplate(id: 'grid_mosaic', name: 'Grid Mosaic', slots: _gridMosaicSlots),
+  PageTemplate(
+    id: 'grid_mosaic',
+    name: 'Grid Mosaic',
+    backgroundColor: const Color(0xFFFAF8FF),
+    slots: _gridMosaicSlots,
+  ),
   // 6. Cinematic Spread – 상단 1칸 넓게, 하단 2칸
   PageTemplate(
     id: 'cinematic',
     name: 'Cinematic Spread',
+    backgroundColor: const Color(0xFFF4F5F7),
     slots: _cinematicSlots,
   ),
   // 7. Full Single – 사진 1장이 화면을 거의 꽉 채우는 레이아웃
   PageTemplate(
     id: 'full_single',
     name: 'Full · 1장',
+    backgroundColor: const Color(0xFFFFFFFF),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -480,6 +499,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'full_duo_vertical',
     name: 'Full · 2장 세로',
+    backgroundColor: const Color(0xFFF7FBF7),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -503,6 +523,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'full_duo_horizontal',
     name: 'Full · 2장 가로',
+    backgroundColor: const Color(0xFFFFFAF4),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -526,6 +547,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'full_triple_strip',
     name: 'Full · 3칸 스트립',
+    backgroundColor: const Color(0xFFF7FBFF),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -557,6 +579,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'full_triple_columns',
     name: 'Full · 3칸 컬럼',
+    backgroundColor: const Color(0xFFFAF7FF),
     slots: [
       PageTemplateSlot(
         type: 'image',
@@ -588,6 +611,7 @@ List<PageTemplate> get pageTemplates => [
   PageTemplate(
     id: 'full_four_grid',
     name: 'Full · 4칸',
+    backgroundColor: const Color(0xFFF8F8F8),
     slots: [
       PageTemplateSlot(
         type: 'image',

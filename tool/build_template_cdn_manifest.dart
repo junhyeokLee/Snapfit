@@ -8,9 +8,7 @@ void main(List<String> args) {
   final prefix = _arg(args, '--prefix') ?? 'templates';
   final inputDir =
       _arg(args, '--input-dir') ??
-      (templateSlug == null
-          ? null
-          : 'assets/templates/$templateSlug/images');
+      (templateSlug == null ? null : 'assets/templates/$templateSlug/images');
   final output =
       _arg(args, '--output') ??
       (templateSlug == null
@@ -36,28 +34,31 @@ void main(List<String> args) {
     exit(2);
   }
 
-  final files = dir
-      .listSync()
-      .whereType<File>()
-      .where((f) => _isImageFile(f.path))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
+  final files =
+      dir
+          .listSync()
+          .whereType<File>()
+          .where((f) => _isImageFile(f.path))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
 
   final normalizedBase = cdnBaseUrl.replaceAll(RegExp(r'/+$'), '');
   final normalizedPrefix = prefix.replaceAll(RegExp(r'^/+|/+$'), '');
   final normalizedVersion = version.startsWith('v') ? version : 'v$version';
 
-  final mappings = files.map((file) {
-    final name = file.uri.pathSegments.last;
-    final relativePath = 'assets/templates/$templateSlug/images/$name';
-    return <String, dynamic>{
-      'fileName': name,
-      'filePath': relativePath,
-      'assetPath': 'asset:$relativePath',
-      'cdnUrl':
-          '$normalizedBase/$normalizedPrefix/$templateSlug/$normalizedVersion/$name',
-    };
-  }).toList(growable: false);
+  final mappings = files
+      .map((file) {
+        final name = file.uri.pathSegments.last;
+        final relativePath = 'assets/templates/$templateSlug/images/$name';
+        return <String, dynamic>{
+          'fileName': name,
+          'filePath': relativePath,
+          'assetPath': 'asset:$relativePath',
+          'cdnUrl':
+              '$normalizedBase/$normalizedPrefix/$templateSlug/$normalizedVersion/$name',
+        };
+      })
+      .toList(growable: false);
 
   final payload = <String, dynamic>{
     'templateSlug': templateSlug,
@@ -70,7 +71,9 @@ void main(List<String> args) {
 
   final outFile = File(output);
   outFile.parent.createSync(recursive: true);
-  outFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(payload));
+  outFile.writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert(payload),
+  );
 
   stdout.writeln('build_template_cdn_manifest');
   stdout.writeln('templateSlug=$templateSlug');

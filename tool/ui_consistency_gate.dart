@@ -70,4 +70,3 @@ void main() {
   }
   stdout.writeln('\nPASS: UI consistency gate succeeded.');
 }
-

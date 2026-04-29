@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 Future<void> main(List<String> args) async {
   final templateSlug = _arg(args, '--template-slug');
@@ -15,9 +14,7 @@ Future<void> main(List<String> args) async {
       'assets/templates/workspace/template_cdn_config.json';
   final imageDir =
       _arg(args, '--image-dir') ??
-      (templateSlug == null
-          ? null
-          : 'assets/templates/$templateSlug/images');
+      (templateSlug == null ? null : 'assets/templates/$templateSlug/images');
   final manifestPath =
       _arg(args, '--manifest') ??
       (templateSlug == null
@@ -52,11 +49,14 @@ Future<void> main(List<String> args) async {
 
   final checklist =
       jsonDecode(checklistFile.readAsStringSync()) as Map<String, dynamic>;
-  final config = jsonDecode(configFile.readAsStringSync()) as Map<String, dynamic>;
+  final config =
+      jsonDecode(configFile.readAsStringSync()) as Map<String, dynamic>;
 
   final bucket = (config['storageBucket'] ?? '').toString().trim();
   final publicBaseUrl = (config['publicBaseUrl'] ?? '').toString().trim();
-  final version = (checklist['firebaseStorageVersion'] ?? 'v1').toString().trim();
+  final version = (checklist['firebaseStorageVersion'] ?? 'v1')
+      .toString()
+      .trim();
   if (bucket.isEmpty || publicBaseUrl.isEmpty) {
     stderr.writeln('storageBucket/publicBaseUrl missing in $configPath');
     exit(2);
@@ -81,7 +81,8 @@ Future<void> main(List<String> args) async {
     exit(2);
   }
   final imageFilesByName = <String, File>{
-    for (final entity in imageDirectory.listSync(recursive: true).whereType<File>())
+    for (final entity
+        in imageDirectory.listSync(recursive: true).whereType<File>())
       entity.uri.pathSegments.last: entity,
   };
 
@@ -150,7 +151,9 @@ Future<void> main(List<String> args) async {
 
   final manifestFile = File(manifestPath);
   manifestFile.parent.createSync(recursive: true);
-  manifestFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(out));
+  manifestFile.writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert(out),
+  );
 
   stdout.writeln('upload_template_assets_to_firebase');
   stdout.writeln('templateSlug=$templateSlug');
@@ -167,7 +170,9 @@ List<Map<String, dynamic>> _resolveRequiredExports({
   required String? storeJsonPath,
 }) {
   final assetPaths = _discoverAssetPaths(templateSlug, storeJsonPath);
-  final version = (checklist['firebaseStorageVersion'] ?? 'v1').toString().trim();
+  final version = (checklist['firebaseStorageVersion'] ?? 'v1')
+      .toString()
+      .trim();
 
   if (assetPaths.isNotEmpty) {
     return assetPaths
@@ -262,11 +267,10 @@ Future<String> _resolveFirebaseAccessToken() async {
   }
 
   final decoded = jsonDecode(result.stdout as String) as Map<String, dynamic>;
-  final rows =
-      (decoded['result'] as List<dynamic>? ?? const <dynamic>[])
-          .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
-          .toList(growable: false);
+  final rows = (decoded['result'] as List<dynamic>? ?? const <dynamic>[])
+      .whereType<Map>()
+      .map((e) => Map<String, dynamic>.from(e))
+      .toList(growable: false);
 
   for (final row in rows) {
     final tokens = row['tokens'];
@@ -275,7 +279,9 @@ Future<String> _resolveFirebaseAccessToken() async {
     if (token.isNotEmpty) return token;
   }
 
-  throw StateError('No firebase access token found. Run `firebase login` first.');
+  throw StateError(
+    'No firebase access token found. Run `firebase login` first.',
+  );
 }
 
 Future<String> _uploadFile({
@@ -285,14 +291,13 @@ Future<String> _uploadFile({
   required File file,
   required String authToken,
 }) async {
-  final uri = Uri.parse(
-    'https://firebasestorage.googleapis.com/v0/b/$bucket/o',
-  ).replace(
-    queryParameters: <String, String>{
-      'uploadType': 'media',
-      'name': storagePath,
-    },
-  );
+  final uri = Uri.parse('https://firebasestorage.googleapis.com/v0/b/$bucket/o')
+      .replace(
+        queryParameters: <String, String>{
+          'uploadType': 'media',
+          'name': storagePath,
+        },
+      );
   final request = await client.postUrl(uri);
   request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $authToken');
   final bytes = await file.readAsBytes();
@@ -311,7 +316,9 @@ Future<String> _uploadFile({
   final decoded = jsonDecode(responseBody) as Map<String, dynamic>;
   final token = (decoded['downloadTokens'] ?? '').toString().trim();
   if (token.isEmpty) {
-    throw StateError('Firebase upload succeeded but no download token was returned for $storagePath');
+    throw StateError(
+      'Firebase upload succeeded but no download token was returned for $storagePath',
+    );
   }
   return token;
 }
@@ -328,7 +335,10 @@ String _uuidLike() {
   final random = Random.secure();
   String hex(int length) {
     const chars = '0123456789abcdef';
-    return List.generate(length, (_) => chars[random.nextInt(chars.length)]).join();
+    return List.generate(
+      length,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
   }
 
   return '${hex(8)}-${hex(4)}-${hex(4)}-${hex(4)}-${hex(12)}';

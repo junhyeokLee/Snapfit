@@ -79,11 +79,9 @@ AlbumProgressInfo calculateAlbumProgress(Album album) {
       ? math.max(0, album.totalPages - 1)
       : math.max(0, album.totalPages);
 
-  // coverLayersJson 기반 실완성도(의미있는 레이어 존재)를 우선 사용하고,
-  // 파싱 불가/구형 데이터일 때만 서버 값을 사용한다.
-  final int completed = fallbackCompleted > 0
-      ? fallbackCompleted
-      : normalizedServerCompleted;
+  // 서버 totalPages와 coverLayersJson 기반 실완성도 중 더 큰 값을 사용한다.
+  // 서버/클라이언트 계산 시점이 어긋나더라도 진행률이 뒤로 물러나지 않게 한다.
+  final int completed = math.max(fallbackCompleted, normalizedServerCompleted);
 
   final int clampedCompleted = target > 0
       ? completed.clamp(0, target)

@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../core/network/dio_provider.dart';
-import '../../../../core/interceptors/token_storage.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
@@ -18,22 +17,6 @@ String _safeTemplateText(String? raw, {String fallback = ''}) {
 
 String _toneKey(String value) =>
     value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
-
-bool _hasLocalOnlyImagePath(String value) {
-  final trimmed = value.trim().toLowerCase();
-  return trimmed.startsWith('asset:') ||
-      trimmed.contains('figma.com/api/mcp/asset/');
-}
-
-bool _shouldPreferLocalTemplateJsonForSaveTheDate(
-  PremiumTemplate local,
-  PremiumTemplate server,
-) {
-  // SAVE_THE_DATE는 이제 서버가 단일 소스 오브 트루스다.
-  // 로컬 번들 템플릿이 오래된 상태로 남아 상세/스토어/생성 화면을 덮지 않도록
-  // 더 이상 로컬 templateJson을 우선하지 않는다.
-  return false;
-}
 
 String _coverModeForTemplate(PremiumTemplate template) {
   final title = _toneKey(template.title);
@@ -454,6 +437,7 @@ int _extractPageCountFromJson(String? templateJson) {
 }
 
 PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
+  final canonicalTitle = _canonicalStoreTemplateTitle(template);
   final jsonPageCount = _extractPageCountFromJson(template.templateJson);
   final coverFromJson = _extractCoverCandidateFromJson(template.templateJson);
   final normalizedPreview = template.previewImages
@@ -515,18 +499,47 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
           pageCount: normalizedPageCount,
         );
 
-  return template.copyWith(
+  final normalized = template.copyWith(
+    title: canonicalTitle,
     coverImageUrl: coverCandidate,
     previewImages: orderedPreview,
     pageCount: normalizedPageCount,
     // 서버/피그마 원본 JSON이 있으면 절대 재생성하지 않고 그대로 사용한다.
     templateJson: normalizedTemplateJson,
   );
+  return _applyExactFigmaCoverPresentation(normalized);
+}
+
+PremiumTemplate _applyExactFigmaCoverPresentation(PremiumTemplate template) {
+  final rawJson = (template.templateJson ?? '').toLowerCase();
+  final title = _canonicalStoreTemplateTitle(template);
+
+  if (title == 'SAVE THE DATE' ||
+      title == 'JEJU TRAVEL' ||
+      title == 'FAMILY WEEKEND' ||
+      title == 'ANNIVERSARY DAYS' ||
+      title == 'Wedding Editorial' ||
+      title == 'Scrapbook' ||
+      rawJson.contains('save_the_date_v1') ||
+      rawJson.contains('jeju_travel_v1') ||
+      rawJson.contains('family_weekend_v1') ||
+      rawJson.contains('anniversary_days_v1') ||
+      rawJson.contains('wedding_editorial_v1') ||
+      rawJson.contains('scrapbook_v1')) {
+    return template.copyWith(coverImageUrl: '', previewImages: const []);
+  }
+  return template;
 }
 
 String _normalizeTemplateTitleKey(String value) {
   final base = value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
   const aliases = <String, String>{
+    '제주의기록': 'jejutravel',
+    '가족의주말': 'familyweekend',
+    '우리의기념일': 'anniversarydays',
+    'savethedate': 'savethedate',
+    'scrapbook': 'scrapbook',
+    'weddingeditorial': 'weddingeditorial',
     '웨딩무드북': '시그니처웨딩',
     '썸머무드북': '썸머커버에디션',
     '스카이무드북': '스카이인비테이션',
@@ -542,6 +555,35 @@ String _normalizeTemplateTitleKey(String value) {
     '링트립무드북': '링트립스토리',
   };
   return aliases[base] ?? base;
+}
+
+String _canonicalStoreTemplateTitle(PremiumTemplate template) {
+  final rawTitle = template.title.trim();
+  final titleKey = _normalizeTemplateTitleKey(rawTitle);
+  final rawJson = (template.templateJson ?? '').toLowerCase();
+
+  if (titleKey == 'savethedate' || rawJson.contains('save_the_date_v1')) {
+    return 'SAVE THE DATE';
+  }
+  if (titleKey == 'jejutravel' || rawJson.contains('jeju_travel_v1')) {
+    return 'JEJU TRAVEL';
+  }
+  if (titleKey == 'familyweekend' || rawJson.contains('family_weekend_v1')) {
+    return 'FAMILY WEEKEND';
+  }
+  if (titleKey == 'anniversarydays' ||
+      rawJson.contains('anniversary_days_v1')) {
+    return 'ANNIVERSARY DAYS';
+  }
+  if (titleKey == 'weddingeditorial' ||
+      rawJson.contains('wedding_editorial_v1')) {
+    return 'Wedding Editorial';
+  }
+  if (titleKey == 'scrapbook' || rawJson.contains('scrapbook_v1')) {
+    return 'Scrapbook';
+  }
+
+  return rawTitle;
 }
 
 PremiumTemplate _mergeServerWithLocalTemplate(
@@ -561,31 +603,475 @@ PremiumTemplate _mergeServerWithLocalTemplate(
     subTitle: localSub.isNotEmpty ? local.subTitle : server.subTitle,
     description: localDesc.isNotEmpty ? local.description : server.description,
     coverImageUrl: localCover.isNotEmpty ? localCover : server.coverImageUrl,
-    previewImages: localPreview.isNotEmpty ? localPreview : server.previewImages,
+    previewImages: localPreview.isNotEmpty
+        ? localPreview
+        : server.previewImages,
     pageCount: local.pageCount > 0 ? local.pageCount : server.pageCount,
     category: (local.category ?? '').trim().isNotEmpty
         ? local.category
         : server.category,
-    tags: (local.tags != null && local.tags!.isNotEmpty) ? local.tags : server.tags,
-    templateJson: localJson.isNotEmpty ? local.templateJson : server.templateJson,
+    tags: (local.tags != null && local.tags!.isNotEmpty)
+        ? local.tags
+        : server.tags,
+    templateJson: localJson.isNotEmpty
+        ? local.templateJson
+        : server.templateJson,
   );
 }
 
+PremiumTemplate _premiumTemplateFromLooseJson(Map<String, dynamic> json) {
+  List<String> stringList(Object? raw) {
+    if (raw is List) {
+      return raw
+          .map((e) => e?.toString().trim() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList(growable: false);
+    }
+    return const <String>[];
+  }
+
+  return PremiumTemplate(
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    title: (json['title'] ?? '').toString(),
+    subTitle: json['subTitle']?.toString(),
+    description: json['description']?.toString(),
+    coverImageUrl: (json['coverImageUrl'] ?? '').toString(),
+    previewImages: stringList(json['previewImages']),
+    pageCount: (json['pageCount'] as num?)?.toInt() ?? 0,
+    likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+    userCount: (json['userCount'] as num?)?.toInt() ?? 0,
+    category: json['category']?.toString(),
+    tags: stringList(json['tags']),
+    weeklyScore: (json['weeklyScore'] as num?)?.toInt() ?? 0,
+    isNew: json['isNew'] == true,
+    isBest: json['isBest'] == true,
+    isPremium: json['isPremium'] != false,
+    isLiked: json['isLiked'] == true,
+    templateJson: json['templateJson']?.toString(),
+    createdAt: json['createdAt']?.toString(),
+  );
+}
+
+String _extractFirstPreviewFromFigmaNode(Map<String, dynamic> node) {
+  final previews = node['previewImages'];
+  if (previews is List) {
+    for (final item in previews) {
+      final value = item?.toString().trim() ?? '';
+      if (value.isNotEmpty) return value;
+    }
+  }
+
+  final layers = node['layers'];
+  if (layers is List) {
+    for (final rawLayer in layers) {
+      if (rawLayer is! Map) continue;
+      final layer = Map<String, dynamic>.from(rawLayer);
+      if ((layer['type'] ?? '').toString().toUpperCase() != 'IMAGE') continue;
+      final payload = layer['payload'];
+      if (payload is! Map) continue;
+      final url =
+          (payload['previewUrl'] ??
+                  payload['imageUrl'] ??
+                  payload['originalUrl'])
+              ?.toString()
+              .trim() ??
+          '';
+      if (url.isNotEmpty) return url;
+    }
+  }
+
+  return '';
+}
+
+Future<List<PremiumTemplate>> _loadFigmaMcpStoreTemplates() async {
+  final templates = <PremiumTemplate>[];
+
+  try {
+    final raw = await rootBundle.loadString(
+      'assets/templates/figma_handoff_example.json',
+    );
+    final decoded = jsonDecode(raw);
+    if (decoded is List && decoded.isNotEmpty && decoded.first is Map) {
+      final item = Map<String, dynamic>.from(decoded.first as Map);
+      final preview = _extractFirstPreviewFromFigmaNode(item);
+      final previewImages = <String>[
+        ...((item['previewImages'] as List?) ?? const <dynamic>[])
+            .map((e) => e?.toString().trim() ?? '')
+            .where((e) => e.isNotEmpty),
+      ];
+      if (preview.isNotEmpty && !previewImages.contains(preview)) {
+        previewImages.insert(0, preview);
+      }
+      final figmaJson = <String, dynamic>{
+        'designWidth': 1080.0,
+        'designHeight': 1440.0,
+        'metadata': {
+          'category': item['category'],
+          'style': item['style'],
+          'templateType': 'wedding',
+        },
+        'pages': item['pages'] ?? const [],
+        'variants': item['variants'] ?? const {},
+      };
+      templates.add(
+        PremiumTemplate(
+          id: -9001,
+          title: 'SAVE THE DATE',
+          subTitle: '웨딩 · figma editorial',
+          description: 'Figma MCP 기반 SAVE THE DATE 템플릿',
+          coverImageUrl: preview,
+          previewImages: previewImages,
+          pageCount: ((item['pages'] as List?) ?? const []).length,
+          userCount: 0,
+          category: '웨딩',
+          tags: const ['웨딩', 'figma', '세이브더데이트'],
+          isPremium: true,
+          templateJson: jsonEncode(figmaJson),
+        ),
+      );
+    }
+  } catch (_) {
+    // Fallback continues with other figma-generated assets.
+  }
+
+  try {
+    final raw = await rootBundle.loadString(
+      'assets/templates/generated/auto_template_samples.json',
+    );
+    final decoded = jsonDecode(raw);
+    final items = decoded is Map ? decoded['templates'] : null;
+    if (items is List) {
+      const titleMap = <int, String>{
+        0: 'JEJU TRAVEL',
+        1: 'ANNIVERSARY DAYS',
+        2: 'FAMILY WEEKEND',
+        3: 'Scrapbook',
+        4: 'Wedding Editorial',
+      };
+      const subTitleMap = <int, String>{
+        0: '여행 · figma editorial',
+        1: '커플 · figma editorial',
+        2: '가족 · figma editorial',
+        3: '스크랩북 · figma editorial',
+        4: '웨딩 · figma editorial',
+      };
+      const categoryMap = <int, String>{
+        0: '여행',
+        1: '기념일',
+        2: '가족',
+        3: '스크랩북',
+        4: '웨딩',
+      };
+      for (var i = 0; i < items.length; i++) {
+        final rawItem = items[i];
+        if (rawItem is! Map) continue;
+        final item = Map<String, dynamic>.from(rawItem);
+        final flutterTemplateJson = item['flutterTemplateJson'];
+        final templateJson = flutterTemplateJson is Map
+            ? jsonEncode(Map<String, dynamic>.from(flutterTemplateJson))
+            : flutterTemplateJson?.toString();
+        final previewImages = ((item['previewImages'] as List?) ?? const [])
+            .map((e) => e?.toString().trim() ?? '')
+            .where((e) => e.isNotEmpty)
+            .toList(growable: false);
+        final title = titleMap[i];
+        if (title == null || templateJson == null || templateJson.isEmpty) {
+          continue;
+        }
+        templates.add(
+          PremiumTemplate(
+            id: -9002 - i,
+            title: title,
+            subTitle: subTitleMap[i],
+            description: '$title Figma MCP 자동 생성 템플릿',
+            coverImageUrl: (item['coverImageUrl'] ?? '').toString(),
+            previewImages: previewImages,
+            pageCount: (item['pageCount'] as num?)?.toInt() ?? 16,
+            userCount: 0,
+            category: categoryMap[i],
+            tags: const ['figma', 'mcp'],
+            isPremium: true,
+            templateJson: templateJson,
+          ),
+        );
+      }
+    }
+  } catch (_) {
+    // ignore
+  }
+
+  return templates.map(_normalizeStoreTemplateRuntime).toList(growable: false);
+}
+
+Future<List<PremiumTemplate>> _loadCanonicalHandoffStoreTemplates() async {
+  const assetPaths = <String>[
+    'assets/templates/save_the_date_handoff.json',
+    'assets/templates/jeju_travel_handoff.json',
+    'assets/templates/family_weekend_handoff.json',
+    'assets/templates/anniversary_days_handoff.json',
+    'assets/templates/wedding_editorial_handoff.json',
+    'assets/templates/scrapbook_handoff.json',
+  ];
+
+  PremiumTemplate? fromDirectPremium(Map<String, dynamic> raw) {
+    final title = (raw['title'] ?? raw['name'] ?? '').toString().trim();
+    if (title.isEmpty && raw['templateJson'] == null) return null;
+    return _premiumTemplateFromLooseJson(raw);
+  }
+
+  PremiumTemplate? fromWrappedTemplate(Map<String, dynamic> raw) {
+    final nested = raw['template'];
+    if (nested is! Map) return null;
+    return _premiumTemplateFromLooseJson(Map<String, dynamic>.from(nested));
+  }
+
+  PremiumTemplate? fromSaveTheDateHandoff(Map<String, dynamic> raw) {
+    final coverImageUrl = (raw['coverImageUrl'] ?? '').toString().trim();
+    final previewImages = ((raw['previewImages'] as List?) ?? const [])
+        .map((e) => e?.toString().trim() ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
+    final handoffJson = <String, dynamic>{
+      'designWidth': raw['designWidth'] ?? 1080,
+      'designHeight': raw['designHeight'] ?? 1440,
+      'templateId': raw['templateId'],
+      'version': raw['version'],
+      'lifecycleStatus': raw['lifecycleStatus'],
+      'aspect': raw['aspect'],
+      'ratio': raw['ratio'],
+      'recommendedPhotoCount': raw['recommendedPhotoCount'],
+      'strictLayout': raw['strictLayout'],
+      'autoFit': raw['autoFit'],
+      'metadata': {
+        'category': raw['category'],
+        'style': raw['style'],
+        'tags': raw['tags'],
+        'title': raw['title'] ?? raw['name'],
+      },
+      'cover': raw['cover'],
+      'pages': raw['pages'] ?? const [],
+      'variants': raw['variants'] ?? const {},
+    };
+    return PremiumTemplate(
+      id: (raw['id'] as num?)?.toInt() ?? -7001,
+      title: (raw['title'] ?? raw['name'] ?? 'SAVE THE DATE').toString(),
+      subTitle: raw['subTitle']?.toString() ?? '웨딩 · editorial',
+      description: raw['description']?.toString() ?? 'SAVE THE DATE 템플릿',
+      coverImageUrl: coverImageUrl,
+      previewImages: previewImages,
+      pageCount:
+          (raw['pageCount'] as num?)?.toInt() ??
+          ((raw['pages'] as List?)?.length ?? 0),
+      likeCount: (raw['likeCount'] as num?)?.toInt() ?? 0,
+      userCount: (raw['userCount'] as num?)?.toInt() ?? 0,
+      category: raw['category']?.toString(),
+      tags: ((raw['tags'] as List?) ?? const [])
+          .map((e) => e?.toString() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList(growable: false),
+      weeklyScore: (raw['weeklyScore'] as num?)?.toInt() ?? 0,
+      isNew: raw['isNew'] == true,
+      isBest: raw['isBest'] == true,
+      isPremium: raw['isPremium'] != false,
+      isLiked: raw['isLiked'] == true,
+      templateJson: jsonEncode(handoffJson),
+      createdAt: raw['createdAt']?.toString(),
+    );
+  }
+
+  final templates = <PremiumTemplate>[];
+  for (final assetPath in assetPaths) {
+    try {
+      final raw = await rootBundle.loadString(assetPath);
+      final decoded = jsonDecode(raw);
+      final map = decoded is List
+          ? (decoded.isNotEmpty && decoded.first is Map
+                ? Map<String, dynamic>.from(decoded.first as Map)
+                : null)
+          : (decoded is Map ? Map<String, dynamic>.from(decoded) : null);
+      if (map == null) continue;
+
+      final parsed =
+          (assetPath.endsWith('save_the_date_handoff.json')
+              ? fromSaveTheDateHandoff(map)
+              : null) ??
+          fromWrappedTemplate(map) ??
+          fromDirectPremium(map);
+      if (parsed != null) {
+        templates.add(_normalizeStoreTemplateRuntime(parsed));
+      }
+    } catch (_) {
+      // Ignore broken handoff files so the remaining canonical templates survive.
+    }
+  }
+
+  return templates;
+}
+
+List<PremiumTemplate> _hardcodedCanonicalStoreTemplates() {
+  return <PremiumTemplate>[
+    PremiumTemplate(
+      id: -1115056,
+      title: 'SAVE THE DATE',
+      subTitle: '웨딩 · editorial',
+      description: 'SAVE THE DATE 스토어 템플릿',
+      coverImageUrl:
+          'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fcover_full_bleed.png?alt=media&token=b63dea3e-40c3-4f07-9b2c-59bc688c7fd2',
+      previewImages: const [
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fcover_full_bleed.png?alt=media&token=b63dea3e-40c3-4f07-9b2c-59bc688c7fd2',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp01_arch_editorial.png?alt=media&token=83681da7-617c-44bc-a2b4-c66c724bc2fc',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fsave_the_date%2Fv1%2Fp02_circle_card.png?alt=media&token=1c6f41f7-e0cc-4880-b040-6894de2e9011',
+      ],
+      pageCount: 13,
+      userCount: 0,
+      category: '웨딩',
+      tags: const ['웨딩', '세이브더데이트'],
+      isPremium: true,
+    ),
+    PremiumTemplate(
+      id: 46,
+      title: 'JEJU TRAVEL',
+      subTitle: '제주 여행 앨범 · editorial',
+      description: '제주의 바다와 풍경을 담는 여행 앨범 템플릿',
+      coverImageUrl:
+          'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_aerial.jpg?alt=media&token=db0d66a4-b6a1-498d-a79c-f41582a68cd2',
+      previewImages: const [
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_aerial.jpg?alt=media&token=db0d66a4-b6a1-498d-a79c-f41582a68cd2',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_seongsan.jpg?alt=media&token=3e444f31-41bb-4fe5-9843-5193f6065b72',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fjeju_travel%2Fv1%2Fjeju_ocean.jpg?alt=media&token=ea599666-206d-4681-b09f-fcaea17bc0fc',
+      ],
+      pageCount: 14,
+      userCount: 0,
+      category: '여행',
+      tags: const ['여행', '제주도'],
+      isPremium: false,
+    ),
+    PremiumTemplate(
+      id: 48,
+      title: 'FAMILY WEEKEND',
+      subTitle: '가족 앨범 · bright scrapbook',
+      description: '함께 보낸 주말을 담는 가족 포토북 템플릿',
+      coverImageUrl:
+          'asset:assets/templates/family_weekend/images/sources/city_weekend.png',
+      previewImages: const [
+        'asset:assets/templates/family_weekend/images/sources/city_weekend.png',
+        'asset:assets/templates/family_weekend/images/sources/ceremony_moment.png',
+        'asset:assets/templates/family_weekend/images/sources/hands_bw.png',
+      ],
+      pageCount: 15,
+      userCount: 0,
+      category: '가족',
+      tags: const ['가족', '주말'],
+      isPremium: false,
+    ),
+    PremiumTemplate(
+      id: 49,
+      title: 'ANNIVERSARY DAYS',
+      subTitle: '커플 기념일 앨범 · clean romantic',
+      description: '100일, 1주년 같은 기념일을 담는 템플릿',
+      coverImageUrl:
+          'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fanniversary_days%2Fv1%2Fanniversary_sample.png?alt=media&token=59dd742d-6a21-4284-bdfd-3981d34b06b0',
+      previewImages: const [
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fanniversary_days%2Fv1%2Fanniversary_sample.png?alt=media&token=59dd742d-6a21-4284-bdfd-3981d34b06b0',
+      ],
+      pageCount: 16,
+      userCount: 0,
+      category: '기념일',
+      tags: const ['기념일', '커플'],
+      isPremium: false,
+    ),
+    PremiumTemplate(
+      id: 50,
+      title: 'Wedding Editorial',
+      subTitle: '웨딩 · clean editorial',
+      description: '크림과 브라운 톤의 웨딩 에디토리얼 포토북 템플릿',
+      coverImageUrl:
+          'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fceremony_moment.png?alt=media&token=7206cd84-6a88-45b5-b0f8-59456c6e3739',
+      previewImages: const [
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fwedding_editorial%2Fv1%2Fceremony_moment.png?alt=media&token=7206cd84-6a88-45b5-b0f8-59456c6e3739',
+      ],
+      pageCount: 22,
+      userCount: 0,
+      category: '웨딩',
+      tags: const ['웨딩', '에디토리얼'],
+      isPremium: false,
+    ),
+    PremiumTemplate(
+      id: 51,
+      title: 'Scrapbook',
+      subTitle: '스크랩북 · layered collage',
+      description: 'Pinterest 감성 스크랩북 템플릿',
+      coverImageUrl:
+          'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fceremony_moment.png?alt=media&token=ed55bc8d-9144-4072-bcc4-c8c1f4bf59a5',
+      previewImages: const [
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fceremony_moment.png?alt=media&token=ed55bc8d-9144-4072-bcc4-c8c1f4bf59a5',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fsunset_pair.png?alt=media&token=3a41d69d-1aab-4836-bb97-ba2da69450de',
+        'https://firebasestorage.googleapis.com/v0/b/snapfit-c719d.firebasestorage.app/o/templates%2Fscrapbook%2Fv1%2Fhands_bw.png?alt=media&token=01171c9a-c9b2-4814-b3fd-3a4720e65a0d',
+      ],
+      pageCount: 16,
+      userCount: 0,
+      category: '스크랩북',
+      tags: const ['스크랩북', '콜라주'],
+      isPremium: false,
+    ),
+  ].map(_normalizeStoreTemplateRuntime).toList(growable: false);
+}
+
 Future<List<PremiumTemplate>> _loadGeneratedStoreLatestTemplates() async {
+  final explicitFallback = await _loadExplicitStoreTemplateFallbacks();
+  final hardcodedFallback = _hardcodedCanonicalStoreTemplates();
+  if (explicitFallback.isNotEmpty) {
+    return explicitFallback;
+  }
   try {
     final raw = await rootBundle.loadString(
       'assets/templates/generated/store_latest.json',
     );
     final decoded = jsonDecode(raw);
-    if (decoded is! List) return const <PremiumTemplate>[];
-    return decoded
-        .whereType<Map<String, dynamic>>()
-        .map(PremiumTemplate.fromJson)
+    if (decoded is! List) return hardcodedFallback;
+    final templates = decoded
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .map(_premiumTemplateFromLooseJson)
         .map(_normalizeStoreTemplateRuntime)
         .toList(growable: false);
+    if (templates.isNotEmpty) return templates;
+    return hardcodedFallback;
   } catch (_) {
-    return const <PremiumTemplate>[];
+    return hardcodedFallback;
   }
+}
+
+Future<List<PremiumTemplate>> _loadExplicitStoreTemplateFallbacks() async {
+  const assetPaths = <String>[
+    'assets/templates/generated/save_the_date_store.json',
+    'assets/templates/generated/jeju_travel_store.json',
+    'assets/templates/generated/family_weekend_store.json',
+    'assets/templates/generated/anniversary_days_store.json',
+    'assets/templates/generated/wedding_editorial_store.json',
+    'assets/templates/generated/scrapbook_store.json',
+  ];
+
+  final templates = <PremiumTemplate>[];
+  for (final assetPath in assetPaths) {
+    try {
+      final raw = await rootBundle.loadString(assetPath);
+      final decoded = jsonDecode(raw);
+      if (decoded is List && decoded.isNotEmpty) {
+        final item = decoded.first;
+        if (item is Map) {
+          templates.add(
+            _normalizeStoreTemplateRuntime(
+              _premiumTemplateFromLooseJson(Map<String, dynamic>.from(item)),
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      // Keep loading the rest so one broken asset does not hide the store.
+    }
+  }
+  return templates.isNotEmpty ? templates : _hardcodedCanonicalStoreTemplates();
 }
 
 bool _isStoreAllowedTemplate(PremiumTemplate template) {
@@ -603,39 +1089,72 @@ final templateRepositoryProvider = Provider<TemplateRepository>((ref) {
   return TemplateRepositoryImpl(api, tokenStorage: tokenStorage);
 });
 
-List<PremiumTemplate> _visibleServerTemplates(
-  Iterable<PremiumTemplate> items,
-) {
+List<PremiumTemplate> _visibleServerTemplates(Iterable<PremiumTemplate> items) {
   final visible = items
       .where(_isStoreAllowedTemplate)
       .map(_normalizeStoreTemplateRuntime)
       .toList(growable: false);
   final sorted = [...visible]..sort((a, b) => b.id.compareTo(a.id));
-  final pinnedSaveTheDate = sorted.where((t) {
-    final title = t.title.trim().toLowerCase();
-    final raw = (t.templateJson ?? '').toLowerCase();
-    return title == 'save the date' || raw.contains('save_the_date_v1');
-  }).toList(growable: false);
+  final pinnedSaveTheDate = sorted
+      .where((t) {
+        final title = t.title.trim().toLowerCase();
+        final raw = (t.templateJson ?? '').toLowerCase();
+        return title == 'save the date' || raw.contains('save_the_date_v1');
+      })
+      .toList(growable: false);
   final others = sorted
       .where((t) => !pinnedSaveTheDate.any((p) => p.id == t.id))
       .toList(growable: false);
-  return <PremiumTemplate>[
-    ...pinnedSaveTheDate.take(1),
-    ...others,
-  ];
+  return <PremiumTemplate>[...pinnedSaveTheDate.take(1), ...others];
+}
+
+List<PremiumTemplate> _buildCanonicalStoreTemplates({
+  required List<PremiumTemplate> server,
+  required List<PremiumTemplate> local,
+}) {
+  final normalizedServerByKey = <String, PremiumTemplate>{};
+  for (final item in server) {
+    final normalized = _normalizeStoreTemplateRuntime(item);
+    final key = _normalizeTemplateTitleKey(normalized.title);
+    normalizedServerByKey[key] = normalized;
+  }
+
+  final canonical = <PremiumTemplate>[];
+  for (final localItem in local) {
+    final normalizedLocal = _normalizeStoreTemplateRuntime(localItem);
+    if (!_isStoreAllowedTemplate(normalizedLocal)) continue;
+    final key = _normalizeTemplateTitleKey(normalizedLocal.title);
+    final serverMatch = normalizedServerByKey[key];
+    canonical.add(
+      serverMatch == null
+          ? normalizedLocal
+          : _mergeServerWithLocalTemplate(serverMatch, normalizedLocal),
+    );
+  }
+
+  if (canonical.isNotEmpty) {
+    return canonical;
+  }
+
+  return _visibleServerTemplates(server);
 }
 
 final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
-  final repository = ref.watch(templateRepositoryProvider);
-  final remote = await repository.getTemplates();
-  final local = await _loadGeneratedStoreLatestTemplates();
-  return _visibleServerTemplates(
-    StoreTemplateFeedNotifier.mergeServerSummaryWithLocalStatic(
-      server: remote,
-      local: local,
-    ),
-  );
+  final canonical = await _loadCanonicalHandoffStoreTemplates();
+  if (canonical.isNotEmpty) return canonical;
+
+  final local = await loadCanonicalStoreTemplatesForRuntime();
+  if (local.isNotEmpty) return local;
+  return _hardcodedCanonicalStoreTemplates();
 });
+
+Future<List<PremiumTemplate>> loadCanonicalStoreTemplatesForRuntime() async {
+  final canonical = await _loadCanonicalHandoffStoreTemplates();
+  if (canonical.isNotEmpty) return canonical;
+  final figmaTemplates = await _loadFigmaMcpStoreTemplates();
+  if (figmaTemplates.isNotEmpty) return figmaTemplates;
+  return _loadGeneratedStoreLatestTemplates();
+}
 
 class StoreTemplateFeedState {
   final List<PremiumTemplate> items;
@@ -702,40 +1221,14 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
   String _normalizeTitle(String value) => _normalizeTemplateTitleKey(value);
 
   Future<List<PremiumTemplate>> _loadLocalTemplates() {
-    return _localTemplatesFuture ??= _loadGeneratedStoreLatestTemplates();
-  }
-
-  List<PremiumTemplate> _mergeServerSummaryWithLocal({
-    required List<PremiumTemplate> server,
-    required List<PremiumTemplate> local,
-  }) {
-    return mergeServerSummaryWithLocalStatic(server: server, local: local);
+    return _localTemplatesFuture ??= loadCanonicalStoreTemplatesForRuntime();
   }
 
   static List<PremiumTemplate> mergeServerSummaryWithLocalStatic({
     required List<PremiumTemplate> server,
     required List<PremiumTemplate> local,
   }) {
-    final byKey = <String, PremiumTemplate>{};
-
-    for (final item in server) {
-      final normalized = _normalizeStoreTemplateRuntime(item);
-      final key = _normalizeTemplateTitleKey(normalized.title);
-      byKey[key] = normalized;
-    }
-
-    for (final localItem in local) {
-      final normalizedLocal = _normalizeStoreTemplateRuntime(localItem);
-      final key = _normalizeTemplateTitleKey(normalizedLocal.title);
-      final current = byKey[key];
-      if (current == null) {
-        byKey[key] = normalizedLocal;
-      } else {
-        byKey[key] = _mergeServerWithLocalTemplate(current, normalizedLocal);
-      }
-    }
-
-    return _visibleServerTemplates(byKey.values);
+    return _buildCanonicalStoreTemplates(server: server, local: local);
   }
 
   Future<void> loadInitial() async {
@@ -766,48 +1259,28 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
   }
 
   Future<void> _fetchPage(int page, {required bool replace}) async {
-    try {
-      final local = await _loadLocalTemplates();
-      final result = await _repository.getTemplateSummaries(
-        page: page,
-        size: _pageSize,
-      );
-      final hydrated = _mergeServerSummaryWithLocal(
-        server: result.content,
-        local: local,
-      );
-      final merged = replace
-          ? hydrated
-          : <PremiumTemplate>[
-              ...state.items,
-              ...hydrated.where(
-                (candidate) => !state.items.any(
-                  (t) =>
-                      t.id == candidate.id ||
-                      _normalizeTitle(t.title) ==
-                          _normalizeTitle(candidate.title),
-                ),
+    final local = await _loadLocalTemplates();
+    final merged = replace
+        ? local
+        : <PremiumTemplate>[
+            ...state.items,
+            ...local.where(
+              (candidate) => !state.items.any(
+                (t) =>
+                    t.id == candidate.id ||
+                    _normalizeTitle(t.title) == _normalizeTitle(candidate.title),
               ),
-            ];
-      state = state.copyWith(
-        items: merged,
-        isInitialLoading: false,
-        isLoadingMore: false,
-        hasNext: false,
-        page: result.page,
-        lastSyncedAt: DateTime.now(),
-        error: null,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        items: state.items,
-        isInitialLoading: false,
-        isLoadingMore: false,
-        hasNext: false,
-        lastSyncedAt: DateTime.now(),
-        error: e,
-      );
-    }
+            ),
+          ];
+    state = state.copyWith(
+      items: merged.isNotEmpty ? merged : local,
+      isInitialLoading: false,
+      isLoadingMore: false,
+      hasNext: false,
+      page: page,
+      lastSyncedAt: DateTime.now(),
+      error: null,
+    );
   }
 }
 

@@ -16,6 +16,8 @@ class PageListSelector extends ConsumerWidget {
   final int currentPageIndex;
   final Function(int) onPageSelected;
   final VoidCallback? onAddPage;
+  final VoidCallback? onDeleteCurrentPage;
+  final bool canDeleteCurrentPage;
 
   const PageListSelector({
     super.key,
@@ -23,6 +25,8 @@ class PageListSelector extends ConsumerWidget {
     required this.currentPageIndex,
     required this.onPageSelected,
     this.onAddPage,
+    this.onDeleteCurrentPage,
+    this.canDeleteCurrentPage = false,
   });
 
   @override
@@ -32,9 +36,9 @@ class PageListSelector extends ConsumerWidget {
     final selectedCover = editorState?.selectedCover;
 
     return SizedBox(
-      height: 80.h,
+      height: 86.h,
       child: ListView.separated(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 0),
         scrollDirection: Axis.horizontal,
         itemCount: pages.length + 1, // 마지막에 + 버튼 추가
         separatorBuilder: (context, index) => SizedBox(width: 12.w),
@@ -56,26 +60,56 @@ class PageListSelector extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
+                SizedBox(
                   width: 50.w,
                   height: 50.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: isSelected
-                        ? Border.all(color: SnapFitColors.accent, width: 2)
-                        : null,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.r),
-                    child: _buildPageThumbnail(
-                      context,
-                      ref: ref,
-                      page: page,
-                      isCover: isCover,
-                      selectedTheme: selectedTheme,
-                      selectedCover: selectedCover,
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 50.w,
+                        height: 50.w,
+                        decoration: BoxDecoration(
+                          color: SnapFitColors.surfaceOf(context),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: isSelected
+                              ? Border.all(color: SnapFitColors.accent, width: 2)
+                              : null,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: _buildPageThumbnail(
+                            context,
+                            ref: ref,
+                            page: page,
+                            isCover: isCover,
+                            selectedTheme: selectedTheme,
+                            selectedCover: selectedCover,
+                          ),
+                        ),
+                      ),
+                      if (isSelected && canDeleteCurrentPage && !isCover)
+                        Positioned(
+                          top: 4.h,
+                          right: 4.w,
+                          child: GestureDetector(
+                            onTap: onDeleteCurrentPage,
+                            child: Container(
+                              width: 18.w,
+                              height: 18.w,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE53935),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 12.sp,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 4.h),

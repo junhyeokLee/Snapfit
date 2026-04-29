@@ -34,9 +34,9 @@ class SnapFitTheme {
           borderRadius: BorderRadius.circular(SnapFitRadius.md),
         ),
       ),
-      textTheme: _textThemeLight(base.textTheme).apply(
-        fontFamily: SnapFitFonts.body,
-      ),
+      textTheme: _textThemeLight(
+        base.textTheme,
+      ).apply(fontFamily: SnapFitFonts.body),
       inputDecorationTheme: _inputDecorationThemeLight(colorScheme),
       elevatedButtonTheme: _elevatedButtonThemeLight(colorScheme),
       outlinedButtonTheme: _outlinedButtonTheme(colorScheme),
@@ -69,9 +69,9 @@ class SnapFitTheme {
           borderRadius: BorderRadius.circular(SnapFitRadius.md),
         ),
       ),
-      textTheme: _textThemeDark(base.textTheme).apply(
-        fontFamily: SnapFitFonts.body,
-      ),
+      textTheme: _textThemeDark(
+        base.textTheme,
+      ).apply(fontFamily: SnapFitFonts.body),
       inputDecorationTheme: _inputDecorationThemeDark(colorScheme),
       elevatedButtonTheme: _elevatedButtonThemeDark(colorScheme),
       outlinedButtonTheme: _outlinedButtonTheme(colorScheme),

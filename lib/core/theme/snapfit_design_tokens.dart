@@ -65,4 +65,3 @@ extension SnapFitTextTokens on BuildContext {
     );
   }
 }
-

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../domain/entities/app_notification_item.dart';
 import '../providers/notification_provider.dart';
 
@@ -37,7 +36,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: AppBar(
         backgroundColor: SnapFitColors.backgroundOf(context),
-        leading: const SnapFitAppBarBackButton(),
         title: Text(
           '알림',
           style: TextStyle(
@@ -237,9 +235,7 @@ class _NotificationCard extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: isRead
-                        ? Colors.transparent
-                        : SnapFitColors.accent,
+                    color: isRead ? Colors.transparent : SnapFitColors.accent,
                     shape: BoxShape.circle,
                   ),
                 ),

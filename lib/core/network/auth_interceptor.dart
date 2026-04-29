@@ -122,8 +122,5 @@ class _RefreshResult {
   final String accessToken;
   final String refreshToken;
 
-  const _RefreshResult({
-    required this.accessToken,
-    required this.refreshToken,
-  });
+  const _RefreshResult({required this.accessToken, required this.refreshToken});
 }

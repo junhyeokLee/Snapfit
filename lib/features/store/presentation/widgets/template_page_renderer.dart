@@ -385,7 +385,9 @@ class TemplatePageRenderer extends StatelessWidget {
     final borderWidthRaw = layer.decorationBorderWidth;
     final borderWidth = borderWidthRaw == null
         ? null
-        : (borderWidthRaw <= 1.0 ? borderWidthRaw * canvasWidth : borderWidthRaw);
+        : (borderWidthRaw <= 1.0
+              ? borderWidthRaw * canvasWidth
+              : borderWidthRaw);
     final fillOverride = _parseHexColor(layer.decorationFillColor);
     final borderOverride = _parseHexColor(layer.decorationBorderColor);
 
@@ -393,7 +395,9 @@ class TemplatePageRenderer extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           color: fillOverride ?? color,
-          borderRadius: radiusPx != null ? BorderRadius.circular(radiusPx) : null,
+          borderRadius: radiusPx != null
+              ? BorderRadius.circular(radiusPx)
+              : null,
           border: borderOverride != null
               ? Border.all(color: borderOverride, width: borderWidth ?? 1.0)
               : null,
@@ -405,7 +409,9 @@ class TemplatePageRenderer extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           color: fillOverride,
-          borderRadius: radiusPx != null ? BorderRadius.circular(radiusPx) : null,
+          borderRadius: radiusPx != null
+              ? BorderRadius.circular(radiusPx)
+              : null,
           border: borderOverride != null
               ? Border.all(color: borderOverride, width: borderWidth ?? 1.0)
               : null,
@@ -636,10 +642,7 @@ class TemplatePageRenderer extends StatelessWidget {
           child: child,
         );
       case 'rounded28':
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: child,
-        );
+        return ClipRRect(borderRadius: BorderRadius.circular(28), child: child);
       case 'circle':
         return ClipOval(child: child);
       case 'archSoft':
@@ -661,10 +664,7 @@ class TemplatePageRenderer extends StatelessWidget {
       case 'circleRing':
         return LayoutBuilder(
           builder: (context, constraints) {
-            final size = math.min(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
+            final size = math.min(constraints.maxWidth, constraints.maxHeight);
             final ringPadding = size * 0.054;
             final borderWidth = (size * 0.0027).clamp(1.0, 2.0);
             return Container(
@@ -683,10 +683,7 @@ class TemplatePageRenderer extends StatelessWidget {
       case 'heartFrame':
         return LayoutBuilder(
           builder: (context, constraints) {
-            final side = math.min(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
+            final side = math.min(constraints.maxWidth, constraints.maxHeight);
             return Center(
               child: SizedBox(
                 width: side,
@@ -900,41 +897,6 @@ class _StoreHeartClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _StoreHeartFramePainter extends CustomPainter {
-  final Color fillColor;
-  final Color strokeColor;
-  final double strokeWidth;
-
-  _StoreHeartFramePainter({
-    required this.fillColor,
-    required this.strokeColor,
-    required this.strokeWidth,
-  });
-
-  Path _heartPath(Size size) => _StoreHeartClipper().getClip(size);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = _heartPath(size);
-    canvas.drawShadow(path, const Color(0x22000000), 10, false);
-    final fill = Paint()..color = fillColor;
-    final stroke =
-        Paint()
-          ..color = strokeColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth;
-    canvas.drawPath(path, fill);
-    canvas.drawPath(path, stroke);
-  }
-
-  @override
-  bool shouldRepaint(covariant _StoreHeartFramePainter oldDelegate) {
-    return fillColor != oldDelegate.fillColor ||
-        strokeColor != oldDelegate.strokeColor ||
-        strokeWidth != oldDelegate.strokeWidth;
-  }
 }
 
 class _StoreTicketNotch extends StatelessWidget {

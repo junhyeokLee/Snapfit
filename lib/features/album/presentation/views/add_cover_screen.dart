@@ -5,7 +5,6 @@ import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.d
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/screen_logger.dart';
-import '../../../../shared/widgets/snapfit_gradient_background.dart';
 import '../../data/api/album_provider.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
@@ -226,8 +225,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        if (mode == EditorMode.decorate) {
-          return DecoratePanel(onClose: () => Navigator.pop(ctx));
+        if (mode == EditorMode.sticker) {
+          return const DecoratePanel(mode: DecorateSheetMode.sticker);
+        } else if (mode == EditorMode.backgroundColor) {
+          return const DecoratePanel(mode: DecorateSheetMode.backgroundColor);
         } else if (mode == EditorMode.layer) {
           return LayerManagerPanel(layers: layers, interaction: _interaction);
         } else if (mode == EditorMode.layout) {

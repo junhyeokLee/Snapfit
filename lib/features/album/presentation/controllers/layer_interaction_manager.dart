@@ -147,7 +147,8 @@ class LayerInteractionManager {
   String? get selectedLayerId => _selectedLayerId;
 
   bool get isImagePanMode => _imagePanMode;
-  List<double> get activeVerticalGuides => List<double>.unmodifiable(_activeVerticalGuides);
+  List<double> get activeVerticalGuides =>
+      List<double>.unmodifiable(_activeVerticalGuides);
   List<double> get activeHorizontalGuides =>
       List<double>.unmodifiable(_activeHorizontalGuides);
 
@@ -547,17 +548,12 @@ class LayerInteractionManager {
           child: Transform.scale(
             scale: layer.scale, // [Fix] _scale 대신 원본 직접 사용
             alignment: Alignment.center,
-            child: SizedBox(
-              width: baseWidth,
-              height: baseHeight,
-              child: child,
-            ),
+            child: SizedBox(width: baseWidth, height: baseHeight, child: child),
           ),
         ),
       );
     }
 
-    final coverSize = getCoverSize();
     final isSelected = _selectedLayerId == layer.id; // 선택 여부
     final isEditing = _editingLayerId == layer.id; // 편집 중 여부
 
@@ -898,7 +894,9 @@ class LayerInteractionManager {
     bool diagonalSnap = false; // 대각선 스냅 여부
     double? snappedGuideX;
     double? snappedGuideY;
-    final layers = ref.read(albumEditorViewModelProvider).value?.layers ?? const <LayerModel>[];
+    final layers =
+        ref.read(albumEditorViewModelProvider).value?.layers ??
+        const <LayerModel>[];
     final xCandidates = <_GuideCandidate>[
       _GuideCandidate(value: startX, weight: 1.0),
       _GuideCandidate(value: startX + usableWidth / 3, weight: 1.0),
@@ -1043,10 +1041,18 @@ class LayerInteractionManager {
       _showDiagonalGuide = false;
       _activeVerticalGuides
         ..clear()
-        ..addAll(showVertical && snappedGuideX != null ? [snappedGuideX] : const <double>[]);
+        ..addAll(
+          showVertical && snappedGuideX != null
+              ? [snappedGuideX]
+              : const <double>[],
+        );
       _activeHorizontalGuides
         ..clear()
-        ..addAll(showHorizontal && snappedGuideY != null ? [snappedGuideY] : const <double>[]);
+        ..addAll(
+          showHorizontal && snappedGuideY != null
+              ? [snappedGuideY]
+              : const <double>[],
+        );
     });
 
     // 중심점을 좌상단 좌표로 변환
@@ -1422,24 +1428,4 @@ class _GuideCandidate {
   final double weight;
 
   const _GuideCandidate({required this.value, required this.weight});
-}
-
-/// 대각선 가이드라인을 그리는 CustomPainter
-class _DiagonalGuidePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
-      ..strokeWidth = 0.5
-      ..style = PaintingStyle.stroke;
-
-    // 좌상단 → 우하단 대각선
-    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
-
-    // 우상단 → 좌하단 대각선
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false; // 항상 동일한 모양
 }

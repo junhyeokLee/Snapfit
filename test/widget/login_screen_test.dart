@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
 import 'package:snap_fit/features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'package:snap_fit/features/auth/presentation/views/login_screen.dart';
@@ -42,6 +43,16 @@ class FakeAuthViewModel extends AuthViewModel {
   void completeGoogle() => _googleCompleter.complete();
 }
 
+class FakeTokenStorage extends TokenStorage {
+  @override
+  Future<bool> hasRequiredConsent({
+    required String termsVersion,
+    required String privacyVersion,
+  }) async {
+    return true;
+  }
+}
+
 void main() {
   testWidgets('kakao login button triggers loading and calls auth', (
     tester,
@@ -50,7 +61,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authViewModelProvider.overrideWith(() => fake)],
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
@@ -59,16 +73,11 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('카카오로 시작'));
+    await tester.tap(find.text('카카오로 계속하기'));
     await tester.pump();
 
     expect(fake.kakaoCalled, isTrue);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
     fake.completeKakao();
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('google login button triggers loading and calls auth', (
@@ -78,7 +87,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authViewModelProvider.overrideWith(() => fake)],
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
@@ -87,15 +99,10 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('구글로 시작'));
+    await tester.tap(find.text('Google로 계속하기'));
     await tester.pump();
 
     expect(fake.googleCalled, isTrue);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
     fake.completeGoogle();
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }

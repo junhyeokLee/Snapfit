@@ -1,29 +1,24 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/utils/app_logger.dart';
 import '../../../domain/entities/album.dart';
-import '../../viewmodels/album_editor_view_model.dart';
-import '../../viewmodels/home_view_model.dart';
 import 'home_focus_wrap.dart';
 import 'home_album_cover_thumbnail.dart';
-import 'home_paper_unfold_route.dart';
+import 'home_album_actions.dart';
 
 /// 슬라이더용 앨범 커버 카드
 class HomeAlbumSliderCard extends ConsumerStatefulWidget {
   final Album album;
   final int index;
-  final PageController pageController;
+  final double currentPage;
 
   const HomeAlbumSliderCard({
     super.key,
     required this.album,
     required this.index,
-    required this.pageController,
+    required this.currentPage,
   });
 
   @override
@@ -33,7 +28,6 @@ class HomeAlbumSliderCard extends ConsumerStatefulWidget {
 
 class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     with SingleTickerProviderStateMixin {
-  final GlobalKey _coverRepaintKey = GlobalKey();
   late final AnimationController _tapController;
   late final Animation<double> _tapScale;
   Timer? _pendingUnpress;
@@ -65,8 +59,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   /// 0..1, 포커스일수록 1 (중앙에 가까울수록 1)
   double _focusFactor() {
-    final page = widget.pageController.page ?? widget.index.toDouble();
-    final diff = (page - widget.index).abs();
+    final diff = (widget.currentPage - widget.index).abs();
     if (diff >= 1) return 0;
     return 1 - diff;
   }
@@ -80,35 +73,39 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     final focus = _focusFactor();
 
     return Padding(
-      // 카드 간격을 줄여 여러 장이 동시에 보이도록
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 40.h),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 0.h),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 홈 셀(PageView 뷰포트) 안에서 세로/가로/정사각형이 같은 비중으로 보이도록
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
-          final base = w < h ? w : h;
+          final baseFromWidth = w * (1.18 + (0.28 * focus));
+          final baseFromHeight = h * (0.70 + (0.14 * focus));
+          final base = baseFromWidth < baseFromHeight
+              ? baseFromWidth
+              : baseFromHeight;
           final ratio = coverSize.ratio;
           final cw = ratio >= 1 ? base : base * ratio;
           final ch = ratio <= 1 ? base : base / ratio;
           final coverContent = SizedBox(
             width: cw,
             height: ch,
-            child: HomeAlbumCoverThumbnail(
-              album: widget.album,
-              height: ch,
-              maxWidth: cw,
-              showShadow: false,
+            child: Opacity(
+              opacity: 1,
+              child: HomeAlbumCoverThumbnail(
+                album: widget.album,
+                height: ch,
+                maxWidth: cw,
+                showShadow: true,
+                shadowScaleMultiplier: 3.8 + (2.4 * focus),
+              ),
             ),
           );
 
-          final closedCover = RepaintBoundary(
-            key: _coverRepaintKey,
-            child: HomeFocusWrap(
-              focus: focus,
-              applyShadow: false,
-              child: Center(child: coverContent),
-            ),
+          final closedCover = HomeFocusWrap(
+            focus: focus,
+            applyShadow: false,
+            child: Center(child: coverContent),
           );
 
           return GestureDetector(
@@ -166,47 +163,8 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
   }
 
   Future<void> _handleTap(BuildContext context) async {
-    Rect? cardRect;
-    ui.Image? coverImage;
-    final box = context.findRenderObject() as RenderBox?;
-    if (box != null && box.hasSize) {
-      final offset = box.localToGlobal(Offset.zero);
-      cardRect = Rect.fromLTWH(
-        offset.dx,
-        offset.dy,
-        box.size.width,
-        box.size.height,
-      );
-    }
-
     try {
-      final vm = ref.read(albumEditorViewModelProvider.notifier);
-      await ref.read(albumEditorViewModelProvider.future);
-      await vm.prepareAlbumForEdit(widget.album);
-      if (!context.mounted) return;
-
-      final boundary =
-          _coverRepaintKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null) {
-        try {
-          coverImage = await boundary.toImage(pixelRatio: 2.0);
-        } catch (_) {}
-      }
-
-      if (!context.mounted) return;
-      await Navigator.of(context).push(
-        HomePaperUnfoldRoute(
-          album: widget.album,
-          cardRect: cardRect,
-          coverImage: coverImage,
-        ),
-      );
-
-      // 앨범 편집 후 돌아왔을 때 홈 화면 갱신
-      if (context.mounted) {
-        await ref.read(homeViewModelProvider.notifier).refresh();
-      }
+      await HomeAlbumActions.openAlbum(context, ref, widget.album);
     } catch (e) {
       if (mounted) _tapController.reverse();
       if (context.mounted) {

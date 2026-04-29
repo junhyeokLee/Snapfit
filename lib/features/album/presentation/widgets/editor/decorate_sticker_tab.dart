@@ -21,41 +21,6 @@ class DecorateStickerTab extends ConsumerStatefulWidget {
 class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
   int? _selectedStickerIndex;
 
-  static const List<_StickerItem> _stickersPreview = [
-    // Templates-first: 추천 영역은 "템플릿에서 실제로 많이 쓰는" deco 위주로 구성
-    _StickerItem.deco("stickerPaperClip", scale: 0.92),
-    _StickerItem.deco("stickerTapeBeige", scale: 1.1),
-    _StickerItem.deco("stickerTornNoteBeige", scale: 1.0),
-    _StickerItem.deco("stickerTicketPaper", scale: 1.0),
-    _StickerItem.deco("stickerRibbonBlue", scale: 1.0),
-    _StickerItem.deco("stickerBowPink", scale: 0.95),
-    _StickerItem.deco("stickerHeartRed", scale: 0.9),
-    _StickerItem.deco("stickerSparkleBlue", scale: 0.9),
-    _StickerItem.deco("stickerBlueStarSmall", scale: 0.74),
-    _StickerItem.deco("stickerScribbleBlue", scale: 0.95),
-    _StickerItem.deco("stickerBrushPink", scale: 0.95),
-    _StickerItem.deco("stickerArrowCoral", scale: 0.95),
-    _StickerItem.deco("stickerBlobGreen", scale: 0.95),
-    _StickerItem.deco("stickerLeafCornerLeft", scale: 0.85),
-    _StickerItem.deco("stickerLeafCornerRight", scale: 0.85),
-    _StickerItem.deco("stickerCloudSoft", scale: 1.05),
-    _StickerItem.deco("stickerCherryBlossom", scale: 1.0),
-    _StickerItem.deco("stickerEnvelopeBlue", scale: 1.0),
-    _StickerItem.deco("stickerCloverGreen", scale: 0.95),
-    _StickerItem.deco("stickerInstantCamera", scale: 1.0),
-    _StickerItem.deco("stickerDaisyWhite", scale: 1.0),
-    _StickerItem.deco("stickerFlowerPink", scale: 1.0),
-    _StickerItem.deco("stickerFlowerCoral", scale: 0.9),
-    _StickerItem.deco("stickerCatDoodle", scale: 1.15),
-
-    // Asset scrap은 "레이아웃" 성격이 강해서 1개만 추천에 남기고, 나머지는 전체보기/레이아웃탭에서 사용
-    _StickerItem.asset("assets/sticker/scrap1.png"),
-
-    // Emoji는 deco와 의미가 겹치는 항목(⭐/✨/❤️)은 추천에서 제거하고, 템플릿에서 실제 쓰이는 것만 유지
-    _StickerItem.emoji("🎀"),
-    _StickerItem.emoji("📎"),
-  ];
-
   static const List<_StickerItem> _stickersAll = [
     _StickerItem.deco("stickerBlueStar", scale: 1.0),
     _StickerItem.deco("stickerBlueStarSmall", scale: 0.74),
@@ -190,166 +155,38 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(
-            context,
-            '인기 스티커',
-            onSeeAll: _openAllStickersSheet,
-          ),
-          SizedBox(height: 16.h),
-          _buildStickerGrid(context),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _openAllStickersSheet() async {
-    if (!mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.78,
-          decoration: BoxDecoration(
-            color: SnapFitColors.surfaceOf(context),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24.r),
-              topRight: Radius.circular(24.r),
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                SizedBox(height: 12.h),
-                Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.textPrimaryOf(
-                      context,
-                    ).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  '스티커 전체보기',
-                  style: TextStyle(
-                    color: SnapFitColors.textPrimaryOf(context),
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Expanded(
-                  child: GridView.builder(
-                    padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 20.h),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 5,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                    itemCount: _stickersAll.length,
-                    itemBuilder: (context, index) {
-                      final sticker = _stickersAll[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop(); // 전체보기 닫기
-                          widget.onStickerTap?.call(sticker.valueForInsert);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: widget.surfaceColor,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: SnapFitColors.overlayLightOf(context),
-                            ),
-                          ),
-                          child: Center(child: _buildStickerVisual(sticker)),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSectionHeader(
-    BuildContext context,
-    String title, {
-    VoidCallback? onSeeAll,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            color: SnapFitColors.isDark(context)
-                ? Colors.white
-                : Colors.black87,
-          ),
-        ),
-        if (onSeeAll != null)
-          GestureDetector(
-            onTap: onSeeAll,
-            child: Text(
-              '전체보기',
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: const Color(0xFF00C2E0).withValues(alpha: 0.8),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildStickerGrid(BuildContext context) {
     return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 5,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemCount: _stickersPreview.length,
+      itemCount: _stickersAll.length,
       itemBuilder: (context, index) {
+        final sticker = _stickersAll[index];
         final isSelected = _selectedStickerIndex == index;
         return GestureDetector(
           onTap: () {
             setState(() {
               _selectedStickerIndex = index;
             });
-            widget.onStickerTap?.call(_stickersPreview[index].valueForInsert);
+            widget.onStickerTap?.call(sticker.valueForInsert);
           },
           child: Container(
             decoration: BoxDecoration(
               color: widget.surfaceColor,
               borderRadius: BorderRadius.circular(12.r),
-              border: isSelected
-                  ? Border.all(color: SnapFitColors.accent, width: 2)
-                  : null,
+              border: Border.all(
+                color: isSelected
+                    ? SnapFitColors.accent
+                    : SnapFitColors.overlayLightOf(context),
+                width: isSelected ? 2 : 1,
+              ),
             ),
             child: Stack(
               children: [
-                Center(child: _buildStickerVisual(_stickersPreview[index])),
+                Center(child: _buildStickerVisual(sticker)),
                 if (isSelected)
                   Positioned(
                     top: 4,

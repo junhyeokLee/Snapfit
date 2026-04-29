@@ -16,7 +16,6 @@ import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
-import 'features/auth/presentation/views/auth_gate.dart';
 import 'features/billing/data/billing_provider.dart';
 import 'features/profile/data/order_repository.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';

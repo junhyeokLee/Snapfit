@@ -33,6 +33,7 @@ class LayerModel {
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
   /// 텍스트 채움 모드 ("solid" | "imageClip")
   final String? textFillMode;
+
   /// textFillMode=imageClip 일 때 채움 이미지 URL
   final String? textFillImageUrl;
   final String?

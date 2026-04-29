@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 const _coverRadius = BorderRadius.only(
   topRight: Radius.circular(12),
@@ -58,11 +57,25 @@ class HomeFocusWrap extends StatelessWidget {
     ];
   }
 
+  static List<BoxShadow> readerCoverShadowForScale(
+    double scale, [
+    double focus = 1,
+  ]) {
+    final easedFocus = Curves.easeOut.transform(focus.clamp(0.0, 1.0));
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.08 + (0.14 * easedFocus)),
+        blurRadius: (14 + (16 * easedFocus)) * scale,
+        spreadRadius: (0.5 + (1.5 * easedFocus)) * scale,
+        offset: Offset(0, 6 + (8 * easedFocus)) * scale,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final scale = 0.98 + 0.15 * focus;
-    // 포커스일수록 살짝 위로 들림 (픽셀)
-    final translateY = -18.0 * focus;
+    final scale = 0.86 + 0.42 * focus;
+    final translateY = -16.0 * focus;
 
     final content = Transform.translate(
       offset: Offset(0, translateY),
@@ -72,7 +85,7 @@ class HomeFocusWrap extends StatelessWidget {
             ? Container(
                 decoration: BoxDecoration(
                   borderRadius: _coverRadius,
-                  boxShadow: coverStyleShadowForScale(1.0),
+                  boxShadow: readerCoverShadowForScale(1.0, focus),
                 ),
                 child: child,
               )

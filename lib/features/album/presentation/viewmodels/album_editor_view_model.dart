@@ -18,12 +18,12 @@ import '../../../../core/constants/page_templates.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/layer.dart';
 import '../../domain/entities/layer_export_mapper.dart';
-import 'gallery_notifier.dart';
 import 'cover_view_model.dart';
 import 'album_view_model.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../service/album_persistence_service.dart';
 import '../../service/album_editor_service.dart'; // Restore import
+import '../utils/cover_backdrop_tone.dart';
 
 part 'album_editor_view_model.freezed.dart';
 part 'album_editor_view_model.g.dart';
@@ -268,41 +268,43 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final offsetX = (targetCanvas.width - fittedW) / 2;
     final offsetY = (targetCanvas.height - fittedH) / 2;
 
-    return sourceLayers.map((layer) {
-      final sourceX = looksNormalized
-          ? layer.position.dx * sourceCanvas.width
-          : (layer.position.dx - sourceOrigin.dx);
-      final sourceY = looksNormalized
-          ? layer.position.dy * sourceCanvas.height
-          : (layer.position.dy - sourceOrigin.dy);
-      final sourceW = looksNormalized
-          ? layer.width * sourceCanvas.width
-          : layer.width;
-      final sourceH = looksNormalized
-          ? layer.height * sourceCanvas.height
-          : layer.height;
+    return sourceLayers
+        .map((layer) {
+          final sourceX = looksNormalized
+              ? layer.position.dx * sourceCanvas.width
+              : (layer.position.dx - sourceOrigin.dx);
+          final sourceY = looksNormalized
+              ? layer.position.dy * sourceCanvas.height
+              : (layer.position.dy - sourceOrigin.dy);
+          final sourceW = looksNormalized
+              ? layer.width * sourceCanvas.width
+              : layer.width;
+          final sourceH = looksNormalized
+              ? layer.height * sourceCanvas.height
+              : layer.height;
 
-      final nx = (sourceX * uniformScale) + offsetX;
-      final ny = (sourceY * uniformScale) + offsetY;
-      final nw = sourceW * uniformScale;
-      final nh = sourceH * uniformScale;
-      final style = layer.textStyle;
-      final scaledStyle = style?.copyWith(
-        fontSize: style.fontSize == null
-            ? null
-            : (style.fontSize! * uniformScale).clamp(8.0, 220.0).toDouble(),
-        letterSpacing: style.letterSpacing == null
-            ? null
-            : style.letterSpacing! * uniformScale,
-      );
+          final nx = (sourceX * uniformScale) + offsetX;
+          final ny = (sourceY * uniformScale) + offsetY;
+          final nw = sourceW * uniformScale;
+          final nh = sourceH * uniformScale;
+          final style = layer.textStyle;
+          final scaledStyle = style?.copyWith(
+            fontSize: style.fontSize == null
+                ? null
+                : (style.fontSize! * uniformScale).clamp(8.0, 220.0).toDouble(),
+            letterSpacing: style.letterSpacing == null
+                ? null
+                : style.letterSpacing! * uniformScale,
+          );
 
-      return layer.copyWith(
-        position: Offset(nx, ny),
-        width: nw,
-        height: nh,
-        textStyle: scaledStyle,
-      );
-    }).toList(growable: false);
+          return layer.copyWith(
+            position: Offset(nx, ny),
+            width: nw,
+            height: nh,
+            textStyle: scaledStyle,
+          );
+        })
+        .toList(growable: false);
   }
 
   Size _normalizedTemplateCanvasFor(Size targetCanvas) {
@@ -477,17 +479,23 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       sourceLayers: coverLayers,
       targetCanvas: _coverReferenceSize,
     );
-    final normalized = _normalizeLayersForEditing(
+    final extracted = _extractTemplateBackgroundForEditing(
       mapped,
+      _coverReferenceSize,
+    );
+    final normalized = _normalizeLayersForEditing(
+      extracted.layers,
       _coverReferenceSize,
       preserveLayout: true,
     );
     final cover = _pages.first;
-    cover.layers
-      ..clear()
-      ..addAll(normalized);
+    _pages[0] = cover.copyWith(
+      layers: normalized,
+      backgroundColor: extracted.backgroundColor ?? cover.backgroundColor,
+    );
     _currentPageIndex = 0;
     _emit();
+    unawaited(_syncPageBackgroundColorFromImageTone(0, normalized));
   }
 
   /// 사진 선택 바텀시트 등을 열기 전에 갤러리 데이터가 비어있으면 1회 로딩
@@ -1007,7 +1015,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final currentPage = _pages[_currentPageIndex];
     var next = updated;
     if (updated.type == LayerType.text) {
-      final old = currentPage.layers.where((l) => l.id == updated.id).firstOrNull;
+      final old = currentPage.layers
+          .where((l) => l.id == updated.id)
+          .firstOrNull;
       final textAppearanceChanged =
           old == null ||
           old.text != updated.text ||
@@ -1030,8 +1040,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final style = layer.textStyle ?? const TextStyle(fontSize: 18);
     final isCoverPage = currentPage?.isCover == true;
     final canvas = isCoverPage ? _coverReferenceSize : _innerPageCanvasSize;
-    final currentW =
-        layer.width.isFinite && layer.width > 1 ? layer.width : 1.0;
     final naturalPainter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
@@ -1054,10 +1062,13 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       textAlign: layer.textAlign ?? TextAlign.center,
       maxLines: null,
     )..layout(minWidth: 0, maxWidth: nextW);
-    final requiredH = (fittedPainter.height + vPad).clamp(20.0, 5000.0).toDouble();
+    final requiredH = (fittedPainter.height + vPad)
+        .clamp(20.0, 5000.0)
+        .toDouble();
     final nextH = math.max(layer.height, requiredH);
 
-    if ((nextW - layer.width).abs() < 0.1 && (nextH - layer.height).abs() < 0.1) {
+    if ((nextW - layer.width).abs() < 0.1 &&
+        (nextH - layer.height).abs() < 0.1) {
       return layer;
     }
     return layer.copyWith(width: nextW, height: nextH);
@@ -1180,6 +1191,27 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
+  bool get canDeleteCurrentPage {
+    if (_pages.length <= 2) return false;
+    if (_currentPageIndex <= 0 || _currentPageIndex >= _pages.length) {
+      return false;
+    }
+    return !_pages[_currentPageIndex].isCover;
+  }
+
+  void deleteCurrentPage() {
+    if (!canDeleteCurrentPage) return;
+    _recordUndo();
+    _pages.removeAt(_currentPageIndex);
+    for (var i = 0; i < _pages.length; i++) {
+      final page = _pages[i];
+      _pages[i] = page.copyWith(pageIndex: i, isCover: i == 0);
+    }
+    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
+    _currentPageIndex = (_currentPageIndex - 1).clamp(0, _pages.length - 1);
+    _emit();
+  }
+
   /// 현재 페이지에 템플릿 적용 (기존 레이어를 템플릿 레이아웃으로 교체)
   void applyTemplateToCurrentPage(PageTemplate template, Size canvasSize) {
     final page = currentPage;
@@ -1195,9 +1227,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       fromTemplate.layers,
       canvasSize,
     );
-    page.layers
-      ..clear()
-      ..addAll(normalized);
+    _pages[_currentPageIndex] = page.copyWith(
+      layers: normalized,
+      backgroundColor: fromTemplate.backgroundColor,
+    );
     _emit();
   }
 
@@ -1223,11 +1256,22 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       layers,
       fillPersistentUrls: true,
     );
-    final normalized = _normalizeLayersForEditing(ready, canvasSize);
-    page.layers
-      ..clear()
-      ..addAll(normalized);
+    final extracted = _extractTemplateBackgroundForEditing(ready, canvasSize);
+    final normalized = _normalizeLayersForEditing(
+      extracted.layers,
+      canvasSize,
+    );
+    _pages[_currentPageIndex] = page.copyWith(
+      layers: normalized,
+      backgroundColor:
+          template.backgroundColor?.toARGB32() ??
+          extracted.backgroundColor ??
+          page.backgroundColor,
+    );
     _emit();
+    unawaited(
+      _syncPageBackgroundColorFromImageTone(_currentPageIndex, normalized),
+    );
   }
 
   List<LayerModel> _scaleTemplateLayers(
@@ -1257,92 +1301,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     }).toList();
   }
 
-  List<LayerModel> _normalizeTemplateLayers(
-    List<LayerModel> layers,
-    Size canvas,
-  ) {
-    if (layers.isEmpty || canvas.width <= 0 || canvas.height <= 0) {
-      return layers;
-    }
-
-    final content = layers.where((l) {
-      if (l.type == LayerType.decoration &&
-          l.position == Offset.zero &&
-          (l.width - canvas.width).abs() <= 0.1 &&
-          (l.height - canvas.height).abs() <= 0.1) {
-        return false;
-      }
-      return true;
-    }).toList();
-    if (content.isEmpty) return layers;
-
-    double minX = double.infinity;
-    double minY = double.infinity;
-    double maxX = -double.infinity;
-    double maxY = -double.infinity;
-    for (final l in content) {
-      minX = math.min(minX, l.position.dx);
-      minY = math.min(minY, l.position.dy);
-      maxX = math.max(maxX, l.position.dx + l.width);
-      maxY = math.max(maxY, l.position.dy + l.height);
-    }
-
-    final boundsW = maxX - minX;
-    final boundsH = maxY - minY;
-    if (boundsW <= 0 || boundsH <= 0) return layers;
-
-    final inset = math.min(canvas.width, canvas.height) * 0.01;
-    final targetW = canvas.width - (inset * 2);
-    final targetH = canvas.height - (inset * 2);
-    final scale = math.min(1.0, math.min(targetW / boundsW, targetH / boundsH));
-
-    final cx = (minX + maxX) / 2;
-    final cy = (minY + maxY) / 2;
-    final tx = canvas.width / 2 - cx;
-    final ty = canvas.height / 2 - cy;
-
-    return layers.map((l) {
-      if (l.type == LayerType.decoration &&
-          l.position == Offset.zero &&
-          (l.width - canvas.width).abs() <= 0.1 &&
-          (l.height - canvas.height).abs() <= 0.1) {
-        return l;
-      }
-
-      final center = Offset(
-        l.position.dx + l.width / 2,
-        l.position.dy + l.height / 2,
-      );
-      final movedCenter = Offset(center.dx + tx, center.dy + ty);
-      final canvasCenter = Offset(canvas.width / 2, canvas.height / 2);
-      final scaledCenter =
-          canvasCenter + ((movedCenter - canvasCenter) * scale);
-      final w = l.width * scale;
-      final h = l.height * scale;
-      final x = scaledCenter.dx - w / 2;
-      final y = scaledCenter.dy - h / 2;
-      final style = l.textStyle;
-      final scaledStyle = style?.copyWith(
-        fontSize: style.fontSize == null ? null : style.fontSize! * scale,
-        letterSpacing: style.letterSpacing == null
-            ? null
-            : style.letterSpacing! * scale,
-      );
-
-      final clampedX = x.clamp(inset, canvas.width - w - inset).toDouble();
-      final clampedY = y.clamp(inset, canvas.height - h - inset).toDouble();
-
-      return l.copyWith(
-        position: Offset(clampedX, clampedY),
-        width: w,
-        height: h,
-        textStyle: scaledStyle,
-      );
-    }).toList();
-  }
-
   bool _isFullCanvasBackgroundCandidate(LayerModel layer, Size canvas) {
-    if (layer.type != LayerType.decoration && layer.type != LayerType.image) {
+    if (layer.type != LayerType.decoration) {
       return false;
     }
     final nearOrigin =
@@ -1355,25 +1315,134 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     return nearFull;
   }
 
-  List<LayerModel> _normalizeLayersForEditing(
+  ({List<LayerModel> layers, int? backgroundColor})
+  _extractTemplateBackgroundForEditing(
     List<LayerModel> layers,
     Size canvas,
-    {bool preserveLayout = false}
   ) {
+    if (layers.isEmpty) {
+      return (layers: layers, backgroundColor: null);
+    }
+
+    final backgroundCandidates = layers
+        .where((layer) => _isFullCanvasBackgroundCandidate(layer, canvas))
+        .toList(growable: false)
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    final backgroundLayer = backgroundCandidates.isEmpty
+        ? null
+        : backgroundCandidates.first;
+    final backgroundColor = backgroundLayer == null
+        ? null
+        : _resolveTemplateBackgroundColor(backgroundLayer);
+
+    return (
+      layers: layers,
+      backgroundColor: backgroundColor?.toARGB32(),
+    );
+  }
+
+  Color? _resolveTemplateBackgroundColor(LayerModel layer) {
+    final fill = _parseHexColor(layer.decorationFillColor);
+    if (fill != null) return fill;
+
+    switch (layer.imageBackground) {
+      case 'paperWhite':
+        return const Color(0xFFFFFFFF);
+      case 'paperWhiteWarm':
+        return const Color(0xFFF7F1E8);
+      case 'paperWarm':
+        return const Color(0xFFF1E6D8);
+      case 'paperBeige':
+        return const Color(0xFFE9DDCB);
+      case 'paperYellow':
+        return const Color(0xFFF6E6B0);
+      case 'paperPink':
+        return const Color(0xFFF1DDE2);
+      case 'paperGray':
+        return const Color(0xFFE9EDF2);
+      case 'paperBrown':
+      case 'paperBrownLined':
+        return const Color(0xFFD8C7B5);
+      case 'paperBrownPlain':
+        return const Color(0xFFCDB08E);
+      case 'skyBlue':
+        return const Color(0xFFCDE2F2);
+      case 'cloudSkyBlue':
+        return const Color(0xFFDCE7EF);
+      case 'minimalGray':
+        return const Color(0xFFD8DEE6);
+      case 'deepNavy':
+        return const Color(0xFF24374A);
+      case 'darkVignette':
+        return const Color(0xFF2E2C3E);
+      case 'softSkyBloom':
+        return const Color(0xFF8FBCE7);
+      case 'blossomPinkDust':
+        return const Color(0xFFE688A6);
+      case 'dreamyNightSky':
+        return const Color(0xFF1D235A);
+      case 'saveDateHeroGradient':
+        return const Color(0xFF8A8A95);
+      case 'notebookPunchPage':
+        return const Color(0xFFF7F1E8);
+    }
+
+    return null;
+  }
+
+  Color? _parseHexColor(String? raw) {
+    if (raw == null) return null;
+    final normalized = raw.trim();
+    if (normalized.isEmpty) return null;
+    final hex = normalized.startsWith('#')
+        ? normalized.substring(1)
+        : normalized;
+    if (hex.length != 6 && hex.length != 8) return null;
+    final value = int.tryParse(
+      hex.length == 6 ? 'FF$hex' : hex,
+      radix: 16,
+    );
+    return value == null ? null : Color(value);
+  }
+
+  Future<void> _syncPageBackgroundColorFromImageTone(
+    int pageIndex,
+    List<LayerModel> layers,
+  ) async {
+    final imageUrl = resolveBackdropImageUrl(layers);
+    if (imageUrl == null || imageUrl.isEmpty) return;
+    final tone = await extractBackdropToneFromImageUrl(imageUrl);
+    if (tone == null) return;
+    if (pageIndex < 0 || pageIndex >= _pages.length) return;
+
+    final page = _pages[pageIndex];
+    final nextColor = tone.toARGB32();
+    if (page.backgroundColor == nextColor) return;
+    _pages[pageIndex] = page.copyWith(backgroundColor: nextColor);
+    _emit();
+  }
+  List<LayerModel> _normalizeLayersForEditing(
+    List<LayerModel> layers,
+    Size canvas, {
+    bool preserveLayout = false,
+  }) {
     if (layers.isEmpty) return layers;
 
     if (preserveLayout) {
-      return layers.map((layer) {
-        var w = layer.width;
-        var h = layer.height;
-        var x = layer.position.dx;
-        var y = layer.position.dy;
-        if (!w.isFinite || w <= 0) w = 8;
-        if (!h.isFinite || h <= 0) h = 8;
-        if (!x.isFinite) x = 0;
-        if (!y.isFinite) y = 0;
-        return layer.copyWith(position: Offset(x, y), width: w, height: h);
-      }).toList(growable: false);
+      return layers
+          .map((layer) {
+            var w = layer.width;
+            var h = layer.height;
+            var x = layer.position.dx;
+            var y = layer.position.dy;
+            if (!w.isFinite || w <= 0) w = 8;
+            if (!h.isFinite || h <= 0) h = 8;
+            if (!x.isFinite) x = 0;
+            if (!y.isFinite) y = 0;
+            return layer.copyWith(position: Offset(x, y), width: w, height: h);
+          })
+          .toList(growable: false);
     }
 
     final maxW = math.max(1.0, canvas.width * 2);

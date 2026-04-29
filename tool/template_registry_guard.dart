@@ -3,7 +3,8 @@ import 'dart:io';
 
 void main(List<String> args) {
   final storeJson =
-      _arg(args, '--store-json') ?? 'assets/templates/generated/store_latest.json';
+      _arg(args, '--store-json') ??
+      'assets/templates/generated/store_latest.json';
   final registryPath =
       _arg(args, '--registry') ??
       'assets/templates/workspace/template_registry.json';
@@ -32,8 +33,7 @@ void main(List<String> args) {
           .toList(growable: false);
 
   final byTemplateId = <String, Map<String, dynamic>>{
-    for (final row in store)
-      (row['templateId'] ?? '').toString().trim(): row,
+    for (final row in store) (row['templateId'] ?? '').toString().trim(): row,
   };
 
   final issues = <String>[];
@@ -72,10 +72,14 @@ void main(List<String> args) {
       issues.add('approved template has asset previewImages: $templateId');
     }
     if (templateJson.contains('asset:assets/templates/$templateId')) {
-      issues.add('approved template templateJson contains asset paths: $templateId');
+      issues.add(
+        'approved template templateJson contains asset paths: $templateId',
+      );
     }
     if (templateJson.contains('asset:assets/templates/')) {
-      issues.add('approved template templateJson still has asset path: $templateId');
+      issues.add(
+        'approved template templateJson still has asset path: $templateId',
+      );
     }
   }
 

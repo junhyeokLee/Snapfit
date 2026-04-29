@@ -12,7 +12,9 @@ void main(List<String> args) {
 
   final outFile = File(outputPath);
   outFile.parent.createSync(recursive: true);
-  outFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(payload));
+  outFile.writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert(payload),
+  );
 
   stdout.writeln('Exported ${payload.length} curated store template(s)');
   stdout.writeln('Output: $outputPath');
@@ -26,4 +28,3 @@ String? _arg(List<String> args, String name) {
   }
   return null;
 }
-

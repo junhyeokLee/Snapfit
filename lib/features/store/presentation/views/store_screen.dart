@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../data/api/template_provider.dart';
 import '../../domain/entities/premium_template.dart';
+import '../widgets/premium_template_list.dart';
 import '../widgets/template_page_renderer.dart';
 import 'template_detail_screen.dart';
 
@@ -32,405 +34,87 @@ class StoreScreen extends ConsumerStatefulWidget {
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
-  DateTime? _lastAutoRefreshRequestAt;
-
   final ScrollController _scrollController = ScrollController();
-  final GlobalKey _allTemplatesKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final threshold = _scrollController.position.maxScrollExtent - 520;
-    if (_scrollController.position.pixels >= threshold) {
-      ref.read(storeTemplateFeedProvider.notifier).loadMore();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final feedState = ref.watch(storeTemplateFeedProvider);
-
-    // 화면이 다시 노출될 때 서버 최신 템플릿으로 자연스럽게 동기화한다.
-    if (!feedState.isInitialLoading && !feedState.isLoadingMore) {
-      final now = DateTime.now();
-      final shouldThrottle =
-          _lastAutoRefreshRequestAt != null &&
-          now.difference(_lastAutoRefreshRequestAt!) <
-              const Duration(seconds: 10);
-      if (!shouldThrottle) {
-        final isStale =
-            feedState.lastSyncedAt == null ||
-            now.difference(feedState.lastSyncedAt!) >=
-                const Duration(seconds: 45);
-        if (isStale) {
-          _lastAutoRefreshRequestAt = now;
-          Future.microtask(() {
-            ref.read(storeTemplateFeedProvider.notifier).refreshIfStale();
-          });
-        }
-      }
-    }
+    final templatesAsync = ref.watch(templateListProvider);
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       body: SafeArea(
-        child: Builder(
-          builder: (_) {
-            if (feedState.isInitialLoading && feedState.items.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (feedState.items.isEmpty) {
-              return _StoreErrorView(
-                onRetry: () =>
-                    ref.read(storeTemplateFeedProvider.notifier).refresh(),
-              );
-            }
-            final templates = feedState.items;
-            final latestNewIds = _resolveNewTemplateIds(templates);
-            final weeklyBest = _resolveWeeklyBest(templates, latestNewIds);
-            final sorted = _sortTemplates(templates);
-
-            return RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(storeTemplateFeedProvider.notifier).refresh(),
-              child: CustomScrollView(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
+        child: templatesAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => _StoreErrorView(
+            onRetry: () => ref.invalidate(templateListProvider),
+          ),
+          data: (templates) => RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(templateListProvider);
+              await ref.read(templateListProvider.future);
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: platformScrollPhysics(alwaysScrollable: true),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const SizedBox(height: 24),
+                      const PremiumTemplateList(maxItems: 3),
+                      const SizedBox(height: 28),
+                      const _AllTemplatesHeader(),
+                      const SizedBox(height: 14),
+                    ]),
+                  ),
                 ),
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        const _TopBar(),
-                        const SizedBox(height: 24),
-                        _WeeklyHeader(
-                          onMoreTap: weeklyBest.length > 2
-                              ? () {
-                                  _scrollToAllTemplates();
-                                }
-                              : null,
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                  sliver: templates.isEmpty
+                      ? const SliverToBoxAdapter(
+                          child: _EmptyState(message: '템플릿을 준비 중입니다.'),
+                        )
+                      : SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 14,
+                                childAspectRatio: 0.62,
+                              ),
+                          delegate: SliverChildBuilderDelegate((context, index) {
+                            final template = templates[index];
+                            return _TemplateGridCard(
+                              template: template,
+                              onTap: () => _openDetail(template),
+                            );
+                          }, childCount: templates.length),
                         ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          height: 246,
-                          child: weeklyBest.isEmpty
-                              ? const _EmptyState(message: '추천 템플릿을 준비 중입니다.')
-                              : ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: weeklyBest.length,
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(width: 14),
-                                  itemBuilder: (context, index) {
-                                    final template = weeklyBest[index];
-                                    return _WeeklyTemplateCard(
-                                      template: template,
-                                      isNew: latestNewIds.contains(template.id),
-                                      onTap: () => _openDetail(template),
-                                    );
-                                  },
-                                ),
-                        ),
-                        const SizedBox(height: 28),
-                        const _AllTemplatesHeader(),
-                        const SizedBox(height: 14),
-                      ]),
-                    ),
-                  ),
-                  SliverPadding(
-                    key: _allTemplatesKey,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                    sliver: sorted.isEmpty
-                        ? const SliverToBoxAdapter(
-                            child: _EmptyState(message: '템플릿을 준비 중입니다.'),
-                          )
-                        : SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 14,
-                                  childAspectRatio: 0.62,
-                                ),
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final template = sorted[index];
-                              return _TemplateGridCard(
-                                template: template,
-                                onTap: () => _openDetail(template),
-                              );
-                            }, childCount: sorted.length),
-                          ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 100),
-                      child: Center(
-                        child: feedState.isLoadingMore
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : (feedState.hasNext
-                                  ? const SizedBox.shrink()
-                                  : const SizedBox.shrink()),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
-
-  Set<int> _resolveNewTemplateIds(List<PremiumTemplate> templates) {
-    return templates
-        .where(_isNewWithinOneDay)
-        .map((template) => template.id)
-        .toSet();
-  }
-
-  bool _isNewWithinOneDay(PremiumTemplate template) {
-    final createdAt = _parseTemplateCreatedAt(template.createdAt);
-    if (createdAt == null) return false;
-    final age = DateTime.now().difference(createdAt);
-    return !age.isNegative && age <= const Duration(hours: 24);
-  }
-
-  DateTime? _parseTemplateCreatedAt(String? raw) {
-    final value = raw?.trim();
-    if (value == null || value.isEmpty) return null;
-    final parsed = DateTime.tryParse(value);
-    if (parsed == null) return null;
-    return parsed.isUtc ? parsed.toLocal() : parsed;
-  }
-
-  List<PremiumTemplate> _resolveWeeklyBest(
-    List<PremiumTemplate> templates,
-    Set<int> latestTopIds,
-  ) {
-    final copied = [...templates];
-    copied.sort((a, b) {
-      final scoreA = _weeklyScore(a, latestTopIds.contains(a.id));
-      final scoreB = _weeklyScore(b, latestTopIds.contains(b.id));
-      final byScore = scoreB.compareTo(scoreA);
-      if (byScore != 0) return byScore;
-      return b.id.compareTo(a.id);
-    });
-    return copied.take(8).toList();
-  }
-
-  int _weeklyScore(PremiumTemplate template, bool isNew) {
-    if (template.weeklyScore > 0) {
-      return template.weeklyScore + (isNew ? 40 : 0);
-    }
-    final bestBonus = template.isBest ? 120 : 0;
-    final newBonus = isNew ? 60 : 0;
-    return (template.likeCount * 10) +
-        (template.userCount * 3) +
-        bestBonus +
-        newBonus;
-  }
-
-  bool _isSaveTheDate(PremiumTemplate template) {
-    final title = template.title.trim().toLowerCase();
-    final raw = (template.templateJson ?? '').toLowerCase();
-    return title == 'save the date' || raw.contains('save_the_date_v1');
-  }
-
-  List<PremiumTemplate> _sortTemplates(List<PremiumTemplate> templates) {
-    final copied = [...templates];
-    copied.sort((a, b) {
-      final aPinned = _isSaveTheDate(a);
-      final bPinned = _isSaveTheDate(b);
-      if (aPinned != bPinned) {
-        return aPinned ? -1 : 1;
-      }
-      return b.id.compareTo(a.id);
-    });
-    return copied;
-  }
-
   void _openDetail(PremiumTemplate template) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => TemplateDetailScreen(template: template),
-      ),
-    );
-  }
-
-  void _scrollToAllTemplates() {
-    final targetContext = _allTemplatesKey.currentContext;
-    if (targetContext == null) return;
-    Scrollable.ensureVisible(
-      targetContext,
-      duration: const Duration(milliseconds: 340),
-      curve: Curves.easeOutCubic,
-      alignment: 0.08,
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            '템플릿 스토어',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _WeeklyHeader extends StatelessWidget {
-  final VoidCallback? onMoreTap;
-
-  const _WeeklyHeader({this.onMoreTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'WEEKLY BEST',
-          style: TextStyle(
-            color: SnapFitColors.accent,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.4,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '금주의 인기 템플릿',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                  color: SnapFitColors.textPrimaryOf(context),
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: onMoreTap,
-              style: TextButton.styleFrom(
-                foregroundColor: SnapFitColors.textPrimaryOf(context),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                minimumSize: const Size(0, 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '더보기',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _WeeklyTemplateCard extends StatelessWidget {
-  final PremiumTemplate template;
-  final bool isNew;
-  final VoidCallback onTap;
-
-  const _WeeklyTemplateCard({
-    required this.template,
-    required this.isNew,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.74,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AspectRatio(
-                aspectRatio: 1.55,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _StoreTemplateCoverPreview(template: template),
-                      if (isNew)
-                        const Positioned(
-                          top: 12,
-                          left: 12,
-                          child: _MiniBadge(label: 'NEW'),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              template.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: SnapFitColors.textPrimaryOf(context),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              template.subTitle ?? template.description ?? '감성을 담은 템플릿',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10,
-                color: SnapFitColors.textSecondaryOf(context),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -441,19 +125,22 @@ class _AllTemplatesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            '모든 템플릿',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              color: SnapFitColors.textPrimaryOf(context),
+    return Padding(
+      padding: const EdgeInsets.only(left: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '모든 템플릿',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                color: SnapFitColors.textPrimaryOf(context),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -555,31 +242,6 @@ class _TemplateGridCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MiniBadge extends StatelessWidget {
-  final String label;
-
-  const _MiniBadge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: SnapFitColors.accent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-        ),
       ),
     );
   }

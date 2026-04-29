@@ -6,7 +6,8 @@ enum EditorMode {
   none,
   layout, // 슬롯 기반 레이아웃(페이지 템플릿)
   template, // 전체 디자인 템플릿 (확장용)
-  decorate,
+  sticker,
+  backgroundColor,
   layer,
   text, // For text editing, though usually handled by dialog/overlay
 }
@@ -85,9 +86,15 @@ class EditorBottomMenu extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
-                  '꾸미기',
+                  '스티커',
+                  Icons.emoji_emotions_outlined,
+                  EditorMode.sticker,
+                ),
+                _buildMenuItem(
+                  context,
+                  '배경색상',
                   Icons.palette_outlined,
-                  EditorMode.decorate,
+                  EditorMode.backgroundColor,
                 ),
                 _buildMenuItem(
                   context,
@@ -126,9 +133,15 @@ class EditorBottomMenu extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
-                  '꾸미기',
+                  '스티커',
+                  Icons.emoji_emotions_outlined,
+                  EditorMode.sticker,
+                ),
+                _buildMenuItem(
+                  context,
+                  '배경색상',
                   Icons.palette_outlined,
-                  EditorMode.decorate,
+                  EditorMode.backgroundColor,
                 ),
                 _buildMenuItem(
                   context,

@@ -91,8 +91,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
         ? widget.parsedPages.length
         : widget.previewImages.length;
 
-    final safeAspect =
-        widget.designCanvasSize.height > 0
+    final safeAspect = widget.designCanvasSize.height > 0
         ? (widget.designCanvasSize.width / widget.designCanvasSize.height)
               .clamp(0.6, 1.8)
         : 0.75;

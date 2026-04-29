@@ -62,7 +62,11 @@ class AlbumEditorService {
     required Size canvasSize,
     bool isCover = false,
   }) {
-    final page = createPage(index: index, isCover: isCover);
+    final page = createPage(
+      index: index,
+      isCover: isCover,
+      backgroundColor: template.backgroundColor.toARGB32(),
+    );
     final w = canvasSize.width;
     final h = canvasSize.height;
 
@@ -319,9 +323,9 @@ class AlbumEditorService {
       textStyle: updated.textStyle ?? oldLayer.textStyle,
       textStyleType: updated.textStyleType,
       bubbleColor: updated.bubbleColor ?? oldLayer.bubbleColor,
-      position: updated.position ?? oldLayer.position,
-      scale: updated.scale ?? oldLayer.scale,
-      rotation: updated.rotation ?? oldLayer.rotation,
+      position: updated.position,
+      scale: updated.scale,
+      rotation: updated.rotation,
       textAlign: updated.textAlign ?? oldLayer.textAlign,
       opacity: updated.opacity,
       // [Fix] 이미지 변경 반영을 위해 asset 및 URL 관련 필드 추가

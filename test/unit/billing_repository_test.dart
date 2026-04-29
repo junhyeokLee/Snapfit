@@ -16,10 +16,8 @@ void main() {
 
     when(() => tokenStorage.getUserId()).thenAnswer((_) async => '1958142146');
     when(
-      () => dio.post(
-        '/api/billing/storage/preflight',
-        data: any(named: 'data'),
-      ),
+      () =>
+          dio.post('/api/billing/storage/preflight', data: any(named: 'data')),
     ).thenAnswer(
       (_) async => Response(
         requestOptions: RequestOptions(path: '/api/billing/storage/preflight'),

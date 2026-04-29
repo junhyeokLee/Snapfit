@@ -4,20 +4,34 @@ import 'dart:io';
 const _assetDir = 'assets/templates/save_the_date/images';
 
 final _imageSources = <String, String>{
-  'cover_full_bleed': 'https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0',
-  'p01_arch_editorial': 'https://www.figma.com/api/mcp/asset/f0daab34-35bc-4432-b244-607ed0a95f09',
-  'p02_circle_card': 'https://www.figma.com/api/mcp/asset/abde0ede-b437-4a65-97df-fee895e01bb7',
-  'p02_circle_ring_overlay': 'https://www.figma.com/api/mcp/asset/214f1915-5d89-4dcf-97e0-5e4d92a8c223',
-  'p03_strip_editorial': 'https://www.figma.com/api/mcp/asset/895f637f-a64e-438d-b560-50b404484749',
-  'p04_type_invitation_bg': 'https://www.figma.com/api/mcp/asset/57f1628a-e722-41d2-a9a2-f34fe8eaa561',
-  'p08_stamp_tl': 'https://www.figma.com/api/mcp/asset/b35c5f07-26af-482a-b330-b548a6a2d095',
-  'p08_stamp_tr': 'https://www.figma.com/api/mcp/asset/7ec9ba4b-b816-4b82-97e0-1634fa04f512',
-  'p08_stamp_bl': 'https://www.figma.com/api/mcp/asset/5075f331-2a16-4053-af9e-052184711110',
-  'p08_stamp_br': 'https://www.figma.com/api/mcp/asset/74e1e7d9-dd1d-4fe8-be13-b1970e66f016',
-  'p10_photo_notes_left': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
-  'p10_photo_notes_center': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
-  'p10_photo_notes_bottom': 'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
-  'p12_closing_photo': 'https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5',
+  'cover_full_bleed':
+      'https://www.figma.com/api/mcp/asset/9fde010a-b44a-4d02-8e64-4a4cd19af7d0',
+  'p01_arch_editorial':
+      'https://www.figma.com/api/mcp/asset/f0daab34-35bc-4432-b244-607ed0a95f09',
+  'p02_circle_card':
+      'https://www.figma.com/api/mcp/asset/abde0ede-b437-4a65-97df-fee895e01bb7',
+  'p02_circle_ring_overlay':
+      'https://www.figma.com/api/mcp/asset/214f1915-5d89-4dcf-97e0-5e4d92a8c223',
+  'p03_strip_editorial':
+      'https://www.figma.com/api/mcp/asset/895f637f-a64e-438d-b560-50b404484749',
+  'p04_type_invitation_bg':
+      'https://www.figma.com/api/mcp/asset/57f1628a-e722-41d2-a9a2-f34fe8eaa561',
+  'p08_stamp_tl':
+      'https://www.figma.com/api/mcp/asset/b35c5f07-26af-482a-b330-b548a6a2d095',
+  'p08_stamp_tr':
+      'https://www.figma.com/api/mcp/asset/7ec9ba4b-b816-4b82-97e0-1634fa04f512',
+  'p08_stamp_bl':
+      'https://www.figma.com/api/mcp/asset/5075f331-2a16-4053-af9e-052184711110',
+  'p08_stamp_br':
+      'https://www.figma.com/api/mcp/asset/74e1e7d9-dd1d-4fe8-be13-b1970e66f016',
+  'p10_photo_notes_left':
+      'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
+  'p10_photo_notes_center':
+      'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
+  'p10_photo_notes_bottom':
+      'https://www.figma.com/api/mcp/asset/cfbcc8f8-fd7c-4d8e-9e63-af32fafec36b',
+  'p12_closing_photo':
+      'https://www.figma.com/api/mcp/asset/657fb709-69c5-4fb3-b790-47a7ebea17e5',
 };
 
 String _assetPath(String name) => 'asset:$_assetDir/$name.png';
@@ -94,16 +108,7 @@ Map<String, dynamic> _buildHandoff() {
       layoutId: 'p01_arch_editorial',
       recommendedPhotoCount: 1,
       layers: [
-        _deco(
-          'bg',
-          0,
-          0,
-          1,
-          1,
-          'paperWarm',
-          z: 0,
-          fillColor: '#FFEADBCF',
-        ),
+        _deco('bg', 0, 0, 1, 1, 'paperWarm', z: 0, fillColor: '#FFEADBCF'),
         _deco(
           'arch_shell',
           0.1111,
@@ -539,7 +544,13 @@ Map<String, dynamic> _buildHandoff() {
           'Ceremony',
           '2:00 PM\nGarden House',
         ),
-        ..._detailCard('dinner', 0.5278, 0.2222, 'Dinner', '5:30 PM\nBlue Hall'),
+        ..._detailCard(
+          'dinner',
+          0.5278,
+          0.2222,
+          'Dinner',
+          '5:30 PM\nBlue Hall',
+        ),
         ..._detailCard(
           'dress',
           0.0833,
@@ -665,41 +676,11 @@ Map<String, dynamic> _buildHandoff() {
           z: 5,
           frame: 'circleRing',
         ),
-        ..._timelineRow(
-          0.1481,
-          0.2361,
-          '1:30',
-          'Arrival and welcome tea',
-          '',
-        ),
-        ..._timelineRow(
-          0.1481,
-          0.3431,
-          '2:00',
-          'Ceremony begins',
-          '',
-        ),
-        ..._timelineRow(
-          0.1481,
-          0.4500,
-          '3:00',
-          'Family portraits',
-          '',
-        ),
-        ..._timelineRow(
-          0.1481,
-          0.5569,
-          '5:30',
-          'Dinner reception',
-          '',
-        ),
-        ..._timelineRow(
-          0.1481,
-          0.6639,
-          '7:00',
-          'Toasts and music',
-          '',
-        ),
+        ..._timelineRow(0.1481, 0.2361, '1:30', 'Arrival and welcome tea', ''),
+        ..._timelineRow(0.1481, 0.3431, '2:00', 'Ceremony begins', ''),
+        ..._timelineRow(0.1481, 0.4500, '3:00', 'Family portraits', ''),
+        ..._timelineRow(0.1481, 0.5569, '5:30', 'Dinner reception', ''),
+        ..._timelineRow(0.1481, 0.6639, '7:00', 'Toasts and music', ''),
       ],
     ),
     _pageSpec(
@@ -829,7 +810,16 @@ Map<String, dynamic> _buildHandoff() {
           z: 1,
           frame: 'free',
         ),
-        _deco('outer', 0.0944, 0.1111, 0.8111, 0.7778, 'deepNavy', z: 2, radius: 0.0352),
+        _deco(
+          'outer',
+          0.0944,
+          0.1111,
+          0.8111,
+          0.7778,
+          'deepNavy',
+          z: 2,
+          radius: 0.0352,
+        ),
         _text(
           'eyebrow',
           0.1667,
@@ -1299,44 +1289,6 @@ Map<String, dynamic> _buildHandoff() {
   };
 }
 
-Future<void> _syncIntoStoreLatest({
-  required String generatedStorePath,
-  required String storeLatestPath,
-}) async {
-  final generatedRaw = await File(generatedStorePath).readAsString();
-  final generatedItems = (jsonDecode(generatedRaw) as List)
-      .whereType<Map>()
-      .map((item) => Map<String, dynamic>.from(item))
-      .toList(growable: false);
-  if (generatedItems.isEmpty) return;
-
-  final generatedItem = generatedItems.first;
-  final generatedTitle = _normalizeTitle(
-    generatedItem['title']?.toString() ?? '',
-  );
-
-  final storeLatestFile = File(storeLatestPath);
-  final existing = storeLatestFile.existsSync()
-      ? (jsonDecode(await storeLatestFile.readAsString()) as List)
-            .whereType<Map>()
-            .map((item) => Map<String, dynamic>.from(item))
-            .toList()
-      : <Map<String, dynamic>>[];
-
-  existing.removeWhere(
-    (item) =>
-        _normalizeTitle(item['title']?.toString() ?? '') == generatedTitle,
-  );
-  existing.add(generatedItem);
-
-  await storeLatestFile.writeAsString(
-    const JsonEncoder.withIndent('  ').convert(existing),
-  );
-}
-
-String _normalizeTitle(String value) =>
-    value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]+'), '');
-
 Map<String, dynamic> _buildVariant({
   required String aspect,
   required double width,
@@ -1457,16 +1409,7 @@ List<Map<String, dynamic>> _transformLayersForAspect(
 }
 
 List<Map<String, dynamic>> _coverLayers() => [
-  _image(
-    'cover_bg',
-    0.0,
-    0.0,
-    1.0,
-    1.0,
-    _coverImage,
-    z: 0,
-    frame: 'free',
-  ),
+  _image('cover_bg', 0.0, 0.0, 1.0, 1.0, _coverImage, z: 0, frame: 'free'),
   _deco('cover_overlay', 0.0, 0.0, 1.0, 1.0, 'deepNavy', z: 1, opacity: 0.26),
   _deco(
     'date_chip',
@@ -1541,67 +1484,6 @@ List<Map<String, dynamic>> _coverLayers() => [
     z: 4,
   ),
 ];
-
-List<Map<String, dynamic>> _heroBase({
-  required int photoIndex,
-  required String haze,
-}) {
-  return [
-    _deco('bg_dark_mask', 0, 0, 1, 1, 'darkVignette', z: 0),
-    _image(
-      'hero_main',
-      0.0833,
-      0.1458,
-      0.8334,
-      0.62,
-      _previewImages[photoIndex],
-      z: 3,
-    ),
-    _deco(
-      'hero_top_tint',
-      0.0833,
-      0.1458,
-      0.8334,
-      0.26,
-      'cloudSkyBlue',
-      z: 4,
-      opacity: 0.32,
-    ),
-    _deco(
-      'hero_bottom_tint',
-      0.0833,
-      0.5070,
-      0.8334,
-      0.26,
-      'paperPink',
-      z: 5,
-      opacity: 0.30,
-    ),
-    _deco(
-      'haze_$haze',
-      haze == 'left' ? 0.10 : (haze == 'center' ? 0.38 : 0.63),
-      haze == 'center' ? 0.20 : 0.18,
-      haze == 'center' ? 0.24 : 0.20,
-      haze == 'center' ? 0.40 : 0.48,
-      'minimalGray',
-      z: 6,
-      opacity: 0.18,
-      radius: 0.22,
-    ),
-    _text(
-      'photo_hint',
-      0.31,
-      0.44,
-      0.38,
-      0.024,
-      '사진을 넣어주세요',
-      fontSize: 20,
-      fontFamily: 'Inter',
-      fontWeight: 6,
-      color: '#CCDDE7F4',
-    ),
-  ];
-}
 
 List<Map<String, dynamic>> _detailCard(
   String id,
@@ -1798,27 +1680,6 @@ Map<String, dynamic> _deco(
       if (borderWidth != null) 'borderWidth': borderWidth,
     },
   };
-}
-
-Map<String, dynamic> _pill(
-  String id,
-  double x,
-  double y,
-  double width,
-  double height, {
-  double opacity = 0.4,
-}) {
-  return _deco(
-    id,
-    x,
-    y,
-    width,
-    height,
-    'darkVignette',
-    z: 12,
-    opacity: opacity,
-    radius: 0.08,
-  );
 }
 
 Map<String, dynamic> _text(

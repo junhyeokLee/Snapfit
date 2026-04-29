@@ -48,6 +48,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
     _allowEditing = widget.allowEditing;
     // 앨범 ID는 부모에서 전달받음
     _albumId = widget.albumId;
+    if (_albumId != null) {
+      Future.microtask(_createInviteLink);
+    }
   }
 
   @override
@@ -478,10 +481,10 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
       final inviteResponse = await memberRepository.invite(
         _albumId!,
-        role: widget.allowEditing ? 'EDITOR' : 'VIEWER',
+        role: _allowEditing ? 'EDITOR' : 'VIEWER',
       );
 
-      _inviteLink = inviteResponse.link;
+      setState(() => _inviteLink = inviteResponse.link);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

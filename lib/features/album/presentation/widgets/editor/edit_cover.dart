@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:typed_data' as ui;
 import 'dart:ui' as ui;
@@ -16,8 +15,6 @@ import 'package:snap_fit/features/album/presentation/controllers/toolbar_action_
 import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
 import 'package:snap_fit/features/album/presentation/controllers/edit_cover_state_manager.dart';
-import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover_selector.dart';
-import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -408,7 +405,6 @@ class EditCoverState extends ConsumerState<EditCover> {
     final albumSt = ref.watch(albumEditorViewModelProvider).asData?.value;
     final albumVm = ref.read(albumEditorViewModelProvider.notifier);
     final coverSt = ref.watch(coverViewModelProvider).asData?.value;
-    final coverVm = ref.read(coverViewModelProvider.notifier);
     final layers = albumSt?.layers ?? [];
 
     // 커버 사이즈 우선순위:
@@ -436,7 +432,7 @@ class EditCoverState extends ConsumerState<EditCover> {
     // - 데코 탭에서 updatePageBackgroundColor 호출 시, 현재 페이지의 backgroundColor가 변경됨
     final int? coverBgInt = albumVm.currentPage?.backgroundColor;
     final Color? coverBackgroundColor = coverBgInt != null
-        ? Color(coverBgInt)
+        ? Color(coverBgInt).withAlpha(0xFF)
         : null;
 
     // _selectedCover 동기화
@@ -524,109 +520,108 @@ class EditCoverState extends ConsumerState<EditCover> {
                                     ),
                                     child: LayoutBuilder(
                                       builder: (context, coverConstraints) {
-                                          final double availW =
-                                              coverConstraints.maxWidth;
-                                          final double availH =
-                                              canvasConstraints.maxHeight;
-                                          final double logicalW =
-                                              kCoverReferenceWidth;
-                                          final double logicalH =
-                                              logicalW / aspect;
+                                        final double availW =
+                                            coverConstraints.maxWidth;
+                                        final double availH =
+                                            canvasConstraints.maxHeight;
+                                        final double logicalW =
+                                            kCoverReferenceWidth;
+                                        final double logicalH =
+                                            logicalW / aspect;
 
-                                          // 모든 커버 유형이 같은 '최대 변' 길이를 갖도록 스케일 계산
-                                          // → 정사각형(500×500)이 세로형(375×500)보다 면적이 더 크게 표시됨
-                                          final double maxLogicalDim =
-                                              logicalW > logicalH
-                                              ? logicalW
-                                              : logicalH;
-                                          final double scaleByMaxDim =
-                                              availW / maxLogicalDim;
-                                          // 높이가 가용 영역을 넘지 않도록 제한
-                                          final double scaleByHeight =
-                                              availH / logicalH;
-                                          final double scale =
-                                              scaleByMaxDim < scaleByHeight
-                                              ? scaleByMaxDim
-                                              : scaleByHeight;
-                                          final double displayW =
-                                              logicalW * scale;
-                                          final double displayH =
-                                              logicalH * scale;
-                                          debugPrint(
-                                            '[CoverSize] aspect=$aspect maxLogicalDim=${maxLogicalDim.toStringAsFixed(0)} scaleByMaxDim=${scaleByMaxDim.toStringAsFixed(3)} scaleByH=${scaleByHeight.toStringAsFixed(3)} → scale=${scale.toStringAsFixed(3)} displayW=${displayW.toStringAsFixed(0)} displayH=${displayH.toStringAsFixed(0)}',
-                                          );
+                                        // 모든 커버 유형이 같은 '최대 변' 길이를 갖도록 스케일 계산
+                                        // → 정사각형(500×500)이 세로형(375×500)보다 면적이 더 크게 표시됨
+                                        final double maxLogicalDim =
+                                            logicalW > logicalH
+                                            ? logicalW
+                                            : logicalH;
+                                        final double scaleByMaxDim =
+                                            availW / maxLogicalDim;
+                                        // 높이가 가용 영역을 넘지 않도록 제한
+                                        final double scaleByHeight =
+                                            availH / logicalH;
+                                        final double scale =
+                                            scaleByMaxDim < scaleByHeight
+                                            ? scaleByMaxDim
+                                            : scaleByHeight;
+                                        final double displayW =
+                                            logicalW * scale;
+                                        final double displayH =
+                                            logicalH * scale;
+                                        debugPrint(
+                                          '[CoverSize] aspect=$aspect maxLogicalDim=${maxLogicalDim.toStringAsFixed(0)} scaleByMaxDim=${scaleByMaxDim.toStringAsFixed(3)} scaleByH=${scaleByHeight.toStringAsFixed(3)} → scale=${scale.toStringAsFixed(3)} displayW=${displayW.toStringAsFixed(0)} displayH=${displayH.toStringAsFixed(0)}',
+                                        );
 
-                                          return SizedBox(
-                                            width: displayW,
-                                            height: displayH,
-                                            child: FittedBox(
-                                              fit: BoxFit.contain,
-                                              child: SizedBox(
-                                                width: logicalW,
-                                                height: logicalH,
-                                                child: CoverLayout(
-                                                  aspect: aspect,
-                                                  layers: _interaction.sortByZ(
-                                                    layers,
-                                                  ),
-                                                  isInteracting: _interaction
-                                                      .isInteractingNow,
-                                                  activeVerticalGuides:
-                                                      _interaction
-                                                          .activeVerticalGuides,
-                                                  activeHorizontalGuides:
-                                                      _interaction
-                                                          .activeHorizontalGuides,
-                                                  leftSpine: 14.0,
-                                                  backgroundColor:
-                                                      coverBackgroundColor,
-                                                  contentKey:
-                                                      widget.canvasKey ??
-                                                      _coverKey,
-                                                  onCoverSizeChanged: (size) {
-                                                    if (_coverSize == size)
-                                                      return;
-                                                    WidgetsBinding.instance
-                                                        .addPostFrameCallback((
-                                                          _,
-                                                        ) {
-                                                          if (!mounted) return;
-
-                                                          setState(() {
-                                                            _coverSize = size;
-                                                          });
-                                                          albumVm
-                                                              .setCoverCanvasSize(
-                                                                size,
-                                                              );
-                                                          widget.onSizeChanged
-                                                              ?.call(size);
-                                                          // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
-                                                          albumVm
-                                                              .loadPendingEditAlbumIfNeeded(
-                                                                size,
-                                                              );
-                                                        });
-                                                  },
-                                                  buildImage: (layer) =>
-                                                      _layerBuilder.buildImage(
-                                                        layer,
-                                                        isCover: true,
-                                                      ),
-                                                  buildText: (layer) =>
-                                                      _layerBuilder.buildText(
-                                                        layer,
-                                                        isCover: true,
-                                                      ),
-                                                  sortedByZ:
-                                                      _interaction.sortByZ,
-                                                  theme: selectedTheme,
+                                        return SizedBox(
+                                          width: displayW,
+                                          height: displayH,
+                                          child: FittedBox(
+                                            fit: BoxFit.contain,
+                                            child: SizedBox(
+                                              width: logicalW,
+                                              height: logicalH,
+                                              child: CoverLayout(
+                                                aspect: aspect,
+                                                layers: _interaction.sortByZ(
+                                                  layers,
                                                 ),
+                                                isInteracting: _interaction
+                                                    .isInteractingNow,
+                                                activeVerticalGuides:
+                                                    _interaction
+                                                        .activeVerticalGuides,
+                                                activeHorizontalGuides:
+                                                    _interaction
+                                                        .activeHorizontalGuides,
+                                                leftSpine: 14.0,
+                                                backgroundColor:
+                                                    coverBackgroundColor,
+                                                contentKey:
+                                                    widget.canvasKey ??
+                                                    _coverKey,
+                                                onCoverSizeChanged: (size) {
+                                                  if (_coverSize == size)
+                                                    return;
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback((
+                                                        _,
+                                                      ) {
+                                                        if (!mounted) return;
+
+                                                        setState(() {
+                                                          _coverSize = size;
+                                                        });
+                                                        albumVm
+                                                            .setCoverCanvasSize(
+                                                              size,
+                                                            );
+                                                        widget.onSizeChanged
+                                                            ?.call(size);
+                                                        // 홈에서 편집으로 들어온 경우: 실제 캔버스 크기 기준으로 레이어 1회 복원
+                                                        albumVm
+                                                            .loadPendingEditAlbumIfNeeded(
+                                                              size,
+                                                            );
+                                                      });
+                                                },
+                                                buildImage: (layer) =>
+                                                    _layerBuilder.buildImage(
+                                                      layer,
+                                                      isCover: true,
+                                                    ),
+                                                buildText: (layer) =>
+                                                    _layerBuilder.buildText(
+                                                      layer,
+                                                      isCover: true,
+                                                    ),
+                                                sortedByZ: _interaction.sortByZ,
+                                                theme: selectedTheme,
                                               ),
                                             ),
-                                          );
-                                        },
-                                      ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                               ],

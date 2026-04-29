@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/utils/platform_ui.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_interaction_manager.dart';
@@ -143,7 +144,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     return Row(
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 16),
+          icon: Icon(platformBackIcon(), color: Colors.black, size: 16),
           onPressed: () => setState(() => _panelMode = EditPanelMode.none),
         ),
         Expanded(
@@ -180,11 +181,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: Colors.black,
-              size: 16,
-            ),
+            icon: Icon(platformBackIcon(), color: Colors.black, size: 16),
             onPressed: () => setState(() => _panelMode = EditPanelMode.none),
           ),
           if (layer.type == LayerType.text) ...[

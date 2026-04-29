@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'home_focus_wrap.dart';
 
 const _coverRadius = BorderRadius.only(
   topRight: Radius.circular(12),
@@ -27,6 +26,8 @@ class HomeCoverFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final clampedShadowScale = shadowScale.clamp(0.35, 10.0);
+
     return Container(
       width: width,
       height: height,
@@ -39,7 +40,17 @@ class HomeCoverFrame extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: _coverRadius,
           boxShadow: showShadow
-              ? HomeFocusWrap.coverStyleShadowForScale(shadowScale, 0.5)
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.16),
+                    blurRadius: 20,
+                    spreadRadius: clampedShadowScale,
+                    offset: Offset(
+                      6 * clampedShadowScale,
+                      14 * clampedShadowScale,
+                    ),
+                  ),
+                ]
               : null,
         ),
         child: ClipRRect(borderRadius: _coverRadius, child: child),

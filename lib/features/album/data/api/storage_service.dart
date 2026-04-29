@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:image/image.dart' as img;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../../billing/data/billing_repository.dart';
 import '../../../../core/utils/app_logger.dart';
@@ -226,40 +224,6 @@ class StorageService {
       originalGsPath: originalGsPath,
       previewGsPath: previewGsPath,
     );
-  }
-
-  /// 바이트를 다운스케일하여 PNG로 반환 (패키지 없이 `ui.instantiateImageCodec` 사용)
-  Future<Uint8List> _resizeImageBytesToPng(
-    Uint8List bytes, {
-    required int maxDimension,
-  }) async {
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-    final ui.FrameInfo frame = await codec.getNextFrame();
-    final ui.Image src = frame.image;
-
-    final int w = src.width;
-    final int h = src.height;
-    final int longest = w > h ? w : h;
-    if (longest <= maxDimension) {
-      // 입력이 이미 PNG가 아닐 수도 있지만, 그대로 업로드하면 용량이 커질 수 있어
-      // 여기서는 "리사이즈 불필요"인 경우만 그대로 반환한다.
-      return bytes;
-    }
-
-    final double scale = maxDimension / longest;
-    final int targetW = (w * scale).round().clamp(1, maxDimension);
-    final int targetH = (h * scale).round().clamp(1, maxDimension);
-
-    final ui.Codec resizedCodec = await ui.instantiateImageCodec(
-      bytes,
-      targetWidth: targetW,
-      targetHeight: targetH,
-    );
-    final ui.FrameInfo resizedFrame = await resizedCodec.getNextFrame();
-    final ByteData? out = await resizedFrame.image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-    return out?.buffer.asUint8List() ?? bytes;
   }
 
   /// 바이트를 다운스케일하여 JPEG로 반환 (native compressor 사용)

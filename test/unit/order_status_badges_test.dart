@@ -32,35 +32,41 @@ void main() {
       expect(badges.hasAny, isFalse);
     });
 
-    test('same counts + newer latestUpdatedAt triggers fallback badge', () async {
-      final first = OrderSummaryResult(
-        paymentPending: 0,
-        paymentCompleted: 1,
-        inProduction: 0,
-        shipping: 0,
-        delivered: 0,
-        canceled: 0,
-        latestUpdatedAt: DateTime.parse('2026-04-01T00:00:00Z'),
-      );
-      await repository.computeUnreadStatusBadges(userId: 'u2', summary: first);
+    test(
+      'same counts + newer latestUpdatedAt triggers fallback badge',
+      () async {
+        final first = OrderSummaryResult(
+          paymentPending: 0,
+          paymentCompleted: 1,
+          inProduction: 0,
+          shipping: 0,
+          delivered: 0,
+          canceled: 0,
+          latestUpdatedAt: DateTime.parse('2026-04-01T00:00:00Z'),
+        );
+        await repository.computeUnreadStatusBadges(
+          userId: 'u2',
+          summary: first,
+        );
 
-      final changed = OrderSummaryResult(
-        paymentPending: 0,
-        paymentCompleted: 1,
-        inProduction: 0,
-        shipping: 0,
-        delivered: 0,
-        canceled: 0,
-        latestUpdatedAt: DateTime.parse('2026-04-01T01:00:00Z'),
-      );
-      final badges = await repository.computeUnreadStatusBadges(
-        userId: 'u2',
-        summary: changed,
-      );
+        final changed = OrderSummaryResult(
+          paymentPending: 0,
+          paymentCompleted: 1,
+          inProduction: 0,
+          shipping: 0,
+          delivered: 0,
+          canceled: 0,
+          latestUpdatedAt: DateTime.parse('2026-04-01T01:00:00Z'),
+        );
+        final badges = await repository.computeUnreadStatusBadges(
+          userId: 'u2',
+          summary: changed,
+        );
 
-      expect(badges.paymentCompleted, 1);
-      expect(badges.hasAny, isTrue);
-    });
+        expect(badges.paymentCompleted, 1);
+        expect(badges.hasAny, isTrue);
+      },
+    );
 
     test('same counts + same latestUpdatedAt keeps zero badges', () async {
       final summary = OrderSummaryResult(
@@ -72,7 +78,10 @@ void main() {
         canceled: 0,
         latestUpdatedAt: DateTime.parse('2026-04-01T02:00:00Z'),
       );
-      await repository.computeUnreadStatusBadges(userId: 'u3', summary: summary);
+      await repository.computeUnreadStatusBadges(
+        userId: 'u3',
+        summary: summary,
+      );
 
       final badges = await repository.computeUnreadStatusBadges(
         userId: 'u3',

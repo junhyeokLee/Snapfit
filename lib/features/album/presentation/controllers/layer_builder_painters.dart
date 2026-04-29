@@ -67,26 +67,6 @@ class _TicketNotchPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// 리본 – 양끝 비스듬히 잘린 배너 클리퍼
-class _RibbonClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    const cut = 14.0;
-    final path = Path()
-      ..moveTo(cut, 0)
-      ..lineTo(size.width - cut, 0)
-      ..lineTo(size.width, size.height / 2)
-      ..lineTo(size.width - cut, size.height)
-      ..lineTo(cut, size.height)
-      ..lineTo(0, size.height / 2)
-      ..close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
 /// 격자 노트 – 가로·세로 그리드 라인 (step 지정 가능)
 class _GridLinePainter extends CustomPainter {
   final Color color;
@@ -523,66 +503,6 @@ class _RoughEdgePaperClipper extends CustomClipper<Path> {
 
 // (중앙 찢김 스크래치용 CustomPainter들은 찢김 스티커 제거에 따라 삭제되었습니다)
 // Film strip painter: 양쪽에 4개씩 연한 타공(perforation) — 레퍼런스 빈티지 필름 스트립
-class _FilmHolePainterV2 extends CustomPainter {
-  static const int holesPerSide = 4;
-  static const double holeW = 5.0;
-  static const double holeH = 5.0;
-  static const Color holeColor = Color(0xFF3D4556);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = holeColor
-      ..style = PaintingStyle.fill;
-    final leftX = 2.0;
-    final rightX = size.width - 2.0 - holeW;
-    final totalGap = size.height - (holesPerSide * holeH);
-    final gap = holesPerSide > 1 ? totalGap / (holesPerSide + 1) : totalGap / 2;
-
-    for (int i = 0; i < holesPerSide; i++) {
-      final y = gap + i * (holeH + gap);
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(leftX, y, holeW, holeH),
-        const Radius.circular(1),
-      );
-      canvas.drawRRect(rect, paint);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(rightX, y, holeW, holeH),
-          const Radius.circular(1),
-        ),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// Sketch frame painter for _frameSketch
-class _SketchFramePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black87
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    final path = Path();
-    path.moveTo(4, 8);
-    path.lineTo(size.width - 4, 4);
-    path.lineTo(size.width - 6, size.height - 6);
-    path.lineTo(6, size.height - 4);
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 /// VHS 스캔라인
 class _VhsScanLinePainter extends CustomPainter {
   @override
@@ -661,44 +581,6 @@ class _HeartClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _HeartFramePainter extends CustomPainter {
-  final Color fillColor;
-  final Color strokeColor;
-  final double strokeWidth;
-  final double shadowBlur;
-
-  _HeartFramePainter({
-    required this.fillColor,
-    required this.strokeColor,
-    required this.strokeWidth,
-    required this.shadowBlur,
-  });
-
-  Path _heartPath(Size size) => _HeartClipper().getClip(size);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = _heartPath(size);
-    canvas.drawShadow(path, const Color(0x22000000), shadowBlur, false);
-    final fill = Paint()..color = fillColor;
-    final stroke =
-        Paint()
-          ..color = strokeColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth;
-    canvas.drawPath(path, fill);
-    canvas.drawPath(path, stroke);
-  }
-
-  @override
-  bool shouldRepaint(covariant _HeartFramePainter oldDelegate) {
-    return fillColor != oldDelegate.fillColor ||
-        strokeColor != oldDelegate.strokeColor ||
-        strokeWidth != oldDelegate.strokeWidth ||
-        shadowBlur != oldDelegate.shadowBlur;
-  }
 }
 
 class _PaperNoisePainter extends CustomPainter {

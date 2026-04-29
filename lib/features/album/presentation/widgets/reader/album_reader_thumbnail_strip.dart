@@ -146,6 +146,12 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
                                   layers: pages[0].layers,
                                   isInteracting: false,
                                   leftSpine: 0,
+                                  backgroundColor:
+                                      pages[0].backgroundColor != null
+                                      ? Color(
+                                          pages[0].backgroundColor!,
+                                        ).withAlpha(0xFF)
+                                      : null,
                                   onCoverSizeChanged: (_) {},
                                   buildImage: (layer) => coverBuilder
                                       .buildImage(layer, isCover: true),

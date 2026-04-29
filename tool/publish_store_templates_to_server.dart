@@ -198,7 +198,9 @@ Future<bool> _postUpsert(
       stderr.writeln(
         'Upsert failed via ${uri.path}: ${payload['title']} (${resp.statusCode}) $body',
       );
-      if (resp.statusCode != 401 && resp.statusCode != 403 && resp.statusCode != 404) {
+      if (resp.statusCode != 401 &&
+          resp.statusCode != 403 &&
+          resp.statusCode != 404) {
         return false;
       }
     }

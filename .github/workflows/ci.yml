@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  frontend-tests:
-    name: Flutter Tests
+  flutter-quality:
+    name: Flutter Quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,5 +22,9 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Run analyzer
+        run: flutter analyze
       - name: Run tests
         run: flutter test

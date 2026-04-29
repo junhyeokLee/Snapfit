@@ -5,6 +5,7 @@ import '../../../../../shared/widgets/spine_painter.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/layer.dart';
+import '../../utils/cover_backdrop_tone.dart';
 
 typedef BuildImageLayer = Widget Function(LayerModel layer);
 typedef BuildTextLayer = Widget Function(LayerModel layer);
@@ -45,6 +46,8 @@ class CoverLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasCustomBackgroundColor = backgroundColor != null;
+    final backgroundImageUrl = resolveBackdropImageUrl(layers);
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -92,6 +95,7 @@ class CoverLayout extends StatelessWidget {
                                       leftSpine: leftSpine,
                                       theme: theme,
                                       backgroundColor: backgroundColor,
+                                      backgroundImageUrl: backgroundImageUrl,
                                     ),
                                     ...sortedByZ(layers).map((layer) {
                                       // 스타일 변경 시 즉시 반영되도록 키에 textBackground/imageBackground 포함
@@ -113,25 +117,27 @@ class CoverLayout extends StatelessWidget {
                                           );
                                       }
                                     }),
-                                    IgnorePointer(
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: CustomPaint(
-                                          painter: SpinePainter(
-                                            baseStart: Colors.white.withOpacity(
-                                              0.1,
+                                    if (!hasCustomBackgroundColor)
+                                      IgnorePointer(
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: CustomPaint(
+                                            painter: SpinePainter(
+                                              baseStart: Colors.white
+                                                  .withOpacity(0.1),
+                                              baseEnd: Colors.white.withOpacity(
+                                                0.1,
+                                              ),
                                             ),
-                                            baseEnd: Colors.white.withOpacity(
-                                              0.1,
+                                            size: Size(
+                                              kCoverSpineWidth,
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .height,
                                             ),
-                                          ),
-                                          size: Size(
-                                            kCoverSpineWidth,
-                                            MediaQuery.of(context).size.height,
                                           ),
                                         ),
                                       ),
-                                    ),
                                     if (isInteracting)
                                       IgnorePointer(
                                         ignoring: true,
@@ -148,7 +154,8 @@ class CoverLayout extends StatelessWidget {
                                         ignoring: true,
                                         child: CustomPaint(
                                           painter: _SnapGuidePainter(
-                                            verticalGuides: activeVerticalGuides,
+                                            verticalGuides:
+                                                activeVerticalGuides,
                                             horizontalGuides:
                                                 activeHorizontalGuides,
                                             leftSpine: leftSpine,
@@ -222,11 +229,13 @@ class _CoverBackground extends StatelessWidget {
   final double leftSpine;
   final CoverTheme theme;
   final Color? backgroundColor;
+  final String? backgroundImageUrl;
 
   const _CoverBackground({
     required this.leftSpine,
     required this.theme,
     this.backgroundColor,
+    this.backgroundImageUrl,
   });
 
   @override
@@ -253,25 +262,95 @@ class _CoverBackground extends StatelessWidget {
                 : null,
           ),
         ),
+        if (backgroundImageUrl != null && backgroundImageUrl!.isNotEmpty)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: _BackdropSolidTone(
+                imageUrl: backgroundImageUrl!,
+                fallbackColor: backgroundColor,
+              ),
+            ),
+          ),
 
         // Spine 영역 어두운 그림자 (공통)
-        IgnorePointer(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              width: leftSpine,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [Colors.black.withOpacity(0.18), Colors.transparent],
-                  stops: const [0.0, 1.0],
+        if (backgroundColor == null)
+          IgnorePointer(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: leftSpine,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.18),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 1.0],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
+    );
+  }
+}
+
+class _BackdropSolidTone extends StatefulWidget {
+  final String imageUrl;
+  final Color? fallbackColor;
+
+  const _BackdropSolidTone({
+    required this.imageUrl,
+    required this.fallbackColor,
+  });
+
+  @override
+  State<_BackdropSolidTone> createState() => _BackdropSolidToneState();
+}
+
+class _BackdropSolidToneState extends State<_BackdropSolidTone> {
+  static final Map<String, Future<Color?>> _toneFutures =
+      <String, Future<Color?>>{};
+
+  late Future<Color?> _toneFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _toneFuture = _resolveTone(widget.imageUrl);
+  }
+
+  @override
+  void didUpdateWidget(covariant _BackdropSolidTone oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _toneFuture = _resolveTone(widget.imageUrl);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Color?>(
+      future: _toneFuture,
+      builder: (context, snapshot) {
+        final resolved = snapshot.data ?? widget.fallbackColor;
+        if (resolved == null) {
+          return const SizedBox.shrink();
+        }
+        return DecoratedBox(
+          decoration: BoxDecoration(color: resolved),
+        );
+      },
+    );
+  }
+
+  Future<Color?> _resolveTone(String imageUrl) {
+    return _toneFutures.putIfAbsent(
+      imageUrl,
+      () => extractBackdropToneFromImageUrl(imageUrl),
     );
   }
 }

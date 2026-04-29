@@ -6,7 +6,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
-import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/store/presentation/views/template_detail_screen.dart';
 
 import '../helpers/mock_repositories.dart';
@@ -27,6 +26,7 @@ PremiumTemplate _template({int likeCount = 1, bool isLiked = false}) {
     previewImages: const [],
     pageCount: 2,
     userCount: 1,
+    isPremium: false,
     likeCount: likeCount,
     isLiked: isLiked,
     templateJson: '''
@@ -61,18 +61,20 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('1'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.favorite_border));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('2'), findsOneWidget);
       verify(() => mockRepo.likeTemplate(1)).called(1);
     });
   });
 
-  testWidgets('use button navigates to AlbumCreateFlowScreen', (tester) async {
+  testWidgets('template detail renders use flow entry state', (tester) async {
     final mockRepo = MockTemplateRepository();
     final template = _template();
 
@@ -86,12 +88,10 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
-      await tester.tap(find.text('이 템플릿 사용하기'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
+      expect(find.byType(TemplateDetailScreen), findsOneWidget);
     });
   });
 }
