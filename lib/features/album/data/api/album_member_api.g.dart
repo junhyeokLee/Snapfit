@@ -44,7 +44,7 @@ class _AlbumMemberApi implements AlbumMemberApi {
     try {
       _value = InviteLinkResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, _result);
+      errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
     }
     return _value;
@@ -71,7 +71,7 @@ class _AlbumMemberApi implements AlbumMemberApi {
     try {
       _value = InviteInfoResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, _result);
+      errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
     }
     return _value;
@@ -101,7 +101,7 @@ class _AlbumMemberApi implements AlbumMemberApi {
     try {
       _value = InviteAcceptResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, _result);
+      errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
     }
     return _value;
@@ -136,7 +136,7 @@ class _AlbumMemberApi implements AlbumMemberApi {
           )
           .toList();
     } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, _result);
+      errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
     }
     return _value;

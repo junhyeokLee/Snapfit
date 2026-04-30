@@ -12,7 +12,7 @@ class TemplateRepositoryImpl implements TemplateRepository {
   TemplateRepositoryImpl(this.api, {required this.tokenStorage});
 
   Future<String> _getUserId() async {
-    final id = await tokenStorage.getUserId();
+    final id = await tokenStorage.getResolvedUserId();
     return id ?? '';
   }
 

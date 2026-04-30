@@ -73,7 +73,7 @@ class HomeAlbumTabScreen extends ConsumerWidget {
                 ),
               ),
               child: Row(
-                children: ['진행중', '완료', '즐겨찾기', '공유'].asMap().entries.map((
+                children: ['전체', '진행중', '완료', '즐겨찾기', '공유'].asMap().entries.map((
                   entry,
                 ) {
                   final idx = entry.key;
@@ -133,17 +133,25 @@ class HomeAlbumTabScreen extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       final category = switch (albumTabIndex) {
-                        1 => AlbumCategory.completed,
-                        3 => AlbumCategory.shared,
+                        4 => AlbumCategory.shared,
                         _ => AlbumCategory.recent,
+                      };
+                      final initialTabIndex = switch (albumTabIndex) {
+                        1 => 0,
+                        2 => 1,
+                        3 => 2,
+                        _ => 0,
                       };
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => AlbumCategoryScreen(
                             category: category,
-                            initialAlbums: tabData.tabAlbums,
+                            initialAlbums: albumTabIndex == 4
+                                ? tabData.tabAlbums
+                                : tabData.allAlbums,
                             currentUserId: currentUserId,
+                            initialTabIndex: initialTabIndex,
                           ),
                         ),
                       );

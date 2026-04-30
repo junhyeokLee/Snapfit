@@ -84,6 +84,9 @@ Widget _buildImageImpl(
   // 앱 번들 에셋 기반 스티커(예: asset:assets/sticker/scrap1.png)
   if (url.startsWith('asset:')) {
     final assetPath = url.substring('asset:'.length);
+    final shouldContainAsset =
+        layer.type == LayerType.sticker ||
+        assetPath.startsWith('assets/sticker/');
     return builder.interaction.buildInteractiveLayer(
       layer: layer,
       baseWidth: layer.width,
@@ -95,8 +98,8 @@ Widget _buildImageImpl(
           layer,
           Image.asset(
             assetPath,
-            // 찢김 스크랩 스티커는 이미지 전체가 보이도록 contain 사용
-            fit: BoxFit.contain,
+            fit: shouldContainAsset ? BoxFit.contain : fit,
+            alignment: alignment,
             filterQuality: FilterQuality.medium,
           ),
         ),

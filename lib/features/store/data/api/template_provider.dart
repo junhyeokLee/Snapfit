@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/dio_provider.dart';
+import '../../../../core/interceptors/token_storage.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
@@ -17,6 +19,69 @@ String _safeTemplateText(String? raw, {String fallback = ''}) {
 
 String _toneKey(String value) =>
     value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9가-힣]'), '');
+
+const String _templateLikeStateKey = 'template_like_state_v1';
+
+PremiumTemplate normalizeTemplateLikeStateForDisplay(PremiumTemplate template) {
+  final safeCount = template.likeCount < 0 ? 0 : template.likeCount;
+  if (template.isLiked && safeCount == 0) {
+    return template.copyWith(likeCount: 1);
+  }
+  if (safeCount != template.likeCount) {
+    return template.copyWith(likeCount: safeCount);
+  }
+  return template;
+}
+
+String _templateLikeLookupKey(PremiumTemplate template, {String? userId}) {
+  final userScope = (userId == null || userId.trim().isEmpty)
+      ? 'guest'
+      : userId.trim();
+  final id = template.id;
+  if (id > 0) return '$userScope:id:$id';
+  return '$userScope:title:${_normalizeTemplateTitleKey(template.title)}';
+}
+
+Future<Map<String, dynamic>> _loadTemplateLikeStateMap() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_templateLikeStateKey);
+    if (raw == null || raw.trim().isEmpty) return <String, dynamic>{};
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) return decoded;
+  } catch (_) {}
+  return <String, dynamic>{};
+}
+
+Future<void> persistTemplateLikeState(
+  PremiumTemplate template, {
+  String? userId,
+}) async {
+  try {
+    final normalized = normalizeTemplateLikeStateForDisplay(template);
+    final prefs = await SharedPreferences.getInstance();
+    final map = await _loadTemplateLikeStateMap();
+    map[_templateLikeLookupKey(normalized, userId: userId)] = <String, dynamic>{
+      'isLiked': normalized.isLiked,
+      'likeCount': normalized.likeCount,
+    };
+    await prefs.setString(_templateLikeStateKey, jsonEncode(map));
+  } catch (_) {}
+}
+
+PremiumTemplate _applyPersistedLikeState(
+  PremiumTemplate template,
+  Map<String, dynamic> likeStateMap, {
+  String? userId,
+}) {
+  final raw = likeStateMap[_templateLikeLookupKey(template, userId: userId)];
+  if (raw is! Map) return template;
+  final state = Map<String, dynamic>.from(raw);
+  return normalizeTemplateLikeStateForDisplay(template.copyWith(
+    isLiked: state['isLiked'] == true,
+    likeCount: (state['likeCount'] as num?)?.toInt() ?? template.likeCount,
+  ));
+}
 
 String _coverModeForTemplate(PremiumTemplate template) {
   final title = _toneKey(template.title);
@@ -440,14 +505,15 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
   final canonicalTitle = _canonicalStoreTemplateTitle(template);
   final jsonPageCount = _extractPageCountFromJson(template.templateJson);
   final coverFromJson = _extractCoverCandidateFromJson(template.templateJson);
+  final extractedPreview = _extractPreviewCandidatesFromJson(
+    template.templateJson,
+  );
   final normalizedPreview = template.previewImages
       .map((e) => e.trim())
       .where((e) => e.isNotEmpty)
       .toList();
   if (normalizedPreview.isEmpty) {
-    normalizedPreview.addAll(
-      _extractPreviewCandidatesFromJson(template.templateJson),
-    );
+    normalizedPreview.addAll(extractedPreview);
   }
 
   final hasCover = template.coverImageUrl.trim().isNotEmpty;
@@ -461,7 +527,7 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
   if (normalizedPreview.length < 3) {
     final fill = <String>[
       resolvedFallbackCover,
-      ..._extractPreviewCandidatesFromJson(template.templateJson),
+      ...extractedPreview,
       ...normalizedPreview,
     ];
     for (final candidate in fill) {
@@ -469,6 +535,12 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
       if (candidate.trim().isEmpty) continue;
       normalizedPreview.add(candidate.trim());
     }
+  }
+
+  for (final candidate in extractedPreview) {
+    final value = candidate.trim();
+    if (value.isEmpty || normalizedPreview.contains(value)) continue;
+    normalizedPreview.add(value);
   }
 
   final coverCandidate =
@@ -511,23 +583,6 @@ PremiumTemplate _normalizeStoreTemplateRuntime(PremiumTemplate template) {
 }
 
 PremiumTemplate _applyExactFigmaCoverPresentation(PremiumTemplate template) {
-  final rawJson = (template.templateJson ?? '').toLowerCase();
-  final title = _canonicalStoreTemplateTitle(template);
-
-  if (title == 'SAVE THE DATE' ||
-      title == 'JEJU TRAVEL' ||
-      title == 'FAMILY WEEKEND' ||
-      title == 'ANNIVERSARY DAYS' ||
-      title == 'Wedding Editorial' ||
-      title == 'Scrapbook' ||
-      rawJson.contains('save_the_date_v1') ||
-      rawJson.contains('jeju_travel_v1') ||
-      rawJson.contains('family_weekend_v1') ||
-      rawJson.contains('anniversary_days_v1') ||
-      rawJson.contains('wedding_editorial_v1') ||
-      rawJson.contains('scrapbook_v1')) {
-    return template.copyWith(coverImageUrl: '', previewImages: const []);
-  }
   return template;
 }
 
@@ -898,7 +953,8 @@ Future<List<PremiumTemplate>> _loadCanonicalHandoffStoreTemplates() async {
           fromWrappedTemplate(map) ??
           fromDirectPremium(map);
       if (parsed != null) {
-        templates.add(_normalizeStoreTemplateRuntime(parsed));
+        final normalized = _normalizeStoreTemplateRuntime(parsed);
+        templates.add(normalized);
       }
     } catch (_) {
       // Ignore broken handoff files so the remaining canonical templates survive.
@@ -1140,12 +1196,47 @@ List<PremiumTemplate> _buildCanonicalStoreTemplates({
 }
 
 final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
+  final tokenStorage = ref.read(tokenStorageProvider);
+  final userId = await tokenStorage.getResolvedUserId();
+  final likeStateMap = await _loadTemplateLikeStateMap();
   final canonical = await _loadCanonicalHandoffStoreTemplates();
-  if (canonical.isNotEmpty) return canonical;
+  final local = canonical.isNotEmpty
+      ? canonical
+      : await loadCanonicalStoreTemplatesForRuntime();
 
-  final local = await loadCanonicalStoreTemplatesForRuntime();
-  if (local.isNotEmpty) return local;
-  return _hardcodedCanonicalStoreTemplates();
+  try {
+    final repository = ref.watch(templateRepositoryProvider);
+    final server = await repository.getTemplates();
+    final merged = _buildCanonicalStoreTemplates(server: server, local: local);
+    if (merged.isNotEmpty) {
+      return merged
+          .map(
+            (t) => normalizeTemplateLikeStateForDisplay(
+              _applyPersistedLikeState(t, likeStateMap, userId: userId),
+            ),
+          )
+          .toList(growable: false);
+    }
+  } catch (_) {
+    // Fallback to local runtime templates when the server is unavailable.
+  }
+
+  if (local.isNotEmpty) {
+    return local
+        .map(
+          (t) => normalizeTemplateLikeStateForDisplay(
+            _applyPersistedLikeState(t, likeStateMap, userId: userId),
+          ),
+        )
+        .toList(growable: false);
+  }
+  return _hardcodedCanonicalStoreTemplates()
+      .map(
+        (t) => normalizeTemplateLikeStateForDisplay(
+          _applyPersistedLikeState(t, likeStateMap, userId: userId),
+        ),
+      )
+      .toList(growable: false);
 });
 
 Future<List<PremiumTemplate>> loadCanonicalStoreTemplatesForRuntime() async {
@@ -1209,13 +1300,14 @@ class _NoUpdate {
 }
 
 class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
-  StoreTemplateFeedNotifier(this._repository)
+  StoreTemplateFeedNotifier(this._repository, this._tokenStorage)
     : super(StoreTemplateFeedState.initial()) {
     loadInitial();
   }
 
   static const int _pageSize = 20;
   final TemplateRepository _repository;
+  final TokenStorage _tokenStorage;
   Future<List<PremiumTemplate>>? _localTemplatesFuture;
 
   String _normalizeTitle(String value) => _normalizeTemplateTitleKey(value);
@@ -1259,12 +1351,28 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
   }
 
   Future<void> _fetchPage(int page, {required bool replace}) async {
+    final userId = await _tokenStorage.getResolvedUserId();
+    final likeStateMap = await _loadTemplateLikeStateMap();
     final local = await _loadLocalTemplates();
-    final merged = replace
-        ? local
+    List<PremiumTemplate> merged = local;
+    try {
+      final server = await _repository.getTemplates();
+      final canonicalMerged = mergeServerSummaryWithLocalStatic(
+        server: server,
+        local: local,
+      );
+      if (canonicalMerged.isNotEmpty) {
+        merged = canonicalMerged;
+      }
+    } catch (_) {
+      // Keep local templates when the server request fails.
+    }
+
+    final nextItems = replace
+        ? merged
         : <PremiumTemplate>[
             ...state.items,
-            ...local.where(
+            ...merged.where(
               (candidate) => !state.items.any(
                 (t) =>
                     t.id == candidate.id ||
@@ -1273,7 +1381,13 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
             ),
           ];
     state = state.copyWith(
-      items: merged.isNotEmpty ? merged : local,
+      items: (nextItems.isNotEmpty ? nextItems : merged)
+          .map(
+            (t) => normalizeTemplateLikeStateForDisplay(
+              _applyPersistedLikeState(t, likeStateMap, userId: userId),
+            ),
+          )
+          .toList(growable: false),
       isInitialLoading: false,
       isLoadingMore: false,
       hasNext: false,
@@ -1289,5 +1403,6 @@ final storeTemplateFeedProvider =
       ref,
     ) {
       final repository = ref.read(templateRepositoryProvider);
-      return StoreTemplateFeedNotifier(repository);
+      final tokenStorage = ref.read(tokenStorageProvider);
+      return StoreTemplateFeedNotifier(repository, tokenStorage);
     });

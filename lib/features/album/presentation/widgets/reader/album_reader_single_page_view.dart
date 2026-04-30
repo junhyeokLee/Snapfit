@@ -60,6 +60,49 @@ class _AlbumReaderSinglePageViewState
     if (mounted) widget.onStateChanged();
   }
 
+  void _openInnerDetail({
+    required double screenW,
+    required double singlePageW,
+    required double singlePageH,
+    required int spreadIndex,
+    double? tapX,
+  }) {
+    if (spreadIndex <= 0) return;
+
+    final leftIndex = 1 + (spreadIndex - 1) * 2;
+    final rightIndex = leftIndex + 1;
+
+    int tappedPageIdx = tapX == null || tapX < screenW / 2
+        ? leftIndex
+        : rightIndex;
+
+    if (tappedPageIdx >= widget.allPages.length) {
+      tappedPageIdx = widget.allPages.length - 1;
+    }
+
+    final innerPages = widget.allPages.sublist(1);
+    final innerInitialIndex = tappedPageIdx - 1;
+
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            FadeTransition(
+              opacity: animation,
+              child: AlbumReaderInnerDetailScreen(
+                innerPages: innerPages,
+                initialPageIndex: innerInitialIndex,
+                singlePageW: singlePageW,
+                singlePageH: singlePageH,
+                interaction: widget.interaction,
+                layerBuilder: widget.layerBuilder,
+              ),
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenW = MediaQuery.sizeOf(context).width;
@@ -227,45 +270,13 @@ class _AlbumReaderSinglePageViewState
               if (safePage >= 0.5 &&
                   widget.interaction.selectedLayerId == null) {
                 final currentIndex = safePage.round();
-                // 1~: 내지 (0: 커버)
-                if (currentIndex > 0) {
-                  final tapX = details.localPosition.dx;
-                  final leftIndex = 1 + (currentIndex - 1) * 2;
-                  final rightIndex = leftIndex + 1;
-
-                  // 화면의 절반 기준으로 탭한 위치에 따라 시작 인덱스 결정
-                  int tappedPageIdx = (tapX < screenW / 2)
-                      ? leftIndex
-                      : rightIndex;
-
-                  // 전체 페이지 범위를 벗어나지 않도록 방어 코드 추가
-                  if (tappedPageIdx >= widget.allPages.length) {
-                    tappedPageIdx = widget.allPages.length - 1;
-                  }
-
-                  // 내지 전체 리스트
-                  final innerPages = widget.allPages.sublist(1);
-                  final innerInitialIndex = tappedPageIdx - 1;
-
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      opaque: false, // 투명한 배경
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          FadeTransition(
-                            opacity: animation,
-                            child: AlbumReaderInnerDetailScreen(
-                              innerPages: innerPages,
-                              initialPageIndex: innerInitialIndex,
-                              singlePageW: singlePageW,
-                              singlePageH: singlePageH,
-                              interaction: widget.interaction,
-                              layerBuilder: widget.layerBuilder,
-                            ),
-                          ),
-                    ),
-                  );
-                }
+                _openInnerDetail(
+                  screenW: screenW,
+                  singlePageW: singlePageW,
+                  singlePageH: singlePageH,
+                  spreadIndex: currentIndex,
+                  tapX: details.localPosition.dx,
+                );
               }
             },
             onTapCancel: () {
@@ -278,12 +289,21 @@ class _AlbumReaderSinglePageViewState
                 widget.interaction.clearSelection();
                 onStateChanged();
               } else if (safePage < 0.5) {
-                // 커버가 절반 넘게 닫혀있으면 무조건 1페이지로 바운스하며 확 열어버림!
+                // 커버를 탭하면 첫 스프레드로 펼친 뒤 상세 보기로 바로 이어진다.
                 widget.pageController.animateToPage(
                   1,
-                  duration: const Duration(milliseconds: 1200), // 시네마틱 속도
+                  duration: const Duration(milliseconds: 1200),
                   curve: Curves.easeInOutCubic,
-                );
+                ).then((_) {
+                  if (!mounted) return;
+                  if (widget.interaction.selectedLayerId != null) return;
+                  _openInnerDetail(
+                    screenW: screenW,
+                    singlePageW: singlePageW,
+                    singlePageH: singlePageH,
+                    spreadIndex: 1,
+                  );
+                });
               }
             },
             behavior: HitTestBehavior.translucent,

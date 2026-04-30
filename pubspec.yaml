@@ -108,6 +108,21 @@ flutter:
     - assets/empty_state.png
     - assets/sticker/
     - assets/templates/
+    - assets/templates/save_the_date/images/
+    - assets/templates/jeju_travel/images/
+    - assets/templates/jeju_travel/images/figma/
+    - assets/templates/jeju_travel/images/figma_small/
+    - assets/templates/jeju_travel/images/figma_tiny/
+    - assets/templates/jeju_travel/images/resized/
+    - assets/templates/jeju_travel/images/sources/
+    - assets/templates/family_weekend/images/
+    - assets/templates/family_weekend/images/sources/
+    - assets/templates/anniversary_days/images/
+    - assets/templates/anniversary_days/images/sources/
+    - assets/templates/wedding_editorial/images/
+    - assets/templates/wedding_editorial/images/sources/
+    - assets/templates/scrapbook/images/
+    - assets/templates/scrapbook/images/sources/
     - assets/social/
 
 

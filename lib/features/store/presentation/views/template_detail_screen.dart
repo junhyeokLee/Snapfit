@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/templates/data_template_engine.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
@@ -30,6 +32,7 @@ class TemplateDetailScreen extends ConsumerStatefulWidget {
 class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   late PremiumTemplate _template;
   bool _isUsing = false;
+  bool _isLikeSubmitting = false;
   bool _isTemplateHydrating = true;
 
   // Parsed template data: List of pages, each page is a list of layers
@@ -60,7 +63,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _template = widget.template;
+    _template = normalizeTemplateLikeStateForDisplay(widget.template);
     _parseTemplateJson();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _precachePreviewImages();
@@ -179,7 +182,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
       final key = _normalizeTitle(_template.title);
       for (final t in remoteList) {
-        if (_normalizeTitle(t.title) == key) {
+        if (t.id == _template.id || _normalizeTitle(t.title) == key) {
           final merged = t.copyWith(
             previewImages: _template.previewImages.isNotEmpty
                 ? _template.previewImages
@@ -189,7 +192,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 ? t.templateJson
                 : _template.templateJson,
           );
-          return _mergeWithLocalPriorityForSaveTheDate(_template, merged);
+          return normalizeTemplateLikeStateForDisplay(
+            _mergeWithLocalPriorityForSaveTheDate(_template, merged),
+          );
         }
       }
     } catch (_) {
@@ -204,7 +209,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       final templates = await loadCanonicalStoreTemplatesForRuntime();
       for (final t in templates) {
         if (_normalizeTitle(t.title) == key) {
-          return t;
+          return normalizeTemplateLikeStateForDisplay(t);
         }
       }
     } catch (_) {
@@ -415,14 +420,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   Future<void> _refreshTemplate() async {
     try {
       final localGenerated = await _findLocalGeneratedMatchByTitle();
-      PremiumTemplate? updated;
-      if (_template.id < 0) {
-        updated = await _findRemoteMatchByTitle();
-      } else {
-        updated = await ref
-            .read(templateRepositoryProvider)
-            .getTemplate(_template.id);
-      }
+      PremiumTemplate? updated = await _findRemoteMatchByTitle();
 
       if (updated == null && localGenerated == null) return;
       if (updated == null && localGenerated != null) {
@@ -432,9 +430,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       }
       if (updated == null) return;
 
-      final updatedTemplate = _mergeWithLocalPriorityForSaveTheDate(
-        _template,
-        updated,
+      final updatedTemplate = normalizeTemplateLikeStateForDisplay(
+        _mergeWithLocalPriorityForSaveTheDate(_template, updated),
       );
       if (mounted) {
         setState(() {
@@ -456,13 +453,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _onLike() async {
+    if (_isLikeSubmitting) return;
     var target = _template;
     if (target.id < 0) {
       final matched = await _findRemoteMatchByTitle();
       if (matched != null && mounted) {
         setState(() {
-          _template = matched;
-          target = matched;
+          _template = _mergeWithLocalPriorityForSaveTheDate(_template, matched);
+          target = _template;
         });
       }
     }
@@ -478,40 +476,66 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     final oldStatus = target.isLiked;
     final oldCount = target.likeCount;
+    final userId = await ref.read(tokenStorageProvider).getResolvedUserId();
+    final optimisticCount = oldStatus
+        ? (oldCount > 0 ? oldCount - 1 : 0)
+        : oldCount + 1;
 
     // 1. Optimistic Update
     setState(() {
-      _template = target.copyWith(
+      _isLikeSubmitting = true;
+      _template = normalizeTemplateLikeStateForDisplay(target.copyWith(
         isLiked: !oldStatus,
-        likeCount: oldStatus ? oldCount - 1 : oldCount + 1,
-      );
+        likeCount: optimisticCount,
+      ));
     });
+    await persistTemplateLikeState(_template, userId: userId);
 
     try {
       // 2. API Call
       await ref.read(templateRepositoryProvider).likeTemplate(target.id);
 
-      // 3. Server truth 재동기화
-      final refreshed = await ref
-          .read(templateRepositoryProvider)
-          .getTemplate(target.id);
-      setState(() {
-        _template = refreshed;
-      });
+      // 3. POST 성공 즉시 버튼 잠금을 풀고, 서버 truth 재동기화는 뒤에서 진행
+      if (mounted) {
+        setState(() => _isLikeSubmitting = false);
+      }
+      await persistTemplateLikeState(_template, userId: userId);
 
       // Invalidate list provider so the previous screen updates
       ref.invalidate(templateListProvider);
       ref.invalidate(storeTemplateFeedProvider);
+      unawaited(_syncLikeStateAfterToggle(userId));
     } catch (e) {
       // 3. Rollback on failure
       if (mounted) {
         setState(() {
-          _template = target.copyWith(isLiked: oldStatus, likeCount: oldCount);
+          _isLikeSubmitting = false;
+          _template = normalizeTemplateLikeStateForDisplay(
+            target.copyWith(isLiked: oldStatus, likeCount: oldCount),
+          );
         });
+        await persistTemplateLikeState(_template, userId: userId);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('좋아요 처리에 실패했습니다: $e')));
       }
+    }
+  }
+
+  Future<void> _syncLikeStateAfterToggle(String? userId) async {
+    try {
+      final refreshed = await _findRemoteMatchByTitle();
+      if (refreshed == null || !mounted) return;
+      setState(() {
+        _template = normalizeTemplateLikeStateForDisplay(
+          _mergeWithLocalPriorityForSaveTheDate(_template, refreshed),
+        );
+      });
+      await persistTemplateLikeState(_template, userId: userId);
+      ref.invalidate(templateListProvider);
+      ref.invalidate(storeTemplateFeedProvider);
+    } catch (_) {
+      // optimistic state 유지
     }
   }
 
@@ -1289,14 +1313,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                 children: [
                                   const TextSpan(text: '현재 '),
                                   TextSpan(
-                                    text: '${_template.userCount}명',
+                                    text: '${_template.likeCount}명',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: SnapFitColors.accent,
                                     ),
                                   ),
                                   const TextSpan(
-                                    text: '이 이 템플릿에 관심을 보이고 있습니다.',
+                                    text: '이 템플릿에 관심을 보이고 있습니다.',
                                   ),
                                 ],
                               ),

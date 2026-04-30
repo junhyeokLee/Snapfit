@@ -19,12 +19,14 @@ class AlbumCategoryScreen extends ConsumerStatefulWidget {
   final AlbumCategory category;
   final List<Album> initialAlbums;
   final String currentUserId;
+  final int? initialTabIndex;
 
   const AlbumCategoryScreen({
     super.key,
     required this.category,
     required this.initialAlbums,
     required this.currentUserId,
+    this.initialTabIndex,
   });
 
   @override
@@ -46,7 +48,15 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
   void initState() {
     super.initState();
     _albums = List<Album>.from(widget.initialAlbums);
+    _selectedTab = _resolveInitialTabIndex();
     _loadFavoriteAlbumIds();
+  }
+
+  int _resolveInitialTabIndex() {
+    final maxIndex = _tabs.length - 1;
+    final initial = widget.initialTabIndex;
+    if (initial == null) return 0;
+    return initial.clamp(0, maxIndex);
   }
 
   @override
@@ -528,7 +538,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                       ? Icons.star_rounded
                       : Icons.star_outline_rounded,
                   color: _isFavorite(album)
-                      ? const Color(0xFFFF4F7B)
+                      ? SnapFitColors.accent
                       : SnapFitColors.overlayStrongOf(context),
                   size: 23.sp,
                 ),

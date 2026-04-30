@@ -73,31 +73,48 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     final focus = _focusFactor();
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 0.h),
+      padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 홈 셀(PageView 뷰포트) 안에서 세로/가로/정사각형이 같은 비중으로 보이도록
-          final w = constraints.maxWidth;
           final h = constraints.maxHeight;
-          final baseFromWidth = w * (1.18 + (0.28 * focus));
-          final baseFromHeight = h * (0.70 + (0.14 * focus));
-          final base = baseFromWidth < baseFromHeight
-              ? baseFromWidth
-              : baseFromHeight;
           final ratio = coverSize.ratio;
-          final cw = ratio >= 1 ? base : base * ratio;
-          final ch = ratio <= 1 ? base : base / ratio;
-          final coverContent = SizedBox(
-            width: cw,
-            height: ch,
-            child: Opacity(
-              opacity: 1,
-              child: HomeAlbumCoverThumbnail(
-                album: widget.album,
-                height: ch,
-                maxWidth: cw,
-                showShadow: true,
-                shadowScaleMultiplier: 3.8 + (2.4 * focus),
+          // 정사각형을 기준 크기로 두고:
+          // - 세로형: 정사각형과 높이는 같고 더 좁게
+          // - 가로형: 정사각형과 폭은 같고 더 낮게
+          final baseSquareSize = h * (0.69 + (0.11 * focus));
+          final maxAllowedWidth = constraints.maxWidth * 0.98;
+          final squareWidth = baseSquareSize > maxAllowedWidth
+              ? maxAllowedWidth
+              : baseSquareSize;
+          final squareHeight = squareWidth;
+
+          final bool isLandscape = ratio > 1.12;
+          final bool isPortrait = ratio < 0.88;
+          final contentWidth = isPortrait ? squareHeight * ratio : squareWidth;
+          final contentHeight = isLandscape ? squareWidth / ratio : squareHeight;
+          final pageDelta = (widget.index - widget.currentPage).clamp(
+            -1.0,
+            1.0,
+          );
+          final gapPush = pageDelta * 18.w;
+          final coverContent = OverflowBox(
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: double.infinity,
+            maxHeight: double.infinity,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: contentWidth,
+              height: contentHeight,
+              child: Opacity(
+                opacity: 1,
+                child: HomeAlbumCoverThumbnail(
+                  album: widget.album,
+                  height: contentHeight,
+                  maxWidth: contentWidth,
+                  showShadow: true,
+                  shadowScaleMultiplier: 6.8 + (2.4 * focus),
+                ),
               ),
             ),
           );
@@ -105,7 +122,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           final closedCover = HomeFocusWrap(
             focus: focus,
             applyShadow: false,
-            child: Center(child: coverContent),
+            child: Transform.translate(
+              offset: Offset(gapPush, 0),
+              child: Center(child: coverContent),
+            ),
           );
 
           return GestureDetector(

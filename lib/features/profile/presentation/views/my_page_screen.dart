@@ -22,6 +22,7 @@ import '../../../billing/domain/entities/subscription_status.dart';
 import '../../data/order_repository.dart';
 import 'notification_settings_screen.dart';
 import 'admin_order_management_screen.dart';
+import 'admin_template_management_screen.dart';
 import 'order_history_screen.dart';
 import 'support_inquiry_screen.dart';
 import 'terms_policy_screen.dart';
@@ -166,6 +167,22 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const AdminOrderManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      if (hasAdminOrderAccess)
+                        _menuRow(
+                          context: context,
+                          icon: Icons.dashboard_customize_outlined,
+                          title: '템플릿 관리',
+                          trailingDot: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const AdminTemplateManagementScreen(),
                               ),
                             );
                           },
@@ -449,33 +466,36 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              width: 126.w,
-              height: 126.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: SnapFitStylePalette.coral,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+            GestureDetector(
+              onTap: () => _openProfileImageViewer(context, profileUrl),
+              child: Container(
+                width: 126.w,
+                height: 126.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: SnapFitStylePalette.coral,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 126.w,
+                    height: 126.w,
+                    child: profileUrl != null && profileUrl.isNotEmpty
+                        ? Image.network(
+                            profileUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                Container(color: SnapFitStylePalette.beige),
+                          )
+                        : Container(color: SnapFitStylePalette.beige),
                   ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: ClipOval(
-                child: SizedBox(
-                  width: 126.w,
-                  height: 126.w,
-                  child: profileUrl != null && profileUrl.isNotEmpty
-                      ? Image.network(
-                          profileUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Container(color: SnapFitStylePalette.beige),
-                        )
-                      : Container(color: SnapFitStylePalette.beige),
                 ),
               ),
             ),
@@ -1117,5 +1137,77 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         );
       }
     }
+  }
+
+  static void _openProfileImageViewer(
+    BuildContext context,
+    String? profileUrl,
+  ) {
+    final trimmed = profileUrl?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('등록된 프로필 사진이 없습니다.')));
+      return;
+    }
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, __, ___) => _ProfileImageViewer(imageUrl: trimmed),
+      ),
+    );
+  }
+}
+
+class _ProfileImageViewer extends StatelessWidget {
+  const _ProfileImageViewer({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black.withOpacity(0.94),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 4,
+                child: Center(
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.account_circle,
+                      color: Colors.white54,
+                      size: 120,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 12,
+              right: 12,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

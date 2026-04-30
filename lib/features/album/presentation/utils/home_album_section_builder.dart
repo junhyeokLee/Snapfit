@@ -19,6 +19,7 @@ class HomeAlbumsPreparedData {
 
 class HomeAlbumTabPreparedData {
   const HomeAlbumTabPreparedData({
+    required this.allAlbums,
     required this.inProgressAlbums,
     required this.completedAlbums,
     required this.favoriteAlbums,
@@ -27,6 +28,7 @@ class HomeAlbumTabPreparedData {
     required this.tabLabel,
   });
 
+  final List<Album> allAlbums;
   final List<Album> inProgressAlbums;
   final List<Album> completedAlbums;
   final List<Album> favoriteAlbums;
@@ -74,6 +76,7 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
   required Set<int> favoriteAlbumIds,
   required int albumTabIndex,
 }) {
+  final allSortedAlbums = List<Album>.from(allAlbums)..sort(compareAlbumByLatestDesc);
   final normalizedUserId = currentUserId.trim();
   final inProgressAlbums = List<Album>.from(
     allAlbums.where((a) => isLiveEditingAlbum(a)),
@@ -94,20 +97,23 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
         )..sort(compareAlbumByLatestDesc));
 
   final tabAlbums = switch (albumTabIndex) {
-    1 => completedAlbums,
-    2 => favoriteAlbums,
-    3 => sharedAlbums,
-    _ => inProgressAlbums,
+    1 => inProgressAlbums,
+    2 => completedAlbums,
+    3 => favoriteAlbums,
+    4 => sharedAlbums,
+    _ => allSortedAlbums,
   };
 
   final tabLabel = switch (albumTabIndex) {
-    1 => '완료',
-    2 => '즐겨찾기',
-    3 => '공유',
-    _ => '진행중',
+    1 => '진행중',
+    2 => '완료',
+    3 => '즐겨찾기',
+    4 => '공유',
+    _ => '전체',
   };
 
   return HomeAlbumTabPreparedData(
+    allAlbums: allSortedAlbums,
     inProgressAlbums: inProgressAlbums,
     completedAlbums: completedAlbums,
     favoriteAlbums: favoriteAlbums,

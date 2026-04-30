@@ -27,6 +27,46 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
   late PageController _pageController;
   late int _currentIndex;
 
+  Widget _imageWidget(String rawUrl) {
+    final trimmed = rawUrl.trim();
+    final bundledAsset = bundledTemplateAssetPath(trimmed);
+    if (bundledAsset != null) {
+      return Image.asset(
+        bundledAsset,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _imageError(),
+      );
+    }
+    if (trimmed.startsWith('asset:')) {
+      return Image.asset(
+        trimmed.substring('asset:'.length),
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _imageError(),
+      );
+    }
+    return Image.network(
+      imageUrlByVariant(trimmed, variant: ImageVariant.detail),
+      fit: BoxFit.contain,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        );
+      },
+      errorBuilder: (_, __, ___) => _imageError(),
+    );
+  }
+
+  Widget _imageError() => Container(
+    color: SnapFitColors.deepCharcoal,
+    alignment: Alignment.center,
+    child: const Icon(
+      Icons.photo_outlined,
+      color: SnapFitStylePalette.charcoal,
+      size: 36,
+    ),
+  );
+
   Color? _parseHexColor(String? raw) {
     final value = raw?.trim();
     if (value == null || value.isEmpty) return null;
@@ -130,30 +170,7 @@ class _TemplateFullScreenViewState extends State<TemplateFullScreenView> {
                         }
                         // Fallback Image
                         if (index < widget.previewImages.length) {
-                          return Image.network(
-                            imageUrlByVariant(
-                              widget.previewImages[index],
-                              variant: ImageVariant.detail,
-                            ),
-                            fit: BoxFit.contain,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              );
-                            },
-                            errorBuilder: (_, __, ___) => Container(
-                              color: SnapFitColors.deepCharcoal,
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.photo_outlined,
-                                color: SnapFitStylePalette.charcoal,
-                                size: 36,
-                              ),
-                            ),
-                          );
+                          return _imageWidget(widget.previewImages[index]);
                         }
                         return const Center(child: CircularProgressIndicator());
                       },

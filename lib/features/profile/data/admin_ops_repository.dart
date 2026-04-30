@@ -263,6 +263,8 @@ class AdminTemplateSummary {
     required this.active,
     required this.pageCount,
     required this.category,
+    required this.likeCount,
+    required this.userCount,
   });
 
   final int id;
@@ -270,6 +272,8 @@ class AdminTemplateSummary {
   final bool active;
   final int pageCount;
   final String category;
+  final int likeCount;
+  final int userCount;
 
   factory AdminTemplateSummary.fromJson(Map<String, dynamic> json) {
     return AdminTemplateSummary(
@@ -278,6 +282,8 @@ class AdminTemplateSummary {
       active: json['active'] != false,
       pageCount: (json['pageCount'] as num?)?.toInt() ?? 0,
       category: json['category']?.toString() ?? '',
+      likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+      userCount: (json['userCount'] as num?)?.toInt() ?? 0,
     );
   }
 }
