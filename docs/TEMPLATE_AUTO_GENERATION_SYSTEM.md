@@ -247,8 +247,6 @@
 - CDN 이미지 디코드 가능
 
 ## 현재 코드 매핑
-- 생성기:
-  - [/Users/devsheep/SnapFit/SnapFit/tool/generate_album_templates.dart](/Users/devsheep/SnapFit/SnapFit/tool/generate_album_templates.dart)
 - 생성 모델:
   - [/Users/devsheep/SnapFit/SnapFit/lib/features/store/domain/entities/generated_template_models.dart](/Users/devsheep/SnapFit/SnapFit/lib/features/store/domain/entities/generated_template_models.dart)
 - 기존 레이어 모델:
@@ -274,16 +272,14 @@
 ## 실행 예시
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
-dart run tool/generate_album_templates.dart \
-  --input=assets/templates/figma_handoff_example.json \
-  --types=travel,couple,family \
-  --count=5 \
-  --min-pages=16 \
-  --output=assets/templates/generated/auto_template_samples.json
+dart run tool/build_store_templates_from_handoff.dart \
+  --input=assets/templates/save_the_date_handoff.json \
+  --output=assets/templates/generated/store_latest.json \
+  --pages=12
 ```
 
 ## 샘플 출력
-- [/Users/devsheep/SnapFit/SnapFit/assets/templates/generated/auto_template_samples.json](/Users/devsheep/SnapFit/SnapFit/assets/templates/generated/auto_template_samples.json)
+- [/Users/devsheep/SnapFit/SnapFit/assets/templates/generated/store_latest.json](/Users/devsheep/SnapFit/SnapFit/assets/templates/generated/store_latest.json)
 
 ## 앞으로의 작업 원칙
 - 새 템플릿 작업은 이 문서 기준으로 진행한다.

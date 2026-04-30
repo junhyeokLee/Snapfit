@@ -4,8 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-HANDOFF_JSON="assets/templates/figma_handoff_example.json"
-GENERATED_JSON="assets/templates/generated/latest.json"
+HANDOFF_JSON="assets/templates/save_the_date_handoff.json"
 STORE_JSON="assets/templates/generated/store_latest.json"
 CDN_MANIFEST=""
 PAGES="12"
@@ -27,7 +26,6 @@ Usage:
 
 Options:
   --handoff=PATH            Handoff JSON path
-  --generated=PATH          Generated design template JSON output path
   --store=PATH              Generated store template JSON output path
   --pages=N                 Page count (12~24)
   --cdn-manifest=PATH       Optional manifest to rewrite asset URLs to CDN URLs
@@ -52,7 +50,6 @@ EOF
 for arg in "$@"; do
   case "$arg" in
     --handoff=*) HANDOFF_JSON="${arg#*=}" ;;
-    --generated=*) GENERATED_JSON="${arg#*=}" ;;
     --store=*) STORE_JSON="${arg#*=}" ;;
     --cdn-manifest=*) CDN_MANIFEST="${arg#*=}" ;;
     --pages=*) PAGES="${arg#*=}" ;;
@@ -71,7 +68,6 @@ done
 
 echo "== Figma Template Pipeline =="
 echo "handoff:   $HANDOFF_JSON"
-echo "generated: $GENERATED_JSON"
 echo "store:     $STORE_JSON"
 echo "pages:     $PAGES"
 echo "base-url:  $BASE_URL"
@@ -91,13 +87,7 @@ if (( PAGES < 12 || PAGES > 24 )); then
 fi
 
 echo ""
-echo "[1/5] Import handoff -> design template json"
-dart run tool/figma_handoff_import.dart \
-  --input="$HANDOFF_JSON" \
-  --output="$GENERATED_JSON"
-
-echo ""
-echo "[2/5] Build store templates (cover + pages)"
+echo "[1/4] Build store templates (cover + pages)"
 dart run tool/build_store_templates_from_handoff.dart \
   --input="$HANDOFF_JSON" \
   --output="$STORE_JSON" \
@@ -105,7 +95,7 @@ dart run tool/build_store_templates_from_handoff.dart \
 
 if [[ -n "${CDN_MANIFEST}" ]]; then
   echo ""
-  echo "[2.5/5] Rewrite store JSON asset URLs to CDN URLs"
+  echo "[1.5/4] Rewrite store JSON asset URLs to CDN URLs"
   dart run tool/replace_template_asset_urls_with_cdn.dart \
     --input="$STORE_JSON" \
     --manifest="$CDN_MANIFEST" \
@@ -113,7 +103,7 @@ if [[ -n "${CDN_MANIFEST}" ]]; then
 fi
 
 echo ""
-echo "[3/5] Run release gate"
+echo "[2/4] Run release gate"
 dart run tool/template_release_gate.dart --store-json="$STORE_JSON"
 
 if [[ "$PUBLISH" != "true" ]]; then
@@ -140,7 +130,7 @@ if [[ -z "$ADMIN_KEY" ]]; then
 fi
 
 echo ""
-echo "[4/5] Publish store templates to backend"
+echo "[3/4] Publish store templates to backend"
 SNAPFIT_PUSH_ADMIN_KEY="$ADMIN_KEY" \
 dart run tool/publish_store_templates_to_server.dart \
   --input="$STORE_JSON" \
@@ -148,13 +138,13 @@ dart run tool/publish_store_templates_to_server.dart \
 
 if [[ "$NOTIFY" == "true" ]]; then
   echo ""
-  echo "[5/5] Send template update push notification"
+  echo "[4/4] Send template update push notification"
   SNAPFIT_API_BASE_URL="$BASE_URL" \
   SNAPFIT_PUSH_ADMIN_KEY="$ADMIN_KEY" \
   ./scripts/test_template_update_notification.sh "$COUNT_FOR_NOTIFY"
 else
   echo ""
-  echo "[5/5] Notification skipped (--notify=false)"
+  echo "[4/4] Notification skipped (--notify=false)"
 fi
 
 echo ""

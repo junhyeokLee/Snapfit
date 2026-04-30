@@ -181,7 +181,6 @@ Future<bool> _postUpsert(
 ) async {
   final uris = <Uri>[
     Uri.parse('$baseUrl/api/admin/templates/upsert'),
-    Uri.parse('$baseUrl/api/templates/admin/upsert'),
   ];
   final client = HttpClient();
   try {
@@ -198,11 +197,7 @@ Future<bool> _postUpsert(
       stderr.writeln(
         'Upsert failed via ${uri.path}: ${payload['title']} (${resp.statusCode}) $body',
       );
-      if (resp.statusCode != 401 &&
-          resp.statusCode != 403 &&
-          resp.statusCode != 404) {
-        return false;
-      }
+      return false;
     }
     return false;
   } catch (e) {

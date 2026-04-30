@@ -1,10 +1,10 @@
 .PHONY: template-release template-release-dry template-gate
 
 # Usage:
-# make template-release HANDOFF=assets/templates/figma_handoff_example.json PAGES=12 BASE_URL=http://54.253.3.176
-# make template-release-dry HANDOFF=assets/templates/figma_handoff_example.json PAGES=12
+# make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 BASE_URL=http://54.253.3.176
+# make template-release-dry HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12
 
-HANDOFF ?= assets/templates/figma_handoff_example.json
+HANDOFF ?= assets/templates/save_the_date_handoff.json
 PAGES ?= 12
 BASE_URL ?= http://54.253.3.176
 

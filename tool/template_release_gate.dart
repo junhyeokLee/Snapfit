@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:snap_fit/features/store/data/local/local_featured_templates.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 
 Future<int> _checkUrl(String url) async {
@@ -356,9 +355,11 @@ String? _validateTextStylePayload(Map<String, dynamic> layer) {
 Future<void> main(List<String> args) async {
   final storeJsonPath = _arg(args, '--store-json');
 
-  final templates = (storeJsonPath != null && storeJsonPath.trim().isNotEmpty)
-      ? _loadTemplatesFromJsonFile(storeJsonPath.trim())
-      : <PremiumTemplate>[...localFeaturedTemplates()];
+  final templates = _loadTemplatesFromJsonFile(
+    (storeJsonPath != null && storeJsonPath.trim().isNotEmpty)
+        ? storeJsonPath.trim()
+        : 'assets/templates/generated/store_latest.json',
+  );
   final hardFails = <String>[];
   final softWarnings = <String>[];
   final parityRules = _loadParityRules();

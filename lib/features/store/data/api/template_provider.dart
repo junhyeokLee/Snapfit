@@ -595,19 +595,6 @@ String _normalizeTemplateTitleKey(String value) {
     'savethedate': 'savethedate',
     'scrapbook': 'scrapbook',
     'weddingeditorial': 'weddingeditorial',
-    '웨딩무드북': '시그니처웨딩',
-    '썸머무드북': '썸머커버에디션',
-    '스카이무드북': '스카이인비테이션',
-    '로즈무드북': '로즈데이',
-    '북클럽무드북': '어린이북클럽',
-    '제주여름무드북': '우리들의여름제주',
-    '오션브리즈무드북': '오션브리즈',
-    '시티나이트무드북': '도시의밤',
-    '졸업무드북': '빛나는졸업장',
-    '패밀리트립무드북': '가족여행일기',
-    '이터널러브무드북': '이터널러브',
-    '빈티지무드북': '빈티지포커스',
-    '링트립무드북': '링트립스토리',
   };
   return aliases[base] ?? base;
 }
@@ -705,157 +692,6 @@ PremiumTemplate _premiumTemplateFromLooseJson(Map<String, dynamic> json) {
     templateJson: json['templateJson']?.toString(),
     createdAt: json['createdAt']?.toString(),
   );
-}
-
-String _extractFirstPreviewFromFigmaNode(Map<String, dynamic> node) {
-  final previews = node['previewImages'];
-  if (previews is List) {
-    for (final item in previews) {
-      final value = item?.toString().trim() ?? '';
-      if (value.isNotEmpty) return value;
-    }
-  }
-
-  final layers = node['layers'];
-  if (layers is List) {
-    for (final rawLayer in layers) {
-      if (rawLayer is! Map) continue;
-      final layer = Map<String, dynamic>.from(rawLayer);
-      if ((layer['type'] ?? '').toString().toUpperCase() != 'IMAGE') continue;
-      final payload = layer['payload'];
-      if (payload is! Map) continue;
-      final url =
-          (payload['previewUrl'] ??
-                  payload['imageUrl'] ??
-                  payload['originalUrl'])
-              ?.toString()
-              .trim() ??
-          '';
-      if (url.isNotEmpty) return url;
-    }
-  }
-
-  return '';
-}
-
-Future<List<PremiumTemplate>> _loadFigmaMcpStoreTemplates() async {
-  final templates = <PremiumTemplate>[];
-
-  try {
-    final raw = await rootBundle.loadString(
-      'assets/templates/figma_handoff_example.json',
-    );
-    final decoded = jsonDecode(raw);
-    if (decoded is List && decoded.isNotEmpty && decoded.first is Map) {
-      final item = Map<String, dynamic>.from(decoded.first as Map);
-      final preview = _extractFirstPreviewFromFigmaNode(item);
-      final previewImages = <String>[
-        ...((item['previewImages'] as List?) ?? const <dynamic>[])
-            .map((e) => e?.toString().trim() ?? '')
-            .where((e) => e.isNotEmpty),
-      ];
-      if (preview.isNotEmpty && !previewImages.contains(preview)) {
-        previewImages.insert(0, preview);
-      }
-      final figmaJson = <String, dynamic>{
-        'designWidth': 1080.0,
-        'designHeight': 1440.0,
-        'metadata': {
-          'category': item['category'],
-          'style': item['style'],
-          'templateType': 'wedding',
-        },
-        'pages': item['pages'] ?? const [],
-        'variants': item['variants'] ?? const {},
-      };
-      templates.add(
-        PremiumTemplate(
-          id: -9001,
-          title: 'SAVE THE DATE',
-          subTitle: '웨딩 · figma editorial',
-          description: 'Figma MCP 기반 SAVE THE DATE 템플릿',
-          coverImageUrl: preview,
-          previewImages: previewImages,
-          pageCount: ((item['pages'] as List?) ?? const []).length,
-          userCount: 0,
-          category: '웨딩',
-          tags: const ['웨딩', 'figma', '세이브더데이트'],
-          isPremium: true,
-          templateJson: jsonEncode(figmaJson),
-        ),
-      );
-    }
-  } catch (_) {
-    // Fallback continues with other figma-generated assets.
-  }
-
-  try {
-    final raw = await rootBundle.loadString(
-      'assets/templates/generated/auto_template_samples.json',
-    );
-    final decoded = jsonDecode(raw);
-    final items = decoded is Map ? decoded['templates'] : null;
-    if (items is List) {
-      const titleMap = <int, String>{
-        0: 'JEJU TRAVEL',
-        1: 'ANNIVERSARY DAYS',
-        2: 'FAMILY WEEKEND',
-        3: 'Scrapbook',
-        4: 'Wedding Editorial',
-      };
-      const subTitleMap = <int, String>{
-        0: '여행 · figma editorial',
-        1: '커플 · figma editorial',
-        2: '가족 · figma editorial',
-        3: '스크랩북 · figma editorial',
-        4: '웨딩 · figma editorial',
-      };
-      const categoryMap = <int, String>{
-        0: '여행',
-        1: '기념일',
-        2: '가족',
-        3: '스크랩북',
-        4: '웨딩',
-      };
-      for (var i = 0; i < items.length; i++) {
-        final rawItem = items[i];
-        if (rawItem is! Map) continue;
-        final item = Map<String, dynamic>.from(rawItem);
-        final flutterTemplateJson = item['flutterTemplateJson'];
-        final templateJson = flutterTemplateJson is Map
-            ? jsonEncode(Map<String, dynamic>.from(flutterTemplateJson))
-            : flutterTemplateJson?.toString();
-        final previewImages = ((item['previewImages'] as List?) ?? const [])
-            .map((e) => e?.toString().trim() ?? '')
-            .where((e) => e.isNotEmpty)
-            .toList(growable: false);
-        final title = titleMap[i];
-        if (title == null || templateJson == null || templateJson.isEmpty) {
-          continue;
-        }
-        templates.add(
-          PremiumTemplate(
-            id: -9002 - i,
-            title: title,
-            subTitle: subTitleMap[i],
-            description: '$title Figma MCP 자동 생성 템플릿',
-            coverImageUrl: (item['coverImageUrl'] ?? '').toString(),
-            previewImages: previewImages,
-            pageCount: (item['pageCount'] as num?)?.toInt() ?? 16,
-            userCount: 0,
-            category: categoryMap[i],
-            tags: const ['figma', 'mcp'],
-            isPremium: true,
-            templateJson: templateJson,
-          ),
-        );
-      }
-    }
-  } catch (_) {
-    // ignore
-  }
-
-  return templates.map(_normalizeStoreTemplateRuntime).toList(growable: false);
 }
 
 Future<List<PremiumTemplate>> _loadCanonicalHandoffStoreTemplates() async {
@@ -1242,8 +1078,6 @@ final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
 Future<List<PremiumTemplate>> loadCanonicalStoreTemplatesForRuntime() async {
   final canonical = await _loadCanonicalHandoffStoreTemplates();
   if (canonical.isNotEmpty) return canonical;
-  final figmaTemplates = await _loadFigmaMcpStoreTemplates();
-  if (figmaTemplates.isNotEmpty) return figmaTemplates;
   return _loadGeneratedStoreLatestTemplates();
 }
 

@@ -17,7 +17,7 @@
 
 1. Figma에서 템플릿 아트보드 1개 제작
 2. 레이어를 아래 규칙에 맞춰 네이밍
-3. 핸드오프 JSON 작성 (`assets/templates/figma_handoff_example.json` 참고)
+3. 핸드오프 JSON 작성 (`assets/templates/save_the_date_handoff.json` 참고)
 4. 변환 스크립트 실행
 5. 앱에서 템플릿 미리보기/적용 결과 QA
 
@@ -60,16 +60,17 @@
 
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
-dart run tool/figma_handoff_import.dart \
-  --input=assets/templates/figma_handoff_example.json \
-  --output=assets/templates/generated/latest.json
+dart run tool/build_store_templates_from_handoff.dart \
+  --input=assets/templates/save_the_date_handoff.json \
+  --output=assets/templates/generated/store_latest.json \
+  --pages=12
 ```
 
 스토어(커버+페이지)용 템플릿 JSON 변환:
 
 ```bash
 dart run tool/build_store_templates_from_handoff.dart \
-  --input=assets/templates/figma_handoff_example.json \
+  --input=assets/templates/save_the_date_handoff.json \
   --output=assets/templates/generated/store_latest.json \
   --pages=12
 ```

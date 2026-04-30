@@ -42,9 +42,10 @@ dart run tool/template_factory.dart --count=3
 
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
-dart run tool/figma_handoff_import.dart \
-  --input=assets/templates/figma_handoff_example.json \
-  --output=assets/templates/generated/latest.json
+dart run tool/build_store_templates_from_handoff.dart \
+  --input=assets/templates/save_the_date_handoff.json \
+  --output=assets/templates/generated/store_latest.json \
+  --pages=12
 ```
 
 상세 규칙은 `docs/FIGMA_TEMPLATE_HANDOFF_GUIDE.md`를 참고하세요.
@@ -54,7 +55,7 @@ dart run tool/figma_handoff_import.dart \
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
 dart run tool/build_store_templates_from_handoff.dart \
-  --input=assets/templates/figma_handoff_example.json \
+  --input=assets/templates/save_the_date_handoff.json \
   --output=assets/templates/generated/store_latest.json \
   --pages=12
 ```

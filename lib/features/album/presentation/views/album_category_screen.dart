@@ -13,7 +13,7 @@ import '../widgets/home/home_album_cover_thumbnail.dart';
 import '../widgets/home/home_album_helpers.dart';
 import 'album_create_flow_screen.dart';
 
-enum AlbumCategory { recent, completed, shared }
+enum AlbumCategory { recent, shared }
 
 class AlbumCategoryScreen extends ConsumerStatefulWidget {
   final AlbumCategory category;
@@ -130,15 +130,11 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         return '나의 기록들';
       case AlbumCategory.shared:
         return '공유된 앨범';
-      case AlbumCategory.completed:
-        return '완료된 앨범';
     }
   }
 
   List<String> get _tabs {
     switch (widget.category) {
-      case AlbumCategory.completed:
-        return const ['전체', '인쇄됨', '주문됨'];
       case AlbumCategory.recent:
       case AlbumCategory.shared:
         return const ['진행 중', '완료', '즐겨찾기'];
@@ -160,9 +156,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     if (SnapFitColors.isDark(context)) {
       return SnapFitColors.backgroundOf(context);
     }
-    if (widget.category == AlbumCategory.shared) {
-      return SnapFitColors.backgroundOf(context);
-    }
     if (widget.category == AlbumCategory.recent) {
       return const Color(0xFFF3F6FA);
     }
@@ -180,17 +173,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       final theme = (album.coverTheme ?? '').toLowerCase();
       return title.contains(q) || theme.contains(q) || album.id.toString() == q;
     }).toList();
-
-    if (widget.category == AlbumCategory.completed) {
-      switch (_selectedTab) {
-        case 1:
-          return searched.where((a) => a.id.isEven).toList();
-        case 2:
-          return searched.where((a) => a.id.isOdd).toList();
-        default:
-          return searched;
-      }
-    }
 
     switch (_selectedTab) {
       case 0:
@@ -375,8 +357,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
                             return _buildRecentTimeline(all);
                           case AlbumCategory.shared:
                             return _buildSharedGrid(all);
-                          case AlbumCategory.completed:
-                            return _buildCompletedShowcase(all);
                         }
                       },
                     ),
@@ -727,295 +707,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCompletedShowcase(List<Album> albums) {
-    final firstLarge = albums.take(2).toList();
-    final rest = albums.skip(2).toList();
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
-
-    return ListView(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 26.h),
-      children: [
-        for (int i = 0; i < firstLarge.length; i++)
-          Padding(
-            padding: EdgeInsets.only(bottom: 20.h),
-            child: _completedLargeCard(
-              album: firstLarge[i],
-              label: i.isEven ? 'PRINTED' : 'ORDERED',
-              accent: i.isEven
-                  ? const Color(0xFFFF7A2F)
-                  : const Color(0xFF18B6D7),
-            ),
-          ),
-        if (rest.isNotEmpty)
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 14.w,
-              mainAxisSpacing: 14.h,
-              childAspectRatio: 0.74,
-            ),
-            itemCount: rest.length,
-            itemBuilder: (context, index) {
-              final album = rest[index];
-              return GestureDetector(
-                onTap: () => _openAlbumAndSync(album),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context),
-                    borderRadius: BorderRadius.circular(18.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(
-                          SnapFitColors.isDark(context) ? 0.2 : 0.04,
-                        ),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(18.r),
-                                ),
-                                child: _coverImage(album),
-                              ),
-                            ),
-                            Positioned(
-                              top: 8.h,
-                              left: 8.w,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w,
-                                  vertical: 4.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFF7A2F),
-                                  borderRadius: BorderRadius.circular(999.r),
-                                ),
-                                child: Text(
-                                  'PRINTED',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              album.title.isEmpty ? '제목 없음' : album.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w800,
-                                color: textPrimary,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              formatAlbumDate(album.createdAt),
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                color: textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _completedLargeCard({
-    required Album album,
-    required String label,
-    required Color accent,
-  }) {
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
-    final statusText = label == 'PRINTED' ? '완료됨' : '배송중';
-
-    return GestureDetector(
-      onTap: () => _openAlbumAndSync(album),
-      child: Container(
-        decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.24 : 0.05,
-              ),
-              blurRadius: 16,
-              offset: const Offset(0, 7),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 220.h,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(24.r),
-                      ),
-                      child: _coverImage(album),
-                    ),
-                  ),
-                  Positioned(
-                    top: 14.h,
-                    left: 14.w,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 7.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accent,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          album.title.isEmpty ? '제목 없음' : album.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 17.sp,
-                            fontWeight: FontWeight.w800,
-                            color: textPrimary,
-                          ),
-                        ),
-                      ),
-                      _tinyAvatar(Colors.orange[200]!),
-                      _tinyAvatar(Colors.brown[200]!),
-                      Container(
-                        margin: EdgeInsets.only(left: 2.w),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 7.w,
-                          vertical: 4.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: SnapFitColors.overlayLightOf(context),
-                          borderRadius: BorderRadius.circular(999.r),
-                        ),
-                        child: Text(
-                          '+${(album.id % 5) + 1}',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            color: textSecondary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    '${formatAlbumDate(album.createdAt)}  ·  $statusText',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _openAlbumAndSync(album),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF7A2F),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999.r),
-                        ),
-                      ),
-                      child: Text(
-                        '상세보기',
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _tinyAvatar(Color color) {
-    return Container(
-      margin: EdgeInsets.only(left: 4.w),
-      width: 24.w,
-      height: 24.w,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: SnapFitColors.backgroundOf(context),
-          width: 1.5,
-        ),
-      ),
-      child: Icon(Icons.person, size: 14.sp, color: Colors.white),
     );
   }
 

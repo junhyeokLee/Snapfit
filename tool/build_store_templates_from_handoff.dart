@@ -3,7 +3,8 @@ import 'dart:io';
 
 void main(List<String> args) {
   final inputPath =
-      _arg(args, '--input') ?? 'assets/templates/figma_handoff_example.json';
+      _arg(args, '--input') ??
+      (throw ArgumentError('Missing --input=<template_handoff.json>'));
   final outputPath =
       _arg(args, '--output') ?? 'assets/templates/generated/store_latest.json';
   final pageCount =

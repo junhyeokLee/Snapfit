@@ -95,7 +95,7 @@ class AdminOpsRepository {
     required Map<String, dynamic> payload,
   }) async {
     await dio.post(
-      '/api/templates/admin/upsert',
+      '/api/admin/templates/upsert',
       data: payload,
       options: Options(headers: {'X-Admin-Key': adminKey}),
     );
@@ -107,7 +107,7 @@ class AdminOpsRepository {
     int size = 20,
   }) async {
     final response = await dio.get(
-      '/api/templates/admin/paged',
+      '/api/admin/templates/paged',
       queryParameters: {'page': page, 'size': size},
       options: Options(headers: {'X-Admin-Key': adminKey}),
     );
@@ -122,7 +122,7 @@ class AdminOpsRepository {
     required bool active,
   }) async {
     await dio.post(
-      '/api/templates/admin/$templateId/active',
+      '/api/admin/templates/$templateId/active',
       data: {'active': active},
       options: Options(headers: {'X-Admin-Key': adminKey}),
     );
@@ -133,7 +133,7 @@ class AdminOpsRepository {
     required int templateId,
   }) async {
     final response = await dio.get(
-      '/api/templates/admin/$templateId',
+      '/api/admin/templates/$templateId',
       options: Options(headers: {'X-Admin-Key': adminKey}),
     );
     return (response.data as Map?)?.cast<String, dynamic>() ??
