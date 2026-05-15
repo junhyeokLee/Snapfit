@@ -38,7 +38,7 @@ class PremiumTemplate {
     this.weeklyScore = 0,
     this.isNew = false,
     this.isBest = false,
-    this.isPremium = true,
+    this.isPremium = false,
     this.isLiked = false,
     this.templateJson,
     this.createdAt,

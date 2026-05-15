@@ -240,7 +240,7 @@
     "weeklyScore": 0,
     "isNew": true,
     "isBest": false,
-    "isPremium": true,
+    "isPremium": false,
     "isLiked": false,
     "templateId": "save_the_date_v1",
     "version": 1,

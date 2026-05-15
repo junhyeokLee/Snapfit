@@ -241,7 +241,7 @@ Map<String, dynamic> _toStoreTemplate(
     'weeklyScore': weekly,
     'isNew': true,
     'isBest': src['isFeatured'] == true,
-    'isPremium': true,
+    'isPremium': false,
     'isLiked': false,
     'templateId': templateId,
     'version': templateVersion,

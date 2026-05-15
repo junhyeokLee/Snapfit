@@ -164,7 +164,7 @@ Map<String, dynamic> _buildUpsertPayload(Map<String, dynamic> item) {
     'likeCount': (item['likeCount'] as num?)?.toInt() ?? 0,
     'userCount': (item['userCount'] as num?)?.toInt() ?? 0,
     'isBest': item['isBest'] == true,
-    'isPremium': item['isPremium'] != false,
+    'isPremium': item['isPremium'] == true,
     'category': (item['category'] ?? '기타').toString(),
     'tagsJson': jsonEncode((item['tags'] as List?) ?? const <dynamic>[]),
     'weeklyScore': (item['weeklyScore'] as num?)?.toInt() ?? 0,

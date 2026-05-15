@@ -285,7 +285,7 @@ class _AdminTemplateEditorScreenState
   final _userCountController = TextEditingController(text: '0');
   final _templateJsonController = TextEditingController();
 
-  bool _isPremium = true;
+  bool _isPremium = false;
   bool _isBest = false;
   bool _isNew = false;
   bool _active = true;

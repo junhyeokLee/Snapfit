@@ -24,7 +24,7 @@ PremiumTemplate _$PremiumTemplateFromJson(Map<String, dynamic> json) =>
       weeklyScore: (json['weeklyScore'] as num?)?.toInt() ?? 0,
       isNew: json['isNew'] as bool? ?? false,
       isBest: json['isBest'] as bool? ?? false,
-      isPremium: json['isPremium'] as bool? ?? true,
+      isPremium: json['isPremium'] as bool? ?? false,
       isLiked: json['isLiked'] as bool? ?? false,
       templateJson: json['templateJson'] as String?,
       createdAt:
