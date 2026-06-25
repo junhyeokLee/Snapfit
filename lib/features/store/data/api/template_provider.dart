@@ -77,10 +77,12 @@ PremiumTemplate _applyPersistedLikeState(
   final raw = likeStateMap[_templateLikeLookupKey(template, userId: userId)];
   if (raw is! Map) return template;
   final state = Map<String, dynamic>.from(raw);
-  return normalizeTemplateLikeStateForDisplay(template.copyWith(
-    isLiked: state['isLiked'] == true,
-    likeCount: (state['likeCount'] as num?)?.toInt() ?? template.likeCount,
-  ));
+  return normalizeTemplateLikeStateForDisplay(
+    template.copyWith(
+      isLiked: state['isLiked'] == true,
+      likeCount: (state['likeCount'] as num?)?.toInt() ?? template.likeCount,
+    ),
+  );
 }
 
 String _coverModeForTemplate(PremiumTemplate template) {
@@ -1012,11 +1014,18 @@ List<PremiumTemplate> _buildCanonicalStoreTemplates({
   }
 
   final canonical = <PremiumTemplate>[];
+  final hasServerData = normalizedServerByKey.isNotEmpty;
   for (final localItem in local) {
     final normalizedLocal = _normalizeStoreTemplateRuntime(localItem);
     if (!_isStoreAllowedTemplate(normalizedLocal)) continue;
     final key = _normalizeTemplateTitleKey(normalizedLocal.title);
     final serverMatch = normalizedServerByKey[key];
+    if (hasServerData && serverMatch == null) {
+      // When the server responds, it is the source of truth for visibility.
+      // Unmatched local templates are hidden so inactive/deleted items do not
+      // remain visible in the store.
+      continue;
+    }
     canonical.add(
       serverMatch == null
           ? normalizedLocal
@@ -1042,7 +1051,8 @@ final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
 
   try {
     final repository = ref.watch(templateRepositoryProvider);
-    final server = await repository.getTemplates();
+    final summary = await repository.getTemplateSummaries(page: 0, size: 50);
+    final server = summary.content;
     final merged = _buildCanonicalStoreTemplates(server: server, local: local);
     if (merged.isNotEmpty) {
       return merged
@@ -1133,16 +1143,16 @@ class _NoUpdate {
   const _NoUpdate();
 }
 
-class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
-  StoreTemplateFeedNotifier(this._repository, this._tokenStorage)
-    : super(StoreTemplateFeedState.initial()) {
-    loadInitial();
-  }
-
+class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
   static const int _pageSize = 20;
-  final TemplateRepository _repository;
-  final TokenStorage _tokenStorage;
   Future<List<PremiumTemplate>>? _localTemplatesFuture;
+
+  @override
+  StoreTemplateFeedState build() {
+    _localTemplatesFuture = null;
+    loadInitial(); // fire-and-forget
+    return StoreTemplateFeedState.initial();
+  }
 
   String _normalizeTitle(String value) => _normalizeTemplateTitleKey(value);
 
@@ -1185,12 +1195,18 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
   }
 
   Future<void> _fetchPage(int page, {required bool replace}) async {
-    final userId = await _tokenStorage.getResolvedUserId();
+    final repository = ref.read(templateRepositoryProvider);
+    final tokenStorage = ref.read(tokenStorageProvider);
+    final userId = await tokenStorage.getResolvedUserId();
     final likeStateMap = await _loadTemplateLikeStateMap();
     final local = await _loadLocalTemplates();
     List<PremiumTemplate> merged = local;
     try {
-      final server = await _repository.getTemplates();
+      final summary = await repository.getTemplateSummaries(
+        page: page,
+        size: _pageSize,
+      );
+      final server = summary.content;
       final canonicalMerged = mergeServerSummaryWithLocalStatic(
         server: server,
         local: local,
@@ -1210,7 +1226,8 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
               (candidate) => !state.items.any(
                 (t) =>
                     t.id == candidate.id ||
-                    _normalizeTitle(t.title) == _normalizeTitle(candidate.title),
+                    _normalizeTitle(t.title) ==
+                        _normalizeTitle(candidate.title),
               ),
             ),
           ];
@@ -1233,10 +1250,6 @@ class StoreTemplateFeedNotifier extends StateNotifier<StoreTemplateFeedState> {
 }
 
 final storeTemplateFeedProvider =
-    StateNotifierProvider<StoreTemplateFeedNotifier, StoreTemplateFeedState>((
-      ref,
-    ) {
-      final repository = ref.read(templateRepositoryProvider);
-      final tokenStorage = ref.read(tokenStorageProvider);
-      return StoreTemplateFeedNotifier(repository, tokenStorage);
-    });
+    NotifierProvider<StoreTemplateFeedNotifier, StoreTemplateFeedState>(
+  StoreTemplateFeedNotifier.new,
+);

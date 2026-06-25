@@ -8,6 +8,7 @@ import '../../../../config/env.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/utils/app_error_mapper.dart';
+import '../../../../core/utils/context_extensions.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../store/data/api/template_provider.dart';
 import '../../../store/domain/entities/premium_template.dart';
@@ -26,15 +27,7 @@ class _AdminTemplateManagementScreenState
   int _refreshSeed = 0;
 
   void _showToast(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-      ),
-    );
+    context.showSnack(message);
   }
 
   Future<void> _openEditor({AdminTemplateSummary? summary}) async {
@@ -356,9 +349,7 @@ class _AdminTemplateEditorScreenState
       _active = detail['active'] != false;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppErrorMapper.toUserMessage(e))),
-        );
+        context.showErrorSnack(AppErrorMapper.toUserMessage(e));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -404,9 +395,7 @@ class _AdminTemplateEditorScreenState
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(AppErrorMapper.toUserMessage(e))));
+      context.showErrorSnack(AppErrorMapper.toUserMessage(e));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
