@@ -8,6 +8,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
     hide AuthApi;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../config/env.dart';
 import '../../../../core/interceptors/token_storage.dart';
@@ -54,39 +55,55 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
   }
 
-  /// 프로필 이미지를 서버에 업로드하고 로컬 유저 정보 갱신
+  /// 프로필 이미지를 Supabase Storage에 업로드하고 로컬 유저 정보 갱신
   Future<void> updateProfileImage(File image) async {
-    final api = ref.read(authApiProvider);
     final fileToUpload = await _normalizeImageForUpload(image);
+    final storage = ref.read(tokenStorageProvider);
+    final current = await storage.getUserInfo();
+    if (current == null) {
+      throw Exception('로그인 후 프로필 이미지를 변경할 수 있습니다.');
+    }
+    final userId = current.id.trim();
+    if (userId.isEmpty) {
+      throw Exception('로그인 후 프로필 이미지를 변경할 수 있습니다.');
+    }
 
+    final supabase = ref.read(supabaseClientProvider);
+    try {
+      final ext = _profileImageExtension(fileToUpload.path);
+      final objectPath = '$userId/profile_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      await supabase.storage.from('avatars').upload(
+            objectPath,
+            fileToUpload,
+            fileOptions: FileOptions(
+              contentType: _profileImageContentType(ext),
+              upsert: true,
+            ),
+          );
+      final publicUrl = supabase.storage.from('avatars').getPublicUrl(objectPath);
+      await supabase.from('profiles').upsert({
+        'id': userId,
+        'email': current.email,
+        'name': current.name,
+        'provider': current.provider,
+        'avatar_url': publicUrl,
+      });
+      await storage.saveUserInfo(current.copyWith(profileImageUrl: publicUrl));
+      state = AsyncData(await storage.getUserInfo());
+      return;
+    } catch (_) {
+      // Supabase 업로드 실패 시 기존 REST 백엔드 경로로 1회 fallback.
+    }
+
+    final api = ref.read(authApiProvider);
     try {
       final userInfo = await api.updateProfile(profileImage: fileToUpload);
-      await ref.read(tokenStorageProvider).saveUserInfo(userInfo);
-      state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+      await storage.saveUserInfo(userInfo);
+      state = AsyncData(await storage.getUserInfo());
     } on DioException catch (e) {
-      // 401 에러(토큰 만료) 발생 시 1회 재시도 (AuthInterceptor가 토큰은 갱신해둠)
-      // FormData 재사용 불가 문제 해결을 위해 여기서 다시 호출
-      if (e.response?.statusCode == 401) {
-        try {
-          // 토큰은 이미 인터셉터에서 갱신되었을 것이므로, 재시도만 하면 됨.
-          // 혹시 모르니 잠시 대기 (인터셉터 갱신 완료 대기) - 실제로는 인터셉터가 401을 반환했다는 것은 갱신 시도 후 실패했거나,
-          // FormData라서 패스한 경우임. 여기서는 "FormData라서 패스한 경우"를 가정하고 재호출.
-          // 새 토큰은 TokenStorage에 저장되어 있고, 다음 요청 시 인터셉터가 새 토큰을 끼워줌.
-          final userInfo = await api.updateProfile(
-            profileImage:
-                fileToUpload, // fileToUpload는 File 객체이므로 다시 FormData 생성됨
-          );
-          await ref.read(tokenStorageProvider).saveUserInfo(userInfo);
-          state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
-          return;
-        } catch (retryError) {
-          // 재시도도 실패하면 에러처리
-        }
-      }
-
       final statusCode = e.response?.statusCode;
       if (statusCode == 404) {
-        throw Exception('서버에 프로필 저장 기능이 없습니다. 백엔드를 최신 버전으로 배포한 뒤 다시 시도해 주세요.');
+        throw Exception('프로필 이미지 저장 기능을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.');
       }
       if (statusCode == 413) {
         throw Exception('이미지 용량이 너무 큽니다. 더 작은 이미지를 선택해 주세요.');
@@ -95,9 +112,27 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
         throw Exception('지원하지 않는 이미지 형식입니다. JPG/PNG 이미지를 선택해 주세요.');
       }
       if (statusCode == 500) {
-        throw Exception('서버 이미지 저장소 설정 문제로 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        throw Exception('이미지 저장소 설정 문제로 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       }
       rethrow;
+    }
+  }
+
+  String _profileImageExtension(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'png';
+    if (lower.endsWith('.webp')) return 'webp';
+    return 'jpg';
+  }
+
+  String _profileImageContentType(String ext) {
+    switch (ext) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
     }
   }
 

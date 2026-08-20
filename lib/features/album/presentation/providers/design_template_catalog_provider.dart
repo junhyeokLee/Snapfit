@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/design_templates.dart';
-import '../../../../../core/network/dio_provider.dart';
+import '../../../store/data/api/template_provider.dart';
 import '../../../../../core/templates/data_template_engine.dart';
 
 final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
@@ -14,29 +14,22 @@ final designTemplateCatalogProvider = FutureProvider<List<DesignTemplate>>((
     for (final t in designTemplates) t.id: _hydratePreviewMeta(t),
   };
 
-  // 1) Real-time supply from server (no app redeploy)
+  // 1) Real-time supply from Supabase (no app redeploy)
   try {
-    final dio = ref.read(dioProvider);
-    final response = await dio.get('/api/templates');
-    final payload = response.data;
-    final items = payload is List
-        ? payload
-        : (payload is Map<String, dynamic> ? payload['templates'] : null);
-    if (items is List) {
-      for (final item in items) {
-        if (item is! Map<String, dynamic>) continue;
-        final converted = _toDesignTemplateJson(item);
-        if (converted == null) continue;
-        final t = _hydratePreviewMeta(
-          DataTemplateEngine.templateFromJson(converted),
-        );
-        if (t.id.isNotEmpty) {
-          merged[t.id] = t;
-        }
+    final repository = ref.read(templateRepositoryProvider);
+    final templates = await repository.getTemplates();
+    for (final item in templates) {
+      final converted = _toDesignTemplateJson(item.toJson());
+      if (converted == null) continue;
+      final t = _hydratePreviewMeta(
+        DataTemplateEngine.templateFromJson(converted),
+      );
+      if (t.id.isNotEmpty) {
+        merged[t.id] = t;
       }
     }
   } catch (_) {
-    // Network/API unavailable -> fallback to local JSON
+    // Supabase/API unavailable -> fallback to local JSON
   }
 
   // 2) Local JSON fallback (base catalog)
