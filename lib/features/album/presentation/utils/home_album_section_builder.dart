@@ -43,7 +43,8 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
   required Set<int> favoriteAlbumIds,
   required int albumTabIndex,
 }) {
-  final allSortedAlbums = List<Album>.from(allAlbums)..sort(compareAlbumByLatestDesc);
+  final allSortedAlbums = List<Album>.from(allAlbums)
+    ..sort(compareAlbumByLatestDesc);
   final normalizedUserId = currentUserId.trim();
   final inProgressAlbums = List<Album>.from(
     allAlbums.where((a) => isLiveEditingAlbum(a)),
@@ -59,7 +60,8 @@ HomeAlbumTabPreparedData buildHomeAlbumTabData({
       : (List<Album>.from(
           allAlbums.where(
             (a) =>
-                a.userId.trim().isNotEmpty && a.userId.trim() != normalizedUserId,
+                a.userId.trim().isNotEmpty &&
+                a.userId.trim() != normalizedUserId,
           ),
         )..sort(compareAlbumByLatestDesc));
 

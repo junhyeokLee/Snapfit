@@ -9,7 +9,11 @@ import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
 
 class BillingRepository {
-  BillingRepository({required this.dio, required this.tokenStorage, this.supabase});
+  BillingRepository({
+    required this.dio,
+    required this.tokenStorage,
+    this.supabase,
+  });
 
   final Dio dio;
   final TokenStorage tokenStorage;
@@ -23,25 +27,27 @@ class BillingRepository {
     return userId;
   }
 
-
   Map<String, dynamic> _camelBillingPlan(Map<String, dynamic> row) => {
-        'planCode': row['plan_code'],
-        'title': row['title'],
-        'amount': row['amount'],
-        'currency': row['currency'],
-        'periodDays': row['period_days'],
-        'provider': row['provider'],
-      };
+    'planCode': row['plan_code'],
+    'title': row['title'],
+    'amount': row['amount'],
+    'currency': row['currency'],
+    'periodDays': row['period_days'],
+    'provider': row['provider'],
+  };
 
-  Map<String, dynamic> _camelSubscription(Map<String, dynamic>? row, String userId) => {
-        'userId': userId,
-        'planCode': row?['plan_code'],
-        'status': row?['status'] ?? 'INACTIVE',
-        'startedAt': row?['started_at'],
-        'expiresAt': row?['expires_at'],
-        'nextBillingAt': row?['next_billing_at'],
-        'isActive': row?['status'] == 'ACTIVE',
-      };
+  Map<String, dynamic> _camelSubscription(
+    Map<String, dynamic>? row,
+    String userId,
+  ) => {
+    'userId': userId,
+    'planCode': row?['plan_code'],
+    'status': row?['status'] ?? 'INACTIVE',
+    'startedAt': row?['started_at'],
+    'expiresAt': row?['expires_at'],
+    'nextBillingAt': row?['next_billing_at'],
+    'isActive': row?['status'] == 'ACTIVE',
+  };
 
   Map<String, dynamic> _camelQuota(Map<String, dynamic>? row, String userId) {
     final used = (row?['used_bytes'] as num?)?.toInt() ?? 0;
@@ -68,7 +74,11 @@ class BillingRepository {
           .eq('is_active', true)
           .order('amount');
       return rows
-          .map<BillingPlan>((e) => BillingPlan.fromJson(_camelBillingPlan(Map<String, dynamic>.from(e))))
+          .map<BillingPlan>(
+            (e) => BillingPlan.fromJson(
+              _camelBillingPlan(Map<String, dynamic>.from(e)),
+            ),
+          )
           .toList(growable: false);
     }
     final response = await dio.get('/api/billing/plans');
@@ -252,7 +262,9 @@ class BillingRepository {
         hardLimitBytes: quota.hardLimitBytes,
         remainingBytes: remaining < 0 ? 0 : remaining,
         allowed: projected <= quota.hardLimitBytes,
-        reason: projected <= quota.hardLimitBytes ? 'OK' : 'HARD_LIMIT_EXCEEDED',
+        reason: projected <= quota.hardLimitBytes
+            ? 'OK'
+            : 'HARD_LIMIT_EXCEEDED',
         measuredAt: quota.measuredAt,
       );
     }

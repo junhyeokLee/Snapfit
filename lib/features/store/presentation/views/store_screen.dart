@@ -94,7 +94,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                 crossAxisSpacing: 14,
                                 childAspectRatio: 0.62,
                               ),
-                          delegate: SliverChildBuilderDelegate((context, index) {
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
                             final template = templates[index];
                             return _TemplateGridCard(
                               template: template,
@@ -110,6 +113,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
     );
   }
+
   void _openDetail(PremiumTemplate template) {
     Navigator.push(
       context,

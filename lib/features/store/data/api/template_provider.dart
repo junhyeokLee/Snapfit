@@ -1250,5 +1250,5 @@ class StoreTemplateFeedNotifier extends Notifier<StoreTemplateFeedState> {
 
 final storeTemplateFeedProvider =
     NotifierProvider<StoreTemplateFeedNotifier, StoreTemplateFeedState>(
-  StoreTemplateFeedNotifier.new,
-);
+      StoreTemplateFeedNotifier.new,
+    );

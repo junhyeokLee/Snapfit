@@ -71,8 +71,11 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     final supabase = ref.read(supabaseClientProvider);
     try {
       final ext = _profileImageExtension(fileToUpload.path);
-      final objectPath = '$userId/profile_${DateTime.now().millisecondsSinceEpoch}.$ext';
-      await supabase.storage.from('avatars').upload(
+      final objectPath =
+          '$userId/profile_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      await supabase.storage
+          .from('avatars')
+          .upload(
             objectPath,
             fileToUpload,
             fileOptions: FileOptions(
@@ -80,7 +83,9 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
               upsert: true,
             ),
           );
-      final publicUrl = supabase.storage.from('avatars').getPublicUrl(objectPath);
+      final publicUrl = supabase.storage
+          .from('avatars')
+          .getPublicUrl(objectPath);
       await supabase.from('profiles').upsert({
         'id': userId,
         'email': current.email,

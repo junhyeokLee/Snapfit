@@ -484,10 +484,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     // 1. Optimistic Update
     setState(() {
       _isLikeSubmitting = true;
-      _template = normalizeTemplateLikeStateForDisplay(target.copyWith(
-        isLiked: !oldStatus,
-        likeCount: optimisticCount,
-      ));
+      _template = normalizeTemplateLikeStateForDisplay(
+        target.copyWith(isLiked: !oldStatus, likeCount: optimisticCount),
+      );
     });
     await persistTemplateLikeState(_template, userId: userId);
 
@@ -1319,9 +1318,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                       color: SnapFitColors.accent,
                                     ),
                                   ),
-                                  const TextSpan(
-                                    text: '이 템플릿에 관심을 보이고 있습니다.',
-                                  ),
+                                  const TextSpan(text: '이 템플릿에 관심을 보이고 있습니다.'),
                                 ],
                               ),
                             ),

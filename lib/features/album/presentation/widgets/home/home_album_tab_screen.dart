@@ -73,37 +73,37 @@ class HomeAlbumTabScreen extends ConsumerWidget {
                 ),
               ),
               child: Row(
-                children: ['전체', '진행중', '완료', '즐겨찾기', '공유'].asMap().entries.map((
-                  entry,
-                ) {
-                  final idx = entry.key;
-                  final selected = idx == albumTabIndex;
-                  return GestureDetector(
-                    onTap: () => onAlbumTabChanged(idx),
-                    child: Container(
-                      margin: EdgeInsets.only(right: 18.w),
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: selected
-                                ? SnapFitColors.accent
-                                : Colors.transparent,
-                            width: 3,
+                children: ['전체', '진행중', '완료', '즐겨찾기', '공유'].asMap().entries.map(
+                  (entry) {
+                    final idx = entry.key;
+                    final selected = idx == albumTabIndex;
+                    return GestureDetector(
+                      onTap: () => onAlbumTabChanged(idx),
+                      child: Container(
+                        margin: EdgeInsets.only(right: 18.w),
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: selected
+                                  ? SnapFitColors.accent
+                                  : Colors.transparent,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          entry.value,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w800,
+                            color: selected ? textPrimary : textSecondary,
                           ),
                         ),
                       ),
-                      child: Text(
-                        entry.value,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w800,
-                          color: selected ? textPrimary : textSecondary,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  },
+                ).toList(),
               ),
             ),
           ),
@@ -329,10 +329,7 @@ class _HomeAlbumGridCard extends StatelessWidget {
     final progress = calculateAlbumProgress(album);
     final tone = albumCardToneOrNull(album);
     final cardBg = tone != null
-        ? softenedAlbumCardToneForBrightness(
-            tone,
-            Theme.of(context).brightness,
-          )
+        ? softenedAlbumCardToneForBrightness(tone, Theme.of(context).brightness)
         : SnapFitColors.surfaceOf(context);
     final coverType = _coverTypeOf(album);
     final thumbnailHeight = switch (coverType) {

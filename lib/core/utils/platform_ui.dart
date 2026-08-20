@@ -11,8 +11,8 @@ IconData platformBackIcon() {
 
 ScrollPhysics platformScrollPhysics({bool alwaysScrollable = false}) {
   final platform = defaultTargetPlatform;
-  final parent = (platform == TargetPlatform.iOS ||
-          platform == TargetPlatform.macOS)
+  final parent =
+      (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS)
       ? const BouncingScrollPhysics()
       : const ClampingScrollPhysics();
   if (alwaysScrollable) {

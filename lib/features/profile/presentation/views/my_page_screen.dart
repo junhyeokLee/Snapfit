@@ -92,10 +92,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
                 children: [
                   SizedBox(height: MediaQuery.of(context).padding.top),
-                  _buildTopBar(
-                    context,
-                    textColor,
-                  ),
+                  _buildTopBar(context, textColor),
                   SizedBox(height: 12.h),
                   _buildProfileHero(
                     context,
@@ -166,7 +163,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const AdminOrderManagementScreen(),
+                                builder: (_) =>
+                                    const AdminOrderManagementScreen(),
                               ),
                             );
                           },
@@ -195,9 +193,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                '구독 및 결제 관리는 현재 준비 중입니다.',
-                              ),
+                              content: Text('구독 및 결제 관리는 현재 준비 중입니다.'),
                             ),
                           );
                         },
@@ -422,14 +418,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _buildTopBar(
-    BuildContext context,
-    Color textColor,
-  ) {
+  Widget _buildTopBar(BuildContext context, Color textColor) {
     return Row(
-      children: [
-        Text('마이페이지', style: context.sfTitle(size: 16.sp)),
-      ],
+      children: [Text('마이페이지', style: context.sfTitle(size: 16.sp))],
     );
   }
 
@@ -935,7 +926,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             for (int i = 0; i < rows.length; i++) ...[
               rows[i],
               if (i != rows.length - 1)
-                Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
+                Divider(
+                  height: 1,
+                  color: SnapFitColors.overlayLightOf(context),
+                ),
             ],
           ],
         ),

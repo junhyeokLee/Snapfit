@@ -10,7 +10,11 @@ import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
 
 class OrderRepository {
-  OrderRepository({required this.dio, required this.tokenStorage, this.supabase});
+  OrderRepository({
+    required this.dio,
+    required this.tokenStorage,
+    this.supabase,
+  });
 
   final Dio dio;
   final TokenStorage tokenStorage;
@@ -37,7 +41,6 @@ class OrderRepository {
     return id;
   }
 
-
   Map<String, dynamic> _orderRowToJson(Map<String, dynamic> row) {
     final status = row['status']?.toString() ?? 'PAYMENT_PENDING';
     return {
@@ -48,7 +51,8 @@ class OrderRepository {
       'status': status,
       'statusLabel': _statusLabel(status),
       'progress': _statusProgress(status),
-      'orderedAt': row['ordered_at']?.toString() ?? row['created_at']?.toString(),
+      'orderedAt':
+          row['ordered_at']?.toString() ?? row['created_at']?.toString(),
       'albumId': (row['album_id'] as num?)?.toInt(),
       'recipientName': row['recipient_name']?.toString(),
       'recipientPhone': row['recipient_phone']?.toString(),
@@ -109,10 +113,12 @@ class OrderRepository {
   }
 
   OrderSummaryResult _summaryFromOrders(List<OrderHistoryItem> items) {
-    int count(String status) => items.where((e) => e.status.toUpperCase() == status).length;
+    int count(String status) =>
+        items.where((e) => e.status.toUpperCase() == status).length;
     DateTime? latest;
     for (final item in items) {
-      if (latest == null || item.orderedAt.isAfter(latest)) latest = item.orderedAt;
+      if (latest == null || item.orderedAt.isAfter(latest))
+        latest = item.orderedAt;
     }
     return OrderSummaryResult(
       paymentPending: count('PAYMENT_PENDING'),
@@ -134,7 +140,11 @@ class OrderRepository {
           .eq('user_id', userId)
           .order('ordered_at', ascending: false);
       return rows
-          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .map<OrderHistoryItem>(
+            (e) => OrderHistoryItem.fromJson(
+              _orderRowToJson(Map<String, dynamic>.from(e)),
+            ),
+          )
           .toList(growable: false);
     }
     final response = await dio.get(
@@ -168,7 +178,11 @@ class OrderRepository {
           .order('ordered_at', ascending: false)
           .range(page * size, page * size + size - 1);
       final items = rows
-          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .map<OrderHistoryItem>(
+            (e) => OrderHistoryItem.fromJson(
+              _orderRowToJson(Map<String, dynamic>.from(e)),
+            ),
+          )
           .toList(growable: false);
       return OrderPageResult(
         items: items,
@@ -202,7 +216,11 @@ class OrderRepository {
           .eq('user_id', userId)
           .order('ordered_at', ascending: false);
       final items = rows
-          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .map<OrderHistoryItem>(
+            (e) => OrderHistoryItem.fromJson(
+              _orderRowToJson(Map<String, dynamic>.from(e)),
+            ),
+          )
           .toList(growable: false);
       return _summaryFromOrders(items);
     }
@@ -221,14 +239,20 @@ class OrderRepository {
   }) async {
     final userId = await _requireUserId();
     if (supabase != null) {
-      final row = await supabase!.from('orders').insert({
-        'user_id': userId,
-        'title': title,
-        'amount': amount,
-        'status': 'PAYMENT_PENDING',
-        'payment_method': 'STORE_IAP',
-      }).select().single();
-      return OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(row)));
+      final row = await supabase!
+          .from('orders')
+          .insert({
+            'user_id': userId,
+            'title': title,
+            'amount': amount,
+            'status': 'PAYMENT_PENDING',
+            'payment_method': 'STORE_IAP',
+          })
+          .select()
+          .single();
+      return OrderHistoryItem.fromJson(
+        _orderRowToJson(Map<String, dynamic>.from(row)),
+      );
     }
     final response = await dio.post(
       '/api/orders/test/create',
@@ -275,22 +299,28 @@ class OrderRepository {
 
     final userId = await _requireUserId();
     if (supabase != null) {
-      final row = await supabase!.from('orders').insert({
-        'user_id': userId,
-        'album_id': albumId,
-        'title': title.trim(),
-        'amount': amount,
-        'page_count': pageCount,
-        'payment_method': normalizedPaymentMethod,
-        'recipient_name': recipientName.trim(),
-        'recipient_phone': normalizedPhone,
-        'zip_code': normalizedZip,
-        'address_line1': addressLine1.trim(),
-        'address_line2': addressLine2?.trim() ?? '',
-        'delivery_memo': deliveryMemo?.trim() ?? '',
-        'status': 'PAYMENT_PENDING',
-      }).select().single();
-      return OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(row)));
+      final row = await supabase!
+          .from('orders')
+          .insert({
+            'user_id': userId,
+            'album_id': albumId,
+            'title': title.trim(),
+            'amount': amount,
+            'page_count': pageCount,
+            'payment_method': normalizedPaymentMethod,
+            'recipient_name': recipientName.trim(),
+            'recipient_phone': normalizedPhone,
+            'zip_code': normalizedZip,
+            'address_line1': addressLine1.trim(),
+            'address_line2': addressLine2?.trim() ?? '',
+            'delivery_memo': deliveryMemo?.trim() ?? '',
+            'status': 'PAYMENT_PENDING',
+          })
+          .select()
+          .single();
+      return OrderHistoryItem.fromJson(
+        _orderRowToJson(Map<String, dynamic>.from(row)),
+      );
     }
     final response = await dio.post(
       '/api/orders',
@@ -770,7 +800,10 @@ final myOrderStatusBadgesProvider = FutureProvider<OrderStatusBadges>((
   }
   try {
     final summary = await ref.watch(myOrderSummaryProvider.future);
-    return await repo.computeUnreadStatusBadges(userId: userId, summary: summary);
+    return await repo.computeUnreadStatusBadges(
+      userId: userId,
+      summary: summary,
+    );
   } catch (_) {
     return const OrderStatusBadges.zero();
   }

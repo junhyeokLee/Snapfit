@@ -13,7 +13,6 @@ class AdminOpsRepository {
   final Dio dio;
   final SupabaseClient? supabase;
 
-
   Future<Map<String, dynamic>> _invoke(
     String action, {
     required String adminKey,
@@ -25,12 +24,15 @@ class AdminOpsRepository {
       body: {'action': action, 'adminKey': adminKey, ...?body},
       headers: {'X-Admin-Key': adminKey},
     );
-    return (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    return (response.data as Map?)?.cast<String, dynamic>() ??
+        <String, dynamic>{};
   }
 
   Future<AdminDashboardData> fetchDashboard({required String adminKey}) async {
     if (supabase != null) {
-      return AdminDashboardData.fromJson(await _invoke('dashboard', adminKey: adminKey));
+      return AdminDashboardData.fromJson(
+        await _invoke('dashboard', adminKey: adminKey),
+      );
     }
     final response = await dio.get(
       '/api/ops/admin/dashboard',
@@ -46,10 +48,17 @@ class AdminOpsRepository {
     int limit = 50,
   }) async {
     if (supabase != null) {
-      final map = await _invoke('csSignals', adminKey: adminKey, body: {'limit': limit});
+      final map = await _invoke(
+        'csSignals',
+        adminKey: adminKey,
+        body: {'limit': limit},
+      );
       final items = map['items'];
       if (items is! List) return const [];
-      return items.whereType<Map>().map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>())).toList();
+      return items
+          .whereType<Map>()
+          .map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>()))
+          .toList();
     }
     final response = await dio.get(
       '/api/ops/admin/cs-signals',
@@ -74,11 +83,18 @@ class AdminOpsRepository {
     int size = 20,
   }) async {
     if (supabase != null) {
-      return OrderPageResult.fromJson(await _invoke(
-        'orders',
-        adminKey: adminKey,
-        body: {'page': page, 'size': size, if (statuses != null) 'statuses': statuses, if (keyword != null) 'keyword': keyword},
-      ));
+      return OrderPageResult.fromJson(
+        await _invoke(
+          'orders',
+          adminKey: adminKey,
+          body: {
+            'page': page,
+            'size': size,
+            if (statuses != null) 'statuses': statuses,
+            if (keyword != null) 'keyword': keyword,
+          },
+        ),
+      );
     }
     final response = await dio.get(
       '/api/orders/admin/paged',
@@ -102,11 +118,17 @@ class AdminOpsRepository {
     required String trackingNumber,
   }) async {
     if (supabase != null) {
-      return OrderHistoryItem.fromJson(await _invoke(
-        'markShipping',
-        adminKey: adminKey,
-        body: {'orderId': orderId, 'courier': courier, 'trackingNumber': trackingNumber},
-      ));
+      return OrderHistoryItem.fromJson(
+        await _invoke(
+          'markShipping',
+          adminKey: adminKey,
+          body: {
+            'orderId': orderId,
+            'courier': courier,
+            'trackingNumber': trackingNumber,
+          },
+        ),
+      );
     }
     final response = await dio.post(
       '/api/orders/$orderId/shipping',
@@ -123,11 +145,13 @@ class AdminOpsRepository {
     required String orderId,
   }) async {
     if (supabase != null) {
-      return OrderHistoryItem.fromJson(await _invoke(
-        'markDelivered',
-        adminKey: adminKey,
-        body: {'orderId': orderId},
-      ));
+      return OrderHistoryItem.fromJson(
+        await _invoke(
+          'markDelivered',
+          adminKey: adminKey,
+          body: {'orderId': orderId},
+        ),
+      );
     }
     final response = await dio.post(
       '/api/orders/$orderId/delivered',
@@ -143,7 +167,11 @@ class AdminOpsRepository {
     required Map<String, dynamic> payload,
   }) async {
     if (supabase != null) {
-      await _invoke('upsertTemplate', adminKey: adminKey, body: {'payload': payload});
+      await _invoke(
+        'upsertTemplate',
+        adminKey: adminKey,
+        body: {'payload': payload},
+      );
       return;
     }
     await dio.post(
@@ -159,11 +187,13 @@ class AdminOpsRepository {
     int size = 20,
   }) async {
     if (supabase != null) {
-      return AdminTemplatePage.fromJson(await _invoke(
-        'templates',
-        adminKey: adminKey,
-        body: {'page': page, 'size': size},
-      ));
+      return AdminTemplatePage.fromJson(
+        await _invoke(
+          'templates',
+          adminKey: adminKey,
+          body: {'page': page, 'size': size},
+        ),
+      );
     }
     final response = await dio.get(
       '/api/admin/templates/paged',

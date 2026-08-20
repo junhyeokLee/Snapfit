@@ -53,7 +53,8 @@ Color? computeBackdropTone(Uint8List bytes) {
     interpolation: img.Interpolation.average,
   );
 
-  final buckets = <int, ({double r, double g, double b, double weight, int count})>{};
+  final buckets =
+      <int, ({double r, double g, double b, double weight, int count})>{};
 
   for (var y = 0; y < resized.height; y++) {
     for (var x = 0; x < resized.width; x++) {
@@ -61,23 +62,16 @@ Color? computeBackdropTone(Uint8List bytes) {
       final alpha = pixel.aNormalized;
       if (alpha < 0.2) continue;
       final isOuterEdge =
-          x < 2 ||
-          x >= resized.width - 2 ||
-          y < 2 ||
-          y >= resized.height - 2;
+          x < 2 || x >= resized.width - 2 || y < 2 || y >= resized.height - 2;
       final isInnerEdge =
-          x < 4 ||
-          x >= resized.width - 4 ||
-          y < 4 ||
-          y >= resized.height - 4;
+          x < 4 || x >= resized.width - 4 || y < 4 || y >= resized.height - 4;
       final edgeBoost = isOuterEdge
           ? 1.08
           : isInnerEdge
-              ? 1.03
-              : 1.0;
+          ? 1.03
+          : 1.0;
       final brightness = (pixel.r + pixel.g + pixel.b) / 3.0;
-      final brightnessWeight =
-          brightness < 28 || brightness > 242 ? 0.55 : 1.0;
+      final brightnessWeight = brightness < 28 || brightness > 242 ? 0.55 : 1.0;
       final weight = alpha * edgeBoost * brightnessWeight;
 
       final rq = (pixel.r ~/ 24).clamp(0, 10);

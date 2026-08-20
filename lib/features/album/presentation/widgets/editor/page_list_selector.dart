@@ -73,7 +73,10 @@ class PageListSelector extends ConsumerWidget {
                           color: SnapFitColors.surfaceOf(context),
                           borderRadius: BorderRadius.circular(8.r),
                           border: isSelected
-                              ? Border.all(color: SnapFitColors.accent, width: 2)
+                              ? Border.all(
+                                  color: SnapFitColors.accent,
+                                  width: 2,
+                                )
                               : null,
                         ),
                         child: ClipRRect(

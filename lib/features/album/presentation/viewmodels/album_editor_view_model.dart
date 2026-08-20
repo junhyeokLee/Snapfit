@@ -1257,10 +1257,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       fillPersistentUrls: true,
     );
     final extracted = _extractTemplateBackgroundForEditing(ready, canvasSize);
-    final normalized = _normalizeLayersForEditing(
-      extracted.layers,
-      canvasSize,
-    );
+    final normalized = _normalizeLayersForEditing(extracted.layers, canvasSize);
     _pages[_currentPageIndex] = page.copyWith(
       layers: normalized,
       backgroundColor:
@@ -1316,18 +1313,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   ({List<LayerModel> layers, int? backgroundColor})
-  _extractTemplateBackgroundForEditing(
-    List<LayerModel> layers,
-    Size canvas,
-  ) {
+  _extractTemplateBackgroundForEditing(List<LayerModel> layers, Size canvas) {
     if (layers.isEmpty) {
       return (layers: layers, backgroundColor: null);
     }
 
-    final backgroundCandidates = layers
-        .where((layer) => _isFullCanvasBackgroundCandidate(layer, canvas))
-        .toList(growable: false)
-      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final backgroundCandidates =
+        layers
+            .where((layer) => _isFullCanvasBackgroundCandidate(layer, canvas))
+            .toList(growable: false)
+          ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
     final backgroundLayer = backgroundCandidates.isEmpty
         ? null
@@ -1336,10 +1331,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         ? null
         : _resolveTemplateBackgroundColor(backgroundLayer);
 
-    return (
-      layers: layers,
-      backgroundColor: backgroundColor?.toARGB32(),
-    );
+    return (layers: layers, backgroundColor: backgroundColor?.toARGB32());
   }
 
   Color? _resolveTemplateBackgroundColor(LayerModel layer) {
@@ -1399,10 +1391,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         ? normalized.substring(1)
         : normalized;
     if (hex.length != 6 && hex.length != 8) return null;
-    final value = int.tryParse(
-      hex.length == 6 ? 'FF$hex' : hex,
-      radix: 16,
-    );
+    final value = int.tryParse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
     return value == null ? null : Color(value);
   }
 
@@ -1422,6 +1411,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _pages[pageIndex] = page.copyWith(backgroundColor: nextColor);
     _emit();
   }
+
   List<LayerModel> _normalizeLayersForEditing(
     List<LayerModel> layers,
     Size canvas, {

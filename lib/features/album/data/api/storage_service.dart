@@ -46,9 +46,11 @@ class StorageQuotaExceededException implements Exception {
 }
 
 class StorageService {
-  StorageService({BillingRepository? billingRepository, SupabaseClient? supabase})
-    : _billingRepository = billingRepository,
-      _supabase = supabase;
+  StorageService({
+    BillingRepository? billingRepository,
+    SupabaseClient? supabase,
+  }) : _billingRepository = billingRepository,
+       _supabase = supabase;
 
   final _storage = FirebaseStorage.instance;
   final SupabaseClient? _supabase;
@@ -73,12 +75,19 @@ class StorageService {
       );
       if (_supabase != null) {
         final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
-        await _supabase!.storage.from('album-assets').uploadBinary(
-          normalizedPath,
-          resized,
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
-        );
-        return _supabase!.storage.from('album-assets').getPublicUrl(normalizedPath);
+        await _supabase!.storage
+            .from('album-assets')
+            .uploadBinary(
+              normalizedPath,
+              resized,
+              fileOptions: const FileOptions(
+                contentType: 'image/jpeg',
+                upsert: false,
+              ),
+            );
+        return _supabase!.storage
+            .from('album-assets')
+            .getPublicUrl(normalizedPath);
       }
       final ref = _storage.ref().child(path);
       await ref.putData(resized, SettableMetadata(contentType: 'image/jpeg'));
@@ -122,7 +131,9 @@ class StorageService {
         final path = 'albums/images/$originalName';
         if (_supabase != null) {
           await _supabase!.storage.from('album-assets').upload(path, file);
-          originalUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          originalUrl = _supabase!.storage
+              .from('album-assets')
+              .getPublicUrl(path);
           originalGsPath = 'supabase://album-assets/$path';
           return;
         }
@@ -136,12 +147,19 @@ class StorageService {
       Future<void> uploadPreview() async {
         final path = 'albums/images/$previewName';
         if (_supabase != null) {
-          await _supabase!.storage.from('album-assets').uploadBinary(
-            path,
-            resizedPreviewBytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
-          );
-          previewUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          await _supabase!.storage
+              .from('album-assets')
+              .uploadBinary(
+                path,
+                resizedPreviewBytes,
+                fileOptions: const FileOptions(
+                  contentType: 'image/jpeg',
+                  upsert: false,
+                ),
+              );
+          previewUrl = _supabase!.storage
+              .from('album-assets')
+              .getPublicUrl(path);
           previewGsPath = 'supabase://album-assets/$path';
           return;
         }
@@ -216,13 +234,22 @@ class StorageService {
 
         final path = 'albums/covers/$originalName';
         if (_supabase != null) {
-          await _supabase!.storage.from('album-assets').uploadBinary(
-            path,
-            originalBytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
+          await _supabase!.storage
+              .from('album-assets')
+              .uploadBinary(
+                path,
+                originalBytes,
+                fileOptions: const FileOptions(
+                  contentType: 'image/jpeg',
+                  upsert: false,
+                ),
+              );
+          AppLogger.perf(
+            '[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms',
           );
-          AppLogger.perf('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
-          originalUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          originalUrl = _supabase!.storage
+              .from('album-assets')
+              .getPublicUrl(path);
           originalGsPath = 'supabase://album-assets/$path';
           return;
         }
@@ -245,13 +272,20 @@ class StorageService {
 
         final path = 'albums/covers/$previewName';
         if (_supabase != null) {
-          await _supabase!.storage.from('album-assets').uploadBinary(
-            path,
-            previewBytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
-          );
+          await _supabase!.storage
+              .from('album-assets')
+              .uploadBinary(
+                path,
+                previewBytes,
+                fileOptions: const FileOptions(
+                  contentType: 'image/jpeg',
+                  upsert: false,
+                ),
+              );
           AppLogger.perf('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
-          previewUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          previewUrl = _supabase!.storage
+              .from('album-assets')
+              .getPublicUrl(path);
           previewGsPath = 'supabase://album-assets/$path';
           return;
         }

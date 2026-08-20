@@ -131,9 +131,9 @@ class CoverLayout extends StatelessWidget {
                                             ),
                                             size: Size(
                                               kCoverSpineWidth,
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .height,
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.height,
                                             ),
                                           ),
                                         ),
@@ -340,9 +340,7 @@ class _BackdropSolidToneState extends State<_BackdropSolidTone> {
         if (resolved == null) {
           return const SizedBox.shrink();
         }
-        return DecoratedBox(
-          decoration: BoxDecoration(color: resolved),
-        );
+        return DecoratedBox(decoration: BoxDecoration(color: resolved));
       },
     );
   }

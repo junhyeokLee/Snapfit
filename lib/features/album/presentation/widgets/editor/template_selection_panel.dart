@@ -40,8 +40,10 @@ class _TemplateSelectionPanelState
 
     final templates = pageTemplates;
 
-    final maxSheetHeight =
-        (MediaQuery.sizeOf(context).height * 0.78).clamp(420.0, 620.0);
+    final maxSheetHeight = (MediaQuery.sizeOf(context).height * 0.78).clamp(
+      420.0,
+      620.0,
+    );
 
     return Container(
       height: maxSheetHeight,

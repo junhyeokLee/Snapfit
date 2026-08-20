@@ -26,7 +26,10 @@ class AdminOrderManagementScreen extends ConsumerStatefulWidget {
 class _AdminOrderManagementScreenState
     extends ConsumerState<AdminOrderManagementScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 5, vsync: this);
+  late final TabController _tabController = TabController(
+    length: 5,
+    vsync: this,
+  );
   final TextEditingController _searchController = TextEditingController();
   String _keyword = '';
   int _refreshSeed = 0;
@@ -55,7 +58,9 @@ class _AdminOrderManagementScreenState
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
         margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       ),
     );
@@ -154,7 +159,10 @@ class _AdminOrderManagementScreenState
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
                 labelColor: SnapFitColors.textPrimaryOf(context),
                 unselectedLabelColor: SnapFitColors.textSecondaryOf(context),
-                labelStyle: context.sfBody(size: 12.sp, weight: FontWeight.w700),
+                labelStyle: context.sfBody(
+                  size: 12.sp,
+                  weight: FontWeight.w700,
+                ),
                 unselectedLabelStyle: context.sfSub(
                   size: 12.sp,
                   weight: FontWeight.w500,
@@ -235,7 +243,9 @@ class _AdminOrderManagementScreenState
     }
 
     Future<void> openExternal(String raw, String label) async {
-      final url = ref.read(orderRepositoryProvider).buildAdminPrintPackageUrl(raw);
+      final url = ref
+          .read(orderRepositoryProvider)
+          .buildAdminPrintPackageUrl(raw);
       final uri = Uri.tryParse(url);
       if (uri == null) {
         _showToast('$label URL 형식이 올바르지 않습니다.');
@@ -246,7 +256,9 @@ class _AdminOrderManagementScreenState
 
     Future<void> preparePrintPackage() async {
       try {
-        await ref.read(orderRepositoryProvider).preparePrintPackage(
+        await ref
+            .read(orderRepositoryProvider)
+            .preparePrintPackage(
               orderId: order.orderId,
               adminKey: Env.orderAdminKey,
             );
@@ -298,7 +310,9 @@ class _AdminOrderManagementScreenState
       );
       if (ok != true) return;
       try {
-        await ref.read(adminOpsRepositoryProvider).markShipping(
+        await ref
+            .read(adminOpsRepositoryProvider)
+            .markShipping(
               adminKey: Env.orderAdminKey,
               orderId: order.orderId,
               courier: courierController.text.trim(),
@@ -315,10 +329,9 @@ class _AdminOrderManagementScreenState
 
     Future<void> markDelivered() async {
       try {
-        await ref.read(adminOpsRepositoryProvider).markDelivered(
-              adminKey: Env.orderAdminKey,
-              orderId: order.orderId,
-            );
+        await ref
+            .read(adminOpsRepositoryProvider)
+            .markDelivered(adminKey: Env.orderAdminKey, orderId: order.orderId);
         if (!mounted) return;
         Navigator.pop(context);
         setState(() => _refreshSeed++);
@@ -402,11 +415,15 @@ class _AdminOrderManagementScreenState
                   ),
                 ),
                 SizedBox(height: 8.h),
-                Text(line('수령인', order.recipientName),
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  line('수령인', order.recipientName),
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
-                Text(line('연락처', order.recipientPhone),
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  line('연락처', order.recipientPhone),
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
                 Text(
                   line(
@@ -419,8 +436,10 @@ class _AdminOrderManagementScreenState
                   style: TextStyle(fontSize: 12.sp, color: textColor),
                 ),
                 SizedBox(height: 4.h),
-                Text(line('배송메모', order.deliveryMemo),
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  line('배송메모', order.deliveryMemo),
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 10.h),
                 Wrap(
                   spacing: 8.w,
@@ -455,7 +474,10 @@ class _AdminOrderManagementScreenState
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: hasPrintPackage
-                            ? () => openExternal(order.printPackageJsonUrl!, '인쇄 패키지')
+                            ? () => openExternal(
+                                order.printPackageJsonUrl!,
+                                '인쇄 패키지',
+                              )
                             : preparePrintPackage,
                         icon: Icon(
                           hasPrintPackage
@@ -463,7 +485,9 @@ class _AdminOrderManagementScreenState
                               : Icons.inventory_2_outlined,
                           size: 16,
                         ),
-                        label: Text(hasPrintPackage ? '인쇄 패키지 열기' : '인쇄 패키지 생성'),
+                        label: Text(
+                          hasPrintPackage ? '인쇄 패키지 열기' : '인쇄 패키지 생성',
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: SnapFitColors.accent,
                           foregroundColor: Colors.white,
@@ -480,8 +504,12 @@ class _AdminOrderManagementScreenState
                       if (hasPrintPdf)
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => openExternal(order.printFilePdfUrl!, 'PDF'),
-                            icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
+                            onPressed: () =>
+                                openExternal(order.printFilePdfUrl!, 'PDF'),
+                            icon: const Icon(
+                              Icons.picture_as_pdf_outlined,
+                              size: 16,
+                            ),
                             label: const Text('PDF 열기'),
                           ),
                         ),
@@ -489,7 +517,8 @@ class _AdminOrderManagementScreenState
                       if (hasPrintZip)
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => openExternal(order.printFileZipUrl!, 'ZIP'),
+                            onPressed: () =>
+                                openExternal(order.printFileZipUrl!, 'ZIP'),
                             icon: const Icon(Icons.archive_outlined, size: 16),
                             label: const Text('ZIP 열기'),
                           ),
@@ -524,7 +553,8 @@ class _AdminOrderManagementScreenState
                             child: const Text('배송 시작'),
                           ),
                         ),
-                      if (canMarkShipping && canMarkDelivered) SizedBox(width: 8.w),
+                      if (canMarkShipping && canMarkDelivered)
+                        SizedBox(width: 8.w),
                       if (canMarkDelivered)
                         Expanded(
                           child: OutlinedButton(
@@ -540,20 +570,30 @@ class _AdminOrderManagementScreenState
                     style: TextStyle(fontSize: 12.sp, color: subColor),
                   ),
                 SizedBox(height: 10.h),
-                Text('결제완료: ${formatDateTime(order.paymentConfirmedAt)}',
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  '결제완료: ${formatDateTime(order.paymentConfirmedAt)}',
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
-                Text('인쇄패키지: ${formatDateTime(order.printPackageGeneratedAt)}',
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  '인쇄패키지: ${formatDateTime(order.printPackageGeneratedAt)}',
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
-                Text('제작사 전송: ${formatDateTime(order.printSubmittedAt)}',
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  '제작사 전송: ${formatDateTime(order.printSubmittedAt)}',
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
-                Text('배송시작: ${formatDateTime(order.shippedAt)}',
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  '배송시작: ${formatDateTime(order.shippedAt)}',
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
                 SizedBox(height: 4.h),
-                Text('배송완료: ${formatDateTime(order.deliveredAt)}',
-                    style: TextStyle(fontSize: 12.sp, color: textColor)),
+                Text(
+                  '배송완료: ${formatDateTime(order.deliveredAt)}',
+                  style: TextStyle(fontSize: 12.sp, color: textColor),
+                ),
               ],
             ),
           ),
@@ -576,7 +616,8 @@ class _AdminOrderPagedTab extends ConsumerStatefulWidget {
   final void Function(OrderHistoryItem order) onShowDetail;
 
   @override
-  ConsumerState<_AdminOrderPagedTab> createState() => _AdminOrderPagedTabState();
+  ConsumerState<_AdminOrderPagedTab> createState() =>
+      _AdminOrderPagedTabState();
 }
 
 class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
@@ -599,7 +640,8 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
   @override
   void didUpdateWidget(covariant _AdminOrderPagedTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final statusChanged = oldWidget.statuses.join(',') != widget.statuses.join(',');
+    final statusChanged =
+        oldWidget.statuses.join(',') != widget.statuses.join(',');
     final keywordChanged = oldWidget.keyword != widget.keyword;
     if (statusChanged || keywordChanged) {
       Future.microtask(_loadFirst);
@@ -640,7 +682,9 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
     if (_loadingMore || !_hasNext) return;
     setState(() => _loadingMore = true);
     try {
-      final result = await ref.read(adminOpsRepositoryProvider).fetchAdminOrders(
+      final result = await ref
+          .read(adminOpsRepositoryProvider)
+          .fetchAdminOrders(
             adminKey: Env.orderAdminKey,
             statuses: widget.statuses,
             keyword: widget.keyword,
@@ -743,7 +787,9 @@ class _AdminOrderPagedTabState extends ConsumerState<_AdminOrderPagedTab> {
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context),
                 borderRadius: BorderRadius.circular(18.r),
-                border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+                border: Border.all(
+                  color: SnapFitColors.overlayLightOf(context),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -48,7 +48,10 @@ final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {
 final storageServiceProvider = Provider<StorageService>((ref) {
   final billingRepository = ref.read(billingRepositoryProvider);
   final supabase = ref.read(supabaseClientProvider);
-  return StorageService(billingRepository: billingRepository, supabase: supabase);
+  return StorageService(
+    billingRepository: billingRepository,
+    supabase: supabase,
+  );
 });
 
 final albumEditorServiceProvider = Provider<AlbumEditorService>((ref) {

@@ -12,10 +12,7 @@ Color albumCardTone(Album album) {
   return albumCardToneOrNull(album) ?? const Color(0xFFE8D6B8);
 }
 
-Color softenedAlbumCardToneForBrightness(
-  Color tone,
-  Brightness brightness,
-) {
+Color softenedAlbumCardToneForBrightness(Color tone, Brightness brightness) {
   return brightness == Brightness.dark
       ? _softenedAlbumCardToneDark(tone)
       : _softenedAlbumCardToneLight(tone);

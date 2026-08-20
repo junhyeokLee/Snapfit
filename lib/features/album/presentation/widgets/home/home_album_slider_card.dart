@@ -91,7 +91,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           final bool isLandscape = ratio > 1.12;
           final bool isPortrait = ratio < 0.88;
           final contentWidth = isPortrait ? squareHeight * ratio : squareWidth;
-          final contentHeight = isLandscape ? squareWidth / ratio : squareHeight;
+          final contentHeight = isLandscape
+              ? squareWidth / ratio
+              : squareHeight;
           final pageDelta = (widget.index - widget.currentPage).clamp(
             -1.0,
             1.0,

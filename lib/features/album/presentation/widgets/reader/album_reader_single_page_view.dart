@@ -87,18 +87,17 @@ class _AlbumReaderSinglePageViewState
       context,
       PageRouteBuilder(
         opaque: false,
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            FadeTransition(
-              opacity: animation,
-              child: AlbumReaderInnerDetailScreen(
-                innerPages: innerPages,
-                initialPageIndex: innerInitialIndex,
-                singlePageW: singlePageW,
-                singlePageH: singlePageH,
-                interaction: widget.interaction,
-                layerBuilder: widget.layerBuilder,
-              ),
-            ),
+        pageBuilder: (context, animation, secondaryAnimation) => FadeTransition(
+          opacity: animation,
+          child: AlbumReaderInnerDetailScreen(
+            innerPages: innerPages,
+            initialPageIndex: innerInitialIndex,
+            singlePageW: singlePageW,
+            singlePageH: singlePageH,
+            interaction: widget.interaction,
+            layerBuilder: widget.layerBuilder,
+          ),
+        ),
       ),
     );
   }
@@ -290,20 +289,22 @@ class _AlbumReaderSinglePageViewState
                 onStateChanged();
               } else if (safePage < 0.5) {
                 // 커버를 탭하면 첫 스프레드로 펼친 뒤 상세 보기로 바로 이어진다.
-                widget.pageController.animateToPage(
-                  1,
-                  duration: const Duration(milliseconds: 1200),
-                  curve: Curves.easeInOutCubic,
-                ).then((_) {
-                  if (!mounted) return;
-                  if (widget.interaction.selectedLayerId != null) return;
-                  _openInnerDetail(
-                    screenW: screenW,
-                    singlePageW: singlePageW,
-                    singlePageH: singlePageH,
-                    spreadIndex: 1,
-                  );
-                });
+                widget.pageController
+                    .animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 1200),
+                      curve: Curves.easeInOutCubic,
+                    )
+                    .then((_) {
+                      if (!mounted) return;
+                      if (widget.interaction.selectedLayerId != null) return;
+                      _openInnerDetail(
+                        screenW: screenW,
+                        singlePageW: singlePageW,
+                        singlePageH: singlePageH,
+                        spreadIndex: 1,
+                      );
+                    });
               }
             },
             behavior: HitTestBehavior.translucent,

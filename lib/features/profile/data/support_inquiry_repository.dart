@@ -8,7 +8,11 @@ import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 
 class SupportInquiryRepository {
-  SupportInquiryRepository({required this.dio, required this.tokenStorage, this.supabase});
+  SupportInquiryRepository({
+    required this.dio,
+    required this.tokenStorage,
+    this.supabase,
+  });
 
   final Dio dio;
   final TokenStorage tokenStorage;

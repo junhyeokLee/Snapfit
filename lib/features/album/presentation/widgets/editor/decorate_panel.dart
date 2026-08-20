@@ -15,11 +15,7 @@ class DecoratePanel extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
   final DecorateSheetMode mode;
 
-  const DecoratePanel({
-    super.key,
-    this.onClose,
-    required this.mode,
-  });
+  const DecoratePanel({super.key, this.onClose, required this.mode});
 
   @override
   ConsumerState<DecoratePanel> createState() => _DecoratePanelState();

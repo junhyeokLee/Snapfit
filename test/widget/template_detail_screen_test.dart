@@ -41,7 +41,9 @@ PremiumTemplate _template({int likeCount = 1, bool isLiked = false}) {
 }
 
 void main() {
-  testWidgets('template detail loads repository-backed template', (tester) async {
+  testWidgets('template detail loads repository-backed template', (
+    tester,
+  ) async {
     final mockRepo = MockTemplateRepository();
     final template = _template();
     final likedTemplate = _template(likeCount: 2, isLiked: true);

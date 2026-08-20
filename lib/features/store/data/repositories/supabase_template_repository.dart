@@ -17,8 +17,11 @@ class SupabaseTemplateRepository implements TemplateRepository {
   }
 
   PremiumTemplate _fromRow(Map<String, dynamic> row, {bool isLiked = false}) {
-    final likeCount = (row['like_count'] as num?)?.toInt() ??
-        (row['template_likes'] is List ? (row['template_likes'] as List).length : 0);
+    final likeCount =
+        (row['like_count'] as num?)?.toInt() ??
+        (row['template_likes'] is List
+            ? (row['template_likes'] as List).length
+            : 0);
     final previewRaw = row['preview_images'];
     final tagsRaw = row['tags'];
     final newUntil = DateTime.tryParse(row['new_until']?.toString() ?? '');
@@ -29,15 +32,22 @@ class SupabaseTemplateRepository implements TemplateRepository {
       description: row['description']?.toString(),
       coverImageUrl: row['cover_image_url']?.toString() ?? '',
       previewImages: previewRaw is List
-          ? previewRaw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList(growable: false)
+          ? previewRaw
+                .map((e) => e.toString())
+                .where((e) => e.isNotEmpty)
+                .toList(growable: false)
           : const <String>[],
       pageCount: (row['page_count'] as num?)?.toInt() ?? 0,
       likeCount: likeCount,
       userCount: (row['user_count'] as num?)?.toInt() ?? 0,
       category: row['category']?.toString(),
-      tags: tagsRaw is List ? tagsRaw.map((e) => e.toString()).toList(growable: false) : const <String>[],
+      tags: tagsRaw is List
+          ? tagsRaw.map((e) => e.toString()).toList(growable: false)
+          : const <String>[],
       weeklyScore: (row['weekly_score'] as num?)?.toInt() ?? 0,
-      isNew: row['is_new'] == true || (newUntil != null && newUntil.isAfter(DateTime.now())),
+      isNew:
+          row['is_new'] == true ||
+          (newUntil != null && newUntil.isAfter(DateTime.now())),
       isBest: row['is_best'] == true,
       isPremium: row['is_premium'] == true,
       isLiked: isLiked,
@@ -55,16 +65,25 @@ class SupabaseTemplateRepository implements TemplateRepository {
         .eq('is_active', true)
         .order('weekly_score', ascending: false)
         .order('created_at', ascending: false);
-    return rows.map<PremiumTemplate>((row) {
-      final likes = row['template_likes'];
-      final isLiked = userId.isNotEmpty && likes is List &&
-          likes.any((like) => like is Map && like['user_id']?.toString() == userId);
-      return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
-    }).toList(growable: false);
+    return rows
+        .map<PremiumTemplate>((row) {
+          final likes = row['template_likes'];
+          final isLiked =
+              userId.isNotEmpty &&
+              likes is List &&
+              likes.any(
+                (like) => like is Map && like['user_id']?.toString() == userId,
+              );
+          return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
+        })
+        .toList(growable: false);
   }
 
   @override
-  Future<TemplateSummaryPage> getTemplateSummaries({int page = 0, int size = 20}) async {
+  Future<TemplateSummaryPage> getTemplateSummaries({
+    int page = 0,
+    int size = 20,
+  }) async {
     final all = await getTemplates();
     final start = (page * size).clamp(0, all.length).toInt();
     final end = (start + size).clamp(0, all.length).toInt();
@@ -88,8 +107,12 @@ class SupabaseTemplateRepository implements TemplateRepository {
         .eq('id', id)
         .single();
     final likes = row['template_likes'];
-    final isLiked = userId.isNotEmpty && likes is List &&
-        likes.any((like) => like is Map && like['user_id']?.toString() == userId);
+    final isLiked =
+        userId.isNotEmpty &&
+        likes is List &&
+        likes.any(
+          (like) => like is Map && like['user_id']?.toString() == userId,
+        );
     return _fromRow(Map<String, dynamic>.from(row), isLiked: isLiked);
   }
 
@@ -104,27 +127,41 @@ class SupabaseTemplateRepository implements TemplateRepository {
         .eq('user_id', userId)
         .maybeSingle();
     if (existing == null) {
-      await client.from('template_likes').insert({'template_id': id, 'user_id': userId});
+      await client.from('template_likes').insert({
+        'template_id': id,
+        'user_id': userId,
+      });
     } else {
-      await client.from('template_likes').delete().eq('template_id', id).eq('user_id', userId);
+      await client
+          .from('template_likes')
+          .delete()
+          .eq('template_id', id)
+          .eq('user_id', userId);
     }
   }
 
   @override
-  Future<Album> createAlbumFromTemplate(int id, {Map<String, String>? replacements}) async {
+  Future<Album> createAlbumFromTemplate(
+    int id, {
+    Map<String, String>? replacements,
+  }) async {
     final userId = await _userId();
     if (userId.isEmpty) throw Exception('로그인이 필요합니다.');
     final template = await getTemplate(id);
-    final inserted = await client.from('albums').insert({
-      'owner_id': userId,
-      'title': template.title,
-      'ratio': '1:1',
-      'cover_image_url': template.coverImageUrl,
-      'cover_preview_url': template.coverImageUrl,
-      'total_pages': template.pageCount,
-      'target_pages': template.pageCount,
-      'cover_layers_json': template.templateJson ?? '',
-    }).select().single();
+    final inserted = await client
+        .from('albums')
+        .insert({
+          'owner_id': userId,
+          'title': template.title,
+          'ratio': '1:1',
+          'cover_image_url': template.coverImageUrl,
+          'cover_preview_url': template.coverImageUrl,
+          'total_pages': template.pageCount,
+          'target_pages': template.pageCount,
+          'cover_layers_json': template.templateJson ?? '',
+        })
+        .select()
+        .single();
     await client
         .from('templates')
         .update({'user_count': template.userCount + 1})
@@ -133,22 +170,22 @@ class SupabaseTemplateRepository implements TemplateRepository {
   }
 
   Map<String, dynamic> _albumRowToJson(Map<String, dynamic> row) => {
-        'albumId': row['id'],
-        'userId': row['owner_id']?.toString() ?? '',
-        'title': row['title']?.toString() ?? '',
-        'ratio': row['ratio']?.toString() ?? '',
-        'coverLayersJson': row['cover_layers_json']?.toString() ?? '',
-        'coverImageUrl': row['cover_image_url'],
-        'coverThumbnailUrl': row['cover_thumbnail_url'],
-        'coverOriginalUrl': row['cover_original_url'],
-        'coverPreviewUrl': row['cover_preview_url'],
-        'coverTheme': row['cover_theme'],
-        'totalPages': row['total_pages'],
-        'targetPages': row['target_pages'],
-        'orders': row['sort_order'],
-        'lockedBy': row['locked_by'],
-        'lockedById': row['locked_by_id']?.toString(),
-        'createdAt': row['created_at']?.toString() ?? '',
-        'updatedAt': row['updated_at']?.toString() ?? '',
-      };
+    'albumId': row['id'],
+    'userId': row['owner_id']?.toString() ?? '',
+    'title': row['title']?.toString() ?? '',
+    'ratio': row['ratio']?.toString() ?? '',
+    'coverLayersJson': row['cover_layers_json']?.toString() ?? '',
+    'coverImageUrl': row['cover_image_url'],
+    'coverThumbnailUrl': row['cover_thumbnail_url'],
+    'coverOriginalUrl': row['cover_original_url'],
+    'coverPreviewUrl': row['cover_preview_url'],
+    'coverTheme': row['cover_theme'],
+    'totalPages': row['total_pages'],
+    'targetPages': row['target_pages'],
+    'orders': row['sort_order'],
+    'lockedBy': row['locked_by'],
+    'lockedById': row['locked_by_id']?.toString(),
+    'createdAt': row['created_at']?.toString() ?? '',
+    'updatedAt': row['updated_at']?.toString() ?? '',
+  };
 }

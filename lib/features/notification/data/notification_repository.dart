@@ -5,7 +5,11 @@ import '../../../core/interceptors/token_storage.dart';
 import '../domain/entities/app_notification_item.dart';
 
 class NotificationRepository {
-  NotificationRepository({required this.dio, required this.tokenStorage, this.supabase});
+  NotificationRepository({
+    required this.dio,
+    required this.tokenStorage,
+    this.supabase,
+  });
 
   final Dio dio;
   final TokenStorage tokenStorage;
@@ -19,8 +23,10 @@ class NotificationRepository {
     return id;
   }
 
-
-  AppNotificationItem _fromInboxRow(Map<String, dynamic> row, Set<int> readIds) {
+  AppNotificationItem _fromInboxRow(
+    Map<String, dynamic> row,
+    Set<int> readIds,
+  ) {
     final id = (row['id'] as num?)?.toInt() ?? -1;
     return AppNotificationItem.fromJson({
       'id': id,
@@ -50,7 +56,9 @@ class NotificationRepository {
           .where((e) => e >= 0)
           .toSet();
       return rows
-          .map<AppNotificationItem>((e) => _fromInboxRow(Map<String, dynamic>.from(e), readIds))
+          .map<AppNotificationItem>(
+            (e) => _fromInboxRow(Map<String, dynamic>.from(e), readIds),
+          )
           .toList(growable: false);
     }
     try {
@@ -83,8 +91,12 @@ class NotificationRepository {
           .from('notification_reads')
           .select('notification_id')
           .eq('user_id', userId);
-      final readIds = read.map<int>((e) => (e['notification_id'] as num?)?.toInt() ?? -1).toSet();
-      return inbox.where((e) => !readIds.contains((e['id'] as num?)?.toInt() ?? -1)).length;
+      final readIds = read
+          .map<int>((e) => (e['notification_id'] as num?)?.toInt() ?? -1)
+          .toSet();
+      return inbox
+          .where((e) => !readIds.contains((e['id'] as num?)?.toInt() ?? -1))
+          .length;
     }
     try {
       final response = await dio.get(

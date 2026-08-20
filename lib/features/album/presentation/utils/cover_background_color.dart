@@ -9,10 +9,12 @@ Color? extractCoverBackgroundColor(String raw) {
     if (decoded is! Map<String, dynamic>) return null;
 
     final coverPage = _extractCoverPage(decoded);
-    final pageColor = _extractColorFromMap(
-      coverPage,
-      const ['backgroundColor', 'canvasColor', 'bgColor', 'color'],
-    );
+    final pageColor = _extractColorFromMap(coverPage, const [
+      'backgroundColor',
+      'canvasColor',
+      'bgColor',
+      'color',
+    ]);
     if (pageColor != null) {
       return pageColor.withAlpha(0xFF);
     }

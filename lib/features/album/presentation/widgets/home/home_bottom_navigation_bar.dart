@@ -22,7 +22,10 @@ class HomeBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_logged) {
       _logged = true;
-      ScreenLogger.widget('HomeBottomNavigationBar', '홈 하단 네비 · 홈/앨범/스토어/알림/설정');
+      ScreenLogger.widget(
+        'HomeBottomNavigationBar',
+        '홈 하단 네비 · 홈/앨범/스토어/알림/설정',
+      );
     }
     final isDark = SnapFitColors.isDark(context);
     final barColor = isDark ? const Color(0xF21C1F22) : SnapFitColors.pureWhite;

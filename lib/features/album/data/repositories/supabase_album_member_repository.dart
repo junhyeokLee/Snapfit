@@ -30,7 +30,10 @@ class SupabaseAlbumMemberRepository implements AlbumMemberRepository {
   }
 
   @override
-  Future<InviteLinkResponse> invite(int albumId, {String role = 'EDITOR'}) async {
+  Future<InviteLinkResponse> invite(
+    int albumId, {
+    String role = 'EDITOR',
+  }) async {
     await _userId();
     final response = await client.functions.invoke(
       'album-invites',
@@ -72,18 +75,20 @@ class SupabaseAlbumMemberRepository implements AlbumMemberRepository {
         .select('id,user_id,role,status')
         .eq('album_id', albumId)
         .order('created_at');
-    return rows.map<AlbumMemberResponse>((row) {
-      final map = Map<String, dynamic>.from(row);
-      final userId = map['user_id']?.toString() ?? '';
-      return AlbumMemberResponse(
-        id: (map['id'] as num?)?.toInt() ?? _stableInt('$albumId:$userId'),
-        userId: _stableInt(userId),
-        userName: null,
-        userEmail: null,
-        profileImageUrl: null,
-        role: map['role']?.toString() ?? 'EDITOR',
-        status: map['status']?.toString() ?? 'ACCEPTED',
-      );
-    }).toList(growable: false);
+    return rows
+        .map<AlbumMemberResponse>((row) {
+          final map = Map<String, dynamic>.from(row);
+          final userId = map['user_id']?.toString() ?? '';
+          return AlbumMemberResponse(
+            id: (map['id'] as num?)?.toInt() ?? _stableInt('$albumId:$userId'),
+            userId: _stableInt(userId),
+            userName: null,
+            userEmail: null,
+            profileImageUrl: null,
+            role: map['role']?.toString() ?? 'EDITOR',
+            status: map['status']?.toString() ?? 'ACCEPTED',
+          );
+        })
+        .toList(growable: false);
   }
 }

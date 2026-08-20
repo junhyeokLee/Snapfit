@@ -139,7 +139,9 @@ class _AdminTemplateManagementScreenState
                 decoration: BoxDecoration(
                   color: SnapFitColors.surfaceOf(context),
                   borderRadius: BorderRadius.circular(18.r),
-                  border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+                  border: Border.all(
+                    color: SnapFitColors.overlayLightOf(context),
+                  ),
                 ),
                 child: ListTile(
                   contentPadding: EdgeInsets.fromLTRB(16.w, 10.h, 12.w, 10.h),
@@ -181,7 +183,9 @@ class _AdminTemplateManagementScreenState
                     activeColor: SnapFitColors.accent,
                     onChanged: (value) async {
                       try {
-                        await ref.read(adminOpsRepositoryProvider).setTemplateActive(
+                        await ref
+                            .read(adminOpsRepositoryProvider)
+                            .setTemplateActive(
                               adminKey: adminKey,
                               templateId: item.id,
                               active: value,
@@ -213,7 +217,9 @@ class _AdminTemplateManagementScreenState
     try {
       final templates = await loadCanonicalStoreTemplatesForRuntime();
       for (final template in templates) {
-        await ref.read(adminOpsRepositoryProvider).upsertTemplate(
+        await ref
+            .read(adminOpsRepositoryProvider)
+            .upsertTemplate(
               adminKey: adminKey,
               payload: _upsertPayload(template),
             );
@@ -314,7 +320,9 @@ class _AdminTemplateEditorScreenState
       return;
     }
     try {
-      final detail = await ref.read(adminOpsRepositoryProvider).fetchAdminTemplateDetail(
+      final detail = await ref
+          .read(adminOpsRepositoryProvider)
+          .fetchAdminTemplateDetail(
             adminKey: Env.orderAdminKey.trim(),
             templateId: templateId,
           );
@@ -332,9 +340,12 @@ class _AdminTemplateEditorScreenState
       if (tags is List) {
         _tagsController.text = tags.map((e) => e.toString()).join(', ');
       }
-      _pageCountController.text = '${(detail['pageCount'] as num?)?.toInt() ?? 0}';
-      _likeCountController.text = '${(detail['likeCount'] as num?)?.toInt() ?? 0}';
-      _userCountController.text = '${(detail['userCount'] as num?)?.toInt() ?? 0}';
+      _pageCountController.text =
+          '${(detail['pageCount'] as num?)?.toInt() ?? 0}';
+      _likeCountController.text =
+          '${(detail['likeCount'] as num?)?.toInt() ?? 0}';
+      _userCountController.text =
+          '${(detail['userCount'] as num?)?.toInt() ?? 0}';
       final templateJson = detail['templateJson'];
       if (templateJson is String) {
         _templateJsonController.text = templateJson;
@@ -387,10 +398,9 @@ class _AdminTemplateEditorScreenState
         'active': _active,
       };
 
-      await ref.read(adminOpsRepositoryProvider).upsertTemplate(
-            adminKey: Env.orderAdminKey.trim(),
-            payload: payload,
-          );
+      await ref
+          .read(adminOpsRepositoryProvider)
+          .upsertTemplate(adminKey: Env.orderAdminKey.trim(), payload: payload);
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
@@ -432,11 +442,15 @@ class _AdminTemplateEditorScreenState
             fillColor: SnapFitColors.surfaceOf(context),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(color: SnapFitColors.overlayLightOf(context)),
+              borderSide: BorderSide(
+                color: SnapFitColors.overlayLightOf(context),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(color: SnapFitColors.overlayLightOf(context)),
+              borderSide: BorderSide(
+                color: SnapFitColors.overlayLightOf(context),
+              ),
             ),
           ),
         ),
@@ -508,11 +522,7 @@ class _AdminTemplateEditorScreenState
                 SizedBox(height: 14.h),
                 _field('태그', _tagsController, hint: '쉼표로 구분'),
                 SizedBox(height: 14.h),
-                _field(
-                  '템플릿 JSON',
-                  _templateJsonController,
-                  maxLines: 16,
-                ),
+                _field('템플릿 JSON', _templateJsonController, maxLines: 16),
                 SizedBox(height: 18.h),
                 SwitchListTile(
                   value: _active,

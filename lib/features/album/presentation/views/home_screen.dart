@@ -160,7 +160,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context,
           currentBottomNavIndex: uiState.bottomNavIndex,
           homeBody: Container(
-            color: uiState.bottomNavIndex == 0 ? homeBackground : baseBackground,
+            color: uiState.bottomNavIndex == 0
+                ? homeBackground
+                : baseBackground,
             child: SafeArea(
               // SafeArea applied to the whole body
               child: albumsAsync.when(
@@ -196,9 +198,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       (MediaQuery.sizeOf(context).height * 0.54)
                                           .clamp(360.0, 640.0),
                                   child: HomeAlbumSlider(
-                                    albums:
-                                        List<Album>.from(prepared.baseAlbums)
-                                          ..sort(compareAlbumByLatestDesc),
+                                    albums: List<Album>.from(
+                                      prepared.baseAlbums,
+                                    )..sort(compareAlbumByLatestDesc),
                                     onFocusedAlbumChanged:
                                         _onFocusedHomeAlbumChanged,
                                   ),
@@ -211,7 +213,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: SizedBox(
                               height: (MediaQuery.sizeOf(context).height * 0.68)
                                   .clamp(420.0, 760.0),
-                              child: HomeEmptyState(onCreate: handleCreateAlbum),
+                              child: HomeEmptyState(
+                                onCreate: handleCreateAlbum,
+                              ),
                             ),
                           ),
                       ],

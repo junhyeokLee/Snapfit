@@ -21,11 +21,14 @@ class AuthService {
   final SupabaseClient? supabase;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-
-  AuthResponse _fromSupabaseSession(Session session, {required String provider}) {
+  AuthResponse _fromSupabaseSession(
+    Session session, {
+    required String provider,
+  }) {
     final user = session.user;
     final metadata = user.userMetadata ?? const <String, dynamic>{};
-    final displayName = metadata['name']?.toString() ??
+    final displayName =
+        metadata['name']?.toString() ??
         metadata['full_name']?.toString() ??
         metadata['nickname']?.toString() ??
         user.email ??
@@ -38,7 +41,9 @@ class AuthService {
         id: user.id,
         email: user.email,
         name: displayName,
-        profileImageUrl: metadata['avatar_url']?.toString() ?? metadata['picture']?.toString(),
+        profileImageUrl:
+            metadata['avatar_url']?.toString() ??
+            metadata['picture']?.toString(),
         provider: provider,
       ),
     );
