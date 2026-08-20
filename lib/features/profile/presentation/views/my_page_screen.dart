@@ -926,14 +926,19 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
-      child: Column(
-        children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            rows[i],
-            if (i != rows.length - 1)
-              Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20.r),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            for (int i = 0; i < rows.length; i++) ...[
+              rows[i],
+              if (i != rows.length - 1)
+                Divider(height: 1, color: SnapFitColors.overlayLightOf(context)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

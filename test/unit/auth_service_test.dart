@@ -19,7 +19,7 @@ void main() {
       accessToken: 'access',
       refreshToken: 'refresh',
       expiresIn: 3600,
-      user: UserInfo(id: 1, name: 'Tester', provider: 'KAKAO'),
+      user: UserInfo(id: '1', name: 'Tester', provider: 'KAKAO'),
     );
 
     when(
@@ -42,7 +42,7 @@ void main() {
       accessToken: 'new-access',
       refreshToken: 'new-refresh',
       expiresIn: 3600,
-      user: UserInfo(id: 2, name: 'Tester', provider: 'GOOGLE'),
+      user: UserInfo(id: '2', name: 'Tester', provider: 'GOOGLE'),
     );
 
     when(

@@ -770,7 +770,7 @@ final myOrderStatusBadgesProvider = FutureProvider<OrderStatusBadges>((
   }
   try {
     final summary = await ref.watch(myOrderSummaryProvider.future);
-    return repo.computeUnreadStatusBadges(userId: userId, summary: summary);
+    return await repo.computeUnreadStatusBadges(userId: userId, summary: summary);
   } catch (_) {
     return const OrderStatusBadges.zero();
   }

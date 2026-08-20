@@ -17,6 +17,7 @@ void main() {
     final repository = TemplateRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-1');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => 'user-1');
     when(
       () => api.getTemplates('user-1'),
     ).thenAnswer((_) async => const <PremiumTemplate>[]);
@@ -32,6 +33,7 @@ void main() {
     final repository = TemplateRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => '');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => '');
 
     expect(() => repository.likeTemplate(1), throwsException);
   });
@@ -42,6 +44,7 @@ void main() {
     final repository = TemplateRepositoryImpl(api, tokenStorage: storage);
 
     when(() => storage.getUserId()).thenAnswer((_) async => 'user-2');
+    when(() => storage.getResolvedUserId()).thenAnswer((_) async => 'user-2');
     when(
       () => api.createAlbumFromTemplate(2, 'user-2', any()),
     ).thenAnswer((_) async => const Album());

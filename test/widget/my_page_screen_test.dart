@@ -36,7 +36,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final fake = FakeAuthViewModel(
       const UserInfo(
-        id: 1,
+        id: '1',
         name: 'Tester',
         provider: 'kakao',
         email: 'test@example.com',

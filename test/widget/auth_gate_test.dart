@@ -61,7 +61,7 @@ void main() {
   });
 
   testWidgets('AuthGate shows HomeScreen when user exists', (tester) async {
-    final user = UserInfo(id: 7, name: 'Tester', provider: 'kakao');
+    final user = UserInfo(id: '7', name: 'Tester', provider: 'kakao');
 
     await tester.pumpWidget(
       ProviderScope(
