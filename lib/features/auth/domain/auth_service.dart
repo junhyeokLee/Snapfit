@@ -60,7 +60,25 @@ class AuthService {
     });
   }
 
-  Future<AuthResponse> loginWithKakaoToken(String accessToken) async {
+  Future<AuthResponse> loginWithKakaoToken(
+    String accessToken, {
+    String? idToken,
+  }) async {
+    if (supabase != null && idToken != null && idToken.isNotEmpty) {
+      final response = await supabase!.auth.signInWithIdToken(
+        provider: OAuthProvider.kakao,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+      final session = response.session;
+      if (session == null) {
+        throw Exception('Supabase Kakao 로그인 세션을 가져올 수 없습니다.');
+      }
+      final auth = _fromSupabaseSession(session, provider: 'KAKAO');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
     final response = await api.loginWithKakao({'accessToken': accessToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -87,6 +105,17 @@ class AuthService {
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.refreshSession(refreshToken);
+      final session = response.session;
+      if (session != null) {
+        final provider = await tokenStorage.getProvider() ?? 'SUPABASE';
+        final auth = _fromSupabaseSession(session, provider: provider);
+        await _upsertSupabaseProfile(auth.user);
+        await tokenStorage.saveAuth(auth);
+        return auth;
+      }
+    }
     final response = await api.refresh({'refreshToken': refreshToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -110,6 +139,16 @@ class AuthService {
   }
 
   Future<void> deleteAccount() async {
+    if (supabase != null) {
+      try {
+        await supabase!.functions.invoke('account-delete');
+        await logout();
+        return;
+      } catch (_) {
+        // Supabase function 미배포/일시 실패 시 기존 REST 백엔드 경로로 fallback.
+      }
+    }
+
     Future<void> deleteCall() async {
       final accessToken = await tokenStorage.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
@@ -145,6 +184,25 @@ class AuthService {
   Future<void> syncConsentIfPresent() async {
     final consent = await tokenStorage.getConsent();
     if (consent == null) return;
+    final user = await tokenStorage.getUserInfo();
+    if (supabase != null && user != null) {
+      try {
+        await supabase!.from('profiles').upsert({
+          'id': user.id,
+          'email': user.email,
+          'name': user.name,
+          'avatar_url': user.profileImageUrl,
+          'provider': user.provider,
+          'terms_version': consent.termsVersion,
+          'privacy_version': consent.privacyVersion,
+          'marketing_opt_in': consent.marketingOptIn,
+          'consented_at': consent.agreedAtIso,
+        });
+        return;
+      } catch (_) {
+        // Supabase 동의 동기화 실패는 비차단 처리하고 REST fallback 시도.
+      }
+    }
     try {
       await api.updateConsents({
         'termsVersion': consent.termsVersion,

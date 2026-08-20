@@ -172,3 +172,19 @@ SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set SNAPFIT_ADMIN_KEY=
 ```
 
 Do not paste this secret in chat; set it directly in the container/root shell.
+
+
+## Phase 5 progress update
+
+Auth/profile migration work:
+
+- Kakao login now attempts Supabase Auth via `signInWithIdToken(provider: OAuthProvider.kakao)` when the Kakao SDK supplies an ID token, with the legacy `/api/auth/login/kakao` path retained as a fallback.
+- Supabase session refresh is used before the legacy `/api/auth/refresh` fallback.
+- Consent sync now writes directly to `public.profiles` (`terms_version`, `privacy_version`, `marketing_opt_in`, `consented_at`) before trying the legacy `/api/auth/consents` endpoint.
+- Added and deployed `account-delete` Edge Function so account deletion can use the authenticated Supabase JWT and service-role server-side user deletion instead of exposing privileged keys to the app.
+
+Still required:
+
+1. Confirm Kakao OpenID Connect / ID token issuance in Kakao developer settings and Supabase Auth provider configuration.
+2. Once Kakao/Google auth is verified on-device, remove or hard-disable the legacy auth REST fallback paths.
+3. Continue with production IAP receipt verification and order print/PDF package generation.

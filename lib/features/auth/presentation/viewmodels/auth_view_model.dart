@@ -200,7 +200,9 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
       throw Exception('카카오 로그인 토큰을 가져올 수 없습니다.');
     }
 
-    await ref.read(authServiceProvider).loginWithKakaoToken(accessToken);
+    await ref
+        .read(authServiceProvider)
+        .loginWithKakaoToken(accessToken, idToken: token.idToken);
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
   }
 
