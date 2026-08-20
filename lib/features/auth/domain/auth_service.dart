@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
     hide AuthApi;
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'dart:async';
 
@@ -13,11 +14,46 @@ import '../data/dto/auth_response.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
-  AuthService({required this.api, required this.tokenStorage});
+  AuthService({required this.api, required this.tokenStorage, this.supabase});
 
   final backend.AuthApi api;
   final TokenStorage tokenStorage;
+  final SupabaseClient? supabase;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+
+
+  AuthResponse _fromSupabaseSession(Session session, {required String provider}) {
+    final user = session.user;
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final displayName = metadata['name']?.toString() ??
+        metadata['full_name']?.toString() ??
+        metadata['nickname']?.toString() ??
+        user.email ??
+        'SnapFit 사용자';
+    return AuthResponse(
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken ?? '',
+      expiresIn: session.expiresIn ?? 3600,
+      user: UserInfo(
+        id: user.id,
+        email: user.email,
+        name: displayName,
+        profileImageUrl: metadata['avatar_url']?.toString() ?? metadata['picture']?.toString(),
+        provider: provider,
+      ),
+    );
+  }
+
+  Future<void> _upsertSupabaseProfile(UserInfo user) async {
+    if (supabase == null) return;
+    await supabase!.from('profiles').upsert({
+      'id': user.id,
+      'email': user.email,
+      'name': user.name,
+      'avatar_url': user.profileImageUrl,
+      'provider': user.provider,
+    });
+  }
 
   Future<AuthResponse> loginWithKakaoToken(String accessToken) async {
     final response = await api.loginWithKakao({'accessToken': accessToken});
@@ -26,6 +62,20 @@ class AuthService {
   }
 
   Future<AuthResponse> loginWithGoogleIdToken(String idToken) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
+      final session = response.session;
+      if (session == null) {
+        throw Exception('Supabase Google 로그인 세션을 가져올 수 없습니다.');
+      }
+      final auth = _fromSupabaseSession(session, provider: 'GOOGLE');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
     final response = await api.loginWithGoogle({'idToken': idToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -40,6 +90,10 @@ class AuthService {
   Future<void> logout() async {
     await FcmNotificationService.clearDevicePushState();
     await FcmNotificationService.clearLocalNotificationPrefs();
+    try {
+      await supabase?.auth.signOut();
+    } catch (_) {}
+
     // 1) 로컬 토큰/유저정보 삭제 (즉시 반영)
     await tokenStorage.clear();
 

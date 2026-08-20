@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.iap-verify]
 verify_jwt = true
+
+[functions.album-invites]
+verify_jwt = false

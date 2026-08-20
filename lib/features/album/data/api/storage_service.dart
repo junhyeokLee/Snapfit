@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../../billing/data/billing_repository.dart';
 import '../../../../core/utils/app_logger.dart';
@@ -45,10 +46,12 @@ class StorageQuotaExceededException implements Exception {
 }
 
 class StorageService {
-  StorageService({BillingRepository? billingRepository})
-    : _billingRepository = billingRepository;
+  StorageService({BillingRepository? billingRepository, SupabaseClient? supabase})
+    : _billingRepository = billingRepository,
+      _supabase = supabase;
 
   final _storage = FirebaseStorage.instance;
+  final SupabaseClient? _supabase;
   final BillingRepository? _billingRepository;
 
   /// 프로필 사진 업로드 — 리사이즈(512px, 품질 85) 후 Firebase 업로드 → 다운로드 URL 반환
@@ -68,6 +71,15 @@ class StorageService {
         maxDimension: 1600,
         quality: 85,
       );
+      if (_supabase != null) {
+        final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+        await _supabase!.storage.from('album-assets').uploadBinary(
+          normalizedPath,
+          resized,
+          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
+        );
+        return _supabase!.storage.from('album-assets').getPublicUrl(normalizedPath);
+      }
       final ref = _storage.ref().child(path);
       await ref.putData(resized, SettableMetadata(contentType: 'image/jpeg'));
       return await ref.getDownloadURL();
@@ -107,7 +119,14 @@ class StorageService {
 
       // 병렬 처리를 위한 Future 정의
       Future<void> uploadOriginal() async {
-        final originalRef = _storage.ref().child('albums/images/$originalName');
+        final path = 'albums/images/$originalName';
+        if (_supabase != null) {
+          await _supabase!.storage.from('album-assets').upload(path, file);
+          originalUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          originalGsPath = 'supabase://album-assets/$path';
+          return;
+        }
+        final originalRef = _storage.ref().child(path);
         final originalSnap = await originalRef.putFile(file);
         originalUrl = await originalSnap.ref.getDownloadURL();
         originalGsPath =
@@ -115,7 +134,18 @@ class StorageService {
       }
 
       Future<void> uploadPreview() async {
-        final previewRef = _storage.ref().child('albums/images/$previewName');
+        final path = 'albums/images/$previewName';
+        if (_supabase != null) {
+          await _supabase!.storage.from('album-assets').uploadBinary(
+            path,
+            resizedPreviewBytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
+          );
+          previewUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          previewGsPath = 'supabase://album-assets/$path';
+          return;
+        }
+        final previewRef = _storage.ref().child(path);
         final previewSnap = await previewRef.putData(
           resizedPreviewBytes,
           SettableMetadata(contentType: 'image/jpeg'),
@@ -184,7 +214,19 @@ class StorageService {
           '[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
-        final originalRef = _storage.ref().child('albums/covers/$originalName');
+        final path = 'albums/covers/$originalName';
+        if (_supabase != null) {
+          await _supabase!.storage.from('album-assets').uploadBinary(
+            path,
+            originalBytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
+          );
+          AppLogger.perf('[PERF] Upload(Original): ${sw.elapsedMilliseconds}ms');
+          originalUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          originalGsPath = 'supabase://album-assets/$path';
+          return;
+        }
+        final originalRef = _storage.ref().child(path);
         final originalSnap = await originalRef.putData(
           originalBytes,
           SettableMetadata(contentType: 'image/jpeg'),
@@ -201,7 +243,19 @@ class StorageService {
           '[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
-        final previewRef = _storage.ref().child('albums/covers/$previewName');
+        final path = 'albums/covers/$previewName';
+        if (_supabase != null) {
+          await _supabase!.storage.from('album-assets').uploadBinary(
+            path,
+            previewBytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
+          );
+          AppLogger.perf('[PERF] Upload(Preview): ${sw.elapsedMilliseconds}ms');
+          previewUrl = _supabase!.storage.from('album-assets').getPublicUrl(path);
+          previewGsPath = 'supabase://album-assets/$path';
+          return;
+        }
+        final previewRef = _storage.ref().child(path);
         final previewSnap = await previewRef.putData(
           previewBytes,
           SettableMetadata(contentType: 'image/jpeg'),

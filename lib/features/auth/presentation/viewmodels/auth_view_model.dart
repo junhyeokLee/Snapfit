@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../../config/env.dart';
 import '../../../../core/interceptors/token_storage.dart';
 import '../../../../core/network/dio_provider.dart';
+import '../../../../core/supabase/supabase_provider.dart';
 import '../../data/api/auth_api.dart';
 import '../../data/dto/auth_response.dart';
 import '../../domain/auth_service.dart';
@@ -29,11 +30,12 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(
     api: ref.read(authApiProvider),
     tokenStorage: ref.read(tokenStorageProvider),
+    supabase: ref.read(supabaseClientProvider),
   );
 });
 
 final authUserIdProvider = FutureProvider<String?>((ref) async {
-  return ref.read(tokenStorageProvider).getUserId();
+  return ref.read(tokenStorageProvider).getResolvedUserId();
 });
 
 /// 홈 상단 로그인 상태 표시용

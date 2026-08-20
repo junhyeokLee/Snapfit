@@ -8,7 +8,6 @@ import '../../../../core/supabase/supabase_provider.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
-import '../repositories/template_repository_impl.dart';
 import '../repositories/supabase_template_repository.dart';
 import 'template_api.dart';
 

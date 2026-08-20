@@ -11,9 +11,8 @@ import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/album_member_repository.dart';
 import '../../domain/repositories/gallery_repository.dart';
 import '../../service/album_editor_service.dart';
-import '../repositories/album_repository_impl.dart';
 import '../repositories/supabase_album_repository.dart';
-import '../repositories/album_member_repository_impl.dart';
+import '../repositories/supabase_album_member_repository.dart';
 import '../repositories/gallery_repository_impl.dart';
 import 'album_api.dart';
 import 'album_member_api.dart';
@@ -37,9 +36,9 @@ final albumRepositoryProvider = Provider<AlbumRepository>((ref) {
 
 /// 앨범 멤버 리포지토리 Provider
 final albumMemberRepositoryProvider = Provider<AlbumMemberRepository>((ref) {
-  final api = ref.read(albumMemberApiProvider);
   final tokenStorage = ref.read(tokenStorageProvider);
-  return AlbumMemberRepositoryImpl(api, tokenStorage: tokenStorage);
+  final supabase = ref.read(supabaseClientProvider);
+  return SupabaseAlbumMemberRepository(supabase, tokenStorage: tokenStorage);
 });
 
 final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {
@@ -48,7 +47,8 @@ final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {
 
 final storageServiceProvider = Provider<StorageService>((ref) {
   final billingRepository = ref.read(billingRepositoryProvider);
-  return StorageService(billingRepository: billingRepository);
+  final supabase = ref.read(supabaseClientProvider);
+  return StorageService(billingRepository: billingRepository, supabase: supabase);
 });
 
 final albumEditorServiceProvider = Provider<AlbumEditorService>((ref) {

@@ -196,6 +196,15 @@ class BillingRepository {
 
   Future<SubscriptionStatusModel> cancelSubscription() async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final row = await supabase!
+          .from('subscriptions')
+          .update({'status': 'CANCELED'})
+          .eq('user_id', userId)
+          .select()
+          .maybeSingle();
+      return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
+    }
     final response = await dio.post(
       '/api/billing/subscription/cancel',
       queryParameters: {'userId': userId},
@@ -230,6 +239,23 @@ class BillingRepository {
     required int incomingBytes,
   }) async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final quota = await getMyStorageQuota();
+      final projected = quota.usedBytes + incomingBytes;
+      final remaining = quota.hardLimitBytes - quota.usedBytes;
+      return StoragePreflightStatus(
+        userId: userId,
+        planCode: quota.planCode,
+        incomingBytes: incomingBytes,
+        usedBytes: quota.usedBytes,
+        projectedBytes: projected,
+        hardLimitBytes: quota.hardLimitBytes,
+        remainingBytes: remaining < 0 ? 0 : remaining,
+        allowed: projected <= quota.hardLimitBytes,
+        reason: projected <= quota.hardLimitBytes ? 'OK' : 'HARD_LIMIT_EXCEEDED',
+        measuredAt: quota.measuredAt,
+      );
+    }
     final response = await dio.post(
       '/api/billing/storage/preflight',
       data: {'userId': userId, 'incomingBytes': incomingBytes},

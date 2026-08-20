@@ -1,17 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
 import '../../../core/network/dio_provider.dart';
+import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
 
 class OrderRepository {
-  OrderRepository({required this.dio, required this.tokenStorage});
+  OrderRepository({required this.dio, required this.tokenStorage, this.supabase});
 
   final Dio dio;
   final TokenStorage tokenStorage;
+  final SupabaseClient? supabase;
   static const Set<String> _allowedPaymentMethods = {
     'TOSS_PAYMENTS',
     'NAVERPAY',
@@ -27,15 +30,113 @@ class OrderRepository {
       'snapfit_order_seen_latest_updated_at_';
 
   Future<String> _requireUserId() async {
-    final id = await tokenStorage.getUserId();
+    final id = await tokenStorage.getResolvedUserId();
     if (id == null || id.trim().isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
     return id;
   }
 
+
+  Map<String, dynamic> _orderRowToJson(Map<String, dynamic> row) {
+    final status = row['status']?.toString() ?? 'PAYMENT_PENDING';
+    return {
+      'orderId': row['order_id']?.toString() ?? '',
+      'title': row['title']?.toString() ?? '주문',
+      'amount': (row['amount'] as num?)?.toInt() ?? 0,
+      'pageCount': (row['page_count'] as num?)?.toInt(),
+      'status': status,
+      'statusLabel': _statusLabel(status),
+      'progress': _statusProgress(status),
+      'orderedAt': row['ordered_at']?.toString() ?? row['created_at']?.toString(),
+      'albumId': (row['album_id'] as num?)?.toInt(),
+      'recipientName': row['recipient_name']?.toString(),
+      'recipientPhone': row['recipient_phone']?.toString(),
+      'zipCode': row['zip_code']?.toString(),
+      'addressLine1': row['address_line1']?.toString(),
+      'addressLine2': row['address_line2']?.toString(),
+      'deliveryMemo': row['delivery_memo']?.toString(),
+      'paymentMethod': row['payment_method']?.toString(),
+      'courier': row['courier']?.toString(),
+      'trackingNumber': row['tracking_number']?.toString(),
+      'printVendor': row['print_vendor']?.toString(),
+      'printVendorOrderId': row['print_vendor_order_id']?.toString(),
+      'printPackageJsonUrl': row['print_package_json_url']?.toString(),
+      'printFilePdfUrl': row['print_file_pdf_url']?.toString(),
+      'printFileZipUrl': row['print_file_zip_url']?.toString(),
+      'printAssetCount': (row['print_asset_count'] as num?)?.toInt(),
+      'paymentConfirmedAt': row['payment_confirmed_at']?.toString(),
+      'printPackageGeneratedAt': row['print_package_generated_at']?.toString(),
+      'printSubmittedAt': row['print_submitted_at']?.toString(),
+      'shippedAt': row['shipped_at']?.toString(),
+      'deliveredAt': row['delivered_at']?.toString(),
+    };
+  }
+
+  String _statusLabel(String status) {
+    switch (status.toUpperCase()) {
+      case 'PAYMENT_COMPLETED':
+        return '결제완료';
+      case 'IN_PRODUCTION':
+      case 'PRINTING':
+        return '제작중';
+      case 'SHIPPING':
+        return '배송중';
+      case 'DELIVERED':
+        return '배송완료';
+      case 'CANCELED':
+      case 'CANCELLED':
+        return '취소';
+      default:
+        return '결제대기';
+    }
+  }
+
+  double _statusProgress(String status) {
+    switch (status.toUpperCase()) {
+      case 'PAYMENT_COMPLETED':
+        return 0.25;
+      case 'IN_PRODUCTION':
+      case 'PRINTING':
+        return 0.5;
+      case 'SHIPPING':
+        return 0.75;
+      case 'DELIVERED':
+        return 1.0;
+      default:
+        return 0.0;
+    }
+  }
+
+  OrderSummaryResult _summaryFromOrders(List<OrderHistoryItem> items) {
+    int count(String status) => items.where((e) => e.status.toUpperCase() == status).length;
+    DateTime? latest;
+    for (final item in items) {
+      if (latest == null || item.orderedAt.isAfter(latest)) latest = item.orderedAt;
+    }
+    return OrderSummaryResult(
+      paymentPending: count('PAYMENT_PENDING'),
+      paymentCompleted: count('PAYMENT_COMPLETED'),
+      inProduction: count('IN_PRODUCTION') + count('PRINTING'),
+      shipping: count('SHIPPING'),
+      delivered: count('DELIVERED'),
+      canceled: count('CANCELED') + count('CANCELLED'),
+      latestUpdatedAt: latest,
+    );
+  }
+
   Future<List<OrderHistoryItem>> fetchMyOrders() async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final rows = await supabase!
+          .from('orders')
+          .select()
+          .eq('user_id', userId)
+          .order('ordered_at', ascending: false);
+      return rows
+          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .toList(growable: false);
+    }
     final response = await dio.get(
       '/api/orders',
       queryParameters: {'userId': userId},
@@ -57,6 +158,27 @@ class OrderRepository {
     int size = 20,
   }) async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      var query = supabase!.from('orders').select();
+      if (statuses != null && statuses.isNotEmpty) {
+        query = query.inFilter('status', statuses);
+      }
+      final rows = await query
+          .eq('user_id', userId)
+          .order('ordered_at', ascending: false)
+          .range(page * size, page * size + size - 1);
+      final items = rows
+          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .toList(growable: false);
+      return OrderPageResult(
+        items: items,
+        page: page,
+        size: size,
+        totalPages: items.length < size ? page + 1 : page + 2,
+        totalElements: page * size + items.length,
+        hasNext: items.length == size,
+      );
+    }
     final response = await dio.get(
       '/api/orders/paged',
       queryParameters: {
@@ -73,6 +195,17 @@ class OrderRepository {
 
   Future<OrderSummaryResult> fetchMyOrderSummary() async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final rows = await supabase!
+          .from('orders')
+          .select()
+          .eq('user_id', userId)
+          .order('ordered_at', ascending: false);
+      final items = rows
+          .map<OrderHistoryItem>((e) => OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(e))))
+          .toList(growable: false);
+      return _summaryFromOrders(items);
+    }
     final response = await dio.get(
       '/api/orders/summary',
       queryParameters: {'userId': userId},
@@ -87,6 +220,16 @@ class OrderRepository {
     int amount = 34900,
   }) async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final row = await supabase!.from('orders').insert({
+        'user_id': userId,
+        'title': title,
+        'amount': amount,
+        'status': 'PAYMENT_PENDING',
+        'payment_method': 'STORE_IAP',
+      }).select().single();
+      return OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(row)));
+    }
     final response = await dio.post(
       '/api/orders/test/create',
       data: {'userId': userId, 'title': title, 'amount': amount},
@@ -131,6 +274,24 @@ class OrderRepository {
     }
 
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final row = await supabase!.from('orders').insert({
+        'user_id': userId,
+        'album_id': albumId,
+        'title': title.trim(),
+        'amount': amount,
+        'page_count': pageCount,
+        'payment_method': normalizedPaymentMethod,
+        'recipient_name': recipientName.trim(),
+        'recipient_phone': normalizedPhone,
+        'zip_code': normalizedZip,
+        'address_line1': addressLine1.trim(),
+        'address_line2': addressLine2?.trim() ?? '',
+        'delivery_memo': deliveryMemo?.trim() ?? '',
+        'status': 'PAYMENT_PENDING',
+      }).select().single();
+      return OrderHistoryItem.fromJson(_orderRowToJson(Map<String, dynamic>.from(row)));
+    }
     final response = await dio.post(
       '/api/orders',
       data: {
@@ -154,6 +315,15 @@ class OrderRepository {
   }
 
   Future<OrderHistoryItem> confirmPayment(String orderId) async {
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'order-confirm-payment',
+        body: {'action': 'confirm', 'orderId': orderId},
+      );
+      return OrderHistoryItem.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post('/api/orders/$orderId/payment/confirm');
     return OrderHistoryItem.fromJson(
       (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
@@ -164,6 +334,21 @@ class OrderRepository {
     required int albumId,
     int? pageCount,
   }) async {
+    if (supabase != null) {
+      final pages = pageCount ?? 12;
+      const basePages = 12;
+      const basePrice = 34900;
+      const extraPagePrice = 1200;
+      final extra = pages > basePages ? pages - basePages : 0;
+      return OrderQuoteResult(
+        pageCount: pages,
+        amount: basePrice + extra * extraPagePrice,
+        basePages: basePages,
+        basePrice: basePrice,
+        extraPageCount: extra,
+        extraPagePrice: extraPagePrice,
+      );
+    }
     final response = await dio.get(
       '/api/orders/quote',
       queryParameters: {
@@ -216,6 +401,20 @@ class OrderRepository {
     required String trackingNumber,
     required String adminKey,
   }) async {
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'order-confirm-payment',
+        body: {
+          'action': 'shipping',
+          'orderId': orderId,
+          'courier': courier,
+          'trackingNumber': trackingNumber,
+        },
+      );
+      return OrderHistoryItem.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post(
       '/api/orders/$orderId/shipping',
       data: {'courier': courier, 'trackingNumber': trackingNumber},
@@ -230,6 +429,15 @@ class OrderRepository {
     required String orderId,
     required String adminKey,
   }) async {
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'order-confirm-payment',
+        body: {'action': 'delivered', 'orderId': orderId},
+      );
+      return OrderHistoryItem.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post(
       '/api/orders/$orderId/delivered',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -243,6 +451,15 @@ class OrderRepository {
     required String orderId,
     required String adminKey,
   }) async {
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'order-confirm-payment',
+        body: {'action': 'preparePrintPackage', 'orderId': orderId},
+      );
+      return OrderHistoryItem.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post(
       '/api/orders/admin/$orderId/print-package/prepare',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -514,6 +731,7 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   return OrderRepository(
     dio: ref.read(dioProvider),
     tokenStorage: ref.read(tokenStorageProvider),
+    supabase: ref.read(supabaseClientProvider),
   );
 });
 
@@ -546,7 +764,7 @@ final myOrderStatusBadgesProvider = FutureProvider<OrderStatusBadges>((
   ref,
 ) async {
   final repo = ref.read(orderRepositoryProvider);
-  final userId = await repo.tokenStorage.getUserId();
+  final userId = await repo.tokenStorage.getResolvedUserId();
   if (userId == null || userId.trim().isEmpty) {
     return const OrderStatusBadges.zero();
   }

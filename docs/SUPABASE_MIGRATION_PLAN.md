@@ -132,3 +132,22 @@ Still required for production:
 2. App Store Server API issuer/key credentials in Supabase Function secrets.
 3. Replace mock verification in `iap-verify` with real Google/Apple receipt validation.
 4. Build Flutter purchase UI/flow around `in_app_purchase` and call `iap-verify` after purchase updates.
+
+## Phase 3 progress update
+
+Additional migration work:
+
+- Added and deployed `album-invites` Edge Function for invite creation, invite info, and invite acceptance.
+- Wired album member/invite repository to Supabase Edge Functions and `album_members` queries.
+- Wired Google login token exchange to Supabase Auth (`signInWithIdToken`) and profile upsert. Kakao still requires Supabase Dashboard/provider flow finalization.
+- Wired order history/page/summary/create/quote and payment-confirm/shipping/delivered/print-package actions to Supabase tables / `order-confirm-payment` Edge Function.
+- Replaced Firebase-first album asset upload path with Supabase Storage `album-assets` when a Supabase client is available, keeping Firebase as fallback.
+- Replaced storage quota preflight and subscription cancel fallback paths with Supabase DB logic.
+
+Remaining high-risk items:
+
+1. Kakao Supabase Auth provider configuration and login flow finalization.
+2. Production-grade Google Play/App Store receipt verification in `iap-verify`.
+3. Real print package/PDF/ZIP/vendor submission inside `order-confirm-payment` instead of current state-transition scaffold.
+4. Admin screens still need full `admin-ops` action routing.
+5. Flutter-capable validation is required: `flutter pub get`, `dart run build_runner build --delete-conflicting-outputs`, `flutter analyze`.
