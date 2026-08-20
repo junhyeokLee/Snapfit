@@ -110,3 +110,25 @@ Remaining before removing the old backend completely:
 3. Port order print package generation and payment provider integrations into Edge Functions.
 4. Port admin template/order/support operations into Edge Functions or Supabase admin UI.
 5. Run `flutter pub get`, `dart run build_runner build`, and `flutter analyze` on a Flutter-capable machine.
+
+## Payment direction change: native in-app purchases
+
+Decision: mobile subscriptions should use native store billing, not Toss/NaverPay external checkout.
+
+- Android: Google Play Billing through Flutter `in_app_purchase`.
+- iOS: App Store / StoreKit through Flutter `in_app_purchase`.
+- Server side: Supabase Edge Function `iap-verify` verifies purchase tokens/receipts and materializes `subscriptions`.
+- Legacy `billing-prepare` / `billing-approve` functions remain only as temporary mock-mode/admin testing scaffolds and should not be used for production mobile checkout.
+
+Added:
+
+- `in_app_purchase` dependency in `pubspec.yaml`.
+- `store_purchases` table in `20260820161000_store_iap_entitlements.sql`.
+- `iap-verify` Edge Function scaffold.
+
+Still required for production:
+
+1. Google Play Developer API service account credentials in Supabase Function secrets.
+2. App Store Server API issuer/key credentials in Supabase Function secrets.
+3. Replace mock verification in `iap-verify` with real Google/Apple receipt validation.
+4. Build Flutter purchase UI/flow around `in_app_purchase` and call `iap-verify` after purchase updates.
