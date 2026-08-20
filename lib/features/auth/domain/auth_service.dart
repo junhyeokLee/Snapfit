@@ -1,7 +1,5 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
-    hide AuthApi;
-import 'package:dio/dio.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
 
 import 'dart:async';
@@ -9,15 +7,12 @@ import 'dart:async';
 import '../../../config/env.dart';
 import '../../../core/interceptors/token_storage.dart';
 import '../../../core/notifications/fcm_notification_service.dart';
-import '../data/api/auth_api.dart' as backend;
 import '../data/dto/auth_response.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
-  AuthService({required this.api, required this.tokenStorage, this.supabase});
+  AuthService({required this.tokenStorage, this.supabase});
 
-  final backend.AuthApi api;
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -80,10 +75,9 @@ class AuthService {
       await tokenStorage.saveAuth(auth);
       return auth;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'auth.login.kakao');
-    final response = await api.loginWithKakao({'accessToken': accessToken});
-    await tokenStorage.saveAuth(response);
-    return response;
+    throw Exception(
+      'Supabase Kakao 로그인에는 ID token이 필요합니다. Kakao/Supabase OIDC 설정을 확인해주세요.',
+    );
   }
 
   Future<AuthResponse> loginWithGoogleIdToken(String idToken) async {
@@ -101,10 +95,7 @@ class AuthService {
       await tokenStorage.saveAuth(auth);
       return auth;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'auth.login.google');
-    final response = await api.loginWithGoogle({'idToken': idToken});
-    await tokenStorage.saveAuth(response);
-    return response;
+    throw Exception('Supabase Google 로그인 환경이 준비되지 않았습니다.');
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
@@ -119,10 +110,7 @@ class AuthService {
         return auth;
       }
     }
-    assertLegacyBackendFallbackAllowed(feature: 'auth.refresh');
-    final response = await api.refresh({'refreshToken': refreshToken});
-    await tokenStorage.saveAuth(response);
-    return response;
+    throw Exception('Supabase 세션 갱신 환경이 준비되지 않았습니다.');
   }
 
   Future<void> logout() async {
@@ -148,42 +136,12 @@ class AuthService {
         await supabase!.functions.invoke('account-delete');
         await logout();
         return;
-      } catch (_) {
-        // Supabase function 미배포/일시 실패 시 기존 REST 백엔드 경로로 fallback.
+      } catch (e) {
+        throw Exception('Supabase 계정 탈퇴 처리에 실패했습니다: $e');
       }
     }
 
-    assertLegacyBackendFallbackAllowed(feature: 'auth.deleteAccount');
-    Future<void> deleteCall() async {
-      final accessToken = await tokenStorage.getAccessToken();
-      if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
-      }
-      await api.deleteAccount();
-    }
-
-    Future<void> refreshIfPossible() async {
-      final refreshToken = await tokenStorage.getRefreshToken();
-      if (refreshToken == null || refreshToken.isEmpty) {
-        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
-      }
-      try {
-        await refresh(refreshToken);
-      } catch (_) {
-        throw Exception('로그인 세션이 만료되었습니다. 다시 로그인 후 탈퇴를 시도해주세요.');
-      }
-    }
-
-    try {
-      await deleteCall();
-    } on DioException catch (e) {
-      final statusCode = e.response?.statusCode;
-      if (statusCode != 401 && statusCode != 403) rethrow;
-      await refreshIfPossible();
-      await deleteCall();
-    }
-
-    await logout();
+    throw Exception('Supabase 계정 탈퇴 기능을 사용할 수 없습니다.');
   }
 
   Future<void> syncConsentIfPresent() async {
@@ -205,21 +163,11 @@ class AuthService {
         });
         return;
       } catch (_) {
-        // Supabase 동의 동기화 실패는 비차단 처리하고 REST fallback 시도.
+        // 동의 동기화 실패가 로그인 실패로 이어지지 않도록 비차단 처리.
+        // 다음 로그인 시 Supabase profiles에 재동기화된다.
       }
     }
-    assertLegacyBackendFallbackAllowed(feature: 'auth.consents');
-    try {
-      await api.updateConsents({
-        'termsVersion': consent.termsVersion,
-        'privacyVersion': consent.privacyVersion,
-        'marketingOptIn': consent.marketingOptIn,
-        'agreedAt': consent.agreedAtIso,
-      });
-    } catch (_) {
-      // 동의 동기화 실패가 로그인 실패로 이어지지 않도록 비차단 처리.
-      // 다음 로그인 시 재동기화된다.
-    }
+    // Supabase Auth/Profile 이외의 Spring fallback은 사용하지 않는다.
   }
 
   Future<void> _logoutFromGoogle() async {

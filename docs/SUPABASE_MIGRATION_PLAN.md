@@ -286,3 +286,17 @@ Spring fallback shutdown guard:
 - Updated tests to assert legacy Spring fallback is blocked by default.
 
 This does not delete every legacy Retrofit class yet, but it prevents production runtime from silently falling back to the Spring backend unless a developer explicitly opts in with `ENABLE_LEGACY_BACKEND_FALLBACK=true`.
+
+
+## Phase 13 progress update
+
+Legacy Retrofit deletion:
+
+- Removed the old Spring Retrofit API clients for auth, albums, album members, and templates.
+- Removed old Spring repository implementations and their unit tests:
+  - `AlbumRepositoryImpl`
+  - `AlbumMemberRepositoryImpl`
+  - `TemplateRepositoryImpl`
+- Refactored `AuthService` and `AuthViewModel` so auth/profile image flows no longer depend on `AuthApi` or REST profile fallback.
+
+The remaining Dio fallback code is guarded by `ENABLE_LEGACY_BACKEND_FALLBACK=false` by default while the active runtime path uses Supabase/Edge Functions.

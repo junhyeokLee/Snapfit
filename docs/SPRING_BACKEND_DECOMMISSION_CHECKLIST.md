@@ -93,3 +93,8 @@ flutter run --dart-define=ENABLE_LEGACY_BACKEND_FALLBACK=true
 ```
 
 This flag should remain `false` for production Supabase-only releases.
+
+
+## Legacy Retrofit files removed
+
+The old Spring Retrofit clients for auth/albums/album members/templates and their old repository implementations have been deleted from the app codebase. Runtime auth/profile, album, member, and template flows no longer depend on Spring REST API client classes.

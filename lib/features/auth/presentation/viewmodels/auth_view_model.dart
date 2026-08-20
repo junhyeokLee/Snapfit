@@ -1,27 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
-    hide AuthApi;
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../config/env.dart';
 import '../../../../core/interceptors/token_storage.dart';
-import '../../../../core/network/dio_provider.dart';
 import '../../../../core/supabase/supabase_provider.dart';
-import '../../data/api/auth_api.dart';
 import '../../data/dto/auth_response.dart';
 import '../../domain/auth_service.dart';
-
-final authApiProvider = Provider<AuthApi>((ref) {
-  final dio = ref.read(dioProvider);
-  return AuthApi(dio);
-});
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return TokenStorage();
@@ -29,7 +20,6 @@ final tokenStorageProvider = Provider<TokenStorage>((ref) {
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(
-    api: ref.read(authApiProvider),
     tokenStorage: ref.read(tokenStorageProvider),
     supabase: ref.read(supabaseClientProvider),
   );
@@ -95,31 +85,8 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
       });
       await storage.saveUserInfo(current.copyWith(profileImageUrl: publicUrl));
       state = AsyncData(await storage.getUserInfo());
-      return;
-    } catch (_) {
-      // Supabase 업로드 실패 시 기존 REST 백엔드 경로로 1회 fallback.
-    }
-
-    final api = ref.read(authApiProvider);
-    try {
-      final userInfo = await api.updateProfile(profileImage: fileToUpload);
-      await storage.saveUserInfo(userInfo);
-      state = AsyncData(await storage.getUserInfo());
-    } on DioException catch (e) {
-      final statusCode = e.response?.statusCode;
-      if (statusCode == 404) {
-        throw Exception('프로필 이미지 저장 기능을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.');
-      }
-      if (statusCode == 413) {
-        throw Exception('이미지 용량이 너무 큽니다. 더 작은 이미지를 선택해 주세요.');
-      }
-      if (statusCode == 415) {
-        throw Exception('지원하지 않는 이미지 형식입니다. JPG/PNG 이미지를 선택해 주세요.');
-      }
-      if (statusCode == 500) {
-        throw Exception('이미지 저장소 설정 문제로 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-      }
-      rethrow;
+    } catch (e) {
+      throw Exception('Supabase 프로필 이미지 업로드에 실패했습니다: $e');
     }
   }
 
