@@ -434,6 +434,26 @@ class OrderRepository {
     if (!_allowedPaymentMethods.contains(normalizedPaymentMethod)) {
       throw Exception('지원하지 않는 결제수단입니다.');
     }
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'order-checkout',
+        body: {
+          'orderId': normalizedOrderId,
+          'provider': normalizedPaymentMethod,
+        },
+      );
+      final map =
+          (response.data as Map?)?.cast<String, dynamic>() ??
+          <String, dynamic>{};
+      if (map['error'] != null) {
+        throw Exception(map['message'] ?? map['error']);
+      }
+      final checkoutUrl = map['checkoutUrl']?.toString() ?? '';
+      if (checkoutUrl.isEmpty) {
+        throw Exception('결제 URL을 생성하지 못했습니다.');
+      }
+      return checkoutUrl;
+    }
     final base = dio.options.baseUrl.trim();
     final normalized = base.endsWith('/')
         ? base.substring(0, base.length - 1)

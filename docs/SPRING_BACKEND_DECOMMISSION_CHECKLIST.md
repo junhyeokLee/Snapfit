@@ -23,7 +23,7 @@ Known fallback areas:
 - `auth_api.dart` and `AuthService` legacy fallback for Kakao ID-token/provider setup gaps.
 - `template_api.dart`, `album_api.dart`, `album_member_api.dart` and generated Retrofit files retained for old repository tests/fallbacks.
 - `billing_repository.dart` fallback Toss/NaverPay-style endpoints; production direction is native store IAP.
-- `order_repository.dart` legacy checkout/admin fallback endpoints. Address search now prefers the `address-search` Edge Function.
+- `order_repository.dart` admin fallback endpoints. Address search now prefers `address-search`; checkout URL creation now prefers `order-checkout`.
 - `notification_repository.dart` and `support_inquiry_repository.dart` legacy fallback endpoints.
 - Firebase Storage helpers remain only for old `gs://` URLs and upload fallback during data migration.
 
@@ -62,3 +62,16 @@ Optional tuning secrets:
 - `SNAPFIT_ADDRESS_JUSO_COUNT_PER_PAGE=10`
 - `SNAPFIT_ADDRESS_JUSO_TIMEOUT_MS=4000`
 - `SNAPFIT_ADDRESS_JUSO_BASE_URL=https://business.juso.go.kr/addrlink/addrLinkApi.do`
+
+
+## Physical order checkout cutover
+
+`OrderRepository.buildOrderCheckoutUrl` now calls the Supabase `order-checkout` Edge Function when Supabase is available. The legacy `/api/orders/{id}/payment/checkout` URL is retained only as a no-Supabase fallback.
+
+Production external payment opening requires a server-side checkout provider URL to be configured:
+
+```bash
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set SNAPFIT_ORDER_CHECKOUT_BASE_URL='https://your-checkout-provider.example/checkout'
+```
+
+Until that secret/provider is configured, the function returns `order_checkout_provider_not_configured` instead of silently falling back to Spring or marking an order as paid. This is intentional: paid physical orders must not be auto-confirmed without a real payment provider callback.

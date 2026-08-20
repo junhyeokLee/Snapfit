@@ -255,3 +255,13 @@ Address search migration:
 - Ported the Spring `AddressSearchService` Juso API integration shape to Deno Edge Functions.
 - Updated `OrderRepository.searchAddress` to prefer `supabase.functions.invoke('address-search')` and retain the old REST endpoint only as a fallback if Supabase is unavailable.
 - The function requires `SNAPFIT_ADDRESS_JUSO_KEY` as a Supabase secret before production checkout address lookup can succeed.
+
+
+## Phase 10 progress update
+
+Physical order checkout migration:
+
+- Added and deployed the `order-checkout` Supabase Edge Function.
+- Updated `OrderRepository.buildOrderCheckoutUrl` to prefer `supabase.functions.invoke('order-checkout')` and keep the Spring checkout URL only as a no-Supabase fallback.
+- The function validates the authenticated user owns the order, ensures the order is `PAYMENT_PENDING`, and refuses unsupported providers.
+- Production checkout opening now requires `SNAPFIT_ORDER_CHECKOUT_BASE_URL` as a Supabase secret. Without it, the function returns `order_checkout_provider_not_configured` instead of falsely confirming payment.
