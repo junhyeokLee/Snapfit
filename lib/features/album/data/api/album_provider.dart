@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Album member repository provider
-import '../../../../core/network/dio_provider.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../service/album_persistence_service.dart';
 import '../../../billing/data/billing_provider.dart';
@@ -14,19 +13,7 @@ import '../../service/album_editor_service.dart';
 import '../repositories/supabase_album_repository.dart';
 import '../repositories/supabase_album_member_repository.dart';
 import '../repositories/gallery_repository_impl.dart';
-import 'album_api.dart';
-import 'album_member_api.dart';
 import 'storage_service.dart';
-
-final albumApiProvider = Provider<AlbumApi>((ref) {
-  final dio = ref.read(dioProvider);
-  return AlbumApi(dio);
-});
-
-final albumMemberApiProvider = Provider<AlbumMemberApi>((ref) {
-  final dio = ref.read(dioProvider);
-  return AlbumMemberApi(dio);
-});
 
 final albumRepositoryProvider = Provider<AlbumRepository>((ref) {
   final tokenStorage = ref.read(tokenStorageProvider);

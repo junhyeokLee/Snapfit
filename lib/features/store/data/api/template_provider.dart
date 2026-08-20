@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/network/dio_provider.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
 import '../repositories/supabase_template_repository.dart';
-import 'template_api.dart';
 
 String _safeTemplateText(String? raw, {String fallback = ''}) {
   final value = (raw ?? '').trim();
@@ -970,11 +968,6 @@ Future<List<PremiumTemplate>> _loadExplicitStoreTemplateFallbacks() async {
 bool _isStoreAllowedTemplate(PremiumTemplate template) {
   return template.title.trim().isNotEmpty;
 }
-
-final templateApiProvider = Provider<TemplateApi>((ref) {
-  final dio = ref.read(dioProvider);
-  return TemplateApi(dio);
-});
 
 final templateRepositoryProvider = Provider<TemplateRepository>((ref) {
   final tokenStorage = ref.read(tokenStorageProvider);

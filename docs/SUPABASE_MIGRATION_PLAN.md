@@ -265,3 +265,12 @@ Physical order checkout migration:
 - Updated `OrderRepository.buildOrderCheckoutUrl` to prefer `supabase.functions.invoke('order-checkout')` and keep the Spring checkout URL only as a no-Supabase fallback.
 - The function validates the authenticated user owns the order, ensures the order is `PAYMENT_PENDING`, and refuses unsupported providers.
 - Production checkout opening now requires `SNAPFIT_ORDER_CHECKOUT_BASE_URL` as a Supabase secret. Without it, the function returns `order_checkout_provider_not_configured` instead of falsely confirming payment.
+
+
+## Phase 11 progress update
+
+Legacy provider graph cleanup:
+
+- Removed unused runtime Riverpod providers for the old Retrofit `AlbumApi`, `AlbumMemberApi`, and `TemplateApi`.
+- The generated Retrofit clients remain only for legacy repository tests/fallback classes during the migration window.
+- Active album/member/template provider wiring now stays Supabase-only at the runtime provider graph level.

@@ -75,3 +75,8 @@ SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set SNAPFIT_ORDER_CHEC
 ```
 
 Until that secret/provider is configured, the function returns `order_checkout_provider_not_configured` instead of silently falling back to Spring or marking an order as paid. This is intentional: paid physical orders must not be auto-confirmed without a real payment provider callback.
+
+
+## Runtime provider cleanup
+
+The main Riverpod runtime providers no longer expose the old Retrofit `AlbumApi`, `AlbumMemberApi`, or `TemplateApi` providers. Those legacy API classes remain in the tree for fallback repositories/tests during the migration window, but the active app provider graph routes albums, members, and templates through Supabase repositories.
