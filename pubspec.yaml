@@ -44,6 +44,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_keyboard_visibility: ^6.0.0
   dio: ^5.9.0
+  supabase_flutter: ^2.9.1
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   retrofit: ^4.9.1

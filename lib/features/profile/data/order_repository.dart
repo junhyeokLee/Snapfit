@@ -520,7 +520,7 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
 final myOrderHistoryProvider = FutureProvider<List<OrderHistoryItem>>((
   ref,
 ) async {
-  return ref.read(orderRepositoryProvider).fetchMyOrders();
+  return await ref.read(orderRepositoryProvider).fetchMyOrders();
 });
 
 final myOrderSummaryProvider = FutureProvider<OrderSummaryResult>((ref) async {

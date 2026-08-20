@@ -34,4 +34,20 @@ class Env {
     'ORDER_ADMIN_KEY',
     defaultValue: '',
   );
+
+  /// Supabase project URL
+  /// - --dart-define=SUPABASE_URL=...
+  static const String supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://rrbhxdtriummqpztpjrk.supabase.co',
+  );
+
+  /// Supabase anon public key. This is intentionally a public client key;
+  /// database access must be protected with RLS policies.
+  /// - --dart-define=SUPABASE_ANON_KEY=...
+  static const String supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyYmh4ZHRyaXVtbXFwenRwanJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDU5MDAsImV4cCI6MjEwMjcyMTkwMH0.uxBcMGAMwAEJZtHA5987jTPePQDY_nNtqMe6W8MejHQ',
+  );
 }

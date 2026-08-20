@@ -2,10 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/dio_provider.dart';
-import '../../../../core/interceptors/token_storage.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
