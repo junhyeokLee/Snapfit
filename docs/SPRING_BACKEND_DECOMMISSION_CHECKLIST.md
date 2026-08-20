@@ -23,7 +23,7 @@ Known fallback areas:
 - `auth_api.dart` and `AuthService` legacy fallback for Kakao ID-token/provider setup gaps.
 - `template_api.dart`, `album_api.dart`, `album_member_api.dart` and generated Retrofit files retained for old repository tests/fallbacks.
 - `billing_repository.dart` fallback Toss/NaverPay-style endpoints; production direction is native store IAP.
-- `order_repository.dart` legacy checkout/address-search/admin fallback endpoints.
+- `order_repository.dart` legacy checkout/admin fallback endpoints. Address search now prefers the `address-search` Edge Function.
 - `notification_repository.dart` and `support_inquiry_repository.dart` legacy fallback endpoints.
 - Firebase Storage helpers remain only for old `gs://` URLs and upload fallback during data migration.
 
@@ -34,7 +34,7 @@ Known fallback areas:
 3. Print vendor production contract must be confirmed:
    - Current Supabase package creates JSON/ZIP/summary PDF and includes source images where reachable.
    - If the vendor requires press-ready flattened PDFs, add a renderer pipeline for album layer JSON.
-4. Address search still uses legacy `/api/orders/address/search`; replace with a public address API or Supabase Edge Function before removing Spring if checkout address search is required.
+4. Address search has been moved to the `address-search` Supabase Edge Function. Production requires `SNAPFIT_ADDRESS_JUSO_KEY` to be set as a Supabase secret.
 5. Run production smoke tests for auth, album save/upload, order payment confirmation, admin print package generation, notification reads, and support inquiry submission.
 
 ## Safe shutdown sequence
@@ -44,3 +44,21 @@ Known fallback areas:
 3. Remove or feature-flag `Env.baseUrl`/Dio fallback once smoke tests pass.
 4. Delete legacy Retrofit API providers and generated files only after tests are rewritten around Supabase repositories.
 5. Archive the Spring backend after no production traffic hits `/api/*` for a full release cycle.
+
+
+## Address search cutover
+
+`OrderRepository.searchAddress` now calls the Supabase `address-search` Edge Function when Supabase is available. The function mirrors the old Spring `AddressSearchService` response shape and calls Korea Juso (`business.juso.go.kr`) using server-side Supabase secrets.
+
+Required Supabase secret before production checkout testing:
+
+```bash
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set SNAPFIT_ADDRESS_JUSO_KEY='***'
+```
+
+Optional tuning secrets:
+
+- `SNAPFIT_ADDRESS_JUSO_ENABLED=false`
+- `SNAPFIT_ADDRESS_JUSO_COUNT_PER_PAGE=10`
+- `SNAPFIT_ADDRESS_JUSO_TIMEOUT_MS=4000`
+- `SNAPFIT_ADDRESS_JUSO_BASE_URL=https://business.juso.go.kr/addrlink/addrLinkApi.do`

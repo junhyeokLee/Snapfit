@@ -395,9 +395,26 @@ class OrderRepository {
     required String keyword,
     int page = 1,
   }) async {
+    final normalizedKeyword = keyword.trim();
+    if (normalizedKeyword.length < 2) {
+      throw Exception('검색어를 2글자 이상 입력해주세요.');
+    }
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'address-search',
+        body: {'keyword': normalizedKeyword, 'page': page},
+      );
+      final map =
+          (response.data as Map?)?.cast<String, dynamic>() ??
+          <String, dynamic>{};
+      if (map['error'] != null) {
+        throw Exception(map['message'] ?? map['error']);
+      }
+      return AddressSearchResult.fromJson(map);
+    }
     final response = await dio.get(
       '/api/orders/address/search',
-      queryParameters: {'keyword': keyword, 'page': page},
+      queryParameters: {'keyword': normalizedKeyword, 'page': page},
     );
     final map =
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};

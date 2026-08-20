@@ -245,3 +245,13 @@ Final backend dependency scan / decommission preparation:
 Remaining active blocker identified in scan:
 
 - Address search still uses legacy `/api/orders/address/search`. Replace it with a public address lookup API or a Supabase Edge Function before turning off Spring if checkout address search is required.
+
+
+## Phase 9 progress update
+
+Address search migration:
+
+- Added and deployed the `address-search` Supabase Edge Function.
+- Ported the Spring `AddressSearchService` Juso API integration shape to Deno Edge Functions.
+- Updated `OrderRepository.searchAddress` to prefer `supabase.functions.invoke('address-search')` and retain the old REST endpoint only as a fallback if Supabase is unavailable.
+- The function requires `SNAPFIT_ADDRESS_JUSO_KEY` as a Supabase secret before production checkout address lookup can succeed.
