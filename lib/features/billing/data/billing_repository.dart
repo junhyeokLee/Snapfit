@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
@@ -177,6 +178,50 @@ class BillingRepository {
     return SubscriptionStatusModel.fromJson(
       (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
     );
+  }
+
+  String _storePlatformFromPurchase(PurchaseDetails purchase) {
+    final source = purchase.verificationData.source.toLowerCase();
+    if (source.contains('google') || source.contains('play')) {
+      return 'GOOGLE_PLAY';
+    }
+    if (source.contains('app_store') ||
+        source.contains('appstore') ||
+        source.contains('storekit')) {
+      return 'APP_STORE';
+    }
+    throw Exception('지원하지 않는 인앱결제 플랫폼입니다: ${purchase.verificationData.source}');
+  }
+
+  Future<SubscriptionStatusModel> verifyStorePurchase(
+    PurchaseDetails purchase, {
+    String planCode = 'SNAPFIT_PRO_MONTHLY',
+  }) async {
+    if (supabase == null) {
+      throw Exception('Supabase 결제 검증 환경이 준비되지 않았습니다.');
+    }
+    final transactionId =
+        purchase.purchaseID ??
+        '${purchase.productID}-${purchase.transactionDate ?? DateTime.now().millisecondsSinceEpoch}';
+    final response = await supabase!.functions.invoke(
+      'iap-verify',
+      body: {
+        'platform': _storePlatformFromPurchase(purchase),
+        'productId': purchase.productID,
+        'transactionId': transactionId,
+        'originalTransactionId': transactionId,
+        'purchaseToken': purchase.verificationData.serverVerificationData,
+        'receiptData': purchase.verificationData.localVerificationData,
+        'verificationSource': purchase.verificationData.source,
+        'planCode': planCode,
+      },
+    );
+    final data =
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    if (data['error'] != null) {
+      throw Exception(data['error']);
+    }
+    return SubscriptionStatusModel.fromJson(data);
   }
 
   Future<void> cancelPayment({

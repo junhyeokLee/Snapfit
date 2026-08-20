@@ -23,6 +23,7 @@ import '../../data/order_repository.dart';
 import 'notification_settings_screen.dart';
 import 'admin_order_management_screen.dart';
 import 'admin_template_management_screen.dart';
+import 'billing_management_screen.dart';
 import 'order_history_screen.dart';
 import 'support_inquiry_screen.dart';
 import 'terms_policy_screen.dart';
@@ -191,9 +192,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         title: '구독 및 결제 관리',
                         trailingDot: false,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('구독 및 결제 관리는 현재 준비 중입니다.'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const BillingManagementScreen(),
                             ),
                           );
                         },

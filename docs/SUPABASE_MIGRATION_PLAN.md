@@ -188,3 +188,18 @@ Still required:
 1. Confirm Kakao OpenID Connect / ID token issuance in Kakao developer settings and Supabase Auth provider configuration.
 2. Once Kakao/Google auth is verified on-device, remove or hard-disable the legacy auth REST fallback paths.
 3. Continue with production IAP receipt verification and order print/PDF package generation.
+
+
+## Phase 6 progress update
+
+Native store billing / IAP wiring:
+
+- Added `IAP_PRO_MONTHLY_PRODUCT_ID` app config with default `snapfit_pro_monthly`.
+- Added a Flutter `BillingManagementScreen` connected from My Page → 구독 및 결제 관리.
+- The screen queries Google Play/App Store product details through `in_app_purchase`, starts the native subscription purchase, listens for purchase updates, restores purchases, and calls the Supabase `iap-verify` function for server-side entitlement materialization.
+- `BillingRepository.verifyStorePurchase` maps `PurchaseDetails` into the `iap-verify` request and refreshes subscription/quota providers after verification.
+- Updated and redeployed `iap-verify` to accept app-provided `planCode` and map known product IDs to `SNAPFIT_PRO_MONTHLY`.
+
+Important production blocker:
+
+- `iap-verify` still intentionally returns `iap_provider_verification_not_configured` unless real Google Play Developer API / App Store Server API secrets and verification logic are configured. This prevents granting paid entitlements from unverified receipts in production.

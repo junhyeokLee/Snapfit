@@ -10,10 +10,16 @@ Deno.serve(async (req) => {
     const platform = String(body.platform ?? '').toUpperCase()
     const productId = String(body.productId ?? '').trim()
     const transactionId = String(body.transactionId ?? '').trim()
+    const requestedPlanCode = String(body.planCode ?? 'SNAPFIT_PRO_MONTHLY').trim()
     const purchaseToken = body.purchaseToken?.toString()
     const receiptData = body.receiptData?.toString()
     if (!['GOOGLE_PLAY', 'APP_STORE'].includes(platform)) return jsonResponse({ error: 'invalid_platform' }, 400)
     if (!productId || !transactionId) return jsonResponse({ error: 'productId_transactionId_required' }, 400)
+    const productPlanMap: Record<string, string> = {
+      snapfit_pro_monthly: 'SNAPFIT_PRO_MONTHLY',
+      SNAPFIT_PRO_MONTHLY: 'SNAPFIT_PRO_MONTHLY',
+    }
+    const planCode = productPlanMap[productId] ?? requestedPlanCode
 
     // TODO: Real verification:
     // - GOOGLE_PLAY: Android Publisher API purchases.subscriptionsv2.get
@@ -40,7 +46,7 @@ Deno.serve(async (req) => {
       purchase_token: purchaseToken ?? null,
       receipt_hash: receiptHash,
       status: 'VERIFIED',
-      plan_code: 'SNAPFIT_PRO_MONTHLY',
+      plan_code: planCode,
       purchased_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       raw_response: { mock: true },
@@ -49,7 +55,7 @@ Deno.serve(async (req) => {
 
     await supabase.from('subscriptions').upsert({
       user_id: user.id,
-      plan_code: 'SNAPFIT_PRO_MONTHLY',
+      plan_code: planCode,
       status: 'ACTIVE',
       started_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
@@ -59,7 +65,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({
       userId: user.id,
-      planCode: 'SNAPFIT_PRO_MONTHLY',
+      planCode: planCode,
       status: 'ACTIVE',
       startedAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),

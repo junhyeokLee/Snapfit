@@ -50,4 +50,12 @@ class Env {
     defaultValue:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyYmh4ZHRyaXVtbXFwenRwanJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDU5MDAsImV4cCI6MjEwMjcyMTkwMH0.uxBcMGAMwAEJZtHA5987jTPePQDY_nNtqMe6W8MejHQ',
   );
+
+  /// Native store subscription product id.
+  /// Configure the same id in Google Play Console / App Store Connect.
+  /// - --dart-define=IAP_PRO_MONTHLY_PRODUCT_ID=...
+  static const String iapProMonthlyProductId = String.fromEnvironment(
+    'IAP_PRO_MONTHLY_PRODUCT_ID',
+    defaultValue: 'snapfit_pro_monthly',
+  );
 }
