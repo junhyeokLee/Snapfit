@@ -111,6 +111,28 @@ class AdminOpsRepository {
     return OrderPageResult.fromJson(map);
   }
 
+  Future<OrderHistoryItem> preparePrintPackage({
+    required String adminKey,
+    required String orderId,
+  }) async {
+    if (supabase != null) {
+      return OrderHistoryItem.fromJson(
+        await _invoke(
+          'preparePrintPackage',
+          adminKey: adminKey,
+          body: {'orderId': orderId},
+        ),
+      );
+    }
+    final response = await dio.post(
+      '/api/orders/admin/$orderId/print-package/prepare',
+      options: Options(headers: {'X-Admin-Key': adminKey}),
+    );
+    return OrderHistoryItem.fromJson(
+      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+    );
+  }
+
   Future<OrderHistoryItem> markShipping({
     required String adminKey,
     required String orderId,

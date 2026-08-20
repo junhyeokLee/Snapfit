@@ -231,3 +231,17 @@ Remaining production gap:
 
 - The generated PDF is currently an inspection/summary PDF. The ZIP contains the print manifest and source images. If the print vendor requires a press-ready flattened PDF per page, add a dedicated renderer pipeline that flattens Flutter album layer JSON into print-resolution page images/PDFs before vendor submission.
 - Real vendor API submission is represented by `SUPABASE_PRINT_PACKAGE` metadata for now. Actual vendor credentials/API contract should be added as Supabase secrets and called from the Edge Function.
+
+
+## Phase 8 progress update
+
+Final backend dependency scan / decommission preparation:
+
+- Scanned remaining `/api/*`, Retrofit, Dio, Firebase Storage, and hard-coded backend URL references.
+- Confirmed most old REST classes are now fallback or test-era implementations rather than the primary provider path.
+- Routed debug/admin order controls in `order_history_screen.dart` and `admin_order_management_screen.dart` through `admin-ops` instead of `order-confirm-payment`, so `SNAPFIT_ADMIN_KEY`/`ORDER_ADMIN_KEY` header-based admin auth works consistently.
+- Added `docs/SPRING_BACKEND_DECOMMISSION_CHECKLIST.md` documenting remaining blockers before the Spring backend can be shut down.
+
+Remaining active blocker identified in scan:
+
+- Address search still uses legacy `/api/orders/address/search`. Replace it with a public address lookup API or a Supabase Edge Function before turning off Spring if checkout address search is required.

@@ -257,7 +257,7 @@ class _AdminOrderManagementScreenState
     Future<void> preparePrintPackage() async {
       try {
         await ref
-            .read(orderRepositoryProvider)
+            .read(adminOpsRepositoryProvider)
             .preparePrintPackage(
               orderId: order.orderId,
               adminKey: Env.orderAdminKey,

@@ -11,6 +11,7 @@ import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/utils/app_error_mapper.dart';
 import '../../../../config/env.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
+import '../../data/admin_ops_repository.dart';
 import '../../data/order_repository.dart';
 import '../../domain/entities/order_history_item.dart';
 
@@ -290,7 +291,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     Future<void> preparePrintPackageForQa() async {
       try {
         final updated = await ref
-            .read(orderRepositoryProvider)
+            .read(adminOpsRepositoryProvider)
             .preparePrintPackage(
               orderId: order.orderId,
               adminKey: Env.orderAdminKey,
@@ -394,7 +395,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
 
       try {
         await ref
-            .read(orderRepositoryProvider)
+            .read(adminOpsRepositoryProvider)
             .markShipping(
               orderId: order.orderId,
               courier: courier,
@@ -416,7 +417,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     Future<void> markDeliveredForQa() async {
       try {
         await ref
-            .read(orderRepositoryProvider)
+            .read(adminOpsRepositoryProvider)
             .markDelivered(orderId: order.orderId, adminKey: Env.orderAdminKey);
         setState(() {
           _refreshSeed++;
