@@ -1,5 +1,6 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { adminClient } from '../_shared/supabase.ts'
+import { buildPrintPackage } from '../_shared/print-package.ts'
 
 async function getOptionalJwtUser(req: Request) {
   const auth = req.headers.get('Authorization') ?? ''
@@ -151,7 +152,12 @@ Deno.serve(async (req) => {
       const patch: Record<string, unknown> = {}
       if (action === 'markShipping') { patch.status = 'SHIPPING'; patch.courier = body.courier ?? null; patch.tracking_number = body.trackingNumber ?? null; patch.shipped_at = now }
       if (action === 'markDelivered') { patch.status = 'DELIVERED'; patch.delivered_at = now }
-      if (action === 'preparePrintPackage') { patch.status = 'IN_PRODUCTION'; patch.print_package_generated_at = now; patch.print_package_json_url = `supabase://print-packages/${orderId}.json` }
+      if (action === 'preparePrintPackage') {
+        const { data: order, error: orderError } = await supabase.from('orders').select('*').eq('order_id', orderId).single()
+        if (orderError) throw orderError
+        const { patch: printPatch } = await buildPrintPackage(supabase, order)
+        Object.assign(patch, printPatch, { status: 'IN_PRODUCTION' })
+      }
       const { data, error } = await supabase.from('orders').update(patch).eq('order_id', orderId).select().single()
       if (error) throw error
       return jsonResponse(orderToJson(data))

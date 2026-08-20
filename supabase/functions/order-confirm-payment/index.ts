@@ -1,5 +1,6 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { adminClient, getUser } from '../_shared/supabase.ts'
+import { buildPrintPackage } from '../_shared/print-package.ts'
 
 function orderToJson(row: Record<string, unknown>) {
   const status = String(row.status ?? 'PAYMENT_PENDING')
@@ -81,6 +82,8 @@ Deno.serve(async (req) => {
     if (action === 'confirm') {
       patch.status = 'PAYMENT_COMPLETED'
       patch.payment_confirmed_at = now
+      const { patch: printPatch } = await buildPrintPackage(supabase, order)
+      Object.assign(patch, printPatch, { status: 'IN_PRODUCTION' })
     } else if (action === 'shipping') {
       if (!isAdmin) return jsonResponse({ error: 'forbidden' }, 403)
       patch.status = 'SHIPPING'
@@ -93,9 +96,8 @@ Deno.serve(async (req) => {
       patch.delivered_at = now
     } else if (action === 'preparePrintPackage') {
       if (!isAdmin) return jsonResponse({ error: 'forbidden' }, 403)
-      patch.status = 'IN_PRODUCTION'
-      patch.print_package_generated_at = now
-      patch.print_package_json_url = order.print_package_json_url ?? `supabase://print-packages/${orderId}.json`
+      const { patch: printPatch } = await buildPrintPackage(supabase, order)
+      Object.assign(patch, printPatch, { status: 'IN_PRODUCTION' })
     } else {
       return jsonResponse({ error: 'unknown_action' }, 400)
     }

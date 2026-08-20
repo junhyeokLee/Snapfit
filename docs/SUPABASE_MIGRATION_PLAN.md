@@ -203,3 +203,31 @@ Native store billing / IAP wiring:
 Important production blocker:
 
 - `iap-verify` still intentionally returns `iap_provider_verification_not_configured` unless real Google Play Developer API / App Store Server API secrets and verification logic are configured. This prevents granting paid entitlements from unverified receipts in production.
+
+
+## Phase 7 progress update
+
+Order / PDF / Print package migration work:
+
+- Ported the Spring `OrderService` print-package flow into Supabase Edge Functions.
+- Added a private `print-packages` Supabase Storage bucket via migration.
+- Added shared Edge Function helper `_shared/print-package.ts` that builds:
+  - `print-package.json` containing order, album, recipient, and asset metadata.
+  - `print-package.zip` containing the JSON, an asset manifest, and downloadable album images where URLs are reachable.
+  - `print-package.pdf` summary document for print/package inspection.
+- Updated `order-confirm-payment` so payment confirmation generates print artifacts and advances the order to `IN_PRODUCTION`.
+- Updated `admin-ops.preparePrintPackage` so admins can regenerate the package and refresh order metadata.
+- Uploaded artifacts are stored in private Supabase Storage and order rows receive signed URLs in:
+  - `print_package_json_url`
+  - `print_file_zip_url`
+  - `print_file_pdf_url`
+  - `print_asset_count`
+  - `print_package_generated_at`
+  - `print_vendor`
+  - `print_vendor_order_id`
+  - `print_submitted_at`
+
+Remaining production gap:
+
+- The generated PDF is currently an inspection/summary PDF. The ZIP contains the print manifest and source images. If the print vendor requires a press-ready flattened PDF per page, add a dedicated renderer pipeline that flattens Flutter album layer JSON into print-resolution page images/PDFs before vendor submission.
+- Real vendor API submission is represented by `SUPABASE_PRINT_PACKAGE` metadata for now. Actual vendor credentials/API contract should be added as Supabase secrets and called from the Edge Function.
