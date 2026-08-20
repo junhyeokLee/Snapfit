@@ -6,6 +6,7 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import 'order_repository.dart';
 import '../domain/entities/order_history_item.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 class AdminOpsRepository {
   AdminOpsRepository({required this.dio, this.supabase});
@@ -34,6 +35,7 @@ class AdminOpsRepository {
         await _invoke('dashboard', adminKey: adminKey),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.dashboard');
     final response = await dio.get(
       '/api/ops/admin/dashboard',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -60,6 +62,7 @@ class AdminOpsRepository {
           .map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>()))
           .toList();
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.csSignals');
     final response = await dio.get(
       '/api/ops/admin/cs-signals',
       queryParameters: {'limit': limit},
@@ -96,6 +99,7 @@ class AdminOpsRepository {
         ),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.orders');
     final response = await dio.get(
       '/api/orders/admin/paged',
       queryParameters: {
@@ -124,6 +128,7 @@ class AdminOpsRepository {
         ),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.printPackage');
     final response = await dio.post(
       '/api/orders/admin/$orderId/print-package/prepare',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -152,6 +157,7 @@ class AdminOpsRepository {
         ),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.shipping');
     final response = await dio.post(
       '/api/orders/$orderId/shipping',
       data: {'courier': courier, 'trackingNumber': trackingNumber},
@@ -175,6 +181,7 @@ class AdminOpsRepository {
         ),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.delivered');
     final response = await dio.post(
       '/api/orders/$orderId/delivered',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -196,6 +203,7 @@ class AdminOpsRepository {
       );
       return;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.upsert');
     await dio.post(
       '/api/admin/templates/upsert',
       data: payload,
@@ -217,6 +225,7 @@ class AdminOpsRepository {
         ),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.templates');
     final response = await dio.get(
       '/api/admin/templates/paged',
       queryParameters: {'page': page, 'size': size},
@@ -240,6 +249,7 @@ class AdminOpsRepository {
       );
       return;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.active');
     await dio.post(
       '/api/admin/templates/$templateId/active',
       data: {'active': active},
@@ -258,6 +268,7 @@ class AdminOpsRepository {
         body: {'templateId': templateId},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.detail');
     final response = await dio.get(
       '/api/admin/templates/$templateId',
       options: Options(headers: {'X-Admin-Key': adminKey}),

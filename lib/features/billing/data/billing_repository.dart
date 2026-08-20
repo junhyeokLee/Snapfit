@@ -8,6 +8,7 @@ import '../domain/entities/payment_prepare_result.dart';
 import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 class BillingRepository {
   BillingRepository({
@@ -82,6 +83,7 @@ class BillingRepository {
           )
           .toList(growable: false);
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.plans');
     final response = await dio.get('/api/billing/plans');
     final data = response.data;
     if (data is! List) return const [];
@@ -101,6 +103,7 @@ class BillingRepository {
           .maybeSingle();
       return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.subscription');
     final response = await dio.get(
       '/api/billing/subscription',
       queryParameters: {'userId': userId},
@@ -131,6 +134,7 @@ class BillingRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.prepare');
     final response = await dio.post(
       '/api/billing/prepare',
       data: {
@@ -165,6 +169,7 @@ class BillingRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.approve');
     final response = await dio.post(
       '/api/billing/approve',
       data: {
@@ -228,6 +233,7 @@ class BillingRepository {
     required String orderId,
     String reason = 'USER_REQUEST',
   }) async {
+    assertLegacyBackendFallbackAllowed(feature: 'billing.cancelPayment');
     await dio.post('/api/billing/$orderId/cancel', data: {'reason': reason});
   }
 
@@ -236,6 +242,7 @@ class BillingRepository {
     String? paymentKey,
   }) async {
     final userId = await _requireUserId();
+    assertLegacyBackendFallbackAllowed(feature: 'billing.e2e');
     final response = await dio.post(
       '/api/billing/test/e2e-run',
       data: {
@@ -260,6 +267,7 @@ class BillingRepository {
           .maybeSingle();
       return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.cancelSubscription');
     final response = await dio.post(
       '/api/billing/subscription/cancel',
       queryParameters: {'userId': userId},
@@ -280,6 +288,7 @@ class BillingRepository {
           .maybeSingle();
       return StorageQuotaStatus.fromJson(_camelQuota(row, userId));
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.storageQuota');
     final response = await dio.get(
       '/api/billing/storage/quota',
       queryParameters: {'userId': userId},
@@ -313,6 +322,7 @@ class BillingRepository {
         measuredAt: quota.measuredAt,
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'billing.storagePreflight');
     final response = await dio.post(
       '/api/billing/storage/preflight',
       data: {'userId': userId, 'incomingBytes': incomingBytes},

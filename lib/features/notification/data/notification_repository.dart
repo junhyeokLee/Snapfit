@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
 import '../domain/entities/app_notification_item.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 class NotificationRepository {
   NotificationRepository({
@@ -61,6 +62,7 @@ class NotificationRepository {
           )
           .toList(growable: false);
     }
+    assertLegacyBackendFallbackAllowed(feature: 'notifications.inbox');
     try {
       final response = await dio.get(
         '/api/notifications/inbox',
@@ -98,6 +100,7 @@ class NotificationRepository {
           .where((e) => !readIds.contains((e['id'] as num?)?.toInt() ?? -1))
           .length;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'notifications.unreadCount');
     try {
       final response = await dio.get(
         '/api/notifications/unread-count',
@@ -123,6 +126,7 @@ class NotificationRepository {
       });
       return;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'notifications.markRead');
     try {
       await dio.post(
         '/api/notifications/$notificationId/read',
@@ -152,6 +156,7 @@ class NotificationRepository {
       }
       return;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'notifications.markAllRead');
     try {
       await dio.post(
         '/api/notifications/read-all',
@@ -168,6 +173,7 @@ class NotificationRepository {
 
   Future<int> fetchRetentionDays() async {
     if (supabase != null) return 90;
+    assertLegacyBackendFallbackAllowed(feature: 'notifications.policy');
     try {
       final response = await dio.get('/api/notifications/policy');
       final data = response.data;

@@ -58,4 +58,12 @@ class Env {
     'IAP_PRO_MONTHLY_PRODUCT_ID',
     defaultValue: 'snapfit_pro_monthly',
   );
+
+  /// Legacy Spring backend fallback gate.
+  /// Production default is false: app must use Supabase/Edge Functions only.
+  /// Temporarily set --dart-define=ENABLE_LEGACY_BACKEND_FALLBACK=true only for rollback tests.
+  static const bool enableLegacyBackendFallback = bool.fromEnvironment(
+    'ENABLE_LEGACY_BACKEND_FALLBACK',
+    defaultValue: false,
+  );
 }

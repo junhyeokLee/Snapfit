@@ -274,3 +274,15 @@ Legacy provider graph cleanup:
 - Removed unused runtime Riverpod providers for the old Retrofit `AlbumApi`, `AlbumMemberApi`, and `TemplateApi`.
 - The generated Retrofit clients remain only for legacy repository tests/fallback classes during the migration window.
 - Active album/member/template provider wiring now stays Supabase-only at the runtime provider graph level.
+
+
+## Phase 12 progress update
+
+Spring fallback shutdown guard:
+
+- Added `Env.enableLegacyBackendFallback`, defaulting to `false`.
+- Added `LegacyBackendDisabledException` and `assertLegacyBackendFallbackAllowed`.
+- Guarded remaining Spring/Dio fallback calls across auth, billing, notifications, support, orders, admin ops, and the old Dio auth refresh interceptor.
+- Updated tests to assert legacy Spring fallback is blocked by default.
+
+This does not delete every legacy Retrofit class yet, but it prevents production runtime from silently falling back to the Spring backend unless a developer explicitly opts in with `ENABLE_LEGACY_BACKEND_FALLBACK=true`.

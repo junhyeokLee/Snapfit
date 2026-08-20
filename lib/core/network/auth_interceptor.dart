@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../interceptors/token_storage.dart';
 import '../utils/app_logger.dart';
+import 'legacy_backend_guard.dart';
 
 class AuthInterceptor extends Interceptor {
   final TokenStorage _tokenStorage;
@@ -91,6 +92,7 @@ class AuthInterceptor extends Interceptor {
 
   Future<_RefreshResult?> _refreshTokens(String refreshToken) async {
     try {
+      assertLegacyBackendFallbackAllowed(feature: 'auth.interceptor.refresh');
       final response = await _dio.post(
         '/api/auth/refresh',
         data: {'refreshToken': refreshToken},

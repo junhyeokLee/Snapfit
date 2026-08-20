@@ -80,3 +80,16 @@ Until that secret/provider is configured, the function returns `order_checkout_p
 ## Runtime provider cleanup
 
 The main Riverpod runtime providers no longer expose the old Retrofit `AlbumApi`, `AlbumMemberApi`, or `TemplateApi` providers. Those legacy API classes remain in the tree for fallback repositories/tests during the migration window, but the active app provider graph routes albums, members, and templates through Supabase repositories.
+
+
+## Legacy Spring fallback disabled by default
+
+`Env.enableLegacyBackendFallback` now defaults to `false`. All remaining direct Spring/Dio fallback paths are guarded with `assertLegacyBackendFallbackAllowed`, so production builds fail fast instead of silently calling `/api/*` on the old Spring backend.
+
+Temporary rollback testing can opt in explicitly:
+
+```bash
+flutter run --dart-define=ENABLE_LEGACY_BACKEND_FALLBACK=true
+```
+
+This flag should remain `false` for production Supabase-only releases.

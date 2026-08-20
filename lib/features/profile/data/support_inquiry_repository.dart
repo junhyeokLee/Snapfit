@@ -6,6 +6,7 @@ import '../../../core/interceptors/token_storage.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 class SupportInquiryRepository {
   SupportInquiryRepository({
@@ -44,6 +45,7 @@ class SupportInquiryRepository {
       return;
     }
 
+    assertLegacyBackendFallbackAllowed(feature: 'support.inquiries');
     await dio.post(
       '/api/support/inquiries',
       data: {

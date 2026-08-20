@@ -8,6 +8,7 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 class OrderRepository {
   OrderRepository({
@@ -147,6 +148,7 @@ class OrderRepository {
           )
           .toList(growable: false);
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.list');
     final response = await dio.get(
       '/api/orders',
       queryParameters: {'userId': userId},
@@ -193,6 +195,7 @@ class OrderRepository {
         hasNext: items.length == size,
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.paged');
     final response = await dio.get(
       '/api/orders/paged',
       queryParameters: {
@@ -224,6 +227,7 @@ class OrderRepository {
           .toList(growable: false);
       return _summaryFromOrders(items);
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.summary');
     final response = await dio.get(
       '/api/orders/summary',
       queryParameters: {'userId': userId},
@@ -254,6 +258,7 @@ class OrderRepository {
         _orderRowToJson(Map<String, dynamic>.from(row)),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.testCreate');
     final response = await dio.post(
       '/api/orders/test/create',
       data: {'userId': userId, 'title': title, 'amount': amount},
@@ -265,6 +270,7 @@ class OrderRepository {
   }
 
   Future<OrderHistoryItem> advanceStatus(String orderId) async {
+    assertLegacyBackendFallbackAllowed(feature: 'orders.advance');
     final response = await dio.post('/api/orders/$orderId/advance');
     return OrderHistoryItem.fromJson(
       (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
@@ -322,6 +328,7 @@ class OrderRepository {
         _orderRowToJson(Map<String, dynamic>.from(row)),
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.create');
     final response = await dio.post(
       '/api/orders',
       data: {
@@ -354,6 +361,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.confirmPayment');
     final response = await dio.post('/api/orders/$orderId/payment/confirm');
     return OrderHistoryItem.fromJson(
       (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
@@ -379,6 +387,7 @@ class OrderRepository {
         extraPagePrice: extraPagePrice,
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.quote');
     final response = await dio.get(
       '/api/orders/quote',
       queryParameters: {
@@ -412,6 +421,7 @@ class OrderRepository {
       }
       return AddressSearchResult.fromJson(map);
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.addressSearch');
     final response = await dio.get(
       '/api/orders/address/search',
       queryParameters: {'keyword': normalizedKeyword, 'page': page},
@@ -454,6 +464,7 @@ class OrderRepository {
       }
       return checkoutUrl;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.checkoutUrl');
     final base = dio.options.baseUrl.trim();
     final normalized = base.endsWith('/')
         ? base.substring(0, base.length - 1)
@@ -482,6 +493,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.shipping');
     final response = await dio.post(
       '/api/orders/$orderId/shipping',
       data: {'courier': courier, 'trackingNumber': trackingNumber},
@@ -505,6 +517,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.delivered');
     final response = await dio.post(
       '/api/orders/$orderId/delivered',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -527,6 +540,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
+    assertLegacyBackendFallbackAllowed(feature: 'orders.printPackage');
     final response = await dio.post(
       '/api/orders/admin/$orderId/print-package/prepare',
       options: Options(headers: {'X-Admin-Key': adminKey}),

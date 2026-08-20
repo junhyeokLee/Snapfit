@@ -11,6 +11,7 @@ import '../../../core/interceptors/token_storage.dart';
 import '../../../core/notifications/fcm_notification_service.dart';
 import '../data/api/auth_api.dart' as backend;
 import '../data/dto/auth_response.dart';
+import '../../../core/network/legacy_backend_guard.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
@@ -79,6 +80,7 @@ class AuthService {
       await tokenStorage.saveAuth(auth);
       return auth;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'auth.login.kakao');
     final response = await api.loginWithKakao({'accessToken': accessToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -99,6 +101,7 @@ class AuthService {
       await tokenStorage.saveAuth(auth);
       return auth;
     }
+    assertLegacyBackendFallbackAllowed(feature: 'auth.login.google');
     final response = await api.loginWithGoogle({'idToken': idToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -116,6 +119,7 @@ class AuthService {
         return auth;
       }
     }
+    assertLegacyBackendFallbackAllowed(feature: 'auth.refresh');
     final response = await api.refresh({'refreshToken': refreshToken});
     await tokenStorage.saveAuth(response);
     return response;
@@ -149,6 +153,7 @@ class AuthService {
       }
     }
 
+    assertLegacyBackendFallbackAllowed(feature: 'auth.deleteAccount');
     Future<void> deleteCall() async {
       final accessToken = await tokenStorage.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
@@ -203,6 +208,7 @@ class AuthService {
         // Supabase 동의 동기화 실패는 비차단 처리하고 REST fallback 시도.
       }
     }
+    assertLegacyBackendFallbackAllowed(feature: 'auth.consents');
     try {
       await api.updateConsents({
         'termsVersion': consent.termsVersion,
