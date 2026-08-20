@@ -1,16 +1,37 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/network/dio_provider.dart';
+import '../../../core/supabase/supabase_provider.dart';
 import 'order_repository.dart';
 import '../domain/entities/order_history_item.dart';
 
 class AdminOpsRepository {
-  AdminOpsRepository({required this.dio});
+  AdminOpsRepository({required this.dio, this.supabase});
 
   final Dio dio;
+  final SupabaseClient? supabase;
+
+
+  Future<Map<String, dynamic>> _invoke(
+    String action, {
+    required String adminKey,
+    Map<String, dynamic>? body,
+  }) async {
+    if (supabase == null) return <String, dynamic>{};
+    final response = await supabase!.functions.invoke(
+      'admin-ops',
+      body: {'action': action, 'adminKey': adminKey, ...?body},
+      headers: {'X-Admin-Key': adminKey},
+    );
+    return (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+  }
 
   Future<AdminDashboardData> fetchDashboard({required String adminKey}) async {
+    if (supabase != null) {
+      return AdminDashboardData.fromJson(await _invoke('dashboard', adminKey: adminKey));
+    }
     final response = await dio.get(
       '/api/ops/admin/dashboard',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -24,6 +45,12 @@ class AdminOpsRepository {
     required String adminKey,
     int limit = 50,
   }) async {
+    if (supabase != null) {
+      final map = await _invoke('csSignals', adminKey: adminKey, body: {'limit': limit});
+      final items = map['items'];
+      if (items is! List) return const [];
+      return items.whereType<Map>().map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>())).toList();
+    }
     final response = await dio.get(
       '/api/ops/admin/cs-signals',
       queryParameters: {'limit': limit},
@@ -46,6 +73,13 @@ class AdminOpsRepository {
     int page = 0,
     int size = 20,
   }) async {
+    if (supabase != null) {
+      return OrderPageResult.fromJson(await _invoke(
+        'orders',
+        adminKey: adminKey,
+        body: {'page': page, 'size': size, if (statuses != null) 'statuses': statuses, if (keyword != null) 'keyword': keyword},
+      ));
+    }
     final response = await dio.get(
       '/api/orders/admin/paged',
       queryParameters: {
@@ -67,6 +101,13 @@ class AdminOpsRepository {
     required String courier,
     required String trackingNumber,
   }) async {
+    if (supabase != null) {
+      return OrderHistoryItem.fromJson(await _invoke(
+        'markShipping',
+        adminKey: adminKey,
+        body: {'orderId': orderId, 'courier': courier, 'trackingNumber': trackingNumber},
+      ));
+    }
     final response = await dio.post(
       '/api/orders/$orderId/shipping',
       data: {'courier': courier, 'trackingNumber': trackingNumber},
@@ -81,6 +122,13 @@ class AdminOpsRepository {
     required String adminKey,
     required String orderId,
   }) async {
+    if (supabase != null) {
+      return OrderHistoryItem.fromJson(await _invoke(
+        'markDelivered',
+        adminKey: adminKey,
+        body: {'orderId': orderId},
+      ));
+    }
     final response = await dio.post(
       '/api/orders/$orderId/delivered',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -94,6 +142,10 @@ class AdminOpsRepository {
     required String adminKey,
     required Map<String, dynamic> payload,
   }) async {
+    if (supabase != null) {
+      await _invoke('upsertTemplate', adminKey: adminKey, body: {'payload': payload});
+      return;
+    }
     await dio.post(
       '/api/admin/templates/upsert',
       data: payload,
@@ -106,6 +158,13 @@ class AdminOpsRepository {
     int page = 0,
     int size = 20,
   }) async {
+    if (supabase != null) {
+      return AdminTemplatePage.fromJson(await _invoke(
+        'templates',
+        adminKey: adminKey,
+        body: {'page': page, 'size': size},
+      ));
+    }
     final response = await dio.get(
       '/api/admin/templates/paged',
       queryParameters: {'page': page, 'size': size},
@@ -121,6 +180,14 @@ class AdminOpsRepository {
     required int templateId,
     required bool active,
   }) async {
+    if (supabase != null) {
+      await _invoke(
+        'setTemplateActive',
+        adminKey: adminKey,
+        body: {'templateId': templateId, 'active': active},
+      );
+      return;
+    }
     await dio.post(
       '/api/admin/templates/$templateId/active',
       data: {'active': active},
@@ -132,6 +199,13 @@ class AdminOpsRepository {
     required String adminKey,
     required int templateId,
   }) async {
+    if (supabase != null) {
+      return _invoke(
+        'templateDetail',
+        adminKey: adminKey,
+        body: {'templateId': templateId},
+      );
+    }
     final response = await dio.get(
       '/api/admin/templates/$templateId',
       options: Options(headers: {'X-Admin-Key': adminKey}),
@@ -225,7 +299,8 @@ class AdminCsSignal {
 
 final adminOpsRepositoryProvider = Provider<AdminOpsRepository>((ref) {
   final dio = ref.watch(dioProvider);
-  return AdminOpsRepository(dio: dio);
+  final supabase = ref.watch(supabaseClientProvider);
+  return AdminOpsRepository(dio: dio, supabase: supabase);
 });
 
 class AdminTemplatePage {

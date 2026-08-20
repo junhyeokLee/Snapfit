@@ -151,3 +151,24 @@ Remaining high-risk items:
 3. Real print package/PDF/ZIP/vendor submission inside `order-confirm-payment` instead of current state-transition scaffold.
 4. Admin screens still need full `admin-ops` action routing.
 5. Flutter-capable validation is required: `flutter pub get`, `dart run build_runner build --delete-conflicting-outputs`, `flutter analyze`.
+
+## Phase 4 progress update
+
+Admin migration work:
+
+- Expanded `admin-ops` Edge Function into action-based admin API:
+  - dashboard metrics
+  - CS/support signals
+  - paged order listing
+  - shipping/delivered/print-package state transitions
+  - template paging/detail/upsert/active toggle
+- Wired `AdminOpsRepository` to call Supabase `admin-ops` when Supabase is available.
+- `admin-ops` accepts either a JWT user with `app_metadata.role = admin` or the existing `ORDER_ADMIN_KEY`/`SNAPFIT_ADMIN_KEY` as an Edge Function secret.
+
+Operational note: for admin-key based screens to work against Supabase Edge Functions, set the same admin key as a Supabase secret:
+
+```bash
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set SNAPFIT_ADMIN_KEY='...'
+```
+
+Do not paste this secret in chat; set it directly in the container/root shell.

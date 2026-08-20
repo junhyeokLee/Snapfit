@@ -13,7 +13,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.admin-ops]
-verify_jwt = true
+verify_jwt = false
 
 [functions.iap-verify]
 verify_jwt = true
