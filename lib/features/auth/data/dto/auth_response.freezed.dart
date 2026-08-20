@@ -70,7 +70,7 @@ class _$AuthResponseCopyWithImpl<$Res>
 accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
-as int,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as String,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserInfo,
   ));
 }
@@ -278,7 +278,7 @@ class __$AuthResponseCopyWithImpl<$Res>
 accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
-as int,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as String,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserInfo,
   ));
 }
@@ -299,7 +299,7 @@ $UserInfoCopyWith<$Res> get user {
 /// @nodoc
 mixin _$UserInfo {
 
- int get id; String? get email; String get name; String? get profileImageUrl; String get provider;
+ String get id; String? get email; String get name; String? get profileImageUrl; String get provider;
 /// Create a copy of UserInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -332,7 +332,7 @@ abstract mixin class $UserInfoCopyWith<$Res>  {
   factory $UserInfoCopyWith(UserInfo value, $Res Function(UserInfo) _then) = _$UserInfoCopyWithImpl;
 @useResult
 $Res call({
- int id, String? email, String name, String? profileImageUrl, String provider
+ String id, String? email, String name, String? profileImageUrl, String provider
 });
 
 
@@ -352,7 +352,7 @@ class _$UserInfoCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? name = null,Object? profileImageUrl = freezed,Object? provider = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,profileImageUrl: freezed == profileImageUrl ? _self.profileImageUrl : profileImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,provider: null == provider ? _self.provider : provider // ignore: cast_nullable_to_non_nullable
@@ -438,7 +438,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? email,  String name,  String? profileImageUrl,  String provider)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? email,  String name,  String? profileImageUrl,  String provider)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserInfo() when $default != null:
 return $default(_that.id,_that.email,_that.name,_that.profileImageUrl,_that.provider);case _:
@@ -459,7 +459,7 @@ return $default(_that.id,_that.email,_that.name,_that.profileImageUrl,_that.prov
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? email,  String name,  String? profileImageUrl,  String provider)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? email,  String name,  String? profileImageUrl,  String provider)  $default,) {final _that = this;
 switch (_that) {
 case _UserInfo():
 return $default(_that.id,_that.email,_that.name,_that.profileImageUrl,_that.provider);}
@@ -476,7 +476,7 @@ return $default(_that.id,_that.email,_that.name,_that.profileImageUrl,_that.prov
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? email,  String name,  String? profileImageUrl,  String provider)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? email,  String name,  String? profileImageUrl,  String provider)?  $default,) {final _that = this;
 switch (_that) {
 case _UserInfo() when $default != null:
 return $default(_that.id,_that.email,_that.name,_that.profileImageUrl,_that.provider);case _:
@@ -494,7 +494,7 @@ class _UserInfo implements UserInfo {
   const _UserInfo({required this.id, this.email, required this.name, this.profileImageUrl, required this.provider});
   factory _UserInfo.fromJson(Map<String, dynamic> json) => _$UserInfoFromJson(json);
 
-@override final  int id;
+@override final  String id;
 @override final  String? email;
 @override final  String name;
 @override final  String? profileImageUrl;
@@ -533,7 +533,7 @@ abstract mixin class _$UserInfoCopyWith<$Res> implements $UserInfoCopyWith<$Res>
   factory _$UserInfoCopyWith(_UserInfo value, $Res Function(_UserInfo) _then) = __$UserInfoCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String? email, String name, String? profileImageUrl, String provider
+ String id, String? email, String name, String? profileImageUrl, String provider
 });
 
 
@@ -553,7 +553,7 @@ class __$UserInfoCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? name = null,Object? profileImageUrl = freezed,Object? provider = null,}) {
   return _then(_UserInfo(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,profileImageUrl: freezed == profileImageUrl ? _self.profileImageUrl : profileImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,provider: null == provider ? _self.provider : provider // ignore: cast_nullable_to_non_nullable

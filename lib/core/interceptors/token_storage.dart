@@ -78,7 +78,7 @@ class TokenStorage {
     final idRaw = await _storage.read(key: _keyUserId);
     if (idRaw == null || idRaw.isEmpty) return null;
 
-    final id = int.tryParse(idRaw) ?? 0;
+    final id = idRaw.trim();
     final email = await _storage.read(key: _keyUserEmail);
     final name = await _storage.read(key: _keyUserName) ?? '사용자';
     final profileImageUrl = await _storage.read(key: _keyUserProfile);

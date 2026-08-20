@@ -1,0 +1,16 @@
+project_id = "rrbhxdtriummqpztpjrk"
+
+[functions.billing-prepare]
+verify_jwt = true
+
+[functions.billing-approve]
+verify_jwt = true
+
+[functions.billing-webhook]
+verify_jwt = false
+
+[functions.order-confirm-payment]
+verify_jwt = true
+
+[functions.admin-ops]
+verify_jwt = true

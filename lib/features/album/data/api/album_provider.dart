@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Album member repository provider
 import '../../../../core/network/dio_provider.dart';
+import '../../../../core/supabase/supabase_provider.dart';
 import '../../service/album_persistence_service.dart';
 import '../../../billing/data/billing_provider.dart';
 
@@ -11,6 +12,7 @@ import '../../domain/repositories/album_member_repository.dart';
 import '../../domain/repositories/gallery_repository.dart';
 import '../../service/album_editor_service.dart';
 import '../repositories/album_repository_impl.dart';
+import '../repositories/supabase_album_repository.dart';
 import '../repositories/album_member_repository_impl.dart';
 import '../repositories/gallery_repository_impl.dart';
 import 'album_api.dart';
@@ -28,9 +30,9 @@ final albumMemberApiProvider = Provider<AlbumMemberApi>((ref) {
 });
 
 final albumRepositoryProvider = Provider<AlbumRepository>((ref) {
-  final api = ref.read(albumApiProvider);
   final tokenStorage = ref.read(tokenStorageProvider);
-  return AlbumRepositoryImpl(api, tokenStorage: tokenStorage);
+  final supabase = ref.read(supabaseClientProvider);
+  return SupabaseAlbumRepository(supabase, tokenStorage: tokenStorage);
 });
 
 /// 앨범 멤버 리포지토리 Provider

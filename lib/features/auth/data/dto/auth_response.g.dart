@@ -23,7 +23,7 @@ Map<String, dynamic> _$AuthResponseToJson(_AuthResponse instance) =>
     };
 
 _UserInfo _$UserInfoFromJson(Map<String, dynamic> json) => _UserInfo(
-  id: (json['id'] as num).toInt(),
+  id: json['id']?.toString() ?? '',
   email: json['email'] as String?,
   name: json['name'] as String,
   profileImageUrl: json['profileImageUrl'] as String?,

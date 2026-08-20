@@ -19,7 +19,7 @@ sealed class AuthResponse with _$AuthResponse {
 @freezed
 sealed class UserInfo with _$UserInfo {
   const factory UserInfo({
-    required int id,
+    required String id,
     String? email,
     required String name,
     String? profileImageUrl,

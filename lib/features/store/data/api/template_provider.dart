@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/dio_provider.dart';
+import '../../../../core/supabase/supabase_provider.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart'; // tokenStorageProvider
 import '../../domain/repositories/template_repository.dart';
 import '../../domain/entities/premium_template.dart'; // PremiumTemplate
 import '../repositories/template_repository_impl.dart';
+import '../repositories/supabase_template_repository.dart';
 import 'template_api.dart';
 
 String _safeTemplateText(String? raw, {String fallback = ''}) {
@@ -976,9 +978,9 @@ final templateApiProvider = Provider<TemplateApi>((ref) {
 });
 
 final templateRepositoryProvider = Provider<TemplateRepository>((ref) {
-  final api = ref.read(templateApiProvider);
   final tokenStorage = ref.read(tokenStorageProvider);
-  return TemplateRepositoryImpl(api, tokenStorage: tokenStorage);
+  final supabase = ref.read(supabaseClientProvider);
+  return SupabaseTemplateRepository(supabase, tokenStorage: tokenStorage);
 });
 
 List<PremiumTemplate> _visibleServerTemplates(Iterable<PremiumTemplate> items) {

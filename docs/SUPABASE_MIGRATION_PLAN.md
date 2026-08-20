@@ -72,3 +72,41 @@ Admin operations should also go through Edge Functions or an admin-only app sess
 - Remove old REST API DTOs/interceptors where unused.
 - Remove default `BASE_URL` dependency once no `/api/*` calls remain.
 - Run Flutter code generation and app tests locally.
+
+## Phase 2 progress update
+
+Applied `supabase/migrations/20260820152000_backend_gap_alignment.sql` to the remote Supabase project.
+
+Added backend-parity schema elements after inspecting `Snapfit-BackEnd`:
+
+- `billing_orders`
+- `templates.new_until`
+- `album_pages.page_number`, `image_url`, `original_url`, `preview_url`
+- `album_members.status`, `invited_by`, `invite_token`
+- `subscriptions.last_order_id`
+- `support_inquiries.category`, `resolved_at`, `resolved_by`
+- `notification_inbox`, `notification_reads`
+- indexes for order/support/billing queries
+
+Created and deployed Supabase Edge Function scaffolds:
+
+- `billing-prepare` — functional mock-mode subscription prepare path using `billing_orders` and `orders`.
+- `billing-approve` — functional mock-mode approval path that updates `billing_orders`, `subscriptions`, and `orders`.
+- `admin-ops` — authenticated admin skeleton.
+- `billing-webhook` — deployed placeholder; provider signature verification still needs porting from Spring.
+- `order-confirm-payment` — deployed placeholder; print package/PDF/ZIP/vendor logic still needs porting from Spring `OrderService`.
+
+Flutter wiring started:
+
+- `UserInfo.id` moved from `int` to `String` for Supabase UUID compatibility.
+- Store template repository now uses Supabase queries for template list/detail/like/create-from-template.
+- Album repository now uses Supabase queries for album CRUD/reorder/lock/unlock.
+- Billing repository now reads plans/subscription/quota from Supabase and calls `billing-prepare` / `billing-approve` functions.
+
+Remaining before removing the old backend completely:
+
+1. Configure Supabase Auth providers for Google and Kakao in the Dashboard.
+2. Replace custom `/api/auth/*` login/profile endpoints with Supabase Auth + `profiles` upsert.
+3. Port order print package generation and payment provider integrations into Edge Functions.
+4. Port admin template/order/support operations into Edge Functions or Supabase admin UI.
+5. Run `flutter pub get`, `dart run build_runner build`, and `flutter analyze` on a Flutter-capable machine.

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
 import '../domain/entities/billing_plan.dart';
@@ -8,10 +9,11 @@ import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
 
 class BillingRepository {
-  BillingRepository({required this.dio, required this.tokenStorage});
+  BillingRepository({required this.dio, required this.tokenStorage, this.supabase});
 
   final Dio dio;
   final TokenStorage tokenStorage;
+  final SupabaseClient? supabase;
 
   Future<String> _requireUserId() async {
     final userId = await tokenStorage.getUserId();
@@ -21,7 +23,54 @@ class BillingRepository {
     return userId;
   }
 
+
+  Map<String, dynamic> _camelBillingPlan(Map<String, dynamic> row) => {
+        'planCode': row['plan_code'],
+        'title': row['title'],
+        'amount': row['amount'],
+        'currency': row['currency'],
+        'periodDays': row['period_days'],
+        'provider': row['provider'],
+      };
+
+  Map<String, dynamic> _camelSubscription(Map<String, dynamic>? row, String userId) => {
+        'userId': userId,
+        'planCode': row?['plan_code'],
+        'status': row?['status'] ?? 'INACTIVE',
+        'startedAt': row?['started_at'],
+        'expiresAt': row?['expires_at'],
+        'nextBillingAt': row?['next_billing_at'],
+        'isActive': row?['status'] == 'ACTIVE',
+      };
+
+  Map<String, dynamic> _camelQuota(Map<String, dynamic>? row, String userId) {
+    final used = (row?['used_bytes'] as num?)?.toInt() ?? 0;
+    final soft = (row?['soft_limit_bytes'] as num?)?.toInt() ?? 1073741824;
+    final hard = (row?['hard_limit_bytes'] as num?)?.toInt() ?? 1073741824;
+    return {
+      'userId': userId,
+      'planCode': row?['plan_code'] ?? 'FREE',
+      'usedBytes': used,
+      'softLimitBytes': soft,
+      'hardLimitBytes': hard,
+      'softExceeded': used > soft,
+      'hardExceeded': used > hard,
+      'usagePercent': hard > 0 ? ((used * 100) ~/ hard).clamp(0, 999) : 0,
+      'measuredAt': row?['measured_at'],
+    };
+  }
+
   Future<List<BillingPlan>> getPlans() async {
+    if (supabase != null) {
+      final rows = await supabase!
+          .from('billing_plans')
+          .select()
+          .eq('is_active', true)
+          .order('amount');
+      return rows
+          .map<BillingPlan>((e) => BillingPlan.fromJson(_camelBillingPlan(Map<String, dynamic>.from(e))))
+          .toList(growable: false);
+    }
     final response = await dio.get('/api/billing/plans');
     final data = response.data;
     if (data is! List) return const [];
@@ -33,6 +82,14 @@ class BillingRepository {
 
   Future<SubscriptionStatusModel> getMySubscription() async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final row = await supabase!
+          .from('subscriptions')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+      return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
+    }
     final response = await dio.get(
       '/api/billing/subscription',
       queryParameters: {'userId': userId},
@@ -51,6 +108,18 @@ class BillingRepository {
     String provider = 'TOSS_NAVERPAY',
   }) async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'billing-prepare',
+        body: {
+          'planCode': planCode ?? 'SNAPFIT_PRO_MONTHLY',
+          'provider': provider,
+        },
+      );
+      return PaymentPrepareResult.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post(
       '/api/billing/prepare',
       data: {
@@ -71,6 +140,20 @@ class BillingRepository {
     int? amount,
     String? transactionId,
   }) async {
+    if (supabase != null) {
+      final response = await supabase!.functions.invoke(
+        'billing-approve',
+        body: {
+          'orderId': orderId,
+          if (paymentKey != null) 'paymentKey': paymentKey,
+          if (amount != null) 'amount': amount,
+          if (transactionId != null) 'transactionId': transactionId,
+        },
+      );
+      return SubscriptionStatusModel.fromJson(
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      );
+    }
     final response = await dio.post(
       '/api/billing/approve',
       data: {
@@ -125,6 +208,14 @@ class BillingRepository {
 
   Future<StorageQuotaStatus> getMyStorageQuota() async {
     final userId = await _requireUserId();
+    if (supabase != null) {
+      final row = await supabase!
+          .from('storage_quotas')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+      return StorageQuotaStatus.fromJson(_camelQuota(row, userId));
+    }
     final response = await dio.get(
       '/api/billing/storage/quota',
       queryParameters: {'userId': userId},
