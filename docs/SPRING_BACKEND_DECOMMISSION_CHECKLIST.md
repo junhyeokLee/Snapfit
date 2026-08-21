@@ -130,3 +130,21 @@ Current audit shows only Supabase built-in secrets are present. The following pr
 - `SNAPFIT_ADDRESS_JUSO_KEY`
 - `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
 - `SNAPFIT_ADMIN_KEY`
+
+
+## Automated readiness check
+
+Run this before each production smoke-test pass:
+
+```bash
+cd /srv/projects/Snapfit
+python3 tool/supabase_readiness_check.py
+```
+
+The script verifies that legacy Spring backend patterns are absent, required Supabase secret names are present, and deployed Edge Functions respond to `OPTIONS`. It intentionally reports only secret names, never secret values.
+
+For code-only verification when production secrets are not configured yet:
+
+```bash
+python3 tool/supabase_readiness_check.py --skip-remote
+```

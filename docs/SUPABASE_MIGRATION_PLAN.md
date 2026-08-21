@@ -364,3 +364,18 @@ Required before production smoke tests can pass:
 - Android: either `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, or both `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`, plus `GOOGLE_PLAY_PACKAGE_NAME`.
 - iOS: `APP_STORE_ISSUER_ID`, `APP_STORE_KEY_ID`, `APP_STORE_BUNDLE_ID`, `APP_STORE_PRIVATE_KEY`, and `APP_STORE_ENVIRONMENT`.
 - Operations: `SNAPFIT_ADDRESS_JUSO_KEY`, `SNAPFIT_ORDER_CHECKOUT_BASE_URL`, and `SNAPFIT_ADMIN_KEY`.
+
+
+## Phase 16 progress update
+
+Production readiness tooling:
+
+- Added `tool/supabase_readiness_check.py`, a safe audit script that does not print secret values.
+- Added `docs/PRODUCTION_SMOKE_TEST_CHECKLIST.md` with the ordered real-device and production smoke-test gate.
+- Local code-only readiness passes with:
+
+```bash
+python3 tool/supabase_readiness_check.py --skip-remote
+```
+
+- Remote readiness currently reaches all deployed Edge Functions via `OPTIONS`, but fails the expected secret checks until the required production secret names are set in Supabase.
