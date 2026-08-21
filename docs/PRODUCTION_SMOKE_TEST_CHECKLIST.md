@@ -64,6 +64,17 @@ SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set \
   SNAPFIT_ADMIN_KEY='<admin-key>'
 ```
 
+## 1.5. Fast interactive secret setup
+
+If the values are available on the VPS, run the helper instead of pasting secrets into chat:
+
+```bash
+cd /srv/projects/Snapfit
+./scripts/configure_supabase_production_secrets.sh
+```
+
+The script hides secret input, sets only non-empty values, and runs the full readiness check afterwards.
+
 ## 2. Auth smoke tests
 
 - [ ] Fresh install launches without initialization errors.
