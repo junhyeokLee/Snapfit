@@ -93,8 +93,15 @@ def secret_names(project_ref: str) -> tuple[set[str], str]:
     )
     out = (proc.stdout + proc.stderr).strip()
     if proc.returncode != 0:
-        return set(), out
-    data = json.loads(proc.stdout)
+        return set(), out or "supabase CLI returned a non-zero exit code"
+    raw = proc.stdout.strip()
+    if not raw:
+        return set(), "supabase CLI returned empty output; run `npx supabase@latest login` or set SUPABASE_ACCESS_TOKEN, then retry"
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        preview = raw[:500].replace("\n", " ")
+        return set(), f"supabase CLI returned non-JSON output: {preview}"
     return {item["name"] for item in data.get("secrets", [])}, ""
 
 
