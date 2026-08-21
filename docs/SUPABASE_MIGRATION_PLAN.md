@@ -300,3 +300,46 @@ Legacy Retrofit deletion:
 - Refactored `AuthService` and `AuthViewModel` so auth/profile image flows no longer depend on `AuthApi` or REST profile fallback.
 
 The remaining Dio fallback code is guarded by `ENABLE_LEGACY_BACKEND_FALLBACK=false` by default while the active runtime path uses Supabase/Edge Functions.
+
+
+## Phase 14 progress update
+
+Final Spring fallback removal and IAP verification hardening:
+
+- Removed the remaining Flutter runtime Spring/Dio fallback paths for billing, notifications, support inquiries, orders, and admin operations.
+- Removed obsolete runtime networking infrastructure tied to the old Spring base URL:
+  - `Env.baseUrl`
+  - `dio_provider.dart` / generated provider
+  - `DioClient`
+  - `AuthInterceptor`
+  - `legacy_backend_guard`
+  - `ENABLE_LEGACY_BACKEND_FALLBACK`
+- Verified the app code no longer contains active `/api/auth`, `/api/billing`, `/api/notifications`, `/api/support`, `/api/orders`, or `/api/admin` references.
+- Reworked and redeployed `iap-verify` so it no longer only supports local mock entitlement grants:
+  - Google Play path uses Android Publisher API `purchases.subscriptionsv2.get` with a service-account JWT.
+  - App Store path uses App Store Server API `inApps/v1/transactions/{transactionId}` with ES256 server JWT auth.
+  - Mock verification is still available only when `SNAPFIT_IAP_MOCK_VERIFY=true` is explicitly set.
+  - Missing provider credentials now fail closed with `*_credentials_not_configured` instead of granting entitlements.
+
+Required Supabase secrets before production IAP smoke testing:
+
+```bash
+# Android / Google Play
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   GOOGLE_PLAY_PACKAGE_NAME='com.yourcompany.snapfit'   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON='<service-account-json>'
+
+# iOS / App Store Server API
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   APP_STORE_ISSUER_ID='<issuer-id>'   APP_STORE_KEY_ID='<key-id>'   APP_STORE_BUNDLE_ID='<bundle-id>'   APP_STORE_PRIVATE_KEY='<p8-private-key>'   APP_STORE_ENVIRONMENT='sandbox'
+```
+
+Keep `SNAPFIT_IAP_MOCK_VERIFY` unset or `false` for production.
+
+Remaining production blockers:
+
+1. Set the real Google Play and App Store secrets above.
+2. Verify Google/Kakao login on physical devices with the Supabase Auth provider settings.
+3. Smoke-test a real sandbox purchase on Android and iOS; confirm `store_purchases` and `subscriptions` materialize correctly.
+4. Confirm print vendor requirements. Current Supabase package generation produces manifest JSON, ZIP, and an inspection PDF; vendor-specific press-ready PDF/API submission may still be required.
+5. Set operational secrets for address search, order checkout, and admin key if not already set:
+   - `SNAPFIT_ADDRESS_JUSO_KEY`
+   - `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
+   - `SNAPFIT_ADMIN_KEY`

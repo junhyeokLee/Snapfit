@@ -16,21 +16,18 @@ Most user-facing SnapFit flows now prefer Supabase directly or Supabase Edge Fun
 
 ## Remaining legacy REST code
 
-The app still contains Retrofit/Dio API classes and fallback code paths for the old backend. These are mostly inactive when `supabaseClientProvider` is available, but they remain compiled and are useful as temporary rollback/fallback paths until production smoke tests are complete.
+The Flutter runtime Spring REST fallback paths have been removed. The current app code no longer has active `/api/auth`, `/api/billing`, `/api/notifications`, `/api/support`, `/api/orders`, or `/api/admin` calls, and the old `Env.baseUrl`/Dio provider stack has been deleted.
 
-Known fallback areas:
+Remaining non-Spring compatibility code:
 
-- `auth_api.dart` and `AuthService` legacy fallback for Kakao ID-token/provider setup gaps.
-- `template_api.dart`, `album_api.dart`, `album_member_api.dart` and generated Retrofit files retained for old repository tests/fallbacks.
-- `billing_repository.dart` fallback Toss/NaverPay-style endpoints; production direction is native store IAP.
-- `order_repository.dart` admin fallback endpoints. Address search now prefers `address-search`; checkout URL creation now prefers `order-checkout`.
-- `notification_repository.dart` and `support_inquiry_repository.dart` legacy fallback endpoints.
-- Firebase Storage helpers remain only for old `gs://` URLs and upload fallback during data migration.
+- `DioException` handling remains in UI/error utilities because some third-party/network layers still surface Dio-style errors.
+- Firebase services remain for FCM and for reading old `gs://` image URLs during data migration.
+- Generated/freezed comments and package paths containing `data/api` are not REST backend calls.
 
 ## Blockers before disabling Spring
 
 1. Kakao Supabase provider configuration must be verified on real devices.
-2. Google Play / App Store receipt verification must be implemented with real provider secrets in Supabase secrets.
+2. Google Play / App Store receipt verification code is now implemented in `iap-verify`, but real provider credentials must be set as Supabase secrets and sandbox purchases must be smoke-tested.
 3. Print vendor production contract must be confirmed:
    - Current Supabase package creates JSON/ZIP/summary PDF and includes source images where reachable.
    - If the vendor requires press-ready flattened PDFs, add a renderer pipeline for album layer JSON.
@@ -40,10 +37,10 @@ Known fallback areas:
 ## Safe shutdown sequence
 
 1. Keep Spring backend running while Supabase flows are tested with production data.
-2. Turn off legacy UI entry points that call checkout/address-search/Toss/NaverPay paths.
-3. Remove or feature-flag `Env.baseUrl`/Dio fallback once smoke tests pass.
-4. Delete legacy Retrofit API providers and generated files only after tests are rewritten around Supabase repositories.
-5. Archive the Spring backend after no production traffic hits `/api/*` for a full release cycle.
+2. Keep `SNAPFIT_IAP_MOCK_VERIFY` unset/false and configure real Google Play/App Store secrets.
+3. Run physical-device smoke tests for auth, album save/upload, checkout/address search, IAP, admin, notifications, and support.
+4. Monitor production logs/network traffic and confirm no `/api/*` traffic reaches Spring for a full release cycle.
+5. Archive the Spring backend after the release cycle is clean.
 
 
 ## Address search cutover
@@ -98,3 +95,22 @@ This flag should remain `false` for production Supabase-only releases.
 ## Legacy Retrofit files removed
 
 The old Spring Retrofit clients for auth/albums/album members/templates and their old repository implementations have been deleted from the app codebase. Runtime auth/profile, album, member, and template flows no longer depend on Spring REST API client classes.
+
+
+## IAP verification production secrets
+
+`iap-verify` now supports real provider verification and fails closed when credentials are absent.
+
+Required Android secrets:
+
+```bash
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   GOOGLE_PLAY_PACKAGE_NAME='com.yourcompany.snapfit'   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON='<service-account-json>'
+```
+
+Required iOS secrets:
+
+```bash
+SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   APP_STORE_ISSUER_ID='<issuer-id>'   APP_STORE_KEY_ID='<key-id>'   APP_STORE_BUNDLE_ID='<bundle-id>'   APP_STORE_PRIVATE_KEY='<p8-private-key>'   APP_STORE_ENVIRONMENT='sandbox'
+```
+
+Switch `APP_STORE_ENVIRONMENT` to `production` only after sandbox purchase verification passes.
