@@ -1,17 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import 'order_repository.dart';
 import '../domain/entities/order_history_item.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 class AdminOpsRepository {
-  AdminOpsRepository({required this.dio, this.supabase});
+  AdminOpsRepository({this.supabase});
 
-  final Dio dio;
   final SupabaseClient? supabase;
 
   Future<Map<String, dynamic>> _invoke(
@@ -35,14 +31,7 @@ class AdminOpsRepository {
         await _invoke('dashboard', adminKey: adminKey),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.dashboard');
-    final response = await dio.get(
-      '/api/ops/admin/dashboard',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return AdminDashboardData.fromJson(map);
+    throw Exception('Supabase 관리자 대시보드 환경이 준비되지 않았습니다.');
   }
 
   Future<List<AdminCsSignal>> fetchCsSignals({
@@ -62,20 +51,7 @@ class AdminOpsRepository {
           .map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>()))
           .toList();
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.csSignals');
-    final response = await dio.get(
-      '/api/ops/admin/cs-signals',
-      queryParameters: {'limit': limit},
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    final items = map['items'];
-    if (items is! List) return const [];
-    return items
-        .whereType<Map>()
-        .map((e) => AdminCsSignal.fromJson(e.cast<String, dynamic>()))
-        .toList();
+    throw Exception('Supabase 관리자 CS 시그널 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderPageResult> fetchAdminOrders({
@@ -99,20 +75,7 @@ class AdminOpsRepository {
         ),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.orders');
-    final response = await dio.get(
-      '/api/orders/admin/paged',
-      queryParameters: {
-        'page': page,
-        'size': size,
-        if (statuses != null && statuses.isNotEmpty) 'status': statuses,
-        if (keyword != null && keyword.trim().isNotEmpty) 'keyword': keyword,
-      },
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return OrderPageResult.fromJson(map);
+    throw Exception('Supabase 관리자 주문 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> preparePrintPackage({
@@ -128,14 +91,7 @@ class AdminOpsRepository {
         ),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.printPackage');
-    final response = await dio.post(
-      '/api/orders/admin/$orderId/print-package/prepare',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 관리자 인쇄 패키지 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> markShipping({
@@ -157,15 +113,7 @@ class AdminOpsRepository {
         ),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.shipping');
-    final response = await dio.post(
-      '/api/orders/$orderId/shipping',
-      data: {'courier': courier, 'trackingNumber': trackingNumber},
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 관리자 배송처리 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> markDelivered({
@@ -181,14 +129,7 @@ class AdminOpsRepository {
         ),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.delivered');
-    final response = await dio.post(
-      '/api/orders/$orderId/delivered',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 관리자 배송완료 환경이 준비되지 않았습니다.');
   }
 
   Future<void> upsertTemplate({
@@ -203,12 +144,7 @@ class AdminOpsRepository {
       );
       return;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.upsert');
-    await dio.post(
-      '/api/admin/templates/upsert',
-      data: payload,
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
+    throw Exception('Supabase 관리자 템플릿 저장 환경이 준비되지 않았습니다.');
   }
 
   Future<AdminTemplatePage> fetchAdminTemplates({
@@ -225,15 +161,7 @@ class AdminOpsRepository {
         ),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.templates');
-    final response = await dio.get(
-      '/api/admin/templates/paged',
-      queryParameters: {'page': page, 'size': size},
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return AdminTemplatePage.fromJson(map);
+    throw Exception('Supabase 관리자 템플릿 목록 환경이 준비되지 않았습니다.');
   }
 
   Future<void> setTemplateActive({
@@ -249,12 +177,7 @@ class AdminOpsRepository {
       );
       return;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.active');
-    await dio.post(
-      '/api/admin/templates/$templateId/active',
-      data: {'active': active},
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
+    throw Exception('Supabase 관리자 템플릿 활성화 환경이 준비되지 않았습니다.');
   }
 
   Future<Map<String, dynamic>> fetchAdminTemplateDetail({
@@ -268,13 +191,7 @@ class AdminOpsRepository {
         body: {'templateId': templateId},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'admin.templates.detail');
-    final response = await dio.get(
-      '/api/admin/templates/$templateId',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return (response.data as Map?)?.cast<String, dynamic>() ??
-        <String, dynamic>{};
+    throw Exception('Supabase 관리자 템플릿 상세 환경이 준비되지 않았습니다.');
   }
 }
 
@@ -361,9 +278,8 @@ class AdminCsSignal {
 }
 
 final adminOpsRepositoryProvider = Provider<AdminOpsRepository>((ref) {
-  final dio = ref.watch(dioProvider);
   final supabase = ref.watch(supabaseClientProvider);
-  return AdminOpsRepository(dio: dio, supabase: supabase);
+  return AdminOpsRepository(supabase: supabase);
 });
 
 class AdminTemplatePage {

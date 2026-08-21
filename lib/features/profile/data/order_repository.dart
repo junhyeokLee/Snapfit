@@ -1,23 +1,15 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
-import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 class OrderRepository {
-  OrderRepository({
-    required this.dio,
-    required this.tokenStorage,
-    this.supabase,
-  });
+  OrderRepository({required this.tokenStorage, this.supabase});
 
-  final Dio dio;
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
   static const Set<String> _allowedPaymentMethods = {
@@ -148,20 +140,7 @@ class OrderRepository {
           )
           .toList(growable: false);
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.list');
-    final response = await dio.get(
-      '/api/orders',
-      queryParameters: {'userId': userId},
-    );
-
-    final data = response.data;
-    if (data is List) {
-      return data
-          .whereType<Map>()
-          .map((e) => OrderHistoryItem.fromJson(e.cast<String, dynamic>()))
-          .toList();
-    }
-    return const [];
+    throw Exception('Supabase 주문 목록 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderPageResult> fetchMyOrdersPage({
@@ -195,19 +174,7 @@ class OrderRepository {
         hasNext: items.length == size,
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.paged');
-    final response = await dio.get(
-      '/api/orders/paged',
-      queryParameters: {
-        'userId': userId,
-        'page': page,
-        'size': size,
-        if (statuses != null && statuses.isNotEmpty) 'status': statuses,
-      },
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return OrderPageResult.fromJson(map);
+    throw Exception('Supabase 주문 페이지 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderSummaryResult> fetchMyOrderSummary() async {
@@ -227,14 +194,7 @@ class OrderRepository {
           .toList(growable: false);
       return _summaryFromOrders(items);
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.summary');
-    final response = await dio.get(
-      '/api/orders/summary',
-      queryParameters: {'userId': userId},
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return OrderSummaryResult.fromJson(map);
+    throw Exception('Supabase 주문 요약 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> createTestOrder({
@@ -258,22 +218,35 @@ class OrderRepository {
         _orderRowToJson(Map<String, dynamic>.from(row)),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.testCreate');
-    final response = await dio.post(
-      '/api/orders/test/create',
-      data: {'userId': userId, 'title': title, 'amount': amount},
-    );
-
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 테스트 주문 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> advanceStatus(String orderId) async {
-    assertLegacyBackendFallbackAllowed(feature: 'orders.advance');
-    final response = await dio.post('/api/orders/$orderId/advance');
+    if (supabase == null) {
+      throw Exception('Supabase 주문 상태 변경 환경이 준비되지 않았습니다.');
+    }
+    final current = await supabase!
+        .from('orders')
+        .select('status')
+        .eq('order_id', orderId)
+        .maybeSingle();
+    final status =
+        current?['status']?.toString().toUpperCase() ?? 'PAYMENT_PENDING';
+    final nextStatus = switch (status) {
+      'PAYMENT_PENDING' => 'PAYMENT_COMPLETED',
+      'PAYMENT_COMPLETED' => 'IN_PRODUCTION',
+      'IN_PRODUCTION' || 'PRINTING' => 'SHIPPING',
+      'SHIPPING' => 'DELIVERED',
+      _ => status,
+    };
+    final row = await supabase!
+        .from('orders')
+        .update({'status': nextStatus})
+        .eq('order_id', orderId)
+        .select()
+        .single();
     return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+      _orderRowToJson(Map<String, dynamic>.from(row)),
     );
   }
 
@@ -328,27 +301,7 @@ class OrderRepository {
         _orderRowToJson(Map<String, dynamic>.from(row)),
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.create');
-    final response = await dio.post(
-      '/api/orders',
-      data: {
-        'userId': userId,
-        'albumId': albumId,
-        'title': title.trim(),
-        'amount': amount,
-        'pageCount': pageCount,
-        'paymentMethod': normalizedPaymentMethod,
-        'recipientName': recipientName.trim(),
-        'recipientPhone': normalizedPhone,
-        'zipCode': normalizedZip,
-        'addressLine1': addressLine1.trim(),
-        'addressLine2': addressLine2?.trim() ?? '',
-        'deliveryMemo': deliveryMemo?.trim() ?? '',
-      },
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 주문 생성 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> confirmPayment(String orderId) async {
@@ -361,11 +314,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.confirmPayment');
-    final response = await dio.post('/api/orders/$orderId/payment/confirm');
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 주문 결제확인 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderQuoteResult> fetchOrderQuote({
@@ -387,17 +336,7 @@ class OrderRepository {
         extraPagePrice: extraPagePrice,
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.quote');
-    final response = await dio.get(
-      '/api/orders/quote',
-      queryParameters: {
-        'albumId': albumId,
-        if (pageCount != null) 'pageCount': pageCount,
-      },
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return OrderQuoteResult.fromJson(map);
+    throw Exception('Supabase 주문 견적 환경이 준비되지 않았습니다.');
   }
 
   Future<AddressSearchResult> searchAddress({
@@ -421,14 +360,7 @@ class OrderRepository {
       }
       return AddressSearchResult.fromJson(map);
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.addressSearch');
-    final response = await dio.get(
-      '/api/orders/address/search',
-      queryParameters: {'keyword': normalizedKeyword, 'page': page},
-    );
-    final map =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    return AddressSearchResult.fromJson(map);
+    throw Exception('Supabase 주소검색 환경이 준비되지 않았습니다.');
   }
 
   Future<String> buildOrderCheckoutUrl({
@@ -464,13 +396,7 @@ class OrderRepository {
       }
       return checkoutUrl;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.checkoutUrl');
-    final base = dio.options.baseUrl.trim();
-    final normalized = base.endsWith('/')
-        ? base.substring(0, base.length - 1)
-        : base;
-    final provider = Uri.encodeQueryComponent(normalizedPaymentMethod);
-    return '$normalized/api/orders/$normalizedOrderId/payment/checkout?provider=$provider';
+    throw Exception('Supabase 주문 결제 URL 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> markShipping({
@@ -493,15 +419,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.shipping');
-    final response = await dio.post(
-      '/api/orders/$orderId/shipping',
-      data: {'courier': courier, 'trackingNumber': trackingNumber},
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 주문 배송처리 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> markDelivered({
@@ -517,14 +435,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.delivered');
-    final response = await dio.post(
-      '/api/orders/$orderId/delivered',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 주문 배송완료 환경이 준비되지 않았습니다.');
   }
 
   Future<OrderHistoryItem> preparePrintPackage({
@@ -540,14 +451,7 @@ class OrderRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'orders.printPackage');
-    final response = await dio.post(
-      '/api/orders/admin/$orderId/print-package/prepare',
-      options: Options(headers: {'X-Admin-Key': adminKey}),
-    );
-    return OrderHistoryItem.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 인쇄 패키지 생성 환경이 준비되지 않았습니다.');
   }
 
   String buildAdminPrintPackageUrl(String printPackageJsonUrl) {
@@ -556,11 +460,7 @@ class OrderRepository {
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
       return raw;
     }
-    final base = dio.options.baseUrl.trim();
-    final normalized = base.endsWith('/')
-        ? base.substring(0, base.length - 1)
-        : base;
-    return raw.startsWith('/') ? '$normalized$raw' : '$normalized/$raw';
+    return raw;
   }
 
   Future<OrderStatusBadges> computeUnreadStatusBadges({
@@ -810,7 +710,6 @@ class AddressSearchItem {
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   return OrderRepository(
-    dio: ref.read(dioProvider),
     tokenStorage: ref.read(tokenStorageProvider),
     supabase: ref.read(supabaseClientProvider),
   );

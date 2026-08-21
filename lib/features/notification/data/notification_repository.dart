@@ -1,18 +1,11 @@
-import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
 import '../domain/entities/app_notification_item.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 class NotificationRepository {
-  NotificationRepository({
-    required this.dio,
-    required this.tokenStorage,
-    this.supabase,
-  });
+  NotificationRepository({required this.tokenStorage, this.supabase});
 
-  final Dio dio;
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
 
@@ -62,27 +55,7 @@ class NotificationRepository {
           )
           .toList(growable: false);
     }
-    assertLegacyBackendFallbackAllowed(feature: 'notifications.inbox');
-    try {
-      final response = await dio.get(
-        '/api/notifications/inbox',
-        queryParameters: {'userId': userId, 'limit': limit},
-      );
-
-      final data = response.data;
-      if (data is! List) return const [];
-
-      return data
-          .whereType<Map>()
-          .map((e) => AppNotificationItem.fromJson(e.cast<String, dynamic>()))
-          .toList();
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 403 || status == 404) {
-        return const [];
-      }
-      rethrow;
-    }
+    throw Exception('Supabase 알림함 환경이 준비되지 않았습니다.');
   }
 
   Future<int> fetchUnreadCount() async {
@@ -100,21 +73,7 @@ class NotificationRepository {
           .where((e) => !readIds.contains((e['id'] as num?)?.toInt() ?? -1))
           .length;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'notifications.unreadCount');
-    try {
-      final response = await dio.get(
-        '/api/notifications/unread-count',
-        queryParameters: {'userId': userId},
-      );
-      final raw = (response.data as Map?)?['unreadCount'];
-      return (raw as num?)?.toInt() ?? 0;
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 403 || status == 404) {
-        return 0;
-      }
-      rethrow;
-    }
+    throw Exception('Supabase 알림 카운트 환경이 준비되지 않았습니다.');
   }
 
   Future<void> markRead(int notificationId) async {
@@ -126,19 +85,7 @@ class NotificationRepository {
       });
       return;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'notifications.markRead');
-    try {
-      await dio.post(
-        '/api/notifications/$notificationId/read',
-        queryParameters: {'userId': userId},
-      );
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 403 || status == 404) {
-        return;
-      }
-      rethrow;
-    }
+    throw Exception('Supabase 알림 읽음 처리 환경이 준비되지 않았습니다.');
   }
 
   Future<void> markAllRead() async {
@@ -156,38 +103,11 @@ class NotificationRepository {
       }
       return;
     }
-    assertLegacyBackendFallbackAllowed(feature: 'notifications.markAllRead');
-    try {
-      await dio.post(
-        '/api/notifications/read-all',
-        queryParameters: {'userId': userId},
-      );
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 403 || status == 404) {
-        return;
-      }
-      rethrow;
-    }
+    throw Exception('Supabase 알림 전체 읽음 처리 환경이 준비되지 않았습니다.');
   }
 
   Future<int> fetchRetentionDays() async {
     if (supabase != null) return 90;
-    assertLegacyBackendFallbackAllowed(feature: 'notifications.policy');
-    try {
-      final response = await dio.get('/api/notifications/policy');
-      final data = response.data;
-      if (data is Map) {
-        final raw = data['retentionDays'];
-        return (raw as num?)?.toInt() ?? 90;
-      }
-      return 90;
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 403 || status == 404) {
-        return 90;
-      }
-      rethrow;
-    }
+    return 90;
   }
 }

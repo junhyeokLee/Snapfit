@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snap_fit/core/interceptors/token_storage.dart';
@@ -10,7 +9,7 @@ void main() {
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      repository = OrderRepository(dio: Dio(), tokenStorage: TokenStorage());
+      repository = OrderRepository(tokenStorage: TokenStorage());
     });
 
     test('first snapshot stores baseline and returns zero badges', () async {

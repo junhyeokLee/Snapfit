@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -8,16 +7,10 @@ import '../domain/entities/payment_prepare_result.dart';
 import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 class BillingRepository {
-  BillingRepository({
-    required this.dio,
-    required this.tokenStorage,
-    this.supabase,
-  });
+  BillingRepository({required this.tokenStorage, this.supabase});
 
-  final Dio dio;
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
 
@@ -83,14 +76,7 @@ class BillingRepository {
           )
           .toList(growable: false);
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.plans');
-    final response = await dio.get('/api/billing/plans');
-    final data = response.data;
-    if (data is! List) return const [];
-    return data
-        .whereType<Map>()
-        .map((e) => BillingPlan.fromJson(e.cast<String, dynamic>()))
-        .toList();
+    throw Exception('Supabase 결제 플랜 환경이 준비되지 않았습니다.');
   }
 
   Future<SubscriptionStatusModel> getMySubscription() async {
@@ -103,14 +89,7 @@ class BillingRepository {
           .maybeSingle();
       return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.subscription');
-    final response = await dio.get(
-      '/api/billing/subscription',
-      queryParameters: {'userId': userId},
-    );
-    return SubscriptionStatusModel.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 구독 조회 환경이 준비되지 않았습니다.');
   }
 
   Future<PaymentPrepareResult> prepareNaverPay({String? planCode}) async {
@@ -121,7 +100,6 @@ class BillingRepository {
     String? planCode,
     String provider = 'TOSS_NAVERPAY',
   }) async {
-    final userId = await _requireUserId();
     if (supabase != null) {
       final response = await supabase!.functions.invoke(
         'billing-prepare',
@@ -134,19 +112,7 @@ class BillingRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.prepare');
-    final response = await dio.post(
-      '/api/billing/prepare',
-      data: {
-        'userId': userId,
-        'planCode': planCode ?? 'SNAPFIT_PRO_MONTHLY',
-        'provider': provider,
-      },
-    );
-
-    return PaymentPrepareResult.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 결제 준비 환경이 준비되지 않았습니다.');
   }
 
   Future<SubscriptionStatusModel> approveOrder({
@@ -169,20 +135,7 @@ class BillingRepository {
         (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.approve');
-    final response = await dio.post(
-      '/api/billing/approve',
-      data: {
-        'orderId': orderId,
-        if (paymentKey != null) 'paymentKey': paymentKey,
-        if (amount != null) 'amount': amount,
-        if (transactionId != null) 'transactionId': transactionId,
-      },
-    );
-
-    return SubscriptionStatusModel.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 결제 승인 환경이 준비되지 않았습니다.');
   }
 
   String _storePlatformFromPurchase(PurchaseDetails purchase) {
@@ -233,27 +186,14 @@ class BillingRepository {
     required String orderId,
     String reason = 'USER_REQUEST',
   }) async {
-    assertLegacyBackendFallbackAllowed(feature: 'billing.cancelPayment');
-    await dio.post('/api/billing/$orderId/cancel', data: {'reason': reason});
+    throw Exception('결제 취소는 Supabase 결제 함수로만 처리해야 합니다.');
   }
 
   Future<Map<String, dynamic>> runE2EFlow({
     String provider = 'TOSS_NAVERPAY',
     String? paymentKey,
   }) async {
-    final userId = await _requireUserId();
-    assertLegacyBackendFallbackAllowed(feature: 'billing.e2e');
-    final response = await dio.post(
-      '/api/billing/test/e2e-run',
-      data: {
-        'userId': userId,
-        'provider': provider,
-        if (paymentKey != null) 'paymentKey': paymentKey,
-      },
-    );
-
-    return (response.data as Map?)?.cast<String, dynamic>() ??
-        <String, dynamic>{};
+    throw Exception('결제 E2E 테스트는 Supabase 함수 기반 테스트로 전환해야 합니다.');
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {
@@ -267,15 +207,7 @@ class BillingRepository {
           .maybeSingle();
       return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.cancelSubscription');
-    final response = await dio.post(
-      '/api/billing/subscription/cancel',
-      queryParameters: {'userId': userId},
-    );
-
-    return SubscriptionStatusModel.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 구독 취소 환경이 준비되지 않았습니다.');
   }
 
   Future<StorageQuotaStatus> getMyStorageQuota() async {
@@ -288,15 +220,7 @@ class BillingRepository {
           .maybeSingle();
       return StorageQuotaStatus.fromJson(_camelQuota(row, userId));
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.storageQuota');
-    final response = await dio.get(
-      '/api/billing/storage/quota',
-      queryParameters: {'userId': userId},
-    );
-
-    return StorageQuotaStatus.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 스토리지 할당량 환경이 준비되지 않았습니다.');
   }
 
   Future<StoragePreflightStatus> preflightStorage({
@@ -322,13 +246,6 @@ class BillingRepository {
         measuredAt: quota.measuredAt,
       );
     }
-    assertLegacyBackendFallbackAllowed(feature: 'billing.storagePreflight');
-    final response = await dio.post(
-      '/api/billing/storage/preflight',
-      data: {'userId': userId, 'incomingBytes': incomingBytes},
-    );
-    return StoragePreflightStatus.fromJson(
-      (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-    );
+    throw Exception('Supabase 스토리지 사전검사 환경이 준비되지 않았습니다.');
   }
 }

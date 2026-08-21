@@ -54,9 +54,9 @@ class HomeErrorState extends StatelessWidget {
             if (isConnectionRefused) ...[
               SizedBox(height: 12.h),
               Text(
-                '• 백엔드를 0.0.0.0:8080 으로 실행했는지 확인\n'
-                '• PC와 폰이 같은 Wi‑Fi인지 확인\n'
-                '• dio_provider의 baseUrl을 PC LAN IP로 설정',
+                '• 네트워크 연결 상태를 확인\n'
+                '• Supabase 프로젝트 URL/anon key 설정 확인\n'
+                '• 잠시 후 다시 시도',
                 style: TextStyle(fontSize: 13.sp, color: subColor),
                 textAlign: TextAlign.center,
               ),

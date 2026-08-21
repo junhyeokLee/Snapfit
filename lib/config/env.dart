@@ -1,18 +1,8 @@
 /// 앱 실행 시점의 환경변수(`--dart-define`)를 읽는 설정 모음.
 ///
 /// 예)
-/// - 로컬 백엔드: flutter run --dart-define=BASE_URL=http://localhost:8080
-/// - 배포 서버(EC2): flutter run --dart-define=BASE_URL=http://54.253.3.176:8080
+/// - Supabase: flutter run --dart-define=SUPABASE_URL=`https://<project>.supabase.co`
 class Env {
-  /// API Base URL
-  ///
-  /// `--dart-define=BASE_URL=...` 로 주입 가능.
-  /// 기본값은 배포 서버(EC2)로 설정.
-  static const String baseUrl = String.fromEnvironment(
-    'BASE_URL',
-    defaultValue: 'http://54.253.3.176', // Nginx Reverse Proxy (Port 80)
-  );
-
   /// Kakao Native App Key
   /// - --dart-define=KAKAO_NATIVE_APP_KEY=...
   static const String kakaoNativeAppKey = String.fromEnvironment(
@@ -57,13 +47,5 @@ class Env {
   static const String iapProMonthlyProductId = String.fromEnvironment(
     'IAP_PRO_MONTHLY_PRODUCT_ID',
     defaultValue: 'snapfit_pro_monthly',
-  );
-
-  /// Legacy Spring backend fallback gate.
-  /// Production default is false: app must use Supabase/Edge Functions only.
-  /// Temporarily set --dart-define=ENABLE_LEGACY_BACKEND_FALLBACK=true only for rollback tests.
-  static const bool enableLegacyBackendFallback = bool.fromEnvironment(
-    'ENABLE_LEGACY_BACKEND_FALLBACK',
-    defaultValue: false,
   );
 }

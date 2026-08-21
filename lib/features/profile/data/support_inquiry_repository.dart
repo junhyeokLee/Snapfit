@@ -1,21 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/interceptors/token_storage.dart';
-import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
-import '../../../core/network/legacy_backend_guard.dart';
 
 class SupportInquiryRepository {
-  SupportInquiryRepository({
-    required this.dio,
-    required this.tokenStorage,
-    this.supabase,
-  });
+  SupportInquiryRepository({required this.tokenStorage, this.supabase});
 
-  final Dio dio;
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
 
@@ -45,16 +37,7 @@ class SupportInquiryRepository {
       return;
     }
 
-    assertLegacyBackendFallbackAllowed(feature: 'support.inquiries');
-    await dio.post(
-      '/api/support/inquiries',
-      data: {
-        'userId': userId.trim(),
-        'category': category.trim().isEmpty ? 'GENERAL' : category.trim(),
-        'subject': subject.trim(),
-        'message': message.trim(),
-      },
-    );
+    throw Exception('Supabase 고객문의 환경이 준비되지 않았습니다.');
   }
 }
 
@@ -62,7 +45,6 @@ final supportInquiryRepositoryProvider = Provider<SupportInquiryRepository>((
   ref,
 ) {
   return SupportInquiryRepository(
-    dio: ref.read(dioProvider),
     tokenStorage: ref.read(tokenStorageProvider),
     supabase: ref.read(supabaseClientProvider),
   );

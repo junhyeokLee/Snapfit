@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/dio_provider.dart';
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../data/notification_repository.dart';
@@ -8,7 +7,6 @@ import '../../domain/entities/app_notification_item.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository(
-    dio: ref.read(dioProvider),
     tokenStorage: ref.read(tokenStorageProvider),
     supabase: ref.read(supabaseClientProvider),
   );

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/network/dio_provider.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/billing_plan.dart';
@@ -10,7 +9,6 @@ import 'billing_repository.dart';
 
 final billingRepositoryProvider = Provider<BillingRepository>((ref) {
   return BillingRepository(
-    dio: ref.read(dioProvider),
     tokenStorage: ref.read(tokenStorageProvider),
     supabase: ref.read(supabaseClientProvider),
   );
