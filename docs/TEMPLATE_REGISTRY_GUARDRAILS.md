@@ -38,7 +38,7 @@ bash ./scripts/template_asset_pipeline.sh \
 
 dart run tool/publish_store_templates_to_server.dart \
   --input=assets/templates/generated/store_latest.json \
-  --base-url=http://54.253.3.176
+  --supabase-url=https://rrbhxdtriummqpztpjrk.supabase.co
 ```
 
 ## 보호 장치

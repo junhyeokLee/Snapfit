@@ -4,19 +4,16 @@ import 'dart:io';
 Future<void> main(List<String> args) async {
   final input =
       _arg(args, '--input') ?? 'assets/templates/generated/store_latest.json';
-  final baseUrl =
-      _arg(args, '--base-url') ?? Platform.environment['SNAPFIT_API_BASE_URL'];
+  final supabaseUrl =
+      _arg(args, '--supabase-url') ??
+      Platform.environment['SUPABASE_URL'] ??
+      'https://rrbhxdtriummqpztpjrk.supabase.co';
   final adminKey =
-      _arg(args, '--admin-key') ??
-      Platform.environment['SNAPFIT_PUSH_ADMIN_KEY'];
+      _arg(args, '--admin-key') ?? Platform.environment['SNAPFIT_ADMIN_KEY'];
   final dryRun = args.contains('--dry-run');
 
-  if (baseUrl == null || baseUrl.trim().isEmpty) {
-    stderr.writeln('Missing --base-url or SNAPFIT_API_BASE_URL');
-    exit(2);
-  }
   if (adminKey == null || adminKey.trim().isEmpty) {
-    stderr.writeln('Missing --admin-key or SNAPFIT_PUSH_ADMIN_KEY');
+    stderr.writeln('Missing --admin-key or SNAPFIT_ADMIN_KEY');
     exit(2);
   }
 
@@ -52,7 +49,7 @@ Future<void> main(List<String> args) async {
     exit(2);
   }
 
-  final existingTemplates = await _fetchServerTemplates(baseUrl);
+  final existingTemplates = await _fetchServerTemplates(supabaseUrl, adminKey);
   var created = 0;
   var updated = 0;
   var skipped = 0;
@@ -78,7 +75,7 @@ Future<void> main(List<String> args) async {
       continue;
     }
 
-    final ok = await _postUpsert(baseUrl, adminKey, payload);
+    final ok = await _postUpsert(supabaseUrl, adminKey, payload);
     if (ok) {
       if (existingId != null) {
         updated++;
@@ -100,30 +97,29 @@ Future<void> main(List<String> args) async {
   }
 }
 
-Future<Map<String, int>> _fetchServerTemplates(String baseUrl) async {
-  final uri = Uri.parse('$baseUrl/api/templates');
-  final client = HttpClient();
-  try {
-    final req = await client.getUrl(uri);
-    final resp = await req.close();
-    final body = await utf8.decodeStream(resp);
-    if (resp.statusCode < 200 || resp.statusCode >= 300) {
-      throw Exception('GET /api/templates failed: ${resp.statusCode}');
-    }
-    final data = jsonDecode(body);
-    if (data is! List) return <String, int>{};
-    final byTitle = <String, int>{};
-    for (final row in data) {
-      if (row is! Map<String, dynamic>) continue;
+Future<Map<String, int>> _fetchServerTemplates(
+  String supabaseUrl,
+  String adminKey,
+) async {
+  final byTitle = <String, int>{};
+  var page = 0;
+  while (true) {
+    final map = await _callAdminOps(supabaseUrl, adminKey, {
+      'action': 'templates',
+      'page': page,
+      'size': 100,
+    });
+    final items = map['items'];
+    if (items is! List || items.isEmpty) break;
+    for (final row in items.whereType<Map>()) {
       final title = _normalize((row['title'] ?? '').toString());
       final id = (row['id'] as num?)?.toInt();
-      if (title.isEmpty || id == null) continue;
-      byTitle[title] = id;
+      if (title.isNotEmpty && id != null) byTitle[title] = id;
     }
-    return byTitle;
-  } finally {
-    client.close(force: true);
+    if (map['hasNext'] != true) break;
+    page++;
   }
+  return byTitle;
 }
 
 Map<String, dynamic> _buildUpsertPayload(Map<String, dynamic> item) {
@@ -175,34 +171,47 @@ Map<String, dynamic> _buildUpsertPayload(Map<String, dynamic> item) {
 }
 
 Future<bool> _postUpsert(
-  String baseUrl,
+  String supabaseUrl,
   String adminKey,
   Map<String, dynamic> payload,
 ) async {
-  final uris = <Uri>[
-    Uri.parse('$baseUrl/api/admin/templates/upsert'),
-  ];
-  final client = HttpClient();
   try {
-    for (final uri in uris) {
-      final req = await client.postUrl(uri);
-      req.headers.contentType = ContentType.json;
-      req.headers.set('X-Admin-Key', adminKey);
-      req.add(utf8.encode(jsonEncode(payload)));
-      final resp = await req.close();
-      if (resp.statusCode >= 200 && resp.statusCode < 300) {
-        return true;
-      }
-      final body = await utf8.decodeStream(resp);
-      stderr.writeln(
-        'Upsert failed via ${uri.path}: ${payload['title']} (${resp.statusCode}) $body',
-      );
-      return false;
-    }
-    return false;
+    await _callAdminOps(supabaseUrl, adminKey, {
+      'action': 'upsertTemplate',
+      'payload': payload,
+    });
+    return true;
   } catch (e) {
     stderr.writeln('Upsert exception: ${payload['title']} $e');
     return false;
+  }
+}
+
+Future<Map<String, dynamic>> _callAdminOps(
+  String supabaseUrl,
+  String adminKey,
+  Map<String, dynamic> body,
+) async {
+  final normalized = supabaseUrl.endsWith('/')
+      ? supabaseUrl.substring(0, supabaseUrl.length - 1)
+      : supabaseUrl;
+  final uri = Uri.parse('$normalized/functions/v1/admin-ops');
+  final client = HttpClient();
+  try {
+    final req = await client.postUrl(uri);
+    req.headers.contentType = ContentType.json;
+    req.headers.set('X-Admin-Key', adminKey);
+    req.add(utf8.encode(jsonEncode({...body, 'adminKey': adminKey})));
+    final resp = await req.close();
+    final raw = await utf8.decodeStream(resp);
+    if (resp.statusCode < 200 || resp.statusCode >= 300) {
+      throw Exception(
+        'admin-ops ${body['action']} failed: ${resp.statusCode} $raw',
+      );
+    }
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) return decoded;
+    return <String, dynamic>{};
   } finally {
     client.close(force: true);
   }

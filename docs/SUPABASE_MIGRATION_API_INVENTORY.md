@@ -1,48 +1,38 @@
-# SnapFit REST API inventory for Supabase migration
+# SnapFit Supabase Cutover Inventory
 
-Total endpoint usages: 29
+This document supersedes the old REST inventory. The Flutter runtime no longer calls the legacy Spring `/api/*` endpoints.
 
-## `lib/features/album/data/api/album_api.dart`
-- `POST` `/api/albums`
-- `GET` `/api/albums/{albumId}`
-- `GET` `/api/albums`
-- `PUT` `/api/albums/{albumId}`
-- `DELETE` `/api/albums/{albumId}`
-- `PATCH` `/api/albums/reorder`
-- `POST` `/api/albums/{albumId}/lock`
-- `POST` `/api/albums/{albumId}/unlock`
+## Final runtime mapping
 
-## `lib/features/album/data/api/album_member_api.dart`
-- `POST` `/api/albums/{albumId}/members/invite`
-- `GET` `/api/invites/{token}`
-- `POST` `/api/invites/{token}/accept`
-- `GET` `/api/albums/{albumId}/members`
+| Legacy area | Current runtime path |
+| --- | --- |
+| Auth login/profile/refresh/delete | Supabase Auth, `profiles`, `account-delete` Edge Function |
+| Album CRUD/reorder/locks | Supabase `albums`, `album_pages` |
+| Album members/invites | Supabase `album_members`, `album_invites`, `album-invites` Edge Function |
+| Template list/detail/like/use | Supabase `templates`, `template_likes`, `albums` |
+| Album/profile image upload | Supabase Storage buckets (`album-assets`, `avatars`) |
+| Notifications | Supabase `notification_inbox`, `notification_reads` |
+| Support inquiries | Supabase `support_inquiries` |
+| Storage quota/subscription status | Supabase `storage_quotas`, `subscriptions` |
+| Native subscriptions | Google Play Billing / App Store + `iap-verify` Edge Function |
+| External subscription billing | Disabled; `billing-prepare`, `billing-approve`, and `billing-webhook` return `410 native_iap_required` |
+| Address lookup | `address-search` Edge Function |
+| Physical order checkout | `order-checkout` Edge Function |
+| Order confirmation/print package | `order-confirm-payment`, `admin-ops.preparePrintPackage`, private `print-packages` bucket |
+| Admin dashboard/orders/templates | `admin-ops` Edge Function |
 
-## `lib/features/album/presentation/providers/design_template_catalog_provider.dart`
-- `GET` `/api/templates`
+## Verification
 
-## `lib/features/auth/data/api/auth_api.dart`
-- `POST` `/api/auth/login/kakao`
-- `POST` `/api/auth/login/google`
-- `POST` `/api/auth/refresh`
-- `POST` `/api/auth/profile`
-- `DELETE` `/api/auth/account`
-- `POST` `/api/auth/consents`
+Run:
 
-## `lib/features/billing/data/billing_repository.dart`
-- `GET` `/api/billing/plans`
-- `POST` `/api/billing/$orderId/cancel`
+```bash
+python3 tool/supabase_readiness_check.py --skip-remote
+```
 
-## `lib/features/notification/data/notification_repository.dart`
-- `GET` `/api/notifications/policy`
+The production-ready remote check additionally requires Supabase secrets:
 
-## `lib/features/profile/data/order_repository.dart`
-- `POST` `/api/orders/$orderId/advance`
-- `POST` `/api/orders/$orderId/payment/confirm`
+```bash
+python3 tool/supabase_readiness_check.py
+```
 
-## `lib/features/store/data/api/template_api.dart`
-- `GET` `/api/templates`
-- `GET` `/api/templates/summary`
-- `GET` `/api/templates/{id}`
-- `POST` `/api/templates/{id}/like`
-- `POST` `/api/templates/{id}/use`
+The code-only check is also enforced by GitHub Actions.

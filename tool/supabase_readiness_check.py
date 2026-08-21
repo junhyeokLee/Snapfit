@@ -120,7 +120,11 @@ def check_secrets(project_ref: str) -> list[Check]:
 
 
 def check_forbidden_patterns() -> Check:
-    paths = [p for p in (ROOT / "lib").rglob("*.dart")] + [p for p in (ROOT / "supabase" / "functions").rglob("*.ts")]
+    paths = [p for p in (ROOT / "lib").rglob("*.dart")]
+    paths += [p for p in (ROOT / "tool").rglob("*.dart")]
+    paths += [p for p in (ROOT / "scripts").rglob("*.sh")]
+    paths += [ROOT / "Makefile"]
+    paths += [p for p in (ROOT / "supabase" / "functions").rglob("*.ts")]
     hits: list[str] = []
     for path in paths:
         text = path.read_text(errors="ignore")

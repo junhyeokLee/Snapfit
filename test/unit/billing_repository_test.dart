@@ -6,7 +6,7 @@ import 'package:snap_fit/features/billing/data/billing_repository.dart';
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
-  test('preflightStorage blocks legacy Spring fallback by default', () async {
+  test('preflightStorage requires a Supabase client', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(tokenStorage: tokenStorage);
 

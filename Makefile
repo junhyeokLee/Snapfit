@@ -1,14 +1,14 @@
 .PHONY: template-release template-release-dry template-gate
 
 # Usage:
-# make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 BASE_URL=http://54.253.3.176
+# make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 SUPABASE_URL=https://rrbhxdtriummqpztpjrk.supabase.co
 # make template-release-dry HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12
 
 HANDOFF ?= assets/templates/save_the_date_handoff.json
 PAGES ?= 12
-BASE_URL ?= http://54.253.3.176
+SUPABASE_URL ?= https://rrbhxdtriummqpztpjrk.supabase.co
 
-TEMPLATE_PIPELINE = ./scripts/run_figma_template_pipeline.sh --handoff=$(HANDOFF) --pages=$(PAGES) --base-url=$(BASE_URL)
+TEMPLATE_PIPELINE = ./scripts/run_figma_template_pipeline.sh --handoff=$(HANDOFF) --pages=$(PAGES) --supabase-url=$(SUPABASE_URL)
 
 template-release:
 	$(TEMPLATE_PIPELINE) --publish=true --notify=false

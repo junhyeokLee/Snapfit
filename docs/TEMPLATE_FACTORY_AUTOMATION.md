@@ -74,8 +74,8 @@ dart run tool/build_store_templates_from_handoff.dart \
 cd /Users/devsheep/SnapFit/SnapFit
 dart run tool/publish_store_templates_to_server.dart \
   --input=assets/templates/generated/store_latest.json \
-  --base-url=http://54.253.3.176 \
-  --admin-key=$SNAPFIT_PUSH_ADMIN_KEY
+  --supabase-url=https://rrbhxdtriummqpztpjrk.supabase.co \
+  --admin-key=$SNAPFIT_ADMIN_KEY
 ```
 
 룰:
@@ -110,16 +110,16 @@ dart run tool/publish_store_templates_to_server.dart \
 
 필수 GitHub Secrets:
 
-- `SNAPFIT_API_BASE_URL` (예: `http://54.253.3.176`)
-- `SNAPFIT_PUSH_ADMIN_KEY` (백엔드 `snapfit.push.admin-key`)
+- `SUPABASE_URL` (예: `https://rrbhxdtriummqpztpjrk.supabase.co`)
+- `SNAPFIT_ADMIN_KEY` (Supabase `admin-ops` Edge Function key)
 
 ## 즉시 테스트 (오늘 바로)
 
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
 dart run tool/template_factory.dart --count=3
-SNAPFIT_API_BASE_URL=http://54.253.3.176 \
-SNAPFIT_PUSH_ADMIN_KEY=YOUR_ADMIN_KEY \
+SUPABASE_URL=https://rrbhxdtriummqpztpjrk.supabase.co \
+SNAPFIT_ADMIN_KEY=YOUR_ADMIN_KEY \
 ./scripts/test_template_update_notification.sh 3
 ```
 

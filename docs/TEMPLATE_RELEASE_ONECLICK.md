@@ -4,7 +4,7 @@
 
 ```bash
 cd /Users/devsheep/SnapFit/SnapFit
-make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 BASE_URL=http://54.253.3.176
+make template-release HANDOFF=assets/templates/save_the_date_handoff.json PAGES=12 SUPABASE_URL=https://rrbhxdtriummqpztpjrk.supabase.co
 ```
 
 - Runs: store build -> release gate -> publish
@@ -21,8 +21,8 @@ make template-release-dry HANDOFF=assets/templates/save_the_date_handoff.json PA
 Workflow: `.github/workflows/template-release.yml`
 
 Required repo secrets:
-- `SNAPFIT_API_BASE_URL`
-- `SNAPFIT_PUSH_ADMIN_KEY`
+- `SUPABASE_URL`
+- `SNAPFIT_ADMIN_KEY`
 
 Run `Template Release` via `workflow_dispatch` and set:
 - `handoff_path`
