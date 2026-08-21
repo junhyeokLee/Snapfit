@@ -17,7 +17,6 @@ import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
-import 'features/billing/data/billing_provider.dart';
 import 'features/profile/data/order_repository.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
@@ -66,7 +65,6 @@ class MoaEditorApp extends ConsumerStatefulWidget {
 
 class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
   final AppLinks _appLinks = AppLinks();
-  final Set<String> _handledBillingOrderIds = <String>{};
   final Set<String> _handledPrintOrderIds = <String>{};
   final GlobalKey<ScaffoldMessengerState> _messengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -81,7 +79,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(themeModeControllerProvider.notifier).loadFromStorage();
       TemplateUpdateNotificationService.checkAndNotifyIfUpdated();
-      _initBillingDeepLinkListener();
+      _initDeepLinkListener();
     });
   }
 
@@ -91,7 +89,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
     super.dispose();
   }
 
-  Future<void> _initBillingDeepLinkListener() async {
+  Future<void> _initDeepLinkListener() async {
     try {
       final initial = await _appLinks.getInitialLink();
       if (initial != null) {
@@ -113,49 +111,6 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
 
     final path = uri.path.toLowerCase();
     final host = uri.host.toLowerCase();
-
-    if (host == 'billing') {
-      final orderId = uri.queryParameters['orderId']?.trim() ?? '';
-      if (orderId.isEmpty) return;
-      if (_handledBillingOrderIds.contains(orderId)) return;
-      _handledBillingOrderIds.add(orderId);
-
-      if (path.contains('success')) {
-        final paymentKey = uri.queryParameters['paymentKey']?.trim();
-        final amount = int.tryParse(uri.queryParameters['amount'] ?? '');
-        try {
-          await ref
-              .read(billingRepositoryProvider)
-              .approveOrder(
-                orderId: orderId,
-                paymentKey: paymentKey,
-                amount: amount,
-              );
-          ref.invalidate(mySubscriptionProvider);
-          ref.invalidate(myStorageQuotaProvider);
-          _messengerKey.currentState?.showSnackBar(
-            const SnackBar(content: Text('결제 완료가 자동 반영되었습니다.')),
-          );
-        } catch (e) {
-          _messengerKey.currentState?.showSnackBar(
-            SnackBar(content: Text('결제 승인 자동 반영 실패: $e')),
-          );
-        }
-        return;
-      }
-
-      if (path.contains('fail')) {
-        final message = uri.queryParameters['message']?.trim();
-        _messengerKey.currentState?.showSnackBar(
-          SnackBar(
-            content: Text(
-              message?.isNotEmpty == true ? message! : '결제가 취소되거나 실패했습니다.',
-            ),
-          ),
-        );
-      }
-      return;
-    }
 
     if (host != 'order') {
       return;

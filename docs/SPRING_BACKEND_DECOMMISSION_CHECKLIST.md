@@ -10,7 +10,7 @@ Most user-facing SnapFit flows now prefer Supabase directly or Supabase Edge Fun
 - Templates/design catalog: Supabase `templates` / `template_likes`.
 - Albums/members/invites: Supabase DB + Storage + `album-invites` Edge Function.
 - Notifications/support: Supabase tables.
-- Billing entitlement scaffold: native store IAP flow + `iap-verify` Edge Function.
+- Billing entitlement: native store IAP flow + `iap-verify` Edge Function. Legacy external subscription billing functions now return `410 native_iap_required`.
 - Admin operations: `admin-ops` Edge Function.
 - Orders/print package: `order-confirm-payment` / `admin-ops.preparePrintPackage` generate private Supabase Storage artifacts.
 
@@ -37,7 +37,7 @@ Remaining non-Spring compatibility code:
 ## Safe shutdown sequence
 
 1. Keep Spring backend running while Supabase flows are tested with production data.
-2. Keep `SNAPFIT_IAP_MOCK_VERIFY` unset/false and configure real Google Play/App Store secrets.
+2. Keep `SNAPFIT_IAP_MOCK_VERIFY` unset/false and configure real Google Play/App Store secrets. The legacy `billing-prepare`, `billing-approve`, and `billing-webhook` functions are disabled and return `410 native_iap_required`.
 3. Run physical-device smoke tests for auth, album save/upload, checkout/address search, IAP, admin, notifications, and support.
 4. Monitor production logs/network traffic and confirm no `/api/*` traffic reaches Spring for a full release cycle.
 5. Archive the Spring backend after the release cycle is clean.
@@ -114,3 +114,19 @@ SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   APP_STORE_ISSUER
 ```
 
 Switch `APP_STORE_ENVIRONMENT` to `production` only after sandbox purchase verification passes.
+
+
+## Current Supabase secret audit
+
+Current audit shows only Supabase built-in secrets are present. The following production secrets still need to be set directly in Supabase before the final smoke-test pass:
+
+- `GOOGLE_PLAY_PACKAGE_NAME`
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
+- `APP_STORE_ISSUER_ID`
+- `APP_STORE_KEY_ID`
+- `APP_STORE_BUNDLE_ID`
+- `APP_STORE_PRIVATE_KEY`
+- `APP_STORE_ENVIRONMENT`
+- `SNAPFIT_ADDRESS_JUSO_KEY`
+- `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
+- `SNAPFIT_ADMIN_KEY`

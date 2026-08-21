@@ -343,3 +343,24 @@ Remaining production blockers:
    - `SNAPFIT_ADDRESS_JUSO_KEY`
    - `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
    - `SNAPFIT_ADMIN_KEY`
+
+
+## Phase 15 progress update
+
+Legacy external subscription billing shutdown:
+
+- Removed the old subscription billing deep-link approval path from `lib/main.dart` (`snapfit://billing/...`).
+- Removed unused Flutter methods that invoked `billing-prepare` / `billing-approve`.
+- Deleted the obsolete `PaymentPrepareResult` DTO.
+- Redeployed `billing-prepare`, `billing-approve`, and `billing-webhook` as explicit `410 native_iap_required` functions so they fail closed if old clients or links call them.
+
+Supabase secret audit result at this phase:
+
+- No production provider secrets are currently configured beyond Supabase's built-in secrets.
+- The migration code is ready to use real providers, but final production completion requires setting the external service secrets directly in Supabase.
+
+Required before production smoke tests can pass:
+
+- Android: either `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, or both `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`, plus `GOOGLE_PLAY_PACKAGE_NAME`.
+- iOS: `APP_STORE_ISSUER_ID`, `APP_STORE_KEY_ID`, `APP_STORE_BUNDLE_ID`, `APP_STORE_PRIVATE_KEY`, and `APP_STORE_ENVIRONMENT`.
+- Operations: `SNAPFIT_ADDRESS_JUSO_KEY`, `SNAPFIT_ORDER_CHECKOUT_BASE_URL`, and `SNAPFIT_ADMIN_KEY`.

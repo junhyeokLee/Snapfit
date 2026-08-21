@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
 import '../domain/entities/billing_plan.dart';
-import '../domain/entities/payment_prepare_result.dart';
 import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
@@ -92,52 +91,6 @@ class BillingRepository {
     throw Exception('Supabase 구독 조회 환경이 준비되지 않았습니다.');
   }
 
-  Future<PaymentPrepareResult> prepareNaverPay({String? planCode}) async {
-    return preparePayment(planCode: planCode, provider: 'TOSS_NAVERPAY');
-  }
-
-  Future<PaymentPrepareResult> preparePayment({
-    String? planCode,
-    String provider = 'TOSS_NAVERPAY',
-  }) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'billing-prepare',
-        body: {
-          'planCode': planCode ?? 'SNAPFIT_PRO_MONTHLY',
-          'provider': provider,
-        },
-      );
-      return PaymentPrepareResult.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 결제 준비 환경이 준비되지 않았습니다.');
-  }
-
-  Future<SubscriptionStatusModel> approveOrder({
-    required String orderId,
-    String? paymentKey,
-    int? amount,
-    String? transactionId,
-  }) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'billing-approve',
-        body: {
-          'orderId': orderId,
-          if (paymentKey != null) 'paymentKey': paymentKey,
-          if (amount != null) 'amount': amount,
-          if (transactionId != null) 'transactionId': transactionId,
-        },
-      );
-      return SubscriptionStatusModel.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 결제 승인 환경이 준비되지 않았습니다.');
-  }
-
   String _storePlatformFromPurchase(PurchaseDetails purchase) {
     final source = purchase.verificationData.source.toLowerCase();
     if (source.contains('google') || source.contains('play')) {
@@ -180,20 +133,6 @@ class BillingRepository {
       throw Exception(data['error']);
     }
     return SubscriptionStatusModel.fromJson(data);
-  }
-
-  Future<void> cancelPayment({
-    required String orderId,
-    String reason = 'USER_REQUEST',
-  }) async {
-    throw Exception('결제 취소는 Supabase 결제 함수로만 처리해야 합니다.');
-  }
-
-  Future<Map<String, dynamic>> runE2EFlow({
-    String provider = 'TOSS_NAVERPAY',
-    String? paymentKey,
-  }) async {
-    throw Exception('결제 E2E 테스트는 Supabase 함수 기반 테스트로 전환해야 합니다.');
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {
