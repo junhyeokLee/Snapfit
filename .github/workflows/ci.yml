@@ -26,5 +26,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Run analyzer
         run: flutter analyze
+      - name: Supabase code-only readiness audit
+        run: python3 tool/supabase_readiness_check.py --skip-remote
       - name: Run tests
         run: flutter test

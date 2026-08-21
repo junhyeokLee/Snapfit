@@ -43,5 +43,8 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Supabase code-only readiness audit
+        run: python3 tool/supabase_readiness_check.py --skip-remote
+
       - name: Test
         run: flutter test

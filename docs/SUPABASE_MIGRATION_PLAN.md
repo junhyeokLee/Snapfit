@@ -379,3 +379,12 @@ python3 tool/supabase_readiness_check.py --skip-remote
 ```
 
 - Remote readiness currently reaches all deployed Edge Functions via `OPTIONS`, but fails the expected secret checks until the required production secret names are set in Supabase.
+
+
+## Phase 17 progress update
+
+CI regression guard:
+
+- Added the code-only Supabase readiness audit to both GitHub Actions workflows.
+- Future pushes now fail CI if legacy Spring/backend patterns reappear in Flutter code or Supabase Edge Functions.
+- The remote secret check remains intentionally excluded from CI because production secrets should not be required or exposed in pull-request builds.
