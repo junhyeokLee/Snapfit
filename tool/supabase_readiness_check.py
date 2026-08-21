@@ -99,10 +99,24 @@ def secret_names(project_ref: str) -> tuple[set[str], str]:
         return set(), "supabase CLI returned empty output; run `npx supabase@latest login` or set SUPABASE_ACCESS_TOKEN, then retry"
     try:
         data = json.loads(raw)
+        return {item["name"] for item in data.get("secrets", [])}, ""
     except json.JSONDecodeError:
+        # Recent Supabase CLI versions may print an ASCII table instead of JSON
+        # even when the command exits successfully. Parse only the NAME column.
+        names: set[str] = set()
+        for line in raw.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("NAME") or stripped.startswith("---"):
+                continue
+            if "|" not in stripped:
+                continue
+            name = stripped.split("|", 1)[0].strip()
+            if name and name != "NAME":
+                names.add(name)
+        if names:
+            return names, ""
         preview = raw[:500].replace("\n", " ")
-        return set(), f"supabase CLI returned non-JSON output: {preview}"
-    return {item["name"] for item in data.get("secrets", [])}, ""
+        return set(), f"supabase CLI returned unparseable output: {preview}"
 
 
 def group_present(names: set[str], group: list[str]) -> bool:
