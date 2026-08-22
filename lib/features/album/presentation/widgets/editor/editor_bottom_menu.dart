@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 enum EditorMode {
   none,
@@ -167,7 +168,8 @@ class EditorBottomMenu extends StatelessWidget {
     // 바텀 아이콘/텍스트 색상: 라이트 모드 = 검정, 다크 모드 = 흰색
     final Color color = isDark ? Colors.white : Colors.black;
 
-    return InkWell(
+    return SnapFitPressable(
+      pressedScale: 0.92,
       onTap: () {
         if (isAction) {
           onAction?.call();
@@ -175,24 +177,47 @@ class EditorBottomMenu extends StatelessWidget {
           onModeChanged(isSelected ? EditorMode.none : mode);
         }
       },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 20.sp),
-          SizedBox(height: 4.h),
-          Text(
-            label,
-            // 앱 전역 텍스트 테마(bodySmall)를 베이스로 사용해 폰트/라인하이트를 통일하고,
-            // 크기·두께만 하단 메뉴용으로 살짝 조정한다.
-            style: (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
-                .copyWith(
-                  fontSize: 9.sp,
-                  color: color,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                  letterSpacing: 0.1,
-                ),
-          ),
-        ],
+      child: AnimatedContainer(
+        duration: SnapFitMotion.fast,
+        curve: SnapFitMotion.settle,
+        padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? SnapFitColors.accent.withOpacity(0.13)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: isSelected ? 1.10 : 1.0,
+              duration: SnapFitMotion.fast,
+              curve: SnapFitMotion.settle,
+              child: Icon(
+                icon,
+                color: isSelected ? SnapFitColors.accent : color,
+                size: 20.sp,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              label,
+              // 앱 전역 텍스트 테마(bodySmall)를 베이스로 사용해 폰트/라인하이트를 통일하고,
+              // 크기·두께만 하단 메뉴용으로 살짝 조정한다.
+              style:
+                  (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
+                      .copyWith(
+                        fontSize: 9.sp,
+                        color: isSelected ? SnapFitColors.accent : color,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w500,
+                        letterSpacing: 0.1,
+                      ),
+            ),
+          ],
+        ),
       ),
     );
   }
