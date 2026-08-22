@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/platform_ui.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../core/templates/data_template_engine.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
@@ -563,8 +564,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     if (!mounted) return;
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AlbumCreateFlowScreen(
+      snapFitRoute(
+        page: AlbumCreateFlowScreen(
           initialTemplatePages: pages,
           initialTemplatePagesByAspect: _parsedPagesByAspect.isEmpty
               ? null
@@ -1597,8 +1598,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               ),
               child: Row(
                 children: [
-                  GestureDetector(
+                  SnapFitPressable(
                     onTap: _onLike,
+                    pressedScale: 0.90,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1678,58 +1680,60 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final heroHeight = 380.h;
     final heroWidth = (heroHeight * aspect).clamp(220.w, 320.w);
 
-    return Center(
-      child: Container(
-        width: heroWidth,
-        height: heroHeight,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.r),
-          color: SnapFitColors.surfaceOf(context),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.r),
-                child: _buildRenderedTemplateSurface(
-                  layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
-                  previewUrl: coverUrl,
-                  width: heroWidth,
-                  height: heroHeight,
-                  loading: () => Container(
-                    color: SnapFitStylePalette.blue,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  error: () => Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          SnapFitStylePalette.blue,
-                          SnapFitStylePalette.lavender,
-                        ],
-                      ),
+    return SnapFitFadeIn(
+      child: Center(
+        child: Container(
+          width: heroWidth,
+          height: heroHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.r),
+            color: SnapFitColors.surfaceOf(context),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.r),
+                  child: _buildRenderedTemplateSurface(
+                    layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
+                    previewUrl: coverUrl,
+                    width: heroWidth,
+                    height: heroHeight,
+                    loading: () => Container(
+                      color: SnapFitStylePalette.blue,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
                     ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.photo_outlined,
-                      color: SnapFitStylePalette.charcoal,
-                      size: 34,
+                    error: () => Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            SnapFitStylePalette.blue,
+                            SnapFitStylePalette.lavender,
+                          ],
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.photo_outlined,
+                        color: SnapFitStylePalette.charcoal,
+                        size: 34,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
