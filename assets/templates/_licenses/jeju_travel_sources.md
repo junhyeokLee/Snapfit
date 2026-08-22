@@ -12,13 +12,16 @@ This file tracks image provenance for `jeju_travel`. Existing bundled/remote pre
 
 ## Shot list
 
-Fill this section from `docs/TEMPLATE_IMAGE_SOURCING_GUIDE.md` before sourcing final imagery.
+Final imagery must feel like real travel snapshots that ordinary users would take, not generic landscape stock. Preferred GPT-generated set:
 
-- Hero/cover image:
-- Detail image 1:
-- Detail image 2:
-- Secondary spread image:
-- Closing image:
+- Airport/window arrival snap with friends from behind, suitcase, boarding pass with no readable text.
+- Rental-car window snap with passenger from behind, iced coffee, coastal road.
+- Cafe table/detail snap with coffee, tangerine dessert, ticket, hand entering frame.
+- Beach walk snap with friends from behind; people are the subject, ocean is background.
+- Local market hands/food snap with no readable signage.
+- Guesthouse mirror/luggage/detail snap with no recognizable face.
+- Sunset closing snap with couple/friends as back-view silhouettes.
+- Photo-dump flatlay with instant photos, shells, tangerines, hand arranging photos.
 
 ## Reference notes
 

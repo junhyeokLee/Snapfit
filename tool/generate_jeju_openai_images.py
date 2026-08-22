@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Generate Snapfit template images with OpenAI gpt-image-1.
+"""Generate Snapfit Jeju template images with OpenAI gpt-image-1.
 
 Requires OPENAI_API_KEY in the environment. Do not paste API keys into chat.
 Outputs PNG files and a metadata JSON next to the assets.
+
+Art direction: real-person travel snapshots, not generic scenery. Use people
+from behind, hands, cafe/food/detail objects, car-window and guesthouse moments,
+while avoiding recognizable faces, logos, brands, or readable text.
 """
 from __future__ import annotations
 import base64, json, os, time, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PROMPT_DOC = ROOT / 'docs/JEJU_TRAVEL_AI_IMAGE_PROMPTS.md'
 OUT_META = ROOT / 'assets/templates/jeju_travel/images/generated_ai/openai_generation_metadata.json'
 API = 'https://api.openai.com/v1/images/generations'
 
@@ -19,14 +22,16 @@ DATA = {
   'quality': 'high',
   'n': 1,
 }
-NEG = ' No logos, no brands, no readable copyrighted signage, no famous landmarks with restricted property issues, no recognizable faces, no celebrity likeness, no watermark, no text embedded in image.'
+NEG = ' No logos, no brands, no readable copyrighted signage, no famous landmarks with restricted property issues, no recognizable faces, no celebrity likeness, no watermark, no text embedded in image, no generic empty landscape-only photos.'
 IMAGES = [
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_aerial_hero.png', 'Premium editorial travel photography for a mobile photobook template: aerial view of a fictional Jeju-inspired volcanic island coastline, turquoise ocean, soft morning haze, sandy beige and sea-blue palette, cinematic but natural, no people, no buildings with logos, no text, high-end magazine cover image, vertical 3:4 composition, generous negative space near lower third.'),
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_oreum_morning.png', 'Designer-grade travel magazine photo, fictional Jeju-inspired green volcanic oreum hill at morning light, winding walking path, sea visible in distance, calm atmosphere, natural colors, no people, no signage, no text, vertical 3:4, premium stock photography feel.'),
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_ocean_wave.png', 'Close coastal ocean scene for premium travel photobook, turquoise waves meeting pale sand and black volcanic rocks, soft sunlight, no people, no text, no logo, high-end editorial stock photo, vertical 3:4 composition.'),
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_basalt_detail.png', 'Premium detail photograph of black volcanic basalt rocks and white sea foam, Jeju-inspired coastline but fictional, tactile texture, elegant muted tones, no people, no text, no watermark, vertical 3:4, suitable for paid travel magazine template interior page.'),
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_sunset_silhouette.png', 'Cinematic fictional island coastline sunset, warm coral sky, calm sea, soft silhouette of grass and distant hill, no recognizable people, no text, no logos, high-end travel magazine closing page image, vertical 3:4, refined premium mood.'),
-  ('assets/templates/jeju_travel/images/generated_ai/jeju_ticket_cafe_detail.png', 'Premium travel detail photo: blank paper ticket, coffee cup, and small shell on a warm cafe table by a window with sea-blue light, no readable text, no logo, no brand, hands not visible, editorial still life, vertical 3:4, refined beige and coral palette.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_airport_arrival_snap.png', 'Realistic smartphone travel snapshot, two Korean friends seen from behind at an airport window just before a Jeju trip, small carry-on suitcase, boarding pass in hand but no readable text, soft morning light, candid everyday composition, premium but natural, no recognizable faces, no logos, no brand signage, no watermark, vertical 3:4. Feels like a real person took it during travel, not a generic landscape.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_rental_car_window_snap.png', 'Realistic candid travel photo from inside a rental car on a fictional Jeju-inspired coastal road, friend in passenger seat partly visible from behind, hand holding an iced coffee near the window, ocean and low volcanic hill outside, natural smartphone perspective, slight motion feeling, no readable signs, no logos, no recognizable face, vertical 3:4, warm sea-blue and sand palette.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_cafe_table_snap.png', 'Realistic casual cafe table snapshot from a Jeju trip, two coffee cups, tangerine dessert, sunglasses, camera strap, and a blank paper ticket on a wooden table by a bright window, one person’s hand lightly entering frame, no readable text, no brands, no logos, natural daylight, premium lifestyle photo but still like a real traveler took it, vertical 3:4.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_beach_friends_back_snap.png', 'Realistic travel photo of two friends from behind walking on a quiet Jeju-inspired beach, one holding sandals and a phone, wind in hair, casual clothes, ocean in background but people are the main subject, candid smartphone photo feeling, no visible faces, no logos, no readable text, warm natural colors, vertical 3:4.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_market_hands_snap.png', 'Realistic candid close-up from a Jeju-style local market, hands holding a small paper tray of street food and tangerines, blurred travel companion in background with face turned away, no readable signage, no brands, no logos, natural smartphone snapshot, lively but tasteful editorial color, vertical 3:4.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_guesthouse_mirror_snap.png', 'Realistic cozy guesthouse travel snapshot, open suitcase on bed, sun hat, film camera, postcards with no readable text, partial mirror reflection of traveler from shoulder down only, warm afternoon window light, no recognizable face, no logos, no brands, natural personal travel diary feeling, vertical 3:4.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_sunset_couple_silhouette_snap.png', 'Realistic candid sunset photo of a couple or two friends seen as small silhouettes from behind on a fictional Jeju-inspired coastal path, one person holding a phone up to take a photo, coral sky, ocean and grass around them, human travel memory first, landscape second, no faces, no logos, no readable text, vertical 3:4, premium emotional closing image.'),
+  ('assets/templates/jeju_travel/images/generated_ai/jeju_photo_dump_detail_snap.png', 'Realistic overhead photo dump flatlay from a Jeju trip: instant photos with blank white borders, rental car key without logo, sunscreen tube with no label, tangerines, shells, cafe receipt with no readable text, friend’s hand arranging photos, natural messy-but-curated smartphone diary aesthetic, vertical 3:4.'),
 ]
 
 def call(prompt: str) -> bytes:
@@ -43,7 +48,13 @@ def call(prompt: str) -> bytes:
     return base64.b64decode(b64)
 
 def main() -> int:
-    meta = {'provider': 'OpenAI', 'model': DATA['model'], 'generatedAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'assets': []}
+    meta = {
+        'provider': 'OpenAI',
+        'model': DATA['model'],
+        'generatedAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'artDirection': 'real-person Jeju travel snapshots: friends from behind, hands, cafe, food, car-window, guesthouse, photo-dump details; no generic scenery-only set',
+        'assets': [],
+    }
     for asset, prompt in IMAGES:
         path = ROOT / asset
         path.parent.mkdir(parents=True, exist_ok=True)
