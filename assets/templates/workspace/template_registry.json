@@ -8,7 +8,7 @@
       "title": "SAVE THE DATE",
       "status": "approved",
       "locked": true,
-      "category": "wedding"
+      "category": "웨딩"
     },
     {
       "slug": "jeju_travel",
@@ -16,7 +16,7 @@
       "title": "제주의 기록",
       "status": "approved",
       "locked": true,
-      "category": "travel"
+      "category": "여행"
     },
     {
       "slug": "family_weekend",
@@ -24,7 +24,7 @@
       "title": "가족의 주말",
       "status": "approved",
       "locked": true,
-      "category": "family"
+      "category": "가족"
     },
     {
       "slug": "anniversary_days",
@@ -32,7 +32,7 @@
       "title": "우리의 기념일",
       "status": "approved",
       "locked": true,
-      "category": "anniversary"
+      "category": "기념일"
     },
     {
       "slug": "minimal_editorial",
