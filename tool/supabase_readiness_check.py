@@ -84,7 +84,7 @@ def secret_names(project_ref: str) -> tuple[set[str], str]:
     if token:
         env["SUPABASE_ACCESS_TOKEN"] = token
     proc = subprocess.run(
-        ["npx", "supabase@latest", "secrets", "list", "--project-ref", project_ref],
+        ["npx", "--yes", "supabase@latest", "secrets", "list", "--project-ref", project_ref],
         cwd=ROOT,
         text=True,
         capture_output=True,
