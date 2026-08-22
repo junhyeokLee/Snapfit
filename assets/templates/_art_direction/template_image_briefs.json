@@ -1,0 +1,125 @@
+{
+  "globalRule": "Every sample image must feel like a relatable real-life memory users could have in their phone: people from behind/silhouettes/hands, everyday objects, rooms, food, streets, travel traces, candid composition. Avoid generic scenery-only, sterile stock, logos, readable text, recognizable faces, celebrity likeness, and uncanny AI hands/faces.",
+  "qualityTarget": "exceed-MiriCanvas-paid-template-standard",
+  "templates": {
+    "jeju_travel_v1": {
+      "title": "제주의 기록",
+      "concept": "real-person Jeju travel diary magazine",
+      "cover": "airport/window or travel-arrival snap with friends from behind, suitcase/ticket, immediate desire to start a trip",
+      "pages": [
+        "rental car window with iced coffee",
+        "cafe table with tangerine dessert/ticket/hand",
+        "friends walking beach from behind",
+        "market hands holding food",
+        "guesthouse luggage/mirror detail",
+        "sunset silhouette with someone taking a photo",
+        "photo-dump flatlay with instant photos and shells"
+      ]
+    },
+    "wedding_editorial_v1": {
+      "title": "Wedding Editorial",
+      "concept": "candid wedding editorial album, cream/gold, intimate details",
+      "cover": "couple from behind or hands/veil moment; not stiff studio pose",
+      "pages": [
+        "bouquet in hand while walking",
+        "rings on invitation paper with no readable private text",
+        "veil/hands close-up",
+        "guest table candle/flower detail",
+        "couple silhouette corridor/window",
+        "dress sleeve/button detail",
+        "quiet closing embrace from behind"
+      ]
+    },
+    "save_the_date_v1": {
+      "title": "SAVE THE DATE",
+      "concept": "premium date announcement with human warmth",
+      "cover": "couple hands holding blank date card or walking back-view with date area in layout",
+      "pages": [
+        "stationery/flower/fabric table with hand",
+        "ring and coffee detail",
+        "couple shadow on wall",
+        "venue entrance with people blurred from behind",
+        "calendar/date object with no readable text",
+        "soft closing portrait from behind"
+      ]
+    },
+    "soft_babybook_v1": {
+      "title": "소프트 베이비북",
+      "concept": "safe, soft, giftable baby milestone book",
+      "cover": "baby hand/foot with parent hand and blanket; no full AI baby face",
+      "pages": [
+        "toy/blanket/little socks detail",
+        "parent hand holding milestone card without readable text",
+        "nursery corner with books and soft messiness",
+        "birthday/month marker table",
+        "family silhouette by window",
+        "closing parent note object scene"
+      ]
+    },
+    "family_weekend_v1": {
+      "title": "가족의 주말",
+      "concept": "warm ordinary family weekend album",
+      "cover": "family backs in park/picnic with blanket/snacks/bags",
+      "pages": [
+        "child hands playing/drawing",
+        "dining table with plates/cups/toys",
+        "parent-child shoes or hands detail",
+        "home sofa/living room candid mess",
+        "park walk with silhouettes",
+        "closing table or doorway moment"
+      ]
+    },
+    "film_diary_v1": {
+      "title": "필름 다이어리",
+      "concept": "candid analog photo dump, friends/cafe/street/night",
+      "cover": "hand holding film camera or printed photo over cafe table",
+      "pages": [
+        "street snap with friend from behind",
+        "night window reflection no face",
+        "printed photos/tape/diary flatlay",
+        "coffee and camera strap detail",
+        "subway/bus window silhouette",
+        "warm closing light leak style human trace"
+      ]
+    },
+    "minimal_editorial_v1": {
+      "title": "화이트 에디토리얼",
+      "concept": "quiet lifestyle editorial with negative space",
+      "cover": "real room/cafe/window moment with person cropped partially, premium whitespace",
+      "pages": [
+        "hands arranging book/flower",
+        "chair/window/light lifestyle scene",
+        "clothing/fabric/detail with human trace",
+        "table setting with object rhythm",
+        "gallery/street back-view",
+        "closing minimal still life"
+      ]
+    },
+    "anniversary_days_v1": {
+      "title": "우리의 기념일",
+      "concept": "couple anniversary memory, everyday intimacy",
+      "cover": "couple backs or hands with cake/flowers, candid home/date context",
+      "pages": [
+        "cake candle and hands",
+        "photo booth/instant photo flatlay",
+        "restaurant table detail no brand",
+        "walking street back-view",
+        "gift/letter detail no readable text",
+        "closing window silhouette"
+      ]
+    },
+    "scrapbook_v1": {
+      "title": "Scrapbook",
+      "concept": "real-life collage diary, messy-curated memories",
+      "cover": "hands arranging printed photos, stickers/tape, coffee, no readable text",
+      "pages": [
+        "desk flatlay with receipts blanked",
+        "friends photo from behind",
+        "ticket/cafe detail",
+        "street/corner snapshot",
+        "polaroid pile with hand",
+        "closing diary page object scene"
+      ]
+    }
+  }
+}

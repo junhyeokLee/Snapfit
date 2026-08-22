@@ -192,6 +192,14 @@ Design details:
 - Parent message page.
 - Avoid large uncanny AI faces.
 
+
+## Creative director source of truth
+
+For per-template GPT image generation briefs and the “real life, designer edited” standard, use:
+
+- `docs/SNAPFIT_TEMPLATE_IMAGE_CREATIVE_DIRECTOR.md`
+- `assets/templates/_art_direction/template_image_briefs.json`
+
 ## Release gate
 
 Before a template is considered store-grade:
