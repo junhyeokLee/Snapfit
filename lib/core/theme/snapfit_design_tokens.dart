@@ -6,7 +6,7 @@ class SnapFitFonts {
   SnapFitFonts._();
 
   static const String body = 'NotoSans';
-  static const String display = 'Raleway';
+  static const String display = 'NotoSans';
 }
 
 class SnapFitSpace {

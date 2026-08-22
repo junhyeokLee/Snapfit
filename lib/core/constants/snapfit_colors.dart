@@ -10,7 +10,7 @@ class SnapFitColors {
 
   /// 카드/요소: 다크/라이트 서피스
   static const Color surfaceDark = Color(0xFF1E1E1E);
-  static const Color surfaceLight = Color(0xFFF5F5F5);
+  static const Color surfaceLight = Color(0xFFF7F5F2);
 
   @Deprecated('Use backgroundOf(context) for theme-aware colors.')
   static const Color background = deepCharcoal;
@@ -19,11 +19,11 @@ class SnapFitColors {
 
   /// 액센트: Vibrant Cyan (텍스트/아이콘)
   /// 디자인 명세: #00C2E0
-  static const Color accent = Color(0xFF00C2E0);
+  static const Color accent = Color(0xFF08B8D0);
 
   /// 세컨드 액센트: Solid Very Light Cyan (배경/버튼)
   /// 디자인 명세: #E3F9FD
-  static const Color accentLight = Color(0xFFE3F9FD);
+  static const Color accentLight = Color(0xFFEAFBFD);
 
   /// 패널/서피스 (기존 스냅핏 컬러 유지)
   static const Color surface = Color(0xFF162A2E);
@@ -67,8 +67,8 @@ class SnapFitColors {
     Color(0xFF0D1B1F),
   ];
   static const List<Color> readerGradientLight = [
-    Color(0xFFF0F4F8),
-    Color(0xFFE8EEF4),
+    Color(0xFFFBF8F3),
+    Color(0xFFEAF4F7),
   ];
 
   /// FannedPagesView 전용 배경 그라데이션
