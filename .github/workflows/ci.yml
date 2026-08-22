@@ -28,5 +28,7 @@ jobs:
         run: flutter analyze
       - name: Supabase code-only readiness audit
         run: python3 tool/supabase_readiness_check.py --skip-remote
+      - name: Template quality audit
+        run: python3 tool/template_quality_check.py
       - name: Run tests
         run: flutter test

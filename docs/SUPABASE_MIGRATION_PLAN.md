@@ -77,6 +77,20 @@ Operations:
 
 Do not paste secret values into chat or commit them to the repository. Set them directly through the Supabase CLI or Dashboard.
 
+## Current execution priority
+
+The remaining App Store IAP secrets and `SNAPFIT_ORDER_CHECKOUT_BASE_URL` are deferred launch gates, not blockers for continuing Supabase core migration, app UX, and template quality work. Use the core profile while those external-console/provider decisions are pending:
+
+```bash
+python3 tool/supabase_readiness_check.py --profile supabase-core
+```
+
+Use the full production profile before App Store subscription launch or physical-order checkout launch:
+
+```bash
+python3 tool/supabase_readiness_check.py --profile production
+```
+
 ## Final production gate
 
 1. Set the required Supabase secrets.

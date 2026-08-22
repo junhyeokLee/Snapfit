@@ -30,13 +30,22 @@ FUNCTIONS = {
     "billing-approve": {"method": "OPTIONS", "expected": {200}},
     "billing-webhook": {"method": "OPTIONS", "expected": {200}},
 }
-REQUIRED_SECRETS = {
-    "android_iap": [
-        ["GOOGLE_PLAY_PACKAGE_NAME"],
-        ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL+GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY"],
-    ],
-    "ios_iap": [["APP_STORE_ISSUER_ID"], ["APP_STORE_KEY_ID"], ["APP_STORE_BUNDLE_ID"], ["APP_STORE_PRIVATE_KEY"], ["APP_STORE_ENVIRONMENT"]],
-    "operations": [["SNAPFIT_ADDRESS_JUSO_KEY"], ["SNAPFIT_ORDER_CHECKOUT_BASE_URL"], ["SNAPFIT_ADMIN_KEY"]],
+REQUIRED_SECRET_PROFILES = {
+    "production": {
+        "android_iap": [
+            ["GOOGLE_PLAY_PACKAGE_NAME"],
+            ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL+GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY"],
+        ],
+        "ios_iap": [["APP_STORE_ISSUER_ID"], ["APP_STORE_KEY_ID"], ["APP_STORE_BUNDLE_ID"], ["APP_STORE_PRIVATE_KEY"], ["APP_STORE_ENVIRONMENT"]],
+        "operations": [["SNAPFIT_ADDRESS_JUSO_KEY"], ["SNAPFIT_ORDER_CHECKOUT_BASE_URL"], ["SNAPFIT_ADMIN_KEY"]],
+    },
+    "supabase-core": {
+        "android_iap": [
+            ["GOOGLE_PLAY_PACKAGE_NAME"],
+            ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL+GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY"],
+        ],
+        "operations": [["SNAPFIT_ADDRESS_JUSO_KEY"], ["SNAPFIT_ADMIN_KEY"]],
+    },
 }
 FORBIDDEN_PATTERNS = [
     "assertLegacyBackendFallbackAllowed",
@@ -129,14 +138,18 @@ def group_present(names: set[str], group: list[str]) -> bool:
     return False
 
 
-def check_secrets(project_ref: str) -> list[Check]:
+def check_secrets(project_ref: str, profile: str) -> list[Check]:
     names, error = secret_names(project_ref)
     if error:
         return [Check("supabase secrets", False, f"unable to list secrets: {error}")]
+    required = REQUIRED_SECRET_PROFILES[profile]
     checks: list[Check] = []
-    for area, groups in REQUIRED_SECRETS.items():
+    for area, groups in required.items():
         missing = [" or ".join(group) for group in groups if not group_present(names, group)]
         checks.append(Check(f"secrets:{area}", not missing, "missing: " + ", ".join(missing) if missing else "all required names present"))
+    if profile == "supabase-core":
+        checks.append(Check("deferred:ios_iap", True, "excluded from supabase-core; required for App Store subscription verification"))
+        checks.append(Check("deferred:physical_checkout", True, "SNAPFIT_ORDER_CHECKOUT_BASE_URL excluded from supabase-core; required before physical-order checkout launch"))
     return checks
 
 
@@ -176,11 +189,17 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-ref", default=PROJECT_REF_DEFAULT)
     parser.add_argument("--skip-remote", action="store_true", help="skip Supabase remote checks")
+    parser.add_argument(
+        "--profile",
+        choices=sorted(REQUIRED_SECRET_PROFILES),
+        default="production",
+        help="secret readiness profile: production checks every launch gate; supabase-core defers iOS IAP and physical checkout",
+    )
     args = parser.parse_args()
 
     checks = [check_forbidden_patterns()]
     if not args.skip_remote:
-        checks.extend(check_secrets(args.project_ref))
+        checks.extend(check_secrets(args.project_ref, args.profile))
         checks.extend(check_function_options(args.project_ref))
 
     for check in checks:
