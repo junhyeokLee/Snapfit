@@ -701,6 +701,9 @@ Future<List<PremiumTemplate>> _loadCanonicalHandoffStoreTemplates() async {
     'assets/templates/anniversary_days_handoff.json',
     'assets/templates/wedding_editorial_handoff.json',
     'assets/templates/scrapbook_handoff.json',
+    'assets/templates/minimal_editorial_handoff.json',
+    'assets/templates/film_diary_handoff.json',
+    'assets/templates/soft_babybook_handoff.json',
   ];
 
   PremiumTemplate? fromDirectPremium(Map<String, dynamic> raw) {
@@ -941,6 +944,9 @@ Future<List<PremiumTemplate>> _loadExplicitStoreTemplateFallbacks() async {
     'assets/templates/generated/anniversary_days_store.json',
     'assets/templates/generated/wedding_editorial_store.json',
     'assets/templates/generated/scrapbook_store.json',
+    'assets/templates/generated/minimal_editorial_store.json',
+    'assets/templates/generated/film_diary_store.json',
+    'assets/templates/generated/soft_babybook_store.json',
   ];
 
   final templates = <PremiumTemplate>[];

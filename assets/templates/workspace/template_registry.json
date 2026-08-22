@@ -33,6 +33,30 @@
       "status": "approved",
       "locked": true,
       "category": "anniversary"
+    },
+    {
+      "slug": "minimal_editorial",
+      "templateId": "minimal_editorial_v1",
+      "title": "화이트 에디토리얼",
+      "status": "approved",
+      "locked": true,
+      "category": "에디토리얼"
+    },
+    {
+      "slug": "film_diary",
+      "templateId": "film_diary_v1",
+      "title": "필름 다이어리",
+      "status": "approved",
+      "locked": true,
+      "category": "다이어리"
+    },
+    {
+      "slug": "soft_babybook",
+      "templateId": "soft_babybook_v1",
+      "title": "소프트 베이비북",
+      "status": "approved",
+      "locked": true,
+      "category": "가족"
     }
   ]
 }

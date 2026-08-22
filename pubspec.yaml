@@ -125,6 +125,9 @@ flutter:
     - assets/templates/wedding_editorial/images/sources/
     - assets/templates/scrapbook/images/
     - assets/templates/scrapbook/images/sources/
+    - assets/templates/minimal_editorial/images/generated/
+    - assets/templates/film_diary/images/generated/
+    - assets/templates/soft_babybook/images/generated/
     - assets/social/
 
 
