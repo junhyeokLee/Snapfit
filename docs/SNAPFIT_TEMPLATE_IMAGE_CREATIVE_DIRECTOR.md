@@ -62,6 +62,13 @@ Rejected images:
    - job id/seed if available
    - status: `generated-needs-human-review`, then `approved-ai-generated`
 
+
+## Reference-board policy
+
+Pinterest, MiriCanvas, Canva, Instagram, portfolio, magazine, album cover, and photobook examples may be used to study mood, composition, hierarchy, motif discipline, and user desire. They must not be copied directly and must never become bundled assets.
+
+When using references, record the interpreted design lesson rather than the source image itself, e.g. “large quiet couple back-view with title in safe sky area,” “hands arranging printed photos as cover desire,” or “baby detail closeup with parent hand for emotional safety.”
+
 ## Per-template image direction
 
 The machine-readable brief lives at:

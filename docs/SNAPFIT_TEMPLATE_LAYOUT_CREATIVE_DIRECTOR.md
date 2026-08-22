@@ -160,6 +160,29 @@ Image set: messy-curated memory board. Layout language: hand-assembled collage.
 - Hands arranging photos are excellent cover/detail images.
 - Avoid overfilling pages; collage still needs visual hierarchy.
 
+
+## Emotional depth and reference-board rule
+
+Every page must carry a clear feeling, not just a layout pattern. Before designing a page, define the emotional purpose in one short phrase, such as “the first excitement,” “quiet after the ceremony,” “childhood mess on a weekend table,” “a saved date that feels personal,” or “a photo-dump memory from a trip.”
+
+Use Pinterest, MiriCanvas, Canva, editorial albums, wedding books, baby books, travel magazines, and scrapbook covers only as **reference boards** for composition and emotional language. Never copy or bundle their actual images, layouts, stickers, text, or proprietary design. Translate references into Snapfit-original decisions:
+
+- what emotion the reference creates
+- how the crop supports that emotion
+- where the title/caption sits and why
+- what motif is meaningful to the theme
+- what detail makes the page usable after the user replaces the sample photo
+
+Decoration must pass the “why is this here?” test. A tape piece, line, route dot, stamp, flower mark, date chip, film strip, or card exists only if it helps the user understand the memory, page role, or editing affordance. If it is only there to make the page busy, remove it.
+
+User-centered quality rule:
+
+- The template must look premium with the sample image.
+- It must still work when a normal user replaces the sample image with an imperfect phone photo.
+- Text boxes must be placed where common replacement photos are likely to have safe negative space.
+- Decorative frames should guide cropping rather than trap the user into unusable compositions.
+- Each page should make the user think, “I know exactly which photo from my phone I would put here.”
+
 ## Visual QA checklist
 
 Before a template can be called “above MiriCanvas quality,” answer yes to all:
