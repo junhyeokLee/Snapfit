@@ -137,7 +137,14 @@ class _BottomNavItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(horizontal: 4.w),
+          margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 3.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? selectedColor.withOpacity(isDark ? 0.18 : 0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
           child: Center(
             child: FittedBox(
               fit: BoxFit.scaleDown,

@@ -955,6 +955,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     required String subtitle,
     required List<Widget> rows,
   }) {
+    final sectionIcon = switch (title) {
+      '내 활동' => Icons.auto_stories_outlined,
+      '관리자' => Icons.admin_panel_settings_outlined,
+      _ => Icons.tune_rounded,
+    };
     return SnapFitFadeIn(
       delay: const Duration(milliseconds: 120),
       child: Container(
@@ -962,6 +967,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           color: SnapFitColors.surfaceOf(context),
           borderRadius: BorderRadius.circular(24.r),
           border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.16 : 0.035,
+              ),
+              blurRadius: 18.r,
+              offset: Offset(0, 8.h),
+            ),
+          ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -971,25 +985,50 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 8.h),
-                child: Column(
+                padding: EdgeInsets.fromLTRB(16.w, 15.h, 16.w, 9.h),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w900,
+                    Container(
+                      width: 31.w,
+                      height: 31.w,
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.accent.withOpacity(0.11),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(
+                        sectionIcon,
+                        size: 16.sp,
+                        color: SnapFitColors.accent,
                       ),
                     ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: SnapFitColors.textMutedOf(context),
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: SnapFitColors.textPrimaryOf(context),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.15,
+                            ),
+                          ),
+                          SizedBox(height: 3.h),
+                          Text(
+                            subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: SnapFitColors.textMutedOf(context),
+                              fontSize: 10.sp,
+                              height: 1.25,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -1025,15 +1064,18 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       onTap: onTap,
       pressedScale: 0.985,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         child: Row(
           children: [
             Container(
               width: 36.w,
               height: 36.w,
               decoration: BoxDecoration(
-                color: SnapFitColors.accent.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(13.r),
+                color: SnapFitColors.accent.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: SnapFitColors.accent.withOpacity(0.10),
+                ),
               ),
               child: Icon(icon, size: 17.sp, color: SnapFitColors.accent),
             ),
@@ -1045,7 +1087,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12.2.sp,
                       fontWeight: FontWeight.w800,
                       color: textColor,
                     ),
