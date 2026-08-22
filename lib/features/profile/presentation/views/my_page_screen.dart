@@ -15,6 +15,7 @@ import '../../../album/presentation/viewmodels/gallery_notifier.dart'; // Add im
 import '../../../album/presentation/viewmodels/home_view_model.dart';
 import '../../../album/presentation/widgets/home/home_album_helpers.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
+import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/presentation/views/album_category_screen.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/storage_quota.dart';
@@ -454,98 +455,121 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       orElse: () => SnapFitColors.textSecondaryOf(context),
     );
 
-    return Column(
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
+    return SnapFitFadeIn(
+      delay: const Duration(milliseconds: 80),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(18.w, 20.h, 18.w, 18.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30.r),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? const [Color(0xFF151923), Color(0xFF241B2B)]
+                : const [Color(0xFFFFFBF5), Color(0xFFEFF6FF)],
+          ),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        ),
+        child: Column(
           children: [
-            GestureDetector(
-              onTap: () => _openProfileImageViewer(context, profileUrl),
-              child: Container(
-                width: 126.w,
-                height: 126.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: SnapFitStylePalette.coral,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: ClipOval(
-                  child: SizedBox(
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SnapFitPressable(
+                  onTap: () => _openProfileImageViewer(context, profileUrl),
+                  pressedScale: 0.96,
+                  borderRadius: BorderRadius.circular(999.r),
+                  child: Container(
                     width: 126.w,
                     height: 126.w,
-                    child: profileUrl != null && profileUrl.isNotEmpty
-                        ? Image.network(
-                            profileUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                Container(color: SnapFitStylePalette.beige),
-                          )
-                        : Container(color: SnapFitStylePalette.beige),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: SnapFitStylePalette.coral,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: ClipOval(
+                      child: SizedBox(
+                        width: 126.w,
+                        height: 126.w,
+                        child: profileUrl != null && profileUrl.isNotEmpty
+                            ? Image.network(
+                                profileUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    Container(color: SnapFitStylePalette.beige),
+                              )
+                            : Container(color: SnapFitStylePalette.beige),
+                      ),
+                    ),
                   ),
+                ),
+                Positioned(
+                  right: -2.w,
+                  bottom: 6.h,
+                  child: SnapFitPressable(
+                    onTap: () =>
+                        _pickAndSaveProfileImage(context, ref, userInfo),
+                    pressedScale: 0.90,
+                    borderRadius: BorderRadius.circular(999.r),
+                    child: Container(
+                      width: 34.w,
+                      height: 34.w,
+                      decoration: const BoxDecoration(
+                        color: SnapFitColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                letterSpacing: -0.2,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: membershipBg,
+                borderRadius: BorderRadius.circular(999.r),
+              ),
+              child: Text(
+                membershipLabel,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: membershipColor,
                 ),
               ),
             ),
-            Positioned(
-              right: -2.w,
-              bottom: 6.h,
-              child: GestureDetector(
-                onTap: () => _pickAndSaveProfileImage(context, ref, userInfo),
-                child: Container(
-                  width: 34.w,
-                  height: 34.w,
-                  decoration: const BoxDecoration(
-                    color: SnapFitColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.edit, size: 16.sp, color: Colors.white),
-                ),
+            SizedBox(height: 8.h),
+            Text(
+              email,
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: subColor,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
-        SizedBox(height: 12.h),
-        Text(
-          name,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w800,
-            color: textColor,
-            letterSpacing: -0.2,
-          ),
-        ),
-        SizedBox(height: 6.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: membershipBg,
-            borderRadius: BorderRadius.circular(999.r),
-          ),
-          child: Text(
-            membershipLabel,
-            style: TextStyle(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w700,
-              color: membershipColor,
-            ),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          email,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: subColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
