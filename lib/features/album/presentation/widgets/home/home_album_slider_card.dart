@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/album.dart';
 import 'home_focus_wrap.dart';
@@ -71,6 +72,14 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       orElse: () => coverSizes.first,
     );
     final focus = _focusFactor();
+    final targetPages = widget.album.targetPages <= 0
+        ? widget.album.totalPages
+        : widget.album.targetPages;
+    final progress = targetPages <= 0
+        ? 0.0
+        : (widget.album.totalPages / targetPages).clamp(0.0, 1.0);
+    final progressLabel = progress >= 1 ? '완성' : '${(progress * 100).round()}%';
+    final hasCollaboratorLock = (widget.album.lockedBy ?? '').trim().isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
@@ -108,15 +117,92 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             child: SizedBox(
               width: contentWidth,
               height: contentHeight,
-              child: Opacity(
-                opacity: 1,
-                child: HomeAlbumCoverThumbnail(
-                  album: widget.album,
-                  height: contentHeight,
-                  maxWidth: contentWidth,
-                  showShadow: true,
-                  shadowScaleMultiplier: 6.8 + (2.4 * focus),
-                ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: HomeAlbumCoverThumbnail(
+                      album: widget.album,
+                      height: contentHeight,
+                      maxWidth: contentWidth,
+                      showShadow: true,
+                      shadowScaleMultiplier: 6.8 + (2.4 * focus),
+                    ),
+                  ),
+                  if (focus > 0.55)
+                    Positioned(
+                      left: 10.w,
+                      right: 10.w,
+                      bottom: 10.h,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 180),
+                        opacity: focus.clamp(0.0, 1.0),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 7.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.46),
+                            borderRadius: BorderRadius.circular(999.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.18),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                hasCollaboratorLock
+                                    ? Icons.edit_note_rounded
+                                    : Icons.auto_stories_outlined,
+                                size: 13.sp,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 5.w),
+                              Expanded(
+                                child: Text(
+                                  hasCollaboratorLock
+                                      ? '${widget.album.lockedBy} 편집 중'
+                                      : '${widget.album.totalPages}/${targetPages <= 0 ? widget.album.totalPages : targetPages}p',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w800,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 7.w,
+                                  vertical: 3.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: progress >= 1
+                                      ? SnapFitColors.accent
+                                      : Colors.white.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(999.r),
+                                ),
+                                child: Text(
+                                  progressLabel,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w900,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           );

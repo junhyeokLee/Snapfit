@@ -124,13 +124,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     ref.watch(myOrderStatusBadgesProvider),
                   ),
                   SizedBox(height: 12.h),
-                  _buildMenuCard(
+                  _buildMenuSection(
                     context: context,
+                    title: '내 활동',
+                    subtitle: '앨범과 주문 흐름을 빠르게 확인해요',
                     rows: [
                       _menuRow(
                         context: context,
                         icon: Icons.history_rounded,
                         title: '나의 주문 내역',
+                        subtitle: '주문/배송 상태 확인',
                         trailingDot: false,
                         onTap: () async {
                           final summary = orderSummaryAsync.maybeWhen(
@@ -149,55 +152,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                           if (!context.mounted) return;
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const OrderHistoryScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      if (hasAdminOrderAccess)
-                        _menuRow(
-                          context: context,
-                          icon: Icons.admin_panel_settings_outlined,
-                          title: '주문 관리',
-                          trailingDot: false,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const AdminOrderManagementScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      if (hasAdminOrderAccess)
-                        _menuRow(
-                          context: context,
-                          icon: Icons.dashboard_customize_outlined,
-                          title: '템플릿 관리',
-                          trailingDot: false,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const AdminTemplateManagementScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      _menuRow(
-                        context: context,
-                        icon: Icons.credit_card_rounded,
-                        title: '구독 및 결제 관리',
-                        trailingDot: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const BillingManagementScreen(),
-                            ),
+                            snapFitRoute(page: const OrderHistoryScreen()),
                           );
                         },
                       ),
@@ -205,12 +160,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         context: context,
                         icon: Icons.photo_library_outlined,
                         title: '공유된 앨범',
+                        subtitle: '${sharedAlbums.length}개의 함께 만든 앨범',
                         trailingDot: sharedAlbums.isNotEmpty,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => AlbumCategoryScreen(
+                            snapFitRoute(
+                              page: AlbumCategoryScreen(
                                 category: AlbumCategory.shared,
                                 initialAlbums: sharedAlbums,
                                 currentUserId: currentUserId,
@@ -221,15 +177,76 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       ),
                       _menuRow(
                         context: context,
-                        icon: Icons.notifications_none_rounded,
-                        title: '알림 설정',
+                        icon: Icons.credit_card_rounded,
+                        title: '구독 및 결제 관리',
+                        subtitle: '저장공간과 프리미엄 상태 관리',
                         trailingDot: false,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const NotificationSettingsScreen(),
+                            snapFitRoute(page: const BillingManagementScreen()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  if (hasAdminOrderAccess) ...[
+                    SizedBox(height: 12.h),
+                    _buildMenuSection(
+                      context: context,
+                      title: '관리자',
+                      subtitle: '운영 도구는 별도 섹션으로 정리했어요',
+                      rows: [
+                        _menuRow(
+                          context: context,
+                          icon: Icons.admin_panel_settings_outlined,
+                          title: '주문 관리',
+                          subtitle: '제작/배송 주문 상태 처리',
+                          trailingDot: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              snapFitRoute(
+                                page: const AdminOrderManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _menuRow(
+                          context: context,
+                          icon: Icons.dashboard_customize_outlined,
+                          title: '템플릿 관리',
+                          subtitle: '스토어 템플릿 운영',
+                          trailingDot: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              snapFitRoute(
+                                page: const AdminTemplateManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                  SizedBox(height: 12.h),
+                  _buildMenuSection(
+                    context: context,
+                    title: '설정과 도움말',
+                    subtitle: '알림, 테마, 약관, 문의를 한 곳에서',
+                    rows: [
+                      _menuRow(
+                        context: context,
+                        icon: Icons.notifications_none_rounded,
+                        title: '알림 설정',
+                        subtitle: '초대와 주문 알림 관리',
+                        trailingDot: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            snapFitRoute(
+                              page: const NotificationSettingsScreen(),
                             ),
                           );
                         },
@@ -238,6 +255,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         context: context,
                         icon: Icons.palette_outlined,
                         title: '테마 설정',
+                        subtitle: '라이트/다크 모드 변경',
                         trailingDot: false,
                         onTap: () =>
                             _showThemeBottomSheet(context, ref, themeMode),
@@ -246,13 +264,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         context: context,
                         icon: Icons.description_outlined,
                         title: '약관 및 정책',
+                        subtitle: '서비스 이용 약관과 개인정보 처리방침',
                         trailingDot: false,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const TermsPolicyScreen(),
-                            ),
+                            snapFitRoute(page: const TermsPolicyScreen()),
                           );
                         },
                       ),
@@ -260,13 +277,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         context: context,
                         icon: Icons.help_outline_rounded,
                         title: '고객 센터',
+                        subtitle: '문의와 운영 지원',
                         trailingDot: false,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const SupportInquiryScreen(),
-                            ),
+                            snapFitRoute(page: const SupportInquiryScreen()),
                           );
                         },
                       ),
@@ -933,31 +949,63 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _buildMenuCard({
+  Widget _buildMenuSection({
     required BuildContext context,
+    required String title,
+    required String subtitle,
     required List<Widget> rows,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20.r),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            for (int i = 0; i < rows.length; i++) ...[
-              rows[i],
-              if (i != rows.length - 1)
-                Divider(
-                  height: 1,
-                  color: SnapFitColors.overlayLightOf(context),
+    return SnapFitFadeIn(
+      delay: const Duration(milliseconds: 120),
+      child: Container(
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24.r),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 8.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              for (int i = 0; i < rows.length; i++) ...[
+                rows[i],
+                if (i != rows.length - 1)
+                  Divider(
+                    height: 1,
+                    indent: 64.w,
+                    color: SnapFitColors.overlayLightOf(context),
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -967,46 +1015,70 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     required BuildContext context,
     required IconData icon,
     required String title,
+    String? subtitle,
     required bool trailingDot,
     required VoidCallback onTap,
   }) {
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
-    return ListTile(
+    return SnapFitPressable(
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 3.h),
-      leading: Container(
-        width: 34.w,
-        height: 34.w,
-        decoration: BoxDecoration(
-          color: SnapFitColors.overlayLightOf(context),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Icon(icon, size: 17.sp, color: textColor),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w500,
-          color: textColor,
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (trailingDot)
+      pressedScale: 0.985,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+        child: Row(
+          children: [
             Container(
-              width: 8.w,
-              height: 8.w,
-              decoration: const BoxDecoration(
-                color: SnapFitColors.accent,
-                shape: BoxShape.circle,
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: SnapFitColors.accent.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(13.r),
+              ),
+              child: Icon(icon, size: 17.sp, color: SnapFitColors.accent),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
+                  if ((subtitle ?? '').trim().isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle!.trim(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: subColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          SizedBox(width: trailingDot ? 10.w : 0),
-          Icon(Icons.chevron_right, color: subColor, size: 20.sp),
-        ],
+            if (trailingDot)
+              Container(
+                width: 8.w,
+                height: 8.w,
+                decoration: const BoxDecoration(
+                  color: SnapFitColors.accent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            SizedBox(width: trailingDot ? 10.w : 0),
+            Icon(Icons.chevron_right, color: subColor, size: 20.sp),
+          ],
+        ),
       ),
     );
   }
