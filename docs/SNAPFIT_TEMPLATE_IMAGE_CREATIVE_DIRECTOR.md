@@ -101,6 +101,13 @@ Everyday couple intimacy: cake, hands, flowers, restaurant table, street back-vi
 ### Scrapbook
 Messy-curated memory board: hands arranging prints, tape, blank receipts, coffee, friends back-view, diary objects.
 
+
+## Layout + image integration source of truth
+
+Image generation alone is not enough. For crop, position, decoration, typography, and page-role rules, use:
+
+- `docs/SNAPFIT_TEMPLATE_LAYOUT_CREATIVE_DIRECTOR.md`
+
 ## Final acceptance bar
 
 A template image set is good enough only if:
