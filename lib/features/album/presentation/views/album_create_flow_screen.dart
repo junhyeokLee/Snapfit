@@ -255,22 +255,100 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 스텝 단계 표시 (스텝1과 동일 스타일)
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
-              child: Text(
-                'STEP ${(_currentStep + 1).toString().padLeft(2, '0')}/03',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: SnapFitColors.accent,
-                ),
-              ),
-            ),
-            // 스텝별 콘텐츠
+            _buildFlowProgress(),
             Expanded(child: _buildStepContent()),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFlowProgress() {
+    const labels = ['기본 정보', '커버 확인', '초대/편집'];
+    final templateMode = widget.initialTemplatePages != null;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Text(
+                  templateMode ? '템플릿 빠른 시작' : '새 앨범 만들기',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w900,
+                    color: SnapFitColors.accent,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'STEP ${(_currentStep + 1).toString().padLeft(2, '0')}/03',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w900,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: List.generate(labels.length, (index) {
+              final active = index <= _currentStep;
+              final current = index == _currentStep;
+              return Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        height: current ? 6.h : 4.h,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? SnapFitColors.accent
+                              : SnapFitColors.overlayLightOf(context),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                      ),
+                    ),
+                    if (index != labels.length - 1) SizedBox(width: 7.w),
+                  ],
+                ),
+              );
+            }),
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: List.generate(labels.length, (index) {
+              final active = index == _currentStep;
+              return Expanded(
+                child: Text(
+                  labels[index],
+                  textAlign: index == 0
+                      ? TextAlign.left
+                      : index == labels.length - 1
+                      ? TextAlign.right
+                      : TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10.5.sp,
+                    fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                    color: active
+                        ? SnapFitColors.textPrimaryOf(context)
+                        : SnapFitColors.textMutedOf(context),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }

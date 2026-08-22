@@ -821,6 +821,236 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     ];
   }
 
+  List<String> _templateUseTags() {
+    final tags = (_template.tags ?? const <String>[])
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .take(4)
+        .toList(growable: false);
+    if (tags.isNotEmpty) return tags;
+    final category = (_template.category ?? '').trim();
+    return [
+      if (category.isNotEmpty) category,
+      if (_template.isPremium) '프리미엄' else '무료 시작',
+      '${_template.pageCount}p',
+    ];
+  }
+
+  Widget _buildTemplateBrief(BuildContext context) {
+    final tags = _templateUseTags();
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _briefMetric(
+                context,
+                Icons.auto_stories_outlined,
+                '${_template.pageCount}p',
+                '페이지',
+              ),
+              SizedBox(width: 10.w),
+              _briefMetric(
+                context,
+                Icons.crop_free_outlined,
+                _initialCoverSizeForTemplate().name,
+                '추천 비율',
+              ),
+              SizedBox(width: 10.w),
+              _briefMetric(
+                context,
+                _template.isPremium
+                    ? Icons.workspace_premium_outlined
+                    : Icons.lock_open_rounded,
+                _template.isPremium ? 'Premium' : 'Free',
+                '사용 조건',
+              ),
+            ],
+          ),
+          if (tags.isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: tags
+                  .map(
+                    (tag) => Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.accent.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(999.r),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: SnapFitColors.accent,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _briefMetric(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: SnapFitColors.backgroundOf(context),
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 18.sp, color: SnapFitColors.accent),
+            SizedBox(height: 8.h),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            SizedBox(height: 2.h),
+            Text(
+              label,
+              style: TextStyle(
+                color: SnapFitColors.textMutedOf(context),
+                fontSize: 10.5.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickStartPanel(BuildContext context) {
+    final items = const [
+      (number: '01', title: '제목만 입력', desc: '템플릿 제목이 기본값으로 들어가요.'),
+      (number: '02', title: '커버 확인', desc: '추천 비율과 표지 레이아웃을 바로 적용해요.'),
+      (number: '03', title: '사진 채우기', desc: '초대는 나중에 해도 편집을 시작할 수 있어요.'),
+    ];
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: Theme.of(context).brightness == Brightness.dark
+              ? const [Color(0xFF172033), Color(0xFF251A32)]
+              : const [Color(0xFFFFF7ED), Color(0xFFEFF6FF)],
+        ),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '빠른 시작 플로우',
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '복잡한 설정보다 먼저 앨범을 만들고, 초대와 세부 편집은 나중에 이어갈 수 있어요.',
+            style: TextStyle(
+              color: SnapFitColors.textSecondaryOf(context),
+              fontSize: 13.sp,
+              height: 1.45,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          ...items.map(
+            (item) => Padding(
+              padding: EdgeInsets.only(bottom: item.number == '03' ? 0 : 12.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 34.w,
+                    height: 34.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: SnapFitColors.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      item.number,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: TextStyle(
+                            color: SnapFitColors.textPrimaryOf(context),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 3.h),
+                        Text(
+                          item.desc,
+                          style: TextStyle(
+                            color: SnapFitColors.textMutedOf(context),
+                            fontSize: 12.sp,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color? _parseHexColor(String? raw) {
     final value = raw?.trim();
     if (value == null || value.isEmpty) return null;
@@ -1138,7 +1368,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       child: Column(
                         children: [
                           Text(
-                            '이 템플릿으로 시작하기',
+                            _template.title,
                             style: TextStyle(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
@@ -1146,9 +1376,13 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             ),
                           ),
                           SizedBox(height: 12.h),
-                          if (_template.subTitle != null)
+                          if ((_template.subTitle ?? _template.description)
+                                  ?.trim()
+                                  .isNotEmpty ??
+                              false)
                             Text(
-                              _template.subTitle!,
+                              (_template.subTitle ?? _template.description)!
+                                  .trim(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15.sp,
@@ -1156,11 +1390,17 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                 height: 1.5,
                               ),
                             ),
+                          SizedBox(height: 22.h),
+                          _buildTemplateBrief(context),
                         ],
                       ),
                     ),
 
-                    SizedBox(height: 40.h),
+                    SizedBox(height: 30.h),
+
+                    _buildQuickStartPanel(context),
+
+                    SizedBox(height: 32.h),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1411,7 +1651,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  '이 템플릿 사용하기',
+                                  '빠른 시작하기',
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
