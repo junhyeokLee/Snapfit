@@ -11,6 +11,8 @@ while avoiding recognizable faces, logos, brands, or readable text.
 from __future__ import annotations
 import base64, json, os, time, urllib.request
 from pathlib import Path
+from urllib.error import HTTPError
+import argparse
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_META = ROOT / 'assets/templates/jeju_travel/images/generated_ai/openai_generation_metadata.json'
@@ -40,14 +42,24 @@ def call(prompt: str) -> bytes:
         raise SystemExit('OPENAI_API_KEY is not set. Export it in the VPS/container shell and rerun.')
     payload = dict(DATA, prompt=prompt + NEG)
     req = urllib.request.Request(API, data=json.dumps(payload).encode(), headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'})
-    with urllib.request.urlopen(req, timeout=180) as resp:
-        body = json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            body = json.loads(resp.read().decode())
+    except HTTPError as exc:
+        detail = exc.read().decode('utf-8', 'replace')
+        raise SystemExit(f'OpenAI image generation failed: HTTP {exc.code} {exc.reason}\n{detail}') from exc
     b64 = body['data'][0].get('b64_json')
     if not b64:
         raise RuntimeError(f'No b64_json returned: {body}')
     return base64.b64decode(b64)
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description='Generate Jeju template images with OpenAI gpt-image-1.')
+    parser.add_argument('--limit', type=int, default=None, help='Generate only the first N images for cost/error testing.')
+    parser.add_argument('--size', default=DATA['size'], help='Image size to request, e.g. 1024x1536 or 1024x1024.')
+    args = parser.parse_args()
+    DATA['size'] = args.size
+    selected = IMAGES[:args.limit] if args.limit else IMAGES
     meta = {
         'provider': 'OpenAI',
         'model': DATA['model'],
@@ -55,7 +67,7 @@ def main() -> int:
         'artDirection': 'real-person Jeju travel snapshots: friends from behind, hands, cafe, food, car-window, guesthouse, photo-dump details; no generic scenery-only set',
         'assets': [],
     }
-    for asset, prompt in IMAGES:
+    for asset, prompt in selected:
         path = ROOT / asset
         path.parent.mkdir(parents=True, exist_ok=True)
         print(f'generating {asset}...')
