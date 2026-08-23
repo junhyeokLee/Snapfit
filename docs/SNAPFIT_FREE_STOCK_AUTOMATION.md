@@ -74,3 +74,13 @@ assets/templates/<template_slug>/images/pexels_candidates/
 ```
 
 Then Hermes can review candidates, select the best images, wire them into the template JSON, and update source records.
+
+## No-key practical fallback: LibreShot scraping
+
+When Openverse results are weak or rate-limited and the user does not want any API key, use LibreShot as a no-key fallback:
+
+```bash
+python3 tool/source_template_images_libreshot.py --template jeju_travel_v1 --per-role 2
+```
+
+LibreShot can provide usable free-stock candidates without API credentials, but the set may be less theme-perfect than Pexels or custom AI generation. Still review every candidate visually and verify current LibreShot license terms before release.

@@ -45,3 +45,10 @@ app.*.map.json
 /android/app/release
 # Supabase local CLI cache (contains machine-local linked project metadata)
 supabase/.temp/
+
+# Template image sourcing candidates (review/transient; approved assets are copied elsewhere)
+assets/templates/*/images/free_stock_candidates/
+assets/templates/*/images/commons_candidates/
+assets/templates/*/images/libreshot_candidates/
+assets/templates/*/images/libreshot_candidates_extra/
+assets/templates/*/images/pexels_candidates/
