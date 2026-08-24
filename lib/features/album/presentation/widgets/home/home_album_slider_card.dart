@@ -41,7 +41,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
     );
     _tapScale = Tween<double>(
       begin: 1,
-      end: 0.92,
+      end: 0.98,
     ).animate(CurvedAnimation(parent: _tapController, curve: Curves.easeOut));
   }
 
@@ -81,7 +81,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
           // 정사각형을 기준 크기로 두고:
           // - 세로형: 정사각형과 높이는 같고 더 좁게
           // - 가로형: 정사각형과 폭은 같고 더 낮게
-          final baseSquareSize = h * (0.69 + (0.11 * focus));
+          final baseSquareSize = h * (0.66 + (0.10 * focus));
           final maxAllowedWidth = constraints.maxWidth * 0.98;
           final squareWidth = baseSquareSize > maxAllowedWidth
               ? maxAllowedWidth
@@ -98,7 +98,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             -1.0,
             1.0,
           );
-          final gapPush = pageDelta * 18.w;
+          final gapPush = pageDelta * 10.w;
           final coverContent = OverflowBox(
             minWidth: 0,
             minHeight: 0,

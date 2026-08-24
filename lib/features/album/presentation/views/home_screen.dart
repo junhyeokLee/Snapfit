@@ -16,7 +16,6 @@ import '../widgets/home/home_bottom_navigation_bar.dart';
 import '../widgets/home/home_empty_state.dart';
 import '../viewmodels/home_view_model.dart';
 import '../widgets/home/home_error_state.dart';
-import '../widgets/home/home_create_album_fab.dart';
 import '../widgets/home/home_album_card_tone.dart';
 import 'album_create_flow_screen.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
@@ -135,7 +134,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final baseBackground = SnapFitColors.backgroundOf(context);
-    final homeBackground = _focusedHomeAlbumTone ?? baseBackground;
+    final warmHomeBase = Theme.of(context).brightness == Brightness.dark
+        ? SnapFitColors.backgroundOf(context)
+        : const Color(0xFFFAF7F1);
+    final homeBackground = _focusedHomeAlbumTone ?? warmHomeBase;
 
     return PopScope(
       canPop: !isAndroid || _bottomNavHistory.length <= 1,
@@ -152,10 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           hasUnreadNotification: hasUnreadNotification,
           onTap: _handleBottomNavTap,
         ),
-        floatingActionButton: uiState.bottomNavIndex == 0
-            ? HomeCreateAlbumFab(onPressed: handleCreateAlbum)
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButton: null,
         body: _buildBottomNavBody(
           context,
           currentBottomNavIndex: uiState.bottomNavIndex,
@@ -186,28 +185,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       physics: platformScrollPhysics(alwaysScrollable: true),
                       slivers: [
                         if (prepared.baseAlbums.isNotEmpty) ...[
+                          SliverToBoxAdapter(child: SizedBox(height: 18.h)),
+                          SliverToBoxAdapter(
+                            child: _buildHomeHeroHeader(context),
+                          ),
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 20.h),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height:
-                                      (MediaQuery.sizeOf(context).height * 0.54)
-                                          .clamp(360.0, 640.0),
-                                  child: HomeAlbumSlider(
-                                    albums: List<Album>.from(
-                                      prepared.baseAlbums,
-                                    )..sort(compareAlbumByLatestDesc),
-                                    onFocusedAlbumChanged:
-                                        _onFocusedHomeAlbumChanged,
-                                  ),
-                                ),
+                          SliverToBoxAdapter(
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: (MediaQuery.sizeOf(context).height * 0.47)
+                                  .clamp(330.0, 560.0),
+                              child: HomeAlbumSlider(
+                                albums: List<Album>.from(prepared.baseAlbums)
+                                  ..sort(compareAlbumByLatestDesc),
+                                onFocusedAlbumChanged:
+                                    _onFocusedHomeAlbumChanged,
                               ),
                             ),
                           ),
+                          SliverToBoxAdapter(child: SizedBox(height: 18.h)),
+                          SliverToBoxAdapter(
+                            child: _buildHomePrimaryCta(
+                              context,
+                              onPressed: handleCreateAlbum,
+                            ),
+                          ),
+                          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
                         ] else
                           SliverToBoxAdapter(
                             child: SizedBox(
@@ -243,6 +246,112 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 error: (err, stack) => HomeErrorState(error: err),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeHeroHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : SnapFitColors.deepCharcoal)
+                  .withOpacity(isDark ? 0.08 : 0.06),
+              borderRadius: BorderRadius.circular(999.r),
+            ),
+            child: Text(
+              'SNAPFIT PHOTOBOOK',
+              style: TextStyle(
+                color: isDark
+                    ? Colors.white.withOpacity(0.74)
+                    : SnapFitColors.deepCharcoal.withOpacity(0.62),
+                fontSize: 10.5.sp,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            '준자님의 추억을\n다시 펼쳐볼까요?',
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 26.sp,
+              height: 1.18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.7,
+            ),
+          ),
+          SizedBox(height: 9.h),
+          Text(
+            '사진 몇 장이면 포토북이 시작돼요.',
+            style: TextStyle(
+              color: SnapFitColors.textSecondaryOf(context),
+              fontSize: 14.sp,
+              height: 1.35,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomePrimaryCta(
+    BuildContext context, {
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 28.w),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(999.r),
+          splashColor: Colors.white.withOpacity(0.12),
+          highlightColor: Colors.white.withOpacity(0.08),
+          child: Ink(
+            height: 54.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999.r),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF13C8EC), Color(0xFF8B5CF6)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF13C8EC).withOpacity(0.18),
+                  blurRadius: 18.r,
+                  offset: Offset(0, 9.h),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.auto_stories_rounded,
+                  color: SnapFitColors.pureWhite,
+                  size: 20.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  '새 포토북 만들기',
+                  style: TextStyle(
+                    color: SnapFitColors.pureWhite,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

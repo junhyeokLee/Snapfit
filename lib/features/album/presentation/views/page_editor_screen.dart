@@ -214,9 +214,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         // 되어 SnackBar 애니메이션 완료 시점에 ancestor 조회가 실패한다.
         final messenger = ScaffoldMessenger.of(context);
         Navigator.popUntil(context, (route) => route.isFirst);
-        messenger.showSnackBar(
-          const SnackBar(content: Text('앨범이 저장되었습니다!')),
-        );
+        messenger.showSnackBar(const SnackBar(content: Text('앨범이 저장되었습니다!')));
       }
     } catch (e) {
       if (e is StorageQuotaExceededException && context.mounted) {
@@ -455,7 +453,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               ),
               SizedBox(width: 8.w),
               Text(
-                "스냅핏 만들기",
+                currentPageIndex == 0 ? '표지를 확인해요' : '스냅핏 만들기',
                 style: TextStyle(
                   color: SnapFitColors.textPrimaryOf(context),
                   fontSize: 16.sp,
@@ -485,7 +483,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: SnapFitColors.readerGradientOf(context),
+              colors: Theme.of(context).brightness == Brightness.dark
+                  ? SnapFitColors.readerGradientOf(context)
+                  : const [Color(0xFFFAF7F1), Color(0xFFFFFCF7)],
             ),
           ),
           child: Stack(
@@ -593,7 +593,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                                             vm.currentPage?.backgroundColor !=
                                                 null
                                             ? Color(
-                                                vm.currentPage!.backgroundColor!,
+                                                vm
+                                                    .currentPage!
+                                                    .backgroundColor!,
                                               )
                                             : null,
                                         isCover:
@@ -610,7 +612,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
                     // RenderFlex overflow가 발생하지 않도록 한다.
                     SizedBox(
-                      height: 80.h,
+                      height: 68.h,
                       child: Center(
                         child: AnimatedSwitcher(
                           duration: SnapFitMotion.medium,
@@ -766,7 +768,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    '사진 슬롯을 탭해 이미지를 넣고, 아래 도구로 레이아웃과 장식을 조정하세요.',
+                    '표지에 담을 사진을 올리고, 제목을 더해 포토북의 첫인상을 완성해보세요.',
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),
                       fontSize: 12.sp,

@@ -1,5 +1,6 @@
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/grid_overlay_painter.dart';
 import '../../../../../shared/widgets/spine_painter.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class CoverLayout extends StatelessWidget {
   final GlobalKey? contentKey;
   final List<double> activeVerticalGuides;
   final List<double> activeHorizontalGuides;
+  final bool showEmptyGuide;
 
   const CoverLayout({
     super.key,
@@ -42,6 +44,7 @@ class CoverLayout extends StatelessWidget {
     this.contentKey,
     this.activeVerticalGuides = const <double>[],
     this.activeHorizontalGuides = const <double>[],
+    this.showEmptyGuide = false,
   });
 
   @override
@@ -97,6 +100,8 @@ class CoverLayout extends StatelessWidget {
                                       backgroundColor: backgroundColor,
                                       backgroundImageUrl: backgroundImageUrl,
                                     ),
+                                    if (showEmptyGuide && layers.isEmpty)
+                                      const _CoverEmptyGuide(),
                                     ...sortedByZ(layers).map((layer) {
                                       // 스타일 변경 시 즉시 반영되도록 키에 textBackground/imageBackground 포함
                                       final styleKey = ValueKey(
@@ -179,6 +184,110 @@ class CoverLayout extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CoverEmptyGuide extends StatelessWidget {
+  const _CoverEmptyGuide();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(52, 46, 38, 42),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 250,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFCF7).withOpacity(0.82),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: const Color(0xFF8E7D67).withOpacity(0.18),
+                width: 1.2,
+              ),
+            ),
+            child: CustomPaint(
+              painter: _DashedGuidePainter(),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF13C8EC).withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        color: Color(0xFF13AFCF),
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '표지에 담을 사진을 올려보세요',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: SnapFitColors.deepCharcoal.withOpacity(0.82),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.62),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '앨범 제목을 입력하면 더 특별해져요',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: SnapFitColors.deepCharcoal.withOpacity(0.62),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashedGuidePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF8E7D67).withOpacity(0.32)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(26),
+    ).deflate(1.5);
+    final path = Path()..addRRect(rect);
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        canvas.drawPath(metric.extractPath(distance, distance + 10), paint);
+        distance += 18;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _SnapGuidePainter extends CustomPainter {
@@ -284,7 +393,7 @@ class _CoverBackground extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      Colors.black.withOpacity(0.18),
+                      Colors.black.withOpacity(0.10),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 1.0],
@@ -388,26 +497,26 @@ class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {
     final List<BoxShadow> boxShadow = animate
         ? [
             BoxShadow(
-              color: Colors.black.withOpacity(0.18),
-              blurRadius: 20,
-              offset: const Offset(32, 90),
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 18,
+              offset: const Offset(24, 64),
             ),
             BoxShadow(
-              color: const Color(0xFF5c5d8d).withOpacity(0.18),
-              blurRadius: 18,
-              offset: const Offset(44, 90),
+              color: const Color(0xFF5c5d8d).withOpacity(0.10),
+              blurRadius: 16,
+              offset: const Offset(32, 64),
             ),
           ]
         : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 10,
-              offset: const Offset(24, 72),
+              color: Colors.black.withOpacity(0.09),
+              blurRadius: 12,
+              offset: const Offset(18, 48),
             ),
             BoxShadow(
-              color: const Color(0xFF5c5d8d).withOpacity(0.12),
-              blurRadius: 10,
-              offset: const Offset(34, 72),
+              color: const Color(0xFF5c5d8d).withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(26, 48),
             ),
           ];
     return AnimatedScale(

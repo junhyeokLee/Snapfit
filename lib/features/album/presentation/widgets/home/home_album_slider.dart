@@ -27,7 +27,7 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.59);
+    _pageController = PageController(viewportFraction: 0.72);
     _currentPage = _pageController.initialPage.toDouble();
     _lastFocusedIndex = _pageController.initialPage;
     _pageController.addListener(_handlePageChanged);

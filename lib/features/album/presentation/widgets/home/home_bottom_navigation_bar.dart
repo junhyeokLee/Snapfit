@@ -37,8 +37,8 @@ class HomeBottomNavigationBar extends StatelessWidget {
       context: context,
       removeBottom: true,
       child: Container(
-        height: 58.h,
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        height: 54.h,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
         decoration: BoxDecoration(
           color: barColor,
           border: Border(top: BorderSide(color: borderColor)),
@@ -137,13 +137,13 @@ class _BottomNavItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 3.h),
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
+          margin: EdgeInsets.symmetric(horizontal: 3.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.h),
           decoration: BoxDecoration(
             color: isSelected
-                ? selectedColor.withOpacity(isDark ? 0.18 : 0.12)
+                ? selectedColor.withOpacity(isDark ? 0.12 : 0.08)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(13.r),
           ),
           child: Center(
             child: FittedBox(
@@ -161,7 +161,7 @@ class _BottomNavItem extends StatelessWidget {
                         scale: isSelected ? 1.06 : 1.0,
                         child: Icon(
                           icon,
-                          size: isSelected ? 20.sp : 19.sp,
+                          size: isSelected ? 18.sp : 17.sp,
                           color: color,
                         ),
                       ),
@@ -190,7 +190,7 @@ class _BottomNavItem extends StatelessWidget {
                         (Theme.of(context).textTheme.bodySmall ??
                                 const TextStyle())
                             .copyWith(
-                              fontSize: 9.5.sp,
+                              fontSize: 9.sp,
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w500,

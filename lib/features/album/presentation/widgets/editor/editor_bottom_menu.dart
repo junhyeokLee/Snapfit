@@ -34,10 +34,10 @@ class EditorBottomMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 76.h,
-      padding: EdgeInsets.only(bottom: 16.h), // 하단 여백 살짝 줄여서 더 컴팩트하게
+      height: 62.h,
+      padding: EdgeInsets.only(bottom: 10.h), // 하단 여백 살짝 줄여서 더 컴팩트하게
       decoration: BoxDecoration(
-        color: Colors.transparent, // 상위 그라데이션 배경 그대로 사용
+        color: SnapFitColors.surfaceOf(context).withOpacity(0.92),
         border: Border(
           top: BorderSide(
             color: SnapFitColors.overlayLightOf(context),
@@ -166,7 +166,9 @@ class EditorBottomMenu extends StatelessWidget {
     final isSelected = !isAction && currentMode == mode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // 바텀 아이콘/텍스트 색상: 라이트 모드 = 검정, 다크 모드 = 흰색
-    final Color color = isDark ? Colors.white : Colors.black;
+    final Color color = isDark
+        ? Colors.white.withOpacity(0.70)
+        : SnapFitColors.deepCharcoal.withOpacity(0.62);
 
     return SnapFitPressable(
       pressedScale: 0.92,
@@ -180,12 +182,12 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? SnapFitColors.accent.withOpacity(0.13)
+              ? SnapFitColors.accent.withOpacity(0.10)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -197,10 +199,10 @@ class EditorBottomMenu extends StatelessWidget {
               child: Icon(
                 icon,
                 color: isSelected ? SnapFitColors.accent : color,
-                size: 20.sp,
+                size: 18.sp,
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 3.h),
             Text(
               label,
               // 앱 전역 텍스트 테마(bodySmall)를 베이스로 사용해 폰트/라인하이트를 통일하고,
@@ -208,7 +210,7 @@ class EditorBottomMenu extends StatelessWidget {
               style:
                   (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
                       .copyWith(
-                        fontSize: 9.sp,
+                        fontSize: 8.5.sp,
                         color: isSelected ? SnapFitColors.accent : color,
                         fontWeight: isSelected
                             ? FontWeight.w800

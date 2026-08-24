@@ -616,6 +616,7 @@ class EditCoverState extends ConsumerState<EditCover> {
                                                     ),
                                                 sortedByZ: _interaction.sortByZ,
                                                 theme: selectedTheme,
+                                                showEmptyGuide: true,
                                               ),
                                             ),
                                           ),
