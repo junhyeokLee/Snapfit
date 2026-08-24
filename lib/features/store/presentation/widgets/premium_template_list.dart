@@ -10,6 +10,7 @@ import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../domain/entities/premium_template.dart';
 import '../views/template_detail_screen.dart';
 import 'template_page_renderer.dart';
+import 'template_preview_frame.dart';
 import '../../data/api/template_provider.dart';
 
 class PremiumTemplateList extends ConsumerStatefulWidget {
@@ -39,14 +40,14 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
 
   Widget _buildCoverImage(BuildContext context, String rawUrl) {
     if (rawUrl.trim().isEmpty) {
-      return _fallbackCover();
+      return const TemplatePaperPlaceholder();
     }
     final bundledAsset = bundledTemplateAssetPath(rawUrl);
     if (bundledAsset != null) {
       return Image.asset(
         bundledAsset,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallbackCover(),
+        errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
       );
     }
     final transformed = imageUrlByVariant(rawUrl, variant: ImageVariant.thumb);
@@ -54,7 +55,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
       return Image.asset(
         transformed.substring('asset:'.length),
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallbackCover(),
+        errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
       );
     }
     return Image.network(
@@ -62,35 +63,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
-        return Container(
-          color: Colors.grey[300],
-          child: Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                  : null,
-              color: Colors.white,
-            ),
-          ),
-        );
+        return const TemplatePaperPlaceholder();
       },
-      errorBuilder: (_, __, ___) => _fallbackCover(),
-    );
-  }
-
-  Widget _fallbackCover() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFE7EDF4), Color(0xFFD8E3F0)],
-        ),
-      ),
-      child: const Center(
-        child: Icon(Icons.photo_outlined, color: Color(0xFF7A8AA0)),
-      ),
+      errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
     );
   }
 
@@ -187,15 +162,16 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     },
                                   )
                                 else
-                                  _fallbackCover(),
+                                  const TemplatePaperPlaceholder(),
+                                _ShowcaseMiniPeek(template: template),
                                 // Premium Gradient Overlay (Deep and smooth)
                                 Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
                                         Colors.black.withOpacity(0.0),
-                                        Colors.black.withOpacity(0.10),
-                                        Colors.black.withOpacity(0.72),
+                                        Colors.black.withOpacity(0.06),
+                                        Colors.black.withOpacity(0.62),
                                       ],
                                       begin: Alignment.center,
                                       end: Alignment.bottomCenter,
@@ -341,6 +317,85 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
         height: 100.h,
         child: Center(child: Text('템플릿을 불러올 수 없습니다.')), // Simple error message
       ),
+    );
+  }
+}
+
+class _ShowcaseMiniPeek extends StatelessWidget {
+  const _ShowcaseMiniPeek({required this.template});
+
+  final PremiumTemplate template;
+
+  @override
+  Widget build(BuildContext context) {
+    final urls = template.previewImages
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .skip(1)
+        .take(2)
+        .toList(growable: false);
+    if (urls.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      top: 74.h,
+      right: 20.w,
+      child: SizedBox(
+        width: 112.w,
+        height: 128.h,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            for (var i = 0; i < urls.length; i++)
+              Positioned(
+                right: (i * 38).w,
+                top: (i * 12).h,
+                child: Transform.rotate(
+                  angle: i == 0 ? 0.06 : -0.08,
+                  child: SizedBox(
+                    width: 58.w,
+                    height: 82.h,
+                    child: TemplatePreviewFrame(
+                      borderRadius: 16,
+                      padding: EdgeInsets.all(3.w),
+                      showShadow: true,
+                      child: _ShowcaseMiniImage(url: urls[i]),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShowcaseMiniImage extends StatelessWidget {
+  const _ShowcaseMiniImage({required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final bundledAsset = bundledTemplateAssetPath(url);
+    if (bundledAsset != null) {
+      return Image.asset(bundledAsset, fit: BoxFit.cover);
+    }
+    final transformed = imageUrlByVariant(url, variant: ImageVariant.thumb);
+    if (transformed.startsWith('asset:')) {
+      return Image.asset(
+        transformed.substring('asset:'.length),
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      transformed,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) =>
+          const TemplatePaperPlaceholder(compact: true),
+      loadingBuilder: (context, child, progress) => progress == null
+          ? child
+          : const TemplatePaperPlaceholder(compact: true),
     );
   }
 }

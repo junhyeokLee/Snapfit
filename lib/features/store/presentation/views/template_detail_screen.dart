@@ -17,6 +17,7 @@ import '../../domain/entities/premium_template.dart';
 import '../../data/api/template_provider.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../widgets/template_page_renderer.dart';
+import '../widgets/template_preview_frame.dart';
 import 'template_full_screen_view.dart';
 import '../../../album/presentation/views/album_create_flow_screen.dart';
 
@@ -1445,7 +1446,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '페이지 미리보기',
+                            '페이지 구성 미리보기',
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w900,
@@ -1453,7 +1454,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             ),
                           ),
                           Text(
-                            '총 ${_template.pageCount}페이지',
+                            '사진만 넣으면 이 흐름으로 완성돼요 · ${_template.pageCount}페이지',
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: SnapFitColors.accent,
@@ -1706,57 +1707,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
     return SnapFitFadeIn(
       child: Center(
-        child: Container(
+        child: SizedBox(
           width: heroWidth,
           height: heroHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26.r),
-            color: SnapFitColors.surfaceOf(context),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.12),
-                blurRadius: 28,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(26.r),
-                  child: _buildRenderedTemplateSurface(
-                    layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
-                    previewUrl: coverUrl,
-                    width: heroWidth,
-                    height: heroHeight,
-                    loading: () => Container(
-                      color: SnapFitStylePalette.blue,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    error: () => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            SnapFitStylePalette.blue,
-                            SnapFitStylePalette.lavender,
-                          ],
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.photo_outlined,
-                        color: SnapFitStylePalette.charcoal,
-                        size: 34,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          child: TemplatePreviewFrame(
+            borderRadius: 28,
+            padding: EdgeInsets.all(6.w),
+            child: _buildRenderedTemplateSurface(
+              layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
+              previewUrl: coverUrl,
+              width: heroWidth,
+              height: heroHeight,
+              loading: () => const TemplatePaperPlaceholder(),
+              error: () => const TemplatePaperPlaceholder(),
+            ),
           ),
         ),
       ),
@@ -1820,28 +1784,31 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildPagePreviewPlaceholder(BuildContext context, int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: 180.w,
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-      ),
-      child: Center(
-        child: Container(
-          width: 140.w,
-          height: 200.h,
-          decoration: BoxDecoration(
-            color: isDark ? Colors.grey[800] : Colors.grey[200],
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-          child: Center(
-            child: Text(
-              "Preview ${index + 1}",
-              style: TextStyle(color: SnapFitColors.textMutedOf(context)),
+    return SnapFitPressable(
+      onTap: () => _openFullScreenView(index),
+      pressedScale: 0.985,
+      borderRadius: BorderRadius.circular(22.r),
+      child: SizedBox(
+        width: 180.w,
+        child: Column(
+          children: [
+            Expanded(
+              child: TemplatePreviewFrame(
+                borderRadius: 22,
+                padding: EdgeInsets.all(5.w),
+                child: const TemplatePaperPlaceholder(),
+              ),
             ),
-          ),
+            SizedBox(height: 8.h),
+            Text(
+              index == 0 ? 'Cover' : index.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textMutedOf(context),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1851,42 +1818,44 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final aspect = _resolveTemplateAspect();
     final previewHeight = 200.h;
     final previewWidth = (previewHeight * aspect).clamp(110.w, 180.w);
-    return Container(
-      width: 180.w,
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-      ),
-      child: Center(
-        child: Container(
-          width: previewWidth,
-          height: previewHeight,
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4.r)),
-          child: _previewImageWidget(
-            imageUrl,
-            fit: BoxFit.cover,
-            variant: ImageVariant.thumb,
-            loading: () => Container(
-              color: SnapFitStylePalette.gray,
-              alignment: Alignment.center,
-              child: const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 1.8),
+    final index = _template.previewImages.indexOf(imageUrl);
+    return SnapFitPressable(
+      onTap: () => _openFullScreenView(index < 0 ? 0 : index),
+      pressedScale: 0.985,
+      borderRadius: BorderRadius.circular(22.r),
+      child: SizedBox(
+        width: 180.w,
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: SizedBox(
+                  width: previewWidth,
+                  height: previewHeight,
+                  child: TemplatePreviewFrame(
+                    borderRadius: 22,
+                    padding: EdgeInsets.all(5.w),
+                    child: _previewImageWidget(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      variant: ImageVariant.thumb,
+                      loading: () => const TemplatePaperPlaceholder(),
+                      error: () => const TemplatePaperPlaceholder(),
+                    ),
+                  ),
+                ),
               ),
             ),
-            error: () => Container(
-              color: SnapFitStylePalette.blue,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.photo_outlined,
-                size: 22,
-                color: SnapFitStylePalette.charcoal,
+            SizedBox(height: 8.h),
+            Text(
+              index <= 0 ? 'Cover' : index.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textMutedOf(context),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1897,7 +1866,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     int index,
     List<LayerModel> layers,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final previewAspect = _resolveTemplateAspect();
     const basePreviewHeight = 140.0;
     final previewHeight = basePreviewHeight.w;
@@ -1908,38 +1876,42 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final previewUrl = index < _template.previewImages.length
         ? _template.previewImages[index]
         : '';
-    final pageSurfaceColor = _inferredTemplateSurfaceColor(layers);
-    return GestureDetector(
+    return SnapFitPressable(
       onTap: () => _openFullScreenView(index),
-      child: Container(
+      pressedScale: 0.985,
+      borderRadius: BorderRadius.circular(22.r),
+      child: SizedBox(
         width: 180.w,
-        decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-        ),
-        child: Center(
-          child: Container(
-            width: previewWidth,
-            height: previewHeight,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: pageSurfaceColor,
-              borderRadius: BorderRadius.circular(4.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.28 : 0.05),
-                  blurRadius: 4,
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: SizedBox(
+                  width: previewWidth,
+                  height: previewHeight,
+                  child: TemplatePreviewFrame(
+                    borderRadius: 22,
+                    padding: EdgeInsets.all(5.w),
+                    child: _buildRenderedTemplateSurface(
+                      layers: layers,
+                      previewUrl: previewUrl,
+                      width: previewWidth,
+                      height: previewHeight,
+                    ),
+                  ),
                 ),
-              ],
+              ),
             ),
-            child: _buildRenderedTemplateSurface(
-              layers: layers,
-              previewUrl: previewUrl,
-              width: previewWidth,
-              height: previewHeight,
+            SizedBox(height: 8.h),
+            Text(
+              index == 0 ? 'Cover' : index.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textMutedOf(context),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1953,28 +1925,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     Widget Function()? loading,
     Widget Function()? error,
   }) {
-    final loadingWidget =
-        loading ??
-        () => Container(
-          color: SnapFitColors.surfaceOf(context),
-          alignment: Alignment.center,
-          child: const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 1.8),
-          ),
-        );
-    final errorWidget =
-        error ??
-        () => Container(
-          color: SnapFitColors.surfaceOf(context),
-          alignment: Alignment.center,
-          child: const Icon(
-            Icons.photo_outlined,
-            color: SnapFitStylePalette.charcoal,
-            size: 20,
-          ),
-        );
+    final loadingWidget = loading ?? () => const TemplatePaperPlaceholder();
+    final errorWidget = error ?? () => const TemplatePaperPlaceholder();
 
     if (layers != null && layers.isNotEmpty) {
       return ColoredBox(

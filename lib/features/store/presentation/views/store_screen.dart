@@ -1,19 +1,15 @@
-import 'dart:convert';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../core/utils/image_url_policy.dart';
-import '../../../album/domain/entities/layer.dart';
-import '../../../album/domain/entities/layer_export_mapper.dart';
 import '../../data/api/template_provider.dart';
 import '../../domain/entities/premium_template.dart';
 import '../widgets/premium_template_list.dart';
-import '../widgets/template_page_renderer.dart';
+import '../widgets/template_preview_frame.dart';
 import 'template_detail_screen.dart';
 
 String _storeCoverPreviewUrl(PremiumTemplate template) {
@@ -579,8 +575,14 @@ class _TemplateGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = template.isPremium ? 'Premium' : '무료 사용';
-    final labelColor = template.isPremium
+    final label = template.isBest
+        ? 'BEST'
+        : template.isNew
+        ? 'NEW'
+        : template.isPremium
+        ? 'PREMIUM'
+        : '무료 사용';
+    final labelColor = (template.isBest || template.isNew || template.isPremium)
         ? SnapFitColors.accent
         : SnapFitColors.textSecondaryOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -613,7 +615,10 @@ class _TemplateGridCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    _StoreTemplateCoverPreview(template: template),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 8),
+                      child: _StoreTemplateSampleStack(template: template),
+                    ),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -696,7 +701,7 @@ class _TemplateGridCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${template.category ?? '포토북'} · ${template.pageCount}페이지${template.isPremium ? ' · Premium' : ''}',
+                      '${template.category ?? '포토북'} · ${template.pageCount}페이지 구성',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -766,88 +771,57 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _StoreTemplateCoverPreview extends StatelessWidget {
-  final PremiumTemplate template;
+class _StoreTemplateSampleStack extends StatelessWidget {
+  const _StoreTemplateSampleStack({required this.template});
 
-  const _StoreTemplateCoverPreview({required this.template});
+  final PremiumTemplate template;
 
   @override
   Widget build(BuildContext context) {
-    final directCoverUrl = _storeCoverPreviewUrl(template);
-    if (directCoverUrl.isNotEmpty) {
-      return _NetworkImage(url: directCoverUrl, variant: ImageVariant.thumb);
-    }
-    final parsed = _parseFirstPage(template);
-    if (parsed != null) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final targetAspect = parsed.$2;
-          final maxWidth = constraints.maxWidth;
-          final maxHeight = constraints.maxHeight;
-          final drawWidth = math.min(maxWidth, maxHeight * targetAspect);
-          final drawHeight = drawWidth / targetAspect;
-          return Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFF7ED), Color(0xFFEAFBFD)],
-              ),
-            ),
+    final urls = <String>[
+      _storeCoverPreviewUrl(template),
+      ...template.previewImages.map((e) => e.trim()),
+    ].where((e) => e.isNotEmpty).toSet().toList(growable: false);
+    Widget page(
+      int index, {
+      required double scale,
+      required Offset offset,
+      required double opacity,
+    }) {
+      final hasUrl = index < urls.length;
+      return Positioned.fill(
+        child: FractionalTranslation(
+          translation: Offset(offset.dx / 130, offset.dy / 180),
+          child: Transform.scale(
+            scale: scale,
             alignment: Alignment.center,
-            child: SizedBox(
-              width: drawWidth,
-              height: drawHeight,
-              child: TemplatePageRenderer(
-                layers: parsed.$1,
-                width: drawWidth,
-                height: drawHeight,
-                designCanvasSize: parsed.$3,
+            child: Opacity(
+              opacity: opacity,
+              child: TemplatePreviewFrame(
+                borderRadius: 22,
+                padding: EdgeInsets.all(4.w),
+                showShadow: index == 0,
+                child: hasUrl
+                    ? _NetworkImage(
+                        url: urls[index],
+                        variant: ImageVariant.thumb,
+                      )
+                    : const TemplatePaperPlaceholder(compact: true),
               ),
             ),
-          );
-        },
+          ),
+        ),
       );
     }
-    return _NetworkImage(url: directCoverUrl, variant: ImageVariant.thumb);
-  }
-}
 
-(List<LayerModel>, double, Size)? _parseFirstPage(PremiumTemplate template) {
-  final raw = template.templateJson;
-  if (raw == null || raw.trim().isEmpty) return null;
-  try {
-    final data = jsonDecode(raw) as Map<String, dynamic>;
-    final metadata =
-        (data['metadata'] as Map?)?.cast<String, dynamic>() ??
-        const <String, dynamic>{};
-    final pages = data['pages'];
-    if (pages is! List || pages.isEmpty) return null;
-    final page = pages.first;
-    if (page is! Map<String, dynamic>) return null;
-    final layersJson = page['layers'];
-    if (layersJson is! List || layersJson.isEmpty) return null;
-
-    final designWidth =
-        (data['designWidth'] as num?)?.toDouble() ??
-        (metadata['designWidth'] as num?)?.toDouble() ??
-        1080.0;
-    final designHeight =
-        (data['designHeight'] as num?)?.toDouble() ??
-        (metadata['designHeight'] as num?)?.toDouble() ??
-        1440.0;
-    final canvasSize = Size(designWidth, designHeight);
-    final layers = layersJson
-        .whereType<Map<String, dynamic>>()
-        .map(
-          (layer) => LayerExportMapper.fromJson(layer, canvasSize: canvasSize),
-        )
-        .toList(growable: false);
-    if (layers.isEmpty) return null;
-    final aspect = (designWidth / designHeight).clamp(0.6, 1.8);
-    return (layers, aspect, canvasSize);
-  } catch (_) {
-    return null;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        page(2, scale: 0.84, offset: const Offset(16, -10), opacity: 0.78),
+        page(1, scale: 0.90, offset: const Offset(9, -4), opacity: 0.88),
+        page(0, scale: 1.0, offset: Offset.zero, opacity: 1),
+      ],
+    );
   }
 }
 
@@ -864,15 +838,7 @@ class _NetworkImage extends StatelessWidget {
       return Image.asset(
         bundledAsset,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          color: SnapFitColors.overlayLightOf(context),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.image_outlined,
-            size: 32,
-            color: SnapFitColors.textMutedOf(context),
-          ),
-        ),
+        errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
       );
     }
     final transformed = imageUrlByVariant(url, variant: variant);
@@ -880,41 +846,17 @@ class _NetworkImage extends StatelessWidget {
       return Image.asset(
         transformed.substring('asset:'.length),
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          color: SnapFitColors.overlayLightOf(context),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.image_outlined,
-            size: 32,
-            color: SnapFitColors.textMutedOf(context),
-          ),
-        ),
+        errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
       );
     }
     return Image.network(
       transformed,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.medium,
-      errorBuilder: (_, __, ___) => Container(
-        color: SnapFitColors.overlayLightOf(context),
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.image_outlined,
-          size: 32,
-          color: SnapFitColors.textMutedOf(context),
-        ),
-      ),
+      errorBuilder: (_, __, ___) => const TemplatePaperPlaceholder(),
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
-        return Container(
-          color: SnapFitColors.overlayLightOf(context),
-          alignment: Alignment.center,
-          child: const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        );
+        return const TemplatePaperPlaceholder();
       },
     );
   }

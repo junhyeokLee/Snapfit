@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../album/domain/entities/layer.dart';
+import 'template_preview_frame.dart';
 
 class TemplatePageRenderer extends StatelessWidget {
   final List<LayerModel> layers;
@@ -161,43 +162,14 @@ class TemplatePageRenderer extends StatelessWidget {
           fit: BoxFit.cover,
           loadingBuilder: (context, child, progress) {
             if (progress == null) return child;
-            return Container(
-              color: const Color(0xFFF1F3F5),
-              child: const Center(
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 1.8),
-                ),
-              ),
-            );
+            return const TemplatePaperPlaceholder(compact: true);
           },
           errorBuilder: (context, error, stackTrace) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFE9EEF5), Color(0xFFDCE6F2)],
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.photo_outlined,
-                  size: 20,
-                  color: Color(0xFF7A8AA0),
-                ),
-              ),
-            );
+            return const TemplatePaperPlaceholder(compact: true);
           },
         );
       } else {
-        imageContent = Container(
-          color: Colors.grey[200],
-          child: const Center(
-            child: Icon(Icons.add_photo_alternate_outlined, color: Colors.grey),
-          ),
-        );
+        imageContent = const TemplatePaperPlaceholder(compact: true);
       }
 
       Widget layerWidget;
