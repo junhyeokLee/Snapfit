@@ -518,102 +518,92 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       ),
                     ),
                     // 2. Main Canvas Area
+                    // AnimatedSwitcher를 사용하지 않는다: EditCover와 PageEditorCanvas가
+                    // 동일한 _canvasKey를 공유하므로 전환 애니메이션 중 두 위젯이 동시에
+                    // 트리에 존재하면 GlobalKey 충돌이 발생한다.
                     Expanded(
-                      child: AnimatedSwitcher(
-                        duration: SnapFitMotion.medium,
-                        switchInCurve: SnapFitMotion.entrance,
-                        switchOutCurve: Curves.easeInCubic,
-                        child: currentPageIndex == 0
-                            ? EditCover(
-                                key: _coverEditorKey,
-                                editAlbum: vm.album,
-                                showAppBar: false,
-                                initialCoverSize: vm.selectedCover,
-                                showBottomToolbar:
-                                    false, // Hide Cover's internal toolbar
-                                interaction:
-                                    _interaction, // Pass shared interaction
-                                canvasKey: _canvasKey, // Pass shared key
-                                onSizeChanged: (size) {
-                                  _canvasSize =
-                                      size; // Sync size for Write/Photo actions
-                                },
-                              )
-                            : LayoutBuilder(
-                                builder: (context, constraints) {
-                                  const double sidePadding = 16.0;
-                                  final double availW =
-                                      constraints.maxWidth - sidePadding * 2;
-                                  final double availH = constraints.maxHeight;
-                                  const double logicalW = kCoverReferenceWidth;
-                                  final double logicalH = logicalW / aspect;
+                      child: currentPageIndex == 0
+                          ? EditCover(
+                              key: _coverEditorKey,
+                              editAlbum: vm.album,
+                              showAppBar: false,
+                              initialCoverSize: vm.selectedCover,
+                              showBottomToolbar: false,
+                              interaction: _interaction,
+                              canvasKey: _canvasKey,
+                              onSizeChanged: (size) {
+                                _canvasSize = size;
+                              },
+                            )
+                          : LayoutBuilder(
+                              key: ValueKey(currentPageIndex),
+                              builder: (context, constraints) {
+                                const double sidePadding = 16.0;
+                                final double availW =
+                                    constraints.maxWidth - sidePadding * 2;
+                                final double availH = constraints.maxHeight;
+                                const double logicalW = kCoverReferenceWidth;
+                                final double logicalH = logicalW / aspect;
 
-                                  // 커버와 동일하게 가로/세로 모두 고려해 캔버스 표시 크기를 계산한다.
-                                  // (일부 비율에서 하단/우측 터치 좌표가 어긋나는 현상 방지)
-                                  final double scaleByWidth = availW / logicalW;
-                                  final double scaleByHeight =
-                                      availH / logicalH;
-                                  final double scale = math.min(
-                                    scaleByWidth,
-                                    scaleByHeight,
-                                  );
-                                  final double innerW = logicalW * scale;
-                                  final double innerH = logicalH * scale;
+                                final double scaleByWidth = availW / logicalW;
+                                final double scaleByHeight = availH / logicalH;
+                                final double scale = math.min(
+                                  scaleByWidth,
+                                  scaleByHeight,
+                                );
+                                final double innerW = logicalW * scale;
+                                final double innerH = logicalH * scale;
 
-                                  return Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: sidePadding,
-                                      ),
-                                      child: SizedBox(
-                                        width: innerW,
-                                        height: innerH,
-                                        child: PageEditorCanvas(
-                                          canvasKey: _canvasKey,
-                                          canvasW: innerW,
-                                          canvasH: innerH,
-                                          layers: layers,
-                                          interaction: _interaction,
-                                          layerBuilder: _layerBuilder,
-                                          onCanvasSizeChanged: (size) {
-                                            // 실제 측정된 캔버스 크기로 갱신
-                                            if (_canvasSize != size) {
-                                              WidgetsBinding.instance
-                                                  .addPostFrameCallback((_) {
-                                                    if (!mounted) return;
-                                                    setState(
-                                                      () => _canvasSize = size,
-                                                    );
-                                                    vm.loadPendingEditAlbumIfNeeded(
-                                                      size,
-                                                    );
-                                                    vm.setCoverCanvasSize(
-                                                      size,
-                                                      isCover:
-                                                          vm.currentPageIndex ==
-                                                          0,
-                                                    );
-                                                  });
-                                            }
-                                          },
-                                          backgroundColor:
-                                              vm.currentPage?.backgroundColor !=
-                                                  null
-                                              ? Color(
-                                                  vm
-                                                      .currentPage!
-                                                      .backgroundColor!,
-                                                )
-                                              : null,
-                                          isCover:
-                                              vm.currentPage?.isCover ?? false,
-                                        ),
+                                return Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: sidePadding,
+                                    ),
+                                    child: SizedBox(
+                                      width: innerW,
+                                      height: innerH,
+                                      child: PageEditorCanvas(
+                                        canvasKey: _canvasKey,
+                                        canvasW: innerW,
+                                        canvasH: innerH,
+                                        layers: layers,
+                                        interaction: _interaction,
+                                        layerBuilder: _layerBuilder,
+                                        onCanvasSizeChanged: (size) {
+                                          if (_canvasSize != size) {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  if (!mounted) return;
+                                                  setState(
+                                                    () => _canvasSize = size,
+                                                  );
+                                                  vm.loadPendingEditAlbumIfNeeded(
+                                                    size,
+                                                  );
+                                                  vm.setCoverCanvasSize(
+                                                    size,
+                                                    isCover:
+                                                        vm.currentPageIndex ==
+                                                        0,
+                                                  );
+                                                });
+                                          }
+                                        },
+                                        backgroundColor:
+                                            vm.currentPage?.backgroundColor !=
+                                                null
+                                            ? Color(
+                                                vm.currentPage!.backgroundColor!,
+                                              )
+                                            : null,
+                                        isCover:
+                                            vm.currentPage?.isCover ?? false,
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                      ),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
 
                     // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
