@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +8,6 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../../../core/constants/page_templates.dart';
-import '../../controllers/layer_builder.dart';
-import '../../controllers/layer_interaction_manager.dart';
-import '../../../domain/entities/layer.dart';
 
 /// 페이지 템플릿 선택 바텀시트
 /// - 여러 레이아웃 템플릿, 슬롯 간 여백 있음
@@ -33,8 +32,6 @@ class _TemplateSelectionPanelState
         ? vm.selectedCover.ratio
         : (3 / 4);
 
-    // 페이지 에디터는 커버/내지 모두 500 기준 논리 좌표계를 사용하므로
-    // 템플릿 생성도 동일 기준으로 맞춰야 터치/이동 체감이 일관된다.
     final double baseW = kCoverReferenceWidth;
     final Size canvasSize = Size(baseW, baseW / aspect);
 
@@ -93,7 +90,6 @@ class _TemplateSelectionPanelState
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.w,
                     mainAxisSpacing: 12.h,
-                    // 카드가 더 커지고 미리보기가 더 꽉 차 보이도록 살짝 더 세로로
                     childAspectRatio: 1 / 1.12,
                   ),
                   itemCount: templates.length,
@@ -101,12 +97,10 @@ class _TemplateSelectionPanelState
                     final template = templates[index];
                     final isSelected = _selectedId == template.id;
                     return RepaintBoundary(
-                      child: _buildTemplateCard(
-                        context,
+                      child: _TemplateCard(
                         template: template,
                         isSelected: isSelected,
                         pageRatio: aspect,
-                        logicalCanvasSize: canvasSize,
                         onTap: () {
                           setState(() => _selectedId = template.id);
                           vm.applyTemplateToCurrentPage(template, canvasSize);
@@ -124,214 +118,156 @@ class _TemplateSelectionPanelState
       ),
     );
   }
-
-  Widget _buildTemplateCard(
-    BuildContext context, {
-    required PageTemplate template,
-    required bool isSelected,
-    required double pageRatio,
-    required Size logicalCanvasSize,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: LayoutBuilder(
-        builder: (context, constraints) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: SnapFitColors.surfaceOf(context),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: isSelected
-                        ? SnapFitColors.accent
-                        : SnapFitColors.overlayLightOf(context),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: AspectRatio(
-                              aspectRatio: pageRatio,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: template.backgroundColor,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: _TemplatePreview(
-                                  template: template,
-                                  pageRatio: pageRatio,
-                                  ref: ref,
-                                  logicalCanvasSize: logicalCanvasSize,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isSelected)
-                      Positioned(
-                        top: 6.h,
-                        left: 6.w,
-                        child: Container(
-                          padding: EdgeInsets.all(3.w),
-                          decoration: const BoxDecoration(
-                            color: SnapFitColors.accent,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.check,
-                            size: 12.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              template.name,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? SnapFitColors.accent
-                    : SnapFitColors.textMutedOf(context),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-/// 슬롯 비율대로 그리기 → 슬롯 사이가 비어 있어 여백으로 보임
-class _TemplatePreview extends StatefulWidget {
+class _TemplateCard extends StatelessWidget {
   final PageTemplate template;
+  final bool isSelected;
   final double pageRatio;
-  final WidgetRef ref;
-  final Size logicalCanvasSize;
+  final VoidCallback onTap;
 
-  const _TemplatePreview({
+  const _TemplateCard({
     required this.template,
+    required this.isSelected,
     required this.pageRatio,
-    required this.ref,
-    required this.logicalCanvasSize,
+    required this.onTap,
   });
 
   @override
-  State<_TemplatePreview> createState() => _TemplatePreviewState();
-}
-
-class _TemplatePreviewState extends State<_TemplatePreview> {
-  late final LayerBuilder _layerBuilder;
-  late final List<LayerModel> _layers;
-
-  @override
-  void initState() {
-    super.initState();
-    // 스크롤 중 매 프레임 재생성을 막기 위해 initState에서 한 번만 빌드한다.
-    final previewInteraction = LayerInteractionManager.preview(
-      widget.ref,
-      () => widget.logicalCanvasSize,
-    );
-    _layerBuilder = LayerBuilder(
-      previewInteraction,
-      () => widget.logicalCanvasSize,
-    );
-    _layers = _buildLayers();
-  }
-
-  List<LayerModel> _buildLayers() {
-    final canvas = widget.logicalCanvasSize;
-    final layers = <LayerModel>[];
-    for (final slot in widget.template.slots) {
-      final slotW = slot.width * canvas.width;
-      final slotH = slot.height * canvas.height;
-      final pos = Offset(slot.left * canvas.width, slot.top * canvas.height);
-
-      if (slot.type == 'text') {
-        final fontSize = (slotH * 0.18).clamp(14.0, 22.0);
-        final approxLineH = fontSize * 1.25;
-        final lines = ((slotH * 0.42) / approxLineH).clamp(1.0, 3.0).round();
-        final chars = ((slotW * 0.62) / (fontSize * 0.55)).clamp(4.0, 12.0).round();
-        final line = List.filled(chars, '텍').join();
-        final previewText = List.filled(lines, line).join('\n');
-        layers.add(LayerModel(
-          id: '${widget.template.id}_text_${slot.left}_${slot.top}',
-          type: LayerType.text,
-          position: pos,
-          width: slotW,
-          height: slotH,
-          rotation: slot.rotation,
-          text: previewText,
-          textBackground: slot.textBackground,
-          textStyle: TextStyle(
-            fontSize: fontSize,
-            color: Colors.transparent,
-            fontWeight: FontWeight.w600,
-            height: 1.25,
-          ),
-          textStyleType: TextStyleType.none,
-          opacity: 1.0,
-        ));
-      } else {
-        layers.add(LayerModel(
-          id: '${widget.template.id}_image_${slot.left}_${slot.top}',
-          type: LayerType.image,
-          position: pos,
-          width: slotW,
-          height: slotH,
-          rotation: slot.rotation,
-          imageBackground: slot.imageBackground,
-          imageTemplate: slot.imageTemplate ?? 'free',
-          opacity: 1.0,
-        ));
-      }
-    }
-    return layers;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final canvas = widget.logicalCanvasSize;
-    return FittedBox(
-      fit: BoxFit.contain,
-      alignment: Alignment.center,
-      child: SizedBox(
-        width: canvas.width,
-        height: canvas.height,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: widget.template.backgroundColor,
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: SnapFitColors.surfaceOf(context),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: isSelected
+                      ? SnapFitColors.accent
+                      : SnapFitColors.overlayLightOf(context),
+                  width: isSelected ? 2 : 1,
                 ),
               ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: pageRatio,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: CustomPaint(
+                            painter: _SlotPreviewPainter(template),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    Positioned(
+                      top: 6.h,
+                      left: 6.w,
+                      child: Container(
+                        padding: EdgeInsets.all(3.w),
+                        decoration: const BoxDecoration(
+                          color: SnapFitColors.accent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          size: 12.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-            for (final layer in _layers)
-              layer.type == LayerType.text
-                  ? _layerBuilder.buildText(layer)
-                  : _layerBuilder.buildImage(layer),
-          ],
-        ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            template.name,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: isSelected
+                  ? SnapFitColors.accent
+                  : SnapFitColors.textMutedOf(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
+}
+
+/// 슬롯 레이아웃을 CustomPainter로 직접 그려서 위젯 트리 생성 비용을 완전히 제거.
+/// LayerBuilder 없이 색 사각형으로만 표현해도 레이아웃 구분이 충분하다.
+class _SlotPreviewPainter extends CustomPainter {
+  final PageTemplate template;
+
+  static const _imageFill = Color(0xFFDDDDDD);
+  static const _imageBorder = Color(0xFFBBBBBB);
+  static const _textFill = Color(0xFFFFF8E1);
+  static const _textBorder = Color(0xFFFFE082);
+
+  const _SlotPreviewPainter(this.template);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 배경
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = template.backgroundColor,
+    );
+
+    final fillPaints = {
+      'image': Paint()..color = _imageFill,
+      'text': Paint()..color = _textFill,
+    };
+    final borderPaints = {
+      'image': Paint()
+        ..color = _imageBorder
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8,
+      'text': Paint()
+        ..color = _textBorder
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8,
+    };
+    const radius = Radius.circular(3);
+
+    for (final slot in template.slots) {
+      final l = slot.left * size.width;
+      final t = slot.top * size.height;
+      final w = slot.width * size.width;
+      final h = slot.height * size.height;
+      final fill = fillPaints[slot.type] ?? fillPaints['image']!;
+      final border = borderPaints[slot.type] ?? borderPaints['image']!;
+
+      if (slot.rotation != 0) {
+        canvas.save();
+        canvas.translate(l + w / 2, t + h / 2);
+        canvas.rotate(slot.rotation * math.pi / 180);
+        final rect = Rect.fromLTWH(-w / 2, -h / 2, w, h);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), fill);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), border);
+        canvas.restore();
+      } else {
+        final rect = Rect.fromLTWH(l, t, w, h);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), fill);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), border);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SlotPreviewPainter old) => old.template.id != template.id;
 }
