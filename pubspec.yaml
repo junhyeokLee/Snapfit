@@ -111,6 +111,7 @@ flutter:
     - assets/sticker/
     - assets/templates/
     - assets/templates/save_the_date/images/
+    - assets/templates/save_the_date/images/approved_stock/
     - assets/templates/jeju_travel/images/
     - assets/templates/jeju_travel/images/figma/
     - assets/templates/jeju_travel/images/figma_small/

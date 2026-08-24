@@ -14,6 +14,7 @@ BASE='https://libreshot.com/'
 QUERIES={
  'jeju_travel_v1':['travel friends','airport luggage','road trip car window','coffee table travel','friends beach','market food hands','hotel room suitcase','sunset couple silhouette','photos travel flatlay'],
  'wedding_editorial_v1':['wedding couple','wedding bouquet','wedding rings','wedding hands','wedding table flowers'],
+ 'save_the_date_v1':['engagement couple','wedding date card','wedding rings flowers','couple hands flowers','wedding invitation flowers','bride groom','wedding dress','wedding couple Prague','wedding table flowers'],
  'family_weekend_v1':['family picnic','children hands','family walk','dining table family'],
  'film_diary_v1':['film camera','printed photos','coffee camera','street friends'],
  'scrapbook_v1':['printed photos','scrapbook paper','coffee photos','tape photos'],
