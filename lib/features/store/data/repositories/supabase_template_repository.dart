@@ -13,7 +13,7 @@ class SupabaseTemplateRepository implements TemplateRepository {
   final TokenStorage tokenStorage;
 
   Future<String> _userId() async {
-    return (await tokenStorage.getResolvedUserId())?.trim() ?? '';
+    return client.auth.currentUser?.id.trim() ?? '';
   }
 
   PremiumTemplate _fromRow(Map<String, dynamic> row, {bool isLiked = false}) {

@@ -1,8 +1,8 @@
+import 'dart:async';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
-
-import 'dart:async';
 
 import '../../../config/env.dart';
 import '../../../core/interceptors/token_storage.dart';
@@ -64,7 +64,9 @@ class AuthService {
       final response = await supabase!.auth.signInWithIdToken(
         provider: OAuthProvider.kakao,
         idToken: idToken,
-        accessToken: accessToken,
+        // accessToken 생략: Supabase가 Kakao userinfo 엔드포인트를 호출해
+        // 미인증 이메일을 받으면 422(provider_email_needs_verification) 발생.
+        // idToken의 sub 클레임으로 사용자를 식별한다.
       );
       final session = response.session;
       if (session == null) {

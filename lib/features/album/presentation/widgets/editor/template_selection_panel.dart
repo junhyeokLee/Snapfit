@@ -100,17 +100,19 @@ class _TemplateSelectionPanelState
                   itemBuilder: (context, index) {
                     final template = templates[index];
                     final isSelected = _selectedId == template.id;
-                    return _buildTemplateCard(
-                      context,
-                      template: template,
-                      isSelected: isSelected,
-                      pageRatio: aspect,
-                      logicalCanvasSize: canvasSize,
-                      onTap: () {
-                        setState(() => _selectedId = template.id);
-                        vm.applyTemplateToCurrentPage(template, canvasSize);
-                        Navigator.of(context).pop();
-                      },
+                    return RepaintBoundary(
+                      child: _buildTemplateCard(
+                        context,
+                        template: template,
+                        isSelected: isSelected,
+                        pageRatio: aspect,
+                        logicalCanvasSize: canvasSize,
+                        onTap: () {
+                          setState(() => _selectedId = template.id);
+                          vm.applyTemplateToCurrentPage(template, canvasSize);
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     );
                   },
                 ),
@@ -218,7 +220,7 @@ class _TemplateSelectionPanelState
 }
 
 /// 슬롯 비율대로 그리기 → 슬롯 사이가 비어 있어 여백으로 보임
-class _TemplatePreview extends StatelessWidget {
+class _TemplatePreview extends StatefulWidget {
   final PageTemplate template;
   final double pageRatio;
   final WidgetRef ref;
@@ -232,97 +234,101 @@ class _TemplatePreview extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // 미리보기에서도 실제 적용과 동일한 프레임/텍스트 스타일(패딩·정렬·비율)을 재사용하기 위해
-    // LayerBuilder + LayerInteractionManager.preview로 “실제 레이어 렌더링”을 그대로 사용한다.
-    final previewInteraction = LayerInteractionManager.preview(
-      ref,
-      () => logicalCanvasSize,
-    );
-    final layerBuilder = LayerBuilder(
-      previewInteraction,
-      () => logicalCanvasSize,
-    );
+  State<_TemplatePreview> createState() => _TemplatePreviewState();
+}
 
+class _TemplatePreviewState extends State<_TemplatePreview> {
+  late final LayerBuilder _layerBuilder;
+  late final List<LayerModel> _layers;
+
+  @override
+  void initState() {
+    super.initState();
+    // 스크롤 중 매 프레임 재생성을 막기 위해 initState에서 한 번만 빌드한다.
+    final previewInteraction = LayerInteractionManager.preview(
+      widget.ref,
+      () => widget.logicalCanvasSize,
+    );
+    _layerBuilder = LayerBuilder(
+      previewInteraction,
+      () => widget.logicalCanvasSize,
+    );
+    _layers = _buildLayers();
+  }
+
+  List<LayerModel> _buildLayers() {
+    final canvas = widget.logicalCanvasSize;
     final layers = <LayerModel>[];
-    for (final slot in template.slots) {
-      final slotW = slot.width * logicalCanvasSize.width;
-      final slotH = slot.height * logicalCanvasSize.height;
-      final pos = Offset(
-        slot.left * logicalCanvasSize.width,
-        slot.top * logicalCanvasSize.height,
-      );
+    for (final slot in widget.template.slots) {
+      final slotW = slot.width * canvas.width;
+      final slotH = slot.height * canvas.height;
+      final pos = Offset(slot.left * canvas.width, slot.top * canvas.height);
 
       if (slot.type == 'text') {
-        // 미리보기에서는 “실제 텍스트”는 노출하지 않고 프레임(배경)만 보이게 한다.
-        // 단, LayerBuilder의 텍스트 프레임은 텍스트 레이아웃 크기에 영향을 받으므로
-        // 슬롯 크기에 비례한 더미 텍스트를 생성해 프레임 크기를 안정화한다.
         final fontSize = (slotH * 0.18).clamp(14.0, 22.0);
         final approxLineH = fontSize * 1.25;
-        final desiredH = slotH * 0.42;
-        final lines = (desiredH / approxLineH).clamp(1.0, 3.0).round();
-        final approxCharW = fontSize * 0.55;
-        final desiredW = slotW * 0.62;
-        final chars = (desiredW / approxCharW).clamp(4.0, 12.0).round();
-        final line = List.filled(chars, '텍').join(); // 폭 확보용
+        final lines = ((slotH * 0.42) / approxLineH).clamp(1.0, 3.0).round();
+        final chars = ((slotW * 0.62) / (fontSize * 0.55)).clamp(4.0, 12.0).round();
+        final line = List.filled(chars, '텍').join();
         final previewText = List.filled(lines, line).join('\n');
-
-        layers.add(
-          LayerModel(
-            id: '${template.id}_text_${slot.left}_${slot.top}_${slot.width}_${slot.height}',
-            type: LayerType.text,
-            position: pos,
-            width: slotW,
-            height: slotH,
-            rotation: slot.rotation,
-            text: previewText,
-            textBackground: slot.textBackground,
-            // 텍스트는 보이지 않게(투명). 프레임만 노출.
-            textStyle: TextStyle(
-              fontSize: fontSize,
-              color: Colors.transparent,
-              fontWeight: FontWeight.w600,
-              height: 1.25,
-            ),
-            textStyleType: TextStyleType.none,
-            opacity: 1.0,
+        layers.add(LayerModel(
+          id: '${widget.template.id}_text_${slot.left}_${slot.top}',
+          type: LayerType.text,
+          position: pos,
+          width: slotW,
+          height: slotH,
+          rotation: slot.rotation,
+          text: previewText,
+          textBackground: slot.textBackground,
+          textStyle: TextStyle(
+            fontSize: fontSize,
+            color: Colors.transparent,
+            fontWeight: FontWeight.w600,
+            height: 1.25,
           ),
-        );
+          textStyleType: TextStyleType.none,
+          opacity: 1.0,
+        ));
       } else {
-        layers.add(
-          LayerModel(
-            id: '${template.id}_image_${slot.left}_${slot.top}_${slot.width}_${slot.height}',
-            type: LayerType.image,
-            position: pos,
-            width: slotW,
-            height: slotH,
-            rotation: slot.rotation,
-            imageBackground: slot.imageBackground,
-            imageTemplate: slot.imageTemplate ?? 'free',
-            opacity: 1.0,
-          ),
-        );
+        layers.add(LayerModel(
+          id: '${widget.template.id}_image_${slot.left}_${slot.top}',
+          type: LayerType.image,
+          position: pos,
+          width: slotW,
+          height: slotH,
+          rotation: slot.rotation,
+          imageBackground: slot.imageBackground,
+          imageTemplate: slot.imageTemplate ?? 'free',
+          opacity: 1.0,
+        ));
       }
     }
+    return layers;
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    final canvas = widget.logicalCanvasSize;
     return FittedBox(
       fit: BoxFit.contain,
       alignment: Alignment.center,
       child: SizedBox(
-        width: logicalCanvasSize.width,
-        height: logicalCanvasSize.height,
+        width: canvas.width,
+        height: canvas.height,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             Positioned.fill(
               child: DecoratedBox(
-                decoration: BoxDecoration(color: template.backgroundColor),
+                decoration: BoxDecoration(
+                  color: widget.template.backgroundColor,
+                ),
               ),
             ),
-            for (final layer in layers)
+            for (final layer in _layers)
               layer.type == LayerType.text
-                  ? layerBuilder.buildText(layer)
-                  : layerBuilder.buildImage(layer),
+                  ? _layerBuilder.buildText(layer)
+                  : _layerBuilder.buildImage(layer),
           ],
         ),
       ),

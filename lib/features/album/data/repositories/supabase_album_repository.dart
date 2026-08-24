@@ -12,7 +12,7 @@ class SupabaseAlbumRepository implements AlbumRepository {
   final TokenStorage tokenStorage;
 
   Future<String> _userId() async {
-    final id = await tokenStorage.getResolvedUserId();
+    final id = client.auth.currentUser?.id;
     if (id == null || id.trim().isEmpty) {
       throw Exception('로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.');
     }

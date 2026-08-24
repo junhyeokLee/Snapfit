@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,70 +30,71 @@ class PageTemplatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
+    final templates = pageTemplates;
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        boxShadow: [
+          BoxShadow(
+            color: SnapFitColors.isDark(context)
+                ? SnapFitColors.accentLight.withOpacity(0.25)
+                : Colors.black.withOpacity(0.18),
+            blurRadius: 20.r,
+            offset: Offset(0, -4.h),
           ),
-          decoration: BoxDecoration(
-            color: SnapFitColors.surfaceOf(context).withOpacity(0.95),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            boxShadow: [
-              BoxShadow(
-                color: SnapFitColors.isDark(context)
-                    ? SnapFitColors.accentLight.withOpacity(0.25)
-                    : Colors.black.withOpacity(0.18),
-                blurRadius: 20.r,
-                offset: Offset(0, -4.h),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Container(
+              width: 48.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: SnapFitColors.overlayMediumOf(context),
+                borderRadius: BorderRadius.circular(2.r),
               ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(height: 12.h),
-                Container(
-                  width: 48.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.overlayMediumOf(context),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Text(
-                    '페이지 템플릿',
-                    style: TextStyle(
-                      color: SnapFitColors.textPrimaryOf(context),
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
-                    child: Wrap(
-                      spacing: 12.w,
-                      runSpacing: 16.h,
-                      children: pageTemplates.map((template) {
-                        return _TemplateCard(
-                          template: template,
-                          onTap: () => onSelect(template),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ],
             ),
-          ),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Text(
+                '페이지 템플릿',
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Flexible(
+              child: GridView.builder(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12.w,
+                  mainAxisSpacing: 16.h,
+                  childAspectRatio: 100.w / (118.h + 8.h + 14.sp * 1.4 + 10.h),
+                ),
+                itemCount: templates.length,
+                itemBuilder: (context, index) {
+                  final template = templates[index];
+                  return RepaintBoundary(
+                    child: _TemplateCard(
+                      template: template,
+                      onTap: () => onSelect(template),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

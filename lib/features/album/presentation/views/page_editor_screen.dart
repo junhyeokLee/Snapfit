@@ -210,11 +210,13 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         await ref.read(homeViewModelProvider.notifier).refresh();
         if (!context.mounted) return;
 
+        // popUntil 이전에 캡처해야 한다. popUntil 이후 context는 deactivated 상태가
+        // 되어 SnackBar 애니메이션 완료 시점에 ancestor 조회가 실패한다.
+        final messenger = ScaffoldMessenger.of(context);
         Navigator.popUntil(context, (route) => route.isFirst);
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('앨범이 저장되었습니다!')));
+        messenger.showSnackBar(
+          const SnackBar(content: Text('앨범이 저장되었습니다!')),
+        );
       }
     } catch (e) {
       if (e is StorageQuotaExceededException && context.mounted) {

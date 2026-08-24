@@ -14,11 +14,11 @@ class SupabaseAlbumMemberRepository implements AlbumMemberRepository {
   final TokenStorage tokenStorage;
 
   Future<String> _userId() async {
-    final id = await tokenStorage.getResolvedUserId();
-    if (id == null || id.trim().isEmpty) {
+    final id = client.auth.currentUser?.id.trim();
+    if (id == null || id.isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
-    return id.trim();
+    return id;
   }
 
   int _stableInt(String value) {
