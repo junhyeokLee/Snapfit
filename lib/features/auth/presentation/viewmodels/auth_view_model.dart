@@ -35,6 +35,8 @@ final authViewModelProvider = AsyncNotifierProvider<AuthViewModel, UserInfo?>(
 );
 
 class AuthViewModel extends AsyncNotifier<UserInfo?> {
+  Future<void>? _googleInitializeFuture;
+
   @override
   FutureOr<UserInfo?> build() async {
     return ref.read(tokenStorageProvider).getUserInfo();
@@ -162,28 +164,48 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
         ? await UserApi.instance.loginWithKakaoTalk()
         : await UserApi.instance.loginWithKakaoAccount();
 
+    // Supabase Kakao OIDC requires an ID token. Kakao can return only an
+    // access token when the OpenID scope has not been granted yet, so request
+    // the missing OpenID scope once before failing the login.
+    if (token.idToken == null || token.idToken!.isEmpty) {
+      token = await UserApi.instance.loginWithNewScopes(['openid']);
+    }
+
     final accessToken = token.accessToken;
     if (accessToken == null || accessToken.isEmpty) {
       throw Exception('카카오 로그인 토큰을 가져올 수 없습니다.');
     }
+    final idToken = token.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw Exception(
+        '카카오 ID 토큰을 가져올 수 없습니다. Kakao Developers에서 OpenID Connect를 활성화하고 Supabase Kakao Provider 설정을 확인해주세요.',
+      );
+    }
 
     await ref
         .read(authServiceProvider)
-        .loginWithKakaoToken(accessToken, idToken: token.idToken);
+        .loginWithKakaoToken(accessToken, idToken: idToken);
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
+  Future<void> _ensureGoogleInitialized() {
+    return _googleInitializeFuture ??= GoogleSignIn.instance.initialize(
+      clientId: Env.googleIosClientId.isEmpty ? null : Env.googleIosClientId,
+      serverClientId: Env.googleWebClientId,
+    );
   }
 
   Future<void> loginWithGoogle() async {
     if (Env.googleWebClientId.isEmpty) {
       throw Exception('GOOGLE_WEB_CLIENT_ID가 설정되지 않았습니다.');
     }
-    await GoogleSignIn.instance.initialize(
-      serverClientId: Env.googleWebClientId,
-    );
+    await _ensureGoogleInitialized();
     final account = await GoogleSignIn.instance.authenticate();
     final idToken = account.authentication.idToken;
     if (idToken == null || idToken.isEmpty) {
-      throw Exception('구글 ID 토큰을 가져올 수 없습니다.');
+      throw Exception(
+        '구글 ID 토큰을 가져올 수 없습니다. GOOGLE_WEB_CLIENT_ID가 Supabase Google Provider의 Web Client ID와 일치하는지, Android SHA-1/SHA-256 및 iOS client ID 설정이 등록되어 있는지 확인해주세요.',
+      );
     }
 
     await ref.read(authServiceProvider).loginWithGoogleIdToken(idToken);

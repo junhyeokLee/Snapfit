@@ -12,10 +12,21 @@ class Env {
 
   /// Google Web Client ID (serverClientId)
   /// - --dart-define=GOOGLE_WEB_CLIENT_ID=...
+  /// Supabase Google signInWithIdToken requires this to match the Google
+  /// OAuth web client configured in Supabase Auth > Providers > Google.
   static const String googleWebClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
     defaultValue:
         '991239566838-uvukou4dr1ucvkei1efgb38l09s6490g.apps.googleusercontent.com',
+  );
+
+  /// Google iOS client ID. Android normally reads its client ID from
+  /// google-services.json, but iOS requires an explicit clientId or
+  /// GoogleService-Info.plist URL scheme configuration.
+  /// - --dart-define=GOOGLE_IOS_CLIENT_ID=...
+  static const String googleIosClientId = String.fromEnvironment(
+    'GOOGLE_IOS_CLIENT_ID',
+    defaultValue: '',
   );
 
   /// 주문 상태 관리자 전환 키(개발/QA용)
