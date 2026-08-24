@@ -192,71 +192,231 @@ class _StoreHero extends StatelessWidget {
     return SnapFitFadeIn(
       child: Container(
         margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-        padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(32),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? const [Color(0xFF172033), Color(0xFF251A32)]
-                : const [Color(0xFFFFF7ED), Color(0xFFEFF6FF)],
+                ? const [
+                    Color(0xFF101827),
+                    Color(0xFF221527),
+                    Color(0xFF101114),
+                  ]
+                : const [
+                    Color(0xFFFFF4E4),
+                    Color(0xFFEAFBFD),
+                    Color(0xFFF7ECFF),
+                  ],
           ),
           border: Border.all(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                : Colors.black.withValues(alpha: 0.05),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
-              blurRadius: 28,
-              offset: const Offset(0, 16),
+              color: Colors.black.withValues(alpha: isDark ? 0.34 : 0.10),
+              blurRadius: 34,
+              offset: const Offset(0, 18),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.72),
-                borderRadius: BorderRadius.circular(999),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Stack(
+            children: [
+              const Positioned(
+                right: -34,
+                top: -32,
+                child: _StoreHeroOrb(size: 142, color: Color(0x553BDDF2)),
               ),
-              child: Text(
-                '$totalCount개의 감성 포토북 템플릿',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
+              const Positioned(
+                left: -28,
+                bottom: -36,
+                child: _StoreHeroOrb(size: 126, color: Color(0x44FFB86B)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(
+                              alpha: isDark ? 0.10 : 0.70,
+                            ),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.18),
+                            ),
+                          ),
+                          child: Text(
+                            '$totalCount TEMPLATE DROPS',
+                            style: TextStyle(
+                              color: SnapFitColors.accent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: SnapFitColors.primaryGradient,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: SnapFitColors.accent.withValues(
+                                  alpha: 0.30,
+                                ),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      '스토어에서\n앨범의 분위기를 고르세요',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 29,
+                        fontWeight: FontWeight.w900,
+                        height: 1.08,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '웨딩, 가족, 여행, 일상을 한 번에 완성도 있게 보여주는 감성 템플릿을 골라 바로 앨범 제작을 시작할 수 있어요.',
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        height: 1.48,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 96,
+                      child: Stack(
+                        children: const [
+                          Positioned(
+                            left: 0,
+                            top: 10,
+                            child: _StoreHeroMiniCard(
+                              width: 78,
+                              colors: [Color(0xFFFFE2C5), Color(0xFFFFF7ED)],
+                              angle: -0.12,
+                            ),
+                          ),
+                          Positioned(
+                            left: 64,
+                            top: 0,
+                            child: _StoreHeroMiniCard(
+                              width: 88,
+                              colors: [Color(0xFFE0F7FF), Color(0xFFFFFFFF)],
+                              angle: 0.06,
+                            ),
+                          ),
+                          Positioned(
+                            left: 138,
+                            top: 16,
+                            child: _StoreHeroMiniCard(
+                              width: 76,
+                              colors: [Color(0xFFF4E7FF), Color(0xFFFFF8FB)],
+                              angle: 0.13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              '오늘의 장면을\n완성도 높은 앨범으로',
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(context),
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                height: 1.12,
-                letterSpacing: -0.6,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '웨딩, 가족, 여행, 기념일 템플릿을 고르고 Supabase에 안전하게 저장되는 앨범을 바로 시작하세요.',
-              style: TextStyle(
-                color: SnapFitColors.textSecondaryOf(context),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.45,
-              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreHeroMiniCard extends StatelessWidget {
+  const _StoreHeroMiniCard({
+    required this.width,
+    required this.colors,
+    required this.angle,
+  });
+
+  final double width;
+  final List<Color> colors;
+  final double angle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: angle,
+      child: Container(
+        width: width,
+        height: 86,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.86),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: colors,
+            ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _StoreHeroOrb extends StatelessWidget {
+  const _StoreHeroOrb({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -402,104 +562,171 @@ class _TemplateGridCard extends StatelessWidget {
     final labelColor = template.isPremium
         ? SnapFitColors.accent
         : SnapFitColors.textSecondaryOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SnapFitPressable(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _StoreTemplateCoverPreview(template: template),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 4,
-                      ),
+      pressedScale: 0.955,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _StoreTemplateCoverPreview(template: template),
+                    DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.black.withValues(alpha: 0.62)
-                            : Colors.white.withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: labelColor,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.04),
+                            Colors.black.withValues(alpha: 0.10),
+                            Colors.black.withValues(alpha: 0.58),
+                          ],
+                          stops: const [0, 0.48, 1],
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.42),
-                        borderRadius: BorderRadius.circular(8),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: labelColor,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      right: 12,
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.favorite_border,
-                            size: 14,
-                            color: Colors.white,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.44),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.18),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.favorite_rounded,
+                                  size: 13,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${template.likeCount}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${template.likeCount}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                          const Spacer(),
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_outward_rounded,
+                              size: 16,
+                              color: SnapFitColors.textPrimaryOf(context),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 13),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      template.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                        color: SnapFitColors.textPrimaryOf(context),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      template.subTitle ??
+                          '${template.pageCount}p · ${template.category ?? '포토북'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textMutedOf(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            template.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            template.subTitle ??
-                '${template.pageCount}p · ${template.category ?? '포토북'}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.textMutedOf(context),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

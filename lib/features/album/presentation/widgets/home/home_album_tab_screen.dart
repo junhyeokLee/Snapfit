@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/platform_ui.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../domain/entities/album.dart';
 import '../../utils/home_album_section_builder.dart';
 import '../../views/album_category_screen.dart';
@@ -34,8 +35,6 @@ class HomeAlbumTabScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
     final tabData = buildHomeAlbumTabData(
       allAlbums: allAlbums,
       currentUserId: currentUserId,
@@ -50,123 +49,43 @@ class HomeAlbumTabScreen extends ConsumerWidget {
         physics: platformScrollPhysics(alwaysScrollable: true),
         slivers: [
           SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
-              child: Text(
-                '내 앨범',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w800,
-                  color: textPrimary,
-                ),
-              ),
+            child: _AlbumStudioHeader(totalCount: tabData.allAlbums.length),
+          ),
+          SliverToBoxAdapter(
+            child: _AlbumSegmentTabs(
+              selectedIndex: albumTabIndex,
+              labels: const ['전체', '진행중', '완료', '즐겨찾기', '공유'],
+              onChanged: onAlbumTabChanged,
             ),
           ),
           SliverToBoxAdapter(
-            child: Container(
-              padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: SnapFitColors.overlayLightOf(context),
-                  ),
-                ),
-              ),
-              child: Row(
-                children: ['전체', '진행중', '완료', '즐겨찾기', '공유'].asMap().entries.map(
-                  (entry) {
-                    final idx = entry.key;
-                    final selected = idx == albumTabIndex;
-                    return GestureDetector(
-                      onTap: () => onAlbumTabChanged(idx),
-                      child: Container(
-                        margin: EdgeInsets.only(right: 18.w),
-                        padding: EdgeInsets.only(bottom: 10.h),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: selected
-                                  ? SnapFitColors.accent
-                                  : Colors.transparent,
-                              width: 3,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          entry.value,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w800,
-                            color: selected ? textPrimary : textSecondary,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ).toList(),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
-              child: Row(
-                children: [
-                  Text(
-                    '앨범',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
+            child: _AlbumSectionHeader(
+              count: tabData.tabAlbums.length,
+              onMore: () {
+                final category = switch (albumTabIndex) {
+                  4 => AlbumCategory.shared,
+                  _ => AlbumCategory.recent,
+                };
+                final initialTabIndex = switch (albumTabIndex) {
+                  1 => 0,
+                  2 => 1,
+                  3 => 2,
+                  _ => 0,
+                };
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AlbumCategoryScreen(
+                      category: category,
+                      initialAlbums: albumTabIndex == 4
+                          ? tabData.tabAlbums
+                          : tabData.allAlbums,
+                      currentUserId: currentUserId,
+                      initialTabIndex: initialTabIndex,
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    '${tabData.tabAlbums.length}개',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  GestureDetector(
-                    onTap: () {
-                      final category = switch (albumTabIndex) {
-                        4 => AlbumCategory.shared,
-                        _ => AlbumCategory.recent,
-                      };
-                      final initialTabIndex = switch (albumTabIndex) {
-                        1 => 0,
-                        2 => 1,
-                        3 => 2,
-                        _ => 0,
-                      };
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AlbumCategoryScreen(
-                            category: category,
-                            initialAlbums: albumTabIndex == 4
-                                ? tabData.tabAlbums
-                                : tabData.allAlbums,
-                            currentUserId: currentUserId,
-                            initialTabIndex: initialTabIndex,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      '더보기',
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: SnapFitColors.accent,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
           _HomeAlbumGridSliver(
@@ -176,6 +95,316 @@ class HomeAlbumTabScreen extends ConsumerWidget {
           ),
           SliverToBoxAdapter(child: SizedBox(height: 90.h)),
         ],
+      ),
+    );
+  }
+}
+
+class _AlbumStudioHeader extends StatelessWidget {
+  const _AlbumStudioHeader({required this.totalCount});
+
+  final int totalCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return SnapFitFadeIn(
+      child: Container(
+        margin: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28.r),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? const [Color(0xFF18212D), Color(0xFF11151D)]
+                : const [Color(0xFFFFF8EC), Color(0xFFEAFBFD)],
+          ),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.26 : 0.07),
+              blurRadius: 26,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Album Studio',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      letterSpacing: 0.4,
+                      color: SnapFitColors.accent,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: 5.h),
+                  Text(
+                    '내 앨범',
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      height: 1.05,
+                      color: SnapFitColors.textPrimaryOf(context),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  SizedBox(height: 7.h),
+                  Text(
+                    '추억을 고르고, 편집하고, 완성하는 나만의 작업실',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      height: 1.35,
+                      color: SnapFitColors.textSecondaryOf(context),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 58.w,
+              height: 58.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    SnapFitColors.primaryGradientStart,
+                    SnapFitColors.primaryGradientEnd,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: SnapFitColors.accent.withOpacity(0.26),
+                    blurRadius: 18,
+                    offset: const Offset(0, 9),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  '$totalCount',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AlbumSegmentTabs extends StatelessWidget {
+  const _AlbumSegmentTabs({
+    required this.selectedIndex,
+    required this.labels,
+    required this.onChanged,
+  });
+
+  final int selectedIndex;
+  final List<String> labels;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48.h,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        scrollDirection: Axis.horizontal,
+        itemCount: labels.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (context, index) {
+          final selected = index == selectedIndex;
+          return SnapFitPressable(
+            onTap: () => onChanged(index),
+            pressedScale: 0.94,
+            borderRadius: BorderRadius.circular(999.r),
+            child: AnimatedContainer(
+              duration: SnapFitMotion.medium,
+              curve: SnapFitMotion.settle,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: selected
+                    ? SnapFitColors.textPrimaryOf(context)
+                    : SnapFitColors.surfaceOf(context),
+                borderRadius: BorderRadius.circular(999.r),
+                border: Border.all(
+                  color: selected
+                      ? SnapFitColors.textPrimaryOf(context)
+                      : SnapFitColors.overlayLightOf(context),
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(
+                            SnapFitColors.isDark(context) ? 0.26 : 0.10,
+                          ),
+                          blurRadius: 14,
+                          offset: const Offset(0, 7),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                labels[index],
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w900,
+                  color: selected
+                      ? SnapFitColors.backgroundOf(context)
+                      : SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AlbumSectionHeader extends StatelessWidget {
+  const _AlbumSectionHeader({required this.count, required this.onMore});
+
+  final int count;
+  final VoidCallback onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 12.h),
+      child: Row(
+        children: [
+          Text(
+            '앨범 컬렉션',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w900,
+              color: SnapFitColors.textPrimaryOf(context),
+              letterSpacing: -0.2,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+            decoration: BoxDecoration(
+              color: SnapFitColors.accentLight,
+              borderRadius: BorderRadius.circular(999.r),
+            ),
+            child: Text(
+              '$count개',
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: SnapFitColors.accent,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const Spacer(),
+          SnapFitPressable(
+            onTap: onMore,
+            borderRadius: BorderRadius.circular(999.r),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+              child: Row(
+                children: [
+                  Text(
+                    '더보기',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: SnapFitColors.accent,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(width: 2.w),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 10.sp,
+                    color: SnapFitColors.accent,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyAlbumShelf extends StatelessWidget {
+  const _EmptyAlbumShelf();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
+      child: Container(
+        height: 148.h,
+        padding: EdgeInsets.all(18.w),
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 54.w,
+              height: 72.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFE4C7), Color(0xFFDFF8FF)],
+                ),
+              ),
+              child: Icon(
+                Icons.photo_album_outlined,
+                color: SnapFitColors.textPrimaryOf(context).withOpacity(0.62),
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '아직 여기에 앨범이 없어요',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w900,
+                      color: SnapFitColors.textPrimaryOf(context),
+                    ),
+                  ),
+                  SizedBox(height: 5.h),
+                  Text(
+                    '다른 탭을 보거나 새 앨범을 만들면 이 공간이 채워져요.',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -195,27 +424,7 @@ class _HomeAlbumGridSliver extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (albums.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
-          child: Container(
-            height: 110.h,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-            ),
-            child: Text(
-              '표시할 앨범이 없습니다.',
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: SnapFitColors.textSecondaryOf(context),
-              ),
-            ),
-          ),
-        ),
-      );
+      return const SliverToBoxAdapter(child: _EmptyAlbumShelf());
     }
 
     final leftCol = <MapEntry<int, Album>>[];
@@ -344,20 +553,22 @@ class _HomeAlbumGridCard extends StatelessWidget {
     };
 
     return RepaintBoundary(
-      child: GestureDetector(
+      child: SnapFitPressable(
         onTap: onTap,
+        pressedScale: 0.965,
+        borderRadius: BorderRadius.circular(22.r),
         child: Container(
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: BorderRadius.circular(15.r),
+            borderRadius: BorderRadius.circular(22.r),
             border: Border.all(color: SnapFitColors.overlayLightOf(context)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(
                   SnapFitColors.isDark(context) ? 0.24 : 0.06,
                 ),
-                blurRadius: 9,
-                offset: const Offset(0, 5),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
@@ -424,7 +635,7 @@ class _HomeAlbumGridCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
+                padding: EdgeInsets.fromLTRB(13.w, 11.h, 13.w, 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
