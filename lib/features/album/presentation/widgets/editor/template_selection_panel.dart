@@ -8,6 +8,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../../../core/constants/page_templates.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 페이지 템플릿 선택 바텀시트
 /// - 여러 레이아웃 템플릿, 슬롯 간 여백 있음
@@ -73,15 +74,28 @@ class _TemplateSelectionPanelState
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(
-                widget.title,
+                widget.title == '레이아웃' ? '쪽 레이아웃 고르기' : widget.title,
                 style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.w900,
                   color: SnapFitColors.textPrimaryOf(context),
                 ),
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 6.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Text(
+                '사진이 놓일 리듬을 먼저 골라보세요.',
+                style: TextStyle(
+                  fontSize: 12.5.sp,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+            ),
+            SizedBox(height: 14.h),
             Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -90,7 +104,7 @@ class _TemplateSelectionPanelState
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.w,
                     mainAxisSpacing: 12.h,
-                    childAspectRatio: 1 / 1.12,
+                    childAspectRatio: 1 / 1.18,
                   ),
                   itemCount: templates.length,
                   itemBuilder: (context, index) {
@@ -135,74 +149,101 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return SnapFitPressable(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: isSelected
-                      ? SnapFitColors.accent
-                      : SnapFitColors.overlayLightOf(context),
-                  width: isSelected ? 2 : 1,
-                ),
+      pressedScale: 0.98,
+      borderRadius: BorderRadius.circular(22.r),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: SnapFitMotion.settle,
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(22.r),
+          border: Border.all(
+            color: isSelected
+                ? SnapFitColors.accent
+                : SnapFitColors.overlayLightOf(context),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.22 : 0.06,
               ),
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
-                    child: Center(
-                      child: AspectRatio(
-                        aspectRatio: pageRatio,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: CustomPaint(
-                            painter: _SlotPreviewPainter(template),
+              blurRadius: isSelected ? 20 : 12,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: pageRatio,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14.r),
+                            child: CustomPaint(
+                              painter: _SlotPreviewPainter(template),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (isSelected)
-                    Positioned(
-                      top: 6.h,
-                      left: 6.w,
-                      child: Container(
-                        padding: EdgeInsets.all(3.w),
-                        decoration: const BoxDecoration(
-                          color: SnapFitColors.accent,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.check,
-                          size: 12.sp,
-                          color: Colors.white,
+                    if (isSelected)
+                      Positioned(
+                        top: 8.h,
+                        right: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 7.w,
+                            vertical: 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: SnapFitColors.accent,
+                            borderRadius: BorderRadius.circular(999.r),
+                          ),
+                          child: Icon(
+                            Icons.check_rounded,
+                            size: 13.sp,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              SizedBox(height: 8.h),
+              Text(
+                template.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5.sp,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
+                  color: isSelected
+                      ? SnapFitColors.accent
+                      : SnapFitColors.textPrimaryOf(context),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                '${template.slots.length}컷 레이아웃',
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontWeight: FontWeight.w700,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 6.h),
-          Text(
-            template.name,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: isSelected
-                  ? SnapFitColors.accent
-                  : SnapFitColors.textMutedOf(context),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -213,10 +254,10 @@ class _TemplateCard extends StatelessWidget {
 class _SlotPreviewPainter extends CustomPainter {
   final PageTemplate template;
 
-  static const _imageFill = Color(0xFFDDDDDD);
-  static const _imageBorder = Color(0xFFBBBBBB);
-  static const _textFill = Color(0xFFFFF8E1);
-  static const _textBorder = Color(0xFFFFE082);
+  static const _imageFill = Color(0xFFF1E7DB);
+  static const _imageBorder = Color(0xFFD8CBBB);
+  static const _textFill = Color(0xFFFFF8E8);
+  static const _textBorder = Color(0xFFE8D5A8);
 
   const _SlotPreviewPainter(this.template);
 

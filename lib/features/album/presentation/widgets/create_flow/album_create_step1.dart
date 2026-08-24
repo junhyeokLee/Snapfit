@@ -64,7 +64,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 28.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,126 +136,160 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           ],
           // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
           Text(
-            '새로운 추억의 정보를 입력해 주세요',
+            '앨범이 될 장면을\n가볍게 적어주세요',
             style: TextStyle(
-              fontSize: 21.sp,
-              fontWeight: FontWeight.w800,
+              fontSize: 23.sp,
+              fontWeight: FontWeight.w900,
               color: SnapFitColors.textPrimaryOf(context),
             ),
           ),
-          SizedBox(height: 40.h),
-          // 앨범 제목
+          SizedBox(height: 10.h),
           Text(
-            '앨범 제목',
+            '제목, 판형, 페이지 수만 정하면 바로 표지를 다듬을 수 있어요.',
             style: TextStyle(
-              fontSize: 14.sp,
-              color: SnapFitColors.textMutedOf(context),
+              fontSize: 13.sp,
+              height: 1.42,
+              fontWeight: FontWeight.w600,
+              color: SnapFitColors.textSecondaryOf(context),
             ),
           ),
-          SizedBox(height: 8.h),
-          // 그라데이션 테두리 + 카드형 텍스트 에디터
+          SizedBox(height: 24.h),
           Container(
+            padding: EdgeInsets.all(18.w),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: SnapFitColors.primaryGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(18.r),
+              color: SnapFitColors.surfaceOf(context),
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(
+                    SnapFitColors.isDark(context) ? 0.20 : 0.05,
+                  ),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            child: Container(
-              margin: EdgeInsets.all(1.5.w),
-              decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: TextField(
-                controller: _titleController,
-                onChanged: (value) {
-                  widget.onTitleChanged(value);
-                },
-                decoration: InputDecoration(
-                  hintText: '예: 우리 가족의 제주 여행',
-                  hintStyle: TextStyle(
-                    // 예시 텍스트는 아주 연하게
-                    color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
-                  ),
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.auto_awesome_rounded,
-                    color: SnapFitColors.accentLight,
-                    size: 20.sp,
-                  ),
-                  suffixIcon: Icon(
-                    Icons.edit_outlined,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 앨범 제목
+                Text(
+                  '앨범 제목',
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: SnapFitColors.textMutedOf(context),
-                    size: 18.sp,
                   ),
-                  counterText: '',
                 ),
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-                maxLength: 50,
-              ),
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '나중에도 언제든지 수정할 수 있어요.',
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: SnapFitColors.textMutedOf(context),
-                ),
-              ),
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: _titleController,
-                builder: (context, value, _) {
-                  return Text(
-                    '${value.text.length}/50',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: SnapFitColors.textMutedOf(context),
+                SizedBox(height: 8.h),
+                // 그라데이션 테두리 + 카드형 텍스트 에디터
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: SnapFitColors.primaryGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: 40.h),
-          // 사이즈 선택
-          Text(
-            '사이즈 선택',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: SnapFitColors.textMutedOf(context),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  child: Container(
+                    margin: EdgeInsets.all(1.5.w),
+                    decoration: BoxDecoration(
+                      color: SnapFitColors.surfaceOf(context),
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    child: TextField(
+                      controller: _titleController,
+                      onChanged: (value) {
+                        widget.onTitleChanged(value);
+                      },
+                      decoration: InputDecoration(
+                        hintText: '제주 가족여행 · 우리 아기 첫 생일',
+                        hintStyle: TextStyle(
+                          // 예시 텍스트는 아주 연하게
+                          color: SnapFitColors.textMutedOf(
+                            context,
+                          ).withOpacity(0.3),
+                        ),
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 14.h,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.auto_awesome_rounded,
+                          color: SnapFitColors.accentLight,
+                          size: 20.sp,
+                        ),
+                        suffixIcon: Icon(
+                          Icons.edit_outlined,
+                          color: SnapFitColors.textMutedOf(context),
+                          size: 18.sp,
+                        ),
+                        counterText: '',
+                      ),
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLength: 50,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '나중에도 언제든지 수정할 수 있어요.',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: SnapFitColors.textMutedOf(context),
+                      ),
+                    ),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _titleController,
+                      builder: (context, value, _) {
+                        return Text(
+                          '${value.text.length}/50',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: SnapFitColors.textMutedOf(context),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 30.h),
+                // 사이즈 선택
+                Text(
+                  '사이즈 선택',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: SnapFitColors.textMutedOf(context),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                _buildSizeSelector(context),
+                SizedBox(height: 30.h),
+                // 페이지 수 선택
+                Text(
+                  '페이지 수 선택',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: SnapFitColors.textMutedOf(context),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                _buildPageCountSelector(context),
+              ],
             ),
           ),
-          SizedBox(height: 16.h),
-          _buildSizeSelector(context),
-          SizedBox(height: 40.h),
-          // 페이지 수 선택
-          Text(
-            '페이지 수 선택',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: SnapFitColors.textMutedOf(context),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildPageCountSelector(context),
-          SizedBox(height: 40.h),
+          SizedBox(height: 28.h),
           // 다음 버튼 (제목/사이즈 상태에 따라 활성화)
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _titleController,
@@ -263,7 +297,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               final canProceed =
                   value.text.isNotEmpty && widget.selectedCover != null;
               return SnapFitPrimaryActionButton(
-                label: '앨범 생성하기',
+                label: '표지 다듬으러 가기',
                 onPressed: canProceed ? widget.onNext : null,
                 icon: Icons.arrow_forward,
               );
@@ -312,7 +346,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               margin: EdgeInsets.only(
                 right: index != sizeOptions.length - 1 ? 12.w : 0,
               ),
-              padding: EdgeInsets.all(20.w),
+              padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 28.h),
               decoration: BoxDecoration(
                 color: isSelected
                     ? SnapFitColors.accent.withOpacity(0.15)
@@ -400,7 +434,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${minPage}p',
+              '${minPage}쪽',
               style: TextStyle(
                 fontSize: 12.sp,
                 color: SnapFitColors.textMutedOf(context),
@@ -414,7 +448,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 border: Border.all(color: SnapFitColors.accent, width: 1),
               ),
               child: Text(
-                '${safePageCount}p',
+                '${safePageCount}쪽',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,

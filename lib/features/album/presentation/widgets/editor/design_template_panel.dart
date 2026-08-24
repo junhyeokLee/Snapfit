@@ -11,6 +11,7 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../cover/cover.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../domain/entities/layer.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
@@ -128,10 +129,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(
-                '템플릿',
+                '앨범 분위기 고르기',
                 style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w900,
                   color: SnapFitColors.textPrimaryOf(context),
                 ),
               ),
@@ -140,10 +141,11 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(
-                '전체',
+                '사진에 맞는 무드를 골라보세요',
                 style: TextStyle(
-                  fontSize: 11.8.sp,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5.sp,
+                  height: 1.35,
+                  fontWeight: FontWeight.w700,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
@@ -191,7 +193,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                             ),
                             SizedBox(height: 10.h),
                             Text(
-                              '템플릿 불러오는 중...',
+                              '어울리는 템플릿을 고르는 중이에요…',
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w600,
@@ -264,60 +266,150 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     required WidgetRef ref,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return SnapFitPressable(
       onTap: onTap,
-      child: Container(
+      pressedScale: 0.98,
+      borderRadius: BorderRadius.circular(22.r),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: SnapFitMotion.settle,
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(22.r),
           border: Border.all(
             color: isSelected
                 ? SnapFitColors.accent
                 : SnapFitColors.overlayLightOf(context),
             width: isSelected ? 2 : 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.24 : 0.07,
+              ),
+              blurRadius: isSelected ? 22 : 14,
+              offset: const Offset(0, 9),
+            ),
+          ],
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 11.h),
           child: Column(
             children: [
               Expanded(
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio:
-                        logicalCanvasSize.width / logicalCanvasSize.height,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: SnapFitColors.backgroundOf(context),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: _DesignTemplatePreview(
-                          template: template,
-                          ref: ref,
-                          logicalCanvasSize: logicalCanvasSize,
-                          sourceCanvasSize: templateSourceSize,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio:
+                              logicalCanvasSize.width /
+                              logicalCanvasSize.height,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: SnapFitColors.backgroundOf(context),
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16.r),
+                              child: _DesignTemplatePreview(
+                                template: template,
+                                ref: ref,
+                                logicalCanvasSize: logicalCanvasSize,
+                                sourceCanvasSize: templateSourceSize,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      top: 8.h,
+                      left: 8.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 7.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.38),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                        child: Text(
+                          template.category,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9.5.sp,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (isSelected)
+                      Positioned(
+                        top: 8.h,
+                        right: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: SnapFitColors.accent,
+                            borderRadius: BorderRadius.circular(999.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_rounded,
+                                size: 12.sp,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 3.w),
+                              Text(
+                                '선택',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9.5.sp,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 9.h),
               Text(
                 template.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 10.8.sp,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                  fontSize: 12.5.sp,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
                   color: isSelected
                       ? SnapFitColors.accent
-                      : SnapFitColors.textSecondaryOf(context),
-                  height: 1.0,
-                  letterSpacing: 0.05,
+                      : SnapFitColors.textPrimaryOf(context),
+                  height: 1.05,
+                  letterSpacing: -0.05,
+                ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                template.isFeatured ? '추천 템플릿' : '바로 적용 가능',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontWeight: FontWeight.w700,
+                  color: SnapFitColors.textMutedOf(context),
+                  height: 1,
                 ),
               ),
             ],

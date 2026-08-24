@@ -207,6 +207,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       child: Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: AppBar(
+          toolbarHeight: 62.h,
           backgroundColor: SnapFitColors.backgroundOf(context),
           surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
@@ -219,13 +220,33 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             ),
             onPressed: _handleBack,
           ),
-          title: Text(
-            '앨범 생성',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'SNAPFIT CREATE',
+                style: TextStyle(
+                  fontSize: 9.5.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.6,
+                  color: SnapFitColors.accent,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                _currentStep == 0
+                    ? '어떤 추억을 담을까요?'
+                    : _currentStep == 1
+                    ? '표지를 먼저 다듬어요'
+                    : '함께 볼 사람을 초대해요',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w900,
+                  color: SnapFitColors.textPrimaryOf(context),
+                  letterSpacing: -0.25,
+                ),
+              ),
+            ],
           ),
           actions: [
             if (_currentStep == 1)
@@ -264,10 +285,42 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   }
 
   Widget _buildFlowProgress() {
-    const labels = ['기본 정보', '커버 확인', '초대/편집'];
+    const labels = ['분위기 고르기', '표지 다듬기', '함께 완성'];
     final templateMode = widget.initialTemplatePages != null;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 12.h),
+    final title = switch (_currentStep) {
+      0 => '분위기에 맞춰 앨범을 시작해요',
+      1 => '첫인상이 될 표지를 확인해요',
+      _ => '완성 전 함께 볼 사람을 정해요',
+    };
+    final subtitle = switch (_currentStep) {
+      0 => '여행, 가족, 아기 사진처럼 기록의 장면에 맞는 포토북을 만들어요.',
+      1 => '사진과 제목이 잘 어울리는지 가볍게 다듬어보세요.',
+      _ => '혼자 간직하거나, 초대 링크로 같이 편집할 수 있어요.',
+    };
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 12.h),
+      padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+      decoration: BoxDecoration(
+        gradient: SnapFitColors.isDark(context)
+            ? const LinearGradient(
+                colors: [Color(0xFF18212D), Color(0xFF11151D)],
+              )
+            : const LinearGradient(
+                colors: [Color(0xFFFFF7EB), Color(0xFFEAFBFD)],
+              ),
+        borderRadius: BorderRadius.circular(26.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(
+              SnapFitColors.isDark(context) ? 0.24 : 0.06,
+            ),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -280,9 +333,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                   borderRadius: BorderRadius.circular(999.r),
                 ),
                 child: Text(
-                  templateMode ? '템플릿 빠른 시작' : '새 앨범 만들기',
+                  templateMode ? '템플릿 빠른 시작' : '새 포토북 만들기',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 11.5.sp,
                     fontWeight: FontWeight.w900,
                     color: SnapFitColors.accent,
                   ),
@@ -290,7 +343,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               ),
               const Spacer(),
               Text(
-                'STEP ${(_currentStep + 1).toString().padLeft(2, '0')}/03',
+                '${_currentStep + 1}/3',
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w900,
@@ -299,18 +352,42 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               ),
             ],
           ),
+          SizedBox(height: 12.h),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 20.sp,
+              height: 1.18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.45,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 12.5.sp,
+              height: 1.42,
+              fontWeight: FontWeight.w600,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
+          ),
           SizedBox(height: 14.h),
           Row(
             children: List.generate(labels.length, (index) {
               final active = index <= _currentStep;
-              final current = index == _currentStep;
               return Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: AnimatedContainer(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: index == labels.length - 1 ? 0 : 7.w,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
-                        height: current ? 6.h : 4.h,
+                        height: 5.h,
                         decoration: BoxDecoration(
                           color: active
                               ? SnapFitColors.accent
@@ -318,31 +395,22 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                           borderRadius: BorderRadius.circular(999.r),
                         ),
                       ),
-                    ),
-                    if (index != labels.length - 1) SizedBox(width: 7.w),
-                  ],
-                ),
-              );
-            }),
-          ),
-          SizedBox(height: 8.h),
-          Row(
-            children: List.generate(labels.length, (index) {
-              final active = index == _currentStep;
-              return Expanded(
-                child: Text(
-                  labels[index],
-                  textAlign: index == 0
-                      ? TextAlign.left
-                      : index == labels.length - 1
-                      ? TextAlign.right
-                      : TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.5.sp,
-                    fontWeight: active ? FontWeight.w900 : FontWeight.w700,
-                    color: active
-                        ? SnapFitColors.textPrimaryOf(context)
-                        : SnapFitColors.textMutedOf(context),
+                      SizedBox(height: 6.h),
+                      Text(
+                        labels[index],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: index == _currentStep
+                              ? FontWeight.w900
+                              : FontWeight.w700,
+                          color: index == _currentStep
+                              ? SnapFitColors.textPrimaryOf(context)
+                              : SnapFitColors.textMutedOf(context),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
