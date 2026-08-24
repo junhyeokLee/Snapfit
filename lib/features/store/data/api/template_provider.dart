@@ -594,6 +594,9 @@ String _normalizeTemplateTitleKey(String value) {
     'savethedate': 'savethedate',
     'scrapbook': 'scrapbook',
     'weddingeditorial': 'weddingeditorial',
+    '화이트에디토리얼': 'whiteeditorial',
+    '필름다이어리': 'filmdiary',
+    '소프트베이비북': 'softbabybook',
   };
   return aliases[base] ?? base;
 }
@@ -622,6 +625,16 @@ String _canonicalStoreTemplateTitle(PremiumTemplate template) {
   }
   if (titleKey == 'scrapbook' || rawJson.contains('scrapbook_v1')) {
     return 'Scrapbook';
+  }
+  if (titleKey == 'whiteeditorial' ||
+      rawJson.contains('minimal_editorial_v1')) {
+    return '화이트 에디토리얼';
+  }
+  if (titleKey == 'filmdiary' || rawJson.contains('film_diary_v1')) {
+    return '필름 다이어리';
+  }
+  if (titleKey == 'softbabybook' || rawJson.contains('soft_babybook_v1')) {
+    return '소프트 베이비북';
   }
 
   return rawTitle;
@@ -805,7 +818,7 @@ Future<List<PremiumTemplate>> _loadCanonicalHandoffStoreTemplates() async {
 List<PremiumTemplate> _hardcodedCanonicalStoreTemplates() {
   return <PremiumTemplate>[
     PremiumTemplate(
-      id: -1115056,
+      id: 52,
       title: 'SAVE THE DATE',
       subTitle: '웨딩 · editorial',
       description: 'SAVE THE DATE 스토어 템플릿',
