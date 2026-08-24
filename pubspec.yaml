@@ -131,6 +131,7 @@ flutter:
     - assets/templates/minimal_editorial/images/generated/
     - assets/templates/film_diary/images/generated/
     - assets/templates/soft_babybook/images/generated/
+    - assets/templates/soft_babybook/images/approved_stock/
     - assets/social/
 
 
