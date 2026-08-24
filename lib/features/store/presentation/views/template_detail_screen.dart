@@ -838,8 +838,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final category = (_template.category ?? '').trim();
     return [
       if (category.isNotEmpty) category,
-      if (_template.isPremium) '프리미엄' else '무료 시작',
-      '${_template.pageCount}p',
+      if (_template.isPremium) 'Premium' else '무료 사용',
+      '${_template.pageCount}페이지',
     ];
   }
 
@@ -861,8 +861,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               _briefMetric(
                 context,
                 Icons.auto_stories_outlined,
-                '${_template.pageCount}p',
-                '페이지',
+                '${_template.pageCount}페이지',
+                '구성',
               ),
               SizedBox(width: 10.w),
               _briefMetric(
@@ -877,8 +877,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 _template.isPremium
                     ? Icons.workspace_premium_outlined
                     : Icons.lock_open_rounded,
-                _template.isPremium ? 'Premium' : 'Free',
-                '사용 조건',
+                _template.isPremium ? 'Premium' : '무료 사용',
+                '이용',
               ),
             ],
           ),
@@ -961,9 +961,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Widget _buildQuickStartPanel(BuildContext context) {
     final items = const [
-      (number: '01', title: '제목만 입력', desc: '템플릿 제목이 기본값으로 들어가요.'),
-      (number: '02', title: '커버 확인', desc: '추천 비율과 표지 레이아웃을 바로 적용해요.'),
-      (number: '03', title: '사진 채우기', desc: '초대는 나중에 해도 편집을 시작할 수 있어요.'),
+      (number: '01', title: '무드 선택', desc: '가족, 여행, 웨딩 기록에 맞는 분위기를 먼저 고릅니다.'),
+      (number: '02', title: '표지 확인', desc: '추천 비율과 표지 레이아웃을 그대로 적용해요.'),
+      (number: '03', title: '사진 채우기', desc: '사진과 제목을 더해 나만의 포토북으로 완성해요.'),
     ];
     return Container(
       width: double.infinity,
@@ -993,7 +993,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           ),
           SizedBox(height: 6.h),
           Text(
-            '복잡한 설정보다 먼저 앨범을 만들고, 초대와 세부 편집은 나중에 이어갈 수 있어요.',
+            '템플릿 분위기는 그대로 가져오고, 사진과 제목만 더해 빠르게 시작해요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
               fontSize: 13.sp,
@@ -1339,10 +1339,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             ),
                           ),
                           Text(
-                            '템플릿 상세',
+                            '템플릿 미리보기',
                             style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w900,
                               color: titleColor,
                             ),
                           ),
@@ -1377,12 +1377,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           Text(
                             _template.title,
                             style: TextStyle(
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 26.sp,
+                              fontWeight: FontWeight.w900,
                               color: titleColor,
                             ),
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 10.h),
                           if ((_template.subTitle ?? _template.description)
                                   ?.trim()
                                   .isNotEmpty ??
@@ -1447,8 +1447,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           Text(
                             '페이지 미리보기',
                             style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w900,
                               color: titleColor,
                             ),
                           ),
@@ -1593,12 +1593,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 bottom: MediaQuery.of(context).padding.bottom + 20.h,
               ),
               decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
+                color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
+                border: Border(
+                  top: BorderSide(color: SnapFitColors.overlayLightOf(context)),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
+                    blurRadius: 18,
+                    offset: const Offset(0, -8),
                   ),
                 ],
               ),
@@ -1633,7 +1636,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 20.w),
+                  SizedBox(width: 14.w),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isUsing ? null : _onUse,
@@ -1642,24 +1645,39 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.r),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         elevation: 0,
                       ),
                       child: _isUsing
                           ? SizedBox(
-                              width: 24.w,
-                              height: 24.w,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 18.w,
+                                    height: 18.w,
+                                    child: const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  Text(
+                                    '앨범을 준비하고 있어요…',
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  '빠른 시작하기',
+                                  '이 템플릿으로 시작하기',
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
@@ -1692,12 +1710,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           width: heroWidth,
           height: heroHeight,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(26.r),
             color: SnapFitColors.surfaceOf(context),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 28,
                 offset: const Offset(0, 10),
               ),
             ],
@@ -1706,7 +1724,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
             children: [
               Positioned.fill(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(26.r),
                   child: _buildRenderedTemplateSurface(
                     layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
                     previewUrl: coverUrl,

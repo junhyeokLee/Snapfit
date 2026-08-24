@@ -119,12 +119,10 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
             children: [
               // Static Card Frame (Layout does not move)
               Container(
-                height: 400.h, // Adjusted height for better balance (was 480.h)
+                height: 376.h,
                 margin: EdgeInsets.symmetric(horizontal: 20.w),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    32.r,
-                  ), // More rounded corners
+                  borderRadius: BorderRadius.circular(30.r),
                   color: Colors.grey[200],
                   boxShadow: [
                     // Softer, more diffused shadow
@@ -196,13 +194,12 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     gradient: LinearGradient(
                                       colors: [
                                         Colors.black.withOpacity(0.0),
-                                        Colors.black.withOpacity(0.2),
-                                        Colors.black.withOpacity(0.8),
+                                        Colors.black.withOpacity(0.10),
+                                        Colors.black.withOpacity(0.72),
                                       ],
-                                      begin: Alignment
-                                          .center, // Start slightly lower
+                                      begin: Alignment.center,
                                       end: Alignment.bottomCenter,
-                                      stops: const [0.0, 0.4, 1.0],
+                                      stops: const [0.0, 0.62, 1.0],
                                     ),
                                   ),
                                 ),
@@ -210,7 +207,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                 Padding(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 24.w,
-                                    vertical: 32.h,
+                                    vertical: 24.h,
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.end,
@@ -233,9 +230,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                             ),
                                           ),
                                           child: Text(
-                                            'MONTHLY BEST',
+                                            '이달의 추천',
                                             style: TextStyle(
-                                              fontSize: 10.sp,
+                                              fontSize: 11.sp,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
                                               letterSpacing: 0.5,
@@ -247,14 +244,14 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontSize: 34.sp, // Large, clean font
-                                          fontWeight: FontWeight.w700,
+                                          fontSize: 27.sp,
+                                          fontWeight: FontWeight.w900,
                                           color: Colors.white,
                                           height: 1.15,
                                           letterSpacing: -0.5,
                                         ),
                                       ),
-                                      SizedBox(height: 12.h),
+                                      SizedBox(height: 8.h),
                                       if (template.subTitle != null)
                                         Text(
                                           template.subTitle!,
@@ -263,12 +260,30 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           style: TextStyle(
                                             fontSize: 14.sp,
                                             color: Colors.white.withOpacity(
-                                              0.7,
+                                              0.78,
                                             ),
-                                            fontWeight: FontWeight.w400,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.35,
                                             letterSpacing: 0,
                                           ),
                                         ),
+                                      SizedBox(height: 14.h),
+                                      Wrap(
+                                        spacing: 7.w,
+                                        runSpacing: 6.h,
+                                        children: [
+                                          _ShowcaseMetaPill(
+                                            label: template.category ?? '포토북',
+                                          ),
+                                          _ShowcaseMetaPill(
+                                            label: '${template.pageCount}페이지',
+                                          ),
+                                          if (template.isPremium)
+                                            const _ShowcaseMetaPill(
+                                              label: 'Premium',
+                                            ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -287,7 +302,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                           children: List.generate(
                             visibleTemplates.length,
                             (index) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 200),
                               margin: EdgeInsets.symmetric(horizontal: 4.w),
                               width: _currentIndex == index ? 24.w : 6.w,
                               height: 6.h,
@@ -325,6 +340,32 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
       error: (err, stack) => SizedBox(
         height: 100.h,
         child: Center(child: Text('템플릿을 불러올 수 없습니다.')), // Simple error message
+      ),
+    );
+  }
+}
+
+class _ShowcaseMetaPill extends StatelessWidget {
+  final String label;
+
+  const _ShowcaseMetaPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.88),
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

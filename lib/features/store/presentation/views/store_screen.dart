@@ -258,10 +258,10 @@ class _StoreHero extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            '$totalCount TEMPLATE DROPS',
+                            'SNAPFIT TEMPLATE STORE',
                             style: TextStyle(
                               color: SnapFitColors.accent,
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.4,
                             ),
@@ -295,7 +295,7 @@ class _StoreHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      '스토어에서\n앨범의 분위기를 고르세요',
+                      '사진만 골라도\n앨범처럼 완성되게',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 29,
@@ -306,7 +306,7 @@ class _StoreHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '웨딩, 가족, 여행, 일상을 한 번에 완성도 있게 보여주는 감성 템플릿을 골라 바로 앨범 제작을 시작할 수 있어요.',
+                      '가족, 여행, 웨딩, 아기 기록에 맞춘 감성 포토북 템플릿을 골라보세요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 14,
@@ -324,6 +324,7 @@ class _StoreHero extends StatelessWidget {
                             top: 10,
                             child: _StoreHeroMiniCard(
                               width: 78,
+                              label: 'Family',
                               colors: [Color(0xFFFFE2C5), Color(0xFFFFF7ED)],
                               angle: -0.12,
                             ),
@@ -333,6 +334,7 @@ class _StoreHero extends StatelessWidget {
                             top: 0,
                             child: _StoreHeroMiniCard(
                               width: 88,
+                              label: 'Travel',
                               colors: [Color(0xFFE0F7FF), Color(0xFFFFFFFF)],
                               angle: 0.06,
                             ),
@@ -342,6 +344,7 @@ class _StoreHero extends StatelessWidget {
                             top: 16,
                             child: _StoreHeroMiniCard(
                               width: 76,
+                              label: 'Wedding',
                               colors: [Color(0xFFF4E7FF), Color(0xFFFFF8FB)],
                               angle: 0.13,
                             ),
@@ -365,11 +368,13 @@ class _StoreHeroMiniCard extends StatelessWidget {
     required this.width,
     required this.colors,
     required this.angle,
+    required this.label,
   });
 
   final double width;
   final List<Color> colors;
   final double angle;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -391,12 +396,22 @@ class _StoreHeroMiniCard extends StatelessWidget {
           ],
         ),
         child: Container(
+          alignment: Alignment.bottomLeft,
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: colors,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: SnapFitColors.deepCharcoal.withValues(alpha: 0.62),
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ),
@@ -445,7 +460,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
             controller: searchController,
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: '템플릿, 분위기, 카테고리 검색',
+              hintText: '어떤 기록을 만들까요?',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: searchController.text.isEmpty
                   ? null
@@ -454,14 +469,18 @@ class _StoreDiscoveryControls extends StatelessWidget {
                       icon: const Icon(Icons.close_rounded),
                     ),
               filled: true,
-              fillColor: SnapFitColors.surfaceOf(context),
+              fillColor: SnapFitColors.surfaceOf(
+                context,
+              ).withValues(alpha: 0.86),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(
+                  color: SnapFitColors.overlayLightOf(context),
+                ),
               ),
             ),
           ),
@@ -485,8 +504,10 @@ class _StoreDiscoveryControls extends StatelessWidget {
                       ? Colors.white
                       : SnapFitColors.textSecondaryOf(context),
                 ),
-                selectedColor: SnapFitColors.accent,
-                backgroundColor: SnapFitColors.surfaceOf(context),
+                selectedColor: SnapFitColors.deepCharcoal,
+                backgroundColor: SnapFitColors.surfaceOf(
+                  context,
+                ).withValues(alpha: 0.76),
                 side: BorderSide(
                   color: selected
                       ? SnapFitColors.accent
@@ -558,7 +579,7 @@ class _TemplateGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = template.isPremium ? 'PREMIUM' : 'FREE';
+    final label = template.isPremium ? 'Premium' : '무료 사용';
     final labelColor = template.isPremium
         ? SnapFitColors.accent
         : SnapFitColors.textSecondaryOf(context);
@@ -566,11 +587,13 @@ class _TemplateGridCard extends StatelessWidget {
 
     return SnapFitPressable(
       onTap: onTap,
-      pressedScale: 0.955,
+      pressedScale: 0.98,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
+          color: isDark
+              ? SnapFitColors.surfaceOf(context)
+              : const Color(0xFFFFFCF7),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: SnapFitColors.overlayLightOf(context)),
           boxShadow: [
@@ -636,58 +659,20 @@ class _TemplateGridCard extends StatelessWidget {
                       ),
                     ),
                     Positioned(
-                      bottom: 12,
-                      left: 12,
                       right: 12,
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.44),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.18),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.favorite_rounded,
-                                  size: 13,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${template.likeCount}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.92),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.arrow_outward_rounded,
-                              size: 16,
-                              color: SnapFitColors.textPrimaryOf(context),
-                            ),
-                          ),
-                        ],
+                      bottom: 12,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.90),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_outward_rounded,
+                          size: 15,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
                       ),
                     ),
                   ],
@@ -711,12 +696,11 @@ class _TemplateGridCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      template.subTitle ??
-                          '${template.pageCount}p · ${template.category ?? '포토북'}',
+                      '${template.category ?? '포토북'} · ${template.pageCount}페이지${template.isPremium ? ' · Premium' : ''}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: SnapFitColors.textMutedOf(context),
                       ),
@@ -803,7 +787,13 @@ class _StoreTemplateCoverPreview extends StatelessWidget {
           final drawWidth = math.min(maxWidth, maxHeight * targetAspect);
           final drawHeight = drawWidth / targetAspect;
           return Container(
-            color: SnapFitColors.overlayLightOf(context),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFFF7ED), Color(0xFFEAFBFD)],
+              ),
+            ),
             alignment: Alignment.center,
             child: SizedBox(
               width: drawWidth,
