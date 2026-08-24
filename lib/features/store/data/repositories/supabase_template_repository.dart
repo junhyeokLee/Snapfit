@@ -162,10 +162,9 @@ class SupabaseTemplateRepository implements TemplateRepository {
         })
         .select()
         .single();
-    await client
-        .from('templates')
-        .update({'user_count': template.userCount + 1})
-        .eq('id', id);
+    await client.rpc('increment_template_user_count', params: {
+      'p_template_id': id,
+    });
     return Album.fromJson(_albumRowToJson(Map<String, dynamic>.from(inserted)));
   }
 

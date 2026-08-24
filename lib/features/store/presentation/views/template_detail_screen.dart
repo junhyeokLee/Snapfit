@@ -456,7 +456,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   Future<void> _onLike() async {
     if (_isLikeSubmitting) return;
     var target = _template;
-    if (target.id < 0) {
+    // Always validate the server ID when the template hasn't been hydrated yet
+    // (e.g. user taps like before _refreshTemplate() completes) OR when the
+    // local handoff JSON carries a hardcoded ID that might not exist in the DB.
+    if (_isTemplateHydrating || target.id < 0) {
       final matched = await _findRemoteMatchByTitle();
       if (matched != null && mounted) {
         setState(() {
