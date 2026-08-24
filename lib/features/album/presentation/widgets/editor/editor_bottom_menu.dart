@@ -33,189 +33,181 @@ class EditorBottomMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 62.h,
-      padding: EdgeInsets.only(bottom: 10.h), // 하단 여백 살짝 줄여서 더 컴팩트하게
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context).withOpacity(0.92),
-        border: Border(
-          top: BorderSide(
-            color: SnapFitColors.overlayLightOf(context),
-            width: 1,
+    final items = isCover
+        ? [
+            _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
+            _EditorMenuItem(
+              '사진',
+              Icons.photo_outlined,
+              EditorMode.none,
+              isAction: true,
+              onAction: onAddPhoto,
+            ),
+            if (showCoverMenuItem)
+              _EditorMenuItem(
+                '커버',
+                Icons.photo_album_outlined,
+                EditorMode.none,
+                isAction: true,
+                onAction: onCover,
+              ),
+            _EditorMenuItem(
+              '레이아웃',
+              Icons.dashboard_outlined,
+              EditorMode.layout,
+            ),
+            _EditorMenuItem(
+              '템플릿',
+              Icons.auto_awesome_outlined,
+              EditorMode.template,
+            ),
+            _EditorMenuItem(
+              '스티커',
+              Icons.emoji_emotions_outlined,
+              EditorMode.sticker,
+            ),
+            _EditorMenuItem(
+              '배경',
+              Icons.palette_outlined,
+              EditorMode.backgroundColor,
+            ),
+            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
+          ]
+        : [
+            _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
+            _EditorMenuItem(
+              '사진',
+              Icons.photo_outlined,
+              EditorMode.none,
+              isAction: true,
+              onAction: onAddPhoto,
+            ),
+            _EditorMenuItem(
+              '레이아웃',
+              Icons.dashboard_outlined,
+              EditorMode.layout,
+            ),
+            _EditorMenuItem(
+              '템플릿',
+              Icons.auto_awesome_outlined,
+              EditorMode.template,
+            ),
+            _EditorMenuItem(
+              '스티커',
+              Icons.emoji_emotions_outlined,
+              EditorMode.sticker,
+            ),
+            _EditorMenuItem(
+              '배경',
+              Icons.palette_outlined,
+              EditorMode.backgroundColor,
+            ),
+            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
+          ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+      child: Container(
+        height: 68.h,
+        decoration: BoxDecoration(
+          color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+          border: Border(
+            top: BorderSide(
+              color: SnapFitColors.overlayLightOf(context),
+              width: 0.8,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                SnapFitColors.isDark(context) ? 0.28 : 0.08,
+              ),
+              blurRadius: 18,
+              offset: const Offset(0, -6),
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              SizedBox(width: 8.w),
+              ...items.map(
+                (item) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w),
+                  child: _buildMenuItem(context, item),
+                ),
+              ),
+              SizedBox(width: 8.w),
+            ],
           ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: isCover
-            // 커버 편집 시: 커버(테마) + 레이아웃 + 템플릿 모두 제공
-            ? [
-                _buildMenuItem(
-                  context,
-                  '글쓰기',
-                  Icons.text_fields_outlined,
-                  EditorMode.text,
-                ),
-                _buildMenuItem(
-                  context,
-                  '사진',
-                  Icons.photo_outlined,
-                  EditorMode.none,
-                  isAction: true,
-                  onAction: onAddPhoto,
-                ),
-                if (showCoverMenuItem)
-                  _buildMenuItem(
-                    context,
-                    '커버',
-                    Icons.photo_album_outlined,
-                    EditorMode.none,
-                    isAction: true,
-                    onAction: onCover,
-                  ),
-                _buildMenuItem(
-                  context,
-                  '레이아웃',
-                  Icons.dashboard_outlined,
-                  EditorMode.layout,
-                ),
-                _buildMenuItem(
-                  context,
-                  '템플릿',
-                  Icons.auto_awesome_outlined,
-                  EditorMode.template,
-                ),
-                _buildMenuItem(
-                  context,
-                  '스티커',
-                  Icons.emoji_emotions_outlined,
-                  EditorMode.sticker,
-                ),
-                _buildMenuItem(
-                  context,
-                  '배경색상',
-                  Icons.palette_outlined,
-                  EditorMode.backgroundColor,
-                ),
-                _buildMenuItem(
-                  context,
-                  '레이어',
-                  Icons.layers_outlined,
-                  EditorMode.layer,
-                ),
-              ]
-            // 내지 편집 시도 동일하게 레이아웃 + 템플릿 제공
-            : [
-                _buildMenuItem(
-                  context,
-                  '글쓰기',
-                  Icons.text_fields_outlined,
-                  EditorMode.text,
-                ),
-                _buildMenuItem(
-                  context,
-                  '사진',
-                  Icons.photo_outlined,
-                  EditorMode.none,
-                  isAction: true,
-                  onAction: onAddPhoto,
-                ),
-                _buildMenuItem(
-                  context,
-                  '레이아웃',
-                  Icons.dashboard_outlined,
-                  EditorMode.layout,
-                ),
-                _buildMenuItem(
-                  context,
-                  '템플릿',
-                  Icons.auto_awesome_outlined,
-                  EditorMode.template,
-                ),
-                _buildMenuItem(
-                  context,
-                  '스티커',
-                  Icons.emoji_emotions_outlined,
-                  EditorMode.sticker,
-                ),
-                _buildMenuItem(
-                  context,
-                  '배경색상',
-                  Icons.palette_outlined,
-                  EditorMode.backgroundColor,
-                ),
-                _buildMenuItem(
-                  context,
-                  '레이어',
-                  Icons.layers_outlined,
-                  EditorMode.layer,
-                ),
-              ],
       ),
     );
   }
 
-  Widget _buildMenuItem(
-    BuildContext context,
-    String label,
-    IconData icon,
-    EditorMode mode, {
-    bool isAction = false,
-    VoidCallback? onAction,
-  }) {
-    final isSelected = !isAction && currentMode == mode;
+  Widget _buildMenuItem(BuildContext context, _EditorMenuItem item) {
+    final isSelected = !item.isAction && currentMode == item.mode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // 바텀 아이콘/텍스트 색상: 라이트 모드 = 검정, 다크 모드 = 흰색
-    final Color color = isDark
-        ? Colors.white.withOpacity(0.70)
-        : SnapFitColors.deepCharcoal.withOpacity(0.62);
+    final color = isDark
+        ? Colors.white.withOpacity(0.72)
+        : SnapFitColors.deepCharcoal.withOpacity(0.66);
 
     return SnapFitPressable(
-      pressedScale: 0.92,
+      pressedScale: 0.95,
+      borderRadius: BorderRadius.circular(16.r),
       onTap: () {
-        if (isAction) {
-          onAction?.call();
+        if (item.isAction) {
+          item.onAction?.call();
         } else {
-          onModeChanged(isSelected ? EditorMode.none : mode);
+          onModeChanged(isSelected ? EditorMode.none : item.mode);
         }
       },
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 4.h),
+        width: 56.w,
+        height: 54.h,
+        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? SnapFitColors.accent.withOpacity(0.10)
+              ? SnapFitColors.accent.withOpacity(0.12)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(16.r),
+          border: isSelected
+              ? Border.all(color: SnapFitColors.accent.withOpacity(0.18))
+              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedScale(
-              scale: isSelected ? 1.10 : 1.0,
+              scale: isSelected ? 1.06 : 1.0,
               duration: SnapFitMotion.fast,
               curve: SnapFitMotion.settle,
               child: Icon(
-                icon,
+                item.icon,
                 color: isSelected ? SnapFitColors.accent : color,
-                size: 18.sp,
+                size: 20.sp,
               ),
             ),
-            SizedBox(height: 3.h),
+            SizedBox(height: 4.h),
             Text(
-              label,
-              // 앱 전역 텍스트 테마(bodySmall)를 베이스로 사용해 폰트/라인하이트를 통일하고,
-              // 크기·두께만 하단 메뉴용으로 살짝 조정한다.
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style:
                   (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
                       .copyWith(
-                        fontSize: 8.5.sp,
+                        fontSize: 10.sp,
+                        height: 1.0,
                         color: isSelected ? SnapFitColors.accent : color,
                         fontWeight: isSelected
-                            ? FontWeight.w800
-                            : FontWeight.w500,
-                        letterSpacing: 0.1,
+                            ? FontWeight.w900
+                            : FontWeight.w700,
+                        letterSpacing: -0.05,
                       ),
             ),
           ],
@@ -223,4 +215,20 @@ class EditorBottomMenu extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EditorMenuItem {
+  const _EditorMenuItem(
+    this.label,
+    this.icon,
+    this.mode, {
+    this.isAction = false,
+    this.onAction,
+  });
+
+  final String label;
+  final IconData icon;
+  final EditorMode mode;
+  final bool isAction;
+  final VoidCallback? onAction;
 }

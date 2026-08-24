@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 저장 중 진행률 오버레이
 class PageEditorSaveOverlay extends StatelessWidget {
@@ -10,29 +11,17 @@ class PageEditorSaveOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: SnapFitColors.overlayStrongOf(context),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 4,
-              color: SnapFitColors.accent,
-              backgroundColor: Colors.white24,
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              '저장 중... ${(progress * 100).toInt()}%',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ],
+    return SnapFitFadeIn(
+      duration: const Duration(milliseconds: 220),
+      child: Container(
+        color: Colors.black.withOpacity(0.42),
+        child: Center(
+          child: _EditorProgressCard(
+            title: '포토북을 저장하고 있어요',
+            subcopy: '사진과 페이지를 안전하게 정리 중입니다.',
+            progress: progress,
+            showPercent: true,
+          ),
         ),
       ),
     );
@@ -45,38 +34,106 @@ class PageEditorPreparingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return SnapFitFadeIn(
+      duration: const Duration(milliseconds: 220),
+      child: Container(
+        color: SnapFitColors.backgroundOf(context).withOpacity(0.96),
+        child: const Center(
+          child: _EditorProgressCard(
+            title: '앨범을 펼치는 중이에요',
+            subcopy: '선택한 템플릿을 페이지에 맞추고 있어요.',
+            progress: null,
+            showPercent: false,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EditorProgressCard extends StatelessWidget {
+  const _EditorProgressCard({
+    required this.title,
+    required this.subcopy,
+    required this.progress,
+    required this.showPercent,
+  });
+
+  final String title;
+  final String subcopy;
+  final double? progress;
+  final bool showPercent;
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = ((progress ?? 0) * 100).round().clamp(0, 100);
     return Container(
-      color: SnapFitColors.backgroundOf(context),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
+      width: 246.w,
+      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 22.h),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(
+              SnapFitColors.isDark(context) ? 0.34 : 0.16,
+            ),
+            blurRadius: 32,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 48.w,
+            height: 48.w,
+            child: CircularProgressIndicator(
+              value: progress,
               strokeWidth: 3,
               color: SnapFitColors.accent,
+              backgroundColor: SnapFitColors.accent.withOpacity(0.14),
             ),
-            SizedBox(height: 24.h),
-            Text(
-              '앨범을 준비하고 있습니다...',
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(context),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.3,
-                decoration: TextDecoration.none,
-              ),
+          ),
+          SizedBox(height: 18.h),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.25,
+              decoration: TextDecoration.none,
             ),
+          ),
+          if (showPercent) ...[
             SizedBox(height: 8.h),
             Text(
-              '잠시만 기다려주세요.',
+              '$percent%',
               style: TextStyle(
-                color: SnapFitColors.textSecondaryOf(context),
-                fontSize: 14.sp,
+                color: SnapFitColors.accent,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w900,
                 decoration: TextDecoration.none,
               ),
             ),
           ],
-        ),
+          SizedBox(height: 8.h),
+          Text(
+            subcopy,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: SnapFitColors.textSecondaryOf(context),
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.45,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -388,6 +388,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          toolbarHeight: 64.h,
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
@@ -403,19 +404,56 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               }
             },
           ),
-          title: Row(
+          title: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Undo/Redo 버튼을 타이틀 왼쪽에 배치
-              Row(
+              Text(
+                '포토북 편집',
+                style: TextStyle(
+                  color: SnapFitColors.accent,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.45,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                currentPageIndex == 0 ? '표지 다듬기' : '${currentPageIndex}페이지 꾸미기',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.25,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Container(
+              height: 34.h,
+              margin: EdgeInsets.only(right: 6.w),
+              padding: EdgeInsets.symmetric(horizontal: 3.w),
+              decoration: BoxDecoration(
+                color: SnapFitColors.surfaceOf(context).withOpacity(0.72),
+                borderRadius: BorderRadius.circular(999.r),
+                border: Border.all(
+                  color: SnapFitColors.overlayLightOf(context),
+                ),
+              ),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    constraints: BoxConstraints.tightFor(
+                      width: 30.w,
+                      height: 30.h,
+                    ),
                     icon: Icon(
                       Icons.undo_rounded,
-                      size: 20.sp,
+                      size: 18.sp,
                       color: canUndo
                           ? SnapFitColors.textPrimaryOf(context)
                           : SnapFitColors.textMutedOf(context),
@@ -429,13 +467,15 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                         : null,
                     tooltip: '되돌리기',
                   ),
-                  SizedBox(width: 4.w),
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    constraints: BoxConstraints.tightFor(
+                      width: 30.w,
+                      height: 30.h,
+                    ),
                     icon: Icon(
                       Icons.redo_rounded,
-                      size: 20.sp,
+                      size: 18.sp,
                       color: canRedo
                           ? SnapFitColors.textPrimaryOf(context)
                           : SnapFitColors.textMutedOf(context),
@@ -451,28 +491,45 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   ),
                 ],
               ),
-              SizedBox(width: 8.w),
-              Text(
-                currentPageIndex == 0 ? '표지를 확인해요' : '스냅핏 만들기',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: _isSaving ? null : () => _onSaveAlbum(vm, layers),
-              child: Text(
-                "저장",
-                style: TextStyle(
-                  color: _isSaving
-                      ? SnapFitColors.textMutedOf(context)
-                      : SnapFitColors.accent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.sp,
+            ),
+            Padding(
+              padding: EdgeInsets.only(right: 12.w),
+              child: SnapFitPressable(
+                onTap: _isSaving ? null : () => _onSaveAlbum(vm, layers),
+                pressedScale: 0.96,
+                borderRadius: BorderRadius.circular(999.r),
+                child: AnimatedOpacity(
+                  duration: SnapFitMotion.fast,
+                  opacity: _isSaving ? 0.45 : 1,
+                  child: Container(
+                    height: 34.h,
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999.r),
+                      gradient: const LinearGradient(
+                        colors: [
+                          SnapFitColors.primaryGradientStart,
+                          SnapFitColors.primaryGradientEnd,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: SnapFitColors.accent.withOpacity(0.18),
+                          blurRadius: 12,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '저장',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -612,7 +669,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
                     // RenderFlex overflow가 발생하지 않도록 한다.
                     SizedBox(
-                      height: 68.h,
+                      height: 72.h,
                       child: Center(
                         child: AnimatedSwitcher(
                           duration: SnapFitMotion.medium,
@@ -640,25 +697,29 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     ),
 
                     // Bottom Menu (고정)
-                    EditorBottomMenu(
-                      currentMode: _currentMode,
-                      isCover: currentPageIndex == 0,
-                      showCoverMenuItem: false,
-                      onModeChanged: (mode) => _handleModeChange(mode, layers),
-                      onAddPhoto: () {
-                        // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
-                        final size =
-                            (currentPageIndex == 0 &&
-                                (_canvasSize.width <= 0 ||
-                                    _canvasSize.height <= 0))
-                            ? Size(
-                                kCoverReferenceWidth,
-                                kCoverReferenceWidth / aspect,
-                              )
-                            : _canvasSize;
-                        _toolbarActionHandler.addPhoto(size);
-                      },
-                      onCover: () => _toolbarActionHandler.openCoverTheme(),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
+                      child: EditorBottomMenu(
+                        currentMode: _currentMode,
+                        isCover: currentPageIndex == 0,
+                        showCoverMenuItem: false,
+                        onModeChanged: (mode) =>
+                            _handleModeChange(mode, layers),
+                        onAddPhoto: () {
+                          // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
+                          final size =
+                              (currentPageIndex == 0 &&
+                                  (_canvasSize.width <= 0 ||
+                                      _canvasSize.height <= 0))
+                              ? Size(
+                                  kCoverReferenceWidth,
+                                  kCoverReferenceWidth / aspect,
+                                )
+                              : _canvasSize;
+                          _toolbarActionHandler.addPhoto(size);
+                        },
+                        onCover: () => _toolbarActionHandler.openCoverTheme(),
+                      ),
                     ),
                   ],
                 ),
@@ -667,7 +728,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               if (_showEditorHint &&
                   !_isSaving &&
                   _interaction.selectedLayerId == null)
-                _buildEditorHint(context),
+                _buildEditorHint(context, isCover: currentPageIndex == 0),
 
               // 저장 중 진행률 오버레이
               if (_isSaving) PageEditorSaveOverlay(progress: _saveProgress),
@@ -728,7 +789,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     );
   }
 
-  Widget _buildEditorHint(BuildContext context) {
+  Widget _buildEditorHint(BuildContext context, {required bool isCover}) {
     return Positioned(
       top: 104.h,
       left: 20.w,
@@ -768,7 +829,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    '표지에 담을 사진을 올리고, 제목을 더해 포토북의 첫인상을 완성해보세요.',
+                    isCover
+                        ? '표지에 담을 사진과 제목을 더해 첫인상을 완성해보세요.'
+                        : '사진을 넣고 레이아웃을 고르면 한 쪽의 이야기가 시작돼요.',
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),
                       fontSize: 12.sp,

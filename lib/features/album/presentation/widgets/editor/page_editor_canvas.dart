@@ -96,24 +96,53 @@ class PageEditorCanvas extends StatelessWidget {
             }
             if (layers.isEmpty) {
               return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.dashboard_customize_outlined,
-                      size: 48.sp,
-                      color: SnapFitColors.deepCharcoal.withOpacity(0.35),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 24.w),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 18.w,
+                    vertical: 18.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
+                    borderRadius: BorderRadius.circular(22.r),
+                    border: Border.all(
+                      color: SnapFitColors.overlayLightOf(context),
                     ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      "템플릿을 선택하거나\n사진/텍스트를 추가하세요",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: SnapFitColors.deepCharcoal.withOpacity(0.6),
-                        fontSize: 14.sp,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.photo_library_outlined,
+                        size: 34.sp,
+                        color: SnapFitColors.deepCharcoal.withOpacity(0.38),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 10.h),
+                      Text(
+                        '이 쪽에 어떤 추억을 담을까요?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: SnapFitColors.deepCharcoal.withOpacity(0.72),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          height: 1.25,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Text(
+                        '사진을 넣거나 레이아웃을 골라 시작해보세요.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: SnapFitColors.deepCharcoal.withOpacity(0.48),
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w600,
+                          height: 1.45,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
@@ -53,34 +54,46 @@ class PageListSelector extends ConsumerWidget {
           final isCover = index == 0;
 
           // 0번은 커버, 1번부터 내지
-          String label = isCover ? '커버' : '${index}페이지';
+          final label = isCover ? '표지' : '${index}쪽';
 
-          return GestureDetector(
+          return SnapFitPressable(
             onTap: () => onPageSelected(index),
+            pressedScale: 0.96,
+            borderRadius: BorderRadius.circular(14.r),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 50.w,
-                  height: 50.w,
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: SnapFitMotion.settle,
+                  width: isSelected ? 56.w : 52.w,
+                  height: isSelected ? 62.h : 58.h,
+                  padding: EdgeInsets.all(isSelected ? 4.w : 3.w),
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.surfaceOf(context),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: isSelected
+                          ? SnapFitColors.accent
+                          : SnapFitColors.overlayLightOf(context),
+                      width: isSelected ? 1.8 : 0.8,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: SnapFitColors.accent.withOpacity(0.18),
+                              blurRadius: 14,
+                              offset: const Offset(0, 7),
+                            ),
+                          ]
+                        : null,
+                  ),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Container(
-                        width: 50.w,
-                        height: 50.w,
-                        decoration: BoxDecoration(
-                          color: SnapFitColors.surfaceOf(context),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: isSelected
-                              ? Border.all(
-                                  color: SnapFitColors.accent,
-                                  width: 2,
-                                )
-                              : null,
-                        ),
+                      Positioned.fill(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius: BorderRadius.circular(10.r),
                           child: _buildPageThumbnail(
                             context,
                             ref: ref,
@@ -91,22 +104,44 @@ class PageListSelector extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      if (isSelected)
+                        Positioned(
+                          left: 8.w,
+                          right: 8.w,
+                          bottom: -7.h,
+                          child: Container(
+                            height: 3.h,
+                            decoration: BoxDecoration(
+                              color: SnapFitColors.accent,
+                              borderRadius: BorderRadius.circular(999.r),
+                            ),
+                          ),
+                        ),
                       if (isSelected && canDeleteCurrentPage && !isCover)
                         Positioned(
-                          top: 4.h,
-                          right: 4.w,
+                          top: -5.h,
+                          right: -5.w,
                           child: GestureDetector(
                             onTap: onDeleteCurrentPage,
                             child: Container(
-                              width: 18.w,
-                              height: 18.w,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFE53935),
+                              width: 20.w,
+                              height: 20.w,
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFB96363,
+                                ).withOpacity(0.92),
                                 shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.16),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
                               child: Icon(
-                                Icons.close_rounded,
-                                size: 12.sp,
+                                Icons.remove_circle_outline_rounded,
+                                size: 13.sp,
                                 color: Colors.white,
                               ),
                             ),
@@ -115,17 +150,15 @@ class PageListSelector extends ConsumerWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 6.h),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 11.5.sp,
                     color: isSelected
                         ? SnapFitColors.accent
                         : SnapFitColors.textSecondaryOf(context),
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                   ),
                 ),
               ],
@@ -203,30 +236,46 @@ class PageListSelector extends ConsumerWidget {
   }
 
   Widget _buildAddButton(BuildContext context) {
-    return GestureDetector(
+    return SnapFitPressable(
       onTap: onAddPage,
+      pressedScale: 0.96,
+      borderRadius: BorderRadius.circular(14.r),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 50.w,
-            height: 50.w,
+            width: 52.w,
+            height: 58.h,
             decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(8.r),
+              color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
+              borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
-                color: SnapFitColors.textSecondaryOf(context).withOpacity(0.5),
-                style: BorderStyle.solid,
+                color: SnapFitColors.textSecondaryOf(context).withOpacity(0.28),
                 width: 1,
               ),
             ),
-            child: Icon(
-              Icons.add,
-              color: SnapFitColors.textSecondaryOf(context),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add_rounded,
+                  size: 22.sp,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '쪽 추가',
+                  style: TextStyle(
+                    fontSize: 9.5.sp,
+                    color: SnapFitColors.textSecondaryOf(context),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 4.h),
-          Text('', style: TextStyle(fontSize: 12.sp)),
+          SizedBox(height: 6.h),
+          Text('', style: TextStyle(fontSize: 11.5.sp)),
         ],
       ),
     );
