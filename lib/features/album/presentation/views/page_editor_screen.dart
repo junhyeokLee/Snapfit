@@ -72,6 +72,48 @@ class _PageEditorEntranceReveal extends StatelessWidget {
   }
 }
 
+class _PageEditorPageTurnReveal extends StatelessWidget {
+  const _PageEditorPageTurnReveal({
+    super.key,
+    required this.forward,
+    required this.child,
+  });
+
+  final bool forward;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 420),
+      curve: SnapFitMotion.entrance,
+      builder: (context, value, child) {
+        final direction = forward ? 1.0 : -1.0;
+        final eased = Curves.easeOutBack.transform(value.clamp(0.0, 1.0));
+        final matrix = Matrix4.identity()
+          ..setEntry(3, 2, 0.0012)
+          ..translate(18.0 * direction * (1 - value), 0.0)
+          ..rotateY(direction * 0.16 * (1 - value));
+        return Opacity(
+          key: const Key('pageEditorPageTurnOpacity'),
+          opacity: (0.18 + value * 0.82).clamp(0.0, 1.0),
+          child: Transform(
+            key: const Key('pageEditorPageTurnReveal'),
+            alignment: Alignment.center,
+            transform: matrix,
+            child: Transform.scale(
+              scale: 0.975 + (0.025 * eased),
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
 class PageEditorScreen extends ConsumerStatefulWidget {
   /// 편집할 내지 페이지 인덱스 (1 이상). null이면 현재 선택된 페이지 유지.
   /// 0(커버)은 페이지 편집에서 사용하지 않음.
@@ -102,6 +144,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   int? _lastSyncedPageIndex;
   String? _lastLayerSyncSignature;
   bool _showEditorHint = false;
+  int _pageTurnNonce = 0;
+  bool _pageTurnForward = true;
 
   void _simulateProgress() {
     _saveProgress = 0.0;
@@ -599,11 +643,17 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           pages: pages,
                           currentPageIndex: currentPageIndex,
                           onPageSelected: (index) {
+                            if (index == currentPageIndex) return;
+                            _pageTurnForward = index > currentPageIndex;
+                            _pageTurnNonce++;
+                            _interaction.clearSelection();
                             vm.goToPage(index);
                             // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
                             setState(() => _canvasSize = Size.zero);
                           },
                           onAddPage: () {
+                            _pageTurnForward = true;
+                            _pageTurnNonce++;
                             vm.addPage();
                             setState(() {}); // Refresh UI
                           },
@@ -624,103 +674,110 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           key: const Key('pageEditorCanvasReveal'),
                           delay: Duration.zero,
                           includeScale: true,
-                          child: _buildWorkspaceFrame(
-                            context,
-                            child: currentPageIndex == 0
-                                ? EditCover(
-                                    key: _coverEditorKey,
-                                    editAlbum: vm.album,
-                                    showAppBar: false,
-                                    initialCoverSize: vm.selectedCover,
-                                    showBottomToolbar: false,
-                                    interaction: _interaction,
-                                    canvasKey: _canvasKey,
-                                    onSizeChanged: (size) {
-                                      _canvasSize = size;
-                                    },
-                                  )
-                                : LayoutBuilder(
-                                    key: ValueKey(currentPageIndex),
-                                    builder: (context, constraints) {
-                                      const double sidePadding = 16.0;
-                                      final double availW =
-                                          constraints.maxWidth -
-                                          sidePadding * 2;
-                                      final double availH =
-                                          constraints.maxHeight;
-                                      const double logicalW =
-                                          kCoverReferenceWidth;
-                                      final double logicalH = logicalW / aspect;
+                          child: _PageEditorPageTurnReveal(
+                            key: ValueKey(
+                              'page-turn-$currentPageIndex-$_pageTurnNonce',
+                            ),
+                            forward: _pageTurnForward,
+                            child: _buildWorkspaceFrame(
+                              context,
+                              child: currentPageIndex == 0
+                                  ? EditCover(
+                                      key: _coverEditorKey,
+                                      editAlbum: vm.album,
+                                      showAppBar: false,
+                                      initialCoverSize: vm.selectedCover,
+                                      showBottomToolbar: false,
+                                      interaction: _interaction,
+                                      canvasKey: _canvasKey,
+                                      onSizeChanged: (size) {
+                                        _canvasSize = size;
+                                      },
+                                    )
+                                  : LayoutBuilder(
+                                      key: ValueKey(currentPageIndex),
+                                      builder: (context, constraints) {
+                                        const double sidePadding = 16.0;
+                                        final double availW =
+                                            constraints.maxWidth -
+                                            sidePadding * 2;
+                                        final double availH =
+                                            constraints.maxHeight;
+                                        const double logicalW =
+                                            kCoverReferenceWidth;
+                                        final double logicalH =
+                                            logicalW / aspect;
 
-                                      final double scaleByWidth =
-                                          availW / logicalW;
-                                      final double scaleByHeight =
-                                          availH / logicalH;
-                                      final double scale = math.min(
-                                        scaleByWidth,
-                                        scaleByHeight,
-                                      );
-                                      final double innerW = logicalW * scale;
-                                      final double innerH = logicalH * scale;
+                                        final double scaleByWidth =
+                                            availW / logicalW;
+                                        final double scaleByHeight =
+                                            availH / logicalH;
+                                        final double scale = math.min(
+                                          scaleByWidth,
+                                          scaleByHeight,
+                                        );
+                                        final double innerW = logicalW * scale;
+                                        final double innerH = logicalH * scale;
 
-                                      return Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: sidePadding,
-                                          ),
-                                          child: SizedBox(
-                                            width: innerW,
-                                            height: innerH,
-                                            child: PageEditorCanvas(
-                                              canvasKey: _canvasKey,
-                                              canvasW: innerW,
-                                              canvasH: innerH,
-                                              layers: layers,
-                                              interaction: _interaction,
-                                              layerBuilder: _layerBuilder,
-                                              onCanvasSizeChanged: (size) {
-                                                if (_canvasSize != size) {
-                                                  WidgetsBinding.instance
-                                                      .addPostFrameCallback((
-                                                        _,
-                                                      ) {
-                                                        if (!mounted) return;
-                                                        setState(
-                                                          () => _canvasSize =
-                                                              size,
-                                                        );
-                                                        vm.loadPendingEditAlbumIfNeeded(
-                                                          size,
-                                                        );
-                                                        vm.setCoverCanvasSize(
-                                                          size,
-                                                          isCover:
-                                                              vm.currentPageIndex ==
-                                                              0,
-                                                        );
-                                                      });
-                                                }
-                                              },
-                                              backgroundColor:
-                                                  vm
-                                                          .currentPage
-                                                          ?.backgroundColor !=
-                                                      null
-                                                  ? Color(
-                                                      vm
-                                                          .currentPage!
-                                                          .backgroundColor!,
-                                                    )
-                                                  : null,
-                                              isCover:
-                                                  vm.currentPage?.isCover ??
-                                                  false,
+                                        return Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: sidePadding,
+                                            ),
+                                            child: SizedBox(
+                                              width: innerW,
+                                              height: innerH,
+                                              child: PageEditorCanvas(
+                                                canvasKey: _canvasKey,
+                                                canvasW: innerW,
+                                                canvasH: innerH,
+                                                layers: layers,
+                                                interaction: _interaction,
+                                                layerBuilder: _layerBuilder,
+                                                onCanvasSizeChanged: (size) {
+                                                  if (_canvasSize != size) {
+                                                    WidgetsBinding.instance
+                                                        .addPostFrameCallback((
+                                                          _,
+                                                        ) {
+                                                          if (!mounted) return;
+                                                          setState(
+                                                            () => _canvasSize =
+                                                                size,
+                                                          );
+                                                          vm.loadPendingEditAlbumIfNeeded(
+                                                            size,
+                                                          );
+                                                          vm.setCoverCanvasSize(
+                                                            size,
+                                                            isCover:
+                                                                vm.currentPageIndex ==
+                                                                0,
+                                                          );
+                                                        });
+                                                  }
+                                                },
+                                                backgroundColor:
+                                                    vm
+                                                            .currentPage
+                                                            ?.backgroundColor !=
+                                                        null
+                                                    ? Color(
+                                                        vm
+                                                            .currentPage!
+                                                            .backgroundColor!,
+                                                      )
+                                                    : null,
+                                                isCover:
+                                                    vm.currentPage?.isCover ??
+                                                    false,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                        );
+                                      },
+                                    ),
+                            ),
                           ),
                         ),
                       ),

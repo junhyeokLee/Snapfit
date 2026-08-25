@@ -95,16 +95,21 @@ class PageEditorCanvas extends StatelessWidget {
               );
             }
             if (layers.isEmpty) {
+              final compact =
+                  constraints.maxWidth < 160 || constraints.maxHeight < 260;
               return Center(
                 child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 24.w),
+                  width: compact ? constraints.maxWidth * 0.72 : null,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: compact ? 10.w : 24.w,
+                  ),
                   padding: EdgeInsets.symmetric(
-                    horizontal: 18.w,
-                    vertical: 18.h,
+                    horizontal: compact ? 10.w : 18.w,
+                    vertical: compact ? 10.h : 18.h,
                   ),
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
-                    borderRadius: BorderRadius.circular(22.r),
+                    borderRadius: BorderRadius.circular(compact ? 16.r : 22.r),
                     border: Border.all(
                       color: SnapFitColors.overlayLightOf(context),
                     ),
@@ -114,33 +119,37 @@ class PageEditorCanvas extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.photo_library_outlined,
-                        size: 34.sp,
+                        size: compact ? 22.sp : 34.sp,
                         color: SnapFitColors.deepCharcoal.withOpacity(0.38),
                       ),
-                      SizedBox(height: 10.h),
+                      SizedBox(height: compact ? 6.h : 10.h),
                       Text(
-                        '이 쪽에 어떤 추억을 담을까요?',
+                        '사진 또는 레이아웃',
                         textAlign: TextAlign.center,
+                        maxLines: compact ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: SnapFitColors.deepCharcoal.withOpacity(0.72),
-                          fontSize: 15.sp,
+                          fontSize: compact ? 10.5.sp : 15.sp,
                           fontWeight: FontWeight.w800,
-                          height: 1.25,
+                          height: 1.2,
                           decoration: TextDecoration.none,
                         ),
                       ),
-                      SizedBox(height: 6.h),
-                      Text(
-                        '사진을 넣거나 레이아웃을 골라 시작해보세요.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: SnapFitColors.deepCharcoal.withOpacity(0.48),
-                          fontSize: 12.5.sp,
-                          fontWeight: FontWeight.w600,
-                          height: 1.45,
-                          decoration: TextDecoration.none,
+                      if (!compact) ...[
+                        SizedBox(height: 6.h),
+                        Text(
+                          '하단 도구로 페이지를 채워보세요.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: SnapFitColors.deepCharcoal.withOpacity(0.48),
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w600,
+                            height: 1.45,
+                            decoration: TextDecoration.none,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

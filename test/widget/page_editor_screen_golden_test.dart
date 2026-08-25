@@ -272,6 +272,25 @@ void main() {
     },
   );
 
+  testWidgets('page selector triggers dimensional page-turn reveal on canvas', (
+    tester,
+  ) async {
+    await _pumpEditor(tester);
+
+    await tester.tap(find.text('1쪽'));
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(find.byKey(const Key('pageEditorPageTurnReveal')), findsOneWidget);
+    final opacity = tester
+        .widget<Opacity>(find.byKey(const Key('pageEditorPageTurnOpacity')))
+        .opacity;
+    expect(opacity, greaterThanOrEqualTo(0.18));
+    expect(opacity, lessThan(1));
+
+    await tester.pumpAndSettle();
+    expect(find.text('1페이지 꾸미기'), findsOneWidget);
+  });
+
   testWidgets(
     'editor tool opens inline atelier panel without modal route jump',
     (tester) async {

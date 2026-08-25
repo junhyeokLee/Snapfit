@@ -141,7 +141,7 @@ PageRoute<T> snapFitAlbumOpenRoute<T>({
 }) {
   return PageRouteBuilder<T>(
     settings: settings,
-    transitionDuration: const Duration(milliseconds: 420),
+    transitionDuration: const Duration(milliseconds: 520),
     reverseTransitionDuration: SnapFitMotion.medium,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -150,18 +150,52 @@ PageRoute<T> snapFitAlbumOpenRoute<T>({
         curve: SnapFitMotion.entrance,
         reverseCurve: Curves.easeInCubic,
       );
-      return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.035),
-            end: Offset.zero,
-          ).animate(curved),
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.985, end: 1).animate(curved),
-            child: child,
-          ),
-        ),
+      return AnimatedBuilder(
+        animation: curved,
+        child: child,
+        builder: (context, child) {
+          final value = curved.value;
+          final matrix = Matrix4.identity()
+            ..setEntry(3, 2, 0.001)
+            ..translate(0.0, 22.0 * (1 - value))
+            ..rotateX(-0.045 * (1 - value));
+          return FadeTransition(
+            opacity: curved,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Transform(
+                  key: const Key('snapFitAlbumOpenDimensionalTransform'),
+                  alignment: Alignment.center,
+                  transform: matrix,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.955, end: 1).animate(curved),
+                    child: child,
+                  ),
+                ),
+                IgnorePointer(
+                  child: Opacity(
+                    opacity: (1 - value) * 0.22,
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: Alignment.topCenter,
+                          radius: 1.12,
+                          colors: [
+                            Color(0x33FFFFFF),
+                            Color(0x002EBCE7),
+                            Color(0x1A111111),
+                          ],
+                          stops: [0.0, 0.54, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       );
     },
   );
