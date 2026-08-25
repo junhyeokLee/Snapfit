@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:snap_fit/core/constants/snapfit_colors.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
@@ -99,6 +100,45 @@ void main() {
     expect(find.textContaining('가장 최근 앨범부터'), findsNothing);
     expect(find.text('앨범 만들기'), findsNothing);
     expect(find.byType(FloatingActionButton), findsOneWidget);
+  });
+
+  testWidgets('홈 앨범 캐러셀은 화면 중앙에 가깝게 배치되고 FAB는 메인 컬러를 쓴다', (
+    WidgetTester tester,
+  ) async {
+    await _setLargeSurface(tester);
+    final album = fakeAlbum(id: 43, ratio: '0.75');
+    stubFetchMyAlbums(mockRepo, [album]);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          authViewModelProvider.overrideWith(
+            () => FakeAuthViewModel(
+              const UserInfo(id: '1', name: 'User', provider: 'kakao'),
+            ),
+          ),
+          templateListProvider.overrideWith((ref) async => const []),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const HomeScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final sliderCenter = tester.getCenter(find.byType(HomeAlbumSlider));
+    expect(sliderCenter.dy, greaterThan(390));
+    expect(sliderCenter.dy, lessThan(610));
+
+    final fab = tester.widget<FloatingActionButton>(
+      find.byKey(const Key('homeCreateAlbumFab')),
+    );
+    expect(fab.backgroundColor, SnapFitColors.accent);
   });
 
   testWidgets('FAB 탭 시 생성 플로우로 이동', (WidgetTester tester) async {

@@ -134,3 +134,35 @@ PageRoute<T> snapFitRoute<T>({required Widget page, RouteSettings? settings}) {
     },
   );
 }
+
+PageRoute<T> snapFitAlbumOpenRoute<T>({
+  required Widget page,
+  RouteSettings? settings,
+}) {
+  return PageRouteBuilder<T>(
+    settings: settings,
+    transitionDuration: const Duration(milliseconds: 420),
+    reverseTransitionDuration: SnapFitMotion.medium,
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: SnapFitMotion.entrance,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.035),
+            end: Offset.zero,
+          ).animate(curved),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.985, end: 1).animate(curved),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
+}

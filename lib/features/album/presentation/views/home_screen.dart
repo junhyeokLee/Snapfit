@@ -144,8 +144,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 tooltip: '새 앨범',
                 elevation: 7,
                 highlightElevation: 3,
-                backgroundColor: SnapFitColors.textPrimaryOf(context),
-                foregroundColor: SnapFitColors.surfaceOf(context),
+                backgroundColor: SnapFitColors.accent,
+                foregroundColor: Colors.white,
                 shape: const CircleBorder(),
                 onPressed: handleCreateAlbum,
                 child: const Icon(Icons.add_rounded, size: 30),
@@ -173,21 +173,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: CustomScrollView(
                       physics: platformScrollPhysics(alwaysScrollable: true),
                       slivers: [
-                        if (prepared.baseAlbums.isNotEmpty) ...[
-                          SliverToBoxAdapter(child: SizedBox(height: 34.h)),
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: (MediaQuery.sizeOf(context).height * 0.47)
-                                  .clamp(330.0, 560.0),
-                              child: HomeAlbumSlider(
-                                albums: List<Album>.from(prepared.baseAlbums)
-                                  ..sort(compareAlbumByLatestDesc),
+                        if (prepared.baseAlbums.isNotEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 86.h),
+                              child: Center(
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height:
+                                      (MediaQuery.sizeOf(context).height * 0.52)
+                                          .clamp(360.0, 580.0),
+                                  child: HomeAlbumSlider(
+                                    albums: List<Album>.from(
+                                      prepared.baseAlbums,
+                                    )..sort(compareAlbumByLatestDesc),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                          SliverToBoxAdapter(child: SizedBox(height: 88.h)),
-                        ] else
+                          )
+                        else
                           SliverToBoxAdapter(
                             child: SizedBox(
                               height: (MediaQuery.sizeOf(context).height * 0.68)

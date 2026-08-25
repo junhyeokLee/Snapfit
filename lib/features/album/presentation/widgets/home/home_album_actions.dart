@@ -9,6 +9,7 @@ import 'home_delete_album_dialog.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../data/api/album_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 액션 관련 헬퍼 클래스
 class HomeAlbumActions {
@@ -155,12 +156,7 @@ class HomeAlbumActions {
       // 3. 진입 (리더 화면으로 이동)
       final result = await Navigator.push<Object?>(
         context,
-        PageRouteBuilder<Object?>(
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-          pageBuilder: (_, __, ___) => const AlbumReaderScreen(),
-          transitionsBuilder: (_, __, ___, child) => child,
-        ),
+        snapFitAlbumOpenRoute<Object?>(page: const AlbumReaderScreen()),
       );
 
       if (result is Map) {
