@@ -90,6 +90,9 @@ class StorageService {
       );
       final supabase = _requireSupabase();
       final normalizedPath = _albumAssetPath(supabase, path);
+      AppLogger.debug(
+        '[StorageUpload] bucket=album-assets path=$normalizedPath',
+      );
       await supabase.storage
           .from('album-assets')
           .uploadBinary(
@@ -139,6 +142,7 @@ class StorageService {
       Future<void> uploadOriginal() async {
         final supabase = _requireSupabase();
         final path = _albumAssetPath(supabase, 'albums/images/$originalName');
+        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
         await supabase.storage.from('album-assets').upload(path, file);
         originalUrl = supabase.storage.from('album-assets').getPublicUrl(path);
         originalGsPath = 'supabase://album-assets/$path';
@@ -147,6 +151,7 @@ class StorageService {
       Future<void> uploadPreview() async {
         final supabase = _requireSupabase();
         final path = _albumAssetPath(supabase, 'albums/images/$previewName');
+        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
@@ -222,6 +227,7 @@ class StorageService {
 
         final supabase = _requireSupabase();
         final path = _albumAssetPath(supabase, 'albums/covers/$originalName');
+        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
@@ -245,6 +251,7 @@ class StorageService {
 
         final supabase = _requireSupabase();
         final path = _albumAssetPath(supabase, 'albums/covers/$previewName');
+        AppLogger.debug('[StorageUpload] bucket=album-assets path=$path');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
