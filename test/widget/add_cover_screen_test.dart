@@ -232,13 +232,18 @@ void main() {
       expect(find.byIcon(Icons.opacity), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(LayerActionPanel),
-          matching: find.byType(SingleChildScrollView),
-        ),
-        findsOneWidget,
+      final actionRail = find.descendant(
+        of: find.byType(LayerActionPanel),
+        matching: find.byType(SingleChildScrollView),
       );
+      expect(actionRail, findsOneWidget);
+      final scrollable = find.descendant(
+        of: find.byType(LayerActionPanel),
+        matching: find.byType(Scrollable),
+      );
+      expect(scrollable, findsOneWidget);
+      final scrollableState = tester.state<ScrollableState>(scrollable);
+      expect(scrollableState.position.maxScrollExtent, greaterThan(0));
 
       final dockTop = tester
           .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))
