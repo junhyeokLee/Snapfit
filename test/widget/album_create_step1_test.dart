@@ -83,7 +83,8 @@ void main() {
     expect(find.text('앨범 기본 정보'), findsNothing);
     expect(find.text('제목, 책 비율, 분량만 정해요.'), findsNothing);
     expect(find.byKey(const Key('albumCreateStepHero')), findsOneWidget);
-    expect(find.text('새 앨범 준비'), findsOneWidget);
+    expect(find.text('새 앨범'), findsOneWidget);
+    expect(find.text('표지와 분량을 먼저 정해요.'), findsOneWidget);
     expect(find.text('표지'), findsOneWidget);
     expect(find.text('제주 가족 여행 룩북'), findsOneWidget);
     expect(find.text('앨범 제목'), findsOneWidget);

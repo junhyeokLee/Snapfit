@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -82,7 +83,11 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _CreateStepHero(),
+                    _CreateStepHero(
+                      cover: widget.selectedCover,
+                      pageCount: widget.selectedPageCount,
+                      titleListenable: _titleController,
+                    ),
                     if (_hasTemplate) ...[
                       SizedBox(height: 10.h),
                       _TemplateSummary(
@@ -342,11 +347,25 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 }
 
 class _CreateStepHero extends StatelessWidget {
-  const _CreateStepHero();
+  final CoverSize? cover;
+  final int pageCount;
+  final ValueListenable<TextEditingValue> titleListenable;
+
+  const _CreateStepHero({
+    required this.cover,
+    required this.pageCount,
+    required this.titleListenable,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
+    final ratio = cover?.ratio ?? 1.0;
+    final previewMaxW = 112.w;
+    final previewMaxH = 92.h;
+    final previewW = ratio >= 1 ? previewMaxW : previewMaxH * ratio;
+    final previewH = ratio >= 1 ? previewMaxW / ratio : previewMaxH;
+
     return Container(
       key: const Key('albumCreateStepHero'),
       width: double.infinity,
@@ -373,62 +392,134 @@ class _CreateStepHero extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 58.w,
-            height: 74.h,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2A2621) : const Color(0xFFF5E9D8),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : const Color(0xFFD9C7AF),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.28 : 0.10),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                width: 7.w,
-                margin: EdgeInsets.symmetric(vertical: 10.h),
-                decoration: BoxDecoration(
-                  color: SnapFitColors.accent.withOpacity(0.38),
-                  borderRadius: BorderRadius.horizontal(
-                    right: Radius.circular(6.r),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '새 앨범 준비',
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      height: 1.12,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.65,
-                      color: SnapFitColors.textPrimaryOf(context),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '새 앨범',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        height: 1.12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.65,
+                        color: SnapFitColors.textPrimaryOf(context),
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 7.h),
+                    Text(
+                      '표지와 분량을 먼저 정해요.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        height: 1.34,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textSecondaryOf(context),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+              SizedBox(width: 14.w),
+              Text(
+                '${pageCount}쪽',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w900,
+                  color: SnapFitColors.accent,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          Center(
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: titleListenable,
+              builder: (context, value, _) {
+                final title = value.text.trim().isEmpty
+                    ? '제목 미정'
+                    : value.text.trim();
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      right: -8.w,
+                      top: 7.h,
+                      bottom: -7.h,
+                      child: Container(
+                        width: previewW,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : const Color(0xFFE9DAC7),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: previewW,
+                      height: previewH,
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF2A2621)
+                            : const Color(0xFFF7EAD8),
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.14)
+                              : const Color(0xFFD9C7AF),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(
+                              isDark ? 0.32 : 0.12,
+                            ),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        width: 8.w,
+                        height: (previewH - 20.w).clamp(18.0, previewH),
+                        decoration: BoxDecoration(
+                          color: SnapFitColors.accent.withOpacity(0.42),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 18.w,
+                      right: 12.w,
+                      bottom: 12.h,
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                          color: isDark
+                              ? Colors.white.withOpacity(0.82)
+                              : const Color(0xFF2A2520),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
