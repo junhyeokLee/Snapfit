@@ -37,9 +37,9 @@ class PageListSelector extends ConsumerWidget {
     final selectedCover = editorState?.selectedCover;
 
     return SizedBox(
-      height: 86.h,
+      height: 100.h,
       child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 0),
+        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 8.h),
         scrollDirection: Axis.horizontal,
         itemCount: pages.length + 1, // 마지막에 + 버튼 추가
         separatorBuilder: (context, index) => SizedBox(width: 12.w),
@@ -66,8 +66,8 @@ class PageListSelector extends ConsumerWidget {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: SnapFitMotion.settle,
-                  width: isSelected ? 56.w : 52.w,
-                  height: isSelected ? 62.h : 58.h,
+                  width: isSelected ? 54.w : 50.w,
+                  height: isSelected ? 58.h : 54.h,
                   padding: EdgeInsets.all(isSelected ? 4.w : 3.w),
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
@@ -108,7 +108,7 @@ class PageListSelector extends ConsumerWidget {
                         Positioned(
                           left: 8.w,
                           right: 8.w,
-                          bottom: -7.h,
+                          bottom: -5.h,
                           child: Container(
                             height: 3.h,
                             decoration: BoxDecoration(
@@ -150,11 +150,11 @@ class PageListSelector extends ConsumerWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 6.h),
+                SizedBox(height: 5.h),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 11.5.sp,
+                    fontSize: 10.5.sp,
                     color: isSelected
                         ? SnapFitColors.accent
                         : SnapFitColors.textSecondaryOf(context),
@@ -244,8 +244,8 @@ class PageListSelector extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 52.w,
-            height: 58.h,
+            width: 50.w,
+            height: 54.h,
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
               borderRadius: BorderRadius.circular(14.r),

@@ -291,11 +291,18 @@ class EditCoverState extends ConsumerState<EditCover> {
   }
 
   Future<void> _onCreateAlbum() async {
+    final effectiveCoverSize = _coverSize == Size.zero
+        ? Size(
+            kCoverReferenceWidth,
+            kCoverReferenceWidth /
+                (_selectedCover.ratio > 0 ? _selectedCover.ratio : 1.0),
+          )
+        : _coverSize;
     if (_coverSize == Size.zero) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("화면 준비 중입니다. 잠시 후 다시 시도해주세요.")),
-      );
-      return;
+      _coverSize = effectiveCoverSize;
+      ref
+          .read(albumEditorViewModelProvider.notifier)
+          .setCoverCanvasSize(effectiveCoverSize);
     }
 
     if (_isSaving) return; // 중복 클릭 방지
@@ -334,7 +341,7 @@ class EditCoverState extends ConsumerState<EditCover> {
       // 2) Firebase 업로드 + 대표 이미지 URL 생성 + 서버 저장
       //    coverImageBytes 로 합성 이미지를 함께 전달
       final createdAlbumId = await editorVm.saveAlbumToBackend(
-        _coverSize,
+        effectiveCoverSize,
         coverImageBytes: coverBytes,
         title: widget.albumTitle,
         targetPages: widget.targetPages,
@@ -392,7 +399,15 @@ class EditCoverState extends ConsumerState<EditCover> {
       }
     } catch (e) {
       debugPrint('Error in _onCreateAlbum: $e');
-      if (mounted) setState(() => _isSaving = false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+        final message = e is Exception
+            ? e.toString().replaceFirst('Exception: ', '')
+            : '$e';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('앨범 생성 실패: $message')));
+      }
     } finally {
       // 성공 시에는 네비게이션이 일어나므로 _isSaving을 false로 돌리지 않음 (오버레이 유지)
       // 실패 케이스는 위에서 처리

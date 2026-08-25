@@ -16,7 +16,6 @@ import '../widgets/home/home_bottom_navigation_bar.dart';
 import '../widgets/home/home_empty_state.dart';
 import '../viewmodels/home_view_model.dart';
 import '../widgets/home/home_error_state.dart';
-import '../widgets/home/home_album_card_tone.dart';
 import 'album_create_flow_screen.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../notification/presentation/views/notification_screen.dart';
@@ -35,7 +34,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const String _favoriteKey = 'album_favorite_ids_v1';
   Set<int> _favoriteAlbumIds = <int>{};
   final List<int> _bottomNavHistory = <int>[0];
-  Color? _focusedHomeAlbumTone;
 
   @override
   void initState() {
@@ -98,19 +96,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.read(homeUiStateProvider.notifier).setBottomNavIndex(previousIndex);
   }
 
-  void _onFocusedHomeAlbumChanged(Album album) {
-    final baseTone = albumCardToneOrNull(album);
-    final nextTone = baseTone != null
-        ? softenedHomeBackgroundToneForBrightness(
-            baseTone,
-            Theme.of(context).brightness,
-          )
-        : null;
-    if (_focusedHomeAlbumTone == nextTone) return;
-    if (!mounted) return;
-    setState(() => _focusedHomeAlbumTone = nextTone);
-  }
-
   @override
   Widget build(BuildContext context) {
     final albumsAsync = ref.watch(homeViewModelProvider);
@@ -134,10 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final baseBackground = SnapFitColors.backgroundOf(context);
-    final warmHomeBase = Theme.of(context).brightness == Brightness.dark
-        ? SnapFitColors.backgroundOf(context)
-        : const Color(0xFFFAF7F1);
-    final homeBackground = _focusedHomeAlbumTone ?? warmHomeBase;
+    final homeBackground = baseBackground;
 
     return PopScope(
       canPop: !isAndroid || _bottomNavHistory.length <= 1,
@@ -172,13 +154,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     albums: albums,
                     currentUserId: currentUserId,
                   );
-                  if (prepared.baseAlbums.isEmpty &&
-                      _focusedHomeAlbumTone != null) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (!mounted || _focusedHomeAlbumTone == null) return;
-                      setState(() => _focusedHomeAlbumTone = null);
-                    });
-                  }
                   final homeContent = RefreshIndicator(
                     onRefresh: _handlePullToRefresh,
                     child: CustomScrollView(
@@ -198,8 +173,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: HomeAlbumSlider(
                                 albums: List<Album>.from(prepared.baseAlbums)
                                   ..sort(compareAlbumByLatestDesc),
-                                onFocusedAlbumChanged:
-                                    _onFocusedHomeAlbumChanged,
                               ),
                             ),
                           ),

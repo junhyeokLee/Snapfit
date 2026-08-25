@@ -11,7 +11,6 @@ import '../../utils/home_album_section_builder.dart';
 import '../../views/album_category_screen.dart';
 import '../../views/album_create_flow_screen.dart';
 import 'home_album_actions.dart';
-import 'home_album_card_tone.dart';
 import 'home_album_cover_thumbnail.dart';
 import 'home_album_helpers.dart';
 
@@ -628,10 +627,7 @@ class _HomeAlbumGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tone = albumCardToneOrNull(album);
-    final cardBg = tone != null
-        ? softenedAlbumCardToneForBrightness(tone, Theme.of(context).brightness)
-        : SnapFitColors.surfaceOf(context);
+    final cardBg = SnapFitColors.surfaceOf(context);
     final coverType = _coverTypeOf(album);
     final thumbnailHeight = switch (coverType) {
       _CoverType.landscape => 126.h,

@@ -838,8 +838,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           coverTheme: themeLabel,
         );
 
-        final newAlbum = ref.read(albumViewModelProvider).value;
-        createdAlbumId = newAlbum?.id;
+        final albumState = ref.read(albumViewModelProvider);
+        if (albumState.hasError) {
+          throw albumState.error ?? Exception('앨범 생성에 실패했습니다.');
+        }
+        final newAlbum = albumState.value;
+        if (newAlbum == null || newAlbum.id <= 0) {
+          throw Exception('앨범 생성 응답을 확인할 수 없습니다.');
+        }
+        createdAlbumId = newAlbum.id;
       }
 
       // [STEP 2] 후(後) 업로드: 서비스로 이관 (진행률 콜백 포함)
@@ -871,7 +878,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       return createdAlbumId;
     } catch (e) {
       debugPrint('Save Album Error: $e');
-      return null;
+      rethrow;
     }
   }
 
