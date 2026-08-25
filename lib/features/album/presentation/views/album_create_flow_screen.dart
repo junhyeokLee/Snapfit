@@ -510,16 +510,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               final vm = ref.read(albumEditorViewModelProvider.notifier);
               if (_resolvedTemplatePages != null &&
                   _resolvedTemplatePages!.isNotEmpty) {
-                // 템플릿 경로에서도 Step3 이후에 페이지 편집으로 진입할 때
-                // 템플릿 페이지가 적용되도록 큐를 먼저 주입한다.
-                vm.queueTemplatePagesForNextLoad(_resolvedTemplatePages!);
+                // 템플릿 페이지는 이미 메모리에 완성되어 있으므로 업로드 폴링을 기다리지 않는다.
+                // 업로드/대표이미지 보정은 백그라운드에서 진행하되 편집 화면은 즉시 열린다.
+                vm.beginCreatedTemplateAlbumForEdit(
+                  albumId: dummyAlbum.id,
+                  albumTitle: _albumTitle,
+                  pages: _resolvedTemplatePages!,
+                  initialCover: _selectedCover,
+                );
+              } else {
+                // 일반 생성 경로만 서버 생성 완료를 기다린다.
+                vm.prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
               }
 
-              // 백그라운드에서 폴링 시작 (await 하지 않음 → 즉시 화면 전환)
-              // PageEditorScreen의 isCreatingInBackground 오버레이가 "생성 중" 표시
-              vm.prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
-
-              // 즉시 편집 화면으로 이동 (로딩 오버레이 표시됨)
+              // 즉시 편집 화면으로 이동
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(

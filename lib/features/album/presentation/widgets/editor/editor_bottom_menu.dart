@@ -51,7 +51,17 @@ class EditorBottomMenu extends StatelessWidget {
                 isAction: true,
                 onAction: onCover,
               ),
-            _EditorMenuItem('페이지', Icons.dashboard_outlined, EditorMode.layout),
+            _EditorMenuItem(
+              '레이아웃',
+              Icons.dashboard_outlined,
+              EditorMode.layout,
+            ),
+            _EditorMenuItem(
+              '템플릿',
+              Icons.auto_awesome_mosaic_outlined,
+              EditorMode.template,
+            ),
+            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -72,7 +82,17 @@ class EditorBottomMenu extends StatelessWidget {
               isAction: true,
               onAction: onAddPhoto,
             ),
-            _EditorMenuItem('페이지', Icons.dashboard_outlined, EditorMode.layout),
+            _EditorMenuItem(
+              '레이아웃',
+              Icons.dashboard_outlined,
+              EditorMode.layout,
+            ),
+            _EditorMenuItem(
+              '템플릿',
+              Icons.auto_awesome_mosaic_outlined,
+              EditorMode.template,
+            ),
+            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -88,7 +108,7 @@ class EditorBottomMenu extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
       child: Container(
-        height: 72.h,
+        height: 84,
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
           borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
@@ -148,9 +168,9 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: 62.w,
-        height: 56.h,
-        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
+        width: 64,
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected
               ? SnapFitColors.accent.withOpacity(0.12)
@@ -170,10 +190,10 @@ class EditorBottomMenu extends StatelessWidget {
               child: Icon(
                 item.icon,
                 color: isSelected ? SnapFitColors.accent : color,
-                size: 20.sp,
+                size: 20,
               ),
             ),
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
             Text(
               item.label,
               maxLines: 1,
@@ -181,7 +201,7 @@ class EditorBottomMenu extends StatelessWidget {
               style:
                   (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
                       .copyWith(
-                        fontSize: 10.sp,
+                        fontSize: 10,
                         height: 1.0,
                         color: isSelected ? SnapFitColors.accent : color,
                         fontWeight: isSelected

@@ -354,4 +354,69 @@ void main() {
       expect(ok, isFalse);
     },
   );
+
+  test(
+    'beginCreatedTemplateAlbumForEdit opens template pages without waiting for upload polling',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(albumEditorViewModelProvider.future);
+      final notifier = container.read(albumEditorViewModelProvider.notifier);
+      final cover = coverSizes.firstWhere((s) => s.name == '정사각형');
+      final pages = [
+        [
+          LayerModel(
+            id: 'cover-template-layer',
+            type: LayerType.text,
+            position: Offset.zero,
+            width: 100,
+            height: 40,
+            text: '템플릿 표지',
+            textStyle: const TextStyle(fontSize: 16),
+            textStyleType: TextStyleType.none,
+          ),
+        ],
+        [
+          LayerModel(
+            id: 'inner-template-layer',
+            type: LayerType.text,
+            position: Offset.zero,
+            width: 100,
+            height: 40,
+            text: '템플릿 내지',
+            textStyle: const TextStyle(fontSize: 16),
+            textStyleType: TextStyleType.none,
+          ),
+        ],
+      ];
+
+      notifier.beginCreatedTemplateAlbumForEdit(
+        albumId: 42,
+        albumTitle: '템플릿 앨범',
+        pages: pages,
+        initialCover: cover,
+      );
+
+      final state = container.read(albumEditorViewModelProvider).value;
+      expect(state, isNotNull);
+      expect(state!.isCreatingInBackground, isFalse);
+      expect(notifier.editingAlbumId, 42);
+      expect(notifier.pages.length, 2);
+      expect(notifier.pages.first.layers.single.id, 'cover-template-layer');
+      expect(notifier.pages[1].layers.single.id, 'inner-template-layer');
+    },
+  );
 }

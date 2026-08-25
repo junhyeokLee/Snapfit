@@ -562,6 +562,29 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _pendingTemplatePagesAfterLoad = pages;
   }
 
+  /// 템플릿 생성 플로우에서는 이미 메모리에 완성된 커버/내지 페이지가 있으므로,
+  /// 생성 직후 편집 진입을 서버 업로드 폴링에 묶지 않는다.
+  ///
+  /// 서버 업로드는 백그라운드로 계속 진행하되, 사용자는 즉시 페이지 편집을 열 수 있어야
+  /// `앨범을 펼치는 중이에요` 오버레이가 업로드 URL 대기 때문에 무한 유지되지 않는다.
+  void beginCreatedTemplateAlbumForEdit({
+    required int albumId,
+    required String albumTitle,
+    required List<List<LayerModel>> pages,
+    CoverSize? initialCover,
+  }) {
+    if (albumId <= 0) return;
+    startLocalTemplateAlbum(
+      albumTitle: albumTitle,
+      pages: pages,
+      initialCover: initialCover,
+    );
+    _editingAlbumId = albumId;
+    final prev = state.value ?? const AlbumEditorState();
+    state = AsyncData(prev.copyWith(isCreatingInBackground: false));
+    _emit();
+  }
+
   /// 앨범 데이터를 로드하여 편집 준비
   Future<void> _loadAlbumForEdit(Album album) async {
     // 목록에서 coverLayersJson이 비어오는 케이스 대비: 상세로 보강
