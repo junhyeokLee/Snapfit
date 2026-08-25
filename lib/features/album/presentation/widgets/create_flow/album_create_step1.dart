@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
-import '../../../../../shared/widgets/snapfit_primary_action_button.dart';
+import '../../../../../shared/snapfit_image.dart';
 
 /// 스텝1: 제목, 커버 사이즈 선택, 페이지 수 선택
 class AlbumCreateStep1 extends StatefulWidget {
@@ -50,7 +51,8 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   @override
   void didUpdateWidget(AlbumCreateStep1 oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.albumTitle != widget.albumTitle) {
+    if (oldWidget.albumTitle != widget.albumTitle &&
+        _titleController.text != widget.albumTitle) {
       _titleController.text = widget.albumTitle;
     }
   }
@@ -63,357 +65,188 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 18.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCockpitHero(context),
-          SizedBox(height: 16.h),
-          if (widget.templateTitle != null &&
-              widget.templateTitle!.trim().isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                color: SnapFitColors.isDark(context)
-                    ? const Color(0xFF171B24)
-                    : const Color(0xFFFFFBF6),
-                borderRadius: BorderRadius.circular(22.r),
-                border: Border.all(
-                  color: SnapFitColors.accent.withOpacity(0.16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(
-                      SnapFitColors.isDark(context) ? 0.22 : 0.07,
-                    ),
-                    blurRadius: 24,
-                    offset: const Offset(0, 14),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: SizedBox(
-                      width: 52.w,
-                      height: 52.w,
-                      child:
-                          (widget.templatePreviewImageUrl != null &&
-                              widget.templatePreviewImageUrl!.isNotEmpty)
-                          ? Image.network(
-                              widget.templatePreviewImageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: SnapFitColors.overlayLightOf(context),
-                              ),
-                            )
-                          : Container(
-                              color: SnapFitColors.overlayLightOf(context),
-                            ),
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '선택한 템플릿 · 룩북 프리셋',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w700,
-                            color: SnapFitColors.textMutedOf(context),
-                          ),
-                        ),
-                        SizedBox(height: 3.h),
-                        Text(
-                          widget.templateTitle!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                            color: SnapFitColors.textPrimaryOf(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 18.h),
-          ],
-          // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
-          Text(
-            '추억을 고르면\n포토북 무드 완성',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Text(
-            '표지 비율, 분량, 템플릿 흐름은 그대로 유지하면서 더 빠르고 고급스럽게 시작해요.',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.42,
-              fontWeight: FontWeight.w600,
-              color: SnapFitColors.textSecondaryOf(context),
-            ),
-          ),
-          SizedBox(height: 18.h),
-          Container(
-            padding: EdgeInsets.all(18.w),
-            decoration: BoxDecoration(
-              color: SnapFitColors.isDark(context)
-                  ? const Color(0xFF151820)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(30.r),
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(
-                    SnapFitColors.isDark(context) ? 0.30 : 0.08,
-                  ),
-                  blurRadius: 32,
-                  offset: const Offset(0, 18),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 앨범 제목
-                Text(
-                  '포토북 제목',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: SnapFitColors.textMutedOf(context),
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                // 그라데이션 테두리 + 카드형 텍스트 에디터
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: SnapFitColors.primaryGradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(18.r),
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.all(1.5.w),
-                    decoration: BoxDecoration(
-                      color: SnapFitColors.surfaceOf(context),
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: TextField(
-                      controller: _titleController,
-                      onChanged: (value) {
-                        widget.onTitleChanged(value);
-                      },
-                      decoration: InputDecoration(
-                        hintText: '제주 바람 기록 · 우리 아기 첫 계절',
-                        hintStyle: TextStyle(
-                          // 예시 텍스트는 아주 연하게
-                          color: SnapFitColors.textMutedOf(
-                            context,
-                          ).withOpacity(0.3),
-                        ),
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 14.h,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: SnapFitColors.accentLight,
-                          size: 20.sp,
-                        ),
-                        suffixIcon: Icon(
-                          Icons.edit_outlined,
-                          color: SnapFitColors.textMutedOf(context),
-                          size: 18.sp,
-                        ),
-                        counterText: '',
-                      ),
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLength: 50,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Row(
+    final isDark = SnapFitColors.isDark(context);
+    final background = isDark
+        ? const Color(0xFF111111)
+        : const Color(0xFFFAF8F3);
+
+    return ColoredBox(
+      color: background,
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 96.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        '언제든 다시 바꿀 수 있어요.',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: SnapFitColors.textMutedOf(context),
-                        ),
+                    const _AtelierProgressHeader(),
+                    if (_hasTemplate) ...[
+                      SizedBox(height: 10.h),
+                      _TemplateSummary(
+                        title: widget.templateTitle!.trim(),
+                        previewUrl: widget.templatePreviewImageUrl,
                       ),
+                    ],
+                    SizedBox(height: 14.h),
+                    _buildTitleBlock(context),
+                    SizedBox(height: 26.h),
+                    _SectionLabel(title: '책 비율', caption: '표지 모양을 먼저 정해요.'),
+                    SizedBox(height: 7.h),
+                    _buildSizeSelector(context),
+                    SizedBox(height: 18.h),
+                    _SectionLabel(
+                      title: '분량',
+                      caption: '편집 중에도 페이지를 더하거나 줄일 수 있어요.',
                     ),
-                    SizedBox(width: 8.w),
-                    ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _titleController,
-                      builder: (context, value, _) {
-                        return Text(
-                          '${value.text.length}/50',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            color: SnapFitColors.textMutedOf(context),
-                          ),
-                        );
-                      },
-                    ),
+                    SizedBox(height: 9.h),
+                    _buildPageCountSelector(context),
                   ],
                 ),
-                SizedBox(height: 22.h),
-                // 사이즈 선택
-                Text(
-                  '책 크기 선택',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: SnapFitColors.textMutedOf(context),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _buildSizeSelector(context),
-                SizedBox(height: 30.h),
-                // 페이지 수 선택
-                Text(
-                  '분량 선택',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: SnapFitColors.textMutedOf(context),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _buildPageCountSelector(context),
-              ],
+              ),
             ),
-          ),
-          SizedBox(height: 28.h),
-          // 다음 버튼 (제목/사이즈 상태에 따라 활성화)
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _titleController,
-            builder: (context, value, _) {
-              final canProceed =
-                  value.text.isNotEmpty && widget.selectedCover != null;
-              return SnapFitPrimaryActionButton(
-                label: '표지 먼저 확인하기',
-                onPressed: canProceed ? widget.onNext : null,
-                icon: Icons.arrow_forward,
-              );
-            },
-          ),
-        ],
+            _buildBottomCta(context),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCockpitHero(BuildContext context) {
+  bool get _hasTemplate =>
+      widget.templateTitle != null && widget.templateTitle!.trim().isNotEmpty;
+
+  Widget _buildTitleBlock(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? const [Color(0xFF10141D), Color(0xFF233142), Color(0xFF0E1D22)]
-              : const [Color(0xFFFFF8EF), Color(0xFFEAFBFD), Color(0xFFF4EDFF)],
-        ),
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: SnapFitColors.accent.withOpacity(0.14)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.32 : 0.08),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(title: '앨범 제목', caption: '나중에 다시 바꿀 수 있어요.'),
+        SizedBox(height: 6.h),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1D1C1A) : Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.10)
+                  : const Color(0xFFE7E1D8),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: SnapFitColors.accent.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(999.r),
-                ),
-                child: Text(
-                  'CREATION COCKPIT',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.7,
-                    color: SnapFitColors.accent,
-                  ),
+          child: TextField(
+            controller: _titleController,
+            onChanged: widget.onTitleChanged,
+            maxLength: 50,
+            decoration: InputDecoration(
+              hintText: '예: 제주 여름 기록',
+              hintStyle: TextStyle(
+                color: SnapFitColors.textMutedOf(context).withOpacity(0.58),
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              counterText: '',
+              border: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18.r),
+                borderSide: const BorderSide(
+                  color: SnapFitColors.accent,
+                  width: 1.5,
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            '사진첩을 여는 순간까지\n흐름을 끊지 않게',
+              enabledBorder: InputBorder.none,
+              contentPadding: EdgeInsets.fromLTRB(13.w, 8.h, 13.w, 8.h),
+            ),
             style: TextStyle(
-              fontSize: 20,
-              height: 1.12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.55,
               color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 15.sp,
+              height: 1.18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.2,
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            '템플릿·레이어·사진·레이아웃 기능은 유지하고, 시작 화면만 더 잡지 같은 제작 콘솔로 바꿨어요.',
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.34,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.textSecondaryOf(context),
+        ),
+        SizedBox(height: 3.h),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _titleController,
+            builder: (context, value, _) => Text(
+              '${value.text.length}/50',
+              style: TextStyle(
+                fontSize: 12.sp,
+                height: 1.35,
+                color: SnapFitColors.textMutedOf(context),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          SizedBox(height: 14.h),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: const [
-              _CockpitPill(label: '3분 완성 루트'),
-              _CockpitPill(label: 'AI 추천 구성'),
-              _CockpitPill(label: '기능 유지'),
-            ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomCta(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 9.h, 20.w, 11.h),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : const Color(0xFFE7E1D8),
           ),
-        ],
+        ),
+      ),
+      child: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _titleController,
+        builder: (context, value, _) {
+          final canProceed =
+              value.text.trim().isNotEmpty && widget.selectedCover != null;
+          return SizedBox(
+            width: double.infinity,
+            height: 48.h,
+            child: ElevatedButton(
+              onPressed: canProceed ? widget.onNext : null,
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: isDark
+                    ? const Color(0xFFF4F1EA)
+                    : const Color(0xFF1F1F1D),
+                disabledBackgroundColor: isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : const Color(0xFFE7E1D8),
+                foregroundColor: isDark
+                    ? const Color(0xFF111111)
+                    : Colors.white,
+                disabledForegroundColor: SnapFitColors.textMutedOf(context),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '표지 확인하기',
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildSizeSelector(BuildContext context) {
-    // 기획 기준: 가로 / 정사각형 / 세로
     final horizontal = coverSizes.firstWhere(
       (s) => s.name == '가로형',
       orElse: () => coverSizes[2],
@@ -426,78 +259,22 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
       (s) => s.name == '세로형',
       orElse: () => coverSizes[0],
     );
-
-    // 가로형, 정사각형, 세로형 옵션
-    final sizeOptions = [
-      {'name': '가로형', 'cover': horizontal},
-      {'name': '정사각형', 'cover': square},
-      {'name': '세로형', 'cover': vertical},
-    ];
+    final sizeOptions = [horizontal, square, vertical];
 
     return Row(
       children: sizeOptions.asMap().entries.map((entry) {
         final index = entry.key;
-        final option = entry.value;
-        final cover = option['cover'] as CoverSize;
+        final cover = entry.value;
         final isSelected = widget.selectedCover?.name == cover.name;
-
         return Expanded(
-          child: GestureDetector(
-            onTap: () {
-              widget.onCoverSelected(cover);
-            },
-            child: Container(
-              margin: EdgeInsets.only(
-                right: index != sizeOptions.length - 1 ? 12.w : 0,
-              ),
-              padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 18.h),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? SnapFitColors.accent.withOpacity(0.12)
-                    : SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(
-                  color: isSelected
-                      ? SnapFitColors.accent
-                      : SnapFitColors.overlayLightOf(context),
-                  width: isSelected ? 1.6 : 1,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 사이즈 비율 미리보기 (가로/정사각형/세로형)
-                  SizedBox(
-                    width: 80.w,
-                    height: 80.w,
-                    child: _SizePreviewFrame(
-                      cover: cover,
-                      color: SnapFitColors.textPrimaryOf(
-                        context,
-                      ).withOpacity(0.35),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    option['name'] as String,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.normal,
-                      color: SnapFitColors.textPrimaryOf(context),
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    '${cover.realSize.width.toInt()}x${cover.realSize.height.toInt()} cm',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: SnapFitColors.textMutedOf(context),
-                    ),
-                  ),
-                ],
-              ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: index == sizeOptions.length - 1 ? 0 : 9.w,
+            ),
+            child: _RatioCard(
+              cover: cover,
+              selected: isSelected,
+              onTap: () => widget.onCoverSelected(cover),
             ),
           ),
         );
@@ -507,36 +284,18 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 
   Widget _buildPageCountSelector(BuildContext context) {
     final minPage = widget.minPageCount.clamp(1, _maxPageCount);
-    final suggested =
-        <({int pages, String title, String body, bool recommended})>[
-          (
-            pages: minPage,
-            title: '${minPage}쪽',
-            body: '가볍게 시작',
-            recommended: false,
-          ),
-          (
-            pages: mathMax(minPage, 24),
-            title: '${mathMax(minPage, 24)}쪽',
-            body: '가장 추천',
-            recommended: true,
-          ),
-          (
-            pages: mathMax(minPage, 36),
-            title: '${mathMax(minPage, 36)}쪽',
-            body: '풍성하게',
-            recommended: false,
-          ),
-        ];
-    final options =
-        <({int pages, String title, String body, bool recommended})>[];
+    final suggested = <({int pages, String body, bool recommended})>[
+      (pages: minPage, body: '가볍게 시작', recommended: false),
+      (pages: mathMax(minPage, 24), body: '추천', recommended: true),
+      (pages: mathMax(minPage, 36), body: '넉넉하게', recommended: false),
+    ];
+    final options = <({int pages, String body, bool recommended})>[];
     final seen = <int>{};
     for (final option in suggested) {
       final pages = option.pages.clamp(minPage, _maxPageCount);
       if (seen.add(pages)) {
         options.add((
           pages: pages,
-          title: '${pages}쪽',
           body: option.body,
           recommended: option.recommended,
         ));
@@ -553,149 +312,414 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
       });
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: options.asMap().entries.map((entry) {
-            final index = entry.key;
-            final option = entry.value;
-            final isSelected = safePageCount == option.pages;
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => widget.onPageCountChanged(option.pages),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  margin: EdgeInsets.only(
-                    right: index == options.length - 1 ? 0 : 10.w,
-                  ),
-                  padding: EdgeInsets.fromLTRB(12.w, 13.h, 12.w, 12.h),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? SnapFitColors.accent.withOpacity(0.12)
-                        : SnapFitColors.surfaceOf(context),
-                    borderRadius: BorderRadius.circular(18.r),
-                    border: Border.all(
-                      color: isSelected
-                          ? SnapFitColors.accent.withOpacity(0.72)
-                          : SnapFitColors.overlayLightOf(context),
-                      width: isSelected ? 1.6 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: SnapFitColors.accent.withOpacity(0.12),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (option.recommended) ...[
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 7.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: SnapFitColors.accent.withOpacity(0.14),
-                            borderRadius: BorderRadius.circular(999.r),
-                          ),
-                          child: Text(
-                            '추천',
-                            style: TextStyle(
-                              fontSize: 9.5.sp,
-                              fontWeight: FontWeight.w900,
-                              color: SnapFitColors.accent,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 9.h),
-                      ] else
-                        SizedBox(height: 25.h),
-                      Text(
-                        option.title,
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w900,
-                          color: SnapFitColors.textPrimaryOf(context),
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        option.body,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w700,
-                          color: SnapFitColors.textMutedOf(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        SizedBox(height: 10.h),
-        Text(
-          '분량은 편집 중에도 페이지를 더하거나 줄일 수 있어요.',
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: SnapFitColors.textMutedOf(context),
-            fontWeight: FontWeight.w600,
+    return Row(
+      children: options.asMap().entries.map((entry) {
+        final index = entry.key;
+        final option = entry.value;
+        final isSelected = safePageCount == option.pages;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: index == options.length - 1 ? 0 : 9.w,
+            ),
+            child: _PageCountCard(
+              pages: option.pages,
+              body: option.body,
+              recommended: option.recommended,
+              selected: isSelected,
+              onTap: () => widget.onPageCountChanged(option.pages),
+            ),
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
   int mathMax(int a, int b) => a > b ? a : b;
 }
 
-class _CockpitPill extends StatelessWidget {
-  final String label;
-
-  const _CockpitPill({required this.label});
+class _AtelierProgressHeader extends StatelessWidget {
+  const _AtelierProgressHeader();
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '1 / 3',
+              style: TextStyle(
+                fontSize: 12.sp,
+                height: 1.35,
+                fontWeight: FontWeight.w800,
+                color: SnapFitColors.textMutedOf(context),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(999.r),
+                child: LinearProgressIndicator(
+                  minHeight: 4.h,
+                  value: 1 / 3,
+                  backgroundColor: SnapFitColors.isDark(context)
+                      ? Colors.white.withOpacity(0.10)
+                      : const Color(0xFFE7E1D8),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    SnapFitColors.isDark(context)
+                        ? const Color(0xFFF4F1EA)
+                        : const Color(0xFF1F1F1D),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          '앨범 기본 정보',
+          style: TextStyle(
+            fontSize: 20.sp,
+            height: 1.10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.55,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+        SizedBox(height: 5.h),
+        Text(
+          '제목, 책 비율, 분량만 정해요.',
+          style: TextStyle(
+            fontSize: 12.5.sp,
+            height: 1.38,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textSecondaryOf(context),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String title;
+  final String caption;
+
+  const _SectionLabel({required this.title, required this.caption});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14.sp,
+            height: 1.18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.25,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          caption,
+          style: TextStyle(
+            fontSize: 12.sp,
+            height: 1.34,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textSecondaryOf(context),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TemplateSummary extends StatelessWidget {
+  final String title;
+  final String? previewUrl;
+
+  const _TemplateSummary({required this.title, this.previewUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    final hasPreview = previewUrl != null && previewUrl!.trim().isNotEmpty;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+      padding: EdgeInsets.all(9.w),
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(
-          context,
-        ).withOpacity(SnapFitColors.isDark(context) ? 0.72 : 0.86),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+        color: isDark ? const Color(0xFF1D1C1A) : Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFE7E1D8),
+        ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 5,
-            height: 5,
-            decoration: const BoxDecoration(
-              color: SnapFitColors.accent,
-              shape: BoxShape.circle,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12.r),
+            child: Container(
+              width: 48.w,
+              height: 48.w,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF151412)
+                    : const Color(0xFFFAF8F3),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.08)
+                      : const Color(0xFFE7E1D8),
+                ),
+              ),
+              child: hasPreview
+                  ? SnapfitImage(urlOrGs: previewUrl!, fit: BoxFit.cover)
+                  : Center(
+                      child: Container(
+                        width: 18.w,
+                        height: 24.h,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: SnapFitColors.textMutedOf(context),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(3.r),
+                        ),
+                      ),
+                    ),
             ),
           ),
-          SizedBox(width: 6.w),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              color: SnapFitColors.textPrimaryOf(context),
+          SizedBox(width: 13.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '선택한 템플릿',
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    height: 1.28,
+                    fontWeight: FontWeight.w800,
+                    color: SnapFitColors.textMutedOf(context),
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    height: 1.22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.2,
+                    color: SnapFitColors.textPrimaryOf(context),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RatioCard extends StatelessWidget {
+  final CoverSize cover;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _RatioCard({
+    required this.cover,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SelectableInk(
+      selected: selected,
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: _CheckDot(selected: selected),
+          ),
+          SizedBox(height: 2.h),
+          _SizePreviewFrame(
+            cover: cover,
+            color: selected
+                ? (SnapFitColors.isDark(context)
+                      ? const Color(0xFFF4F1EA)
+                      : const Color(0xFF1F1F1D))
+                : SnapFitColors.textMutedOf(context),
+          ),
+          SizedBox(height: 4.h),
+          SizedBox(
+            height: 18.h,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                cover.name,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  height: 1.0,
+                  fontWeight: FontWeight.w900,
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PageCountCard extends StatelessWidget {
+  final int pages;
+  final String body;
+  final bool recommended;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PageCountCard({
+    required this.pages,
+    required this.body,
+    required this.recommended,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SelectableInk(
+      selected: selected,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _CheckDot(selected: selected, alignLeft: true),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '${pages}쪽',
+            style: TextStyle(
+              fontSize: 15.5.sp,
+              height: 1.05,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.35,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
+          ),
+          SizedBox(height: 5.h),
+          Text(
+            body,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.8.sp,
+              height: 1.25,
+              fontWeight: FontWeight.w700,
+              color: SnapFitColors.textMutedOf(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectableInk extends StatelessWidget {
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _SelectableInk({
+    required this.selected,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    final activeLine = isDark
+        ? const Color(0xFFF4F1EA)
+        : const Color(0xFF1F1F1D);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18.r),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 170),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.fromLTRB(8.w, 7.h, 8.w, 8.h),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1D1C1A) : Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: selected
+                  ? activeLine
+                  : (isDark
+                        ? Colors.white.withOpacity(0.10)
+                        : const Color(0xFFE7E1D8)),
+              width: selected ? 1.6 : 1,
+            ),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckDot extends StatelessWidget {
+  final bool selected;
+  final bool alignLeft;
+
+  const _CheckDot({required this.selected, this.alignLeft = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected
+        ? (SnapFitColors.isDark(context)
+              ? const Color(0xFFF4F1EA)
+              : const Color(0xFF1F1F1D))
+        : SnapFitColors.textMutedOf(context).withOpacity(0.45);
+    return Align(
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      child: Container(
+        width: 13.w,
+        height: 13.w,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 1.5),
+        ),
+        child: selected
+            ? Center(
+                child: Container(
+                  width: 5.w,
+                  height: 5.w,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -711,31 +735,41 @@ class _SizePreviewFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = cover.realSize.width / cover.realSize.height;
-    // 모든 타입의 최대 변 길이는 동일하게 맞추고,
-    // 정사각형보다 크지 않게 스케일링
-    const double maxSide = 60;
+    const double maxSide = 30;
     double width;
     double height;
     if (ratio >= 1) {
-      // 가로형: 가로가 최대, 세로는 비율에 맞게 축소
       width = maxSide;
       height = maxSide / ratio;
     } else {
-      // 세로형: 세로가 최대, 가로는 비율에 맞게 축소
       height = maxSide;
       width = maxSide * ratio;
     }
 
     return SizedBox(
-      width: maxSide,
-      height: maxSide,
+      width: maxSide.w,
+      height: maxSide.w,
       child: Center(
         child: Container(
-          width: width,
-          height: height,
+          width: width.w,
+          height: height.w,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6.r),
-            border: Border.all(color: color, width: 2),
+            color: color.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(5.r),
+            border: Border.all(color: color, width: 1.8),
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: 5.w,
+              margin: EdgeInsets.symmetric(vertical: 4.h),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.20),
+                borderRadius: BorderRadius.horizontal(
+                  right: Radius.circular(4.r),
+                ),
+              ),
+            ),
           ),
         ),
       ),

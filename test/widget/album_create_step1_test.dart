@@ -53,47 +53,54 @@ void main() {
     expect(enabledButton.onPressed, isNotNull);
   });
 
-  testWidgets(
-    'renders renewed premium creation cockpit without losing controls',
-    (tester) async {
-      var selectedCover = coverSizes.firstWhere((s) => s.name == '정사각형');
-      var pageCount = 24;
+  testWidgets('renders book atelier creation step without losing controls', (
+    tester,
+  ) async {
+    var selectedCover = coverSizes.firstWhere((s) => s.name == '정사각형');
+    var pageCount = 24;
 
-      await tester.pumpWidget(
-        _wrap(
-          StatefulBuilder(
-            builder: (context, setState) {
-              return AlbumCreateStep1(
-                albumTitle: '제주 여름 기록',
-                templateTitle: '제주 가족 여행 룩북',
-                selectedCover: selectedCover,
-                selectedPageCount: pageCount,
-                minPageCount: 12,
-                onTitleChanged: (_) {},
-                onCoverSelected: (cover) =>
-                    setState(() => selectedCover = cover),
-                onPageCountChanged: (count) =>
-                    setState(() => pageCount = count),
-                onNext: () {},
-              );
-            },
-          ),
+    await tester.pumpWidget(
+      _wrap(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return AlbumCreateStep1(
+              albumTitle: '제주 여름 기록',
+              templateTitle: '제주 가족 여행 룩북',
+              selectedCover: selectedCover,
+              selectedPageCount: pageCount,
+              minPageCount: 12,
+              onTitleChanged: (_) {},
+              onCoverSelected: (cover) => setState(() => selectedCover = cover),
+              onPageCountChanged: (count) => setState(() => pageCount = count),
+              onNext: () {},
+            );
+          },
         ),
-      );
+      ),
+    );
 
-      expect(find.text('CREATION COCKPIT'), findsOneWidget);
-      expect(find.text('3분 완성 루트'), findsOneWidget);
-      expect(find.text('AI 추천 구성'), findsOneWidget);
-      expect(find.textContaining('선택한 템플릿'), findsOneWidget);
-      expect(find.text('가로형'), findsOneWidget);
-      expect(find.text('정사각형'), findsOneWidget);
-      expect(find.text('세로형'), findsOneWidget);
-      expect(find.text('24쪽'), findsWidgets);
-      expect(find.text('표지 먼저 확인하기'), findsOneWidget);
-    },
-  );
+    expect(find.text('1 / 3'), findsOneWidget);
+    expect(find.text('앨범 기본 정보'), findsOneWidget);
+    expect(find.text('제목, 책 비율, 분량만 정해요.'), findsOneWidget);
+    expect(find.text('선택한 템플릿'), findsOneWidget);
+    expect(find.text('제주 가족 여행 룩북'), findsOneWidget);
+    expect(find.text('앨범 제목'), findsOneWidget);
+    expect(find.text('책 비율'), findsOneWidget);
+    expect(find.text('분량'), findsOneWidget);
+    expect(find.text('가로형'), findsOneWidget);
+    expect(find.text('정사각형'), findsOneWidget);
+    expect(find.text('세로형'), findsOneWidget);
+    expect(find.text('24쪽'), findsWidgets);
+    expect(find.text('표지 확인하기'), findsOneWidget);
 
-  testWidgets('matches renewed creation cockpit golden', (tester) async {
+    expect(find.text('CREATION COCKPIT'), findsNothing);
+    expect(find.text('3분 완성 루트'), findsNothing);
+    expect(find.text('AI 추천 구성'), findsNothing);
+    expect(find.text('기능 유지'), findsNothing);
+    expect(find.text('표지 먼저 확인하기'), findsNothing);
+  });
+
+  testWidgets('matches book atelier creation golden', (tester) async {
     await _loadGoldenFonts();
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
