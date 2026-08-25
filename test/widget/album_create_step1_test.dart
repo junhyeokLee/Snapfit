@@ -138,6 +138,7 @@ void main() {
     expect(squareSize.width, closeTo(squareSize.height, 0.5));
 
     final hero = find.byKey(const Key('albumCreateStepHero'));
+    expect(hero, findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '바뀐 앨범 제목');
     await tester.pump();
