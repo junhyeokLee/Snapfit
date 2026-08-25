@@ -18,6 +18,15 @@ Widget _wrap(Widget child) {
   );
 }
 
+// The store showcase card scales vertically with the phone canvas, so its CTA
+// and key metadata should stay in the upper card area by ratio instead of by a
+// fixed pixel value. The clamp keeps small phones from using an unrealistically
+// tiny limit and large Galaxy Ultra/iPhone Max screens from accepting content
+// that drifts too far down the card.
+double _upperLookbookCardContentLimit(Size viewport) {
+  return (viewport.height * 0.42).clamp(320, 430).toDouble();
+}
+
 void main() {
   testWidgets('shows loading indicator while templates load', (tester) async {
     final completer = Completer<List<PremiumTemplate>>();
@@ -198,7 +207,7 @@ void main() {
         reason: viewport.$1,
       );
       expect(pageMetaRect.right, lessThanOrEqualTo(width), reason: viewport.$1);
-      final upperCardLimit = (viewport.$2.height * 0.42).clamp(320, 430);
+      final upperCardLimit = _upperLookbookCardContentLimit(viewport.$2);
       expect(ctaRect.top, lessThan(upperCardLimit), reason: viewport.$1);
       expect(photoMetaRect.top, lessThan(upperCardLimit), reason: viewport.$1);
     }
