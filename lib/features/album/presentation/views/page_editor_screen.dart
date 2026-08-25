@@ -58,6 +58,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   bool _isSaving = false;
   double _saveProgress = 0.0;
   Timer? _progressTimer;
+  Timer? _editorHintTimer;
   int? _lastSyncedPageIndex;
   String? _lastLayerSyncSignature;
   bool _showEditorHint = true;
@@ -86,6 +87,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   @override
   void dispose() {
     _progressTimer?.cancel();
+    _editorHintTimer?.cancel();
     super.dispose();
   }
 
@@ -123,7 +125,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     );
     _layerBuilder = LayerBuilder(_interaction, () => _canvasSize);
     _toolbarActionHandler = ToolbarActionHandler(context, ref);
-    Future.delayed(const Duration(seconds: 4), () {
+    _editorHintTimer?.cancel();
+    _editorHintTimer = Timer(const Duration(seconds: 4), () {
       if (!mounted || !_showEditorHint) return;
       setState(() => _showEditorHint = false);
     });

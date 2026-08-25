@@ -37,9 +37,9 @@ class PageListSelector extends ConsumerWidget {
     final selectedCover = editorState?.selectedCover;
 
     return SizedBox(
-      height: 100.h,
+      height: 88.h,
       child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 8.h),
+        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 6.h),
         scrollDirection: Axis.horizontal,
         itemCount: pages.length + 1, // 마지막에 + 버튼 추가
         separatorBuilder: (context, index) => SizedBox(width: 12.w),
@@ -66,8 +66,8 @@ class PageListSelector extends ConsumerWidget {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: SnapFitMotion.settle,
-                  width: isSelected ? 54.w : 50.w,
-                  height: isSelected ? 58.h : 54.h,
+                  width: isSelected ? 50.w : 46.w,
+                  height: isSelected ? 48.h : 44.h,
                   padding: EdgeInsets.all(isSelected ? 4.w : 3.w),
                   decoration: BoxDecoration(
                     color: SnapFitColors.surfaceOf(context),
@@ -108,9 +108,9 @@ class PageListSelector extends ConsumerWidget {
                         Positioned(
                           left: 8.w,
                           right: 8.w,
-                          bottom: -5.h,
+                          bottom: -3.h,
                           child: Container(
-                            height: 3.h,
+                            height: 2.5.h,
                             decoration: BoxDecoration(
                               color: SnapFitColors.accent,
                               borderRadius: BorderRadius.circular(999.r),
@@ -150,11 +150,11 @@ class PageListSelector extends ConsumerWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 5.h),
+                SizedBox(height: 3.h),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 10.5.sp,
+                    fontSize: 9.5,
                     color: isSelected
                         ? SnapFitColors.accent
                         : SnapFitColors.textSecondaryOf(context),
@@ -244,8 +244,8 @@ class PageListSelector extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 50.w,
-            height: 54.h,
+            width: 46.w,
+            height: 44.h,
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
               borderRadius: BorderRadius.circular(14.r),
@@ -259,14 +259,14 @@ class PageListSelector extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.add_rounded,
-                  size: 22.sp,
+                  size: 17,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
-                SizedBox(height: 2.h),
+                SizedBox(height: 1.h),
                 Text(
-                  '페이지 추가',
+                  '추가',
                   style: TextStyle(
-                    fontSize: 8.8.sp,
+                    fontSize: 8,
                     color: SnapFitColors.textSecondaryOf(context),
                     fontWeight: FontWeight.w800,
                   ),
@@ -274,8 +274,8 @@ class PageListSelector extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(height: 6.h),
-          Text('', style: TextStyle(fontSize: 11.5.sp)),
+          SizedBox(height: 3.h),
+          Text('', style: TextStyle(fontSize: 9)),
         ],
       ),
     );
