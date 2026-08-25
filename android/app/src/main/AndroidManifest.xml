@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Android 13 이상 -->
@@ -8,7 +9,10 @@
     <!-- Android 12 이하 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- 선택적: Android 9 이하 호환 -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29"
+        tools:replace="android:maxSdkVersion" />
     <application
         android:label="snap_fit"
         android:name="${applicationName}"

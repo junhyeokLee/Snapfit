@@ -17,6 +17,7 @@ class AppErrorMapper {
         return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       }
       if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.transformTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.type == DioExceptionType.connectionError) {
         return '네트워크 연결이 불안정합니다. 잠시 후 다시 시도해주세요.';

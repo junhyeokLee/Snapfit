@@ -33,6 +33,7 @@ class ApiErrorMapper {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
         return ApiError(
           message: '요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
           statusCode: statusCode,
