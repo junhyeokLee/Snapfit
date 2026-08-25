@@ -214,6 +214,17 @@ void main() {
   );
 
   testWidgets(
+    'page editor first entry stages canvas selector and dock motion',
+    (tester) async {
+      await _pumpEditor(tester);
+
+      expect(find.byKey(const Key('pageEditorCanvasReveal')), findsOneWidget);
+      expect(find.byKey(const Key('pageEditorSelectorReveal')), findsOneWidget);
+      expect(find.byKey(const Key('pageEditorDockReveal')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'page editor full workspace golden captures canvas dock and layer sheet',
     (tester) async {
       await _pumpEditor(tester);

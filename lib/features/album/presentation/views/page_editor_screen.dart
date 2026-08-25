@@ -32,6 +32,46 @@ import '../widgets/editor/page_editor_overlays.dart';
 import '../viewmodels/gallery_notifier.dart'; // Add import
 import '../../data/api/storage_service.dart';
 
+class _PageEditorEntranceReveal extends StatelessWidget {
+  final Widget child;
+  final Duration delay;
+  final bool includeScale;
+
+  const _PageEditorEntranceReveal({
+    super.key,
+    required this.child,
+    this.delay = Duration.zero,
+    this.includeScale = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const duration = Duration(milliseconds: 360);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: delay + duration,
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        final totalMs = (delay + duration).inMilliseconds;
+        final t = delay == Duration.zero
+            ? value
+            : ((value * totalMs - delay.inMilliseconds) /
+                      duration.inMilliseconds)
+                  .clamp(0.0, 1.0);
+        final scale = includeScale ? 0.96 + (0.04 * t) : 1.0;
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, 12 * (1 - t)),
+            child: Transform.scale(scale: scale, child: child),
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
 class PageEditorScreen extends ConsumerStatefulWidget {
   /// 편집할 내지 페이지 인덱스 (1 이상). null이면 현재 선택된 페이지 유지.
   /// 0(커버)은 페이지 편집에서 사용하지 않음.
@@ -553,6 +593,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     Padding(
                       padding: EdgeInsets.only(top: 16.h),
                       child: SnapFitFadeIn(
+                        key: const Key('pageEditorSelectorReveal'),
                         delay: const Duration(milliseconds: 80),
                         child: PageListSelector(
                           pages: pages,
@@ -579,99 +620,108 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 0),
-                        child: _buildWorkspaceFrame(
-                          context,
-                          child: currentPageIndex == 0
-                              ? EditCover(
-                                  key: _coverEditorKey,
-                                  editAlbum: vm.album,
-                                  showAppBar: false,
-                                  initialCoverSize: vm.selectedCover,
-                                  showBottomToolbar: false,
-                                  interaction: _interaction,
-                                  canvasKey: _canvasKey,
-                                  onSizeChanged: (size) {
-                                    _canvasSize = size;
-                                  },
-                                )
-                              : LayoutBuilder(
-                                  key: ValueKey(currentPageIndex),
-                                  builder: (context, constraints) {
-                                    const double sidePadding = 16.0;
-                                    final double availW =
-                                        constraints.maxWidth - sidePadding * 2;
-                                    final double availH = constraints.maxHeight;
-                                    const double logicalW =
-                                        kCoverReferenceWidth;
-                                    final double logicalH = logicalW / aspect;
+                        child: _PageEditorEntranceReveal(
+                          key: const Key('pageEditorCanvasReveal'),
+                          delay: Duration.zero,
+                          includeScale: true,
+                          child: _buildWorkspaceFrame(
+                            context,
+                            child: currentPageIndex == 0
+                                ? EditCover(
+                                    key: _coverEditorKey,
+                                    editAlbum: vm.album,
+                                    showAppBar: false,
+                                    initialCoverSize: vm.selectedCover,
+                                    showBottomToolbar: false,
+                                    interaction: _interaction,
+                                    canvasKey: _canvasKey,
+                                    onSizeChanged: (size) {
+                                      _canvasSize = size;
+                                    },
+                                  )
+                                : LayoutBuilder(
+                                    key: ValueKey(currentPageIndex),
+                                    builder: (context, constraints) {
+                                      const double sidePadding = 16.0;
+                                      final double availW =
+                                          constraints.maxWidth -
+                                          sidePadding * 2;
+                                      final double availH =
+                                          constraints.maxHeight;
+                                      const double logicalW =
+                                          kCoverReferenceWidth;
+                                      final double logicalH = logicalW / aspect;
 
-                                    final double scaleByWidth =
-                                        availW / logicalW;
-                                    final double scaleByHeight =
-                                        availH / logicalH;
-                                    final double scale = math.min(
-                                      scaleByWidth,
-                                      scaleByHeight,
-                                    );
-                                    final double innerW = logicalW * scale;
-                                    final double innerH = logicalH * scale;
+                                      final double scaleByWidth =
+                                          availW / logicalW;
+                                      final double scaleByHeight =
+                                          availH / logicalH;
+                                      final double scale = math.min(
+                                        scaleByWidth,
+                                        scaleByHeight,
+                                      );
+                                      final double innerW = logicalW * scale;
+                                      final double innerH = logicalH * scale;
 
-                                    return Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: sidePadding,
-                                        ),
-                                        child: SizedBox(
-                                          width: innerW,
-                                          height: innerH,
-                                          child: PageEditorCanvas(
-                                            canvasKey: _canvasKey,
-                                            canvasW: innerW,
-                                            canvasH: innerH,
-                                            layers: layers,
-                                            interaction: _interaction,
-                                            layerBuilder: _layerBuilder,
-                                            onCanvasSizeChanged: (size) {
-                                              if (_canvasSize != size) {
-                                                WidgetsBinding.instance
-                                                    .addPostFrameCallback((_) {
-                                                      if (!mounted) return;
-                                                      setState(
-                                                        () =>
-                                                            _canvasSize = size,
-                                                      );
-                                                      vm.loadPendingEditAlbumIfNeeded(
-                                                        size,
-                                                      );
-                                                      vm.setCoverCanvasSize(
-                                                        size,
-                                                        isCover:
-                                                            vm.currentPageIndex ==
-                                                            0,
-                                                      );
-                                                    });
-                                              }
-                                            },
-                                            backgroundColor:
-                                                vm
-                                                        .currentPage
-                                                        ?.backgroundColor !=
-                                                    null
-                                                ? Color(
-                                                    vm
-                                                        .currentPage!
-                                                        .backgroundColor!,
-                                                  )
-                                                : null,
-                                            isCover:
-                                                vm.currentPage?.isCover ??
-                                                false,
+                                      return Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: sidePadding,
+                                          ),
+                                          child: SizedBox(
+                                            width: innerW,
+                                            height: innerH,
+                                            child: PageEditorCanvas(
+                                              canvasKey: _canvasKey,
+                                              canvasW: innerW,
+                                              canvasH: innerH,
+                                              layers: layers,
+                                              interaction: _interaction,
+                                              layerBuilder: _layerBuilder,
+                                              onCanvasSizeChanged: (size) {
+                                                if (_canvasSize != size) {
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback((
+                                                        _,
+                                                      ) {
+                                                        if (!mounted) return;
+                                                        setState(
+                                                          () => _canvasSize =
+                                                              size,
+                                                        );
+                                                        vm.loadPendingEditAlbumIfNeeded(
+                                                          size,
+                                                        );
+                                                        vm.setCoverCanvasSize(
+                                                          size,
+                                                          isCover:
+                                                              vm.currentPageIndex ==
+                                                              0,
+                                                        );
+                                                      });
+                                                }
+                                              },
+                                              backgroundColor:
+                                                  vm
+                                                          .currentPage
+                                                          ?.backgroundColor !=
+                                                      null
+                                                  ? Color(
+                                                      vm
+                                                          .currentPage!
+                                                          .backgroundColor!,
+                                                    )
+                                                  : null,
+                                              isCover:
+                                                  vm.currentPage?.isCover ??
+                                                  false,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                                      );
+                                    },
+                                  ),
+                          ),
                         ),
                       ),
                     ),
@@ -710,26 +760,31 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     // Bottom Menu (고정)
                     Padding(
                       padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
-                      child: EditorBottomMenu(
-                        currentMode: _currentMode,
-                        isCover: currentPageIndex == 0,
-                        showCoverMenuItem: false,
-                        onModeChanged: (mode) =>
-                            _handleModeChange(mode, layers),
-                        onAddPhoto: () {
-                          // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
-                          final size =
-                              (currentPageIndex == 0 &&
-                                  (_canvasSize.width <= 0 ||
-                                      _canvasSize.height <= 0))
-                              ? Size(
-                                  kCoverReferenceWidth,
-                                  kCoverReferenceWidth / aspect,
-                                )
-                              : _canvasSize;
-                          _toolbarActionHandler.addPhoto(size);
-                        },
-                        onCover: () => _toolbarActionHandler.openCoverTheme(),
+                      child: SnapFitFadeIn(
+                        key: const Key('pageEditorDockReveal'),
+                        delay: const Duration(milliseconds: 140),
+                        beginOffset: const Offset(0, 0.055),
+                        child: EditorBottomMenu(
+                          currentMode: _currentMode,
+                          isCover: currentPageIndex == 0,
+                          showCoverMenuItem: false,
+                          onModeChanged: (mode) =>
+                              _handleModeChange(mode, layers),
+                          onAddPhoto: () {
+                            // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
+                            final size =
+                                (currentPageIndex == 0 &&
+                                    (_canvasSize.width <= 0 ||
+                                        _canvasSize.height <= 0))
+                                ? Size(
+                                    kCoverReferenceWidth,
+                                    kCoverReferenceWidth / aspect,
+                                  )
+                                : _canvasSize;
+                            _toolbarActionHandler.addPhoto(size);
+                          },
+                          onCover: () => _toolbarActionHandler.openCoverTheme(),
+                        ),
                       ),
                     ),
                   ],
