@@ -17,6 +17,14 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
+  test('create flow layer action panel clears restored cover tools', () {
+    expect(
+      coverLayerActionPanelBottom(isCreateFlow: true),
+      greaterThanOrEqualTo(200),
+    );
+    expect(coverLayerActionPanelBottom(isCreateFlow: false), 100);
+  });
+
   testWidgets(
     'create flow cover atelier focuses cover and contextual actions',
     (tester) async {

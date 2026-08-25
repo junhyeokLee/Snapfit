@@ -25,6 +25,10 @@ import '../viewmodels/gallery_notifier.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 
+@visibleForTesting
+double coverLayerActionPanelBottom({required bool isCreateFlow}) =>
+    isCreateFlow ? 204 : 100;
+
 /// 커버 편집 화면 (앨범 생성/편집 공통)
 /// - editAlbum == null && albumId == null: 앨범 생성 모드 (새 커버 만들기)
 /// - editAlbum != null: 앨범 편집 모드 (기존 커버 수정, 이미 prepareAlbumForEdit 호출됨)
@@ -329,7 +333,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
               // 커버 레이어 선택 시 하단 액션 패널 (스텝2에서도 스냅핏 만들기 화면과 동일하게)
               if (_interaction.selectedLayerId != null)
                 Positioned(
-                  bottom: isCreateFlow ? 92 : 100, // Bottom action 위에 겹치도록
+                  bottom: isCreateFlow
+                      ? 204.h
+                      : 100.h, // Full create dock + CTA 위로 분리
                   left: 20,
                   right: 20,
                   child: LayerActionPanel(
@@ -545,6 +551,7 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
         child: SafeArea(
           top: false,
           child: Container(
+            key: const Key('coverAtelierActionBar'),
             padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 12.h),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
