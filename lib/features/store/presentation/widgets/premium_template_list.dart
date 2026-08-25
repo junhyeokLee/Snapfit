@@ -182,13 +182,13 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.black.withOpacity(0.0),
-                                        Colors.black.withOpacity(0.06),
-                                        Colors.black.withOpacity(0.62),
+                                        Colors.black.withOpacity(0.08),
+                                        Colors.black.withOpacity(0.30),
+                                        Colors.black.withOpacity(0.76),
                                       ],
-                                      begin: Alignment.center,
+                                      begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      stops: const [0.0, 0.62, 1.0],
+                                      stops: const [0.0, 0.48, 1.0],
                                     ),
                                   ),
                                 ),
@@ -236,6 +236,15 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           color: Colors.white,
                                           height: 1.15,
                                           letterSpacing: -0.5,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black.withOpacity(
+                                                0.38,
+                                              ),
+                                              blurRadius: 12,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       SizedBox(height: 8.h),
@@ -247,7 +256,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           style: TextStyle(
                                             fontSize: 14.sp,
                                             color: Colors.white.withOpacity(
-                                              0.78,
+                                              0.88,
                                             ),
                                             fontWeight: FontWeight.w500,
                                             height: 1.35,
