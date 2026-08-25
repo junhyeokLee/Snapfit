@@ -848,18 +848,20 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   List<String> _templateUseTags() {
-    final tags = (_template.tags ?? const <String>[])
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .take(3)
-        .toList(growable: false);
-    if (tags.isNotEmpty) return tags;
     final category = (_template.category ?? '').trim();
-    return [
+    final tags = _template.tags ?? const <String>[];
+    final candidates = [
       if (category.isNotEmpty) category,
+      ...tags.map((e) => e.trim()).where((e) => e.isNotEmpty),
       if (_template.isPremium) 'Premium' else '무료 사용',
       '${_template.pageCount}페이지',
     ];
+
+    final seen = <String>{};
+    return candidates
+        .where((tag) => seen.add(tag))
+        .take(3)
+        .toList(growable: false);
   }
 
   Widget _buildTemplateBrief(BuildContext context) {
@@ -918,12 +920,17 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           color: SnapFitColors.overlayLightOf(context),
                         ),
                       ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          color: SnapFitColors.textSecondaryOf(context),
-                          fontSize: 11.5.sp,
-                          fontWeight: FontWeight.w800,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 140.w),
+                        child: Text(
+                          tag,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: SnapFitColors.textSecondaryOf(context),
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
