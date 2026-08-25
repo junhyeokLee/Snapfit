@@ -213,6 +213,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
   }) {
     return Tooltip(
       message: label,
+      excludeFromSemantics: true,
       child: Semantics(
         label: label,
         button: true,
