@@ -225,6 +225,7 @@ void main() {
       );
       interaction!.setSelectedLayer(layerId);
       await tester.pump();
+      await tester.pump();
 
       expect(find.byType(LayerActionPanel), findsOneWidget);
       expect(find.byIcon(Icons.image_outlined), findsOneWidget);
@@ -240,7 +241,9 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(LayerActionPanel),
-          matching: find.byKey(const Key('layerActionRailEdgeFade')),
+          matching: find.byKey(
+            const Key('layerActionRailEdgeFade-left-off-right-on'),
+          ),
         ),
         findsOneWidget,
       );
@@ -258,6 +261,17 @@ void main() {
       expect(scrollable, findsOneWidget);
       final scrollableState = tester.state<ScrollableState>(scrollable);
       expect(scrollableState.position.maxScrollExtent, greaterThan(0));
+      scrollableState.position.jumpTo(scrollableState.position.maxScrollExtent);
+      await tester.pump();
+      expect(
+        find.descendant(
+          of: find.byType(LayerActionPanel),
+          matching: find.byKey(
+            const Key('layerActionRailEdgeFade-left-on-right-off'),
+          ),
+        ),
+        findsOneWidget,
+      );
 
       final dockTop = tester
           .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))

@@ -35,7 +35,48 @@ class LayerActionPanel extends ConsumerStatefulWidget {
 }
 
 class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
+  static const _edgeFadeWidth = 0.08;
+
+  final ScrollController _primaryRailController = ScrollController();
   EditPanelMode _panelMode = EditPanelMode.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _primaryRailController.addListener(_handlePrimaryRailScroll);
+  }
+
+  @override
+  void dispose() {
+    _primaryRailController
+      ..removeListener(_handlePrimaryRailScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handlePrimaryRailScroll() {
+    if (mounted) setState(() {});
+  }
+
+  void _syncPrimaryRailFadeAfterLayout() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _primaryRailController.hasClients) {
+        setState(() {});
+      }
+    });
+  }
+
+  bool get _canScrollRailLeft {
+    if (!_primaryRailController.hasClients) return false;
+    return _primaryRailController.position.pixels >
+        _primaryRailController.position.minScrollExtent + 0.5;
+  }
+
+  bool get _canScrollRailRight {
+    if (!_primaryRailController.hasClients) return false;
+    return _primaryRailController.position.pixels <
+        _primaryRailController.position.maxScrollExtent - 0.5;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,25 +115,46 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     );
   }
 
+  List<double> _railFadeStops({
+    required bool fadeLeft,
+    required bool fadeRight,
+  }) {
+    final leftOpaqueStart = fadeLeft ? _edgeFadeWidth : 0.0;
+    final rightOpaqueEnd = fadeRight ? 1.0 - _edgeFadeWidth : 1.0;
+    return [0, leftOpaqueStart, rightOpaqueEnd, 1];
+  }
+
   Widget _buildPrimaryActionRail(LayerModel layer) {
+    if (!_primaryRailController.hasClients) {
+      _syncPrimaryRailFadeAfterLayout();
+    }
+
+    final fadeStops = _railFadeStops(
+      fadeLeft: _canScrollRailLeft,
+      fadeRight: _canScrollRailRight,
+    );
+
     return ShaderMask(
-      key: const Key('layerActionRailEdgeFade'),
+      key: Key(
+        'layerActionRailEdgeFade-left-${_canScrollRailLeft ? 'on' : 'off'}-right-${_canScrollRailRight ? 'on' : 'off'}',
+      ),
       blendMode: BlendMode.dstIn,
       shaderCallback: (bounds) {
-        return const LinearGradient(
+        return LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
+          colors: const [
             Colors.transparent,
             Colors.black,
             Colors.black,
             Colors.transparent,
           ],
-          stops: [0, 0.08, 0.92, 1],
+          stops: fadeStops,
         ).createShader(bounds);
       },
       child: SingleChildScrollView(
         key: const Key('layerActionRailScroll'),
+        controller: _primaryRailController,
         scrollDirection: Axis.horizontal,
         child: Row(
           mainAxisSize: MainAxisSize.min,
