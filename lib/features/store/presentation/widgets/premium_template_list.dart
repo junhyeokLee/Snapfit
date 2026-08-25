@@ -75,6 +75,13 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
     super.dispose();
   }
 
+  String? _showcaseBadgeLabel(PremiumTemplate template) {
+    if (template.isBest) return 'BEST PICK';
+    if (template.isNew) return 'NEW MOOD';
+    if (template.isPremium) return 'PREMIUM';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final templatesAsync = ref.watch(templateListProvider);
@@ -94,7 +101,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
             children: [
               // Static Card Frame (Layout does not move)
               Container(
-                height: 376.h,
+                height: 368.w,
                 margin: EdgeInsets.symmetric(horizontal: 20.w),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30.r),
@@ -190,7 +197,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      if (template.isBest)
+                                      if (_showcaseBadgeLabel(template) != null)
                                         Container(
                                           margin: EdgeInsets.only(bottom: 12.h),
                                           padding: EdgeInsets.symmetric(
@@ -198,15 +205,13 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                             vertical: 6.h,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(
-                                              0xFF22D3EE,
-                                            ), // Cyan-400 equivalent
+                                            color: const Color(0xFF22D3EE),
                                             borderRadius: BorderRadius.circular(
                                               100.r,
                                             ),
                                           ),
                                           child: Text(
-                                            '이달의 추천',
+                                            _showcaseBadgeLabel(template)!,
                                             style: TextStyle(
                                               fontSize: 11.sp,
                                               fontWeight: FontWeight.w900,
@@ -244,20 +249,31 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                           ),
                                         ),
                                       SizedBox(height: 14.h),
-                                      Wrap(
-                                        spacing: 7.w,
-                                        runSpacing: 6.h,
+                                      Row(
                                         children: [
-                                          _ShowcaseMetaPill(
-                                            label: template.category ?? '포토북',
-                                          ),
-                                          _ShowcaseMetaPill(
-                                            label: '${template.pageCount}페이지',
-                                          ),
-                                          if (template.isPremium)
-                                            const _ShowcaseMetaPill(
-                                              label: 'Premium',
+                                          Expanded(
+                                            child: Wrap(
+                                              spacing: 7.w,
+                                              runSpacing: 6.h,
+                                              children: [
+                                                _ShowcaseMetaPill(
+                                                  label:
+                                                      template.category ??
+                                                      '포토북',
+                                                ),
+                                                _ShowcaseMetaPill(
+                                                  label:
+                                                      '${template.pageCount}페이지',
+                                                ),
+                                                if (template.isPremium)
+                                                  const _ShowcaseMetaPill(
+                                                    label: 'Premium',
+                                                  ),
+                                              ],
                                             ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          const _ShowcaseCtaPill(),
                                         ],
                                       ),
                                     ],
@@ -273,27 +289,34 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                         top: 24.h,
                         left: 0,
                         right: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            visibleTemplates.length,
-                            (index) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: EdgeInsets.symmetric(horizontal: 4.w),
-                              width: _currentIndex == index ? 24.w : 6.w,
-                              height: 6.h,
-                              decoration: BoxDecoration(
-                                color: _currentIndex == index
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(3.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 2,
-                                    offset: const Offset(0, 1),
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 6.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(999.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                visibleTemplates.length,
+                                (index) => AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOutCubic,
+                                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                                  width: _currentIndex == index ? 24.w : 6.w,
+                                  height: 6.h,
+                                  decoration: BoxDecoration(
+                                    color: _currentIndex == index
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(3.r),
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -396,6 +419,48 @@ class _ShowcaseMiniImage extends StatelessWidget {
       loadingBuilder: (context, child, progress) => progress == null
           ? child
           : const TemplatePaperPlaceholder(compact: true),
+    );
+  }
+}
+
+class _ShowcaseCtaPill extends StatelessWidget {
+  const _ShowcaseCtaPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 32.h,
+      padding: EdgeInsets.symmetric(horizontal: 11.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.90),
+        borderRadius: BorderRadius.circular(999.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            '자세히 보기',
+            style: TextStyle(
+              color: Color(0xFF1F2937),
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(width: 3.w),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 15,
+            color: Color(0xFF1F2937),
+          ),
+        ],
+      ),
     );
   }
 }
