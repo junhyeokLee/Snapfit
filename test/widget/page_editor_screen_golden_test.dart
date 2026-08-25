@@ -291,6 +291,13 @@ void main() {
       findsOneWidget,
     );
 
+    await tester.pump(const Duration(milliseconds: 240));
+    final settlingScale = tester
+        .widget<Transform>(find.byKey(const Key('pageEditorPageSettleScale')))
+        .transform
+        .storage[0];
+    expect(settlingScale, greaterThan(1));
+
     await tester.pumpAndSettle();
     expect(find.text('1페이지 꾸미기'), findsOneWidget);
   });

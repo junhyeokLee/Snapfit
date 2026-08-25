@@ -91,6 +91,8 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
       builder: (context, value, child) {
         final direction = forward ? 1.0 : -1.0;
         final t = value.clamp(0.0, 1.0);
+        final settleT = ((t - 0.72) / 0.28).clamp(0.0, 1.0);
+        final settlePulse = math.sin(settleT * math.pi);
         final matrix = Matrix4.identity()
           ..setEntry(3, 2, 0.0012)
           ..translate(18.0 * direction * (1 - t), 0.0)
@@ -103,14 +105,17 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
             alignment: Alignment.center,
             transform: matrix,
             child: Transform.scale(
-              scale: 0.965 + (0.035 * t),
+              key: const Key('pageEditorPageSettleScale'),
+              scale: 0.965 + (0.035 * t) + (0.006 * settlePulse),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.16 * (1 - t)),
-                      blurRadius: 18 + 10 * (1 - t),
-                      offset: Offset(0, 8 + 6 * (1 - t)),
+                      color: Colors.black.withOpacity(
+                        (0.16 * (1 - t) + 0.045 * settlePulse).clamp(0.0, 0.18),
+                      ),
+                      blurRadius: 18 + 10 * (1 - t) + 8 * settlePulse,
+                      offset: Offset(0, 8 + 6 * (1 - t) + 3 * settlePulse),
                     ),
                   ],
                 ),
