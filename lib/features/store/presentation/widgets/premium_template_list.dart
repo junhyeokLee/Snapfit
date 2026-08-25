@@ -76,9 +76,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
   }
 
   String? _showcaseBadgeLabel(PremiumTemplate template) {
-    if (template.isBest) return 'BEST PICK';
-    if (template.isNew) return 'NEW MOOD';
-    if (template.isPremium) return 'PREMIUM';
+    if (template.isBest) return '추천';
+    if (template.isNew) return '새 무드';
     return null;
   }
 
@@ -225,7 +224,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontSize: 27.sp,
+                                          fontSize: 25.sp,
                                           fontWeight: FontWeight.w900,
                                           color: Colors.white,
                                           height: 1.15,
@@ -286,7 +285,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                       ),
                       // Dots Indicator (Top Center)
                       Positioned(
-                        top: 24.h,
+                        top: 18.h,
                         left: 0,
                         right: 0,
                         child: Center(
@@ -296,7 +295,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               vertical: 6.h,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.18),
+                              color: Colors.black.withOpacity(0.14),
                               borderRadius: BorderRadius.circular(999.r),
                             ),
                             child: Row(
@@ -308,7 +307,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                   duration: const Duration(milliseconds: 200),
                                   curve: Curves.easeOutCubic,
                                   margin: EdgeInsets.symmetric(horizontal: 4.w),
-                                  width: _currentIndex == index ? 24.w : 6.w,
+                                  width: _currentIndex == index ? 18.w : 5.w,
                                   height: 6.h,
                                   decoration: BoxDecoration(
                                     color: _currentIndex == index

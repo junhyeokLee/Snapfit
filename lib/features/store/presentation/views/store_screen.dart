@@ -87,8 +87,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         ),
                         const SizedBox(height: 22),
                         const _StoreSectionHeader(
-                          title: '이번 주 추천 무드',
-                          subtitle: '사진만 넣어도 완성도가 살아나는 템플릿',
+                          title: '추천 템플릿',
+                          subtitle: '사진을 가장 예쁘게 담는 무드',
                         ),
                         const SizedBox(height: 12),
                         const PremiumTemplateList(maxItems: 3),
@@ -326,7 +326,6 @@ class _StoreHero extends StatelessWidget {
                       children: [
                         _StoreHeroStat(label: '템플릿 $totalCount개'),
                         _StoreHeroStat(label: '무드 $categoryCount종'),
-                        const _StoreHeroStat(label: '빠른 완성'),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -582,7 +581,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '어떤 앨범을 만들까요?',
+                '앨범 무드 찾기',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -591,7 +590,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '기록하고 싶은 순간에 맞춰 골라보세요.',
+                '순간에 맞는 템플릿을 골라보세요.',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -742,52 +741,31 @@ class _AllTemplatesHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isAll = selectedCategory == '전체';
     final title = isAll ? '전체 템플릿' : '$selectedCategory 템플릿';
-    final summary = isAll ? '$visibleCount개' : '$visibleCount개 추천';
+    final subtitle = isAll
+        ? '전체 $visibleCount개의 템플릿'
+        : '$selectedCategory 무드 $visibleCount개';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: SnapFitColors.textPrimaryOf(context),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '마음에 드는 무드를 골라 앨범 만들기를 시작해보세요.',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: SnapFitColors.textMutedOf(context),
-                  ),
-                ),
-              ],
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+              color: SnapFitColors.textPrimaryOf(context),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context).withValues(alpha: 0.78),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-            ),
-            child: Text(
-              summary,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: SnapFitColors.textMutedOf(context),
-              ),
+          const SizedBox(height: 3),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: SnapFitColors.textMutedOf(context),
             ),
           ),
         ],
@@ -808,15 +786,8 @@ class _TemplateGridCard extends StatelessWidget {
         ? 'BEST'
         : template.isNew
         ? 'NEW'
-        : template.isPremium
-        ? 'PREMIUM'
         : null;
     const labelColor = SnapFitColors.accent;
-    final trustLabel = template.isPremium
-        ? '프리미엄'
-        : template.userCount > 0
-        ? '많이 선택됨'
-        : '빠른 완성';
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SnapFitPressable(
@@ -848,7 +819,7 @@ class _TemplateGridCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 8),
+                      padding: const EdgeInsets.fromLTRB(11, 13, 11, 6),
                       child: _StoreTemplateSampleStack(template: template),
                     ),
                     DecoratedBox(
@@ -857,11 +828,11 @@ class _TemplateGridCard extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.04),
-                            Colors.black.withValues(alpha: 0.10),
-                            Colors.black.withValues(alpha: 0.58),
+                            Colors.black.withValues(alpha: 0.02),
+                            Colors.black.withValues(alpha: 0.08),
+                            Colors.black.withValues(alpha: 0.42),
                           ],
-                          stops: const [0, 0.48, 1],
+                          stops: const [0, 0.56, 1],
                         ),
                       ),
                     ),
@@ -917,7 +888,7 @@ class _TemplateGridCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 11, 12, 13),
+                padding: const EdgeInsets.fromLTRB(12, 9, 12, 11),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -933,40 +904,15 @@ class _TemplateGridCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${template.category ?? '포토북'} · ${template.pageCount}페이지',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: SnapFitColors.textMutedOf(context),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: SnapFitColors.accent.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            trustLabel,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w900,
-                              color: SnapFitColors.accent,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      '${template.category ?? '포토북'} · ${template.pageCount}P',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textMutedOf(context),
+                      ),
                     ),
                   ],
                 ),
