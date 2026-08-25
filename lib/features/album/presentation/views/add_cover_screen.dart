@@ -279,23 +279,27 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
               Column(
                 children: [
                   Expanded(
-                    child: EditCover(
-                      key: _coverEditorKey,
-                      editAlbum: widget.editAlbum,
-                      isFromCreateFlow: widget.isFromCreateFlow,
-                      albumTitle: widget.albumTitle,
-                      targetPages: widget.targetPages,
-                      fallbackTemplateCoverLayers:
-                          widget.initialTemplateCoverLayers,
-                      onAlbumCreated: widget.onAlbumCreated,
-                      onRegisterCompleteAction: widget.onRegisterCompleteAction,
-                      initialCoverSize: _selectedCover,
-                      showBottomToolbar: false, // Use shared menu
-                      interaction: _interaction,
-                      canvasKey: _canvasKey,
-                      onSizeChanged: (size) {
-                        // Synced size for menu actions
-                      },
+                    child: _CoverFocusReveal(
+                      enabled: isCreateFlow,
+                      child: EditCover(
+                        key: _coverEditorKey,
+                        editAlbum: widget.editAlbum,
+                        isFromCreateFlow: widget.isFromCreateFlow,
+                        albumTitle: widget.albumTitle,
+                        targetPages: widget.targetPages,
+                        fallbackTemplateCoverLayers:
+                            widget.initialTemplateCoverLayers,
+                        onAlbumCreated: widget.onAlbumCreated,
+                        onRegisterCompleteAction:
+                            widget.onRegisterCompleteAction,
+                        initialCoverSize: _selectedCover,
+                        showBottomToolbar: false, // Use shared menu
+                        interaction: _interaction,
+                        canvasKey: _canvasKey,
+                        onSizeChanged: (size) {
+                          // Synced size for menu actions
+                        },
+                      ),
                     ),
                   ),
                   if (isCreateFlow)
@@ -394,6 +398,81 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         }
       });
     }
+  }
+}
+
+class _CoverFocusReveal extends StatefulWidget {
+  final bool enabled;
+  final Widget child;
+
+  const _CoverFocusReveal({required this.enabled, required this.child});
+
+  @override
+  State<_CoverFocusReveal> createState() => _CoverFocusRevealState();
+}
+
+class _CoverFocusRevealState extends State<_CoverFocusReveal>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+      value: widget.enabled ? 0 : 1,
+    );
+    final curve = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, 0.78, curve: Curves.easeOutCubic),
+    );
+    _fade = Tween<double>(begin: 0, end: 1).animate(curve);
+    _scale = Tween<double>(begin: 0.965, end: 1).animate(curve);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.035),
+      end: Offset.zero,
+    ).animate(curve);
+    if (widget.enabled) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _CoverFocusReveal oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled && !oldWidget.enabled) {
+      _controller.forward(from: 0);
+    } else if (!widget.enabled && oldWidget.enabled) {
+      _controller.value = 1;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+    return SlideTransition(
+      key: const Key('coverFocusRevealSlide'),
+      position: _slide,
+      child: FadeTransition(
+        key: const Key('coverFocusRevealFade'),
+        opacity: _fade,
+        child: ScaleTransition(
+          key: const Key('coverFocusRevealScale'),
+          scale: _scale,
+          child: widget.child,
+        ),
+      ),
+    );
   }
 }
 

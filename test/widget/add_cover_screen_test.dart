@@ -71,4 +71,28 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'create flow cover preview has focus reveal motion before controls',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          AddCoverScreen(
+            isFromCreateFlow: true,
+            initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
+            albumTitle: '제주 여름 기록',
+            targetPages: 24,
+            onAlbumCreated: (_) {},
+          ),
+        ),
+      );
+
+      expect(find.byKey(const Key('coverFocusRevealFade')), findsOneWidget);
+      expect(find.byKey(const Key('coverFocusRevealSlide')), findsOneWidget);
+      expect(find.byKey(const Key('coverFocusRevealScale')), findsOneWidget);
+    },
+  );
 }
