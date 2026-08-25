@@ -68,7 +68,10 @@ void main() {
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: LoginScreen()),
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(),
+          ),
         ),
       ),
     );
@@ -94,7 +97,10 @@ void main() {
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: LoginScreen()),
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(),
+          ),
         ),
       ),
     );
