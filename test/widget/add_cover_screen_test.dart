@@ -18,15 +18,38 @@ Widget _wrap(Widget child) {
 
 void main() {
   test('create flow layer action panel clears restored cover tools', () {
+    double scaledBase(double value) => value;
+
     expect(
-      coverLayerActionPanelBottom(isCreateFlow: true),
+      coverLayerActionPanelBottom(
+        isCreateFlow: true,
+        scaleBaseOffset: scaledBase,
+      ),
       greaterThanOrEqualTo(200),
     );
     expect(
-      coverLayerActionPanelBottom(isCreateFlow: true, safeAreaBottom: 34),
+      coverLayerActionPanelBottom(
+        isCreateFlow: true,
+        scaleBaseOffset: scaledBase,
+        safeAreaBottom: 34,
+      ),
       greaterThanOrEqualTo(238),
     );
-    expect(coverLayerActionPanelBottom(isCreateFlow: false), 100);
+    expect(
+      coverLayerActionPanelBottom(
+        isCreateFlow: false,
+        scaleBaseOffset: scaledBase,
+      ),
+      100,
+    );
+    expect(
+      coverLayerActionPanelBottom(
+        isCreateFlow: true,
+        scaleBaseOffset: (value) => value * 0.8,
+        safeAreaBottom: 34,
+      ),
+      closeTo(204 * 0.8 + 34, 0.01),
+    );
   });
 
   testWidgets(

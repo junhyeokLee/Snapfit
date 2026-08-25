@@ -26,10 +26,19 @@ import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 
 @visibleForTesting
+double coverLayerActionPanelBaseBottom({required bool isCreateFlow}) =>
+    isCreateFlow ? 204 : 100;
+
+@visibleForTesting
 double coverLayerActionPanelBottom({
   required bool isCreateFlow,
+  required double Function(double value) scaleBaseOffset,
   double safeAreaBottom = 0,
-}) => (isCreateFlow ? 204 : 100) + safeAreaBottom;
+}) =>
+    scaleBaseOffset(
+      coverLayerActionPanelBaseBottom(isCreateFlow: isCreateFlow),
+    ) +
+    safeAreaBottom;
 
 /// 커버 편집 화면 (앨범 생성/편집 공통)
 /// - editAlbum == null && albumId == null: 앨범 생성 모드 (새 커버 만들기)
@@ -337,8 +346,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                 Positioned(
                   bottom: coverLayerActionPanelBottom(
                     isCreateFlow: isCreateFlow,
+                    scaleBaseOffset: (value) => value.h,
                     safeAreaBottom: MediaQuery.paddingOf(context).bottom,
-                  ).h,
+                  ),
                   left: 20,
                   right: 20,
                   child: LayerActionPanel(
