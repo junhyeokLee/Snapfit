@@ -82,7 +82,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _AtelierProgressHeader(),
+                    const _CreateStepTitle(),
                     if (_hasTemplate) ...[
                       SizedBox(height: 10.h),
                       _TemplateSummary(
@@ -93,14 +93,11 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     SizedBox(height: 14.h),
                     _buildTitleBlock(context),
                     SizedBox(height: 26.h),
-                    _SectionLabel(title: '책 비율', caption: '표지 모양을 먼저 정해요.'),
+                    const _SectionLabel(title: '책 비율'),
                     SizedBox(height: 7.h),
                     _buildSizeSelector(context),
                     SizedBox(height: 18.h),
-                    _SectionLabel(
-                      title: '분량',
-                      caption: '편집 중에도 페이지를 더하거나 줄일 수 있어요.',
-                    ),
+                    const _SectionLabel(title: '분량'),
                     SizedBox(height: 9.h),
                     _buildPageCountSelector(context),
                   ],
@@ -122,7 +119,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel(title: '앨범 제목', caption: '나중에 다시 바꿀 수 있어요.'),
+        const _SectionLabel(title: '앨범 제목'),
         SizedBox(height: 6.h),
         Container(
           decoration: BoxDecoration(
@@ -230,7 +227,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '표지 확인하기',
+                    '다음',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w800,
@@ -285,9 +282,9 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   Widget _buildPageCountSelector(BuildContext context) {
     final minPage = widget.minPageCount.clamp(1, _maxPageCount);
     final suggested = <({int pages, String body, bool recommended})>[
-      (pages: minPage, body: '가볍게 시작', recommended: false),
-      (pages: mathMax(minPage, 24), body: '추천', recommended: true),
-      (pages: mathMax(minPage, 36), body: '넉넉하게', recommended: false),
+      (pages: minPage, body: '기본', recommended: false),
+      (pages: mathMax(minPage, 24), body: '중간', recommended: false),
+      (pages: mathMax(minPage, 36), body: '여유', recommended: false),
     ];
     final options = <({int pages, String body, bool recommended})>[];
     final seen = <int>{};
@@ -338,76 +335,28 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   int mathMax(int a, int b) => a > b ? a : b;
 }
 
-class _AtelierProgressHeader extends StatelessWidget {
-  const _AtelierProgressHeader();
+class _CreateStepTitle extends StatelessWidget {
+  const _CreateStepTitle();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              '1 / 3',
-              style: TextStyle(
-                fontSize: 12.sp,
-                height: 1.35,
-                fontWeight: FontWeight.w800,
-                color: SnapFitColors.textMutedOf(context),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(999.r),
-                child: LinearProgressIndicator(
-                  minHeight: 4.h,
-                  value: 1 / 3,
-                  backgroundColor: SnapFitColors.isDark(context)
-                      ? Colors.white.withOpacity(0.10)
-                      : const Color(0xFFE7E1D8),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    SnapFitColors.isDark(context)
-                        ? const Color(0xFFF4F1EA)
-                        : const Color(0xFF1F1F1D),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        Text(
-          '앨범 기본 정보',
-          style: TextStyle(
-            fontSize: 20.sp,
-            height: 1.10,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.55,
-            color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
-        SizedBox(height: 5.h),
-        Text(
-          '제목, 책 비율, 분량만 정해요.',
-          style: TextStyle(
-            fontSize: 12.5.sp,
-            height: 1.38,
-            fontWeight: FontWeight.w600,
-            color: SnapFitColors.textSecondaryOf(context),
-          ),
-        ),
-      ],
+    return Text(
+      '새 앨범',
+      style: TextStyle(
+        fontSize: 24.sp,
+        height: 1.12,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.65,
+        color: SnapFitColors.textPrimaryOf(context),
+      ),
     );
   }
 }
 
 class _SectionLabel extends StatelessWidget {
   final String title;
-  final String caption;
 
-  const _SectionLabel({required this.title, required this.caption});
+  const _SectionLabel({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -422,16 +371,6 @@ class _SectionLabel extends StatelessWidget {
             fontWeight: FontWeight.w900,
             letterSpacing: -0.25,
             color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          caption,
-          style: TextStyle(
-            fontSize: 12.sp,
-            height: 1.34,
-            fontWeight: FontWeight.w600,
-            color: SnapFitColors.textSecondaryOf(context),
           ),
         ),
       ],
@@ -500,7 +439,7 @@ class _TemplateSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '선택한 템플릿',
+                  '표지',
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     height: 1.28,

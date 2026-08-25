@@ -222,10 +222,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           ),
           title: Text(
             _currentStep == 0
-                ? '앨범 만들기'
+                ? '새 앨범'
                 : _currentStep == 1
-                ? '표지 확인'
-                : '초대 설정',
+                ? '표지'
+                : '초대',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w900,
