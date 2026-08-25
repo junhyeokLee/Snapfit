@@ -68,56 +68,77 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
           if (_panelMode == EditPanelMode.decorate &&
               widget.onOpenDecorateSheet == null)
             _buildDecorateSubmenu(layer),
-          if (_panelMode == EditPanelMode.none)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (layer.type == LayerType.text)
-                    _buildActionButton(
-                      Icons.font_download_outlined,
-                      "폰트",
-                      () => widget.textEditor.openForExisting(layer),
-                    ),
-                  if (layer.type == LayerType.image)
-                    _buildActionButton(
-                      Icons.image_outlined,
-                      "사진변경",
-                      () => widget.onOpenGallery?.call(layer),
-                    ),
-                  if (layer.type == LayerType.image)
-                    _buildActionButton(
-                      Icons.open_with,
-                      "사진위치",
-                      () {
-                        widget.interaction.toggleImagePanMode();
-                        widget.onRefresh();
-                      },
-                      color: widget.interaction.isImagePanMode
-                          ? SnapFitColors.accent
-                          : null,
-                    ),
-                  _buildActionButton(
-                    Icons.opacity,
-                    "불투명도",
-                    () => setState(() => _panelMode = EditPanelMode.opacity),
-                  ),
-                  _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
-                    if (widget.onOpenDecorateSheet != null) {
-                      widget.onOpenDecorateSheet!(layer);
-                    } else {
-                      setState(() => _panelMode = EditPanelMode.decorate);
-                    }
-                  }),
-                  _buildActionButton(Icons.delete_outline, "삭제", () {
-                    widget.interaction.deleteSelected();
-                    widget.onRefresh();
-                  }, color: Colors.black),
-                ],
-              ),
-            ),
+          if (_panelMode == EditPanelMode.none) _buildPrimaryActionRail(layer),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPrimaryActionRail(LayerModel layer) {
+    return ShaderMask(
+      key: const Key('layerActionRailEdgeFade'),
+      blendMode: BlendMode.dstIn,
+      shaderCallback: (bounds) {
+        return const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: [0, 0.08, 0.92, 1],
+        ).createShader(bounds);
+      },
+      child: SingleChildScrollView(
+        key: const Key('layerActionRailScroll'),
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (layer.type == LayerType.text)
+              _buildActionButton(
+                Icons.font_download_outlined,
+                "폰트",
+                () => widget.textEditor.openForExisting(layer),
+              ),
+            if (layer.type == LayerType.image)
+              _buildActionButton(
+                Icons.image_outlined,
+                "사진변경",
+                () => widget.onOpenGallery?.call(layer),
+              ),
+            if (layer.type == LayerType.image)
+              _buildActionButton(
+                Icons.open_with,
+                "사진위치",
+                () {
+                  widget.interaction.toggleImagePanMode();
+                  widget.onRefresh();
+                },
+                color: widget.interaction.isImagePanMode
+                    ? SnapFitColors.accent
+                    : null,
+              ),
+            _buildActionButton(
+              Icons.opacity,
+              "불투명도",
+              () => setState(() => _panelMode = EditPanelMode.opacity),
+            ),
+            _buildActionButton(Icons.auto_awesome_outlined, "꾸미기", () {
+              if (widget.onOpenDecorateSheet != null) {
+                widget.onOpenDecorateSheet!(layer);
+              } else {
+                setState(() => _panelMode = EditPanelMode.decorate);
+              }
+            }),
+            _buildActionButton(Icons.delete_outline, "삭제", () {
+              widget.interaction.deleteSelected();
+              widget.onRefresh();
+            }, color: Colors.black),
+          ],
+        ),
       ),
     );
   }

@@ -237,6 +237,20 @@ void main() {
         matching: find.byType(SingleChildScrollView),
       );
       expect(actionRail, findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(LayerActionPanel),
+          matching: find.byKey(const Key('layerActionRailEdgeFade')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(LayerActionPanel),
+          matching: find.byKey(const Key('layerActionRailScroll')),
+        ),
+        findsOneWidget,
+      );
       final scrollable = find.descendant(
         of: find.byType(LayerActionPanel),
         matching: find.byType(Scrollable),
