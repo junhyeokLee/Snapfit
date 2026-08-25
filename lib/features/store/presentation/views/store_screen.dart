@@ -87,8 +87,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         ),
                         const SizedBox(height: 22),
                         const _StoreSectionHeader(
-                          title: '추천 템플릿',
-                          subtitle: '사진을 가장 예쁘게 담는 무드',
+                          title: '이번 주 추천 무드',
+                          subtitle: '완성된 포토북이 먼저 떠오르는 템플릿',
                         ),
                         const SizedBox(height: 12),
                         const PremiumTemplateList(maxItems: 3),
@@ -121,7 +121,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   crossAxisCount: 2,
                                   mainAxisSpacing: 16,
                                   crossAxisSpacing: 14,
-                                  childAspectRatio: 0.62,
+                                  childAspectRatio: 0.58,
                                 ),
                             delegate: SliverChildBuilderDelegate((
                               context,
@@ -263,7 +263,7 @@ class _StoreHero extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'TEMPLATE SHOP',
+                            'TEMPLATE STORE',
                             style: TextStyle(
                               color: SnapFitColors.accent,
                               fontSize: 12,
@@ -300,7 +300,7 @@ class _StoreHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      '사진의 분위기를\n한 권의 앨범으로',
+                      '오늘의 사진을\n작품처럼',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 29,
@@ -311,7 +311,7 @@ class _StoreHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '가족, 여행, 웨딩, 아기 기록에 맞춘 템플릿을 골라보세요. 사진만 넣어도 정돈된 포토북이 완성돼요.',
+                      '가족, 여행, 아기, 커플의 순간을 바로 완성할 수 있는 포토북 템플릿을 골라보세요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 14,
@@ -320,6 +320,8 @@ class _StoreHero extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    const _StoreHeroCta(label: '무드별 둘러보기'),
+                    const SizedBox(height: 12),
                     Wrap(
                       spacing: 7,
                       runSpacing: 7,
@@ -406,6 +408,51 @@ class _StoreSectionHeader extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: SnapFitColors.textMutedOf(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StoreHeroCta extends StatelessWidget {
+  const _StoreHeroCta({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: SnapFitColors.textPrimaryOf(context),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: SnapFitColors.isDark(context) ? 0.28 : 0.12,
+            ),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.auto_stories_rounded,
+            size: 15,
+            color: SnapFitColors.backgroundOf(context),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: SnapFitColors.backgroundOf(context),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ],
@@ -581,7 +628,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '앨범 무드 찾기',
+                '무드별 템플릿 찾기',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -590,7 +637,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '순간에 맞는 템플릿을 골라보세요.',
+                '사진의 장면과 어울리는 포토북 스타일을 골라보세요.',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -602,7 +649,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
                 controller: searchController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: '가족 여행, 웨딩, 아기앨범 검색',
+                  hintText: '가족, 여행, 아기, 커플 템플릿 검색',
                   prefixIcon: const Icon(Icons.search_rounded, size: 20),
                   suffixIcon: searchController.text.isEmpty
                       ? null
@@ -689,24 +736,25 @@ class _StoreCategoryPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 15),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          gradient: selected
-              ? const LinearGradient(colors: SnapFitColors.primaryGradient)
-              : null,
           color: selected
-              ? null
+              ? SnapFitColors.accent.withValues(
+                  alpha: SnapFitColors.isDark(context) ? 0.24 : 0.14,
+                )
               : SnapFitColors.surfaceOf(context).withValues(alpha: 0.78),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected
-                ? Colors.white.withValues(alpha: 0.26)
+                ? SnapFitColors.accent.withValues(alpha: 0.42)
                 : SnapFitColors.overlayLightOf(context),
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: SnapFitColors.accent.withValues(alpha: 0.18),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(
+                      alpha: SnapFitColors.isDark(context) ? 0.22 : 0.08,
+                    ),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
                   ),
                 ]
               : null,
@@ -717,7 +765,7 @@ class _StoreCategoryPill extends StatelessWidget {
             fontSize: 13,
             fontWeight: FontWeight.w900,
             color: selected
-                ? Colors.white
+                ? SnapFitColors.textPrimaryOf(context)
                 : SnapFitColors.textSecondaryOf(context),
           ),
         ),
@@ -742,8 +790,8 @@ class _AllTemplatesHeader extends StatelessWidget {
     final isAll = selectedCategory == '전체';
     final title = isAll ? '전체 템플릿' : '$selectedCategory 템플릿';
     final subtitle = isAll
-        ? '전체 $visibleCount개의 템플릿'
-        : '$selectedCategory 무드 $visibleCount개';
+        ? '분위기별로 고른 $visibleCount개의 포토북 스타일'
+        : '$selectedCategory 분위기에 어울리는 $visibleCount개';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -828,9 +876,9 @@ class _TemplateGridCard extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.02),
-                            Colors.black.withValues(alpha: 0.08),
-                            Colors.black.withValues(alpha: 0.42),
+                            Colors.black.withValues(alpha: 0.00),
+                            Colors.black.withValues(alpha: 0.05),
+                            Colors.black.withValues(alpha: 0.30),
                           ],
                           stops: const [0, 0.56, 1],
                         ),
@@ -903,6 +951,19 @@ class _TemplateGridCard extends StatelessWidget {
                         color: SnapFitColors.textPrimaryOf(context),
                       ),
                     ),
+                    if ((template.subTitle ?? '').trim().isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        template.subTitle!.trim(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: SnapFitColors.textSecondaryOf(context),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       '${template.category ?? '포토북'} · ${template.pageCount}P',
@@ -910,7 +971,7 @@ class _TemplateGridCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: SnapFitColors.textMutedOf(context),
                       ),
                     ),
@@ -1046,7 +1107,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            '이 무드의 템플릿은 준비 중이에요',
+            '아직 이 무드의 템플릿이 없어요',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -1056,13 +1117,32 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 7),
           Text(
-            '다른 키워드나 전체 카테고리에서 마음에 드는 앨범 무드를 찾아보세요.',
+            '곧 새로운 포토북 스타일을 채워둘게요. 전체 템플릿에서 먼저 둘러보세요.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
               height: 1.45,
               fontWeight: FontWeight.w600,
               color: SnapFitColors.textMutedOf(context),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: SnapFitColors.accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: SnapFitColors.accent.withValues(alpha: 0.20),
+              ),
+            ),
+            child: const Text(
+              '전체 템플릿 보기',
+              style: TextStyle(
+                color: SnapFitColors.accent,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],
