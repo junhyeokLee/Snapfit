@@ -34,11 +34,12 @@ double coverLayerActionPanelBottom({
   required bool isCreateFlow,
   required double Function(double value) scaleBaseOffset,
   double safeAreaBottom = 0,
-}) =>
-    scaleBaseOffset(
-      coverLayerActionPanelBaseBottom(isCreateFlow: isCreateFlow),
-    ) +
-    safeAreaBottom;
+}) {
+  final base = coverLayerActionPanelBaseBottom(isCreateFlow: isCreateFlow);
+  final scaledBase = scaleBaseOffset(base);
+  return (isCreateFlow ? scaledBase.clamp(base, double.infinity) : scaledBase) +
+      safeAreaBottom;
+}
 
 /// 커버 편집 화면 (앨범 생성/편집 공통)
 /// - editAlbum == null && albumId == null: 앨범 생성 모드 (새 커버 만들기)

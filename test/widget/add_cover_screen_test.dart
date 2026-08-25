@@ -48,9 +48,51 @@ void main() {
         scaleBaseOffset: (value) => value * 0.8,
         safeAreaBottom: 34,
       ),
-      closeTo(204 * 0.8 + 34, 0.01),
+      closeTo(204 + 34, 0.01),
     );
   });
+
+  testWidgets(
+    'create flow layer action offset clears measured dock with safe area',
+    (tester) async {
+      const viewport = Size(390, 760);
+      const safeBottom = 34.0;
+      await tester.binding.setSurfaceSize(viewport);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          MediaQuery(
+            data: const MediaQueryData(
+              size: viewport,
+              padding: EdgeInsets.only(bottom: safeBottom),
+            ),
+            child: AddCoverScreen(
+              isFromCreateFlow: true,
+              initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
+              albumTitle: '제주 여름 기록',
+              targetPages: 24,
+              onAlbumCreated: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final dockTop = tester
+          .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))
+          .dy;
+      final layerPanelBottomY =
+          viewport.height -
+          coverLayerActionPanelBottom(
+            isCreateFlow: true,
+            scaleBaseOffset: (value) => value.h,
+            safeAreaBottom: safeBottom,
+          );
+
+      expect(layerPanelBottomY, lessThanOrEqualTo(dockTop - 8));
+    },
+  );
 
   testWidgets(
     'create flow cover atelier focuses cover and contextual actions',
