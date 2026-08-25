@@ -165,6 +165,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(hero, findsOneWidget);
 
     final verticalSize = tester.getSize(
       find.byKey(const Key('albumCreateHeroPreview')),
