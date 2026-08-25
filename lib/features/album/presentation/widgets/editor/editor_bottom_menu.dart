@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:ui';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 
@@ -38,7 +39,7 @@ class EditorBottomMenu extends StatelessWidget {
             _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
             _EditorMenuItem(
               '사진',
-              Icons.photo_outlined,
+              Icons.add_photo_alternate_outlined,
               EditorMode.none,
               isAction: true,
               onAction: onAddPhoto,
@@ -53,15 +54,21 @@ class EditorBottomMenu extends StatelessWidget {
               ),
             _EditorMenuItem(
               '레이아웃',
-              Icons.dashboard_outlined,
+              Icons.dashboard_customize_outlined,
               EditorMode.layout,
             ),
             _EditorMenuItem(
               '템플릿',
               Icons.auto_awesome_mosaic_outlined,
               EditorMode.template,
+              isHighlighted: true,
             ),
-            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
+            _EditorMenuItem(
+              '레이어',
+              Icons.layers_rounded,
+              EditorMode.layer,
+              isHighlighted: true,
+            ),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -77,22 +84,28 @@ class EditorBottomMenu extends StatelessWidget {
             _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
             _EditorMenuItem(
               '사진',
-              Icons.photo_outlined,
+              Icons.add_photo_alternate_outlined,
               EditorMode.none,
               isAction: true,
               onAction: onAddPhoto,
             ),
             _EditorMenuItem(
               '레이아웃',
-              Icons.dashboard_outlined,
+              Icons.dashboard_customize_outlined,
               EditorMode.layout,
             ),
             _EditorMenuItem(
               '템플릿',
               Icons.auto_awesome_mosaic_outlined,
               EditorMode.template,
+              isHighlighted: true,
             ),
-            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
+            _EditorMenuItem(
+              '레이어',
+              Icons.layers_rounded,
+              EditorMode.layer,
+              isHighlighted: true,
+            ),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -105,43 +118,62 @@ class EditorBottomMenu extends StatelessWidget {
             ),
           ];
 
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
-      child: Container(
-        height: 84,
-        decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
-          border: Border(
-            top: BorderSide(
-              color: SnapFitColors.overlayLightOf(context),
-              width: 0.8,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.28 : 0.08,
-              ),
-              blurRadius: 18,
-              offset: const Offset(0, -6),
-            ),
-          ],
+    final isDark = SnapFitColors.isDark(context);
+
+    return Container(
+      height: 90,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF1D2230).withOpacity(0.96),
+                  const Color(0xFF101820).withOpacity(0.92),
+                ]
+              : [
+                  Colors.white.withOpacity(0.92),
+                  const Color(0xFFEAFBFD).withOpacity(0.72),
+                  const Color(0xFFFFF4EA).withOpacity(0.86),
+                ],
         ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              SizedBox(width: 8.w),
-              ...items.map(
-                (item) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 2.w),
-                  child: _buildMenuItem(context, item),
-                ),
-              ),
-              SizedBox(width: 8.w),
-            ],
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : SnapFitColors.deepCharcoal.withOpacity(0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
+            blurRadius: 28,
+            offset: const Offset(0, -12),
+          ),
+          BoxShadow(
+            color: SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10),
+            blurRadius: 34,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30.r),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+            child: Row(
+              children: items
+                  .map(
+                    (item) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 3.w),
+                      child: _buildMenuItem(context, item),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ),
       ),
@@ -150,14 +182,15 @@ class EditorBottomMenu extends StatelessWidget {
 
   Widget _buildMenuItem(BuildContext context, _EditorMenuItem item) {
     final isSelected = !item.isAction && currentMode == item.mode;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = isDark
-        ? Colors.white.withOpacity(0.72)
-        : SnapFitColors.deepCharcoal.withOpacity(0.66);
+    final isDark = SnapFitColors.isDark(context);
+    final baseColor = isDark
+        ? Colors.white.withOpacity(0.74)
+        : SnapFitColors.deepCharcoal.withOpacity(0.70);
+    final isFeatured = item.isHighlighted || isSelected;
 
     return SnapFitPressable(
-      pressedScale: 0.95,
-      borderRadius: BorderRadius.circular(16.r),
+      pressedScale: 0.94,
+      borderRadius: BorderRadius.circular(22.r),
       onTap: () {
         if (item.isAction) {
           item.onAction?.call();
@@ -168,32 +201,85 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: 64,
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        width: 58,
+        height: 66,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22.r),
+          gradient: isSelected
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    SnapFitColors.primaryGradientStart,
+                    SnapFitColors.primaryGradientEnd,
+                  ],
+                )
+              : null,
           color: isSelected
-              ? SnapFitColors.accent.withOpacity(0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(16.r),
-          border: isSelected
-              ? Border.all(color: SnapFitColors.accent.withOpacity(0.18))
+              ? null
+              : isFeatured
+              ? SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10)
+              : Colors.white.withOpacity(isDark ? 0.04 : 0.30),
+          border: Border.all(
+            color: isSelected
+                ? Colors.white.withOpacity(0.20)
+                : isFeatured
+                ? SnapFitColors.accent.withOpacity(0.20)
+                : SnapFitColors.overlayLightOf(context),
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: SnapFitColors.accent.withOpacity(0.24),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
               : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedScale(
-              scale: isSelected ? 1.06 : 1.0,
-              duration: SnapFitMotion.fast,
-              curve: SnapFitMotion.settle,
-              child: Icon(
-                item.icon,
-                color: isSelected ? SnapFitColors.accent : color,
-                size: 20,
-              ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedScale(
+                  scale: isSelected ? 1.08 : 1.0,
+                  duration: SnapFitMotion.fast,
+                  curve: SnapFitMotion.settle,
+                  child: Icon(
+                    item.icon,
+                    color: isSelected
+                        ? Colors.white
+                        : isFeatured
+                        ? SnapFitColors.accent
+                        : baseColor,
+                    size: 22,
+                  ),
+                ),
+                if (item.isAction)
+                  Positioned(
+                    right: -4,
+                    top: -5,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF171A22)
+                              : Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               item.label,
               maxLines: 1,
@@ -203,11 +289,15 @@ class EditorBottomMenu extends StatelessWidget {
                       .copyWith(
                         fontSize: 10,
                         height: 1.0,
-                        color: isSelected ? SnapFitColors.accent : color,
-                        fontWeight: isSelected
+                        color: isSelected
+                            ? Colors.white
+                            : isFeatured
+                            ? SnapFitColors.accent
+                            : baseColor,
+                        fontWeight: isSelected || isFeatured
                             ? FontWeight.w900
-                            : FontWeight.w700,
-                        letterSpacing: -0.05,
+                            : FontWeight.w800,
+                        letterSpacing: -0.12,
                       ),
             ),
           ],
@@ -224,6 +314,7 @@ class _EditorMenuItem {
     this.mode, {
     this.isAction = false,
     this.onAction,
+    this.isHighlighted = false,
   });
 
   final String label;
@@ -231,4 +322,5 @@ class _EditorMenuItem {
   final EditorMode mode;
   final bool isAction;
   final VoidCallback? onAction;
+  final bool isHighlighted;
 }
