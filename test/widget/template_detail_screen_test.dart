@@ -231,4 +231,86 @@ void main() {
       expect(ctaRect.bottom, lessThanOrEqualTo(844));
     });
   });
+
+  testWidgets(
+    'template detail stays stable across iPhone and Galaxy viewports',
+    (tester) async {
+      const viewports = [
+        ('iPhone SE', Size(320, 568)),
+        ('iPhone 13 mini', Size(375, 812)),
+        ('iPhone 15', Size(393, 852)),
+        ('iPhone 15 Pro Max', Size(430, 932)),
+        ('Galaxy compact', Size(360, 780)),
+        ('Galaxy standard', Size(412, 915)),
+        ('Galaxy Ultra', Size(480, 1040)),
+      ];
+
+      for (final viewport in viewports) {
+        tester.view.physicalSize = viewport.$2;
+        tester.view.devicePixelRatio = 1.0;
+
+        final mockRepo = MockTemplateRepository();
+        final template = _template(
+          title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+          subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+          pageCount: 24,
+          category: '가족여행프리미엄에디토리얼',
+          tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
+        );
+        stubGetTemplates(mockRepo, [template]);
+
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                templateRepositoryProvider.overrideWithValue(mockRepo),
+              ],
+              child: _wrap(TemplateDetailScreen(template: template)),
+            ),
+          );
+
+          await tester.pump();
+          await tester.pump(const Duration(seconds: 3));
+
+          expect(tester.takeException(), isNull, reason: viewport.$1);
+
+          final width = viewport.$2.width;
+          final height = viewport.$2.height;
+          final titleRect = tester.getRect(
+            find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+          );
+          final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼').first);
+          final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+          final heroMetaRect = tester.getRect(find.text('24쪽 · 사진 38~52장 추천'));
+
+          expect(titleRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
+          expect(
+            titleRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(
+            categoryRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(
+            heroMetaRect.right,
+            lessThanOrEqualTo(width),
+            reason: viewport.$1,
+          );
+          expect(ctaRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
+          expect(ctaRect.right, lessThanOrEqualTo(width), reason: viewport.$1);
+          expect(
+            ctaRect.bottom,
+            lessThanOrEqualTo(height),
+            reason: viewport.$1,
+          );
+        });
+      }
+
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    },
+  );
 }

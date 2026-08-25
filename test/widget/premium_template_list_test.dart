@@ -142,4 +142,68 @@ void main() {
     expect(ctaRect.top, lessThan(360));
     expect(photoMetaRect.top, lessThan(360));
   });
+
+  testWidgets('store lookbook cards fit iPhone and Galaxy viewports', (
+    tester,
+  ) async {
+    const viewports = [
+      ('iPhone SE', Size(320, 568)),
+      ('iPhone 13 mini', Size(375, 812)),
+      ('iPhone 15', Size(393, 852)),
+      ('iPhone 15 Pro Max', Size(430, 932)),
+      ('Galaxy compact', Size(360, 780)),
+      ('Galaxy standard', Size(412, 915)),
+      ('Galaxy Ultra', Size(480, 1040)),
+    ];
+
+    final templates = [
+      const PremiumTemplate(
+        id: 1,
+        title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+        subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+        coverImageUrl: 'https://example.com/cover.png',
+        previewImages: [],
+        pageCount: 24,
+        userCount: 1,
+        category: '가족여행프리미엄에디토리얼',
+      ),
+    ];
+
+    for (final viewport in viewports) {
+      tester.view.physicalSize = viewport.$2;
+      tester.view.devicePixelRatio = 1.0;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            templateListProvider.overrideWith((ref) async => templates),
+          ],
+          child: _wrap(const PremiumTemplateList()),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: viewport.$1);
+
+      final width = viewport.$2.width;
+      final ctaRect = tester.getRect(find.text('룩북 보기'));
+      final photoMetaRect = tester.getRect(find.text('사진 38~52장'));
+      final pageMetaRect = tester.getRect(find.text('24쪽'));
+
+      expect(ctaRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
+      expect(ctaRect.right, lessThanOrEqualTo(width), reason: viewport.$1);
+      expect(
+        photoMetaRect.right,
+        lessThanOrEqualTo(width),
+        reason: viewport.$1,
+      );
+      expect(pageMetaRect.right, lessThanOrEqualTo(width), reason: viewport.$1);
+      final upperCardLimit = (viewport.$2.height * 0.42).clamp(320, 430);
+      expect(ctaRect.top, lessThan(upperCardLimit), reason: viewport.$1);
+      expect(photoMetaRect.top, lessThan(upperCardLimit), reason: viewport.$1);
+    }
+
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  });
 }
