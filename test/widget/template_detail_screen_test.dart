@@ -139,4 +139,45 @@ void main() {
       expect(find.text('프리미엄'), findsNothing);
     });
   });
+
+  testWidgets(
+    'template detail keeps hero title meta and CTA in first viewport',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '제주의 기록',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '여행',
+        tags: const ['여행', '제주', '감성'],
+      );
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(TemplateDetailScreen(template: template)),
+          ),
+        );
+
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 3));
+
+        final titleRect = tester.getRect(find.text('제주의 기록').first);
+        final heroMetaRect = tester.getRect(find.text('24쪽 · 사진 38~52장 추천'));
+        final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+
+        expect(titleRect.top, lessThan(560));
+        expect(heroMetaRect.bottom, lessThan(520));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+        expect(ctaRect.top, greaterThan(700));
+      });
+    },
+  );
 }

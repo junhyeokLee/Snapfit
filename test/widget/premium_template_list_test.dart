@@ -101,4 +101,45 @@ void main() {
     expect(find.text('사진 38~52장'), findsOneWidget);
     expect(find.text('여행'), findsOneWidget);
   });
+
+  testWidgets('showcase lookbook CTA and photo meta fit phone viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final templates = [
+      const PremiumTemplate(
+        id: 1,
+        title: '제주의 기록',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        coverImageUrl: 'https://example.com/cover.png',
+        previewImages: [],
+        pageCount: 24,
+        userCount: 1,
+        category: '여행',
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          templateListProvider.overrideWith((ref) async => templates),
+        ],
+        child: _wrap(const PremiumTemplateList()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final ctaRect = tester.getRect(find.text('룩북 보기'));
+    final photoMetaRect = tester.getRect(find.text('사진 38~52장'));
+
+    expect(ctaRect.right, lessThanOrEqualTo(390));
+    expect(photoMetaRect.right, lessThanOrEqualTo(390));
+    expect(ctaRect.top, lessThan(360));
+    expect(photoMetaRect.top, lessThan(360));
+  });
 }
