@@ -18,14 +18,25 @@ Widget _wrap(Widget child) {
   );
 }
 
-PremiumTemplate _template({int likeCount = 1, bool isLiked = false}) {
+PremiumTemplate _template({
+  int likeCount = 1,
+  bool isLiked = false,
+  int pageCount = 2,
+  String title = 'Template A',
+  String? subTitle,
+  String? category,
+  List<String>? tags,
+}) {
   return PremiumTemplate(
     id: 1,
-    title: 'Template A',
+    title: title,
+    subTitle: subTitle,
     coverImageUrl: 'https://example.com/cover.png',
     previewImages: const [],
-    pageCount: 2,
+    pageCount: pageCount,
     userCount: 1,
+    category: category,
+    tags: tags,
     isPremium: false,
     likeCount: likeCount,
     isLiked: isLiked,
@@ -74,7 +85,7 @@ void main() {
     final mockRepo = MockTemplateRepository();
     final template = _template();
 
-    when(() => mockRepo.getTemplate(1)).thenAnswer((_) async => template);
+    stubGetTemplates(mockRepo, [template]);
 
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(
@@ -88,6 +99,44 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(TemplateDetailScreen), findsOneWidget);
+    });
+  });
+
+  testWidgets('template detail exposes lookbook hero and practical reasons', (
+    tester,
+  ) async {
+    final mockRepo = MockTemplateRepository();
+    final template = _template(
+      title: '제주의 기록',
+      subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+      pageCount: 24,
+      category: '여행',
+      tags: const ['여행', '제주', '감성', '프리미엄'],
+    );
+
+    stubGetTemplates(mockRepo, [template]);
+
+    await mockNetworkImagesFor(() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+          child: _wrap(TemplateDetailScreen(template: template)),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 3));
+
+      expect(find.text('룩북 미리보기'), findsOneWidget);
+      expect(find.text('추천 사진'), findsOneWidget);
+      expect(find.text('38~52장'), findsOneWidget);
+      expect(find.text('이 템플릿이 좋은 이유'), findsOneWidget);
+      expect(find.text('사진만 넣으면 바로 완성'), findsOneWidget);
+      expect(find.text('이 템플릿으로 시작하기'), findsOneWidget);
+      expect(find.text('여행'), findsWidgets);
+      expect(find.text('제주'), findsOneWidget);
+      expect(find.text('감성'), findsOneWidget);
+      expect(find.text('프리미엄'), findsNothing);
     });
   });
 }

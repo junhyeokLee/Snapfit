@@ -35,7 +35,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   late PremiumTemplate _template;
   bool _isUsing = false;
   bool _isLikeSubmitting = false;
-  bool _isTemplateHydrating = true;
+  bool _isTemplateHydrating = false;
 
   // Parsed template data: List of pages, each page is a list of layers
   List<List<LayerModel>> _parsedPages = [];
@@ -829,11 +829,29 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     ];
   }
 
+  String _recommendedPhotoRange() {
+    final pages = _template.pageCount <= 0 ? 24 : _template.pageCount;
+    final minPhotos = (pages * 1.6).round().clamp(18, 120);
+    final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
+    return '$minPhotos~$maxPhotos장';
+  }
+
+  String _moodLabel() {
+    final tags = (_template.tags ?? const <String>[])
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
+    if (tags.isNotEmpty) return tags.first;
+    final category = (_template.category ?? '').trim();
+    if (category.isNotEmpty) return category;
+    return '포토북';
+  }
+
   List<String> _templateUseTags() {
     final tags = (_template.tags ?? const <String>[])
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
-        .take(4)
+        .take(3)
         .toList(growable: false);
     if (tags.isNotEmpty) return tags;
     final category = (_template.category ?? '').trim();
@@ -862,29 +880,27 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               _briefMetric(
                 context,
                 Icons.auto_stories_outlined,
-                '${_template.pageCount}페이지',
-                '구성',
+                '${_template.pageCount}쪽',
+                '포토북 분량',
               ),
               SizedBox(width: 10.w),
               _briefMetric(
                 context,
-                Icons.crop_free_outlined,
-                _initialCoverSizeForTemplate().name,
-                '추천 비율',
+                Icons.add_photo_alternate_outlined,
+                _recommendedPhotoRange(),
+                '추천 사진',
               ),
               SizedBox(width: 10.w),
               _briefMetric(
                 context,
-                _template.isPremium
-                    ? Icons.workspace_premium_outlined
-                    : Icons.lock_open_rounded,
-                _template.isPremium ? 'Premium' : '무료 사용',
-                '이용',
+                Icons.palette_outlined,
+                _moodLabel(),
+                '대표 무드',
               ),
             ],
           ),
           if (tags.isNotEmpty) ...[
-            SizedBox(height: 16.h),
+            SizedBox(height: 14.h),
             Wrap(
               spacing: 8.w,
               runSpacing: 8.h,
@@ -896,14 +912,17 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
-                        color: SnapFitColors.accent.withOpacity(0.10),
+                        color: SnapFitColors.backgroundOf(context),
                         borderRadius: BorderRadius.circular(999.r),
+                        border: Border.all(
+                          color: SnapFitColors.overlayLightOf(context),
+                        ),
                       ),
                       child: Text(
                         tag,
                         style: TextStyle(
-                          color: SnapFitColors.accent,
-                          fontSize: 12.sp,
+                          color: SnapFitColors.textSecondaryOf(context),
+                          fontSize: 11.5.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -961,10 +980,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Widget _buildQuickStartPanel(BuildContext context) {
-    final items = const [
-      (number: '01', title: '무드 선택', desc: '가족, 여행, 웨딩 기록에 맞는 분위기를 먼저 고릅니다.'),
-      (number: '02', title: '표지 확인', desc: '추천 비율과 표지 레이아웃을 그대로 적용해요.'),
-      (number: '03', title: '사진 채우기', desc: '사진과 제목을 더해 나만의 포토북으로 완성해요.'),
+    final reasons = _detailFeatureCards();
+    final items = [
+      reasons[0],
+      reasons[1],
+      (
+        icon: Icons.touch_app_outlined,
+        title: '사진만 넣으면 바로 완성',
+        description:
+            '${_template.pageCount}쪽 흐름과 ${_recommendedPhotoRange()} 사진 분량에 맞춰 시작할 수 있어요.',
+      ),
     ];
     return Container(
       width: double.infinity,
@@ -972,20 +997,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: Theme.of(context).brightness == Brightness.dark
-              ? const [Color(0xFF172033), Color(0xFF251A32)]
-              : const [Color(0xFFFFF7ED), Color(0xFFEFF6FF)],
-        ),
+        color: SnapFitColors.surfaceOf(context),
         border: Border.all(color: SnapFitColors.overlayLightOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '빠른 시작 플로우',
+            '이 템플릿이 좋은 이유',
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
               fontSize: 17.sp,
@@ -994,7 +1013,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           ),
           SizedBox(height: 6.h),
           Text(
-            '템플릿 분위기는 그대로 가져오고, 사진과 제목만 더해 빠르게 시작해요.',
+            '디자인 설명보다 실제로 만들 때 편한 지점을 먼저 정리했어요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
               fontSize: 13.sp,
@@ -1004,7 +1023,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           SizedBox(height: 16.h),
           ...items.map(
             (item) => Padding(
-              padding: EdgeInsets.only(bottom: item.number == '03' ? 0 : 12.h),
+              padding: EdgeInsets.only(
+                bottom: item.title == items.last.title ? 0 : 14.h,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1013,16 +1034,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                     height: 34.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: SnapFitColors.accent,
+                      color: SnapFitColors.backgroundOf(context),
                       shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      item.number,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w900,
+                      border: Border.all(
+                        color: SnapFitColors.overlayLightOf(context),
                       ),
+                    ),
+                    child: Icon(
+                      item.icon,
+                      size: 18.sp,
+                      color: SnapFitColors.accent,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -1040,7 +1061,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ),
                         SizedBox(height: 3.h),
                         Text(
-                          item.desc,
+                          item.description,
                           style: TextStyle(
                             color: SnapFitColors.textMutedOf(context),
                             fontSize: 12.sp,
@@ -1238,8 +1259,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = SnapFitColors.textPrimaryOf(context);
     final secondaryColor = SnapFitColors.textSecondaryOf(context);
-    final featureCards = _detailFeatureCards();
-
     if (_isTemplateHydrating) {
       return Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
@@ -1317,8 +1336,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 60.h),
-                    // Header
+                    SizedBox(height: 44.h),
+                    // Minimal lookbook chrome
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: Row(
@@ -1340,11 +1359,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                             ),
                           ),
                           Text(
-                            '템플릿 미리보기',
+                            '룩북 미리보기',
                             style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w900,
-                              color: titleColor,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w800,
+                              color: SnapFitColors.textMutedOf(context),
                             ),
                           ),
                           GestureDetector(
@@ -1365,11 +1384,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 30.h),
+                    SizedBox(height: 18.h),
 
                     _buildHeroImage(context),
 
-                    SizedBox(height: 40.h),
+                    SizedBox(height: 28.h),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -1378,7 +1397,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           Text(
                             _template.title,
                             style: TextStyle(
-                              fontSize: 26.sp,
+                              fontSize: 24.sp,
                               fontWeight: FontWeight.w900,
                               color: titleColor,
                             ),
@@ -1393,9 +1412,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                   .trim(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 15.sp,
+                                fontSize: 13.5.sp,
                                 color: secondaryColor,
-                                height: 1.5,
+                                height: 1.45,
                               ),
                             ),
                           SizedBox(height: 22.h),
@@ -1408,42 +1427,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
                     _buildQuickStartPanel(context),
 
-                    SizedBox(height: 32.h),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: _buildFeatureCard(
-                                context,
-                                featureCards[0].icon,
-                                featureCards[0].title,
-                                featureCards[0].description,
-                              ),
-                            ),
-                            SizedBox(width: 16.w),
-                            Expanded(
-                              child: _buildFeatureCard(
-                                context,
-                                featureCards[1].icon,
-                                featureCards[1].title,
-                                featureCards[1].description,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 50.h),
+                    SizedBox(height: 34.h),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '페이지 구성 미리보기',
@@ -1453,8 +1442,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                               color: titleColor,
                             ),
                           ),
+                          SizedBox(height: 4.h),
                           Text(
                             '사진만 넣으면 이 흐름으로 완성돼요 · ${_template.pageCount}페이지',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: SnapFitColors.accent,
@@ -1702,83 +1694,124 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   Widget _buildHeroImage(BuildContext context) {
     final coverUrl = _coverPreviewUrl(_template);
     final aspect = _resolveTemplateAspect();
-    final heroHeight = 380.h;
-    final heroWidth = (heroHeight * aspect).clamp(220.w, 320.w);
+    final heroHeight = 420.h;
+    final mainWidth = (heroHeight * aspect).clamp(220.w, 310.w).toDouble();
+    final sideWidth = (mainWidth * 0.72).clamp(150.w, 220.w).toDouble();
+    final sideHeight = (sideWidth / aspect).clamp(190.h, 320.h).toDouble();
+
+    Widget pageCard({
+      required int index,
+      required double width,
+      required double height,
+      required double radius,
+    }) {
+      final layers = index < _parsedPages.length ? _parsedPages[index] : null;
+      final previewUrl = index < _template.previewImages.length
+          ? _template.previewImages[index]
+          : coverUrl;
+      return TemplatePreviewFrame(
+        borderRadius: radius,
+        padding: EdgeInsets.all(5.w),
+        child: _buildRenderedTemplateSurface(
+          layers: layers,
+          previewUrl: previewUrl,
+          width: width,
+          height: height,
+          loading: () => const TemplatePaperPlaceholder(),
+          error: () => const TemplatePaperPlaceholder(),
+        ),
+      );
+    }
 
     return SnapFitFadeIn(
-      child: Center(
-        child: SizedBox(
-          width: heroWidth,
-          height: heroHeight,
-          child: TemplatePreviewFrame(
-            borderRadius: 28,
-            padding: EdgeInsets.all(6.w),
-            child: _buildRenderedTemplateSurface(
-              layers: _parsedPages.isNotEmpty ? _parsedPages.first : null,
-              previewUrl: coverUrl,
-              width: heroWidth,
-              height: heroHeight,
-              loading: () => const TemplatePaperPlaceholder(),
-              error: () => const TemplatePaperPlaceholder(),
+      child: SizedBox(
+        width: double.infinity,
+        height: heroHeight + 18.h,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: 28.w,
+              top: 46.h,
+              child: Opacity(
+                opacity: 0.78,
+                child: Transform.rotate(
+                  angle: -0.075,
+                  child: SizedBox(
+                    width: sideWidth,
+                    height: sideHeight,
+                    child: pageCard(
+                      index: 1,
+                      width: sideWidth,
+                      height: sideHeight,
+                      radius: 24,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              right: 24.w,
+              bottom: 22.h,
+              child: Opacity(
+                opacity: 0.72,
+                child: Transform.rotate(
+                  angle: 0.065,
+                  child: SizedBox(
+                    width: sideWidth * 0.92,
+                    height: sideHeight * 0.92,
+                    child: pageCard(
+                      index: 2,
+                      width: sideWidth * 0.92,
+                      height: sideHeight * 0.92,
+                      radius: 22,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              child: SnapFitPressable(
+                onTap: () => _openFullScreenView(0),
+                pressedScale: 0.985,
+                borderRadius: BorderRadius.circular(30.r),
+                child: SizedBox(
+                  width: mainWidth,
+                  height: heroHeight,
+                  child: pageCard(
+                    index: 0,
+                    width: mainWidth,
+                    height: heroHeight,
+                    radius: 30,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.surfaceOf(context).withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(999.r),
+                  border: Border.all(
+                    color: SnapFitColors.overlayLightOf(context),
+                  ),
+                ),
+                child: Text(
+                  '탭해서 전체 페이지 보기',
+                  style: TextStyle(
+                    color: SnapFitColors.textMutedOf(context),
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String desc,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? SnapFitColors.accent.withOpacity(0.16)
-                  : SnapFitColors.accentLight,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: SnapFitColors.accent, size: 24.sp),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.bold,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            desc,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: SnapFitColors.textSecondaryOf(context),
-              height: 1.4,
-            ),
-          ),
-        ],
       ),
     );
   }
