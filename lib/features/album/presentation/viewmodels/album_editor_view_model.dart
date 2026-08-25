@@ -23,7 +23,6 @@ import 'album_view_model.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../service/album_persistence_service.dart';
 import '../../service/album_editor_service.dart'; // Restore import
-import '../utils/cover_backdrop_tone.dart';
 
 part 'album_editor_view_model.freezed.dart';
 part 'album_editor_view_model.g.dart';
@@ -495,7 +494,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     );
     _currentPageIndex = 0;
     _emit();
-    unawaited(_syncPageBackgroundColorFromImageTone(0, normalized));
   }
 
   /// 사진 선택 바텀시트 등을 열기 전에 갤러리 데이터가 비어있으면 1회 로딩
@@ -1161,15 +1159,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (_pages.isEmpty) return;
     _recordUndo();
     final page = _pages[_currentPageIndex];
-    // AlbumPage.copyWith는 backgroundColor에 null을 넘기면 기존 값을 유지하므로
-    // 여기서는 명시적으로 새 인스턴스를 만들어 backgroundColor를 완전히 제거한다.
-    _pages[_currentPageIndex] = AlbumPage(
-      id: page.id,
-      layers: page.layers,
-      pageIndex: page.pageIndex,
-      isCover: page.isCover,
-      backgroundColor: null,
-    );
+    _pages[_currentPageIndex] = page.copyWith(backgroundColor: null);
     _emit();
   }
 
@@ -1322,9 +1312,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           page.backgroundColor,
     );
     _emit();
-    unawaited(
-      _syncPageBackgroundColorFromImageTone(_currentPageIndex, normalized),
-    );
   }
 
   List<LayerModel> _scaleTemplateLayers(
@@ -1449,23 +1436,6 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     if (hex.length != 6 && hex.length != 8) return null;
     final value = int.tryParse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
     return value == null ? null : Color(value);
-  }
-
-  Future<void> _syncPageBackgroundColorFromImageTone(
-    int pageIndex,
-    List<LayerModel> layers,
-  ) async {
-    final imageUrl = resolveBackdropImageUrl(layers);
-    if (imageUrl == null || imageUrl.isEmpty) return;
-    final tone = await extractBackdropToneFromImageUrl(imageUrl);
-    if (tone == null) return;
-    if (pageIndex < 0 || pageIndex >= _pages.length) return;
-
-    final page = _pages[pageIndex];
-    final nextColor = tone.toARGB32();
-    if (page.backgroundColor == nextColor) return;
-    _pages[pageIndex] = page.copyWith(backgroundColor: nextColor);
-    _emit();
   }
 
   List<LayerModel> _normalizeLayersForEditing(

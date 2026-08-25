@@ -6,7 +6,6 @@ import '../../../../../shared/widgets/spine_painter.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/layer.dart';
-import '../../utils/cover_backdrop_tone.dart';
 
 typedef BuildImageLayer = Widget Function(LayerModel layer);
 typedef BuildTextLayer = Widget Function(LayerModel layer);
@@ -50,7 +49,6 @@ class CoverLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCustomBackgroundColor = backgroundColor != null;
-    final backgroundImageUrl = resolveBackdropImageUrl(layers);
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -98,7 +96,6 @@ class CoverLayout extends StatelessWidget {
                                       leftSpine: leftSpine,
                                       theme: theme,
                                       backgroundColor: backgroundColor,
-                                      backgroundImageUrl: backgroundImageUrl,
                                     ),
                                     if (showEmptyGuide && layers.isEmpty)
                                       const _CoverEmptyGuide(),
@@ -338,13 +335,11 @@ class _CoverBackground extends StatelessWidget {
   final double leftSpine;
   final CoverTheme theme;
   final Color? backgroundColor;
-  final String? backgroundImageUrl;
 
   const _CoverBackground({
     required this.leftSpine,
     required this.theme,
     this.backgroundColor,
-    this.backgroundImageUrl,
   });
 
   @override
@@ -371,16 +366,6 @@ class _CoverBackground extends StatelessWidget {
                 : null,
           ),
         ),
-        if (backgroundImageUrl != null && backgroundImageUrl!.isNotEmpty)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: _BackdropSolidTone(
-                imageUrl: backgroundImageUrl!,
-                fallbackColor: backgroundColor,
-              ),
-            ),
-          ),
-
         // Spine 영역 어두운 그림자 (공통)
         if (backgroundColor == null)
           IgnorePointer(
@@ -403,61 +388,6 @@ class _CoverBackground extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _BackdropSolidTone extends StatefulWidget {
-  final String imageUrl;
-  final Color? fallbackColor;
-
-  const _BackdropSolidTone({
-    required this.imageUrl,
-    required this.fallbackColor,
-  });
-
-  @override
-  State<_BackdropSolidTone> createState() => _BackdropSolidToneState();
-}
-
-class _BackdropSolidToneState extends State<_BackdropSolidTone> {
-  static final Map<String, Future<Color?>> _toneFutures =
-      <String, Future<Color?>>{};
-
-  late Future<Color?> _toneFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _toneFuture = _resolveTone(widget.imageUrl);
-  }
-
-  @override
-  void didUpdateWidget(covariant _BackdropSolidTone oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageUrl != widget.imageUrl) {
-      _toneFuture = _resolveTone(widget.imageUrl);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Color?>(
-      future: _toneFuture,
-      builder: (context, snapshot) {
-        final resolved = snapshot.data ?? widget.fallbackColor;
-        if (resolved == null) {
-          return const SizedBox.shrink();
-        }
-        return DecoratedBox(decoration: BoxDecoration(color: resolved));
-      },
-    );
-  }
-
-  Future<Color?> _resolveTone(String imageUrl) {
-    return _toneFutures.putIfAbsent(
-      imageUrl,
-      () => extractBackdropToneFromImageUrl(imageUrl),
     );
   }
 }

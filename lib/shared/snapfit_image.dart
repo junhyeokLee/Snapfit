@@ -1,11 +1,12 @@
 import 'dart:collection';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-/// gs:// 또는 https:// URL을 받아 Firebase Storage에서 표시용 다운로드 URL로 변환해 주는 공용 위젯.
-/// - 같은 gs://에 대해서는 앱이 살아 있는 동안 한 번만 getDownloadURL()을 호출하도록 Future를 캐싱한다.
+import '../core/utils/storage_url_resolver.dart';
+
+/// gs://, supabase:// 또는 https:// URL을 표시용 다운로드 URL로 변환해 주는 공용 위젯.
+/// - 같은 storage URI에 대해서는 앱이 살아 있는 동안 반복 resolver 호출을 줄이도록 Future를 캐싱한다.
 class SnapfitImage extends StatelessWidget {
   final String urlOrGs;
   final BoxFit fit;
@@ -69,14 +70,9 @@ class SnapfitImage extends StatelessWidget {
     }
 
     final future = () async {
-      if (urlOrGs.startsWith('gs://')) {
-        final ref = FirebaseStorage.instance.refFromURL(urlOrGs);
-        final url = await ref.getDownloadURL();
-        _touchResolved(urlOrGs, url);
-        return url;
-      }
-      _touchResolved(urlOrGs, urlOrGs);
-      return urlOrGs;
+      final url = await resolveStorageImageUrl(urlOrGs);
+      _touchResolved(urlOrGs, url);
+      return url;
     }();
 
     _touchInFlight(urlOrGs, future);
@@ -119,7 +115,8 @@ class SnapfitImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!urlOrGs.startsWith('gs://')) {
+    if (!urlOrGs.startsWith('gs://') &&
+        parseSupabaseStorageUri(urlOrGs) == null) {
       return _buildCachedNetwork(urlOrGs);
     }
 

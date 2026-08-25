@@ -1,5 +1,7 @@
 import 'layer.dart';
 
+const Object _unsetBackgroundColor = Object();
+
 class AlbumPage {
   final String id; // page 고유 ID (로컬 편집용)
   final List<LayerModel> layers; // 이미지/텍스트 레이어들
@@ -20,14 +22,16 @@ class AlbumPage {
     List<LayerModel>? layers,
     int? pageIndex,
     bool? isCover,
-    int? backgroundColor,
+    Object? backgroundColor = _unsetBackgroundColor,
   }) {
     return AlbumPage(
       id: id ?? this.id,
       layers: layers ?? this.layers,
       pageIndex: pageIndex ?? this.pageIndex,
       isCover: isCover ?? this.isCover,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
+      backgroundColor: identical(backgroundColor, _unsetBackgroundColor)
+          ? this.backgroundColor
+          : backgroundColor as int?,
     );
   }
 }

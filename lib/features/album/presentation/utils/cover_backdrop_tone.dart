@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
 import '../../../../core/cache/snapfit_cache_manager.dart';
+import '../../../../core/utils/storage_url_resolver.dart';
 import '../../domain/entities/layer.dart';
 
 String? resolveBackdropImageUrl(List<LayerModel> layers) {
@@ -37,9 +37,7 @@ Future<Color?> extractBackdropToneFromImageUrl(String imageUrl) async {
 }
 
 Future<String> resolveImageUrl(String imageUrl) async {
-  if (!imageUrl.startsWith('gs://')) return imageUrl;
-  final ref = FirebaseStorage.instance.refFromURL(imageUrl);
-  return ref.getDownloadURL();
+  return resolveStorageImageUrl(imageUrl);
 }
 
 Color? computeBackdropTone(Uint8List bytes) {
