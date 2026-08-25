@@ -211,16 +211,23 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     VoidCallback onTap, {
     Color? color,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-        child: Icon(
-          icon,
-          size: 20.sp,
-          // 편집 툴바 아이콘은 라이트/다크 모드 모두 흰 배경 위에서
-          // 동일하게 보이도록 항상 검은색으로 통일한다.
-          color: color ?? Colors.black,
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        label: label,
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            child: Icon(
+              icon,
+              size: 20.sp,
+              // 편집 툴바 아이콘은 라이트/다크 모드 모두 흰 배경 위에서
+              // 동일하게 보이도록 항상 검은색으로 통일한다.
+              color: color ?? Colors.black,
+            ),
+          ),
         ),
       ),
     );

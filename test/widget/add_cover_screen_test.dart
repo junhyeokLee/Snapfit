@@ -233,6 +233,16 @@ void main() {
       expect(find.byIcon(Icons.opacity), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+      expect(find.byTooltip('사진변경'), findsOneWidget);
+      expect(find.byTooltip('사진위치'), findsOneWidget);
+      expect(find.byTooltip('불투명도'), findsOneWidget);
+      expect(find.byTooltip('꾸미기'), findsOneWidget);
+      expect(find.byTooltip('삭제'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('사진변경')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('사진위치')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('불투명도')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('꾸미기')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('삭제')), findsOneWidget);
       final actionRail = find.descendant(
         of: find.byType(LayerActionPanel),
         matching: find.byType(SingleChildScrollView),
