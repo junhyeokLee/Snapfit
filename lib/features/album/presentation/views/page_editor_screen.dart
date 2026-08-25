@@ -757,6 +757,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       ),
                     ),
 
+                    if (_currentMode != EditorMode.none)
+                      Padding(
+                        key: const Key('editorAtelierPanel'),
+                        padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10.h),
+                        child: _EditorToolPanelReveal(
+                          child: _buildInlineToolPanel(
+                            context,
+                            _currentMode,
+                            layers,
+                          ),
+                        ),
+                      ),
+
                     // Bottom Menu (고정)
                     Padding(
                       padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
@@ -1083,6 +1096,42 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
   }
 
+  Widget _buildInlineToolPanel(
+    BuildContext context,
+    EditorMode mode,
+    List<LayerModel> layers,
+  ) {
+    final title = switch (mode) {
+      EditorMode.layout => '레이아웃',
+      EditorMode.template => '템플릿',
+      EditorMode.layer => '레이어',
+      EditorMode.sticker => '스티커',
+      EditorMode.backgroundColor => '배경',
+      _ => '',
+    };
+    final panel = switch (mode) {
+      EditorMode.sticker => const DecoratePanel(
+        mode: DecorateSheetMode.sticker,
+      ),
+      EditorMode.backgroundColor => const DecoratePanel(
+        mode: DecorateSheetMode.backgroundColor,
+      ),
+      EditorMode.layer => LayerManagerPanel(
+        layers: layers,
+        interaction: _interaction,
+      ),
+      EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
+      EditorMode.template => const DesignTemplatePanel(),
+      _ => const SizedBox.shrink(),
+    };
+
+    return _InlineEditorAtelierPanel(
+      title: title,
+      onClose: () => setState(() => _currentMode = EditorMode.none),
+      child: panel,
+    );
+  }
+
   void _handleModeChange(EditorMode mode, List<LayerModel> layers) {
     if (_showEditorHint) {
       setState(() => _showEditorHint = false);
@@ -1093,7 +1142,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     if (mode == EditorMode.text) {
-      _currentMode = EditorMode.none;
+      setState(() => _currentMode = EditorMode.none);
       final vm = ref.read(albumEditorViewModelProvider.notifier);
       // Legacy logic: responsive size based on canvas
       final effectiveSize = _canvasSize == Size.zero
@@ -1106,29 +1155,122 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     setState(() => _currentMode = mode);
+  }
+}
 
-    // Bottom Sheet 호출
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        if (mode == EditorMode.sticker) {
-          return const DecoratePanel(mode: DecorateSheetMode.sticker);
-        } else if (mode == EditorMode.backgroundColor) {
-          return const DecoratePanel(mode: DecorateSheetMode.backgroundColor);
-        } else if (mode == EditorMode.layer) {
-          return LayerManagerPanel(layers: layers, interaction: _interaction);
-        } else if (mode == EditorMode.layout) {
-          return const TemplateSelectionPanel(title: '레이아웃');
-        } else if (mode == EditorMode.template) {
-          return const DesignTemplatePanel();
-        }
-        return const SizedBox.shrink();
+class _EditorToolPanelReveal extends StatelessWidget {
+  const _EditorToolPanelReveal({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 300),
+      curve: SnapFitMotion.entrance,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 24 * (1 - value)),
+            child: Transform.scale(
+              scale: 0.985 + (0.015 * value),
+              alignment: Alignment.bottomCenter,
+              child: child,
+            ),
+          ),
+        );
       },
-    ).then((_) {
-      if (mounted) setState(() => _currentMode = EditorMode.none);
-    });
+      child: child,
+    );
+  }
+}
+
+class _InlineEditorAtelierPanel extends StatelessWidget {
+  const _InlineEditorAtelierPanel({
+    required this.title,
+    required this.onClose,
+    required this.child,
+  });
+
+  final String title;
+  final VoidCallback onClose;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        constraints: BoxConstraints(maxHeight: 0.42.sh, minHeight: 220.h),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xF21A1E26) : const Color(0xF7FFFCF7),
+          borderRadius: BorderRadius.circular(28.r),
+          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.32 : 0.12),
+              blurRadius: 26,
+              offset: const Offset(0, -10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28.r),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 8.h),
+              Container(
+                width: 38.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: SnapFitColors.textMutedOf(context).withOpacity(0.32),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(18.w, 8.h, 10.w, 6.h),
+                child: Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onClose,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: SnapFitColors.textSecondaryOf(context),
+                        size: 20.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: SnapFitMotion.fast,
+                  switchInCurve: SnapFitMotion.entrance,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: KeyedSubtree(key: ValueKey(title), child: child),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -273,6 +273,27 @@ void main() {
   );
 
   testWidgets(
+    'editor tool opens inline atelier panel without modal route jump',
+    (tester) async {
+      await _pumpEditor(tester);
+
+      await tester.tap(find.text('레이어'));
+      await tester.pump(const Duration(milliseconds: 180));
+
+      expect(find.byKey(const Key('editorAtelierPanel')), findsOneWidget);
+      expect(find.byType(LayerManagerPanel), findsOneWidget);
+      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(find.byType(BottomSheet), findsNothing);
+
+      final panelBottom = tester
+          .getBottomLeft(find.byKey(const Key('editorAtelierPanel')))
+          .dy;
+      final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
+      expect(panelBottom, lessThanOrEqualTo(dockTop + 1));
+    },
+  );
+
+  testWidgets(
     'page editor full workspace golden captures canvas dock and layer sheet',
     (tester) async {
       await _pumpEditor(tester);
