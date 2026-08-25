@@ -68,17 +68,30 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildCockpitHero(context),
+          SizedBox(height: 16.h),
           if (widget.templateTitle != null &&
               widget.templateTitle!.trim().isNotEmpty) ...[
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(14.r),
+                color: SnapFitColors.isDark(context)
+                    ? const Color(0xFF171B24)
+                    : const Color(0xFFFFFBF6),
+                borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: SnapFitColors.overlayLightOf(context),
+                  color: SnapFitColors.accent.withOpacity(0.16),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(
+                      SnapFitColors.isDark(context) ? 0.22 : 0.07,
+                    ),
+                    blurRadius: 24,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -108,7 +121,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '선택한 템플릿',
+                          '선택한 템플릿 · 룩북 프리셋',
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w700,
@@ -136,37 +149,39 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           ],
           // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
           Text(
-            '어떤 추억을\n책으로 만들까요?',
+            '추억을 고르면\n포토북 무드 완성',
             style: TextStyle(
-              fontSize: 23.sp,
+              fontSize: 30,
               fontWeight: FontWeight.w900,
               color: SnapFitColors.textPrimaryOf(context),
             ),
           ),
           SizedBox(height: 10.h),
           Text(
-            '제목은 나중에 바꿀 수 있어요. 먼저 사진이 담길 책의 분위기와 분량을 가볍게 정해보세요.',
+            '표지 비율, 분량, 템플릿 흐름은 그대로 유지하면서 더 빠르고 고급스럽게 시작해요.',
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 13,
               height: 1.42,
               fontWeight: FontWeight.w600,
               color: SnapFitColors.textSecondaryOf(context),
             ),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 18.h),
           Container(
             padding: EdgeInsets.all(18.w),
             decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(24.r),
+              color: SnapFitColors.isDark(context)
+                  ? const Color(0xFF151820)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(30.r),
               border: Border.all(color: SnapFitColors.overlayLightOf(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(
-                    SnapFitColors.isDark(context) ? 0.20 : 0.05,
+                    SnapFitColors.isDark(context) ? 0.30 : 0.08,
                   ),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  blurRadius: 32,
+                  offset: const Offset(0, 18),
                 ),
               ],
             ),
@@ -241,15 +256,19 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 ),
                 SizedBox(height: 6.h),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '언제든 다시 바꿀 수 있어요.',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: SnapFitColors.textMutedOf(context),
+                    Expanded(
+                      child: Text(
+                        '언제든 다시 바꿀 수 있어요.',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: SnapFitColors.textMutedOf(context),
+                        ),
                       ),
                     ),
+                    SizedBox(width: 8.w),
                     ValueListenableBuilder<TextEditingValue>(
                       valueListenable: _titleController,
                       builder: (context, value, _) {
@@ -264,7 +283,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     ),
                   ],
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 22.h),
                 // 사이즈 선택
                 Text(
                   '책 크기 선택',
@@ -302,6 +321,91 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 icon: Icons.arrow_forward,
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCockpitHero(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF10141D), Color(0xFF233142), Color(0xFF0E1D22)]
+              : const [Color(0xFFFFF8EF), Color(0xFFEAFBFD), Color(0xFFF4EDFF)],
+        ),
+        borderRadius: BorderRadius.circular(30.r),
+        border: Border.all(color: SnapFitColors.accent.withOpacity(0.14)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.32 : 0.08),
+            blurRadius: 30,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.accent.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Text(
+                  'CREATION COCKPIT',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.7,
+                    color: SnapFitColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            '사진첩을 여는 순간까지\n흐름을 끊지 않게',
+            style: TextStyle(
+              fontSize: 20,
+              height: 1.12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.55,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '템플릿·레이어·사진·레이아웃 기능은 유지하고, 시작 화면만 더 잡지 같은 제작 콘솔로 바꿨어요.',
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.34,
+              fontWeight: FontWeight.w700,
+              color: SnapFitColors.textSecondaryOf(context),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: const [
+              _CockpitPill(label: '3분 완성 루트'),
+              _CockpitPill(label: 'AI 추천 구성'),
+              _CockpitPill(label: '기능 유지'),
+            ],
           ),
         ],
       ),
@@ -553,6 +657,48 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   }
 
   int mathMax(int a, int b) => a > b ? a : b;
+}
+
+class _CockpitPill extends StatelessWidget {
+  final String label;
+
+  const _CockpitPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(
+          context,
+        ).withOpacity(SnapFitColors.isDark(context) ? 0.72 : 0.86),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: SnapFitColors.accent,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// 사이즈 카드 내부에 사용하는 비율 미리보기 프레임
