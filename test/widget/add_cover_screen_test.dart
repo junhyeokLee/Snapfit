@@ -3,8 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
+import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/views/add_cover_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/layer_action_panel.dart';
 
 Widget _wrap(Widget child) {
   return ProviderScope(
@@ -91,6 +93,57 @@ void main() {
           );
 
       expect(layerPanelBottomY, lessThanOrEqualTo(dockTop - 8));
+    },
+  );
+
+  testWidgets(
+    'create flow selected layer panel render box clears measured dock',
+    (tester) async {
+      const viewport = Size(390, 760);
+      const safeBottom = 34.0;
+      const layerId = 'selected-layer';
+      await tester.binding.setSurfaceSize(viewport);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          MediaQuery(
+            data: const MediaQueryData(
+              size: viewport,
+              padding: EdgeInsets.only(bottom: safeBottom),
+            ),
+            child: AddCoverScreen(
+              isFromCreateFlow: true,
+              initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
+              albumTitle: '제주 여름 기록',
+              targetPages: 24,
+              initialTemplateCoverLayers: [
+                LayerModel(
+                  id: layerId,
+                  type: LayerType.text,
+                  position: const Offset(120, 120),
+                  width: 180,
+                  height: 52,
+                  text: '표지 제목',
+                ),
+              ],
+              debugInitialSelectedLayerId: layerId,
+              onAlbumCreated: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LayerActionPanel), findsOneWidget);
+      final dockTop = tester
+          .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))
+          .dy;
+      final panelBottom = tester
+          .getBottomLeft(find.byType(LayerActionPanel))
+          .dy;
+
+      expect(panelBottom, lessThanOrEqualTo(dockTop - 8));
     },
   );
 

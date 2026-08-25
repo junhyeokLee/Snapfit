@@ -72,6 +72,10 @@ class AddCoverScreen extends ConsumerStatefulWidget {
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
 
+  /// 테스트에서 실제 레이어 선택 상태를 안정적으로 재현하기 위한 초기 선택 ID.
+  @visibleForTesting
+  final String? debugInitialSelectedLayerId;
+
   /// 플로우 AppBar의 '완료' 버튼이 눌렸을 때 호출할 액션 등록 (플로우에서만 사용)
   final void Function(VoidCallback)? onRegisterCompleteAction;
 
@@ -85,6 +89,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.targetPages,
     this.initialTemplateCoverLayers,
     this.onAlbumCreated,
+    this.debugInitialSelectedLayerId,
     this.onRegisterCompleteAction,
   });
 
@@ -264,6 +269,16 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
   Widget build(BuildContext context) {
     final asyncState = ref.watch(albumEditorViewModelProvider);
     final layers = asyncState.value?.layers ?? [];
+
+    final debugSelectedId = widget.debugInitialSelectedLayerId;
+    if (debugSelectedId != null &&
+        layers.any((layer) => layer.id == debugSelectedId) &&
+        _interaction.selectedLayerId != debugSelectedId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _interaction.setSelectedLayer(debugSelectedId);
+      });
+    }
 
     if (!_templateApplyQueued &&
         widget.isFromCreateFlow &&
