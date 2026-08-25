@@ -22,6 +22,10 @@ void main() {
       coverLayerActionPanelBottom(isCreateFlow: true),
       greaterThanOrEqualTo(200),
     );
+    expect(
+      coverLayerActionPanelBottom(isCreateFlow: true, safeAreaBottom: 34),
+      greaterThanOrEqualTo(238),
+    );
     expect(coverLayerActionPanelBottom(isCreateFlow: false), 100);
   });
 
