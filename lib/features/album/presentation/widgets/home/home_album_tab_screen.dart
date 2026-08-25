@@ -9,7 +9,6 @@ import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../domain/entities/album.dart';
 import '../../utils/home_album_section_builder.dart';
 import '../../views/album_category_screen.dart';
-import '../../views/album_create_flow_screen.dart';
 import 'home_album_actions.dart';
 import 'home_album_cover_thumbnail.dart';
 import 'home_album_helpers.dart';
@@ -50,158 +49,52 @@ class HomeAlbumTabScreen extends ConsumerWidget {
         physics: platformScrollPhysics(alwaysScrollable: true),
         slivers: [
           SliverToBoxAdapter(
-            child: _AlbumStudioHeader(totalCount: tabData.allAlbums.length),
-          ),
-          SliverToBoxAdapter(
             child: _AlbumSegmentTabs(
               selectedIndex: albumTabIndex,
               labels: const ['전체', '작업 중', '완성본', '즐겨찾기', '함께 만든'],
               onChanged: onAlbumTabChanged,
             ),
           ),
-          SliverToBoxAdapter(
-            child: _AlbumSectionHeader(
-              selectedIndex: albumTabIndex,
-              count: tabData.tabAlbums.length,
-              onMore: () {
-                final category = switch (albumTabIndex) {
-                  4 => AlbumCategory.shared,
-                  _ => AlbumCategory.recent,
-                };
-                final initialTabIndex = switch (albumTabIndex) {
-                  1 => 0,
-                  2 => 1,
-                  3 => 2,
-                  _ => 0,
-                };
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AlbumCategoryScreen(
-                      category: category,
-                      initialAlbums: albumTabIndex == 4
-                          ? tabData.tabAlbums
-                          : tabData.allAlbums,
-                      currentUserId: currentUserId,
-                      initialTabIndex: initialTabIndex,
+          if (tabData.tabAlbums.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _AlbumSectionHeader(
+                selectedIndex: albumTabIndex,
+                count: tabData.tabAlbums.length,
+                onMore: () {
+                  final category = switch (albumTabIndex) {
+                    4 => AlbumCategory.shared,
+                    _ => AlbumCategory.recent,
+                  };
+                  final initialTabIndex = switch (albumTabIndex) {
+                    1 => 0,
+                    2 => 1,
+                    3 => 2,
+                    _ => 0,
+                  };
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AlbumCategoryScreen(
+                        category: category,
+                        initialAlbums: albumTabIndex == 4
+                            ? tabData.tabAlbums
+                            : tabData.allAlbums,
+                        currentUserId: currentUserId,
+                        initialTabIndex: initialTabIndex,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
           _HomeAlbumGridSliver(
             selectedIndex: albumTabIndex,
             albums: tabData.tabAlbums,
             favoriteAlbumIds: favoriteAlbumIds,
             onToggleFavorite: onToggleFavorite,
-            onCreate: () async {
-              final created = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AlbumCreateFlowScreen(),
-                ),
-              );
-              if (created == true) await onRefresh();
-            },
           ),
           SliverToBoxAdapter(child: SizedBox(height: 90.h)),
         ],
-      ),
-    );
-  }
-}
-
-class _AlbumStudioHeader extends StatelessWidget {
-  const _AlbumStudioHeader({required this.totalCount});
-
-  final int totalCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    return SnapFitFadeIn(
-      child: Container(
-        margin: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
-        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28.r),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? const [Color(0xFF18212D), Color(0xFF11151D)]
-                : const [Color(0xFFFFF8EC), Color(0xFFEAFBFD)],
-          ),
-          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.26 : 0.07),
-              blurRadius: 26,
-              offset: const Offset(0, 14),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MY PHOTOBOOKS',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      letterSpacing: 0.6,
-                      color: SnapFitColors.accent,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  SizedBox(height: 5.h),
-                  Text(
-                    '추억이 쌓이는 서재',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      height: 1.08,
-                      color: SnapFitColors.textPrimaryOf(context),
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  SizedBox(height: 7.h),
-                  Text(
-                    '만들고 있는 앨범과 완성한 포토북을 한곳에서 이어서 볼 수 있어요.',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      height: 1.42,
-                      color: SnapFitColors.textSecondaryOf(context),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: (isDark ? Colors.white : SnapFitColors.deepCharcoal)
-                    .withOpacity(isDark ? 0.08 : 0.06),
-                borderRadius: BorderRadius.circular(999.r),
-                border: Border.all(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
-              ),
-              child: Text(
-                '${totalCount}권 보관 중',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -344,40 +237,18 @@ class _AlbumSectionHeader extends StatelessWidget {
 }
 
 class _EmptyAlbumShelf extends StatelessWidget {
-  const _EmptyAlbumShelf({required this.selectedIndex, required this.onCreate});
+  const _EmptyAlbumShelf({required this.selectedIndex});
 
   final int selectedIndex;
-  final VoidCallback onCreate;
   static bool _logged = false;
 
-  ({String title, String body, String cta}) get _copy =>
-      switch (selectedIndex) {
-        1 => (
-          title: '이어 만들 앨범이 없어요',
-          body: '새 앨범을 시작하면 여기에서 바로 이어서 편집할 수 있어요.',
-          cta: '포토북 시작하기',
-        ),
-        2 => (
-          title: '아직 완성된 포토북이 없어요',
-          body: '편집을 마친 앨범은 완성본 서재에 따로 모아드릴게요.',
-          cta: '앨범 만들기',
-        ),
-        3 => (
-          title: '자주 보고 싶은 앨범을 별표해보세요',
-          body: '가족, 여행, 기념일 앨범을 빠르게 꺼내볼 수 있어요.',
-          cta: '앨범 둘러보기',
-        ),
-        4 => (
-          title: '함께 만든 앨범이 아직 없어요',
-          body: '초대받은 앨범이나 공동 편집 앨범이 생기면 여기에 모여요.',
-          cta: '새 포토북 만들기',
-        ),
-        _ => (
-          title: '첫 번째 포토북을 꽂아볼까요?',
-          body: '사진 몇 장이면 가족, 여행, 일상의 기억이 한 권의 앨범처럼 정리돼요.',
-          cta: '새 포토북 만들기',
-        ),
-      };
+  ({String title, String body}) get _copy => switch (selectedIndex) {
+    1 => (title: '이어 만들 앨범 없음', body: '진행 중인 앨범은 여기에 정리돼요.'),
+    2 => (title: '완성본 없음', body: '완성한 앨범은 이곳에 모여요.'),
+    3 => (title: '즐겨찾기 없음', body: '자주 보는 앨범에 별표를 눌러보세요.'),
+    4 => (title: '공유 앨범 없음', body: '함께 만든 앨범은 이곳에 모여요.'),
+    _ => (title: '앨범 없음', body: '오른쪽 아래 + 버튼으로 새 앨범을 시작하세요.'),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -428,33 +299,6 @@ class _EmptyAlbumShelf extends StatelessWidget {
                 height: 1.45,
                 fontWeight: FontWeight.w600,
                 color: SnapFitColors.textSecondaryOf(context),
-              ),
-            ),
-            SizedBox(height: 18.h),
-            SnapFitPressable(
-              onTap: onCreate,
-              pressedScale: 0.985,
-              borderRadius: BorderRadius.circular(18.r),
-              child: Container(
-                height: 54.h,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18.r),
-                  gradient: const LinearGradient(
-                    colors: [
-                      SnapFitColors.primaryGradientStart,
-                      SnapFitColors.primaryGradientEnd,
-                    ],
-                  ),
-                ),
-                child: Text(
-                  copy.cta,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
               ),
             ),
           ],
@@ -541,23 +385,18 @@ class _HomeAlbumGridSliver extends ConsumerWidget {
     required this.albums,
     required this.favoriteAlbumIds,
     required this.onToggleFavorite,
-    required this.onCreate,
   });
 
   final int selectedIndex;
   final List<Album> albums;
   final Set<int> favoriteAlbumIds;
   final ValueChanged<int> onToggleFavorite;
-  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (albums.isEmpty) {
       return SliverToBoxAdapter(
-        child: _EmptyAlbumShelf(
-          selectedIndex: selectedIndex,
-          onCreate: onCreate,
-        ),
+        child: _EmptyAlbumShelf(selectedIndex: selectedIndex),
       );
     }
 

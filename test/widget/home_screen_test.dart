@@ -172,4 +172,44 @@ void main() {
 
     expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
   });
+
+  testWidgets('앨범 탭은 올드한 서재 카피와 대형 생성 CTA 없이 앨범/필터만 보여준다', (
+    WidgetTester tester,
+  ) async {
+    await _setLargeSurface(tester);
+    stubFetchMyAlbums(mockRepo, []);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          authViewModelProvider.overrideWith(
+            () => FakeAuthViewModel(
+              const UserInfo(id: '1', name: 'User', provider: 'kakao'),
+            ),
+          ),
+          templateListProvider.overrideWith((ref) async => const []),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const HomeScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('앨범'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('추억이 쌓이는 서재'), findsNothing);
+    expect(find.textContaining('첫 번째 포토북을 꽂아볼까요'), findsNothing);
+    expect(find.text('새 포토북 만들기'), findsNothing);
+    expect(find.text('포토북 시작하기'), findsNothing);
+    expect(find.text('앨범 만들기'), findsNothing);
+    expect(find.text('전체'), findsOneWidget);
+    expect(find.byKey(const Key('homeCreateAlbumFab')), findsOneWidget);
+  });
 }
