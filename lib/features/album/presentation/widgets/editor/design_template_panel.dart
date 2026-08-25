@@ -15,7 +15,9 @@ import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../domain/entities/layer.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
-  const DesignTemplatePanel({super.key});
+  const DesignTemplatePanel({super.key, this.closeOnApply = true});
+
+  final bool closeOnApply;
 
   @override
   ConsumerState<DesignTemplatePanel> createState() =>
@@ -181,26 +183,28 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: isCatalogLoading
                     ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 24.w,
-                              height: 24.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2.2,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 24.w,
+                                height: 24.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 10.h),
-                            Text(
-                              '어울리는 템플릿을 고르는 중이에요…',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w600,
-                                color: SnapFitColors.textSecondaryOf(context),
+                              SizedBox(height: 10.h),
+                              Text(
+                                '어울리는 템플릿을 고르는 중이에요…',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: SnapFitColors.textSecondaryOf(context),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       )
                     : GridView.builder(
@@ -227,7 +231,9 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                                 template,
                                 canvasSize,
                               );
-                              Navigator.of(context).pop();
+                              if (widget.closeOnApply) {
+                                Navigator.of(context).pop();
+                              }
                             },
                           );
                         },

@@ -1121,7 +1121,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         interaction: _interaction,
       ),
       EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
-      EditorMode.template => const DesignTemplatePanel(),
+      EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
       _ => const SizedBox.shrink(),
     };
 
@@ -1204,7 +1204,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        constraints: BoxConstraints(maxHeight: 0.42.sh, minHeight: 220.h),
+        height: 0.48.sh,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xF21A1E26) : const Color(0xF7FFFCF7),
           borderRadius: BorderRadius.circular(28.r),
@@ -1219,51 +1219,37 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28.r),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              SizedBox(height: 8.h),
-              Container(
-                width: 38.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textMutedOf(context).withOpacity(0.32),
-                  borderRadius: BorderRadius.circular(999.r),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(18.w, 8.h, 10.w, 6.h),
-                child: Row(
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      onPressed: onClose,
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: SnapFitColors.textSecondaryOf(context),
-                        size: 20.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
+              Positioned.fill(
                 child: AnimatedSwitcher(
                   duration: SnapFitMotion.fast,
                   switchInCurve: SnapFitMotion.entrance,
                   switchOutCurve: Curves.easeInCubic,
                   child: KeyedSubtree(key: ValueKey(title), child: child),
+                ),
+              ),
+              Positioned(
+                top: 8.h,
+                right: 8.w,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.surfaceOf(context).withOpacity(0.82),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: SnapFitColors.overlayLightOf(context),
+                    ),
+                  ),
+                  child: IconButton(
+                    tooltip: '$title 닫기',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onClose,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: SnapFitColors.textSecondaryOf(context),
+                      size: 20.sp,
+                    ),
+                  ),
                 ),
               ),
             ],
