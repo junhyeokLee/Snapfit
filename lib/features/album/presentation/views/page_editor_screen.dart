@@ -61,7 +61,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   Timer? _editorHintTimer;
   int? _lastSyncedPageIndex;
   String? _lastLayerSyncSignature;
-  bool _showEditorHint = true;
+  bool _showEditorHint = false;
 
   void _simulateProgress() {
     _saveProgress = 0.0;
@@ -125,12 +125,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     );
     _layerBuilder = LayerBuilder(_interaction, () => _canvasSize);
     _toolbarActionHandler = ToolbarActionHandler(context, ref);
-    _editorHintTimer?.cancel();
-    _editorHintTimer = Timer(const Duration(seconds: 4), () {
-      if (!mounted || !_showEditorHint) return;
-      setState(() => _showEditorHint = false);
-    });
-
     // 내지 페이지만 편집: initialPageIndex가 있으면 즉시 해당 페이지로 이동
     final idx = widget.initialPageIndex;
     if (idx != null && idx >= 1) {

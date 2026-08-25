@@ -61,14 +61,8 @@ class EditorBottomMenu extends StatelessWidget {
               '템플릿',
               Icons.auto_awesome_mosaic_outlined,
               EditorMode.template,
-              isHighlighted: true,
             ),
-            _EditorMenuItem(
-              '레이어',
-              Icons.layers_rounded,
-              EditorMode.layer,
-              isHighlighted: true,
-            ),
+            _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -98,14 +92,8 @@ class EditorBottomMenu extends StatelessWidget {
               '템플릿',
               Icons.auto_awesome_mosaic_outlined,
               EditorMode.template,
-              isHighlighted: true,
             ),
-            _EditorMenuItem(
-              '레이어',
-              Icons.layers_rounded,
-              EditorMode.layer,
-              isHighlighted: true,
-            ),
+            _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -123,7 +111,7 @@ class EditorBottomMenu extends StatelessWidget {
     return Container(
       height: 90,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(24.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -149,15 +137,10 @@ class EditorBottomMenu extends StatelessWidget {
             blurRadius: 28,
             offset: const Offset(0, -12),
           ),
-          BoxShadow(
-            color: SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10),
-            blurRadius: 34,
-            offset: const Offset(0, -4),
-          ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(24.r),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
           child: SingleChildScrollView(
@@ -186,7 +169,7 @@ class EditorBottomMenu extends StatelessWidget {
     final baseColor = isDark
         ? Colors.white.withOpacity(0.74)
         : SnapFitColors.deepCharcoal.withOpacity(0.70);
-    final isFeatured = item.isHighlighted || isSelected;
+    final isFeatured = isSelected;
 
     return SnapFitPressable(
       pressedScale: 0.94,
@@ -314,7 +297,6 @@ class _EditorMenuItem {
     this.mode, {
     this.isAction = false,
     this.onAction,
-    this.isHighlighted = false,
   });
 
   final String label;
@@ -322,5 +304,4 @@ class _EditorMenuItem {
   final EditorMode mode;
   final bool isAction;
   final VoidCallback? onAction;
-  final bool isHighlighted;
 }

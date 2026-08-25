@@ -79,19 +79,8 @@ class HomeEmptyState extends StatelessWidget {
                             children: [
                               const _MiniAlbumStack(),
                               SizedBox(height: 28.h),
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 7.w,
-                                runSpacing: 7.h,
-                                children: const [
-                                  _GlassPill(text: '템플릿 추천'),
-                                  _GlassPill(text: '친구 초대'),
-                                  _GlassPill(text: '인쇄 준비'),
-                                ],
-                              ),
-                              SizedBox(height: 18.h),
                               Text(
-                                '아직 비어있는\n나만의 앨범 공간',
+                                '아직 비어있는\n앨범 서재',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 25.sp,
@@ -103,7 +92,7 @@ class HomeEmptyState extends StatelessWidget {
                               ),
                               SizedBox(height: 10.h),
                               Text(
-                                '지금은 참여 중인 앨범이 없어요.\n사진 몇 장만 골라도 감성적인 표지와 페이지가 바로 시작돼요.',
+                                '지금은 참여 중인 앨범이 없어요.\n사진을 고르고 한 권의 앨범으로 정리해보세요.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12.sp,
@@ -122,46 +111,20 @@ class HomeEmptyState extends StatelessWidget {
                                   height: 56.h,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(18.r),
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      colors: [
-                                        SnapFitColors.primaryGradientStart,
-                                        SnapFitColors.primaryGradientEnd,
-                                      ],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: SnapFitColors.accent.withOpacity(
-                                          0.32,
-                                        ),
-                                        blurRadius: 22,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
+                                    color: isDark
+                                        ? const Color(0xFFF4F1EA)
+                                        : const Color(0xFF1F1F1D),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
-                                        Icons.auto_awesome_rounded,
-                                        size: 21.w,
-                                        color: Colors.white,
-                                      ),
-                                      SizedBox(width: 9.w),
                                       Text(
-                                        '앨범 시작하기',
+                                        '앨범 만들기',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 15.sp,
                                           fontWeight: FontWeight.w900,
                                         ),
-                                      ),
-                                      SizedBox(width: 8.w),
-                                      Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 18.w,
-                                        color: Colors.white.withOpacity(0.92),
                                       ),
                                     ],
                                   ),
@@ -293,34 +256,6 @@ class _AlbumMockCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(18.r),
             gradient: LinearGradient(colors: gradient),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassPill extends StatelessWidget {
-  const _GlassPill({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: SnapFitColors.isDark(context)
-            ? Colors.white.withOpacity(0.08)
-            : Colors.white.withOpacity(0.78),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w800,
-          color: SnapFitColors.textSecondaryOf(context),
         ),
       ),
     );

@@ -110,8 +110,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('앨범 시작하기'));
-    await tester.tap(find.text('앨범 시작하기'));
+    await tester.ensureVisible(find.text('앨범 만들기'));
+    await tester.tap(find.text('앨범 만들기'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);

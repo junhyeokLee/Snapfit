@@ -241,7 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(999.r),
             ),
             child: Text(
-              'SNAPFIT PHOTOBOOK',
+              '나의 앨범',
               style: TextStyle(
                 color: isDark
                     ? Colors.white.withOpacity(0.74)
@@ -254,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           SizedBox(height: 14.h),
           Text(
-            '준자님의 추억을\n다시 펼쳐볼까요?',
+            '앨범에만\n집중해볼까요?',
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
               fontSize: 26.sp,
@@ -265,7 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           SizedBox(height: 9.h),
           Text(
-            '사진 몇 장이면 포토북이 시작돼요.',
+            '가장 최근 앨범부터 조용히 보여드릴게요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
               fontSize: 14.sp,
@@ -282,49 +282,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context, {
     required VoidCallback onPressed,
   }) {
+    final isDark = SnapFitColors.isDark(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(999.r),
-          splashColor: Colors.white.withOpacity(0.12),
-          highlightColor: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(18.r),
           child: Ink(
-            height: 54.h,
+            height: 50.h,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999.r),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF13C8EC), Color(0xFF8B5CF6)],
+              color: isDark ? const Color(0xFF1D1C1A) : const Color(0xFFFFFCF7),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : const Color(0xFFE7E1D8),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF13C8EC).withOpacity(0.18),
-                  blurRadius: 18.r,
-                  offset: Offset(0, 9.h),
-                ),
-              ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.auto_stories_rounded,
-                  color: SnapFitColors.pureWhite,
-                  size: 20.sp,
+            child: Center(
+              child: Text(
+                '앨범 만들기',
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
                 ),
-                SizedBox(width: 8.w),
-                Text(
-                  '새 포토북 만들기',
-                  style: TextStyle(
-                    color: SnapFitColors.pureWhite,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
