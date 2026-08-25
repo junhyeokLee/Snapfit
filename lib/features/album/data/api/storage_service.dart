@@ -54,6 +54,23 @@ class StorageService {
   final SupabaseClient? _supabase;
   final BillingRepository? _billingRepository;
 
+  static String userScopedAlbumAssetPath({
+    required String userId,
+    required String relativePath,
+  }) {
+    final cleanUserId = userId.trim();
+    if (cleanUserId.isEmpty) {
+      throw StateError('Authenticated user is required for album uploads.');
+    }
+    final cleanPath = relativePath.startsWith('/')
+        ? relativePath.substring(1)
+        : relativePath;
+    if (cleanPath == cleanUserId || cleanPath.startsWith('$cleanUserId/')) {
+      return cleanPath;
+    }
+    return '$cleanUserId/$cleanPath';
+  }
+
   /// 프로필 사진 업로드 — 리사이즈 후 Supabase Storage URL 반환
   Future<String?> uploadProfileImage(File file, String userId) async {
     return uploadFile(
@@ -72,7 +89,7 @@ class StorageService {
         quality: 85,
       );
       final supabase = _requireSupabase();
-      final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+      final normalizedPath = _albumAssetPath(supabase, path);
       await supabase.storage
           .from('album-assets')
           .uploadBinary(
@@ -120,16 +137,16 @@ class StorageService {
 
       // 병렬 처리를 위한 Future 정의
       Future<void> uploadOriginal() async {
-        final path = 'albums/images/$originalName';
         final supabase = _requireSupabase();
+        final path = _albumAssetPath(supabase, 'albums/images/$originalName');
         await supabase.storage.from('album-assets').upload(path, file);
         originalUrl = supabase.storage.from('album-assets').getPublicUrl(path);
         originalGsPath = 'supabase://album-assets/$path';
       }
 
       Future<void> uploadPreview() async {
-        final path = 'albums/images/$previewName';
         final supabase = _requireSupabase();
+        final path = _albumAssetPath(supabase, 'albums/images/$previewName');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
@@ -203,8 +220,8 @@ class StorageService {
           '[PERF] Native Compress(Original): ${sw.elapsedMilliseconds}ms, Size: ${(originalBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
-        final path = 'albums/covers/$originalName';
         final supabase = _requireSupabase();
+        final path = _albumAssetPath(supabase, 'albums/covers/$originalName');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
@@ -226,8 +243,8 @@ class StorageService {
           '[PERF] Native Compress(Preview): ${sw.elapsedMilliseconds}ms, Size: ${(previewBytes.length / 1024).toStringAsFixed(2)} KB',
         );
 
-        final path = 'albums/covers/$previewName';
         final supabase = _requireSupabase();
+        final path = _albumAssetPath(supabase, 'albums/covers/$previewName');
         await supabase.storage
             .from('album-assets')
             .uploadBinary(
@@ -286,6 +303,14 @@ class StorageService {
       );
     }
     return supabase;
+  }
+
+  String _albumAssetPath(SupabaseClient supabase, String relativePath) {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || userId.trim().isEmpty) {
+      throw StateError('Authenticated user is required for album uploads.');
+    }
+    return userScopedAlbumAssetPath(userId: userId, relativePath: relativePath);
   }
 
   Future<void> _ensureStorageQuota(int incomingBytes) async {
