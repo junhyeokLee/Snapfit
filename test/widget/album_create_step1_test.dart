@@ -137,10 +137,18 @@ void main() {
     );
     expect(squareSize.width, closeTo(squareSize.height, 0.5));
 
+    final hero = find.byKey(const Key('albumCreateStepHero'));
+
     await tester.enterText(find.byType(TextField), '바뀐 앨범 제목');
     await tester.pump();
-    expect(find.text('바뀐 앨범 제목'), findsWidgets);
-    expect(find.text('제목 미정'), findsNothing);
+    expect(
+      find.descendant(of: hero, matching: find.text('바뀐 앨범 제목')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: hero, matching: find.text('제목 미정')),
+      findsNothing,
+    );
 
     await tester.pumpWidget(
       _wrap(
@@ -162,7 +170,10 @@ void main() {
     );
     expect(verticalSize.height, greaterThan(verticalSize.width));
     expect(verticalSize.width, lessThan(squareSize.width));
-    expect(find.text('바뀐 앨범 제목'), findsWidgets);
+    expect(
+      find.descendant(of: hero, matching: find.text('바뀐 앨범 제목')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('matches book atelier creation golden', (tester) async {
