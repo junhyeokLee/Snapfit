@@ -466,6 +466,7 @@ class _CreateStepHero extends StatelessWidget {
                       ),
                     ),
                     Container(
+                      key: const Key('albumCreateHeroPreview'),
                       width: previewW,
                       height: previewH,
                       padding: EdgeInsets.all(10.w),

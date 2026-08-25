@@ -107,6 +107,64 @@ void main() {
     expect(find.text('표지 먼저 확인하기'), findsNothing);
   });
 
+  testWidgets('hero preview reacts to title and cover ratio changes', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final squareCover = coverSizes.firstWhere((s) => s.name == '정사각형');
+    final verticalCover = coverSizes.firstWhere((s) => s.name == '세로형');
+
+    await tester.pumpWidget(
+      _wrap(
+        AlbumCreateStep1(
+          albumTitle: '',
+          selectedCover: squareCover,
+          selectedPageCount: 24,
+          onTitleChanged: (_) {},
+          onCoverSelected: (_) {},
+          onPageCountChanged: (_) {},
+          onNext: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('제목 미정'), findsOneWidget);
+    final squareSize = tester.getSize(
+      find.byKey(const Key('albumCreateHeroPreview')),
+    );
+    expect(squareSize.width, closeTo(squareSize.height, 0.5));
+
+    await tester.enterText(find.byType(TextField), '바뀐 앨범 제목');
+    await tester.pump();
+    expect(find.text('바뀐 앨범 제목'), findsWidgets);
+    expect(find.text('제목 미정'), findsNothing);
+
+    await tester.pumpWidget(
+      _wrap(
+        AlbumCreateStep1(
+          albumTitle: '바뀐 앨범 제목',
+          selectedCover: verticalCover,
+          selectedPageCount: 24,
+          onTitleChanged: (_) {},
+          onCoverSelected: (_) {},
+          onPageCountChanged: (_) {},
+          onNext: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final verticalSize = tester.getSize(
+      find.byKey(const Key('albumCreateHeroPreview')),
+    );
+    expect(verticalSize.height, greaterThan(verticalSize.width));
+    expect(verticalSize.width, lessThan(squareSize.width));
+    expect(find.text('바뀐 앨범 제목'), findsWidgets);
+  });
+
   testWidgets('matches book atelier creation golden', (tester) async {
     await _loadGoldenFonts();
     await tester.binding.setSurfaceSize(const Size(390, 844));
