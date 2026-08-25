@@ -104,6 +104,61 @@ void main() {
     expect(tester.widget<Switch>(switchFinder).value, isFalse);
   });
 
+  testWidgets(
+    'syncs permission badge and invite role when editing is turned off',
+    (tester) async {
+      final mockRepo = MockAlbumMemberRepository();
+      when(() => mockRepo.invite(1, role: 'EDITOR')).thenAnswer(
+        (_) async => const InviteLinkResponse(
+          albumId: 1,
+          token: 'editor-token',
+          link: 'https://example.com/invite/editor-token',
+        ),
+      );
+      when(() => mockRepo.invite(1, role: 'VIEWER')).thenAnswer(
+        (_) async => const InviteLinkResponse(
+          albumId: 1,
+          token: 'viewer-token',
+          link: 'https://example.com/invite/viewer-token',
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            albumMemberRepositoryProvider.overrideWithValue(mockRepo),
+          ],
+          child: _wrap(
+            AlbumCreateStep2(
+              albumTitle: '앨범',
+              selectedCover: coverSizes.first,
+              selectedPageCount: 10,
+              albumId: 1,
+              allowEditing: true,
+              onNext: () {},
+              onBack: () {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.text('ON'), findsOneWidget);
+      expect(find.textContaining('editor-token'), findsOneWidget);
+
+      final switchFinder = find.byType(Switch);
+      await tester.ensureVisible(switchFinder);
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<Switch>(switchFinder).value, isFalse);
+      expect(find.text('OFF'), findsOneWidget);
+      expect(find.textContaining('viewer-token'), findsOneWidget);
+      verify(() => mockRepo.invite(1, role: 'EDITOR')).called(1);
+      verify(() => mockRepo.invite(1, role: 'VIEWER')).called(1);
+    },
+  );
+
   testWidgets('renders renewed invite cockpit without losing invite controls', (
     tester,
   ) async {

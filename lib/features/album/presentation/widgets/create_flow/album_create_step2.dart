@@ -341,10 +341,10 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                       color: SnapFitColors.accent.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(14.r),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'ON',
-                        style: TextStyle(
+                        _allowEditing ? 'ON' : 'OFF',
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                           color: SnapFitColors.accent,
@@ -367,7 +367,9 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          '멤버가 사진을 추가하고 배치할 수 있어요.',
+                          _allowEditing
+                              ? '멤버가 사진을 추가하고 배치할 수 있어요.'
+                              : '멤버는 보기 전용으로 앨범을 확인할 수 있어요.',
                           style: TextStyle(
                             fontSize: 12,
                             color: SnapFitColors.textMutedOf(context),
@@ -380,8 +382,12 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                   Switch(
                     value: _allowEditing,
                     onChanged: (value) {
-                      setState(() => _allowEditing = value);
+                      setState(() {
+                        _allowEditing = value;
+                        _inviteLink = null;
+                      });
                       widget.onAllowEditingChanged?.call(value);
+                      _createInviteLink();
                     },
                     activeColor: SnapFitColors.accent,
                   ),
