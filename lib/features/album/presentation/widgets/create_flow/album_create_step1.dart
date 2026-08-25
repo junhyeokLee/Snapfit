@@ -64,7 +64,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 28.h),
+      padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 18.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,7 +136,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           ],
           // 메인 타이틀 (STEP 표시는 플로우 상단에서 공통 표시)
           Text(
-            '앨범이 될 장면을\n가볍게 적어주세요',
+            '어떤 추억을\n책으로 만들까요?',
             style: TextStyle(
               fontSize: 23.sp,
               fontWeight: FontWeight.w900,
@@ -145,7 +145,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           ),
           SizedBox(height: 10.h),
           Text(
-            '제목, 판형, 페이지 수만 정하면 바로 표지를 다듬을 수 있어요.',
+            '제목은 나중에 바꿀 수 있어요. 먼저 사진이 담길 책의 분위기와 분량을 가볍게 정해보세요.',
             style: TextStyle(
               fontSize: 13.sp,
               height: 1.42,
@@ -175,7 +175,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               children: [
                 // 앨범 제목
                 Text(
-                  '앨범 제목',
+                  '포토북 제목',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: SnapFitColors.textMutedOf(context),
@@ -196,7 +196,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     margin: EdgeInsets.all(1.5.w),
                     decoration: BoxDecoration(
                       color: SnapFitColors.surfaceOf(context),
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: TextField(
                       controller: _titleController,
@@ -204,7 +204,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                         widget.onTitleChanged(value);
                       },
                       decoration: InputDecoration(
-                        hintText: '제주 가족여행 · 우리 아기 첫 생일',
+                        hintText: '제주 바람 기록 · 우리 아기 첫 계절',
                         hintStyle: TextStyle(
                           // 예시 텍스트는 아주 연하게
                           color: SnapFitColors.textMutedOf(
@@ -244,7 +244,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '나중에도 언제든지 수정할 수 있어요.',
+                      '언제든 다시 바꿀 수 있어요.',
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: SnapFitColors.textMutedOf(context),
@@ -267,7 +267,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 SizedBox(height: 30.h),
                 // 사이즈 선택
                 Text(
-                  '사이즈 선택',
+                  '책 크기 선택',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: SnapFitColors.textMutedOf(context),
@@ -278,7 +278,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 SizedBox(height: 30.h),
                 // 페이지 수 선택
                 Text(
-                  '페이지 수 선택',
+                  '분량 선택',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: SnapFitColors.textMutedOf(context),
@@ -297,7 +297,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               final canProceed =
                   value.text.isNotEmpty && widget.selectedCover != null;
               return SnapFitPrimaryActionButton(
-                label: '표지 다듬으러 가기',
+                label: '표지 먼저 확인하기',
                 onPressed: canProceed ? widget.onNext : null,
                 icon: Icons.arrow_forward,
               );
@@ -346,17 +346,17 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               margin: EdgeInsets.only(
                 right: index != sizeOptions.length - 1 ? 12.w : 0,
               ),
-              padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 28.h),
+              padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 18.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? SnapFitColors.accent.withOpacity(0.15)
+                    ? SnapFitColors.accent.withOpacity(0.12)
                     : SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: isSelected
                       ? SnapFitColors.accent
                       : SnapFitColors.overlayLightOf(context),
-                  width: isSelected ? 2 : 1,
+                  width: isSelected ? 1.6 : 1,
                 ),
               ),
               child: Column(
@@ -403,6 +403,41 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 
   Widget _buildPageCountSelector(BuildContext context) {
     final minPage = widget.minPageCount.clamp(1, _maxPageCount);
+    final suggested =
+        <({int pages, String title, String body, bool recommended})>[
+          (
+            pages: minPage,
+            title: '${minPage}쪽',
+            body: '가볍게 시작',
+            recommended: false,
+          ),
+          (
+            pages: mathMax(minPage, 24),
+            title: '${mathMax(minPage, 24)}쪽',
+            body: '가장 추천',
+            recommended: true,
+          ),
+          (
+            pages: mathMax(minPage, 36),
+            title: '${mathMax(minPage, 36)}쪽',
+            body: '풍성하게',
+            recommended: false,
+          ),
+        ];
+    final options =
+        <({int pages, String title, String body, bool recommended})>[];
+    final seen = <int>{};
+    for (final option in suggested) {
+      final pages = option.pages.clamp(minPage, _maxPageCount);
+      if (seen.add(pages)) {
+        options.add((
+          pages: pages,
+          title: '${pages}쪽',
+          body: option.body,
+          recommended: option.recommended,
+        ));
+      }
+    }
     final safePageCount = widget.selectedPageCount.clamp(
       minPage,
       _maxPageCount,
@@ -415,71 +450,109 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 슬라이더
-        Slider(
-          value: safePageCount.toDouble(),
-          min: minPage.toDouble(),
-          max: _maxPageCount.toDouble(),
-          divisions: (_maxPageCount - minPage).clamp(1, _maxPageCount - 1),
-          activeColor: SnapFitColors.accent,
-          inactiveColor: SnapFitColors.overlayLightOf(context),
-          onChanged: (value) {
-            widget.onPageCountChanged(value.toInt());
-          },
-        ),
-        SizedBox(height: 8.h),
-        // 페이지 수 표시
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${minPage}쪽',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: SnapFitColors.textMutedOf(context),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: SnapFitColors.accent.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: SnapFitColors.accent, width: 1),
-              ),
-              child: Text(
-                '${safePageCount}쪽',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                  color: SnapFitColors.accent,
+          children: options.asMap().entries.map((entry) {
+            final index = entry.key;
+            final option = entry.value;
+            final isSelected = safePageCount == option.pages;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => widget.onPageCountChanged(option.pages),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  margin: EdgeInsets.only(
+                    right: index == options.length - 1 ? 0 : 10.w,
+                  ),
+                  padding: EdgeInsets.fromLTRB(12.w, 13.h, 12.w, 12.h),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? SnapFitColors.accent.withOpacity(0.12)
+                        : SnapFitColors.surfaceOf(context),
+                    borderRadius: BorderRadius.circular(18.r),
+                    border: Border.all(
+                      color: isSelected
+                          ? SnapFitColors.accent.withOpacity(0.72)
+                          : SnapFitColors.overlayLightOf(context),
+                      width: isSelected ? 1.6 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: SnapFitColors.accent.withOpacity(0.12),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (option.recommended) ...[
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 7.w,
+                            vertical: 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: SnapFitColors.accent.withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(999.r),
+                          ),
+                          child: Text(
+                            '추천',
+                            style: TextStyle(
+                              fontSize: 9.5.sp,
+                              fontWeight: FontWeight.w900,
+                              color: SnapFitColors.accent,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 9.h),
+                      ] else
+                        SizedBox(height: 25.h),
+                      Text(
+                        option.title,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w900,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        option.body,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: SnapFitColors.textMutedOf(context),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Text(
-              '50p',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: SnapFitColors.textMutedOf(context),
-              ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
         SizedBox(height: 10.h),
-        Row(
-          children: [
-            Text(
-              '나중에도 언제든지 수정할 수 있어요.',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: SnapFitColors.textMutedOf(context),
-              ),
-            ),
-          ],
+        Text(
+          '분량은 편집 중에도 페이지를 더하거나 줄일 수 있어요.',
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: SnapFitColors.textMutedOf(context),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
   }
+
+  int mathMax(int a, int b) => a > b ? a : b;
 }
 
 /// 사이즈 카드 내부에 사용하는 비율 미리보기 프레임

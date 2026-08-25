@@ -74,16 +74,16 @@ class PageListSelector extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
                       color: isSelected
-                          ? SnapFitColors.accent
+                          ? SnapFitColors.accent.withOpacity(0.58)
                           : SnapFitColors.overlayLightOf(context),
-                      width: isSelected ? 1.8 : 0.8,
+                      width: isSelected ? 1.4 : 0.8,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: SnapFitColors.accent.withOpacity(0.18),
-                              blurRadius: 14,
-                              offset: const Offset(0, 7),
+                              color: SnapFitColors.accent.withOpacity(0.12),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
                           ]
                         : null,
@@ -264,9 +264,9 @@ class PageListSelector extends ConsumerWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  '쪽 추가',
+                  '페이지 추가',
                   style: TextStyle(
-                    fontSize: 9.5.sp,
+                    fontSize: 8.8.sp,
                     color: SnapFitColors.textSecondaryOf(context),
                     fontWeight: FontWeight.w800,
                   ),

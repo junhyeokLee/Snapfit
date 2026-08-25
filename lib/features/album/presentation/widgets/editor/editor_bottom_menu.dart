@@ -51,16 +51,7 @@ class EditorBottomMenu extends StatelessWidget {
                 isAction: true,
                 onAction: onCover,
               ),
-            _EditorMenuItem(
-              '레이아웃',
-              Icons.dashboard_outlined,
-              EditorMode.layout,
-            ),
-            _EditorMenuItem(
-              '템플릿',
-              Icons.auto_awesome_outlined,
-              EditorMode.template,
-            ),
+            _EditorMenuItem('페이지', Icons.dashboard_outlined, EditorMode.layout),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -71,7 +62,6 @@ class EditorBottomMenu extends StatelessWidget {
               Icons.palette_outlined,
               EditorMode.backgroundColor,
             ),
-            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
           ]
         : [
             _EditorMenuItem('글', Icons.text_fields_outlined, EditorMode.text),
@@ -82,16 +72,7 @@ class EditorBottomMenu extends StatelessWidget {
               isAction: true,
               onAction: onAddPhoto,
             ),
-            _EditorMenuItem(
-              '레이아웃',
-              Icons.dashboard_outlined,
-              EditorMode.layout,
-            ),
-            _EditorMenuItem(
-              '템플릿',
-              Icons.auto_awesome_outlined,
-              EditorMode.template,
-            ),
+            _EditorMenuItem('페이지', Icons.dashboard_outlined, EditorMode.layout),
             _EditorMenuItem(
               '스티커',
               Icons.emoji_emotions_outlined,
@@ -102,13 +83,12 @@ class EditorBottomMenu extends StatelessWidget {
               Icons.palette_outlined,
               EditorMode.backgroundColor,
             ),
-            _EditorMenuItem('레이어', Icons.layers_outlined, EditorMode.layer),
           ];
 
     return ClipRRect(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
       child: Container(
-        height: 68.h,
+        height: 72.h,
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(context).withOpacity(0.94),
           borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
@@ -168,8 +148,8 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: 56.w,
-        height: 54.h,
+        width: 62.w,
+        height: 56.h,
         padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
         decoration: BoxDecoration(
           color: isSelected
