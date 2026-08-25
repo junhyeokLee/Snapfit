@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 
 import '../../../../core/constants/cover_size.dart';
@@ -265,9 +266,14 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isCreateFlow = widget.isFromCreateFlow;
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: SnapFitColors.backgroundOf(context), // Match theme
+          backgroundColor: isCreateFlow
+              ? (SnapFitColors.isDark(context)
+                    ? const Color(0xFF111111)
+                    : const Color(0xFFFAF8F3))
+              : SnapFitColors.backgroundOf(context),
           body: Stack(
             children: [
               Column(
@@ -292,24 +298,33 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       },
                     ),
                   ),
-                  // Bottom Menu
-                  EditorBottomMenu(
-                    currentMode: _currentMode,
-                    isCover: true,
-                    showCoverMenuItem: false,
-                    onModeChanged: (mode) => _handleModeChange(mode, layers),
-                    onAddPhoto: () => _toolbarActionHandler.addPhoto(
-                      coverCanvasBaseSize(_selectedCover),
+                  if (isCreateFlow)
+                    _CoverAtelierActionBar(
+                      onText: () => _handleModeChange(EditorMode.text, layers),
+                      onPhoto: () => _toolbarActionHandler.addPhoto(
+                        coverCanvasBaseSize(_selectedCover),
+                      ),
+                      onStartEditing: () =>
+                          _coverEditorKey.currentState?.submitCover(),
+                    )
+                  else
+                    EditorBottomMenu(
+                      currentMode: _currentMode,
+                      isCover: true,
+                      showCoverMenuItem: false,
+                      onModeChanged: (mode) => _handleModeChange(mode, layers),
+                      onAddPhoto: () => _toolbarActionHandler.addPhoto(
+                        coverCanvasBaseSize(_selectedCover),
+                      ),
+                      onCover: () => _toolbarActionHandler.openCoverTheme(),
                     ),
-                    onCover: () => _toolbarActionHandler.openCoverTheme(),
-                  ),
                 ],
               ),
 
               // 커버 레이어 선택 시 하단 액션 패널 (스텝2에서도 스냅핏 만들기 화면과 동일하게)
               if (_interaction.selectedLayerId != null)
                 Positioned(
-                  bottom: 100, // Bottom Menu 위에 겹치도록
+                  bottom: isCreateFlow ? 92 : 100, // Bottom action 위에 겹치도록
                   left: 20,
                   right: 20,
                   child: LayerActionPanel(
@@ -379,5 +394,133 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         }
       });
     }
+  }
+}
+
+class _CoverAtelierActionBar extends StatelessWidget {
+  final VoidCallback onText;
+  final VoidCallback onPhoto;
+  final VoidCallback onStartEditing;
+
+  const _CoverAtelierActionBar({
+    required this.onText,
+    required this.onPhoto,
+    required this.onStartEditing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    final surface = isDark ? const Color(0xFF171717) : Colors.white;
+    final line = isDark
+        ? Colors.white.withOpacity(0.12)
+        : const Color(0xFFE7E1D8);
+    final primaryBg = isDark
+        ? const Color(0xFFF4F1EA)
+        : const Color(0xFF1F1F1D);
+    final primaryFg = isDark ? const Color(0xFF111111) : Colors.white;
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
+          border: Border(top: BorderSide(color: line)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _CoverAtelierSecondaryButton(
+                label: '표지 문구',
+                surface: surface,
+                line: line,
+                onTap: onText,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: _CoverAtelierSecondaryButton(
+                label: '사진 바꾸기',
+                surface: surface,
+                line: line,
+                onTap: onPhoto,
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: 50.h,
+                child: ElevatedButton(
+                  onPressed: onStartEditing,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: primaryBg,
+                    foregroundColor: primaryFg,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                  child: Text(
+                    '편집 시작',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CoverAtelierSecondaryButton extends StatelessWidget {
+  final String label;
+  final Color surface;
+  final Color line;
+  final VoidCallback onTap;
+
+  const _CoverAtelierSecondaryButton({
+    required this.label,
+    required this.surface,
+    required this.line,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 50.h,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: surface,
+          foregroundColor: SnapFitColors.textPrimaryOf(context),
+          side: BorderSide(color: line),
+          padding: EdgeInsets.symmetric(horizontal: 6.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+    );
   }
 }

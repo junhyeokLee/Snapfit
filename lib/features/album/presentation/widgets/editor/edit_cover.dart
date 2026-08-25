@@ -290,6 +290,8 @@ class EditCoverState extends ConsumerState<EditCover> {
     return out?.buffer.asUint8List() ?? pngBytes;
   }
 
+  Future<void> submitCover() => _onCreateAlbum();
+
   Future<void> _onCreateAlbum() async {
     final effectiveCoverSize = _coverSize == Size.zero
         ? Size(
