@@ -11,6 +11,7 @@ import 'package:snap_fit/features/album/data/api/album_provider.dart';
 import 'package:snap_fit/features/album/data/api/storage_service.dart';
 import 'package:snap_fit/features/album/data/dto/request/create_album_request.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/album/domain/entities/album_page.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/service/album_persistence_service.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
@@ -454,4 +455,73 @@ void main() {
       expect(notifier.pages[1].layers.single.id, 'inner-template-layer');
     },
   );
+
+  test(
+    'image template pages do not automatically overwrite background tone',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(albumEditorViewModelProvider.future);
+      final notifier = container.read(albumEditorViewModelProvider.notifier);
+
+      notifier.startLocalTemplateAlbum(
+        albumTitle: '배경 보호 앨범',
+        pages: [
+          [
+            LayerModel(
+              id: 'hero-photo',
+              type: LayerType.image,
+              position: Offset.zero,
+              width: 500,
+              height: 500,
+              previewUrl:
+                  'supabase://album-assets/user-123/albums/covers/cover.jpg',
+            ),
+          ],
+          [
+            LayerModel(
+              id: 'inner-photo',
+              type: LayerType.image,
+              position: Offset.zero,
+              width: 500,
+              height: 500,
+              previewUrl:
+                  'supabase://album-assets/user-123/albums/images/page.jpg',
+            ),
+          ],
+        ],
+        initialCover: coverSizes.firstWhere((s) => s.name == '정사각형'),
+      );
+
+      expect(notifier.pages.first.layers.single.id, 'hero-photo');
+      expect(notifier.pages.first.backgroundColor, isNull);
+      expect(notifier.pages[1].layers.single.id, 'inner-photo');
+      expect(notifier.pages[1].backgroundColor, isNull);
+    },
+  );
+
+  test('AlbumPage.copyWith can explicitly clear backgroundColor to null', () {
+    final page = AlbumPage(
+      id: 'page-1',
+      layers: const <LayerModel>[],
+      pageIndex: 0,
+      backgroundColor: 0xFF123456,
+    );
+
+    expect(page.copyWith().backgroundColor, 0xFF123456);
+    expect(page.copyWith(backgroundColor: null).backgroundColor, isNull);
+  });
 }
