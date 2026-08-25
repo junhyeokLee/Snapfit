@@ -6,6 +6,9 @@ import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/presentation/views/add_cover_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
+import 'package:snap_fit/features/album/presentation/controllers/layer_interaction_manager.dart';
+import 'package:snap_fit/features/album/presentation/controllers/text_editor_manager.dart';
+import 'package:snap_fit/features/album/presentation/viewmodels/album_editor_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_action_panel.dart';
 
 Widget _wrap(Widget child) {
@@ -133,9 +136,110 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(LayerActionPanel), findsOneWidget);
+      final dockTop = tester
+          .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))
+          .dy;
+      final panelBottom = tester
+          .getBottomLeft(find.byType(LayerActionPanel))
+          .dy;
+
+      expect(panelBottom, lessThanOrEqualTo(dockTop - 8));
+    },
+  );
+
+  testWidgets(
+    'create flow selected image layer panel stays scrollable above dock',
+    (tester) async {
+      const viewport = Size(390, 760);
+      const safeBottom = 34.0;
+      const layerId = 'selected-image-layer';
+      final imageLayer = LayerModel(
+        id: layerId,
+        type: LayerType.image,
+        position: const Offset(90, 120),
+        width: 220,
+        height: 160,
+      );
+      await tester.binding.setSurfaceSize(viewport);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      LayerInteractionManager? interaction;
+
+      await tester.pumpWidget(
+        _wrap(
+          MediaQuery(
+            data: const MediaQueryData(
+              size: viewport,
+              padding: EdgeInsets.only(bottom: safeBottom),
+            ),
+            child: Consumer(
+              builder: (context, ref, _) {
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    interaction ??= LayerInteractionManager(
+                      ref: ref,
+                      coverKey: GlobalKey(),
+                      setState: setState,
+                      getCoverSize: () => const Size(500, 500),
+                      onEditText: (_) {},
+                    );
+                    return Stack(
+                      children: [
+                        Positioned(
+                          left: 20,
+                          right: 20,
+                          bottom: coverLayerActionPanelBottom(
+                            isCreateFlow: true,
+                            scaleBaseOffset: (value) => value.h,
+                            safeAreaBottom: safeBottom,
+                          ),
+                          child: LayerActionPanel(
+                            layers: [imageLayer],
+                            interaction: interaction!,
+                            textEditor: TextEditorManager(
+                              context,
+                              ref.read(albumEditorViewModelProvider.notifier),
+                            ),
+                            onRefresh: () => setState(() {}),
+                          ),
+                        ),
+                        Positioned(
+                          key: const Key('coverAtelierActionBar'),
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: SizedBox(height: 204.h + safeBottom),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      interaction!.setSelectedLayer(layerId);
+      await tester.pump();
+
+      expect(find.byType(LayerActionPanel), findsOneWidget);
+      expect(find.byIcon(Icons.image_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.open_with), findsOneWidget);
+      expect(find.byIcon(Icons.opacity), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(LayerActionPanel),
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsOneWidget,
+      );
+
       final dockTop = tester
           .getTopLeft(find.byKey(const Key('coverAtelierActionBar')))
           .dy;
