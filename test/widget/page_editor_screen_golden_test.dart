@@ -174,6 +174,27 @@ Widget _wrapEditor() {
   );
 }
 
+Future<void> _pumpEditorToEntryMotion(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(390, 844));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await tester.pumpWidget(_wrapEditor());
+  for (var i = 0; i < 12; i += 1) {
+    await tester.pump(const Duration(milliseconds: 16));
+    if (find.byKey(const Key('pageEditorCanvasReveal')).evaluate().isNotEmpty) {
+      return;
+    }
+  }
+}
+
+double _firstOpacityUnder(WidgetTester tester, Key key) {
+  return tester
+      .widgetList<Opacity>(
+        find.descendant(of: find.byKey(key), matching: find.byType(Opacity)),
+      )
+      .first
+      .opacity;
+}
+
 Future<void> _pumpEditor(WidgetTester tester) async {
   await tester.binding.setSurfaceSize(const Size(390, 844));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -221,6 +242,33 @@ void main() {
       expect(find.byKey(const Key('pageEditorCanvasReveal')), findsOneWidget);
       expect(find.byKey(const Key('pageEditorSelectorReveal')), findsOneWidget);
       expect(find.byKey(const Key('pageEditorDockReveal')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'page editor entry motion exposes staggered middle frame behavior',
+    (tester) async {
+      await _pumpEditorToEntryMotion(tester);
+      await tester.pump(const Duration(milliseconds: 96));
+
+      final canvasOpacity = _firstOpacityUnder(
+        tester,
+        const Key('pageEditorCanvasReveal'),
+      );
+      final selectorOpacity = _firstOpacityUnder(
+        tester,
+        const Key('pageEditorSelectorReveal'),
+      );
+      final dockOpacity = _firstOpacityUnder(
+        tester,
+        const Key('pageEditorDockReveal'),
+      );
+
+      expect(canvasOpacity, greaterThan(0));
+      expect(canvasOpacity, lessThan(1));
+      expect(selectorOpacity, greaterThan(0));
+      expect(selectorOpacity, lessThan(canvasOpacity));
+      expect(dockOpacity, lessThan(canvasOpacity));
     },
   );
 
