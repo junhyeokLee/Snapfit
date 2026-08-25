@@ -397,7 +397,7 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
   }
 }
 
-class _CoverAtelierActionBar extends StatelessWidget {
+class _CoverAtelierActionBar extends StatefulWidget {
   final VoidCallback onText;
   final VoidCallback onPhoto;
   final VoidCallback onStartEditing;
@@ -407,6 +407,41 @@ class _CoverAtelierActionBar extends StatelessWidget {
     required this.onPhoto,
     required this.onStartEditing,
   });
+
+  @override
+  State<_CoverAtelierActionBar> createState() => _CoverAtelierActionBarState();
+}
+
+class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entryController;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    final curve = CurvedAnimation(
+      parent: _entryController,
+      curve: Curves.easeOutCubic,
+    );
+    _fade = Tween<double>(begin: 0, end: 1).animate(curve);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.18),
+      end: Offset.zero,
+    ).animate(curve);
+    _entryController.forward();
+  }
+
+  @override
+  void dispose() {
+    _entryController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -420,63 +455,110 @@ class _CoverAtelierActionBar extends StatelessWidget {
         : const Color(0xFF1F1F1D);
     final primaryFg = isDark ? const Color(0xFF111111) : Colors.white;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
-          border: Border(top: BorderSide(color: line)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _CoverAtelierSecondaryButton(
-                label: '표지 문구',
-                surface: surface,
-                line: line,
-                onTap: onText,
-              ),
+    return SlideTransition(
+      key: const Key('coverAtelierEntrySlide'),
+      position: _slide,
+      child: FadeTransition(
+        key: const Key('coverAtelierEntryFade'),
+        opacity: _fade,
+        child: SafeArea(
+          top: false,
+          child: Container(
+            padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
+              border: Border(top: BorderSide(color: line)),
             ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: _CoverAtelierSecondaryButton(
-                label: '사진 바꾸기',
-                surface: surface,
-                line: line,
-                onTap: onPhoto,
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              flex: 2,
-              child: SizedBox(
-                height: 50.h,
-                child: ElevatedButton(
-                  onPressed: onStartEditing,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: primaryBg,
-                    foregroundColor: primaryFg,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _CoverAtelierSecondaryButton(
+                    label: '표지 문구',
+                    surface: surface,
+                    line: line,
+                    onTap: widget.onText,
                   ),
-                  child: Text(
-                    '편집 시작',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.2,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _CoverAtelierSecondaryButton(
+                    label: '사진 바꾸기',
+                    surface: surface,
+                    line: line,
+                    onTap: widget.onPhoto,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  flex: 2,
+                  child: _CoverAtelierPressScale(
+                    scaleKey: const Key('coverAtelierPrimaryPressScale'),
+                    child: SizedBox(
+                      height: 50.h,
+                      child: ElevatedButton(
+                        onPressed: widget.onStartEditing,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: primaryBg,
+                          foregroundColor: primaryFg,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                        ),
+                        child: Text(
+                          '편집 시작',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _CoverAtelierPressScale extends StatefulWidget {
+  final Widget child;
+  final Key? scaleKey;
+
+  const _CoverAtelierPressScale({required this.child, this.scaleKey});
+
+  @override
+  State<_CoverAtelierPressScale> createState() =>
+      _CoverAtelierPressScaleState();
+}
+
+class _CoverAtelierPressScaleState extends State<_CoverAtelierPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        key: widget.scaleKey,
+        scale: _pressed ? 0.975 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: widget.child,
       ),
     );
   }
@@ -497,27 +579,29 @@ class _CoverAtelierSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 50.h,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: surface,
-          foregroundColor: SnapFitColors.textPrimaryOf(context),
-          side: BorderSide(color: line),
-          padding: EdgeInsets.symmetric(horizontal: 6.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+    return _CoverAtelierPressScale(
+      child: SizedBox(
+        height: 50.h,
+        child: OutlinedButton(
+          onPressed: onTap,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: surface,
+            foregroundColor: SnapFitColors.textPrimaryOf(context),
+            side: BorderSide(color: line),
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.2,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.2,
+            ),
           ),
         ),
       ),

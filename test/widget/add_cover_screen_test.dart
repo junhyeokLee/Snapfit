@@ -44,4 +44,31 @@ void main() {
       expect(find.byType(EditorBottomMenu), findsNothing);
     },
   );
+
+  testWidgets(
+    'create flow cover atelier uses motion wrappers for premium entry',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          AddCoverScreen(
+            isFromCreateFlow: true,
+            initialCoverSize: coverSizes.firstWhere((s) => s.name == '정사각형'),
+            albumTitle: '제주 여름 기록',
+            targetPages: 24,
+            onAlbumCreated: (_) {},
+          ),
+        ),
+      );
+
+      expect(find.byKey(const Key('coverAtelierEntryFade')), findsOneWidget);
+      expect(find.byKey(const Key('coverAtelierEntrySlide')), findsOneWidget);
+      expect(
+        find.byKey(const Key('coverAtelierPrimaryPressScale')),
+        findsOneWidget,
+      );
+    },
+  );
 }
