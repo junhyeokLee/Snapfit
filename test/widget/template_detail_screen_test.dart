@@ -313,4 +313,62 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
     },
   );
+
+  testWidgets(
+    'template detail supports larger text scale with long Korean metadata',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockTemplateRepository();
+      final template = _template(
+        title: '제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿',
+        subTitle: '부모님과 아이들의 긴 여행 사진을 감성적인 한 권의 룩북처럼 정리해요.',
+        pageCount: 24,
+        category: '가족여행프리미엄에디토리얼',
+        tags: const ['가족여행프리미엄', '제주감성스냅', '여름방학기록', '긴태그숨김'],
+      );
+      stubGetTemplates(mockRepo, [template]);
+
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [templateRepositoryProvider.overrideWithValue(mockRepo)],
+            child: _wrap(
+              MediaQuery(
+                data: const MediaQueryData(
+                  size: Size(390, 844),
+                  textScaler: TextScaler.linear(1.3),
+                ),
+                child: TemplateDetailScreen(template: template),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 3));
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('이 템플릿으로 시작하기'), findsOneWidget);
+        expect(find.text('가족여행프리미엄에디토리얼'), findsWidgets);
+        expect(find.text('여름방학기록'), findsNothing);
+
+        final titleRect = tester.getRect(
+          find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
+        );
+        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼').first);
+        final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+
+        expect(titleRect.left, greaterThanOrEqualTo(0));
+        expect(titleRect.right, lessThanOrEqualTo(390));
+        expect(categoryRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.left, greaterThanOrEqualTo(0));
+        expect(ctaRect.right, lessThanOrEqualTo(390));
+        expect(ctaRect.bottom, lessThanOrEqualTo(844));
+      });
+    },
+  );
 }
