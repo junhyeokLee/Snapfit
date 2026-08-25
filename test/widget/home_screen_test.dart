@@ -51,13 +51,19 @@ void main() {
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: HomeScreen()),
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const HomeScreen(),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('지금은 참여 중인 앨범이 없어요.'), findsOneWidget);
+    expect(find.text('아직 만든 앨범이 없어요'), findsOneWidget);
+    expect(find.textContaining('지금은 참여 중인 앨범이 없어요.'), findsNothing);
+    expect(find.text('앨범 만들기'), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
   });
 
   testWidgets('앨범이 있으면 앨범 슬라이더 표시', (WidgetTester tester) async {
@@ -78,16 +84,24 @@ void main() {
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: HomeScreen()),
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const HomeScreen(),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
+    expect(find.text('나의 앨범'), findsNothing);
+    expect(find.textContaining('앨범에만'), findsNothing);
+    expect(find.textContaining('가장 최근 앨범부터'), findsNothing);
+    expect(find.text('앨범 만들기'), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
   });
 
-  testWidgets('앨범 만들기 버튼 탭 시 생성 플로우로 이동', (WidgetTester tester) async {
+  testWidgets('FAB 탭 시 생성 플로우로 이동', (WidgetTester tester) async {
     await _setLargeSurface(tester);
     stubFetchMyAlbums(mockRepo, []);
     await tester.pumpWidget(
@@ -104,14 +118,16 @@ void main() {
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
-          builder: (_, __) => const MaterialApp(home: HomeScreen()),
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const HomeScreen(),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('앨범 만들기'));
-    await tester.tap(find.text('앨범 만들기'));
+    await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);

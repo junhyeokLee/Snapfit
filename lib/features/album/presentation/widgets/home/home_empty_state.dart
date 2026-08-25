@@ -80,10 +80,10 @@ class HomeEmptyState extends StatelessWidget {
                               const _MiniAlbumStack(),
                               SizedBox(height: 28.h),
                               Text(
-                                '아직 비어있는\n앨범 서재',
+                                '아직 만든 앨범이 없어요',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 25.sp,
+                                  fontSize: 24.sp,
                                   fontWeight: FontWeight.w900,
                                   height: 1.12,
                                   letterSpacing: -0.7,
@@ -92,42 +92,13 @@ class HomeEmptyState extends StatelessWidget {
                               ),
                               SizedBox(height: 10.h),
                               Text(
-                                '지금은 참여 중인 앨범이 없어요.\n사진을 고르고 한 권의 앨범으로 정리해보세요.',
+                                '오른쪽 아래 + 버튼으로 시작하세요.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12.sp,
-                                  height: 1.55,
+                                  height: 1.45,
                                   color: muted,
                                   fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 22.h),
-                              SnapFitPressable(
-                                onTap: onCreate,
-                                pressedScale: 0.965,
-                                borderRadius: BorderRadius.circular(18.r),
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 56.h,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(18.r),
-                                    color: isDark
-                                        ? const Color(0xFFF4F1EA)
-                                        : const Color(0xFF1F1F1D),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        '앨범 만들기',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15.sp,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ],

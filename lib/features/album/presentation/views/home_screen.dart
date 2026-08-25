@@ -136,7 +136,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           hasUnreadNotification: hasUnreadNotification,
           onTap: _handleBottomNavTap,
         ),
-        floatingActionButton: null,
+        floatingActionButton:
+            uiState.bottomNavIndex == 0 || uiState.bottomNavIndex == 1
+            ? FloatingActionButton(
+                key: const Key('homeCreateAlbumFab'),
+                heroTag: 'homeCreateAlbumFab',
+                tooltip: '새 앨범',
+                elevation: 7,
+                highlightElevation: 3,
+                backgroundColor: SnapFitColors.textPrimaryOf(context),
+                foregroundColor: SnapFitColors.surfaceOf(context),
+                shape: const CircleBorder(),
+                onPressed: handleCreateAlbum,
+                child: const Icon(Icons.add_rounded, size: 30),
+              )
+            : null,
         body: _buildBottomNavBody(
           context,
           currentBottomNavIndex: uiState.bottomNavIndex,
@@ -160,11 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       physics: platformScrollPhysics(alwaysScrollable: true),
                       slivers: [
                         if (prepared.baseAlbums.isNotEmpty) ...[
-                          SliverToBoxAdapter(child: SizedBox(height: 18.h)),
-                          SliverToBoxAdapter(
-                            child: _buildHomeHeroHeader(context),
-                          ),
-                          SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          SliverToBoxAdapter(child: SizedBox(height: 34.h)),
                           SliverToBoxAdapter(
                             child: SizedBox(
                               width: double.infinity,
@@ -176,14 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ),
                           ),
-                          SliverToBoxAdapter(child: SizedBox(height: 18.h)),
-                          SliverToBoxAdapter(
-                            child: _buildHomePrimaryCta(
-                              context,
-                              onPressed: handleCreateAlbum,
-                            ),
-                          ),
-                          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+                          SliverToBoxAdapter(child: SizedBox(height: 88.h)),
                         ] else
                           SliverToBoxAdapter(
                             child: SizedBox(
@@ -218,98 +221,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 error: (err, stack) => HomeErrorState(error: err),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHomeHeroHeader(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
-            decoration: BoxDecoration(
-              color: (isDark ? Colors.white : SnapFitColors.deepCharcoal)
-                  .withOpacity(isDark ? 0.08 : 0.06),
-              borderRadius: BorderRadius.circular(999.r),
-            ),
-            child: Text(
-              '나의 앨범',
-              style: TextStyle(
-                color: isDark
-                    ? Colors.white.withOpacity(0.74)
-                    : SnapFitColors.deepCharcoal.withOpacity(0.62),
-                fontSize: 10.5.sp,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Text(
-            '앨범에만\n집중해볼까요?',
-            style: TextStyle(
-              color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 26.sp,
-              height: 1.18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.7,
-            ),
-          ),
-          SizedBox(height: 9.h),
-          Text(
-            '가장 최근 앨범부터 조용히 보여드릴게요.',
-            style: TextStyle(
-              color: SnapFitColors.textSecondaryOf(context),
-              fontSize: 14.sp,
-              height: 1.35,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomePrimaryCta(
-    BuildContext context, {
-    required VoidCallback onPressed,
-  }) {
-    final isDark = SnapFitColors.isDark(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 28.w),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(18.r),
-          child: Ink(
-            height: 50.h,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1D1C1A) : const Color(0xFFFFFCF7),
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : const Color(0xFFE7E1D8),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '앨범 만들기',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.2,
-                ),
               ),
             ),
           ),
