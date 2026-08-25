@@ -8,9 +8,13 @@ class SnapFitMotion {
   static const Duration fast = Duration(milliseconds: 160);
   static const Duration medium = Duration(milliseconds: 260);
   static const Duration slow = Duration(milliseconds: 420);
+  static const Duration pageTurn = Duration(milliseconds: 390);
+  static const Duration pageTurnFast = Duration(milliseconds: 220);
 
   static const Curve entrance = Curves.easeOutCubic;
   static const Curve settle = Curves.easeOutQuart;
+  static const Curve pageTurnCurve = Curves.easeOutQuart;
+  static const Curve pageTurnExitCurve = Curves.easeInCubic;
 }
 
 class SnapFitFadeIn extends StatelessWidget {

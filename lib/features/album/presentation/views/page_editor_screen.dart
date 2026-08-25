@@ -86,25 +86,57 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 420),
-      curve: SnapFitMotion.entrance,
+      duration: SnapFitMotion.pageTurn,
+      curve: SnapFitMotion.pageTurnCurve,
       builder: (context, value, child) {
         final direction = forward ? 1.0 : -1.0;
-        final eased = Curves.easeOutBack.transform(value.clamp(0.0, 1.0));
+        final t = value.clamp(0.0, 1.0);
         final matrix = Matrix4.identity()
           ..setEntry(3, 2, 0.0012)
-          ..translate(18.0 * direction * (1 - value), 0.0)
-          ..rotateY(direction * 0.16 * (1 - value));
+          ..translate(18.0 * direction * (1 - t), 0.0)
+          ..rotateY(direction * 0.16 * (1 - t));
         return Opacity(
           key: const Key('pageEditorPageTurnOpacity'),
-          opacity: (0.18 + value * 0.82).clamp(0.0, 1.0),
+          opacity: (0.18 + t * 0.82).clamp(0.0, 1.0),
           child: Transform(
             key: const Key('pageEditorPageTurnReveal'),
             alignment: Alignment.center,
             transform: matrix,
             child: Transform.scale(
-              scale: 0.975 + (0.025 * eased),
-              child: child,
+              scale: 0.965 + (0.035 * t),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.16 * (1 - t)),
+                      blurRadius: 18 + 10 * (1 - t),
+                      offset: Offset(0, 8 + 6 * (1 - t)),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  fit: StackFit.passthrough,
+                  children: [
+                    child ?? const SizedBox.shrink(),
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      right: forward ? 0 : null,
+                      left: forward ? null : 0,
+                      child: IgnorePointer(
+                        child: Opacity(
+                          opacity: 0.18 * (1 - t),
+                          child: Container(
+                            key: const Key('pageEditorPageEdgeHighlight'),
+                            width: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         );

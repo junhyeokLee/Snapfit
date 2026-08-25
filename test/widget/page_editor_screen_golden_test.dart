@@ -286,6 +286,10 @@ void main() {
         .opacity;
     expect(opacity, greaterThanOrEqualTo(0.18));
     expect(opacity, lessThan(1));
+    expect(
+      find.byKey(const Key('pageEditorPageEdgeHighlight')),
+      findsOneWidget,
+    );
 
     await tester.pumpAndSettle();
     expect(find.text('1페이지 꾸미기'), findsOneWidget);
