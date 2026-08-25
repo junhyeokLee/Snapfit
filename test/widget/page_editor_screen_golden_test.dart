@@ -281,6 +281,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
 
     expect(find.byKey(const Key('pageEditorPageTurnReveal')), findsOneWidget);
+    expect(find.byKey(const Key('pageSelectorSelectionGlow')), findsOneWidget);
     final opacity = tester
         .widget<Opacity>(find.byKey(const Key('pageEditorPageTurnOpacity')))
         .opacity;

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -105,11 +106,44 @@ class PageListSelector extends ConsumerWidget {
                         ),
                       ),
                       if (isSelected)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: TweenAnimationBuilder<double>(
+                              key: ValueKey(
+                                'pageSelectorSelectionGlow-$currentPageIndex',
+                              ),
+                              tween: Tween(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 96),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, child) {
+                                final glow = math.sin(value * math.pi);
+                                return DecoratedBox(
+                                  key: const Key('pageSelectorSelectionGlow'),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: SnapFitColors.accent.withOpacity(
+                                          0.22 * glow,
+                                        ),
+                                        blurRadius: 10 + 6 * glow,
+                                        spreadRadius: 0.5 * glow,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      if (isSelected)
                         Positioned(
                           left: 8.w,
                           right: 8.w,
                           bottom: -3.h,
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: SnapFitMotion.pageTurnFast,
+                            curve: SnapFitMotion.pageTurnCurve,
                             height: 2.5.h,
                             decoration: BoxDecoration(
                               color: SnapFitColors.accent,
