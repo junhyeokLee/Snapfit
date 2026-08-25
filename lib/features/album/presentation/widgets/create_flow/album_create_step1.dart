@@ -82,7 +82,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _CreateStepTitle(),
+                    const _CreateStepHero(),
                     if (_hasTemplate) ...[
                       SizedBox(height: 10.h),
                       _TemplateSummary(
@@ -93,11 +93,17 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                     SizedBox(height: 14.h),
                     _buildTitleBlock(context),
                     SizedBox(height: 26.h),
-                    const _SectionLabel(title: '책 비율'),
+                    const _SectionLabel(
+                      title: '책 비율',
+                      caption: '사진이 가장 잘 보이는 책의 형태를 고르세요.',
+                    ),
                     SizedBox(height: 7.h),
                     _buildSizeSelector(context),
                     SizedBox(height: 18.h),
-                    const _SectionLabel(title: '분량'),
+                    const _SectionLabel(
+                      title: '분량',
+                      caption: '처음 분량만 정하고, 편집 중 언제든 조정할 수 있어요.',
+                    ),
                     SizedBox(height: 9.h),
                     _buildPageCountSelector(context),
                   ],
@@ -119,7 +125,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel(title: '앨범 제목'),
+        const _SectionLabel(title: '앨범 제목', caption: '표지와 내지에 함께 쓰일 이름이에요.'),
         SizedBox(height: 6.h),
         Container(
           decoration: BoxDecoration(
@@ -335,19 +341,97 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   int mathMax(int a, int b) => a > b ? a : b;
 }
 
-class _CreateStepTitle extends StatelessWidget {
-  const _CreateStepTitle();
+class _CreateStepHero extends StatelessWidget {
+  const _CreateStepHero();
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '새 앨범',
-      style: TextStyle(
-        fontSize: 24.sp,
-        height: 1.12,
-        fontWeight: FontWeight.w900,
-        letterSpacing: -0.65,
-        color: SnapFitColors.textPrimaryOf(context),
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      key: const Key('albumCreateStepHero'),
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 18.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF1E1B18), const Color(0xFF121110)]
+              : [Colors.white, const Color(0xFFFFF7EC)],
+        ),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFE7DED2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
+            blurRadius: 26,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58.w,
+            height: 74.h,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2621) : const Color(0xFFF5E9D8),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : const Color(0xFFD9C7AF),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.28 : 0.10),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: 7.w,
+                margin: EdgeInsets.symmetric(vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: SnapFitColors.accent.withOpacity(0.38),
+                  borderRadius: BorderRadius.horizontal(
+                    right: Radius.circular(6.r),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '새 앨범 준비',
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      height: 1.12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.65,
+                      color: SnapFitColors.textPrimaryOf(context),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -355,8 +439,9 @@ class _CreateStepTitle extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   final String title;
+  final String caption;
 
-  const _SectionLabel({required this.title});
+  const _SectionLabel({required this.title, required this.caption});
 
   @override
   Widget build(BuildContext context) {
@@ -371,6 +456,16 @@ class _SectionLabel extends StatelessWidget {
             fontWeight: FontWeight.w900,
             letterSpacing: -0.25,
             color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          caption,
+          style: TextStyle(
+            fontSize: 12.sp,
+            height: 1.34,
+            fontWeight: FontWeight.w600,
+            color: SnapFitColors.textSecondaryOf(context),
           ),
         ),
       ],

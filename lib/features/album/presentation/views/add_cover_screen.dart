@@ -304,8 +304,9 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                   ),
                   if (isCreateFlow)
                     _CoverAtelierActionBar(
-                      onText: () => _handleModeChange(EditorMode.text, layers),
-                      onPhoto: () => _toolbarActionHandler.addPhoto(
+                      currentMode: _currentMode,
+                      onModeChanged: (mode) => _handleModeChange(mode, layers),
+                      onAddPhoto: () => _toolbarActionHandler.addPhoto(
                         coverCanvasBaseSize(_selectedCover),
                       ),
                       onStartEditing: () =>
@@ -477,13 +478,15 @@ class _CoverFocusRevealState extends State<_CoverFocusReveal>
 }
 
 class _CoverAtelierActionBar extends StatefulWidget {
-  final VoidCallback onText;
-  final VoidCallback onPhoto;
+  final EditorMode currentMode;
+  final ValueChanged<EditorMode> onModeChanged;
+  final VoidCallback onAddPhoto;
   final VoidCallback onStartEditing;
 
   const _CoverAtelierActionBar({
-    required this.onText,
-    required this.onPhoto,
+    required this.currentMode,
+    required this.onModeChanged,
+    required this.onAddPhoto,
     required this.onStartEditing,
   });
 
@@ -525,7 +528,6 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
-    final surface = isDark ? const Color(0xFF171717) : Colors.white;
     final line = isDark
         ? Colors.white.withOpacity(0.12)
         : const Color(0xFFE7E1D8);
@@ -543,56 +545,74 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
         child: SafeArea(
           top: false,
           child: Container(
-            padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
+            padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 12.h),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF111111) : const Color(0xFFFAF8F3),
               border: Border(top: BorderSide(color: line)),
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _CoverAtelierSecondaryButton(
-                    label: '표지 문구',
-                    surface: surface,
-                    line: line,
-                    onTap: widget.onText,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: _CoverAtelierSecondaryButton(
-                    label: '사진 바꾸기',
-                    surface: surface,
-                    line: line,
-                    onTap: widget.onPhoto,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  flex: 2,
-                  child: _CoverAtelierPressScale(
-                    scaleKey: const Key('coverAtelierPrimaryPressScale'),
-                    child: SizedBox(
-                      height: 50.h,
-                      child: ElevatedButton(
-                        onPressed: widget.onStartEditing,
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: primaryBg,
-                          foregroundColor: primaryFg,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '표지 도구',
+                        style: TextStyle(
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                          color: SnapFitColors.textPrimaryOf(context),
                         ),
-                        child: Text(
-                          '편집 시작',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.2,
-                          ),
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        '템플릿 · 스티커 · 배경까지 편집',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: SnapFitColors.textMutedOf(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                EditorBottomMenu(
+                  currentMode: widget.currentMode,
+                  isCover: true,
+                  showCoverMenuItem: false,
+                  onModeChanged: widget.onModeChanged,
+                  onAddPhoto: widget.onAddPhoto,
+                ),
+                SizedBox(height: 10.h),
+                _CoverAtelierPressScale(
+                  scaleKey: const Key('coverAtelierPrimaryPressScale'),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 46.h,
+                    child: ElevatedButton(
+                      onPressed: widget.onStartEditing,
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: primaryBg,
+                        foregroundColor: primaryFg,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                      ),
+                      child: Text(
+                        '표지 완성',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
                         ),
                       ),
                     ),
@@ -638,51 +658,6 @@ class _CoverAtelierPressScaleState extends State<_CoverAtelierPressScale> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
         child: widget.child,
-      ),
-    );
-  }
-}
-
-class _CoverAtelierSecondaryButton extends StatelessWidget {
-  final String label;
-  final Color surface;
-  final Color line;
-  final VoidCallback onTap;
-
-  const _CoverAtelierSecondaryButton({
-    required this.label,
-    required this.surface,
-    required this.line,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _CoverAtelierPressScale(
-      child: SizedBox(
-        height: 50.h,
-        child: OutlinedButton(
-          onPressed: onTap,
-          style: OutlinedButton.styleFrom(
-            backgroundColor: surface,
-            foregroundColor: SnapFitColors.textPrimaryOf(context),
-            side: BorderSide(color: line),
-            padding: EdgeInsets.symmetric(horizontal: 6.w),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
       ),
     );
   }
