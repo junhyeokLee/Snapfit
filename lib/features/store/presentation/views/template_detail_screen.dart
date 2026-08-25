@@ -1336,7 +1336,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 44.h),
+                    SizedBox(height: 36.h),
                     // Minimal lookbook chrome
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1384,11 +1384,11 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 14.h),
 
                     _buildHeroImage(context),
 
-                    SizedBox(height: 28.h),
+                    SizedBox(height: 20.h),
 
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -1417,7 +1417,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                                 height: 1.45,
                               ),
                             ),
-                          SizedBox(height: 22.h),
+                          SizedBox(height: 16.h),
                           _buildTemplateBrief(context),
                         ],
                       ),
@@ -1694,10 +1694,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   Widget _buildHeroImage(BuildContext context) {
     final coverUrl = _coverPreviewUrl(_template);
     final aspect = _resolveTemplateAspect();
-    final heroHeight = 420.h;
-    final mainWidth = (heroHeight * aspect).clamp(220.w, 310.w).toDouble();
-    final sideWidth = (mainWidth * 0.72).clamp(150.w, 220.w).toDouble();
-    final sideHeight = (sideWidth / aspect).clamp(190.h, 320.h).toDouble();
+    final heroHeight = 384.h;
+    final mainWidth = (heroHeight * aspect).clamp(214.w, 296.w).toDouble();
+    final sideWidth = (mainWidth * 0.70).clamp(144.w, 208.w).toDouble();
+    final sideHeight = (sideWidth / aspect).clamp(176.h, 292.h).toDouble();
 
     Widget pageCard({
       required int index,
@@ -1726,14 +1726,14 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return SnapFitFadeIn(
       child: SizedBox(
         width: double.infinity,
-        height: heroHeight + 18.h,
+        height: heroHeight + 14.h,
         child: Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
             Positioned(
-              left: 28.w,
-              top: 46.h,
+              left: 30.w,
+              top: 42.h,
               child: Opacity(
                 opacity: 0.78,
                 child: Transform.rotate(
@@ -1752,8 +1752,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               ),
             ),
             Positioned(
-              right: 24.w,
-              bottom: 22.h,
+              right: 26.w,
+              bottom: 20.h,
               child: Opacity(
                 opacity: 0.72,
                 child: Transform.rotate(
@@ -1801,7 +1801,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                   ),
                 ),
                 child: Text(
-                  '탭해서 전체 페이지 보기',
+                  '${_template.pageCount}쪽 · 사진 ${_recommendedPhotoRange()} 추천',
                   style: TextStyle(
                     color: SnapFitColors.textMutedOf(context),
                     fontSize: 11.5.sp,

@@ -27,6 +27,13 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
+  String _recommendedPhotoRange(PremiumTemplate template) {
+    final pages = template.pageCount <= 0 ? 24 : template.pageCount;
+    final minPhotos = (pages * 1.6).round().clamp(18, 120);
+    final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
+    return '$minPhotos~$maxPhotos장';
+  }
+
   String _coverPreviewUrl(PremiumTemplate template) {
     final cover = template.coverImageUrl.trim();
     if (cover.isNotEmpty) return cover;
@@ -262,12 +269,12 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                                 ),
                                                 _ShowcaseMetaPill(
                                                   label:
-                                                      '${template.pageCount}페이지',
+                                                      '${template.pageCount}쪽',
                                                 ),
-                                                if (template.isPremium)
-                                                  const _ShowcaseMetaPill(
-                                                    label: 'Premium',
-                                                  ),
+                                                _ShowcaseMetaPill(
+                                                  label:
+                                                      '사진 ${_recommendedPhotoRange(template)}',
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -445,7 +452,7 @@ class _ShowcaseCtaPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            '자세히 보기',
+            '룩북 보기',
             style: TextStyle(
               color: Color(0xFF1F2937),
               fontSize: 11,

@@ -12,6 +12,13 @@ import '../widgets/premium_template_list.dart';
 import '../widgets/template_preview_frame.dart';
 import 'template_detail_screen.dart';
 
+String _storeRecommendedPhotoRange(PremiumTemplate template) {
+  final pages = template.pageCount <= 0 ? 24 : template.pageCount;
+  final minPhotos = (pages * 1.6).round().clamp(18, 120);
+  final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
+  return '$minPhotos~$maxPhotos장';
+}
+
 String _storeCoverPreviewUrl(PremiumTemplate template) {
   final cover = template.coverImageUrl.trim();
   if (cover.isNotEmpty) return cover;
@@ -916,19 +923,42 @@ class _TemplateGridCard extends StatelessWidget {
                         ),
                       ),
                     Positioned(
-                      right: 12,
-                      bottom: 12,
+                      right: 10,
+                      bottom: 10,
                       child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.90),
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 6,
                         ),
-                        child: Icon(
-                          Icons.chevron_right_rounded,
-                          size: 15,
-                          color: SnapFitColors.textPrimaryOf(context),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '룩북 보기',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: SnapFitColors.textPrimaryOf(context),
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 14,
+                              color: SnapFitColors.textPrimaryOf(context),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -966,7 +996,7 @@ class _TemplateGridCard extends StatelessWidget {
                     ],
                     const SizedBox(height: 4),
                     Text(
-                      '${template.category ?? '포토북'} · ${template.pageCount}P',
+                      '${template.category ?? '포토북'} · ${template.pageCount}쪽 · 사진 ${_storeRecommendedPhotoRange(template)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

@@ -12,7 +12,9 @@ Widget _wrap(Widget child) {
   return ScreenUtilInit(
     designSize: const Size(390, 844),
     minTextAdapt: true,
-    builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+    builder: (_, __) => MaterialApp(
+      home: Scaffold(body: SingleChildScrollView(child: child)),
+    ),
   );
 }
 
@@ -65,5 +67,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(PageView), findsNothing);
+  });
+
+  testWidgets('showcase card connects to detail lookbook language', (
+    tester,
+  ) async {
+    final templates = [
+      const PremiumTemplate(
+        id: 1,
+        title: '제주의 기록',
+        subTitle: '여행 사진을 한 권의 룩북처럼 정리해요.',
+        coverImageUrl: 'https://example.com/cover.png',
+        previewImages: [],
+        pageCount: 24,
+        userCount: 1,
+        category: '여행',
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          templateListProvider.overrideWith((ref) async => templates),
+        ],
+        child: _wrap(const PremiumTemplateList()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('룩북 보기'), findsOneWidget);
+    expect(find.text('24쪽'), findsOneWidget);
+    expect(find.text('사진 38~52장'), findsOneWidget);
+    expect(find.text('여행'), findsOneWidget);
   });
 }
