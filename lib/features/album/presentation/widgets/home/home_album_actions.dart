@@ -95,96 +95,97 @@ class HomeAlbumActions {
     }
     _isOpeningAlbum = true;
 
-    // 1. 잠금 시도 (Lock)
     final repository = ref.read(albumRepositoryProvider);
+    var lockAcquired = false;
+    var needsRefresh = false;
+
     try {
-      await repository.lockAlbum(album.id);
-    } catch (e) {
-      if (!context.mounted) return;
-      // 잠금 실패 (다른 사용자가 편집 중)
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: SnapFitColors.surfaceOf(ctx),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          title: Text(
-            '편집 제한',
-            style: TextStyle(
-              color: SnapFitColors.textPrimaryOf(ctx),
-              fontWeight: FontWeight.bold,
-              fontSize: 18.sp,
+      // 1. 잠금 시도 (Lock)
+      try {
+        await repository.lockAlbum(album.id);
+        lockAcquired = true;
+      } catch (e) {
+        if (!context.mounted) return;
+        // 잠금 실패 (다른 사용자가 편집 중)
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: SnapFitColors.surfaceOf(ctx),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
             ),
-          ),
-          content: Text(
-            '현재 다른 사용자가 편집 중입니다.\n잠시 후 다시 시도해 주세요.',
-            style: TextStyle(
-              color: SnapFitColors.textSecondaryOf(ctx),
-              fontSize: 14.sp,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                '확인',
-                style: TextStyle(color: SnapFitColors.accent),
+            title: Text(
+              '편집 제한',
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(ctx),
+                fontWeight: FontWeight.bold,
+                fontSize: 18.sp,
               ),
             ),
-          ],
+            content: Text(
+              '현재 다른 사용자가 편집 중입니다.\n잠시 후 다시 시도해 주세요.',
+              style: TextStyle(
+                color: SnapFitColors.textSecondaryOf(ctx),
+                fontSize: 14.sp,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  '확인',
+                  style: TextStyle(color: SnapFitColors.accent),
+                ),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // 2. 편집 준비
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      await ref.read(albumEditorViewModelProvider.future);
+      await vm.prepareAlbumForEdit(album);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      // 3. 진입 (리더 화면으로 이동)
+      final result = await Navigator.push<Object?>(
+        context,
+        PageRouteBuilder<Object?>(
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          pageBuilder: (_, __, ___) => const AlbumReaderScreen(),
+          transitionsBuilder: (_, __, ___, child) => child,
         ),
       );
-      _isOpeningAlbum = false;
-      return;
-    }
 
-    // 2. 편집 준비
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-    await ref.read(albumEditorViewModelProvider.future);
-    await vm.prepareAlbumForEdit(album);
-
-    if (!context.mounted) {
-      // 만약 준비 중 화면이 닫혔다면 잠금 해제 필요
-      try {
-        await repository.unlockAlbum(album.id);
-      } catch (_) {}
-      return;
-    }
-
-    // 3. 진입 (리더 화면으로 이동)
-    final result = await Navigator.push<Object?>(
-      context,
-      PageRouteBuilder<Object?>(
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-        pageBuilder: (_, __, ___) => const AlbumReaderScreen(),
-        transitionsBuilder: (_, __, ___, child) => child,
-      ),
-    );
-
-    var needsRefresh = false;
-    if (result is Map) {
-      final deletedAlbumId = result['deletedAlbumId'];
-      if (deletedAlbumId is int) {
-        onAlbumDeleted?.call(deletedAlbumId);
+      if (result is Map) {
+        final deletedAlbumId = result['deletedAlbumId'];
+        if (deletedAlbumId is int) {
+          onAlbumDeleted?.call(deletedAlbumId);
+          needsRefresh = true;
+        }
+        if (result['updated'] == true) {
+          needsRefresh = true;
+        }
+      } else if (result == true) {
         needsRefresh = true;
       }
-      if (result['updated'] == true) {
-        needsRefresh = true;
-      }
-    } else if (result == true) {
-      needsRefresh = true;
-    }
-
-    // 4. 복귀 시 잠금 해제 (항상 실행)
-    try {
-      await repository.unlockAlbum(album.id);
-    } catch (e) {
-      debugPrint('HomeAlbumActions: Unlock failed: $e');
     } finally {
+      // prepare/open 과정에서 예외가 나도 다음 앨범 탭이 영구 차단되지 않도록
+      // 잠금 해제와 opening guard reset은 항상 수행한다.
+      if (lockAcquired) {
+        try {
+          await repository.unlockAlbum(album.id);
+        } catch (e) {
+          debugPrint('HomeAlbumActions: Unlock failed: $e');
+        }
+      }
       _isOpeningAlbum = false;
-      // 수정/삭제 등 변경사항이 있을 때만 홈 화면 갱신
       if (context.mounted && needsRefresh == true) {
         ref.read(homeViewModelProvider.notifier).refresh();
       }

@@ -356,6 +356,41 @@ void main() {
   );
 
   test(
+    'beginCreatedAlbumForEdit opens regular created album without upload polling',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(albumEditorViewModelProvider.future);
+      final notifier = container.read(albumEditorViewModelProvider.notifier);
+      final cover = coverSizes.firstWhere((s) => s.name == '정사각형');
+
+      notifier.resetForCreate(initialCover: cover, targetPages: 3);
+      notifier.beginCreatedAlbumForEdit(albumId: 77, albumTitle: '새 앨범');
+
+      final state = container.read(albumEditorViewModelProvider).value;
+      expect(state, isNotNull);
+      expect(state!.isCreatingInBackground, isFalse);
+      expect(notifier.editingAlbumId, 77);
+      expect(notifier.pages.length, 4);
+      expect(notifier.currentPageIndex, 0);
+      verifyNever(() => mockRepo.fetchAlbum(any()));
+    },
+  );
+
+  test(
     'beginCreatedTemplateAlbumForEdit opens template pages without waiting for upload polling',
     () async {
       final mockRepo = MockAlbumRepository();

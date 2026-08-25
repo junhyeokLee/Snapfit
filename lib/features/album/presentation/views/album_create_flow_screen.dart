@@ -519,8 +519,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                   initialCover: _selectedCover,
                 );
               } else {
-                // 일반 생성 경로만 서버 생성 완료를 기다린다.
-                vm.prepareAlbumForEdit(dummyAlbum, waitForCreation: true);
+                // 일반 생성도 이미 로컬에 빈 커버/내지 페이지가 준비되어 있으므로
+                // 서버 대표이미지/업로드 폴링을 기다리지 않고 즉시 편집으로 연다.
+                vm.beginCreatedAlbumForEdit(
+                  albumId: dummyAlbum.id,
+                  albumTitle: _albumTitle,
+                );
               }
 
               // 즉시 편집 화면으로 이동

@@ -562,6 +562,32 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _pendingTemplatePagesAfterLoad = pages;
   }
 
+  /// 일반 새 앨범 생성 플로우에서도 서버 업로드/대표이미지 폴링을 기다리지 않고,
+  /// 이미 로컬에 준비된 빈 커버/내지 페이지 상태로 즉시 편집 화면을 연다.
+  ///
+  /// 서버 앨범 ID만 확정되면 백그라운드 업로드는 계속 진행되며, 사용자는
+  /// `앨범을 펼치는 중이에요` 오버레이에 묶이지 않고 바로 편집을 시작할 수 있다.
+  void beginCreatedAlbumForEdit({
+    required int albumId,
+    required String albumTitle,
+  }) {
+    if (albumId <= 0) return;
+    _editingAlbumId = albumId;
+    _initialAlbumTitle = albumTitle;
+    if (_pages.isEmpty) {
+      _pages.add(_service.createPage(index: 0, isCover: true));
+      final targetPageCount = _targetPagesHint > 0 ? _targetPagesHint : 1;
+      for (int i = 1; i <= targetPageCount; i++) {
+        _pages.add(_service.createPage(index: i));
+      }
+    }
+    _currentPageIndex = 0;
+    _pendingCoverLayersJson = null;
+    final prev = state.value ?? const AlbumEditorState();
+    state = AsyncData(prev.copyWith(isCreatingInBackground: false));
+    _emit();
+  }
+
   /// 템플릿 생성 플로우에서는 이미 메모리에 완성된 커버/내지 페이지가 있으므로,
   /// 생성 직후 편집 진입을 서버 업로드 폴링에 묶지 않는다.
   ///
