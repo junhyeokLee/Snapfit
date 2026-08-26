@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,8 +29,9 @@ class HomeAlbumSliderCard extends ConsumerStatefulWidget {
 }
 
 class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _tapController;
+  late final AnimationController _floatController;
   late final Animation<double> _tapScale;
   Timer? _pendingUnpress;
 
@@ -43,6 +46,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       begin: 1,
       end: 0.98,
     ).animate(CurvedAnimation(parent: _tapController, curve: Curves.easeOut));
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3800),
+    )..repeat();
   }
 
   void _cancelPendingUnpress() {
@@ -54,6 +61,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
   void dispose() {
     _cancelPendingUnpress();
     _tapController.dispose();
+    _floatController.dispose();
     super.dispose();
   }
 
@@ -78,27 +86,27 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
         builder: (context, constraints) {
           final h = constraints.maxHeight;
           final ratio = coverSize.ratio;
-          // 정사각형을 기준 크기로 두고:
-          // - 세로형: 정사각형과 높이는 같고 더 좁게
-          // - 가로형: 정사각형과 폭은 같고 더 낮게
-          final baseSquareSize = h * (0.66 + (0.10 * focus));
-          final maxAllowedWidth = constraints.maxWidth * 0.98;
-          final squareWidth = baseSquareSize > maxAllowedWidth
-              ? maxAllowedWidth
-              : baseSquareSize;
-          final squareHeight = squareWidth;
-
           final bool isLandscape = ratio > 1.12;
           final bool isPortrait = ratio < 0.88;
-          final contentWidth = isPortrait ? squareHeight * ratio : squareWidth;
-          final contentHeight = isLandscape
-              ? squareWidth / ratio
-              : squareHeight;
+          final fallbackAsset = isPortrait
+              ? 'assets/snapfit_home_portrait.jpg'
+              : isLandscape
+              ? 'assets/snapfit_home_landscape.jpg'
+              : 'assets/snapfit_home_square.jpg';
+          final stageMaxHeight = math.max(h, 1.0);
+          final squareReferenceSide = (314.w)
+              .clamp(258.0, math.min(328.w, stageMaxHeight * 0.78))
+              .toDouble();
+          final contentWidth =
+              squareReferenceSide * coverSize.realSize.width / 20;
+          final contentHeight =
+              squareReferenceSide * coverSize.realSize.height / 20;
           final pageDelta = (widget.index - widget.currentPage).clamp(
             -1.0,
             1.0,
           );
-          final gapPush = pageDelta * 10.w;
+          final gapPush = pageDelta * 214.w;
+          final sideLift = (1 - focus) * 38.h;
           final coverContent = OverflowBox(
             minWidth: 0,
             minHeight: 0,
@@ -108,30 +116,54 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             child: SizedBox(
               width: contentWidth,
               height: contentHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned.fill(
-                    child: HomeAlbumCoverThumbnail(
-                      album: widget.album,
-                      height: contentHeight,
-                      maxWidth: contentWidth,
-                      showShadow: true,
-                      shadowScaleMultiplier: 6.8 + (2.4 * focus),
-                    ),
-                  ),
-                ],
+              child: HomeAlbumCoverThumbnail(
+                album: widget.album,
+                height: contentHeight,
+                maxWidth: contentWidth,
+                showShadow: true,
+                shadowScaleMultiplier: 6.8 + (2.4 * focus),
+                fallbackAsset: fallbackAsset,
               ),
             ),
           );
 
-          final closedCover = HomeFocusWrap(
-            focus: focus,
-            applyShadow: false,
-            child: Transform.translate(
-              offset: Offset(gapPush, 0),
-              child: Center(child: coverContent),
-            ),
+          final closedCover = AnimatedBuilder(
+            animation: _floatController,
+            builder: (context, child) {
+              final phase = math.sin(_floatController.value * math.pi * 2);
+              final floating = ((phase + 1) / 2) * focus;
+              final floatOffset = -24.h * floating;
+              final focusedRotateY = -0.16 + (0.11 * floating);
+              final focusedRotateZ = -0.024 + (0.052 * floating);
+              final sideRotateY = pageDelta == 0 ? 0.0 : -0.244 * pageDelta;
+              final sideRotateZ = pageDelta == 0 ? 0.0 : 0.122 * pageDelta;
+
+              return HomeFocusWrap(
+                focus: focus,
+                applyShadow: false,
+                child: Opacity(
+                  opacity: 0.45 + (0.55 * focus),
+                  child: Transform.translate(
+                    offset: Offset(gapPush, sideLift + floatOffset),
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.0015)
+                        ..rotateY(
+                          (focusedRotateY * focus) +
+                              (sideRotateY * (1 - focus)),
+                        )
+                        ..rotateZ(
+                          (focusedRotateZ * focus) +
+                              (sideRotateZ * (1 - focus)),
+                        ),
+                      child: child,
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Center(child: coverContent),
           );
 
           return GestureDetector(

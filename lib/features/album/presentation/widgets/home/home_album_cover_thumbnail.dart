@@ -20,6 +20,7 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
   final double? maxWidth;
   final bool showShadow;
   final double shadowScaleMultiplier;
+  final String? fallbackAsset;
 
   const HomeAlbumCoverThumbnail({
     super.key,
@@ -28,6 +29,7 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
     this.maxWidth,
     this.showShadow = true,
     this.shadowScaleMultiplier = 1.0,
+    this.fallbackAsset,
   });
 
   @override
@@ -138,6 +140,8 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
               fit: BoxFit.cover,
               cacheManager: snapfitImageCacheManager,
             )
+          : fallbackAsset != null
+          ? Image.asset(fallbackAsset!, fit: BoxFit.cover)
           : Container(
               color: Colors.grey[300],
               child: Icon(

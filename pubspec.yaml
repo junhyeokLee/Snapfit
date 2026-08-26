@@ -107,6 +107,10 @@ flutter:
     - assets/cover/cover16.png
     - assets/snapfit_logo.png
     - assets/splash.png
+    - assets/snapfit_splash_album_cover.jpg
+    - assets/snapfit_home_square.jpg
+    - assets/snapfit_home_portrait.jpg
+    - assets/snapfit_home_landscape.jpg
     - assets/empty_state.png
     - assets/sticker/
     - assets/templates/

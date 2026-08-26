@@ -43,11 +43,11 @@ class HomeCoverFrame extends StatelessWidget {
               ? [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.16),
-                    blurRadius: 20,
-                    spreadRadius: clampedShadowScale,
+                    blurRadius: 18,
+                    spreadRadius: clampedShadowScale * 0.86,
                     offset: Offset(
                       6 * clampedShadowScale,
-                      14 * clampedShadowScale,
+                      10 * clampedShadowScale,
                     ),
                   ),
                 ]

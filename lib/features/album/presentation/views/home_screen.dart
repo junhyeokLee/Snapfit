@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../../core/utils/platform_ui.dart';
@@ -136,8 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           hasUnreadNotification: hasUnreadNotification,
           onTap: _handleBottomNavTap,
         ),
-        floatingActionButton:
-            uiState.bottomNavIndex == 0 || uiState.bottomNavIndex == 1
+        floatingActionButton: uiState.bottomNavIndex == 1
             ? FloatingActionButton(
                 key: const Key('homeCreateAlbumFab'),
                 heroTag: 'homeCreateAlbumFab',
@@ -176,21 +174,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         if (prepared.baseAlbums.isNotEmpty)
                           SliverFillRemaining(
                             hasScrollBody: false,
-                            child: Padding(
-                              padding: EdgeInsets.only(bottom: 86.h),
-                              child: Center(
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height:
-                                      (MediaQuery.sizeOf(context).height * 0.52)
-                                          .clamp(360.0, 580.0),
-                                  child: HomeAlbumSlider(
-                                    albums: List<Album>.from(
-                                      prepared.baseAlbums,
-                                    )..sort(compareAlbumByLatestDesc),
-                                  ),
-                                ),
-                              ),
+                            child: HomeAlbumSlider(
+                              albums: List<Album>.from(prepared.baseAlbums)
+                                ..sort(compareAlbumByLatestDesc),
+                              onCreateAlbum: handleCreateAlbum,
+                              onOpenAlbumTab: () => _handleBottomNavTap(1),
                             ),
                           )
                         else

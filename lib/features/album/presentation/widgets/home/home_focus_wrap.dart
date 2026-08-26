@@ -76,8 +76,8 @@ class HomeFocusWrap extends StatelessWidget {
   Widget build(BuildContext context) {
     // Keep the side albums visible without letting the focused cover
     // physically overlap the previous/next PageView items.
-    final scale = 0.90 + 0.10 * focus;
-    final translateY = -10.0 * focus;
+    final scale = 0.82 + 0.30 * focus;
+    final translateY = 38.0 * (1 - focus) - (14.0 * focus);
 
     final content = Transform.translate(
       offset: Offset(0, translateY),
