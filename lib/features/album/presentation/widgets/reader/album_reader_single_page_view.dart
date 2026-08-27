@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
+import 'package:book_page_flip/book_page_flip.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
@@ -10,6 +14,7 @@ import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../views/album_reader_inner_detail_screen.dart';
+import '../../views/page_editor_screen.dart';
 import '../cover/cover.dart';
 import 'book_page_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +37,12 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
   final ValueChanged<Size> onCanvasSizeChanged;
   final ValueChanged<int> onPageChanged;
   final VoidCallback onStateChanged;
+  final double maxSpreadWidthFactor;
+  final Alignment contentAlignment;
+  final bool focusMode;
+  final ValueChanged<int>? onFocusPageChanged;
+  final double focusBottomInset;
+  final int? requestedFocusPageIndex;
 
   const AlbumReaderSinglePageView({
     super.key,
@@ -45,6 +56,12 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
     required this.onCanvasSizeChanged,
     required this.onPageChanged,
     required this.onStateChanged,
+    this.maxSpreadWidthFactor = 1.0,
+    this.contentAlignment = Alignment.center,
+    this.focusMode = false,
+    this.onFocusPageChanged,
+    this.focusBottomInset = 0,
+    this.requestedFocusPageIndex,
   });
 
   @override
@@ -53,11 +70,558 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
 }
 
 class _AlbumReaderSinglePageViewState
-    extends ConsumerState<AlbumReaderSinglePageView> {
+    extends ConsumerState<AlbumReaderSinglePageView>
+    with SingleTickerProviderStateMixin {
+  static const double _bookFlipControlVelocity = 0.04;
+  static const double _bookFlipListVelocity = 6.8;
+  static const BookFlipPhysics _bookFlipPhysics = BookFlipPhysics(
+    springStiffness: 155,
+    springDampingRatio: 1.12,
+    commitThreshold: 0.42, // 높을수록 페이지를 더 많이 끌어야 넘어감
+    commitVelocity: 2.8, // 높을수록 짧게 휙 하는 손동작으로는 덜 넘어감
+    velocityLookAhead: 0.015, // 손을 땔 때 속도 예측 영향을 줄여서 조금 움직였는데도 넘어가는 현상 감소
+    settleEpsilon: 0.12,
+  );
+  static const BookFlipPhysics _bookFlipListPhysics = BookFlipPhysics(
+    springStiffness: 3400,
+    springDampingRatio: 1.08,
+    commitThreshold: 0.56,
+    commitVelocity: 1.65,
+    velocityLookAhead: 0.06,
+    settleEpsilon: 0.98,
+  );
+
   bool _isCoverPressed = false;
+  bool _isTurningWithControl = false;
+  late int _focusPageIndex;
+  late final BookFlipController _bookFlipController;
+  int? _requestedFocusPage;
+  bool _syncingSpreadFromFocus = false;
+  int? _animatedTargetSpread;
+  Completer<void>? _flipEndCompleter;
+  bool _isAnimatingToRequestedSpread = false;
+
+  BookFlipPhysics get _activeBookFlipPhysics =>
+      _isAnimatingToRequestedSpread ? _bookFlipListPhysics : _bookFlipPhysics;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusPageIndex = _focusPageForSpread(widget.pageController.initialPage);
+    _bookFlipController = BookFlipController(
+      initialSpread: widget.pageController.initialPage,
+    );
+    widget.pageController.addListener(_syncFocusFromSpread);
+  }
+
+  @override
+  void dispose() {
+    widget.pageController.removeListener(_syncFocusFromSpread);
+    _bookFlipController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant AlbumReaderSinglePageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.focusMode) return;
+    final requested = widget.requestedFocusPageIndex;
+    if (requested == null ||
+        requested == oldWidget.requestedFocusPageIndex ||
+        requested == _focusPageIndex) {
+      return;
+    }
+
+    final target =
+        requested.clamp(0, math.max(0, widget.allPages.length - 1)) as int;
+    _animateFocusToPage(target);
+  }
 
   void onStateChanged() {
     if (mounted) widget.onStateChanged();
+  }
+
+  int _focusPageForSpread(int spreadIndex) {
+    if (spreadIndex <= 0) return 0;
+    return (1 + ((spreadIndex - 1) * 2)).clamp(
+      0,
+      math.max(0, widget.allPages.length - 1),
+    );
+  }
+
+  int _spreadForFocusPage(int pageIndex) {
+    if (pageIndex <= 0) return 0;
+    return 1 + ((pageIndex - 1) ~/ 2);
+  }
+
+  int get _bookPageCount {
+    final count = widget.allPages.length + 1;
+    return count.isEven ? count : count + 1;
+  }
+
+  int get _bookSpreadCount => math.max(1, _bookPageCount ~/ 2);
+
+  void _syncFocusFromSpread() {
+    if (!widget.focusMode ||
+        _syncingSpreadFromFocus ||
+        !widget.pageController.hasClients) {
+      return;
+    }
+    final target = _focusPageForSpread(
+      (widget.pageController.page ?? 0).round(),
+    );
+    if (target == _focusPageIndex || target == _requestedFocusPage) return;
+    _requestedFocusPage = target;
+    setState(() {
+      _focusPageIndex = target;
+      _bookFlipController.goToSpread(_spreadForFocusPage(target));
+    });
+    _requestedFocusPage = null;
+  }
+
+  Future<void> _syncSpreadFromFocus(int pageIndex) async {
+    if (!widget.focusMode || !widget.pageController.hasClients) {
+      widget.onFocusPageChanged?.call(pageIndex);
+      return;
+    }
+
+    final targetSpread = _spreadForFocusPage(pageIndex);
+    final currentSpread = (widget.pageController.page ?? 0).round();
+    if (targetSpread != currentSpread) {
+      _syncingSpreadFromFocus = true;
+      try {
+        widget.pageController.jumpToPage(targetSpread);
+      } finally {
+        _syncingSpreadFromFocus = false;
+      }
+    }
+    widget.onFocusPageChanged?.call(pageIndex);
+  }
+
+  Future<void> _turnFocusPage(int direction) async {
+    if (widget.allPages.isEmpty) return;
+
+    final currentSpread = _bookFlipController.totalSpreads > 0
+        ? _bookFlipController.currentSpread
+        : _spreadForFocusPage(_focusPageIndex);
+    final maxSpread =
+        math.max(_bookSpreadCount, _bookFlipController.totalSpreads) - 1;
+    final targetSpread = (currentSpread + direction).clamp(0, maxSpread);
+    if (targetSpread == currentSpread) return;
+
+    if (_bookFlipController.isAnimating) return;
+
+    final started = direction > 0
+        ? _bookFlipController.nextSpread(velocity: _bookFlipControlVelocity)
+        : _bookFlipController.previousSpread(
+            velocity: -_bookFlipControlVelocity,
+          );
+    if (started) return;
+
+    final syncedTarget = _focusPageForSpread(targetSpread);
+    setState(() {
+      _focusPageIndex = syncedTarget;
+      _bookFlipController.goToSpread(targetSpread);
+    });
+    await _syncSpreadFromFocus(syncedTarget);
+  }
+
+  Future<void> _animateFocusToPage(int pageIndex) async {
+    if (!widget.focusMode || widget.allPages.isEmpty) return;
+
+    _animatedTargetSpread = _spreadForFocusPage(pageIndex);
+    if (_isAnimatingToRequestedSpread) return;
+
+    setState(() => _isAnimatingToRequestedSpread = true);
+    await WidgetsBinding.instance.endOfFrame;
+    try {
+      final targetSpread =
+          _animatedTargetSpread!.clamp(0, math.max(0, _bookSpreadCount - 1))
+              as int;
+      final currentSpread = _bookFlipController.totalSpreads > 0
+          ? _bookFlipController.currentSpread
+          : _spreadForFocusPage(_focusPageIndex);
+
+      if (currentSpread == targetSpread) {
+        await _finishAnimatedSpreadJump(targetSpread);
+        return;
+      }
+
+      if (_bookFlipController.isAnimating) {
+        await _waitForFlipEnd().timeout(
+          const Duration(milliseconds: 70),
+          onTimeout: () {},
+        );
+      }
+
+      final distance = (targetSpread - currentSpread).abs();
+      final visualTurnCount = math.min(distance, 5);
+
+      for (var turn = 1; mounted && turn <= visualTurnCount; turn += 1) {
+        final latestTarget =
+            (_animatedTargetSpread ?? targetSpread).clamp(
+                  0,
+                  math.max(0, _bookSpreadCount - 1),
+                )
+                as int;
+        final remainingTurns = visualTurnCount - turn + 1;
+        final spreadNow = _bookFlipController.totalSpreads > 0
+            ? _bookFlipController.currentSpread
+            : _spreadForFocusPage(_focusPageIndex);
+        final remainingDistance = (latestTarget - spreadNow).abs();
+        if (remainingDistance == 0) break;
+
+        final hop = math.max(1, (remainingDistance / remainingTurns).ceil());
+        final fromSpread = (latestTarget > spreadNow)
+            ? math.min(latestTarget - 1, spreadNow + hop - 1)
+            : math.max(latestTarget + 1, spreadNow - hop + 1);
+
+        if (fromSpread != spreadNow) {
+          _bookFlipController.goToSpread(fromSpread);
+          setState(() => _focusPageIndex = _focusPageForSpread(fromSpread));
+          await _syncSpreadFromFocus(_focusPageForSpread(fromSpread));
+          await Future<void>.delayed(const Duration(milliseconds: 8));
+        }
+
+        final turnDirection = latestTarget > fromSpread ? 1 : -1;
+        final flipEnd = _waitForFlipEnd();
+        final started = turnDirection > 0
+            ? _bookFlipController.nextSpread(velocity: _bookFlipListVelocity)
+            : _bookFlipController.previousSpread(
+                velocity: -_bookFlipListVelocity,
+              );
+
+        if (!started) {
+          _clearFlipEndWaiter();
+          break;
+        }
+
+        await flipEnd.timeout(
+          const Duration(milliseconds: 58),
+          onTimeout: () {},
+        );
+      }
+
+      final finalTarget =
+          (_animatedTargetSpread ?? targetSpread).clamp(
+                0,
+                math.max(0, _bookSpreadCount - 1),
+              )
+              as int;
+      await _finishAnimatedSpreadJump(finalTarget);
+    } finally {
+      if (mounted) {
+        setState(() => _isAnimatingToRequestedSpread = false);
+      } else {
+        _isAnimatingToRequestedSpread = false;
+      }
+    }
+  }
+
+  Future<void> _finishAnimatedSpreadJump(int spread) async {
+    if (!mounted) return;
+
+    final targetPage = _focusPageForSpread(spread);
+    _animatedTargetSpread = null;
+    setState(() {
+      _focusPageIndex = targetPage;
+      _bookFlipController.goToSpread(spread);
+    });
+    await _syncSpreadFromFocus(targetPage);
+  }
+
+  Future<void> _waitForFlipEnd() {
+    final pending = _flipEndCompleter;
+    if (pending != null && !pending.isCompleted) return pending.future;
+
+    final completer = Completer<void>();
+    _flipEndCompleter = completer;
+    return completer.future;
+  }
+
+  void _clearFlipEndWaiter() {
+    final completer = _flipEndCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
+    }
+    _flipEndCompleter = null;
+  }
+
+  Future<void> _openFocusEditor() async {
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PageEditorScreen(initialPageIndex: _focusPageIndex),
+      ),
+    );
+  }
+
+  Widget _buildFocusCard(
+    int pageIndex,
+    double pageWidth,
+    double pageHeight, {
+    Key? cardKey,
+    GlobalKey? coverBoundaryKey,
+  }) {
+    final page = widget.allPages[pageIndex];
+    if (pageIndex == 0) {
+      return _CoverPageCard(
+        key: cardKey ?? GlobalObjectKey(page),
+        page: page,
+        pageW: pageWidth,
+        pageH: pageHeight,
+        selectedCover: widget.selectedCover,
+        coverTheme: widget.coverTheme,
+        interaction: widget.interaction,
+        layerBuilder: widget.layerBuilder,
+        coverKey: coverBoundaryKey ?? widget.canvasKey,
+        onCoverSizeChanged: widget.onCanvasSizeChanged,
+      );
+    }
+
+    return _InnerPageCard(
+      key: cardKey ?? ValueKey('focus_inner_page_${page.id}'),
+      page: page,
+      pageW: pageWidth,
+      pageH: pageHeight,
+      interaction: widget.interaction,
+      layerBuilder: widget.layerBuilder,
+    );
+  }
+
+  Widget _buildBookFlipPage(
+    int bookPageIndex,
+    double pageWidth,
+    double pageHeight,
+  ) {
+    if (bookPageIndex == 0 || bookPageIndex > widget.allPages.length) {
+      return _BlankBookPage(pageWidth: pageWidth, pageHeight: pageHeight);
+    }
+
+    final albumPageIndex = bookPageIndex - 1;
+    return SizedBox(
+      width: pageWidth,
+      height: pageHeight,
+      child: _buildFocusCard(
+        albumPageIndex,
+        pageWidth,
+        pageHeight,
+        cardKey: ValueKey('book_flip_album_page_$albumPageIndex'),
+      ),
+    );
+  }
+
+  Widget _buildStaticFocusSpread(double pageWidth, double pageHeight) {
+    final spread = _spreadForFocusPage(_focusPageIndex);
+    final leftBookPage = spread * 2;
+    final rightBookPage = leftBookPage + 1;
+
+    return Row(
+      children: [
+        SizedBox(
+          width: pageWidth,
+          height: pageHeight,
+          child: _buildBookFlipPage(leftBookPage, pageWidth, pageHeight),
+        ),
+        SizedBox(
+          width: pageWidth,
+          height: pageHeight,
+          child: _buildBookFlipPage(rightBookPage, pageWidth, pageHeight),
+        ),
+      ],
+    );
+  }
+
+  void _handleBookSpreadChanged(int spread, {required bool ended}) {
+    if (!ended) return;
+
+    final target = _focusPageForSpread(spread);
+    if (!mounted) return;
+    setState(() {
+      _focusPageIndex = target;
+      _isTurningWithControl = false;
+    });
+    unawaited(_syncSpreadFromFocus(target));
+    _clearFlipEndWaiter();
+  }
+
+  Widget _buildBookFlipFocusReader(double pageWidth, double pageHeight) {
+    Widget fallbackSpread(BuildContext context) => _BookFlipLoadingPlaceholder(
+      pageWidth: pageWidth,
+      pageHeight: pageHeight,
+      child: _buildStaticFocusSpread(pageWidth, pageHeight),
+    );
+
+    return _SequentialBookFlipPages(
+      key: ValueKey(
+        'book_flip_${_bookPageCount}_${pageWidth.toStringAsFixed(1)}_${pageHeight.toStringAsFixed(1)}',
+      ),
+      pageCount: _bookPageCount,
+      pageSize: Size(pageWidth, pageHeight),
+      pixelRatio: 1.0,
+      pageBuilder: (context, index) =>
+          _buildBookFlipPage(index, pageWidth, pageHeight),
+      bookBuilder: (context, pages) => BookFlip(
+        pages: pages,
+        controller: _bookFlipController,
+        physics: _activeBookFlipPhysics,
+        pageAspectRatio: pageWidth / pageHeight,
+        fit: BookFit.contain,
+        material: const BookFlipMaterial(
+          stiffness: 0.28,
+          weight: 0.34,
+          gloss: 0.0,
+          translucency: 0.0,
+          thickness: 1.05,
+        ),
+        curl: const BookFlipCurl(bend: 0.74, foldTilt: 0.62, droop: 0.28),
+        effects: const BookFlipEffects(
+          gloss: false,
+          grain: false,
+          castShadow: true,
+          spineShadow: false,
+          edge: false,
+          translucency: false,
+        ),
+        meshResolution: 54,
+        onFlipEnd: (spread) => _handleBookSpreadChanged(spread, ended: true),
+      ),
+      loadingBuilder: fallbackSpread,
+      errorBuilder: fallbackSpread,
+    );
+  }
+
+  Widget _buildFocusReader(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screen = constraints.biggest;
+        final ratio = widget.selectedCover.ratio;
+        final bottomInset = widget.focusBottomInset;
+        final isLandscape = screen.width > screen.height;
+        final railInset = isLandscape ? 72.0 : 0.0;
+        final usableHeight = math.max(
+          260.0,
+          isLandscape ? screen.height : screen.height - bottomInset,
+        );
+        final horizontalMargin = isLandscape ? 34.0 : 48.0;
+        final verticalMargin = isLandscape ? 70.0 : 38.0;
+        final maxSpreadWidth = screen.width - railInset - horizontalMargin;
+        final maxSpreadHeight = usableHeight - verticalMargin;
+        var pageHeight = maxSpreadHeight;
+        var pageWidth = pageHeight * ratio;
+        if (pageWidth * 2 > maxSpreadWidth) {
+          pageWidth = maxSpreadWidth / 2;
+          pageHeight = pageWidth / ratio;
+        }
+        final stageWidth = pageWidth * 2;
+        final stageHeight = pageHeight;
+        final minTop = isLandscape ? 0.0 : 12.0;
+        final centeredTop = (usableHeight - stageHeight) / 2;
+        final stageTop = math.max(
+          minTop,
+          isLandscape ? centeredTop - 20.0 : centeredTop,
+        );
+        final stageOffsetX = 0.0;
+
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              top: stageTop,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Transform.translate(
+                  offset: Offset(stageOffsetX, 0),
+                  child: SizedBox(
+                    width: stageWidth,
+                    height: stageHeight,
+                    child: _PremiumSpreadStage(
+                      isLandscape: isLandscape,
+                      child: _buildBookFlipFocusReader(pageWidth, pageHeight),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (isLandscape)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 6,
+                child: Center(
+                  child: SizedBox(
+                    width: math.min(326.0, screen.width - railInset - 48),
+                    child: _FocusReaderControls(
+                      canGoBack:
+                          _spreadForFocusPage(_focusPageIndex) > 0 ||
+                          _bookFlipController.currentSpread > 0,
+                      canGoForward:
+                          _spreadForFocusPage(_focusPageIndex) <
+                              _bookSpreadCount - 1 ||
+                          _bookFlipController.currentSpread <
+                              _bookSpreadCount - 1,
+                      onPrevious: () => _turnFocusPage(-1),
+                      onEdit: _openFocusEditor,
+                      onNext: () => _turnFocusPage(1),
+                    ),
+                  ),
+                ),
+              )
+            else
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: bottomInset + 8,
+                child: Center(
+                  child: SizedBox(
+                    width: math.min(342.0, screen.width - 48),
+                    child: _FocusReaderControls(
+                      canGoBack:
+                          _spreadForFocusPage(_focusPageIndex) > 0 ||
+                          _bookFlipController.currentSpread > 0,
+                      canGoForward:
+                          _spreadForFocusPage(_focusPageIndex) <
+                              _bookSpreadCount - 1 ||
+                          _bookFlipController.currentSpread <
+                              _bookSpreadCount - 1,
+                      onPrevious: () => _turnFocusPage(-1),
+                      onEdit: _openFocusEditor,
+                      onNext: () => _turnFocusPage(1),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _turnSpread({
+    required int direction,
+    required int itemCount,
+  }) async {
+    if (_isTurningWithControl || !widget.pageController.hasClients) return;
+
+    final current = (widget.pageController.page ?? 0).round();
+    final target = (current + direction).clamp(0, itemCount - 1);
+    if (target == current) return;
+
+    setState(() => _isTurningWithControl = true);
+    try {
+      // Uses the same controller as a finger swipe, keeping the existing
+      // renderer, page pairing, and thumbnail selection in lockstep.
+      await widget.pageController.animateToPage(
+        target,
+        duration: const Duration(milliseconds: 620),
+        curve: Curves.easeOutCubic,
+      );
+    } finally {
+      if (mounted) setState(() => _isTurningWithControl = false);
+    }
   }
 
   void _openInnerDetail({
@@ -104,11 +668,13 @@ class _AlbumReaderSinglePageViewState
 
   @override
   Widget build(BuildContext context) {
+    if (widget.focusMode) return _buildFocusReader(context);
+
     final screenW = MediaQuery.sizeOf(context).width;
     final screenH = MediaQuery.sizeOf(context).height;
 
     // 표시 가능한 최대 너비 (여백 포함)
-    final availW = screenW - 20.w;
+    final availW = (screenW - 20.w) * widget.maxSpreadWidthFactor;
 
     final double maxH = screenH * 0.62;
 
@@ -166,6 +732,7 @@ class _AlbumReaderSinglePageViewState
     );
 
     return Stack(
+      alignment: widget.contentAlignment,
       children: [
         // 1. 실제 화면 렌더링 레이어 (터치 비활성)
         Positioned.fill(
@@ -206,7 +773,7 @@ class _AlbumReaderSinglePageViewState
                 }
 
                 return Stack(
-                  alignment: Alignment.center,
+                  alignment: widget.contentAlignment,
                   children: [
                     // 앨범 하단에 상시 깔리는 통짜 그림자 (입체감 부여)
                     if (shadowAlpha > 0.01)
@@ -230,7 +797,8 @@ class _AlbumReaderSinglePageViewState
                     // 책 자체는 스케일 트랜스폼 처리 (Tween 래퍼를 걷어내어 재빌드 반짝임 원천 차단)
                     Transform.scale(
                       scale: currentScale,
-                      child: Center(
+                      child: Align(
+                        alignment: widget.contentAlignment,
                         child: _GlobalPageFlipRenderer(
                           page: page,
                           itemCount: itemCount,
@@ -311,7 +879,497 @@ class _AlbumReaderSinglePageViewState
             child: pageView,
           ),
         ),
+
+        // The controls are intentionally above the PageView gesture layer.
+        // They drive the same controller rather than introducing a second
+        // transition path for button navigation.
+        Positioned(
+          left: 18.w,
+          bottom: 12.h,
+          child: AnimatedBuilder(
+            animation: widget.pageController,
+            builder: (context, _) {
+              final current = widget.pageController.hasClients
+                  ? (widget.pageController.page ?? 0).round()
+                  : 0;
+              return _ReaderPageTurnControl(
+                icon: Icons.chevron_left_rounded,
+                semanticLabel: '이전 스프레드',
+                enabled: current > 0 && !_isTurningWithControl,
+                onTap: () => _turnSpread(direction: -1, itemCount: itemCount),
+              );
+            },
+          ),
+        ),
+        Positioned(
+          right: 18.w,
+          bottom: 12.h,
+          child: AnimatedBuilder(
+            animation: widget.pageController,
+            builder: (context, _) {
+              final current = widget.pageController.hasClients
+                  ? (widget.pageController.page ?? 0).round()
+                  : 0;
+              return _ReaderPageTurnControl(
+                icon: Icons.chevron_right_rounded,
+                semanticLabel: '다음 스프레드',
+                enabled: current < itemCount - 1 && !_isTurningWithControl,
+                onTap: () => _turnSpread(direction: 1, itemCount: itemCount),
+              );
+            },
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _ReaderPageTurnControl extends StatelessWidget {
+  const _ReaderPageTurnControl({
+    required this.icon,
+    required this.semanticLabel,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String semanticLabel;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: enabled ? onTap : null,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 160),
+          opacity: enabled ? 1 : 0.28,
+          child: Container(
+            width: 44.w,
+            height: 44.w,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.72),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Icon(icon, size: 28.sp, color: const Color(0xFF1B1916)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BlankBookPage extends StatelessWidget {
+  const _BlankBookPage({required this.pageWidth, required this.pageHeight});
+
+  final double pageWidth;
+  final double pageHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: pageWidth,
+      height: pageHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFCF5),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.035)),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookFlipLoadingPlaceholder extends StatelessWidget {
+  const _BookFlipLoadingPlaceholder({
+    required this.pageWidth,
+    required this.pageHeight,
+    this.child,
+  });
+
+  final double pageWidth;
+  final double pageHeight;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: pageWidth * 2,
+      height: pageHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFCF5),
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: child ?? const SizedBox.shrink(),
+      ),
+    );
+  }
+}
+
+class _SequentialBookFlipPages extends StatefulWidget {
+  const _SequentialBookFlipPages({
+    super.key,
+    required this.pageCount,
+    required this.pageSize,
+    required this.pixelRatio,
+    required this.pageBuilder,
+    required this.bookBuilder,
+    required this.loadingBuilder,
+    required this.errorBuilder,
+  });
+
+  final int pageCount;
+  final Size pageSize;
+  final double pixelRatio;
+  final Widget Function(BuildContext context, int index) pageBuilder;
+  final Widget Function(BuildContext context, List<ui.Image> pages) bookBuilder;
+  final WidgetBuilder loadingBuilder;
+  final WidgetBuilder errorBuilder;
+
+  @override
+  State<_SequentialBookFlipPages> createState() =>
+      _SequentialBookFlipPagesState();
+}
+
+class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
+  final GlobalKey _captureKey = GlobalKey();
+  final List<ui.Image> _images = [];
+  List<ui.Image>? _bookPages;
+  int _captureIndex = 0;
+  bool _hasError = false;
+  bool _captureScheduled = false;
+  bool _captureStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleCapture();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SequentialBookFlipPages oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pageCount != widget.pageCount ||
+        oldWidget.pageSize != widget.pageSize ||
+        oldWidget.pixelRatio != widget.pixelRatio) {
+      _disposeImages();
+      _images.clear();
+      _bookPages = null;
+      _captureIndex = 0;
+      _hasError = false;
+      _captureScheduled = false;
+      _captureStarted = false;
+      _scheduleCapture();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeImages();
+    super.dispose();
+  }
+
+  void _disposeImages() {
+    for (final image in _images) {
+      image.dispose();
+    }
+  }
+
+  void _scheduleCapture() {
+    if (_captureScheduled || _captureIndex >= widget.pageCount) return;
+    _captureScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!_captureStarted) {
+        _captureStarted = true;
+        await Future<void>.delayed(const Duration(milliseconds: 260));
+      }
+      if (mounted) unawaited(_captureCurrentPage());
+    });
+  }
+
+  Future<void> _captureCurrentPage([int attempt = 0]) async {
+    if (!mounted || _captureIndex >= widget.pageCount) return;
+    _captureScheduled = false;
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!mounted || _captureIndex >= widget.pageCount) return;
+
+    final object = _captureKey.currentContext?.findRenderObject();
+    if (object is! RenderRepaintBoundary) {
+      if (attempt < 6) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _captureCurrentPage(attempt + 1),
+        );
+      } else if (mounted) {
+        setState(() => _hasError = true);
+      }
+      return;
+    }
+
+    try {
+      final image = await object.toImage(pixelRatio: widget.pixelRatio);
+      if (!mounted) {
+        image.dispose();
+        return;
+      }
+      setState(() {
+        _images.add(image);
+        _captureIndex += 1;
+        if (_images.length == widget.pageCount) {
+          _bookPages = List<ui.Image>.unmodifiable(_images);
+        }
+      });
+      _scheduleCapture();
+    } on Object {
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) return widget.errorBuilder(context);
+    if (_images.length == widget.pageCount) {
+      return widget.bookBuilder(
+        context,
+        _bookPages ??= List<ui.Image>.unmodifiable(_images),
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(child: widget.loadingBuilder(context)),
+        Positioned(
+          left: 0,
+          top: 0,
+          width: widget.pageSize.width,
+          height: widget.pageSize.height,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: 0.01,
+              child: RepaintBoundary(
+                key: _captureKey,
+                child: widget.pageBuilder(context, _captureIndex),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PremiumSpreadStage extends StatelessWidget {
+  const _PremiumSpreadStage({required this.child, required this.isLandscape});
+
+  final Widget child;
+  final bool isLandscape;
+
+  @override
+  Widget build(BuildContext context) {
+    final floorShadowAlpha = isLandscape ? 0.10 : 0.08;
+    final cardShadowAlpha = isLandscape ? 0.10 : 0.075;
+    final spineAlpha = isLandscape ? 0.045 : 0.035;
+    final spineWidth = isLandscape ? 44.0 : 34.0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          left: 28.w,
+          right: 28.w,
+          bottom: -24.h,
+          height: 52.h,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999.r),
+              gradient: RadialGradient(
+                colors: [
+                  Colors.black.withValues(alpha: floorShadowAlpha),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFCF5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: cardShadowAlpha),
+                blurRadius: isLandscape ? 24 : 22,
+                offset: Offset(0, isLandscape ? 14 : 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            fit: StackFit.expand,
+            children: [
+              child,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Center(
+                    child: SizedBox(
+                      width: spineWidth,
+                      height: double.infinity,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: spineAlpha),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FocusReaderControls extends StatelessWidget {
+  const _FocusReaderControls({
+    required this.canGoBack,
+    required this.canGoForward,
+    required this.onPrevious,
+    required this.onEdit,
+    required this.onNext,
+  });
+
+  final bool canGoBack;
+  final bool canGoForward;
+  final VoidCallback onPrevious;
+  final VoidCallback onEdit;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context);
+    final isLandscape = screen.width > screen.height;
+    final controlHeight = isLandscape ? 44.0 : 44.0;
+    final sideButtonSize = isLandscape ? 38.0 : 38.0;
+    final primaryWidth = isLandscape ? 72.0 : 64.0;
+    final primaryHeight = isLandscape ? 34.0 : 32.0;
+    final editFontSize = isLandscape ? 12.0 : 12.0;
+    final iconSize = isLandscape ? 25.0 : 24.0;
+
+    Widget action({
+      required IconData icon,
+      required bool enabled,
+      required VoidCallback onTap,
+      bool primary = false,
+      required String label,
+    }) {
+      return Semantics(
+        button: true,
+        enabled: enabled,
+        label: label,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: enabled ? onTap : null,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 160),
+            opacity: enabled ? 1 : 0.28,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                width: primary ? primaryWidth : sideButtonSize,
+                height: primary ? primaryHeight : sideButtonSize,
+                decoration: BoxDecoration(
+                  color: primary ? const Color(0xFF1B1916) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(primary ? 99.r : 99.r),
+                ),
+                child: primary
+                    ? Center(
+                        child: Text(
+                          '편집',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: editFontSize,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        color: const Color(0xFF1B1916),
+                        size: iconSize,
+                      ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final children = [
+      Expanded(
+        child: action(
+          icon: Icons.chevron_left_rounded,
+          enabled: canGoBack,
+          onTap: onPrevious,
+          label: '이전 페이지',
+        ),
+      ),
+      Expanded(
+        child: action(
+          icon: Icons.edit_outlined,
+          enabled: true,
+          onTap: onEdit,
+          primary: true,
+          label: '현재 페이지 편집',
+        ),
+      ),
+      Expanded(
+        child: action(
+          icon: Icons.chevron_right_rounded,
+          enabled: canGoForward,
+          onTap: onNext,
+          label: '다음 페이지',
+        ),
+      ),
+    ];
+
+    return Container(
+      height: controlHeight,
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.66),
+        borderRadius: BorderRadius.circular(99.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(children: children),
     );
   }
 }

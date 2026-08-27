@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -10,7 +9,7 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-extensions.configure<ApplicationExtension>("android") {
+android {
     namespace = "com.devsheep.snap_fit"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion

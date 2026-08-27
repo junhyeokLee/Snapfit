@@ -6,9 +6,7 @@ import '../../viewmodels/home_view_model.dart';
 import '../../views/add_cover_screen.dart';
 import '../../views/album_reader_screen.dart';
 import 'home_delete_album_dialog.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../data/api/album_provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 액션 관련 헬퍼 클래스
@@ -97,54 +95,20 @@ class HomeAlbumActions {
     _isOpeningAlbum = true;
 
     final repository = ref.read(albumRepositoryProvider);
-    var lockAcquired = false;
+    Future<bool>? lockFuture;
     var needsRefresh = false;
 
     try {
-      // 1. 잠금 시도 (Lock)
-      try {
-        await repository.lockAlbum(album.id);
-        lockAcquired = true;
-      } catch (e) {
-        if (!context.mounted) return;
-        // 잠금 실패 (다른 사용자가 편집 중)
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: SnapFitColors.surfaceOf(ctx),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            title: Text(
-              '편집 제한',
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(ctx),
-                fontWeight: FontWeight.bold,
-                fontSize: 18.sp,
-              ),
-            ),
-            content: Text(
-              '현재 다른 사용자가 편집 중입니다.\n잠시 후 다시 시도해 주세요.',
-              style: TextStyle(
-                color: SnapFitColors.textSecondaryOf(ctx),
-                fontSize: 14.sp,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text(
-                  '확인',
-                  style: TextStyle(color: SnapFitColors.accent),
-                ),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
+      // 읽기 화면 진입은 서버 잠금 응답을 기다리지 않는다.
+      // 잠금은 편집 충돌 방지를 위한 백그라운드 상태로만 반영한다.
+      lockFuture = repository.lockAlbum(album.id).then((_) => true).catchError((
+        e,
+      ) {
+        debugPrint('HomeAlbumActions: Lock failed: $e');
+        return false;
+      });
 
-      // 2. 편집 준비
+      // 1. 편집 준비
       final vm = ref.read(albumEditorViewModelProvider.notifier);
       await ref.read(albumEditorViewModelProvider.future);
       await vm.prepareAlbumForEdit(album);
@@ -153,11 +117,18 @@ class HomeAlbumActions {
         return;
       }
 
-      // 3. 진입 (리더 화면으로 이동)
-      final result = await Navigator.push<Object?>(
+      // 2. 진입 (리더 화면으로 이동)
+      final preparedPages = vm.pages;
+      final opensToSpread = preparedPages.length > 1;
+      final initialSpreadIndex = opensToSpread ? 1 : 0;
+
+      final routeResult = Navigator.push<Object?>(
         context,
-        snapFitAlbumOpenRoute<Object?>(page: const AlbumReaderScreen()),
+        snapFitAlbumOpenRoute<Object?>(
+          page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
+        ),
       );
+      final result = await routeResult;
 
       if (result is Map) {
         final deletedAlbumId = result['deletedAlbumId'];
@@ -174,6 +145,7 @@ class HomeAlbumActions {
     } finally {
       // prepare/open 과정에서 예외가 나도 다음 앨범 탭이 영구 차단되지 않도록
       // 잠금 해제와 opening guard reset은 항상 수행한다.
+      final lockAcquired = await (lockFuture ?? Future.value(false));
       if (lockAcquired) {
         try {
           await repository.unlockAlbum(album.id);

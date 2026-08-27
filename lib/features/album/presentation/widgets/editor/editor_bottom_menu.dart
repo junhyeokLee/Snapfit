@@ -21,6 +21,10 @@ class EditorBottomMenu extends StatelessWidget {
   final bool isCover;
   final VoidCallback? onCover;
   final bool showCoverMenuItem;
+  final bool canUndo;
+  final bool canRedo;
+  final VoidCallback? onUndo;
+  final VoidCallback? onRedo;
 
   const EditorBottomMenu({
     super.key,
@@ -30,6 +34,10 @@ class EditorBottomMenu extends StatelessWidget {
     this.isCover = false,
     this.onCover,
     this.showCoverMenuItem = true,
+    this.canUndo = false,
+    this.canRedo = false,
+    this.onUndo,
+    this.onRedo,
   });
 
   @override
@@ -106,64 +114,95 @@ class EditorBottomMenu extends StatelessWidget {
             ),
           ];
 
-    final isDark = SnapFitColors.isDark(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isVerticalRail = constraints.maxWidth < 120;
+        final isDark = SnapFitColors.isDark(context);
 
-    return Container(
-      height: 90,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  const Color(0xFF1D2230).withOpacity(0.96),
-                  const Color(0xFF101820).withOpacity(0.92),
-                ]
-              : [
-                  Colors.white.withOpacity(0.92),
-                  const Color(0xFFEAFBFD).withOpacity(0.72),
-                  const Color(0xFFFFF4EA).withOpacity(0.86),
-                ],
-        ),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : SnapFitColors.deepCharcoal.withOpacity(0.08),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
-            blurRadius: 28,
-            offset: const Offset(0, -12),
+        return Container(
+          height: isVerticalRail ? double.infinity : 90,
+          width: isVerticalRail ? 62 : null,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24.r),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [
+                      const Color(0xFF1D2230).withOpacity(0.96),
+                      const Color(0xFF101820).withOpacity(0.92),
+                    ]
+                  : [
+                      Colors.white.withOpacity(0.92),
+                      const Color(0xFFEAFBFD).withOpacity(0.72),
+                      const Color(0xFFFFF4EA).withOpacity(0.86),
+                    ],
+            ),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.10)
+                  : SnapFitColors.deepCharcoal.withOpacity(0.08),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
+                blurRadius: 28,
+                offset: const Offset(0, -12),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24.r),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
-            child: Row(
-              children: items
-                  .map(
-                    (item) => Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 3.w),
-                      child: _buildMenuItem(context, item),
-                    ),
-                  )
-                  .toList(),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24.r),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: SingleChildScrollView(
+                scrollDirection: isVerticalRail
+                    ? Axis.vertical
+                    : Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: isVerticalRail
+                    ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
+                    : EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+                child: isVerticalRail
+                    ? Column(
+                        children: items
+                            .map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
+                                child: _buildMenuItem(
+                                  context,
+                                  item,
+                                  compact: true,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      )
+                    : Row(
+                        children: items
+                            .map(
+                              (item) => Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 3.w),
+                                child: _buildMenuItem(context, item),
+                              ),
+                            )
+                            .toList(),
+                      ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, _EditorMenuItem item) {
+  Widget _buildMenuItem(
+    BuildContext context,
+    _EditorMenuItem item, {
+    bool compact = false,
+  }) {
     final isSelected = !item.isAction && currentMode == item.mode;
     final isDark = SnapFitColors.isDark(context);
     final baseColor = isDark
@@ -184,9 +223,11 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: 58,
-        height: 66,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+        width: compact ? 44 : 58,
+        height: compact ? 38 : 66,
+        padding: compact
+            ? EdgeInsets.zero
+            : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22.r),
           gradient: isSelected
@@ -238,10 +279,10 @@ class EditorBottomMenu extends StatelessWidget {
                         : isFeatured
                         ? SnapFitColors.accent
                         : baseColor,
-                    size: 22,
+                    size: compact ? 19 : 22,
                   ),
                 ),
-                if (item.isAction)
+                if (!compact && item.isAction)
                   Positioned(
                     right: -4,
                     top: -5,
@@ -262,27 +303,29 @@ class EditorBottomMenu extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
-                      .copyWith(
-                        fontSize: 10,
-                        height: 1.0,
-                        color: isSelected
-                            ? Colors.white
-                            : isFeatured
-                            ? SnapFitColors.accent
-                            : baseColor,
-                        fontWeight: isSelected || isFeatured
-                            ? FontWeight.w900
-                            : FontWeight.w800,
-                        letterSpacing: -0.12,
-                      ),
-            ),
+            if (!compact) ...[
+              const SizedBox(height: 6),
+              Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
+                        .copyWith(
+                          fontSize: 10,
+                          height: 1.0,
+                          color: isSelected
+                              ? Colors.white
+                              : isFeatured
+                              ? SnapFitColors.accent
+                              : baseColor,
+                          fontWeight: isSelected || isFeatured
+                              ? FontWeight.w900
+                              : FontWeight.w800,
+                          letterSpacing: -0.12,
+                        ),
+              ),
+            ],
           ],
         ),
       ),

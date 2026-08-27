@@ -26,6 +26,8 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
   final LayerBuilder previewBuilder;
   final Size baseCanvasSize;
   final double height;
+  final int? currentSpreadIndex;
+  final ValueChanged<int>? onSpreadSelected;
 
   const AlbumReaderThumbnailStrip({
     super.key,
@@ -34,6 +36,8 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
     required this.previewBuilder,
     required this.baseCanvasSize,
     this.height = 70,
+    this.currentSpreadIndex,
+    this.onSpreadSelected,
   });
 
   static bool _logged = false;
@@ -91,15 +95,17 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
 
     final spreadItems = _buildSpreadItems(pages.length);
 
-    if (pageController != null) {
+    if (pageController != null || onSpreadSelected != null) {
       return SizedBox(
         height: height + 12.h,
         child: AnimatedBuilder(
-          animation: pageController!,
+          animation: pageController ?? const AlwaysStoppedAnimation(0),
           builder: (context, _) {
-            final spreadIdx = pageController!.hasClients
-                ? (pageController!.page?.round() ?? 0)
-                : 0;
+            final spreadIdx =
+                currentSpreadIndex ??
+                (pageController?.hasClients == true
+                    ? (pageController!.page?.round() ?? 0)
+                    : 0);
 
             return ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -112,7 +118,12 @@ class AlbumReaderThumbnailStrip extends ConsumerWidget {
 
                 return GestureDetector(
                   onTap: () {
-                    pageController!.animateToPage(
+                    final callback = onSpreadSelected;
+                    if (callback != null) {
+                      callback(i);
+                      return;
+                    }
+                    pageController?.animateToPage(
                       i,
                       duration: const Duration(milliseconds: 280),
                       curve: Curves.easeOutCubic,

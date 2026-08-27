@@ -85,6 +85,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final h = constraints.maxHeight;
+          final w = constraints.maxWidth;
+          final screen = MediaQuery.sizeOf(context);
+          final isScreenLandscape = screen.width > screen.height;
           final ratio = coverSize.ratio;
           final bool isLandscape = ratio > 1.12;
           final bool isPortrait = ratio < 0.88;
@@ -94,9 +97,13 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
               ? 'assets/snapfit_home_landscape.jpg'
               : 'assets/snapfit_home_square.jpg';
           final stageMaxHeight = math.max(h, 1.0);
-          final squareReferenceSide = (314.w)
-              .clamp(258.0, math.min(328.w, stageMaxHeight * 0.78))
-              .toDouble();
+          final squareReferenceSide = isScreenLandscape
+              ? (stageMaxHeight * 0.76)
+                    .clamp(190.0, math.min(292.0, w * 0.30))
+                    .toDouble()
+              : (314.w)
+                    .clamp(258.0, math.min(328.w, stageMaxHeight * 0.78))
+                    .toDouble();
           final contentWidth =
               squareReferenceSide * coverSize.realSize.width / 20;
           final contentHeight =
@@ -105,8 +112,10 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             -1.0,
             1.0,
           );
-          final gapPush = pageDelta * 214.w;
-          final sideLift = (1 - focus) * 38.h;
+          final gapPush =
+              pageDelta *
+              (isScreenLandscape ? math.min(206.0, w * 0.24) : 214.w);
+          final sideLift = (1 - focus) * (isScreenLandscape ? 18.0 : 38.h);
           final coverContent = OverflowBox(
             minWidth: 0,
             minHeight: 0,
@@ -132,7 +141,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             builder: (context, child) {
               final phase = math.sin(_floatController.value * math.pi * 2);
               final floating = ((phase + 1) / 2) * focus;
-              final floatOffset = -24.h * floating;
+              final floatOffset = -(isScreenLandscape ? 16.0 : 24.h) * floating;
               final focusedRotateY = -0.16 + (0.11 * floating);
               final focusedRotateZ = -0.024 + (0.052 * floating);
               final sideRotateY = pageDelta == 0 ? 0.0 : -0.244 * pageDelta;

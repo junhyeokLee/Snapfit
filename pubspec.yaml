@@ -64,8 +64,8 @@ dependencies:
   share_plus: ^11.1.0
   app_links: ^6.4.0
   flutter_svg: ^2.2.1
-
-
+  book_page_flip:
+    path: packages/book_page_flip
 dev_dependencies:
   flutter_test:
     sdk: flutter

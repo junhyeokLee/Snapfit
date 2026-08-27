@@ -145,13 +145,13 @@ PageRoute<T> snapFitAlbumOpenRoute<T>({
 }) {
   return PageRouteBuilder<T>(
     settings: settings,
-    transitionDuration: const Duration(milliseconds: 520),
-    reverseTransitionDuration: SnapFitMotion.medium,
+    transitionDuration: const Duration(milliseconds: 420),
+    reverseTransitionDuration: SnapFitMotion.fast,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
-        curve: SnapFitMotion.entrance,
+        curve: Curves.easeOutQuart,
         reverseCurve: Curves.easeInCubic,
       );
       return AnimatedBuilder(
@@ -159,45 +159,73 @@ PageRoute<T> snapFitAlbumOpenRoute<T>({
         child: child,
         builder: (context, child) {
           final value = curved.value;
+          final fold = 1 - value;
           final matrix = Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..translate(0.0, 22.0 * (1 - value))
-            ..rotateX(-0.045 * (1 - value));
-          return FadeTransition(
-            opacity: curved,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Transform(
-                  key: const Key('snapFitAlbumOpenDimensionalTransform'),
-                  alignment: Alignment.center,
+            ..setEntry(3, 2, 0.0012)
+            ..translate(18.0 * fold, 6.0 * fold)
+            ..rotateY(-0.20 * fold)
+            ..rotateX(0.025 * fold);
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
+              Opacity(
+                opacity: (0.18 + (0.82 * value)).clamp(0.0, 1.0),
+                child: Transform(
+                  alignment: Alignment.centerLeft,
                   transform: matrix,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.955, end: 1).animate(curved),
-                    child: child,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      final height = constraints.maxHeight;
+                      final revealWidth = width * (0.72 + (0.28 * value));
+
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          width: revealWidth,
+                          height: height,
+                          child: ClipRect(
+                            child: OverflowBox(
+                              alignment: Alignment.centerLeft,
+                              minWidth: width,
+                              maxWidth: width,
+                              minHeight: height,
+                              maxHeight: height,
+                              child: SizedBox(
+                                width: width,
+                                height: height,
+                                child: child,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                IgnorePointer(
-                  child: Opacity(
-                    opacity: (1 - value) * 0.22,
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: Alignment.topCenter,
-                          radius: 1.12,
-                          colors: [
-                            Color(0x33FFFFFF),
-                            Color(0x002EBCE7),
-                            Color(0x1A111111),
-                          ],
-                          stops: [0.0, 0.54, 1.0],
-                        ),
+              ),
+              IgnorePointer(
+                child: Opacity(
+                  opacity: 0.16 * fold,
+                  child: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Color(0x00FFFFFF),
+                          Color(0x26FFFFFF),
+                          Color(0x22000000),
+                        ],
+                        stops: [0.0, 0.55, 1.0],
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       );

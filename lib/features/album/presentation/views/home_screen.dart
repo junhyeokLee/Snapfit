@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/screen_logger.dart';
-import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../profile/presentation/views/my_page_screen.dart';
@@ -118,106 +118,134 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final baseBackground = SnapFitColors.backgroundOf(context);
-    final homeBackground = baseBackground;
+    const paperTop = Color(0xFFEFE2D0);
+    const paperBottom = Color(0xFFF8EFE2);
+    final homeBackground = uiState.bottomNavIndex == 0
+        ? paperTop
+        : baseBackground;
+    const homeOverlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    );
+    SystemChrome.setSystemUIOverlayStyle(homeOverlayStyle);
 
-    return PopScope(
-      canPop: !isAndroid || _bottomNavHistory.length <= 1,
-      onPopInvoked: (didPop) {
-        if (!isAndroid || didPop) return;
-        _handleSystemBack();
-      },
-      child: Scaffold(
-        backgroundColor: uiState.bottomNavIndex == 0
-            ? homeBackground
-            : baseBackground,
-        bottomNavigationBar: HomeBottomNavigationBar(
-          currentIndex: uiState.bottomNavIndex,
-          hasUnreadNotification: hasUnreadNotification,
-          onTap: _handleBottomNavTap,
-        ),
-        floatingActionButton: uiState.bottomNavIndex == 1
-            ? FloatingActionButton(
-                key: const Key('homeCreateAlbumFab'),
-                heroTag: 'homeCreateAlbumFab',
-                tooltip: '새 앨범',
-                elevation: 7,
-                highlightElevation: 3,
-                backgroundColor: SnapFitColors.accent,
-                foregroundColor: Colors.white,
-                shape: const CircleBorder(),
-                onPressed: handleCreateAlbum,
-                child: const Icon(Icons.add_rounded, size: 30),
-              )
-            : null,
-        body: _buildBottomNavBody(
-          context,
-          currentBottomNavIndex: uiState.bottomNavIndex,
-          homeBody: Container(
-            color: uiState.bottomNavIndex == 0
-                ? homeBackground
-                : baseBackground,
-            child: SafeArea(
-              // SafeArea applied to the whole body
-              child: albumsAsync.when(
-                data: (albums) {
-                  final currentUserId =
-                      authAsync.asData?.value?.id.toString() ?? '';
-                  final prepared = buildHomeAlbumsData(
-                    albums: albums,
-                    currentUserId: currentUserId,
-                  );
-                  final homeContent = RefreshIndicator(
-                    onRefresh: _handlePullToRefresh,
-                    child: CustomScrollView(
-                      physics: platformScrollPhysics(alwaysScrollable: true),
-                      slivers: [
-                        if (prepared.baseAlbums.isNotEmpty)
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: HomeAlbumSlider(
-                              albums: List<Album>.from(prepared.baseAlbums)
-                                ..sort(compareAlbumByLatestDesc),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: homeOverlayStyle,
+      child: PopScope(
+        canPop: !isAndroid || _bottomNavHistory.length <= 1,
+        onPopInvoked: (didPop) {
+          if (!isAndroid || didPop) return;
+          _handleSystemBack();
+        },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isLandscape = constraints.maxWidth > constraints.maxHeight;
+            final body = _buildBottomNavBody(
+              context,
+              currentBottomNavIndex: uiState.bottomNavIndex,
+              homeBody: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: uiState.bottomNavIndex == 0
+                      ? paperTop
+                      : baseBackground,
+                  gradient: uiState.bottomNavIndex == 0
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [paperTop, paperBottom],
+                        )
+                      : null,
+                ),
+                child: SafeArea(
+                  left: !isLandscape,
+                  // SafeArea applied to the whole body
+                  child: albumsAsync.when(
+                    data: (albums) {
+                      final currentUserId =
+                          authAsync.asData?.value?.id.toString() ?? '';
+                      final prepared = buildHomeAlbumsData(
+                        albums: albums,
+                        currentUserId: currentUserId,
+                      );
+                      final sortedBaseAlbums = List<Album>.from(
+                        prepared.baseAlbums,
+                      )..sort(compareAlbumByLatestDesc);
+                      final homeContent = sortedBaseAlbums.isNotEmpty
+                          ? HomeAlbumSlider(
+                              albums: sortedBaseAlbums,
                               onCreateAlbum: handleCreateAlbum,
                               onOpenAlbumTab: () => _handleBottomNavTap(1),
-                            ),
-                          )
-                        else
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: (MediaQuery.sizeOf(context).height * 0.68)
-                                  .clamp(420.0, 760.0),
-                              child: HomeEmptyState(
-                                onCreate: handleCreateAlbum,
-                              ),
-                            ),
-                          ),
-                      ],
+                            )
+                          : HomeEmptyState(onCreate: handleCreateAlbum);
+
+                      final albumTabContent = HomeAlbumTabScreen(
+                        allAlbums: prepared.myRecordsAlbums,
+                        currentUserId: currentUserId,
+                        albumTabIndex: uiState.albumTabIndex,
+                        favoriteAlbumIds: _favoriteAlbumIds,
+                        onAlbumTabChanged: uiStateNotifier.setAlbumTabIndex,
+                        onToggleFavorite: _toggleFavorite,
+                        onRefresh: _handlePullToRefresh,
+                      );
+
+                      return uiState.bottomNavIndex == 1
+                          ? albumTabContent
+                          : homeContent;
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: SnapFitColors.accentLight,
+                      ),
                     ),
-                  );
-
-                  final albumTabContent = HomeAlbumTabScreen(
-                    allAlbums: prepared.myRecordsAlbums,
-                    currentUserId: currentUserId,
-                    albumTabIndex: uiState.albumTabIndex,
-                    favoriteAlbumIds: _favoriteAlbumIds,
-                    onAlbumTabChanged: uiStateNotifier.setAlbumTabIndex,
-                    onToggleFavorite: _toggleFavorite,
-                    onRefresh: _handlePullToRefresh,
-                  );
-
-                  return uiState.bottomNavIndex == 1
-                      ? albumTabContent
-                      : homeContent;
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: SnapFitColors.accentLight,
+                    error: (err, stack) => HomeErrorState(error: err),
                   ),
                 ),
-                error: (err, stack) => HomeErrorState(error: err),
               ),
-            ),
-          ),
+            );
+
+            return Scaffold(
+              backgroundColor: uiState.bottomNavIndex == 0
+                  ? homeBackground
+                  : baseBackground,
+              bottomNavigationBar: isLandscape
+                  ? null
+                  : HomeBottomNavigationBar(
+                      currentIndex: uiState.bottomNavIndex,
+                      hasUnreadNotification: hasUnreadNotification,
+                      onTap: _handleBottomNavTap,
+                    ),
+              floatingActionButton: uiState.bottomNavIndex == 1
+                  ? FloatingActionButton(
+                      key: const Key('homeCreateAlbumFab'),
+                      heroTag: 'homeCreateAlbumFab',
+                      tooltip: '새 앨범',
+                      elevation: 7,
+                      highlightElevation: 3,
+                      backgroundColor: SnapFitColors.accent,
+                      foregroundColor: Colors.white,
+                      shape: const CircleBorder(),
+                      onPressed: handleCreateAlbum,
+                      child: const Icon(Icons.add_rounded, size: 30),
+                    )
+                  : null,
+              body: isLandscape
+                  ? Row(
+                      children: [
+                        HomeBottomNavigationBar(
+                          currentIndex: uiState.bottomNavIndex,
+                          hasUnreadNotification: hasUnreadNotification,
+                          onTap: _handleBottomNavTap,
+                          rail: true,
+                        ),
+                        Expanded(child: body),
+                      ],
+                    )
+                  : body,
+            );
+          },
         ),
       ),
     );

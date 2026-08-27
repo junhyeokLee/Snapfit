@@ -9,6 +9,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
   final VoidCallback? onDelete; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onInvite; // null이면 메뉴에서 숨김 처리
   final VoidCallback? onDetail; // null이면 메뉴에서 숨김 처리
+  final bool compact;
 
   const AlbumReaderMoreOptionsSheet({
     super.key,
@@ -17,30 +18,52 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
     this.onDelete,
     this.onInvite,
     this.onDetail,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+      margin: compact
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(compact ? 18.r : 24.r),
+        border: compact
+            ? Border.all(
+                color: SnapFitColors.textMutedOf(context).withOpacity(0.10),
+              )
+            : null,
+        boxShadow: compact
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.16),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
+                ),
+              ]
+            : null,
       ),
       child: SafeArea(
+        top: !compact,
+        bottom: !compact,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 8.h),
-            Container(
-              width: 36.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r),
+            if (!compact) ...[
+              SizedBox(height: 8.h),
+              Container(
+                width: 36.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
               ),
-            ),
-            SizedBox(height: 20.h),
+              SizedBox(height: 20.h),
+            ] else
+              SizedBox(height: 8.h),
 
             // 상세보기 (onDetail이 전달되었을 때만 노출)
             if (onDetail != null) ...[
@@ -48,6 +71,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 icon: Icons.zoom_in_rounded,
                 label: '상세보기',
                 onTap: onDetail!,
+                compact: compact,
               ),
               Divider(
                 height: 1,
@@ -62,6 +86,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               icon: Icons.edit_note_rounded,
               label: '수정하기',
               onTap: onEdit,
+              compact: compact,
             ),
 
             Divider(
@@ -77,6 +102,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 icon: Icons.group_add_rounded,
                 label: '초대하기',
                 onTap: onInvite!,
+                compact: compact,
               ),
               Divider(
                 height: 1,
@@ -93,6 +119,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               iconColor: SnapFitColors.accent,
               labelColor: SnapFitColors.accent,
               onTap: onConfirm,
+              compact: compact,
             ),
 
             if (onDelete != null) ...[
@@ -108,10 +135,11 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
                 iconColor: Colors.redAccent,
                 labelColor: Colors.redAccent,
                 onTap: onDelete!,
+                compact: compact,
               ),
             ],
 
-            SizedBox(height: 8.h),
+            SizedBox(height: compact ? 8.h : 8.h),
           ],
         ),
       ),
@@ -125,6 +153,7 @@ class _SheetItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color? iconColor;
   final Color? labelColor;
+  final bool compact;
 
   const _SheetItem({
     required this.icon,
@@ -132,6 +161,7 @@ class _SheetItem extends StatelessWidget {
     required this.onTap,
     this.iconColor,
     this.labelColor,
+    this.compact = false,
   });
 
   @override
@@ -140,19 +170,22 @@ class _SheetItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 18.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 14.w : 24.w,
+          vertical: compact ? 10.h : 18.h,
+        ),
         child: Row(
           children: [
             Icon(
               icon,
               color: iconColor ?? SnapFitColors.textSecondaryOf(context),
-              size: 22.sp,
+              size: compact ? 18.sp : 22.sp,
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: compact ? 10.w : 16.w),
             Text(
               label,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: compact ? 13.sp : 16.sp,
                 fontWeight: FontWeight.w600,
                 color: color,
               ),

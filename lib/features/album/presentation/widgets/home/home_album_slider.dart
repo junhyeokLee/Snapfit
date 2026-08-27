@@ -114,6 +114,39 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLandscape = constraints.maxWidth > constraints.maxHeight;
+        final headerHeight = isLandscape ? 50.0 : 58.h;
+        final stageTop = isLandscape ? 18.0 : 58.h;
+        final stageBottom = isLandscape ? 72.0 : 110.h;
+        final controlsBottom = isLandscape ? 14.0 : 64.h;
+        final controlsWidth = isLandscape
+            ? (constraints.maxWidth * 0.28).clamp(236.0, 300.0)
+            : null;
+
+        return _buildSliderStage(
+          context,
+          headerHeight: headerHeight,
+          stageTop: stageTop,
+          stageBottom: stageBottom,
+          controlsBottom: controlsBottom,
+          controlsWidth: controlsWidth,
+          sideInset: isLandscape ? 28.0 : 20.w,
+        );
+      },
+    );
+  }
+
+  Widget _buildSliderStage(
+    BuildContext context, {
+    required double headerHeight,
+    required double stageTop,
+    required double stageBottom,
+    required double controlsBottom,
+    required double sideInset,
+    double? controlsWidth,
+  }) {
     final visibleIndices = <int>[];
     for (var index = 0; index < widget.albums.length; index += 1) {
       if ((index - _visualPage).abs() <= 1.35) {
@@ -151,10 +184,10 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
           const Positioned.fill(child: _HomeAlbumStageBackground()),
           Positioned(
             top: 0,
-            left: 20.w,
-            right: 20.w,
+            left: sideInset,
+            right: sideInset,
             child: SizedBox(
-              height: 58.h,
+              height: headerHeight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -175,8 +208,8 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
           Positioned(
             left: 0,
             right: 0,
-            top: 58.h,
-            bottom: 110.h,
+            top: stageTop,
+            bottom: stageBottom,
             child: Stack(
               clipBehavior: Clip.none,
               fit: StackFit.expand,
@@ -184,13 +217,19 @@ class _HomeAlbumSliderState extends ConsumerState<HomeAlbumSlider>
             ),
           ),
           Positioned(
-            left: 70.w,
-            right: 70.w,
-            bottom: 64.h,
-            child: _HomeGlassControls(
-              onPrevious: () => _animateToIndex(_focusedIndex - 1),
-              onOpen: _openFocusedAlbum,
-              onNext: () => _animateToIndex(_focusedIndex + 1),
+            left: 0,
+            right: 0,
+            bottom: controlsBottom,
+            child: Center(
+              child: SizedBox(
+                width:
+                    controlsWidth ?? (MediaQuery.sizeOf(context).width - 140.w),
+                child: _HomeGlassControls(
+                  onPrevious: () => _animateToIndex(_focusedIndex - 1),
+                  onOpen: _openFocusedAlbum,
+                  onNext: () => _animateToIndex(_focusedIndex + 1),
+                ),
+              ),
             ),
           ),
         ],
@@ -239,6 +278,9 @@ class _StageCircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    final size = isLandscape ? 44.0 : 38.w;
     return Tooltip(
       message: tooltip,
       child: Material(
@@ -247,14 +289,18 @@ class _StageCircleButton extends StatelessWidget {
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: Container(
-            width: 38.w,
-            height: 38.w,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withOpacity(0.78),
               border: Border.all(color: Colors.black.withOpacity(0.08)),
             ),
-            child: Icon(icon, size: 21.sp, color: const Color(0xFF141312)),
+            child: Icon(
+              icon,
+              size: isLandscape ? 28 : 21.sp,
+              color: const Color(0xFF141312),
+            ),
           ),
         ),
       ),
@@ -275,9 +321,11 @@ class _HomeGlassControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
     return Container(
-      height: 74.h,
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      height: isLandscape ? 58 : 74.h,
+      padding: EdgeInsets.symmetric(horizontal: isLandscape ? 8 : 12.w),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.54),
         borderRadius: BorderRadius.circular(999.r),
@@ -286,7 +334,7 @@ class _HomeGlassControls extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.14),
             blurRadius: 34.r,
-            offset: Offset(0, 18.h),
+            offset: Offset(0, isLandscape ? 10 : 18.h),
           ),
         ],
       ),
@@ -297,13 +345,13 @@ class _HomeGlassControls extends StatelessWidget {
             icon: Icons.chevron_left_rounded,
             onTap: onPrevious,
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: isLandscape ? 10 : 12.w),
           _RoundControlButton(
             icon: Icons.north_east_rounded,
             onTap: onOpen,
             primary: true,
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: isLandscape ? 10 : 12.w),
           _RoundControlButton(icon: Icons.chevron_right_rounded, onTap: onNext),
         ],
       ),
@@ -331,6 +379,11 @@ class _RoundControlButtonState extends State<_RoundControlButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    final size = widget.primary
+        ? (isLandscape ? 48.0 : 58.w)
+        : (isLandscape ? 42.0 : 48.w);
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapCancel: () => setState(() => _pressed = false),
@@ -341,8 +394,8 @@ class _RoundControlButtonState extends State<_RoundControlButton> {
         curve: Curves.easeOutCubic,
         scale: _pressed ? 0.94 : 1,
         child: Container(
-          width: widget.primary ? 58.w : 48.w,
-          height: widget.primary ? 58.w : 48.w,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: widget.primary ? Colors.white : const Color(0xFF101010),
@@ -361,7 +414,11 @@ class _RoundControlButtonState extends State<_RoundControlButton> {
           ),
           child: widget.primary
               ? null
-              : Icon(widget.icon, size: 22.sp, color: Colors.white),
+              : Icon(
+                  widget.icon,
+                  size: isLandscape ? 25 : 22.sp,
+                  color: Colors.white,
+                ),
         ),
       ),
     );

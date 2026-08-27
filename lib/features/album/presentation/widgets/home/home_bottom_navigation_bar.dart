@@ -7,12 +7,14 @@ class HomeBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final bool hasUnreadNotification;
+  final bool rail;
 
   const HomeBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     this.hasUnreadNotification = false,
+    this.rail = false,
   });
 
   static bool _logged = false;
@@ -26,6 +28,89 @@ class HomeBottomNavigationBar extends StatelessWidget {
         '홈 하단 네비 · 홈/앨범/스토어/알림/설정',
       );
     }
+    final items = [
+      _BottomNavItem(
+        icon: Icons.home_rounded,
+        label: '홈',
+        isSelected: currentIndex == 0,
+        onTap: () => onTap(0),
+        rail: rail,
+      ),
+      _BottomNavItem(
+        icon: Icons.auto_stories_rounded,
+        label: '앨범',
+        isSelected: currentIndex == 1,
+        onTap: () => onTap(1),
+        rail: rail,
+      ),
+      _BottomNavItem(
+        icon: Icons.storefront_rounded,
+        label: '스토어',
+        isSelected: currentIndex == 2,
+        onTap: () => onTap(2),
+        rail: rail,
+      ),
+      _BottomNavItem(
+        icon: Icons.notifications_rounded,
+        label: '알림',
+        isSelected: currentIndex == 3,
+        onTap: () => onTap(3),
+        showBadge: hasUnreadNotification,
+        rail: rail,
+      ),
+      _BottomNavItem(
+        icon: Icons.person_rounded,
+        label: '마이',
+        isSelected: currentIndex == 4,
+        onTap: () => onTap(4),
+        rail: rail,
+      ),
+    ];
+
+    if (rail) {
+      return MediaQuery.removePadding(
+        context: context,
+        removeLeft: true,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFFF8EFE2), Color(0xFFEFE2D0)],
+            ),
+          ),
+          child: SizedBox(
+            width: 86,
+            child: SafeArea(
+              right: false,
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  width: 62,
+                  height: 336,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF111111),
+                    borderRadius: BorderRadius.circular(999.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.20),
+                        blurRadius: 24.r,
+                        offset: const Offset(10, 0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [for (final item in items) Expanded(child: item)],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return MediaQuery.removePadding(
       context: context,
       removeBottom: true,
@@ -57,44 +142,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
                 ],
               ),
               child: Row(
-                children: [
-                  Expanded(
-                    child: _BottomNavItem(
-                      label: '홈',
-                      isSelected: currentIndex == 0,
-                      onTap: () => onTap(0),
-                    ),
-                  ),
-                  Expanded(
-                    child: _BottomNavItem(
-                      label: '앨범',
-                      isSelected: currentIndex == 1,
-                      onTap: () => onTap(1),
-                    ),
-                  ),
-                  Expanded(
-                    child: _BottomNavItem(
-                      label: '스토어',
-                      isSelected: currentIndex == 2,
-                      onTap: () => onTap(2),
-                    ),
-                  ),
-                  Expanded(
-                    child: _BottomNavItem(
-                      label: '알림',
-                      isSelected: currentIndex == 3,
-                      onTap: () => onTap(3),
-                      showBadge: hasUnreadNotification,
-                    ),
-                  ),
-                  Expanded(
-                    child: _BottomNavItem(
-                      label: '마이',
-                      isSelected: currentIndex == 4,
-                      onTap: () => onTap(4),
-                    ),
-                  ),
-                ],
+                children: [for (final item in items) Expanded(child: item)],
               ),
             ),
           ),
@@ -106,16 +154,20 @@ class HomeBottomNavigationBar extends StatelessWidget {
 
 /// 바텀 네비게이션 아이템
 class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
   final bool showBadge;
+  final bool rail;
 
   const _BottomNavItem({
+    required this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
     this.showBadge = false,
+    this.rail = false,
   });
 
   @override
@@ -123,6 +175,75 @@ class _BottomNavItem extends StatelessWidget {
     const selectedColor = Color(0xFF08B8D0);
     final unselectedColor = Colors.white.withOpacity(0.46);
     final color = isSelected ? selectedColor : unselectedColor;
+    if (rail) {
+      return Tooltip(
+        message: label,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                width: 48,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.10)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon, size: 22, color: color),
+                        const SizedBox(height: 4),
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.clip,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                            letterSpacing: 0,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (showBadge)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: selectedColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final labelText = AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
