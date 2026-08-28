@@ -80,6 +80,8 @@ void main() {
     await tester.pump();
 
     expect(fake.kakaoCalled, isTrue);
+    expect(find.text('로그인 중…'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNWidgets(2));
     fake.completeKakao();
   });
 
@@ -109,6 +111,61 @@ void main() {
     await tester.pump();
 
     expect(fake.googleCalled, isTrue);
+    expect(find.text('로그인 중…'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNWidgets(2));
     fake.completeGoogle();
+  });
+
+  testWidgets('loading spinner appears only on the selected provider button', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('카카오로 계속하기'));
+    await tester.pump();
+
+    final kakaoButton = find.ancestor(
+      of: find.text('카카오로 계속하기'),
+      matching: find.byType(ElevatedButton),
+    );
+    final googleButton = find.ancestor(
+      of: find.text('Google로 계속하기'),
+      matching: find.byType(ElevatedButton),
+    );
+
+    expect(
+      find.descendant(
+        of: kakaoButton,
+        matching: find.byType(CircularProgressIndicator),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: googleButton,
+        matching: find.byType(CircularProgressIndicator),
+      ),
+      findsNothing,
+    );
+    expect(tester.widget<ElevatedButton>(googleButton).onPressed, isNull);
+
+    fake.completeKakao();
   });
 }

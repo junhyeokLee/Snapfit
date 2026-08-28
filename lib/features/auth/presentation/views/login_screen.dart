@@ -17,8 +17,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  bool _loading = false;
+  _LoginProvider? _loadingProvider;
   bool _animateIn = false;
+
+  bool get _isLoading => _loadingProvider != null;
 
   @override
   void initState() {
@@ -33,8 +35,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _loginWithKakao() async {
     final canProceed = await _ensureConsentBeforeLogin();
     if (!canProceed) return;
-    if (_loading) return;
-    setState(() => _loading = true);
+    if (_isLoading) return;
+    setState(() => _loadingProvider = _LoginProvider.kakao);
     try {
       await ref.read(authViewModelProvider.notifier).loginWithKakao();
       await ref.read(authViewModelProvider.notifier).syncConsentIfPresent();
@@ -44,15 +46,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('카카오 로그인 실패: $e')));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _loadingProvider = null);
     }
   }
 
   Future<void> _loginWithGoogle() async {
     final canProceed = await _ensureConsentBeforeLogin();
     if (!canProceed) return;
-    if (_loading) return;
-    setState(() => _loading = true);
+    if (_isLoading) return;
+    setState(() => _loadingProvider = _LoginProvider.google);
     try {
       await ref.read(authViewModelProvider.notifier).loginWithGoogle();
       await ref.read(authViewModelProvider.notifier).syncConsentIfPresent();
@@ -62,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('구글 로그인 실패: $e')));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _loadingProvider = null);
     }
   }
 
@@ -366,25 +368,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             SizedBox(height: 24.h),
                             _SocialLoginButton.kakao(
-                              loading: _loading,
-                              onPressed: _loading ? null : _loginWithKakao,
+                              loading: _loadingProvider == _LoginProvider.kakao,
+                              onPressed: _isLoading ? null : _loginWithKakao,
                             ),
                             SizedBox(height: 10.h),
                             _SocialLoginButton.google(
-                              loading: _loading,
-                              onPressed: _loading ? null : _loginWithGoogle,
+                              loading:
+                                  _loadingProvider == _LoginProvider.google,
+                              onPressed: _isLoading ? null : _loginWithGoogle,
                             ),
-                            if (_loading) ...[
+                            if (_isLoading) ...[
                               SizedBox(height: 16.h),
-                              Center(
-                                child: SizedBox(
-                                  width: 18.w,
-                                  height: 18.w,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.2,
-                                    color: SnapFitColors.accent,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 18.w,
+                                    height: 18.w,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      color: SnapFitColors.accent,
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    '로그인 중…',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: SnapFitColors.textMutedOf(context),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                             SizedBox(height: 14.h),
@@ -477,6 +492,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+
+enum _LoginProvider { kakao, google }
 
 class _BackgroundBlob extends StatelessWidget {
   const _BackgroundBlob({required this.size, required this.color});
