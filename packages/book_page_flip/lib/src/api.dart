@@ -498,14 +498,14 @@ double bookFlipCurlSag(BookFlipCurl c) => _kSagPeak * c.droop;
 /// Dispose the controller when you no longer need it.
 class BookFlipController extends ChangeNotifier {
   /// Creates a controller, optionally opening at [initialSpread].
-  BookFlipController({int initialSpread = 0}) : _initialSpread = initialSpread;
+  BookFlipController({int initialSpread = 0}) : _spreadCache = initialSpread;
 
-  final int _initialSpread;
+  int _spreadCache;
   _BookFlipState? _state;
 
   /// The spread (open two-page view) shown at rest. Spread 0 is the first two
   /// pages.
-  int get currentSpread => _state?._spread ?? _initialSpread;
+  int get currentSpread => _state?._spread ?? _spreadCache;
 
   /// Total number of spreads in the book (pages shown two at a time). Useful for
   /// a "spread X of N" indicator. 0 until the book has loaded.
@@ -533,7 +533,10 @@ class BookFlipController extends ChangeNotifier {
 
   /// Jumps straight to [spread] with no animation — handy for restoring a saved
   /// position.
-  void goToSpread(int spread) => _state?._jumpTo(spread);
+  void goToSpread(int spread) {
+    _spreadCache = spread;
+    _state?._jumpTo(spread);
+  }
 
   /// Total number of pages in the book (two per spread). 0 until it has loaded.
   int get totalPages => _state?._pageCount ?? 0;
@@ -543,7 +546,7 @@ class BookFlipController extends ChangeNotifier {
   int get currentPage => currentSpread * 2;
 
   /// Jumps straight to the spread that contains [page] (0-based), no animation.
-  void goToPage(int page) => _state?._jumpTo(page ~/ 2);
+  void goToPage(int page) => goToSpread(page ~/ 2);
 
   void _emit() => notifyListeners();
 }

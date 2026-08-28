@@ -48,8 +48,9 @@ class _BookFlipState extends State<BookFlip>
         'This BookFlipController is already attached to another BookFlip — use '
         'one controller per widget.');
     widget.controller?._state = this;
-    _spread = (widget.controller?._initialSpread ?? 0)
+    _spread = (widget.controller?._spreadCache ?? 0)
         .clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
+    widget.controller?._spreadCache = _spread;
     // Clamp to the asserted range so a release build (asserts stripped) can never
     // overflow the 16-bit mesh index — a stripped assert would otherwise corrupt the
     // triangle soup. Debug builds still trip the constructor assert first.
@@ -69,6 +70,7 @@ class _BookFlipState extends State<BookFlip>
     super.didUpdateWidget(old);
     if (!identical(old.controller, widget.controller)) {
       if (identical(old.controller?._state, this)) {
+        old.controller?._spreadCache = _spread;
         old.controller?._state = null;
       }
       assert(
@@ -76,6 +78,7 @@ class _BookFlipState extends State<BookFlip>
           'This BookFlipController is already attached to another BookFlip — use '
           'one controller per widget.');
       widget.controller?._state = this;
+      widget.controller?._spreadCache = _spread;
     }
     if (old.material != widget.material) {
       _scene.material = widget.material;
@@ -102,6 +105,7 @@ class _BookFlipState extends State<BookFlip>
         ..dir = 0
         ..t = 0.0;
       _spread = _spread.clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
+      widget.controller?._spreadCache = _spread;
       _scene.atlas?.dispose();
       _scene.atlas = null;
       _phase.value = _BootPhase.loading;
@@ -149,6 +153,7 @@ class _BookFlipState extends State<BookFlip>
       }
       _pageCount = pages.length;
       _spread = _spread.clamp(0, math.max(0, _maxSpread));
+      widget.controller?._spreadCache = _spread;
       _scene
         ..atlas = atlas
         ..atlasCols = cols
@@ -236,6 +241,7 @@ class _BookFlipState extends State<BookFlip>
     _ctl.stop();
     _dragging = false;
     _spread = spread.clamp(0, math.max(0, _maxSpread));
+    widget.controller?._spreadCache = _spread;
     _scene
       ..active = false
       ..dir = 0
@@ -249,6 +255,7 @@ class _BookFlipState extends State<BookFlip>
   @override
   void dispose() {
     if (identical(widget.controller?._state, this)) {
+      widget.controller?._spreadCache = _spread;
       widget.controller?._state = null;
     }
     _ctl.dispose();
@@ -306,6 +313,7 @@ class _BookFlipState extends State<BookFlip>
       // BACK texture, pixel-identical to the new idle base redraw.
       _spread = (_spread + dir).clamp(0, _maxSpread);
     }
+    widget.controller?._spreadCache = _spread;
     final committed = _target == 1 && !_atBoundary;
     _scene
       ..active = false

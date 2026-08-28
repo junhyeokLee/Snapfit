@@ -40,16 +40,14 @@ class _AlbumReaderInnerDetailScreenState
     extends ConsumerState<AlbumReaderInnerDetailScreen> {
   late PageController _pageController;
   late int _currentPage;
+  bool? _lastIsLandscape;
   bool _showSwipeHint = true;
 
   @override
   void initState() {
     super.initState();
     _currentPage = widget.initialPageIndex;
-    _pageController = PageController(
-      initialPage: widget.initialPageIndex,
-      viewportFraction: 0.88, // 옆 페이지가 살짝 보이는 뷰포트
-    );
+    _pageController = PageController(initialPage: widget.initialPageIndex);
 
     // 스와이프 힌트는 3초 뒤에 사라지게 설정
     Future.delayed(const Duration(seconds: 3), () {
@@ -67,6 +65,21 @@ class _AlbumReaderInnerDetailScreenState
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    if (_lastIsLandscape == isLandscape) return;
+    _lastIsLandscape = isLandscape;
+    final oldController = _pageController;
+    _pageController = PageController(
+      initialPage: _currentPage,
+      viewportFraction: isLandscape ? 0.64 : 0.88,
+    );
+    oldController.dispose();
+  }
+
   void _showMoreOptions() {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     // innerPages는 vm.pages.sublist(1) 기준으로 들어오기 때문에,
@@ -77,10 +90,8 @@ class _AlbumReaderInnerDetailScreenState
       vm.pages.length - 1,
     );
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => AlbumReaderMoreOptionsSheet(
+    Widget buildSheet(BuildContext ctx, {required bool compact}) {
+      return AlbumReaderMoreOptionsSheet(
         onEdit: () async {
           Navigator.pop(ctx);
           // 내지 상세에서 편집으로 진입 시, 현재 보고 있는 페이지를 기준으로 에디터로 이동
@@ -121,15 +132,63 @@ class _AlbumReaderInnerDetailScreenState
             ),
           );
         },
-      ),
+        compact: compact,
+      );
+    }
+
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    if (isLandscape) {
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: '메뉴 닫기',
+        barrierColor: Colors.black.withValues(alpha: 0.22),
+        transitionDuration: const Duration(milliseconds: 180),
+        pageBuilder: (ctx, animation, secondaryAnimation) {
+          return Center(
+            child: SizedBox(
+              width: 232,
+              child: Material(
+                color: Colors.transparent,
+                child: buildSheet(ctx, compact: true),
+              ),
+            ),
+          );
+        },
+        transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              alignment: Alignment.center,
+              scale: Tween<double>(begin: 0.96, end: 1).animate(curved),
+              child: child,
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => buildSheet(ctx, compact: false),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     // 앨범 사이즈 계산 (에디터/만들기 화면과 유사하게 꽉 차게)
-    final screenW = MediaQuery.sizeOf(context).width;
-    final screenH = MediaQuery.sizeOf(context).height;
+    final media = MediaQuery.of(context);
+    final screenW = media.size.width;
+    final screenH = media.size.height;
+    final isLandscape = screenW > screenH;
 
     final vmState = ref.watch(albumEditorViewModelProvider).value;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
@@ -148,9 +207,14 @@ class _AlbumReaderInnerDetailScreenState
     // 전달받은 singlePageW, singlePageH는 비율을 구하는 용도
     final targetRatio = widget.singlePageW / widget.singlePageH;
 
-    // 상세보기에서는 위아래 여백을 적게 두고 화면을 넓게 씁니다.
-    final maxW = screenW * 0.82;
-    final maxH = screenH * 0.60;
+    final topSafe = media.padding.top;
+    final bottomSafe = media.padding.bottom;
+
+    // 가로에서는 텍스트/버튼을 오버레이로 빼고 페이지가 화면 높이를 최대한 쓰게 한다.
+    final maxW = isLandscape ? screenW * 0.70 : screenW * 0.82;
+    final maxH = isLandscape
+        ? screenH - topSafe - bottomSafe - 44
+        : screenH * 0.60;
 
     double detailW = maxW;
     double detailH = detailW / targetRatio;
@@ -163,6 +227,158 @@ class _AlbumReaderInnerDetailScreenState
 
     // 목업의 딥 다크 블루/그레이 배경
     final bgColor = const Color(0xFF161C20);
+
+    Widget pageIndicator({required bool compact}) {
+      final baseSize = compact ? 11.0 : 14.sp;
+      final currentSize = compact ? 16.0 : 20.sp;
+      return RichText(
+        text: TextSpan(
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.58),
+            fontSize: baseSize,
+            fontFamily: 'NotoSans',
+            fontWeight: FontWeight.w600,
+          ),
+          children: [
+            const TextSpan(text: 'Page  '),
+            TextSpan(
+              text: '${_currentPage + 1}',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: currentSize,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextSpan(text: '  of ${widget.innerPages.length}'),
+          ],
+        ),
+      );
+    }
+
+    Widget topButton({required IconData icon, required VoidCallback onTap}) {
+      return Material(
+        color: Colors.white.withValues(alpha: isLandscape ? 0.12 : 0.08),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: isLandscape ? 42 : 46.w,
+            height: isLandscape ? 42 : 46.w,
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: isLandscape ? 22 : 24.sp,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget pageCarousel() {
+      return PageView.builder(
+        controller: _pageController,
+        itemCount: widget.innerPages.length,
+        onPageChanged: (idx) {
+          setState(() {
+            _currentPage = idx;
+            _showSwipeHint = false; // 수동으로 넘기면 힌트 즉시 해제
+          });
+        },
+        itemBuilder: (context, index) {
+          return AnimatedBuilder(
+            animation: _pageController,
+            builder: (context, child) {
+              double pageDist = 0.0;
+              if (_pageController.position.haveDimensions) {
+                pageDist = _pageController.page! - index;
+              } else if (index != widget.initialPageIndex) {
+                pageDist = widget.initialPageIndex > index ? 1.0 : -1.0;
+              }
+
+              final offsetX = pageDist * (isLandscape ? 18.0 : 28.w);
+              final darkness = (pageDist.abs()).clamp(0.0, 0.05);
+              final sideScale = 1.0 - (pageDist.abs().clamp(0.0, 1.0) * 0.035);
+
+              return Center(
+                child: Transform.translate(
+                  offset: Offset(offsetX, 0),
+                  child: Transform.scale(
+                    scale: sideScale,
+                    child: Hero(
+                      tag: 'inner_page_${widget.innerPages[index].id}',
+                      child: _DetailInnerCard(
+                        page: widget.innerPages[index],
+                        pageW: detailW,
+                        pageH: detailH,
+                        interaction: widget.interaction,
+                        layerBuilder: widget.layerBuilder,
+                        darkness: darkness,
+                        compactShadow: isLandscape,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
+
+    if (isLandscape) {
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(child: pageCarousel()),
+              Positioned(
+                left: 14,
+                top: 10,
+                child: topButton(
+                  icon: platformBackIcon(),
+                  onTap: () => Navigator.pop(context),
+                ),
+              ),
+              Positioned(
+                right: 14,
+                top: 10,
+                child: topButton(
+                  icon: Icons.more_horiz_rounded,
+                  onTap: _showMoreOptions,
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 10,
+                child: Center(child: pageIndicator(compact: true)),
+              ),
+              if (_showSwipeHint && _currentPage < widget.innerPages.length - 1)
+                Positioned(
+                  right: 76,
+                  top: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      opacity: _showSwipeHint ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: Center(
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white.withValues(alpha: 0.42),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -228,56 +444,7 @@ class _AlbumReaderInnerDetailScreenState
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: widget.innerPages.length,
-                    onPageChanged: (idx) {
-                      setState(() {
-                        _currentPage = idx;
-                        _showSwipeHint = false; // 수동으로 넘기면 힌트 즉시 해제
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return AnimatedBuilder(
-                        animation: _pageController,
-                        builder: (context, child) {
-                          double pageDist = 0.0;
-                          if (_pageController.position.haveDimensions) {
-                            pageDist = _pageController.page! - index;
-                          } else if (index != widget.initialPageIndex) {
-                            pageDist = widget.initialPageIndex > index
-                                ? 1.0
-                                : -1.0;
-                          }
-
-                          // 페이지 크기는 1.0으로 모두 동일하게 유지
-                          // 페이지 간격을 없애고 자연스럽게 겹치기 위한 X축 이동
-                          double offsetX = pageDist * 28.w;
-
-                          // 측면 페이지에 들어갈 어두운 딤(Dim) 효과 정도
-                          double darkness = (pageDist.abs()).clamp(0.0, 0.05);
-
-                          return Center(
-                            child: Transform.translate(
-                              offset: Offset(offsetX, 0),
-                              child: Hero(
-                                tag:
-                                    'inner_page_${widget.innerPages[index].id}',
-                                child: _DetailInnerCard(
-                                  page: widget.innerPages[index],
-                                  pageW: detailW,
-                                  pageH: detailH,
-                                  interaction: widget.interaction,
-                                  layerBuilder: widget.layerBuilder,
-                                  darkness: darkness,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                  pageCarousel(),
 
                   // 스와이프 안내 힌트 (오른쪽 중앙)
                   if (_showSwipeHint &&
@@ -338,27 +505,7 @@ class _AlbumReaderInnerDetailScreenState
             // 하단 페이지 인디케이터 text ("Page 12 of 40")
             Padding(
               padding: EdgeInsets.only(bottom: 40.h, top: 20.h),
-              child: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 14.sp,
-                    fontFamily: 'NotoSans',
-                  ),
-                  children: [
-                    const TextSpan(text: 'Page  '),
-                    TextSpan(
-                      text: '${_currentPage + 1}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextSpan(text: '  of ${widget.innerPages.length}'),
-                  ],
-                ),
-              ),
+              child: pageIndicator(compact: false),
             ),
           ],
         ),
@@ -374,6 +521,7 @@ class _DetailInnerCard extends StatelessWidget {
   final LayerInteractionManager interaction;
   final LayerBuilder layerBuilder;
   final double darkness;
+  final bool compactShadow;
 
   const _DetailInnerCard({
     required this.page,
@@ -382,6 +530,7 @@ class _DetailInnerCard extends StatelessWidget {
     required this.interaction,
     required this.layerBuilder,
     this.darkness = 0.0,
+    this.compactShadow = false,
   });
 
   @override
@@ -407,10 +556,10 @@ class _DetailInnerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(4.r), // 은근한 둥글기 적용
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 20.0,
-              spreadRadius: 2.0,
-              offset: const Offset(0, 10),
+              color: Colors.black.withValues(alpha: compactShadow ? 0.32 : 0.4),
+              blurRadius: compactShadow ? 16.0 : 20.0,
+              spreadRadius: compactShadow ? 0.0 : 2.0,
+              offset: Offset(0, compactShadow ? 8 : 10),
             ),
           ],
         ),

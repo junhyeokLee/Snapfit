@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
@@ -21,7 +22,6 @@ import '../viewmodels/home_view_model.dart';
 import '../../data/api/album_provider.dart';
 import '../../../billing/data/billing_provider.dart';
 import 'page_editor_screen.dart';
-import 'album_reader_inner_detail_screen.dart';
 import 'album_invite_screen.dart';
 import 'print_order_checkout_screen.dart';
 
@@ -182,50 +182,6 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ),
           );
         },
-        onDetail: () {
-          Navigator.pop(ctx);
-          final safePage = _pageController.hasClients
-              ? (_pageController.page ?? 0.0)
-              : 0.0;
-          if (safePage < 0.5) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('상세 보기는 앨범 내지에서 이용 가능합니다.')),
-            );
-            return;
-          }
-          final currentIndex = safePage.round();
-          final leftIndex = 1 + (currentIndex - 1) * 2;
-          final innerInitialIndex = leftIndex - 1;
-
-          final vm = ref.read(albumEditorViewModelProvider.notifier);
-          final innerPages = vm.pages.sublist(1);
-
-          if (innerPages.isEmpty) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('보여줄 페이지가 없습니다.')));
-            return;
-          }
-
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              opaque: false, // 투명한 배경
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  FadeTransition(
-                    opacity: animation,
-                    child: AlbumReaderInnerDetailScreen(
-                      innerPages: innerPages,
-                      initialPageIndex: innerInitialIndex,
-                      singlePageW: _baseCanvasSize.width,
-                      singlePageH: _baseCanvasSize.height,
-                      interaction: _interaction,
-                      layerBuilder: _layerBuilder,
-                    ),
-                  ),
-            ),
-          );
-        },
         compact: compact,
       );
     }
@@ -240,19 +196,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         barrierColor: Colors.black.withOpacity(0.18),
         transitionDuration: const Duration(milliseconds: 180),
         pageBuilder: (ctx, animation, secondaryAnimation) {
-          return SafeArea(
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 52,
-                  right: 8,
-                  width: 224,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: buildOptions(ctx, compact: true),
-                  ),
-                ),
-              ],
+          return Center(
+            child: SizedBox(
+              width: 232,
+              child: Material(
+                color: Colors.transparent,
+                child: buildOptions(ctx, compact: true),
+              ),
             ),
           );
         },
@@ -265,7 +215,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
-              alignment: Alignment.topRight,
+              alignment: Alignment.center,
               scale: Tween<double>(begin: 0.96, end: 1).animate(curved),
               child: child,
             ),
@@ -548,17 +498,19 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
 
     vm.ensureCoverPage();
     final allPages = vm.pages;
-    final totalPages = allPages.length;
-
-    // PageController는 스프레드(2페이지 묶음) 단위로 인덱싱됨
-    // itemCount = 커버(1) + 내지 스프레드 수
-    final int innerPageCount = (totalPages - 1).clamp(0, totalPages);
-    final int spreadCount = (innerPageCount / 2).ceil();
-    final int itemCount = 1 + spreadCount; // 도트 인디케이터에 사용
 
     final useContinuousOpenSurface = widget.initialSpreadIndex > 0;
     final isLandscape =
         MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    final media = MediaQuery.of(context);
+    final bottomSystemInset = math.max(
+      media.viewPadding.bottom,
+      media.viewInsets.bottom,
+    );
+    final rightSystemInset = math.max(
+      media.viewPadding.right,
+      media.viewInsets.right,
+    );
 
     int spreadForFocusPage(int pageIndex) {
       if (pageIndex <= 0) return 0;
@@ -647,7 +599,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ? Alignment.topCenter
             : const Alignment(0, -0.16),
         focusMode: true,
-        focusBottomInset: isLandscape ? 0 : 120.h,
+        focusBottomInset: isLandscape
+            ? bottomSystemInset
+            : 120.h + bottomSystemInset,
         requestedFocusPageIndex: _focusPageIndex,
         onCanvasSizeChanged: (size) {
           if (_coverSize == size) return;
@@ -735,9 +689,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                 Positioned.fill(child: readerView()),
                                 if (allPages.isNotEmpty)
                                   Positioned(
-                                    right: 8,
+                                    right: 8 + rightSystemInset,
                                     top: 58,
-                                    bottom: 18,
+                                    bottom: 18 + bottomSystemInset,
                                     width: 56,
                                     child: _LandscapePageRail(
                                       pages: allPages,
@@ -804,57 +758,11 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                                   ),
                                 ),
 
-                                // ─── 4. 페이지 도트 인디케이터 (스프레드 단위) ───
-                                if (itemCount > 1)
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 102.h,
-                                    child: AnimatedBuilder(
-                                      animation: _pageController,
-                                      builder: (context, _) {
-                                        final current =
-                                            _pageController.hasClients
-                                            ? (_pageController.page?.round() ??
-                                                  0)
-                                            : 0;
-                                        return Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: List.generate(itemCount, (
-                                            i,
-                                          ) {
-                                            final isActive = i == current;
-                                            return AnimatedContainer(
-                                              duration: const Duration(
-                                                milliseconds: 250,
-                                              ),
-                                              margin: EdgeInsets.symmetric(
-                                                horizontal: 3.w,
-                                              ),
-                                              width: isActive ? 20.w : 6.w,
-                                              height: 6.w,
-                                              decoration: BoxDecoration(
-                                                color: isActive
-                                                    ? SnapFitColors.accent
-                                                    : const Color(
-                                                        0xFF151412,
-                                                      ).withOpacity(0.17),
-                                                borderRadius:
-                                                    BorderRadius.circular(3.r),
-                                              ),
-                                            );
-                                          }),
-                                        );
-                                      },
-                                    ),
-                                  ),
-
                                 // ─── 5. 하단 썸네일 스트립 ───
                                 Positioned(
                                   left: 0,
                                   right: 0,
-                                  bottom: 18.h,
+                                  bottom: 18.h + bottomSystemInset,
                                   child: AlbumReaderThumbnailStrip(
                                     pages: allPages,
                                     pageController: allPages.isNotEmpty

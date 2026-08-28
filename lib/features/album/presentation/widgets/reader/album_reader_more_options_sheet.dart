@@ -23,13 +23,14 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = compact ? 16.0 : 24.r;
     return Container(
       margin: compact
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(compact ? 18.r : 24.r),
+        borderRadius: BorderRadius.circular(radius),
         border: compact
             ? Border.all(
                 color: SnapFitColors.textMutedOf(context).withOpacity(0.10),
@@ -52,7 +53,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (!compact) ...[
-              SizedBox(height: 8.h),
+              const SizedBox(height: 6),
               Container(
                 width: 36.w,
                 height: 4.h,
@@ -139,7 +140,7 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
               ),
             ],
 
-            SizedBox(height: compact ? 8.h : 8.h),
+            SizedBox(height: compact ? 6 : 8.h),
           ],
         ),
       ),
@@ -167,25 +168,31 @@ class _SheetItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = labelColor ?? SnapFitColors.textPrimaryOf(context);
+    final horizontalPadding = compact ? 14.0 : 24.w;
+    final verticalPadding = compact ? 8.5 : 18.h;
+    final iconSize = compact ? 17.5 : 22.sp;
+    final gap = compact ? 10.0 : 16.w;
+    final fontSize = compact ? 13.0 : 16.sp;
+
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: compact ? 14.w : 24.w,
-          vertical: compact ? 10.h : 18.h,
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
         ),
         child: Row(
           children: [
             Icon(
               icon,
               color: iconColor ?? SnapFitColors.textSecondaryOf(context),
-              size: compact ? 18.sp : 22.sp,
+              size: iconSize,
             ),
-            SizedBox(width: compact ? 10.w : 16.w),
+            SizedBox(width: gap),
             Text(
               label,
               style: TextStyle(
-                fontSize: compact ? 13.sp : 16.sp,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w600,
                 color: color,
               ),

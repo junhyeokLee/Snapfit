@@ -357,6 +357,36 @@ class _AlbumReaderSinglePageViewState
     );
   }
 
+  void _openFocusDetail({
+    required double tapX,
+    required double stageWidth,
+    required double pageWidth,
+    required double pageHeight,
+  }) {
+    final spread = _bookFlipController.totalSpreads > 0
+        ? _bookFlipController.currentSpread
+        : _spreadForFocusPage(_focusPageIndex);
+    if (spread <= 0 || widget.allPages.length <= 1) return;
+
+    final leftPageIndex = 1 + ((spread - 1) * 2);
+    final rightPageIndex = leftPageIndex + 1;
+    var targetPageIndex = tapX < stageWidth / 2
+        ? leftPageIndex
+        : rightPageIndex;
+    if (targetPageIndex >= widget.allPages.length) {
+      targetPageIndex = widget.allPages.length - 1;
+    }
+
+    setState(() => _focusPageIndex = targetPageIndex);
+    _openInnerDetail(
+      screenW: stageWidth,
+      singlePageW: pageWidth,
+      singlePageH: pageHeight,
+      spreadIndex: spread,
+      tapX: tapX,
+    );
+  }
+
   Widget _buildFocusCard(
     int pageIndex,
     double pageWidth,
@@ -486,6 +516,8 @@ class _AlbumReaderSinglePageViewState
         ),
         meshResolution: 54,
         onFlipEnd: (spread) => _handleBookSpreadChanged(spread, ended: true),
+        loadingBuilder: fallbackSpread,
+        errorBuilder: fallbackSpread,
       ),
       loadingBuilder: fallbackSpread,
       errorBuilder: fallbackSpread,
@@ -496,14 +528,15 @@ class _AlbumReaderSinglePageViewState
     return LayoutBuilder(
       builder: (context, constraints) {
         final screen = constraints.biggest;
+        final media = MediaQuery.of(context);
         final ratio = widget.selectedCover.ratio;
-        final bottomInset = widget.focusBottomInset;
+        final bottomInset = math.max(
+          widget.focusBottomInset,
+          math.max(media.viewPadding.bottom, media.viewInsets.bottom),
+        );
         final isLandscape = screen.width > screen.height;
         final railInset = isLandscape ? 72.0 : 0.0;
-        final usableHeight = math.max(
-          260.0,
-          isLandscape ? screen.height : screen.height - bottomInset,
-        );
+        final usableHeight = math.max(260.0, screen.height - bottomInset);
         final horizontalMargin = isLandscape ? 34.0 : 48.0;
         final verticalMargin = isLandscape ? 70.0 : 38.0;
         final maxSpreadWidth = screen.width - railInset - horizontalMargin;
@@ -538,9 +571,18 @@ class _AlbumReaderSinglePageViewState
                   child: SizedBox(
                     width: stageWidth,
                     height: stageHeight,
-                    child: _PremiumSpreadStage(
-                      isLandscape: isLandscape,
-                      child: _buildBookFlipFocusReader(pageWidth, pageHeight),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTapUp: (details) => _openFocusDetail(
+                        tapX: details.localPosition.dx,
+                        stageWidth: stageWidth,
+                        pageWidth: pageWidth,
+                        pageHeight: pageHeight,
+                      ),
+                      child: _PremiumSpreadStage(
+                        isLandscape: isLandscape,
+                        child: _buildBookFlipFocusReader(pageWidth, pageHeight),
+                      ),
                     ),
                   ),
                 ),
@@ -550,7 +592,7 @@ class _AlbumReaderSinglePageViewState
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 6,
+                bottom: 6 + bottomInset,
                 child: Center(
                   child: SizedBox(
                     width: math.min(326.0, screen.width - railInset - 48),
@@ -1052,7 +1094,6 @@ class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
   int _captureIndex = 0;
   bool _hasError = false;
   bool _captureScheduled = false;
-  bool _captureStarted = false;
 
   @override
   void initState() {
@@ -1072,7 +1113,6 @@ class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
       _captureIndex = 0;
       _hasError = false;
       _captureScheduled = false;
-      _captureStarted = false;
       _scheduleCapture();
     }
   }
@@ -1093,10 +1133,6 @@ class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
     if (_captureScheduled || _captureIndex >= widget.pageCount) return;
     _captureScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!_captureStarted) {
-        _captureStarted = true;
-        await Future<void>.delayed(const Duration(milliseconds: 260));
-      }
       if (mounted) unawaited(_captureCurrentPage());
     });
   }
@@ -1150,24 +1186,22 @@ class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
     }
 
     return Stack(
+      clipBehavior: Clip.none,
       fit: StackFit.expand,
       children: [
-        Positioned.fill(child: widget.loadingBuilder(context)),
         Positioned(
           left: 0,
           top: 0,
           width: widget.pageSize.width,
           height: widget.pageSize.height,
           child: IgnorePointer(
-            child: Opacity(
-              opacity: 0.01,
-              child: RepaintBoundary(
-                key: _captureKey,
-                child: widget.pageBuilder(context, _captureIndex),
-              ),
+            child: RepaintBoundary(
+              key: _captureKey,
+              child: widget.pageBuilder(context, _captureIndex),
             ),
           ),
         ),
+        Positioned.fill(child: widget.loadingBuilder(context)),
       ],
     );
   }
@@ -1181,72 +1215,244 @@ class _PremiumSpreadStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final floorShadowAlpha = isLandscape ? 0.10 : 0.08;
-    final cardShadowAlpha = isLandscape ? 0.10 : 0.075;
-    final spineAlpha = isLandscape ? 0.045 : 0.035;
-    final spineWidth = isLandscape ? 44.0 : 34.0;
+    final floorShadowAlpha = isLandscape ? 0.11 : 0.075;
+    final contactShadowAlpha = isLandscape ? 0.13 : 0.09;
+    final cardShadowAlpha = isLandscape ? 0.055 : 0.052;
+    final spineWidth = isLandscape ? 58.0 : 42.0;
+    final spineCreaseWidth = isLandscape ? 18.0 : 13.0;
+    final edgeDepth = isLandscape ? 7.0 : 5.0;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          left: 28.w,
-          right: 28.w,
-          bottom: -24.h,
-          height: 52.h,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999.r),
-              gradient: RadialGradient(
-                colors: [
-                  Colors.black.withValues(alpha: floorShadowAlpha),
-                  Colors.transparent,
-                ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final halfWidth = width / 2;
+
+        Widget pageEdge({required Alignment alignment}) {
+          final isRight = alignment == Alignment.centerRight;
+          return Align(
+            alignment: alignment,
+            child: Transform.translate(
+              offset: Offset(isRight ? edgeDepth * 0.92 : -edgeDepth * 0.92, 0),
+              child: SizedBox(
+                width: edgeDepth,
+                height: height - 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: isRight
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      end: isRight
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      colors: const [
+                        Color(0xFFE7DDCF),
+                        Color(0xFFFDF8EE),
+                        Color(0xFFE2D6C6),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.022),
+                        blurRadius: 2,
+                        offset: Offset(isRight ? 1 : -1, 0),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFCF5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: cardShadowAlpha),
-                blurRadius: isLandscape ? 24 : 22,
-                offset: Offset(0, isLandscape ? 14 : 12),
+          );
+        }
+
+        Widget paperStack() {
+          return Center(
+            child: SizedBox(
+              width: math.max(0, halfWidth - 10),
+              height: 6,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      const Color(0xFFD9CCBB).withValues(alpha: 0.24),
+                      const Color(0xFFFFFCF5).withValues(alpha: 0.0),
+                      const Color(0xFFD9CCBB).withValues(alpha: 0.18),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(99),
+                ),
               ),
-            ],
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            fit: StackFit.expand,
-            children: [
-              child,
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Center(
-                    child: SizedBox(
-                      width: spineWidth,
-                      height: double.infinity,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: spineAlpha),
-                              Colors.transparent,
-                            ],
+            ),
+          );
+        }
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: width * 0.12,
+              right: width * 0.12,
+              bottom: isLandscape ? -22 : -18,
+              height: isLandscape ? 46 : 38,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999.r),
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: floorShadowAlpha),
+                      Colors.black.withValues(alpha: floorShadowAlpha * 0.22),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.48, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: width * 0.06,
+              right: width * 0.06,
+              bottom: -6,
+              height: 18,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  color: Colors.black.withValues(alpha: contactShadowAlpha),
+                ),
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFCF5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: cardShadowAlpha),
+                    blurRadius: isLandscape ? 18 : 16,
+                    offset: Offset(0, isLandscape ? 8 : 7),
+                  ),
+                ],
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                fit: StackFit.expand,
+                children: [
+                  IgnorePointer(
+                    child: pageEdge(alignment: Alignment.centerLeft),
+                  ),
+                  IgnorePointer(
+                    child: pageEdge(alignment: Alignment.centerRight),
+                  ),
+                  Positioned(
+                    left: 4,
+                    right: 4,
+                    top: -2,
+                    height: 7,
+                    child: IgnorePointer(child: paperStack()),
+                  ),
+                  Positioned(
+                    left: 4,
+                    right: 4,
+                    bottom: -2,
+                    height: 7,
+                    child: IgnorePointer(child: paperStack()),
+                  ),
+                  Positioned.fill(child: child),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Center(
+                        child: SizedBox(
+                          width: spineWidth,
+                          height: double.infinity,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  const Color(0xFF6B5843).withValues(
+                                    alpha: isLandscape ? 0.085 : 0.06,
+                                  ),
+                                  const Color(
+                                    0xFFFFFCF5,
+                                  ).withValues(alpha: 0.22),
+                                  const Color(0xFF6B5843).withValues(
+                                    alpha: isLandscape ? 0.09 : 0.065,
+                                  ),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0, 0.34, 0.5, 0.66, 1],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Center(
+                        child: Container(
+                          width: spineCreaseWidth,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(
+                                  alpha: isLandscape ? 0.075 : 0.052,
+                                ),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerRight,
+                                  end: Alignment.centerLeft,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.035),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0, 0.16],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.032),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0, 0.16],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
