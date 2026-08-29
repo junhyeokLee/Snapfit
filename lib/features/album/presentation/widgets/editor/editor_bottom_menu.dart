@@ -120,10 +120,10 @@ class EditorBottomMenu extends StatelessWidget {
         final isDark = SnapFitColors.isDark(context);
 
         return Container(
-          height: isVerticalRail ? double.infinity : 88,
+          height: isVerticalRail ? double.infinity : 78,
           width: isVerticalRail ? 56 : null,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(22.r),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -152,7 +152,7 @@ class EditorBottomMenu extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(22.r),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
               child: SingleChildScrollView(
@@ -223,11 +223,11 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: compact ? 44 : 58,
-        height: compact ? 44 : 66,
+        width: compact ? 44 : 54,
+        height: compact ? 44 : 58,
         padding: compact
             ? EdgeInsets.zero
-            : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+            : const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22.r),
           gradient: isSelected

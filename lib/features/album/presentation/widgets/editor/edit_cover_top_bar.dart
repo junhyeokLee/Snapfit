@@ -17,8 +17,14 @@ class EditCoverTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: SnapFitColors.backgroundOf(context),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: SnapFitColors.readerGradientOf(context),
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: SizedBox(
@@ -28,8 +34,19 @@ class EditCoverTopBar extends StatelessWidget {
             children: [
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: SnapFitColors.accent.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20.r),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1F1B16), Color(0xFF5A4634)],
+                  ),
+                  borderRadius: BorderRadius.circular(999.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.14),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
                 child: TextButton(
                   style: TextButton.styleFrom(

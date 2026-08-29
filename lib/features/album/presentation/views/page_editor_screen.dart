@@ -851,7 +851,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       children: [
                         // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
                         Padding(
-                          padding: EdgeInsets.only(top: 10.h),
+                          padding: EdgeInsets.only(top: 8.h),
                           child: SnapFitFadeIn(
                             key: const Key('pageEditorSelectorReveal'),
                             delay: const Duration(milliseconds: 80),
@@ -885,7 +885,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                         // 트리에 존재하면 GlobalKey 충돌이 발생한다.
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(14.w, 4.h, 14.w, 2.h),
+                            padding: EdgeInsets.fromLTRB(10.w, 2.h, 10.w, 2.h),
                             child: _PageEditorEntranceReveal(
                               key: const Key('pageEditorCanvasReveal'),
                               delay: Duration.zero,
@@ -1215,9 +1215,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   Widget _buildWorkspaceFrame(BuildContext context, {required Widget child}) {
     final isDark = SnapFitColors.isDark(context);
     return Container(
-      padding: EdgeInsets.all(10.w),
+      padding: EdgeInsets.all(6.w),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32.r),
+        borderRadius: BorderRadius.circular(22.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1237,17 +1237,17 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.30 : 0.10),
-            blurRadius: 32,
-            offset: const Offset(0, 18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
           BoxShadow(
             color: const Color(0xFFD6B892).withOpacity(isDark ? 0.08 : 0.10),
-            blurRadius: 42,
-            offset: const Offset(0, 12),
+            blurRadius: 30,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(24.r), child: child),
+      child: ClipRRect(borderRadius: BorderRadius.circular(18.r), child: child),
     );
   }
 

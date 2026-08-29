@@ -41,12 +41,12 @@ class PageListSelector extends ConsumerWidget {
       builder: (context, constraints) {
         final isVerticalRail = constraints.maxWidth < 120;
         return SizedBox(
-          height: isVerticalRail ? double.infinity : 88.h,
+          height: isVerticalRail ? double.infinity : 74.h,
           width: isVerticalRail ? 60 : null,
           child: ListView.separated(
             padding: isVerticalRail
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
-                : EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 6.h),
+                : EdgeInsets.fromLTRB(16.w, 0, 16.w, 4.h),
             scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
             itemCount: pages.length + 1, // 마지막에 + 버튼 추가
             separatorBuilder: (context, index) => SizedBox(
@@ -76,8 +76,8 @@ class PageListSelector extends ConsumerWidget {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: SnapFitMotion.settle,
-                      width: isVerticalRail ? 44 : (isSelected ? 50.w : 46.w),
-                      height: isVerticalRail ? 42 : (isSelected ? 48.h : 44.h),
+                      width: isVerticalRail ? 44 : (isSelected ? 44.w : 40.w),
+                      height: isVerticalRail ? 42 : (isSelected ? 40.h : 36.h),
                       padding: EdgeInsets.all(
                         isVerticalRail ? 3 : (isSelected ? 4.w : 3.w),
                       ),
@@ -202,11 +202,11 @@ class PageListSelector extends ConsumerWidget {
                       ),
                     ),
                     if (!isVerticalRail) ...[
-                      SizedBox(height: 3.h),
+                      SizedBox(height: 2.h),
                       Text(
                         label,
                         style: TextStyle(
-                          fontSize: 9.5,
+                          fontSize: 10,
                           color: isSelected
                               ? const Color(0xFF5A4634)
                               : SnapFitColors.textSecondaryOf(context),

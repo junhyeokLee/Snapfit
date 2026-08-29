@@ -27,26 +27,31 @@ class EditToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        left: 20.w,
-        right: 20.w,
-        bottom: 20.h,
-        top: 10.h,
-      ),
+      padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 14.h, top: 8.h),
       child: Container(
-        height: 72.h,
+        height: 64.h,
         decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(
-            context,
-          ).withOpacity(0.95), // theme support
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: SnapFitColors.isDark(context)
+                ? [
+                    SnapFitColors.surfaceOf(context).withOpacity(0.94),
+                    SnapFitColors.surfaceOf(context).withOpacity(0.82),
+                  ]
+                : [
+                    Colors.white.withOpacity(0.94),
+                    const Color(0xFFFFF8F1).withOpacity(0.88),
+                  ],
+          ),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(
                 SnapFitColors.isDark(context) ? 0.3 : 0.1,
               ),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              blurRadius: 18,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
@@ -84,22 +89,18 @@ class EditToolbar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 24.sp,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-            SizedBox(height: 6.h),
+            Icon(icon, size: 22.sp, color: SnapFitColors.deepCharcoal),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11.sp,
                 color: SnapFitColors.textSecondaryOf(context),
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
