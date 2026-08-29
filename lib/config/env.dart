@@ -52,6 +52,15 @@ class Env {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyYmh4ZHRyaXVtbXFwenRwanJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDU5MDAsImV4cCI6MjEwMjcyMTkwMH0.uxBcMGAMwAEJZtHA5987jTPePQDY_nNtqMe6W8MejHQ',
   );
 
+  /// Supabase Auth email confirmation/recovery redirect URL.
+  /// Register this URL in Supabase Auth > URL Configuration > Redirect URLs
+  /// and native Android/iOS deep-link settings.
+  /// - --dart-define=AUTH_REDIRECT_URL=snapfit://auth/callback
+  static const String authRedirectUrl = String.fromEnvironment(
+    'AUTH_REDIRECT_URL',
+    defaultValue: 'snapfit://auth/callback',
+  );
+
   /// Native store subscription product id.
   /// Configure the same id in Google Play Console / App Store Connect.
   /// - --dart-define=IAP_PRO_MONTHLY_PRODUCT_ID=...

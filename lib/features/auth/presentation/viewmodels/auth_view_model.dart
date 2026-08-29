@@ -212,6 +212,54 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
   }
 
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    await ref
+        .read(authServiceProvider)
+        .loginWithEmail(email: email, password: password);
+    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+    await syncConsentIfPresent();
+  }
+
+  Future<void> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+    required bool marketingOptIn,
+  }) async {
+    final auth = await ref
+        .read(authServiceProvider)
+        .signUpWithEmail(name: name, email: email, password: password);
+    if (auth != null) {
+      state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+      await syncConsentIfPresent();
+    }
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    await ref.read(authServiceProvider).requestPasswordReset(email);
+  }
+
+  Future<void> resendEmailConfirmation(String email) async {
+    await ref.read(authServiceProvider).resendEmailConfirmation(email);
+  }
+
+  Future<String?> handleAuthCallback(Uri uri) async {
+    final redirectType = await ref
+        .read(authServiceProvider)
+        .handleAuthCallback(uri);
+    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+    await syncConsentIfPresent();
+    return redirectType;
+  }
+
+  Future<void> updatePassword(String password) async {
+    await ref.read(authServiceProvider).updatePassword(password);
+    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
   Future<void> syncConsentIfPresent() async {
     await ref.read(authServiceProvider).syncConsentIfPresent();
   }
