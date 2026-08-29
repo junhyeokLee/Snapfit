@@ -27,6 +27,7 @@ import '../widgets/editor/text_style_picker_sheet.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../../../../shared/widgets/image_frame_style_picker.dart';
 import '../viewmodels/home_view_model.dart';
+import '../utils/album_save_error_message.dart';
 import '../controllers/toolbar_action_handler.dart';
 import '../widgets/editor/page_editor_overlays.dart';
 import '../viewmodels/gallery_notifier.dart'; // Add import
@@ -342,9 +343,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       }
       if (context.mounted) {
         setState(() => _isSaving = false);
+        final message = albumSaveErrorMessage(e);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+        ).showSnackBar(SnackBar(content: Text('저장 실패: $message')));
       }
     } finally {
       _progressTimer?.cancel();
