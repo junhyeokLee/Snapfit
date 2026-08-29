@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
 
 import '../../../config/env.dart';
@@ -108,6 +108,18 @@ class AuthService {
     }
   }
 
+  bool _hasConfirmedEmail(User user) {
+    return user.emailConfirmedAt?.trim().isNotEmpty == true;
+  }
+
+  Future<void> _requireConfirmedEmailSession(Session session) async {
+    if (_hasConfirmedEmail(session.user)) return;
+    try {
+      await supabase?.auth.signOut();
+    } catch (_) {}
+    throw Exception('이메일 인증을 완료한 뒤 다시 로그인해주세요.');
+  }
+
   Future<void> _upsertSupabaseProfile(UserInfo user) async {
     if (supabase == null) return;
     await supabase!.from('profiles').upsert({
@@ -186,6 +198,7 @@ class AuthService {
       if (session == null) {
         throw Exception('Supabase 이메일 로그인 세션을 가져올 수 없습니다.');
       }
+      await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'EMAIL');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
@@ -212,6 +225,7 @@ class AuthService {
         // move to the email-confirmation state and wait for the user to verify.
         return null;
       }
+      await _requireConfirmedEmailSession(session);
       final auth = _fromSupabaseSession(session, provider: 'EMAIL');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
@@ -246,6 +260,7 @@ class AuthService {
   Future<String?> handleAuthCallback(Uri uri) async {
     if (supabase != null) {
       final response = await supabase!.auth.getSessionFromUrl(uri);
+      await _requireConfirmedEmailSession(response.session);
       final auth = _fromSupabaseSession(response.session, provider: 'EMAIL');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
