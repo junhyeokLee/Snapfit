@@ -689,15 +689,15 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     Widget buildLandscapeLayout() {
-      // Read 화면의 오른쪽 page rail 방향성을 유지한다.
-      // 편집 도구는 왼쪽 command rail로 빼서 read → edit 전환 시 페이지 위치가 덜 튄다.
+      // 편집 화면은 도구 접근성이 우선이다. read 톤은 색/프레임으로 맞추고,
+      // UX 구조는 안정적인 page rail(좌) + canvas + command rail(우)를 유지한다.
       return Row(
         children: [
           SizedBox(
-            width: 68,
+            width: 72,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 52, 4, 16),
-              child: buildBottomMenu(),
+              padding: const EdgeInsets.fromLTRB(10, 56, 2, 18),
+              child: buildPageSelector(),
             ),
           ),
           Expanded(
@@ -705,31 +705,31 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               children: [
                 Positioned.fill(
                   child: buildCanvasArea(
-                    padding: const EdgeInsets.fromLTRB(10, 52, 10, 16),
+                    padding: const EdgeInsets.fromLTRB(12, 54, 12, 18),
                   ),
                 ),
                 Positioned(
-                  left: 10,
-                  top: 52,
-                  width: 148,
+                  left: 12,
+                  top: 58,
+                  width: 152,
                   child: buildLayerActions(),
                 ),
                 if (_currentMode != EditorMode.none)
                   Positioned(
-                    left: 10,
-                    top: 124,
-                    width: 172,
-                    bottom: 16,
+                    left: 12,
+                    top: 132,
+                    width: 176,
+                    bottom: 18,
                     child: SingleChildScrollView(child: buildInlinePanel()),
                   ),
               ],
             ),
           ),
           SizedBox(
-            width: 64,
+            width: 76,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(2, 52, 8, 16),
-              child: buildPageSelector(),
+              padding: const EdgeInsets.fromLTRB(4, 56, 10, 18),
+              child: buildBottomMenu(),
             ),
           ),
         ],
