@@ -212,6 +212,21 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
   }
 
+  Future<void> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+    required bool marketingOptIn,
+  }) async {
+    final auth = await ref
+        .read(authServiceProvider)
+        .signUpWithEmail(name: name, email: email, password: password);
+    if (auth != null) {
+      state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+      await syncConsentIfPresent();
+    }
+  }
+
   Future<void> syncConsentIfPresent() async {
     await ref.read(authServiceProvider).syncConsentIfPresent();
   }

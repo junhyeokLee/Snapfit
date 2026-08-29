@@ -211,12 +211,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  void _submitEmailSignUp() {
+  Future<void> _submitEmailSignUp() async {
     FocusScope.of(context).unfocus();
     final valid = _signUpFormKey.currentState?.validate() ?? false;
-    if (!valid || !_canCreateEmailAccount) return;
+    if (!valid || !_canCreateEmailAccount || _isLoading) return;
     HapticFeedback.selectionClick();
-    setState(() => _showSignUpConfirmation = true);
+    setState(() => _loadingProvider = _LoginProvider.email);
+    try {
+      final storage = ref.read(tokenStorageProvider);
+      await storage.saveConsent(
+        termsVersion: ConsentPolicy.termsVersion,
+        privacyVersion: ConsentPolicy.privacyVersion,
+        marketingOptIn: _marketingChecked,
+        agreedAtIso: DateTime.now().toIso8601String(),
+      );
+      await ref
+          .read(authViewModelProvider.notifier)
+          .signUpWithEmail(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            marketingOptIn: _marketingChecked,
+          );
+      if (!mounted) return;
+      setState(() => _showSignUpConfirmation = true);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('이메일 가입을 완료하지 못했어요. 입력값을 확인하고 다시 시도해주세요.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingProvider = null);
+    }
   }
 
   void _switchMode(_AuthMode mode) {
@@ -439,9 +467,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             SizedBox(height: 14.h),
             ElevatedButton(
-              onPressed: _canCreateEmailAccount ? _submitEmailSignUp : null,
+              onPressed: _canCreateEmailAccount && !_isLoading
+                  ? _submitEmailSignUp
+                  : null,
               style: _primaryButtonStyle(context),
-              child: const Text('계정 만들기'),
+              child: _loadingProvider == _LoginProvider.email
+                  ? SizedBox(
+                      width: 18.w,
+                      height: 18.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('계정 만들기'),
             ),
             SizedBox(height: 8.h),
             TextButton(
@@ -1185,6 +1224,6 @@ TextStyle _bodyStyle(BuildContext context) {
   );
 }
 
-enum _LoginProvider { kakao, google }
+enum _LoginProvider { kakao, google, email }
 
 enum _AuthMode { login, signup }

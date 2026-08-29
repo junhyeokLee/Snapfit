@@ -19,4 +19,18 @@ void main() {
 
     await expectLater(service.refresh('old-refresh'), throwsException);
   });
+
+  test('signUpWithEmail requires Supabase auth support', () async {
+    final storage = MockTokenStorage();
+    final service = AuthService(tokenStorage: storage);
+
+    await expectLater(
+      service.signUpWithEmail(
+        name: '준자',
+        email: 'junja@example.com',
+        password: 'password123',
+      ),
+      throwsException,
+    );
+  });
 }

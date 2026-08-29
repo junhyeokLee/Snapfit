@@ -22,6 +22,8 @@ class FakeAuthViewModel extends AuthViewModel {
   final Completer<void> _googleCompleter;
   bool kakaoCalled = false;
   bool googleCalled = false;
+  bool emailSignUpCalled = false;
+  String? signedUpEmail;
 
   @override
   FutureOr<UserInfo?> build() => user;
@@ -41,6 +43,17 @@ class FakeAuthViewModel extends AuthViewModel {
   void completeKakao() => _kakaoCompleter.complete();
 
   void completeGoogle() => _googleCompleter.complete();
+
+  @override
+  Future<void> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+    required bool marketingOptIn,
+  }) async {
+    emailSignUpCalled = true;
+    signedUpEmail = email;
+  }
 }
 
 class FakeTokenStorage extends TokenStorage {
@@ -51,6 +64,14 @@ class FakeTokenStorage extends TokenStorage {
   }) async {
     return true;
   }
+
+  @override
+  Future<void> saveConsent({
+    required String termsVersion,
+    required String privacyVersion,
+    required bool marketingOptIn,
+    required String agreedAtIso,
+  }) async {}
 }
 
 Future<void> pumpLoginScreen(
@@ -293,5 +314,66 @@ void main() {
           .onPressed,
       isNotNull,
     );
+  });
+
+  testWidgets('valid email signup submits through auth view model', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.ensureVisible(find.text('이메일로 새 계정 만들기'));
+    await tester.tap(find.text('이메일로 새 계정 만들기'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '앨범에 표시할 이름'),
+      '준자',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'snapfit@example.com'),
+      'junja@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '8자 이상'),
+      'password123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '한 번 더 입력'),
+      'password123',
+    );
+    await tester.tap(find.byType(Checkbox).at(0), warnIfMissed: false);
+    await tester.tap(find.byType(Checkbox).at(1), warnIfMissed: false);
+    await tester.pump();
+    final createButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, '계정 만들기'),
+    );
+    expect(createButton.onPressed, isNotNull);
+    createButton.onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(fake.emailSignUpCalled, isTrue);
+    expect(fake.signedUpEmail, 'junja@example.com');
+    expect(find.text('확인 메일을 보냈어요'), findsOneWidget);
   });
 }

@@ -100,6 +100,31 @@ class AuthService {
     throw Exception('Supabase Google 로그인 환경이 준비되지 않았습니다.');
   }
 
+  Future<AuthResponse?> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: {'name': name.trim(), 'full_name': name.trim()},
+      );
+      final session = response.session;
+      if (session == null) {
+        // Supabase email confirmation enabled: no session yet. The UI should
+        // move to the email-confirmation state and wait for the user to verify.
+        return null;
+      }
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 이메일 가입 환경이 준비되지 않았습니다.');
+  }
+
   Future<AuthResponse> refresh(String refreshToken) async {
     if (supabase != null) {
       final response = await supabase!.auth.refreshSession(refreshToken);
