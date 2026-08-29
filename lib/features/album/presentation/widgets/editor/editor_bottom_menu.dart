@@ -120,8 +120,8 @@ class EditorBottomMenu extends StatelessWidget {
         final isDark = SnapFitColors.isDark(context);
 
         return Container(
-          height: isVerticalRail ? double.infinity : 90,
-          width: isVerticalRail ? 62 : null,
+          height: isVerticalRail ? double.infinity : 88,
+          width: isVerticalRail ? 56 : null,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24.r),
             gradient: LinearGradient(
@@ -134,8 +134,8 @@ class EditorBottomMenu extends StatelessWidget {
                     ]
                   : [
                       Colors.white.withOpacity(0.92),
-                      const Color(0xFFEAFBFD).withOpacity(0.72),
-                      const Color(0xFFFFF4EA).withOpacity(0.86),
+                      const Color(0xFFFFF8F1).withOpacity(0.88),
+                      const Color(0xFFEFE2D0).withOpacity(0.64),
                     ],
             ),
             border: Border.all(
@@ -146,8 +146,8 @@ class EditorBottomMenu extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
-                blurRadius: 28,
-                offset: const Offset(0, -12),
+                blurRadius: 24,
+                offset: const Offset(0, -8),
               ),
             ],
           ),
@@ -224,7 +224,7 @@ class EditorBottomMenu extends StatelessWidget {
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
         width: compact ? 44 : 58,
-        height: compact ? 38 : 66,
+        height: compact ? 44 : 66,
         padding: compact
             ? EdgeInsets.zero
             : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
@@ -234,17 +234,14 @@ class EditorBottomMenu extends StatelessWidget {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    SnapFitColors.primaryGradientStart,
-                    SnapFitColors.primaryGradientEnd,
-                  ],
+                  colors: [Color(0xFF1F1B16), Color(0xFF5A4634)],
                 )
               : null,
           color: isSelected
               ? null
               : isFeatured
-              ? SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10)
-              : Colors.white.withOpacity(isDark ? 0.04 : 0.30),
+              ? SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.08)
+              : Colors.white.withOpacity(isDark ? 0.04 : 0.36),
           border: Border.all(
             color: isSelected
                 ? Colors.white.withOpacity(0.20)
@@ -255,7 +252,9 @@ class EditorBottomMenu extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: SnapFitColors.accent.withOpacity(0.24),
+                    color: const Color(
+                      0xFFD6B892,
+                    ).withOpacity(isDark ? 0.18 : 0.24),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),

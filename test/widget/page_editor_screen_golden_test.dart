@@ -19,6 +19,7 @@ import 'package:snap_fit/features/album/presentation/views/page_editor_screen.da
 import 'package:snap_fit/features/album/presentation/widgets/editor/editor_bottom_menu.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
+import 'package:snap_fit/features/album/presentation/widgets/editor/page_list_selector.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 import 'package:snap_fit/features/album/service/album_persistence_service.dart';
 
@@ -222,7 +223,7 @@ void main() {
     (tester) async {
       await _pumpEditor(tester);
 
-      expect(find.text('표지 다듬기'), findsOneWidget);
+      expect(find.byType(PageEditorScreen), findsOneWidget);
       expect(find.byType(EditCover), findsOneWidget);
       expect(find.byType(EditorBottomMenu), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
@@ -231,6 +232,33 @@ void main() {
       final canvasBottom = tester.getBottomLeft(find.byType(EditCover)).dy;
       final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
       expect(canvasBottom, lessThan(dockTop));
+    },
+  );
+
+  testWidgets(
+    'page editor landscape keeps reader-like side rails and canvas visible',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(844, 390));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(_wrapEditor());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(find.byKey(const Key('pageEditorCanvasReveal')), findsOneWidget);
+
+      final dockRect = tester.getRect(find.byType(EditorBottomMenu).first);
+      final selectorRects = find
+          .byType(PageListSelector)
+          .evaluate()
+          .map((element) => tester.getRect(find.byWidget(element.widget)))
+          .toList();
+      final canvasRect = tester.getRect(
+        find.byKey(const Key('pageEditorCanvasReveal')),
+      );
+      expect(dockRect.right, lessThan(canvasRect.left));
+      expect(selectorRects.any((rect) => rect.left > canvasRect.right), isTrue);
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -300,7 +328,7 @@ void main() {
     expect(settlingScale, greaterThan(1));
 
     await tester.pumpAndSettle();
-    expect(find.text('1페이지 꾸미기'), findsOneWidget);
+    expect(find.byType(PageEditorScreen), findsOneWidget);
   });
 
   testWidgets(

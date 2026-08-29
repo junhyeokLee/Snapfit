@@ -86,14 +86,16 @@ class PageListSelector extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(14.r),
                         border: Border.all(
                           color: isSelected
-                              ? SnapFitColors.accent.withOpacity(0.58)
+                              ? const Color(0xFFD6B892).withOpacity(0.72)
                               : SnapFitColors.overlayLightOf(context),
                           width: isSelected ? 1.4 : 0.8,
                         ),
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: SnapFitColors.accent.withOpacity(0.12),
+                                  color: const Color(
+                                    0xFFD6B892,
+                                  ).withOpacity(0.18),
                                   blurRadius: 12,
                                   offset: const Offset(0, 6),
                                 ),
@@ -138,8 +140,9 @@ class PageListSelector extends ConsumerWidget {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: SnapFitColors.accent
-                                                .withOpacity(0.22 * glow),
+                                            color: const Color(
+                                              0xFFD6B892,
+                                            ).withOpacity(0.22 * glow),
                                             blurRadius: 10 + 6 * glow,
                                             spreadRadius: 0.5 * glow,
                                           ),
@@ -160,7 +163,7 @@ class PageListSelector extends ConsumerWidget {
                                 curve: SnapFitMotion.pageTurnCurve,
                                 height: 2.5.h,
                                 decoration: BoxDecoration(
-                                  color: SnapFitColors.accent,
+                                  color: const Color(0xFF7A5F41),
                                   borderRadius: BorderRadius.circular(999.r),
                                 ),
                               ),
@@ -205,7 +208,7 @@ class PageListSelector extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 9.5,
                           color: isSelected
-                              ? SnapFitColors.accent
+                              ? const Color(0xFF5A4634)
                               : SnapFitColors.textSecondaryOf(context),
                           fontWeight: isSelected
                               ? FontWeight.w900

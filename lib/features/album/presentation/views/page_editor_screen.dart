@@ -689,13 +689,15 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     Widget buildLandscapeLayout() {
+      // Read 화면의 오른쪽 page rail 방향성을 유지한다.
+      // 편집 도구는 왼쪽 command rail로 빼서 read → edit 전환 시 페이지 위치가 덜 튄다.
       return Row(
         children: [
           SizedBox(
-            width: 72,
+            width: 68,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 58, 2, 18),
-              child: buildPageSelector(),
+              padding: const EdgeInsets.fromLTRB(8, 52, 4, 16),
+              child: buildBottomMenu(),
             ),
           ),
           Expanded(
@@ -703,31 +705,31 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               children: [
                 Positioned.fill(
                   child: buildCanvasArea(
-                    padding: const EdgeInsets.fromLTRB(12, 58, 12, 18),
+                    padding: const EdgeInsets.fromLTRB(10, 52, 10, 16),
                   ),
                 ),
                 Positioned(
                   left: 10,
-                  top: 58,
-                  width: 138,
+                  top: 52,
+                  width: 148,
                   child: buildLayerActions(),
                 ),
                 if (_currentMode != EditorMode.none)
                   Positioned(
                     left: 10,
-                    top: 136,
-                    width: 160,
-                    bottom: 18,
+                    top: 124,
+                    width: 172,
+                    bottom: 16,
                     child: SingleChildScrollView(child: buildInlinePanel()),
                   ),
               ],
             ),
           ),
           SizedBox(
-            width: 76,
+            width: 64,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 58, 10, 18),
-              child: buildBottomMenu(),
+              padding: const EdgeInsets.fromLTRB(2, 52, 8, 16),
+              child: buildPageSelector(),
             ),
           ),
         ],
@@ -800,10 +802,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(999.r),
                       gradient: const LinearGradient(
-                        colors: [
-                          SnapFitColors.primaryGradientStart,
-                          SnapFitColors.primaryGradientEnd,
-                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1F1B16), Color(0xFF3B3026)],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -832,9 +833,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: Theme.of(context).brightness == Brightness.dark
-                  ? SnapFitColors.readerGradientOf(context)
-                  : const [Color(0xFFFAF7F1), Color(0xFFFFFCF7)],
+              colors: SnapFitColors.readerGradientOf(context),
             ),
           ),
           child: Stack(
@@ -852,7 +851,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       children: [
                         // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
                         Padding(
-                          padding: EdgeInsets.only(top: 16.h),
+                          padding: EdgeInsets.only(top: 10.h),
                           child: SnapFitFadeIn(
                             key: const Key('pageEditorSelectorReveal'),
                             delay: const Duration(milliseconds: 80),
@@ -886,7 +885,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                         // 트리에 존재하면 GlobalKey 충돌이 발생한다.
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 0),
+                            padding: EdgeInsets.fromLTRB(14.w, 4.h, 14.w, 2.h),
                             child: _PageEditorEntranceReveal(
                               key: const Key('pageEditorCanvasReveal'),
                               delay: Duration.zero,
@@ -1172,17 +1171,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark
-                ? const [
-                    Color(0xFF0E1117),
-                    Color(0xFF102A30),
-                    Color(0xFF171423),
-                  ]
-                : const [
-                    Color(0xFFFFF8F1),
-                    Color(0xFFEAFBFD),
-                    Color(0xFFF7F3FF),
-                  ],
+            colors: SnapFitColors.readerGradientOf(context),
           ),
         ),
         child: Stack(
@@ -1192,7 +1181,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               right: -54.w,
               child: _AmbientOrb(
                 size: 190.w,
-                color: SnapFitColors.accent.withOpacity(isDark ? 0.18 : 0.20),
+                color: const Color(
+                  0xFFE8D4B8,
+                ).withOpacity(isDark ? 0.10 : 0.30),
               ),
             ),
             Positioned(
@@ -1201,8 +1192,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               child: _AmbientOrb(
                 size: 230.w,
                 color: const Color(
-                  0xFFFFA86B,
-                ).withOpacity(isDark ? 0.10 : 0.18),
+                  0xFFD6B892,
+                ).withOpacity(isDark ? 0.10 : 0.20),
               ),
             ),
             Positioned(
@@ -1210,9 +1201,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               right: -92.w,
               child: _AmbientOrb(
                 size: 250.w,
-                color: const Color(
-                  0xFF8B7CFF,
-                ).withOpacity(isDark ? 0.14 : 0.16),
+                color: SnapFitColors.deepCharcoal.withOpacity(
+                  isDark ? 0.10 : 0.06,
+                ),
               ),
             ),
           ],
@@ -1233,8 +1224,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           colors: isDark
               ? [Colors.white.withOpacity(0.09), Colors.white.withOpacity(0.03)]
               : [
-                  Colors.white.withOpacity(0.72),
-                  const Color(0xFFEAFBFD).withOpacity(0.54),
+                  Colors.white.withOpacity(0.74),
+                  const Color(0xFFFFF8F1).withOpacity(0.78),
+                  const Color(0xFFEFE2D0).withOpacity(0.50),
                 ],
         ),
         border: Border.all(
@@ -1249,7 +1241,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             offset: const Offset(0, 18),
           ),
           BoxShadow(
-            color: SnapFitColors.accent.withOpacity(isDark ? 0.12 : 0.08),
+            color: const Color(0xFFD6B892).withOpacity(isDark ? 0.08 : 0.10),
             blurRadius: 42,
             offset: const Offset(0, 12),
           ),
