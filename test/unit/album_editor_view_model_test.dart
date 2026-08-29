@@ -59,6 +59,33 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
   Future<bool> pollAlbumCreation(int albumId) async => false;
 }
 
+class QuotaFailAlbumPersistenceService implements AlbumPersistenceService {
+  @override
+  Future<void> performBackgroundUpload({
+    required int albumId,
+    required Size canvasSize,
+    required List<LayerModel> currentLayers,
+    required Uint8List? coverImageBytes,
+    required String themeLabel,
+    required String title,
+    required double coverRatio,
+    required int targetPages,
+    bool swallowErrors = true,
+    void Function(int completed, int total)? onProgress,
+  }) async {
+    throw const StorageQuotaExceededException(
+      hardLimitBytes: 1024,
+      usedBytes: 1024,
+      incomingBytes: 10,
+      projectedBytes: 1034,
+      reason: 'HARD_LIMIT_EXCEEDED',
+    );
+  }
+
+  @override
+  Future<bool> pollAlbumCreation(int albumId) async => false;
+}
+
 class MockAssetEntity extends Mock implements AssetEntity {}
 
 void main() {
@@ -353,6 +380,52 @@ void main() {
 
       final ok = await notifier.saveFullAlbum();
       expect(ok, isFalse);
+    },
+  );
+
+  test(
+    'saveAlbumToBackend surfaces fatal upload errors during new album creation',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      when(() => mockRepo.createAlbum(any())).thenAnswer((invocation) async {
+        final request = invocation.positionalArguments[0] as CreateAlbumRequest;
+        return fakeAlbum(
+          id: 99,
+          ratio: request.ratio,
+          coverLayersJson: request.coverLayersJson,
+          coverImageUrl: request.coverImageUrl,
+          coverThumbnailUrl: request.coverThumbnailUrl,
+        );
+      });
+
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            QuotaFailAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(albumEditorViewModelProvider.future);
+      final notifier = container.read(albumEditorViewModelProvider.notifier);
+      final cover = coverSizes.first;
+      notifier.resetForCreate(initialCover: cover, targetPages: 3);
+
+      expect(
+        () => notifier.saveAlbumToBackend(
+          const Size(500, 500),
+          coverImageBytes: Uint8List.fromList([0, 1, 2]),
+          title: '새 앨범',
+          targetPages: 3,
+        ),
+        throwsA(isA<StorageQuotaExceededException>()),
+      );
     },
   );
 
