@@ -53,6 +53,41 @@ class FakeTokenStorage extends TokenStorage {
   }
 }
 
+Future<void> pumpLoginScreen(
+  WidgetTester tester,
+  FakeAuthViewModel fake, {
+  Size size = const Size(390, 844),
+}) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        authViewModelProvider.overrideWith(() => fake),
+        tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+      ],
+      child: ScreenUtilInit(
+        designSize: const Size(390, 844),
+        minTextAdapt: true,
+        builder: (_, __) => MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          home: const LoginScreen(),
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
+}
+
+Finder socialButton(String label) {
+  return find.ancestor(
+    of: find.text(label),
+    matching: find.byType(ElevatedButton),
+  );
+}
+
 void main() {
   testWidgets('kakao login button triggers loading and calls auth', (
     tester,
@@ -76,13 +111,49 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('카카오로 계속하기'));
+    await tester.tap(socialButton('카카오로 계속하기'));
     await tester.pump();
 
     expect(fake.kakaoCalled, isTrue);
     expect(find.text('로그인 중…'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNWidgets(2));
     fake.completeKakao();
+  });
+
+  testWidgets('login screen renders in portrait and landscape', (tester) async {
+    final fake = FakeAuthViewModel();
+
+    Future<void> pumpAt(Size size) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authViewModelProvider.overrideWith(() => fake),
+            tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+          ],
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            minTextAdapt: true,
+            builder: (_, __) => MaterialApp(
+              theme: ThemeData(splashFactory: NoSplash.splashFactory),
+              home: const LoginScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    await pumpAt(const Size(390, 844));
+    expect(find.text('추억을 한 권의 앨범으로'), findsOneWidget);
+    expect(find.text('내 앨범으로 계속하기'), findsOneWidget);
+
+    await pumpAt(const Size(844, 390));
+    expect(find.text('추억을 한 권의 앨범으로'), findsOneWidget);
+    expect(find.text('내 앨범으로 계속하기'), findsOneWidget);
   });
 
   testWidgets('google login button triggers loading and calls auth', (
@@ -107,7 +178,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Google로 계속하기'));
+    await tester.tap(socialButton('Google로 계속하기'));
     await tester.pump();
 
     expect(fake.googleCalled, isTrue);
@@ -138,7 +209,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('카카오로 계속하기'));
+    await tester.tap(socialButton('카카오로 계속하기'));
     await tester.pump();
 
     final kakaoButton = find.ancestor(
@@ -167,5 +238,60 @@ void main() {
     expect(tester.widget<ElevatedButton>(googleButton).onPressed, isNull);
 
     fake.completeKakao();
+  });
+
+  testWidgets('email signup form renders and requires terms before submit', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.ensureVisible(find.text('이메일로 새 계정 만들기'));
+    await tester.tap(find.text('이메일로 새 계정 만들기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Snapfit 계정 만들기'), findsOneWidget);
+    expect(find.text('이름'), findsOneWidget);
+    expect(find.text('이메일'), findsOneWidget);
+    expect(find.text('비밀번호'), findsOneWidget);
+    expect(find.text('비밀번호 확인'), findsOneWidget);
+    expect(
+      tester
+          .widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '계정 만들기'))
+          .onPressed,
+      isNull,
+    );
+
+    await tester.tap(find.byType(Checkbox).at(0), warnIfMissed: false);
+    await tester.pump();
+    await tester.tap(find.byType(Checkbox).at(1), warnIfMissed: false);
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '계정 만들기'))
+          .onPressed,
+      isNotNull,
+    );
   });
 }

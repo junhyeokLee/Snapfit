@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,18 +19,39 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   _LoginProvider? _loadingProvider;
+  _AuthMode _mode = _AuthMode.login;
   bool _animateIn = false;
 
+  final _signUpFormKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
+  bool _termsChecked = false;
+  bool _privacyChecked = false;
+  bool _marketingChecked = false;
+  bool _showSignUpConfirmation = false;
+
   bool get _isLoading => _loadingProvider != null;
+  bool get _canCreateEmailAccount => _termsChecked && _privacyChecked;
 
   @override
   void initState() {
     super.initState();
-    ScreenLogger.enter('LoginScreen', '카카오/구글 로그인 진입 화면');
+    ScreenLogger.enter('LoginScreen', '카카오/구글/이메일 로그인 진입 화면');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() => _animateIn = true);
     });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _passwordConfirmController.dispose();
+    super.dispose();
   }
 
   Future<void> _loginWithKakao() async {
@@ -42,9 +64,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authViewModelProvider.notifier).syncConsentIfPresent();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('카카오 로그인 실패: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('카카오 로그인을 완료하지 못했어요. 잠시 후 다시 시도해주세요.')),
+      );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
     }
@@ -60,9 +82,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authViewModelProvider.notifier).syncConsentIfPresent();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('구글 로그인 실패: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google 로그인을 완료하지 못했어요. 잠시 후 다시 시도해주세요.')),
+      );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
     }
@@ -84,124 +106,84 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final canAgree = termsChecked && privacyChecked;
             return SafeArea(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 18.h),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '서비스 이용 동의',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
-                        color: SnapFitColors.textPrimaryOf(context),
-                      ),
-                    ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      '최초 1회만 동의하면 다음 로그인부터는 바로 진행됩니다.\n동의 이력은 계정 기준으로 서버에 저장됩니다.',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: SnapFitColors.textSecondaryOf(context),
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    CheckboxListTile(
-                      value: termsChecked,
-                      onChanged: (v) => setModalState(() {
-                        termsChecked = v ?? false;
-                      }),
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        '[필수] 이용약관 동의',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      secondary: TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TermsPolicyScreen(
-                              initialDocType: TermsPolicyDocType.terms,
-                            ),
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 14.h),
+                child: _AuthPaperCard(
+                  maxWidth: 460,
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 18.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141312).withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(999.r),
                           ),
                         ),
-                        child: const Text('보기'),
                       ),
-                    ),
-                    CheckboxListTile(
-                      value: privacyChecked,
-                      onChanged: (v) => setModalState(() {
-                        privacyChecked = v ?? false;
-                      }),
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        '[필수] 개인정보처리방침 동의',
+                      SizedBox(height: 16.h),
+                      Text(
+                        '서비스 이용 동의',
                         style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w900,
+                          color: SnapFitColors.textPrimaryOf(context),
                         ),
                       ),
-                      secondary: TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TermsPolicyScreen(
-                              initialDocType: TermsPolicyDocType.privacy,
-                            ),
-                          ),
-                        ),
-                        child: const Text('보기'),
-                      ),
-                    ),
-                    CheckboxListTile(
-                      value: marketingChecked,
-                      onChanged: (v) => setModalState(() {
-                        marketingChecked = v ?? false;
-                      }),
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(
-                        '[선택] 마케팅 정보 수신 동의',
+                      SizedBox(height: 6.h),
+                      Text(
+                        '동의 이력은 계정에 저장되며, 빠른 확인을 위해 기기에도 보관됩니다.',
                         style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 11.sp,
+                          height: 1.45,
                           color: SnapFitColors.textSecondaryOf(context),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 8.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: canAgree
-                            ? () => Navigator.pop(ctx, true)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: SnapFitColors.accent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                        child: const Text('동의하고 계속'),
+                      SizedBox(height: 12.h),
+                      _TermsCheckTile(
+                        value: termsChecked,
+                        requiredLabel: true,
+                        label: '이용약관 동의',
+                        onChanged: (v) => setModalState(() => termsChecked = v),
+                        onView: () => _openTerms(TermsPolicyDocType.terms),
                       ),
-                    ),
-                  ],
+                      _TermsCheckTile(
+                        value: privacyChecked,
+                        requiredLabel: true,
+                        label: '개인정보처리방침 동의',
+                        onChanged: (v) =>
+                            setModalState(() => privacyChecked = v),
+                        onView: () => _openTerms(TermsPolicyDocType.privacy),
+                      ),
+                      _TermsCheckTile(
+                        value: marketingChecked,
+                        label: '마케팅 정보 수신 동의',
+                        onChanged: (v) =>
+                            setModalState(() => marketingChecked = v),
+                      ),
+                      SizedBox(height: 10.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: canAgree
+                              ? () => Navigator.pop(ctx, true)
+                              : null,
+                          style: _primaryButtonStyle(context),
+                          child: const Text('동의하고 계속'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -220,272 +202,531 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return true;
   }
 
+  void _openTerms(TermsPolicyDocType type) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TermsPolicyScreen(initialDocType: type),
+      ),
+    );
+  }
+
+  void _submitEmailSignUp() {
+    FocusScope.of(context).unfocus();
+    final valid = _signUpFormKey.currentState?.validate() ?? false;
+    if (!valid || !_canCreateEmailAccount) return;
+    HapticFeedback.selectionClick();
+    setState(() => _showSignUpConfirmation = true);
+  }
+
+  void _switchMode(_AuthMode mode) {
+    setState(() {
+      _mode = mode;
+      _showSignUpConfirmation = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
-    final isDark = SnapFitColors.isDark(context);
-
     return Scaffold(
-      backgroundColor: SnapFitColors.backgroundOf(context),
-      body: Stack(
+      backgroundColor: const Color(0xFFF8EFE2),
+      body: _AuthResponsiveShell(
+        animateIn: _animateIn,
+        form: _mode == _AuthMode.login
+            ? _buildLoginCard(context)
+            : _buildSignUpCard(context),
+      ),
+    );
+  }
+
+  Widget _buildLoginCard(BuildContext context) {
+    return _AuthPaperCard(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isDark
-                      ? const [
-                          Color(0xFF0C1B1F),
-                          Color(0xFF102A31),
-                          Color(0xFF132C34),
-                        ]
-                      : const [
-                          Color(0xFFF4FBFF),
-                          Color(0xFFEAF6FC),
-                          Color(0xFFF5FAFD),
-                        ],
+          const _CardEyebrow('Snapfit 계정'),
+          SizedBox(height: 8.h),
+          Text('내 앨범으로 계속하기', style: _titleStyle(context)),
+          SizedBox(height: 8.h),
+          Text(
+            '로그인하면 제작 중인 앨범과 주문 정보를 안전하게 이어볼 수 있어요.',
+            style: _bodyStyle(context),
+          ),
+          SizedBox(height: 22.h),
+          _SocialLoginButton.kakao(
+            loading: _loadingProvider == _LoginProvider.kakao,
+            disabled: _isLoading && _loadingProvider != _LoginProvider.kakao,
+            onPressed: _isLoading ? null : _loginWithKakao,
+          ),
+          SizedBox(height: 10.h),
+          _SocialLoginButton.google(
+            loading: _loadingProvider == _LoginProvider.google,
+            disabled: _isLoading && _loadingProvider != _LoginProvider.google,
+            onPressed: _isLoading ? null : _loginWithGoogle,
+          ),
+          if (_isLoading) ...[
+            SizedBox(height: 14.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 18.w,
+                  height: 18.w,
+                  child: const CircularProgressIndicator(strokeWidth: 2.2),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: -80.h,
-            right: -50.w,
-            child: _BackgroundBlob(
-              size: 220.w,
-              color: SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.18),
-            ),
-          ),
-          Positioned(
-            top: 160.h,
-            left: -70.w,
-            child: _BackgroundBlob(
-              size: 170.w,
-              color: const Color(0xFFFEE500).withOpacity(isDark ? 0.10 : 0.18),
-            ),
-          ),
-          Positioned(
-            bottom: -60.h,
-            right: 24.w,
-            child: _BackgroundBlob(
-              size: 190.w,
-              color: SnapFitColors.accentLight.withOpacity(
-                isDark ? 0.12 : 0.28,
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-                child: AnimatedOpacity(
-                  opacity: _animateIn ? 1 : 0,
-                  duration: const Duration(milliseconds: 380),
-                  curve: Curves.easeOut,
-                  child: AnimatedSlide(
-                    offset: _animateIn ? Offset.zero : const Offset(0, 0.04),
-                    duration: const Duration(milliseconds: 380),
-                    curve: Curves.easeOutCubic,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.96, end: 1),
-                      duration: const Duration(milliseconds: 320),
-                      curve: Curves.easeOut,
-                      builder: (context, scale, child) =>
-                          Transform.scale(scale: scale, child: child),
-                      child: Container(
-                        width: double.infinity,
-                        constraints: BoxConstraints(maxWidth: 430.w),
-                        padding: EdgeInsets.fromLTRB(22.w, 26.h, 22.w, 20.h),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.06)
-                              : Colors.white.withOpacity(0.86),
-                          borderRadius: BorderRadius.circular(22.r),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.10)
-                                : Colors.white.withOpacity(0.75),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(
-                                isDark ? 0.30 : 0.10,
-                              ),
-                              blurRadius: 28,
-                              offset: const Offset(0, 12),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 34.w,
-                                  height: 34.w,
-                                  decoration: BoxDecoration(
-                                    color: SnapFitColors.accent.withOpacity(
-                                      0.16,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(6.w),
-                                    child: Image.asset(
-                                      'assets/snapfit_logo.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 10.w),
-                                Text(
-                                  'SnapFit',
-                                  style: TextStyle(
-                                    fontFamily: 'Raleway',
-                                    fontSize: 29.sp,
-                                    letterSpacing: -0.4,
-                                    fontWeight: FontWeight.w800,
-                                    color: textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 12.h),
-                            Text(
-                              '소중한 순간을 한 권의 앨범으로',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: textSecondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 24.h),
-                            _SocialLoginButton.kakao(
-                              loading: _loadingProvider == _LoginProvider.kakao,
-                              onPressed: _isLoading ? null : _loginWithKakao,
-                            ),
-                            SizedBox(height: 10.h),
-                            _SocialLoginButton.google(
-                              loading:
-                                  _loadingProvider == _LoginProvider.google,
-                              onPressed: _isLoading ? null : _loginWithGoogle,
-                            ),
-                            if (_isLoading) ...[
-                              SizedBox(height: 16.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 18.w,
-                                    height: 18.w,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                      color: SnapFitColors.accent,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    '로그인 중…',
-                                    style: TextStyle(
-                                      fontSize: 11.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: SnapFitColors.textMutedOf(context),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                            SizedBox(height: 14.h),
-                            Text(
-                              '최초 로그인 시 이용약관/개인정보처리방침 동의가 필요하며, 이후에는 약관 버전 변경 시에만 다시 동의합니다.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                height: 1.45,
-                                color: SnapFitColors.textMutedOf(context),
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              '동의 이력은 기기에 저장됩니다.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                height: 1.35,
-                                color: SnapFitColors.textMutedOf(context),
-                              ),
-                            ),
-                            SizedBox(height: 10.h),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _linkTextButton(
-                                  label: '이용약관',
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const TermsPolicyScreen(
-                                        initialDocType:
-                                            TermsPolicyDocType.terms,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  ' · ',
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: SnapFitColors.textMutedOf(context),
-                                  ),
-                                ),
-                                _linkTextButton(
-                                  label: '개인정보처리방침',
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const TermsPolicyScreen(
-                                        initialDocType:
-                                            TermsPolicyDocType.privacy,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                SizedBox(width: 8.w),
+                Text(
+                  '로그인 중…',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w800,
+                    color: SnapFitColors.textMutedOf(context),
                   ),
                 ),
+              ],
+            ),
+          ],
+          SizedBox(height: 16.h),
+          const _DividerWithText('또는'),
+          SizedBox(height: 12.h),
+          OutlinedButton(
+            onPressed: _isLoading ? null : () => _switchMode(_AuthMode.signup),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size.fromHeight(48.h),
+              foregroundColor: const Color(0xFF141312),
+              side: BorderSide(
+                color: const Color(0xFF141312).withOpacity(0.18),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.r),
               ),
             ),
+            child: const Text('이메일로 새 계정 만들기'),
+          ),
+          SizedBox(height: 12.h),
+          _TermsFooter(
+            onTerms: () => _openTerms(TermsPolicyDocType.terms),
+            onPrivacy: () => _openTerms(TermsPolicyDocType.privacy),
           ),
         ],
       ),
     );
   }
 
-  Widget _linkTextButton({required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.h),
-        child: Text(
-          label,
+  Widget _buildSignUpCard(BuildContext context) {
+    if (_showSignUpConfirmation) {
+      return _AuthPaperCard(
+        maxWidth: 520,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _CardEyebrow('이메일 가입'),
+            SizedBox(height: 8.h),
+            Text('확인 메일을 보냈어요', style: _titleStyle(context)),
+            SizedBox(height: 8.h),
+            Text(
+              '메일함에서 인증을 마치면 Snapfit 앨범을 이어서 만들 수 있어요. 기능 연결 전 UI 검증용 상태입니다.',
+              style: _bodyStyle(context),
+            ),
+            SizedBox(height: 18.h),
+            ElevatedButton(
+              onPressed: () => _switchMode(_AuthMode.login),
+              style: _primaryButtonStyle(context),
+              child: const Text('로그인으로 돌아가기'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _AuthPaperCard(
+      maxWidth: 520,
+      child: Form(
+        key: _signUpFormKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _CardEyebrow('이메일 가입'),
+                      SizedBox(height: 8.h),
+                      Text('Snapfit 계정 만들기', style: _titleStyle(context)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: '로그인으로 돌아가기',
+                  onPressed: () => _switchMode(_AuthMode.login),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            SizedBox(height: 14.h),
+            _AuthTextField(
+              controller: _nameController,
+              label: '이름',
+              hint: '앨범에 표시할 이름',
+              autofillHints: const [AutofillHints.name],
+              validator: (value) => (value == null || value.trim().isEmpty)
+                  ? '이름을 입력해주세요.'
+                  : null,
+            ),
+            SizedBox(height: 10.h),
+            _AuthTextField(
+              controller: _emailController,
+              label: '이메일',
+              hint: 'snapfit@example.com',
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              validator: (value) {
+                final text = value?.trim() ?? '';
+                if (text.isEmpty) return '이메일을 입력해주세요.';
+                if (!text.contains('@') || !text.contains('.')) {
+                  return '이메일 형식을 확인해주세요.';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 10.h),
+            _AuthTextField(
+              controller: _passwordController,
+              label: '비밀번호',
+              hint: '8자 이상',
+              obscureText: true,
+              autofillHints: const [AutofillHints.newPassword],
+              validator: (value) {
+                final text = value ?? '';
+                if (text.length < 8) return '비밀번호는 8자 이상 입력해주세요.';
+                return null;
+              },
+            ),
+            SizedBox(height: 10.h),
+            _AuthTextField(
+              controller: _passwordConfirmController,
+              label: '비밀번호 확인',
+              hint: '한 번 더 입력',
+              obscureText: true,
+              autofillHints: const [AutofillHints.newPassword],
+              validator: (value) =>
+                  value != _passwordController.text ? '비밀번호가 서로 달라요.' : null,
+            ),
+            SizedBox(height: 12.h),
+            _TermsCheckTile(
+              value: _termsChecked,
+              requiredLabel: true,
+              label: '이용약관 동의',
+              onChanged: (v) => setState(() => _termsChecked = v),
+              onView: () => _openTerms(TermsPolicyDocType.terms),
+            ),
+            _TermsCheckTile(
+              value: _privacyChecked,
+              requiredLabel: true,
+              label: '개인정보처리방침 동의',
+              onChanged: (v) => setState(() => _privacyChecked = v),
+              onView: () => _openTerms(TermsPolicyDocType.privacy),
+            ),
+            _TermsCheckTile(
+              value: _marketingChecked,
+              label: '마케팅 정보 수신 동의',
+              onChanged: (v) => setState(() => _marketingChecked = v),
+            ),
+            SizedBox(height: 14.h),
+            ElevatedButton(
+              onPressed: _canCreateEmailAccount ? _submitEmailSignUp : null,
+              style: _primaryButtonStyle(context),
+              child: const Text('계정 만들기'),
+            ),
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => _switchMode(_AuthMode.login),
+              child: const Text('이미 계정이 있어요'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthResponsiveShell extends StatelessWidget {
+  const _AuthResponsiveShell({required this.animateIn, required this.form});
+
+  final bool animateIn;
+  final Widget form;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = MediaQuery.sizeOf(context);
+        final isLandscape = size.width > size.height;
+        final isTablet = size.width >= 840;
+        final compactLandscape = isLandscape && size.height < 430;
+        final horizontal = isLandscape || isTablet;
+        final maxContentWidth = isTablet ? 1180.0 : double.infinity;
+
+        final content = ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxContentWidth),
+          child: horizontal
+              ? Row(
+                  children: [
+                    Expanded(
+                      flex: isTablet ? 56 : 54,
+                      child: _AuthHeroPane(compact: compactLandscape),
+                    ),
+                    SizedBox(width: isTablet ? 26.w : 12.w),
+                    Expanded(
+                      flex: isTablet ? 44 : 46,
+                      child: Align(
+                        alignment: isTablet
+                            ? Alignment.centerLeft
+                            : Alignment.center,
+                        child: form,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    _AuthHeroPane(compact: size.height < 720),
+                    SizedBox(height: 18.h),
+                    form,
+                  ],
+                ),
+        );
+
+        return DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontal ? 28.w : 22.w,
+                  vertical: compactLandscape ? 14.h : 22.h,
+                ),
+                child: AnimatedOpacity(
+                  opacity: animateIn ? 1 : 0,
+                  duration: const Duration(milliseconds: 360),
+                  child: AnimatedSlide(
+                    offset: animateIn ? Offset.zero : const Offset(0, 0.035),
+                    duration: const Duration(milliseconds: 360),
+                    curve: Curves.easeOutCubic,
+                    child: content,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AuthHeroPane extends StatelessWidget {
+  const _AuthHeroPane({required this.compact});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isLandscape = size.width > size.height;
+    final previewHeight = isLandscape
+        ? (compact ? 150.0 : 250.0)
+        : (compact ? 150.h : 220.h);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: isLandscape
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 34.w,
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.62),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(6.w),
+                child: Image.asset(
+                  'assets/snapfit_logo.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              'SnapFit',
+              style: TextStyle(
+                fontFamily: 'Raleway',
+                fontSize: isLandscape ? 28 : 30.sp,
+                letterSpacing: -0.5,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF141312),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: compact ? 10.h : 16.h),
+        Text(
+          '추억을 한 권의 앨범으로',
+          textAlign: isLandscape ? TextAlign.left : TextAlign.center,
           style: TextStyle(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w700,
-            decoration: TextDecoration.underline,
-            color: SnapFitColors.textSecondaryOf(context),
+            fontSize: isLandscape ? 30 : 25.sp,
+            height: 1.12,
+            letterSpacing: -0.7,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFF141312),
+          ),
+        ),
+        SizedBox(height: 7.h),
+        Text(
+          '사진을 고르고, 넘기고, 간직하는 가장 쉬운 방법',
+          textAlign: isLandscape ? TextAlign.left : TextAlign.center,
+          style: TextStyle(
+            fontSize: isLandscape ? 14 : 12.5.sp,
+            height: 1.45,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF4F4941),
+          ),
+        ),
+        SizedBox(height: compact ? 12.h : 20.h),
+        SizedBox(height: previewHeight, child: const _AuthAlbumPreview()),
+        if (isLandscape && !compact) ...[
+          SizedBox(height: 18.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: const [
+              _BenefitPill('앨범 제작 이어보기'),
+              _BenefitPill('공유 초대와 주문 관리'),
+              _BenefitPill('사진과 문구를 안전하게 저장'),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AuthAlbumPreview extends StatelessWidget {
+  const _AuthAlbumPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+        final width = constraints.maxWidth.clamp(210.0, 360.0);
+        return Center(
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                _PreviewCover(
+                  asset: 'assets/snapfit_home_landscape.jpg',
+                  width: width * 0.72,
+                  height: height * 0.62,
+                  angle: -0.13,
+                  offset: Offset(-width * 0.14, height * 0.02),
+                  opacity: 0.72,
+                ),
+                _PreviewCover(
+                  asset: 'assets/snapfit_home_square.jpg',
+                  width: height * 0.62,
+                  height: height * 0.62,
+                  angle: 0.11,
+                  offset: Offset(width * 0.16, -height * 0.01),
+                  opacity: 0.82,
+                ),
+                _PreviewCover(
+                  asset: 'assets/snapfit_home_portrait.jpg',
+                  width: height * 0.53,
+                  height: height * 0.76,
+                  angle: -0.02,
+                  offset: Offset.zero,
+                  opacity: 1,
+                  foreground: true,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PreviewCover extends StatelessWidget {
+  const _PreviewCover({
+    required this.asset,
+    required this.width,
+    required this.height,
+    required this.angle,
+    required this.offset,
+    required this.opacity,
+    this.foreground = false,
+  });
+
+  final String asset;
+  final double width;
+  final double height;
+  final double angle;
+  final Offset offset;
+  final double opacity;
+  final bool foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: offset,
+      child: Transform.rotate(
+        angle: angle,
+        child: Opacity(
+          opacity: opacity,
+          child: Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8.r),
+                bottomLeft: Radius.circular(8.r),
+                topRight: Radius.circular(22.r),
+                bottomRight: Radius.circular(22.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(foreground ? 0.18 : 0.10),
+                  blurRadius: foreground ? 28.r : 18.r,
+                  offset: Offset(0, foreground ? 14.h : 8.h),
+                ),
+              ],
+              image: DecorationImage(
+                image: AssetImage(asset),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
         ),
       ),
@@ -493,27 +734,111 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-enum _LoginProvider { kakao, google }
+class _AuthPaperCard extends StatelessWidget {
+  const _AuthPaperCard({
+    required this.child,
+    this.maxWidth = 430,
+    this.padding,
+  });
 
-class _BackgroundBlob extends StatelessWidget {
-  const _BackgroundBlob({required this.size, required this.color});
-
-  final double size;
-  final Color color;
+  final Widget child;
+  final double maxWidth;
+  final EdgeInsets? padding;
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color, color.withOpacity(0.06), Colors.transparent],
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Container(
+          width: double.infinity,
+          padding: padding ?? EdgeInsets.fromLTRB(22.w, 24.h, 22.w, 20.h),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.86),
+            borderRadius: BorderRadius.circular(24.r),
+            border: Border.all(color: Colors.white.withOpacity(0.68)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.11),
+                blurRadius: 30.r,
+                offset: Offset(0, 16.h),
+              ),
+            ],
           ),
+          child: child,
         ),
       ),
+    );
+  }
+}
+
+class _CardEyebrow extends StatelessWidget {
+  const _CardEyebrow(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.6,
+        color: SnapFitColors.textMutedOf(context),
+      ),
+    );
+  }
+}
+
+class _BenefitPill extends StatelessWidget {
+  const _BenefitPill(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.52),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withOpacity(0.58)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
+          color: const Color(0xFF4F4941),
+        ),
+      ),
+    );
+  }
+}
+
+class _DividerWithText extends StatelessWidget {
+  const _DividerWithText(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider(height: 1)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10.w),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: SnapFitColors.textMutedOf(context),
+            ),
+          ),
+        ),
+        const Expanded(child: Divider(height: 1)),
+      ],
     );
   }
 }
@@ -526,12 +851,14 @@ class _SocialLoginButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.loading,
+    required this.disabled,
     this.borderColor,
   });
 
   factory _SocialLoginButton.kakao({
     required VoidCallback? onPressed,
     required bool loading,
+    required bool disabled,
   }) {
     return _SocialLoginButton(
       label: '카카오로 계속하기',
@@ -545,12 +872,14 @@ class _SocialLoginButton extends StatelessWidget {
       ),
       onPressed: onPressed,
       loading: loading,
+      disabled: disabled,
     );
   }
 
   factory _SocialLoginButton.google({
     required VoidCallback? onPressed,
     required bool loading,
+    required bool disabled,
   }) {
     return _SocialLoginButton(
       label: 'Google로 계속하기',
@@ -560,6 +889,7 @@ class _SocialLoginButton extends StatelessWidget {
       icon: SvgPicture.asset('assets/social/google.svg', width: 18, height: 18),
       onPressed: onPressed,
       loading: loading,
+      disabled: disabled,
     );
   }
 
@@ -570,53 +900,291 @@ class _SocialLoginButton extends StatelessWidget {
   final Widget icon;
   final VoidCallback? onPressed;
   final bool loading;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54.h,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            side: borderColor == null
-                ? BorderSide.none
-                : BorderSide(color: borderColor!, width: 1),
+    return Opacity(
+      opacity: disabled ? 0.55 : 1,
+      child: SizedBox(
+        width: double.infinity,
+        height: 54.h,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: foregroundColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.r),
+              side: borderColor == null
+                  ? BorderSide.none
+                  : BorderSide(color: borderColor!, width: 1),
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (loading) ...[
-              SizedBox(
-                width: 14.w,
-                height: 14.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (loading) ...[
+                SizedBox(
+                  width: 14.w,
+                  height: 14.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+              ] else ...[
+                icon,
+                SizedBox(width: 10.w),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w900,
+                    color: foregroundColor,
+                  ),
                 ),
               ),
-              SizedBox(width: 10.w),
-            ] else ...[
-              icon,
-              SizedBox(width: 10.w),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w800,
-                color: foregroundColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthTextField extends StatelessWidget {
+  const _AuthTextField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    this.keyboardType,
+    this.obscureText = false,
+    this.autofillHints,
+    this.validator,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final Iterable<String>? autofillHints;
+  final FormFieldValidator<String>? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFF141312),
+          ),
+        ),
+        SizedBox(height: 6.h),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          autofillHints: autofillHints,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hint,
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.92),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 15.w,
+              vertical: 14.h,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.r),
+              borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.r),
+              borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.r),
+              borderSide: BorderSide(
+                color: SnapFitColors.accent.withOpacity(0.9),
+                width: 1.4,
               ),
             ),
+            errorStyle: TextStyle(fontSize: 10.5.sp, height: 1.2),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TermsCheckTile extends StatelessWidget {
+  const _TermsCheckTile({
+    required this.value,
+    required this.label,
+    required this.onChanged,
+    this.requiredLabel = false,
+    this.onView,
+  });
+
+  final bool value;
+  final bool requiredLabel;
+  final String label;
+  final ValueChanged<bool> onChanged;
+  final VoidCallback? onView;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12.r),
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 3.h),
+        child: Row(
+          children: [
+            Checkbox(
+              value: value,
+              onChanged: (v) => onChanged(v ?? false),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            Expanded(
+              child: Text(
+                '${requiredLabel ? '[필수] ' : '[선택] '}$label',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: requiredLabel ? FontWeight.w800 : FontWeight.w600,
+                  color: requiredLabel
+                      ? const Color(0xFF141312)
+                      : SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+            ),
+            if (onView != null)
+              TextButton(
+                onPressed: onView,
+                style: TextButton.styleFrom(
+                  minimumSize: Size(44.w, 36.h),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('보기'),
+              ),
           ],
         ),
       ),
     );
   }
 }
+
+class _TermsFooter extends StatelessWidget {
+  const _TermsFooter({required this.onTerms, required this.onPrivacy});
+
+  final VoidCallback onTerms;
+  final VoidCallback onPrivacy;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          '최초 로그인 시 이용약관/개인정보처리방침 동의가 필요하며, 동의 이력은 계정과 기기에 안전하게 보관됩니다.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10.sp,
+            height: 1.45,
+            color: SnapFitColors.textMutedOf(context),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _FooterLink(label: '이용약관', onTap: onTerms),
+            Text(
+              ' · ',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: SnapFitColors.textMutedOf(context),
+              ),
+            ),
+            _FooterLink(label: '개인정보처리방침', onTap: onPrivacy),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  const _FooterLink({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 7.h),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w800,
+            decoration: TextDecoration.underline,
+            color: SnapFitColors.textSecondaryOf(context),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+ButtonStyle _primaryButtonStyle(BuildContext context) {
+  return ElevatedButton.styleFrom(
+    minimumSize: Size.fromHeight(52.h),
+    backgroundColor: const Color(0xFF141312),
+    foregroundColor: Colors.white,
+    disabledBackgroundColor: const Color(0xFF141312).withOpacity(0.24),
+    disabledForegroundColor: Colors.white.withOpacity(0.72),
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+    textStyle: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w900),
+  );
+}
+
+TextStyle _titleStyle(BuildContext context) {
+  return TextStyle(
+    fontSize: 24.sp,
+    height: 1.15,
+    letterSpacing: -0.6,
+    fontWeight: FontWeight.w900,
+    color: SnapFitColors.textPrimaryOf(context),
+  );
+}
+
+TextStyle _bodyStyle(BuildContext context) {
+  return TextStyle(
+    fontSize: 12.5.sp,
+    height: 1.48,
+    fontWeight: FontWeight.w600,
+    color: SnapFitColors.textSecondaryOf(context),
+  );
+}
+
+enum _LoginProvider { kakao, google }
+
+enum _AuthMode { login, signup }
