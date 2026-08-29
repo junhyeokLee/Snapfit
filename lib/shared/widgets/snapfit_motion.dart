@@ -145,8 +145,8 @@ PageRoute<T> snapFitAlbumOpenRoute<T>({
 }) {
   return PageRouteBuilder<T>(
     settings: settings,
-    transitionDuration: const Duration(milliseconds: 420),
-    reverseTransitionDuration: SnapFitMotion.fast,
+    transitionDuration: const Duration(milliseconds: 520),
+    reverseTransitionDuration: SnapFitMotion.medium,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(

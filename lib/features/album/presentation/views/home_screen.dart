@@ -217,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       hasUnreadNotification: hasUnreadNotification,
                       onTap: _handleBottomNavTap,
                     ),
-              floatingActionButton: uiState.bottomNavIndex == 1
+              floatingActionButton: uiState.bottomNavIndex <= 1
                   ? FloatingActionButton(
                       key: const Key('homeCreateAlbumFab'),
                       heroTag: 'homeCreateAlbumFab',
