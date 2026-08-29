@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -45,6 +46,68 @@ class AuthService {
     );
   }
 
+  Map<String, dynamic> _decodeJwtPayload(String token) {
+    final parts = token.split('.');
+    if (parts.length < 2) return const <String, dynamic>{};
+    try {
+      final normalized = base64Url.normalize(parts[1]);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final payload = jsonDecode(decoded);
+      if (payload is Map<String, dynamic>) return payload;
+      if (payload is Map) return Map<String, dynamic>.from(payload);
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  bool _truthy(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().trim().toLowerCase();
+    return text == 'true' || text == '1' || text == 'yes';
+  }
+
+  String? _stringValue(Map<String, dynamic> source, Iterable<String> keys) {
+    for (final key in keys) {
+      final value = source[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  Future<void> _requireVerifiedProviderEmail(
+    Session session, {
+    required String provider,
+    String? idToken,
+  }) async {
+    final user = session.user;
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final claims = idToken == null || idToken.isEmpty
+        ? const <String, dynamic>{}
+        : _decodeJwtPayload(idToken);
+
+    final email = user.email?.trim().isNotEmpty == true
+        ? user.email!.trim()
+        : _stringValue(claims, const ['email']) ??
+              _stringValue(metadata, const ['email']);
+
+    final emailVerified =
+        _truthy(claims['email_verified']) ||
+        _truthy(claims['verified_email']) ||
+        _truthy(claims['is_email_verified']) ||
+        _truthy(metadata['email_verified']) ||
+        _truthy(metadata['verified_email']) ||
+        _truthy(metadata['is_email_verified']);
+
+    if (email == null || !emailVerified) {
+      try {
+        await supabase?.auth.signOut();
+      } catch (_) {}
+      throw Exception(
+        '$provider 로그인은 인증된 이메일이 필요합니다. 이메일 제공/인증 동의 후 다시 시도해주세요.',
+      );
+    }
+  }
+
   Future<void> _upsertSupabaseProfile(UserInfo user) async {
     if (supabase == null) return;
     await supabase!.from('profiles').upsert({
@@ -72,6 +135,11 @@ class AuthService {
       if (session == null) {
         throw Exception('Supabase Kakao 로그인 세션을 가져올 수 없습니다.');
       }
+      await _requireVerifiedProviderEmail(
+        session,
+        provider: '카카오',
+        idToken: idToken,
+      );
       final auth = _fromSupabaseSession(session, provider: 'KAKAO');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
@@ -92,6 +160,11 @@ class AuthService {
       if (session == null) {
         throw Exception('Supabase Google 로그인 세션을 가져올 수 없습니다.');
       }
+      await _requireVerifiedProviderEmail(
+        session,
+        provider: '구글',
+        idToken: idToken,
+      );
       final auth = _fromSupabaseSession(session, provider: 'GOOGLE');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
