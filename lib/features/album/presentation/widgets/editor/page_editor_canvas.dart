@@ -65,14 +65,14 @@ class PageEditorCanvas extends StatelessWidget {
     final double coverScale = canvasW / kCoverReferenceWidth;
     final sharedShadow = [
       BoxShadow(
-        color: Colors.black.withOpacity(0.10),
-        blurRadius: 28 * coverScale,
-        offset: Offset(0, 14 * coverScale),
+        color: Colors.black.withOpacity(0.12),
+        blurRadius: 10 * coverScale,
+        offset: Offset(24 * coverScale, 72 * coverScale),
       ),
       BoxShadow(
-        color: const Color(0xFFD6B892).withOpacity(0.08),
-        blurRadius: 34 * coverScale,
-        offset: Offset(0, 8 * coverScale),
+        color: const Color(0xFF5c5d8d).withOpacity(0.12),
+        blurRadius: 10 * coverScale,
+        offset: Offset(34 * coverScale, 72 * coverScale),
       ),
     ];
 
@@ -108,10 +108,10 @@ class PageEditorCanvas extends StatelessWidget {
                     vertical: compact ? 10.h : 18.h,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF8F1).withOpacity(0.78),
+                    color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
                     borderRadius: BorderRadius.circular(compact ? 16.r : 22.r),
                     border: Border.all(
-                      color: const Color(0xFFD6B892).withOpacity(0.55),
+                      color: SnapFitColors.overlayLightOf(context),
                     ),
                   ),
                   child: Column(
@@ -282,7 +282,7 @@ class _SnapGuidePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF7A5F41).withOpacity(0.42)
+      ..color = Colors.blue.withOpacity(0.45)
       ..strokeWidth = 1.2;
 
     for (final x in verticalGuides) {

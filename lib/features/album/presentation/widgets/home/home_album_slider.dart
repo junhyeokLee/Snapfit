@@ -412,13 +412,13 @@ class _RoundControlButtonState extends State<_RoundControlButton> {
                   ]
                 : null,
           ),
-          child: Icon(
-            widget.icon,
-            size: widget.primary
-                ? (isLandscape ? 24 : 23.sp)
-                : (isLandscape ? 25 : 22.sp),
-            color: widget.primary ? const Color(0xFF141312) : Colors.white,
-          ),
+          child: widget.primary
+              ? null
+              : Icon(
+                  widget.icon,
+                  size: isLandscape ? 25 : 22.sp,
+                  color: Colors.white,
+                ),
         ),
       ),
     );

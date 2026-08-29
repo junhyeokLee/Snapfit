@@ -120,10 +120,10 @@ class EditorBottomMenu extends StatelessWidget {
         final isDark = SnapFitColors.isDark(context);
 
         return Container(
-          height: isVerticalRail ? double.infinity : 66,
-          width: isVerticalRail ? 58 : null,
+          height: isVerticalRail ? double.infinity : 90,
+          width: isVerticalRail ? 62 : null,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999.r),
+            borderRadius: BorderRadius.circular(24.r),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -134,8 +134,8 @@ class EditorBottomMenu extends StatelessWidget {
                     ]
                   : [
                       Colors.white.withOpacity(0.92),
-                      const Color(0xFFFFF8F1).withOpacity(0.88),
-                      const Color(0xFFEFE2D0).withOpacity(0.64),
+                      const Color(0xFFEAFBFD).withOpacity(0.72),
+                      const Color(0xFFFFF4EA).withOpacity(0.86),
                     ],
             ),
             border: Border.all(
@@ -146,13 +146,13 @@ class EditorBottomMenu extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
-                blurRadius: 18,
-                offset: const Offset(0, -5),
+                blurRadius: 28,
+                offset: const Offset(0, -12),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(999.r),
+            borderRadius: BorderRadius.circular(24.r),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
               child: SingleChildScrollView(
@@ -162,7 +162,7 @@ class EditorBottomMenu extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: isVerticalRail
                     ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
-                    : EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
+                    : EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
                 child: isVerticalRail
                     ? Column(
                         children: items
@@ -208,10 +208,11 @@ class EditorBottomMenu extends StatelessWidget {
     final baseColor = isDark
         ? Colors.white.withOpacity(0.74)
         : SnapFitColors.deepCharcoal.withOpacity(0.70);
+    final isFeatured = isSelected;
 
     return SnapFitPressable(
       pressedScale: 0.94,
-      borderRadius: BorderRadius.circular(999.r),
+      borderRadius: BorderRadius.circular(22.r),
       onTap: () {
         if (item.isAction) {
           item.onAction?.call();
@@ -222,34 +223,39 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: compact ? 40 : 44,
-        height: compact ? 40 : 46,
+        width: compact ? 44 : 58,
+        height: compact ? 38 : 66,
         padding: compact
             ? EdgeInsets.zero
-            : const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+            : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999.r),
+          borderRadius: BorderRadius.circular(22.r),
           gradient: isSelected
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1F1B16), Color(0xFF5A4634)],
+                  colors: [
+                    SnapFitColors.primaryGradientStart,
+                    SnapFitColors.primaryGradientEnd,
+                  ],
                 )
               : null,
           color: isSelected
               ? null
-              : Colors.white.withOpacity(isDark ? 0.03 : 0.18),
+              : isFeatured
+              ? SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10)
+              : Colors.white.withOpacity(isDark ? 0.04 : 0.30),
           border: Border.all(
             color: isSelected
-                ? Colors.white.withOpacity(0.18)
-                : SnapFitColors.deepCharcoal.withOpacity(isDark ? 0.07 : 0.045),
+                ? Colors.white.withOpacity(0.20)
+                : isFeatured
+                ? SnapFitColors.accent.withOpacity(0.20)
+                : SnapFitColors.overlayLightOf(context),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(
-                      0xFFD6B892,
-                    ).withOpacity(isDark ? 0.18 : 0.24),
+                    color: SnapFitColors.accent.withOpacity(0.24),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -268,14 +274,37 @@ class EditorBottomMenu extends StatelessWidget {
                   curve: SnapFitMotion.settle,
                   child: Icon(
                     item.icon,
-                    color: isSelected ? Colors.white : baseColor,
-                    size: compact ? 18 : 20,
+                    color: isSelected
+                        ? Colors.white
+                        : isFeatured
+                        ? SnapFitColors.accent
+                        : baseColor,
+                    size: compact ? 19 : 22,
                   ),
                 ),
+                if (!compact && item.isAction)
+                  Positioned(
+                    right: -4,
+                    top: -5,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: SnapFitColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF171A22)
+                              : Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             if (!compact) ...[
-              const SizedBox(height: 3),
+              const SizedBox(height: 6),
               Text(
                 item.label,
                 maxLines: 1,
@@ -283,10 +312,14 @@ class EditorBottomMenu extends StatelessWidget {
                 style:
                     (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
                         .copyWith(
-                          fontSize: 8.7,
+                          fontSize: 10,
                           height: 1.0,
-                          color: isSelected ? Colors.white : baseColor,
-                          fontWeight: isSelected
+                          color: isSelected
+                              ? Colors.white
+                              : isFeatured
+                              ? SnapFitColors.accent
+                              : baseColor,
+                          fontWeight: isSelected || isFeatured
                               ? FontWeight.w900
                               : FontWeight.w800,
                           letterSpacing: -0.12,

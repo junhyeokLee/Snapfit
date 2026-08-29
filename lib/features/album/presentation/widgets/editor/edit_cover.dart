@@ -25,7 +25,6 @@ import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
-import '../../utils/album_save_error_message.dart';
 import '../../viewmodels/gallery_notifier.dart'; // Add import
 import '../../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../views/page_editor_screen.dart';
@@ -404,7 +403,9 @@ class EditCoverState extends ConsumerState<EditCover> {
       debugPrint('Error in _onCreateAlbum: $e');
       if (mounted) {
         setState(() => _isSaving = false);
-        final message = albumSaveErrorMessage(e);
+        final message = e is Exception
+            ? e.toString().replaceFirst('Exception: ', '')
+            : '$e';
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('앨범 생성 실패: $message')));

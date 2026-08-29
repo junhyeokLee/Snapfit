@@ -92,7 +92,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
 
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
     expect(find.text('나의 앨범'), findsNothing);
@@ -129,7 +129,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
 
     final sliderCenter = tester.getCenter(find.byType(HomeAlbumSlider));
     expect(sliderCenter.dy, greaterThan(390));
