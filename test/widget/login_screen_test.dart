@@ -210,6 +210,21 @@ void main() {
     expect(find.text('내 앨범으로 계속하기'), findsOneWidget);
   });
 
+  testWidgets('signup form stays renderable on compact landscape phones', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake, size: const Size(844, 390));
+
+    await tester.ensureVisible(find.text('이메일로 새 계정 만들기'));
+    await tester.tap(find.text('이메일로 새 계정 만들기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Snapfit 계정 만들기'), findsOneWidget);
+    expect(find.text('계정 만들기'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('google login button triggers loading and calls auth', (
     tester,
   ) async {

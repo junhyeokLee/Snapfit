@@ -251,6 +251,7 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
         .read(authServiceProvider)
         .handleAuthCallback(uri);
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+    await syncConsentIfPresent();
     return redirectType;
   }
 

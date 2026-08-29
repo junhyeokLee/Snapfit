@@ -947,10 +947,16 @@ class _AuthResponsiveShell extends StatelessWidget {
         final isTablet = size.width >= 840;
         final compactLandscape = isLandscape && size.height < 430;
         final compactPortrait = !isLandscape && size.height < 720;
+        final compactHorizontal = compactLandscape && !isTablet;
         final hidePreviewForCompactForm =
-            compactPortrait && mode != _AuthMode.login;
+            (compactPortrait || compactHorizontal) && mode != _AuthMode.login;
         final horizontal = isLandscape || isTablet;
         final maxContentWidth = isTablet ? 1180.0 : double.infinity;
+        final shellHorizontalPadding = horizontal
+            ? (compactHorizontal ? 12.0 : (isTablet ? 32.0 : 18.0))
+            : 22.w;
+        final shellVerticalPadding = compactLandscape ? 10.0 : 22.h;
+        final splitGap = compactHorizontal ? 10.0 : (isTablet ? 26.0 : 12.0);
 
         final content = ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxContentWidth),
@@ -958,15 +964,19 @@ class _AuthResponsiveShell extends StatelessWidget {
               ? Row(
                   children: [
                     Expanded(
-                      flex: isTablet ? 56 : 54,
+                      flex: compactHorizontal && mode != _AuthMode.login
+                          ? 34
+                          : (isTablet ? 56 : 54),
                       child: _AuthHeroPane(
                         compact: compactLandscape,
-                        showPreview: true,
+                        showPreview: !hidePreviewForCompactForm,
                       ),
                     ),
-                    SizedBox(width: isTablet ? 26.w : 12.w),
+                    SizedBox(width: splitGap),
                     Expanded(
-                      flex: isTablet ? 44 : 46,
+                      flex: compactHorizontal && mode != _AuthMode.login
+                          ? 66
+                          : (isTablet ? 44 : 46),
                       child: Align(
                         alignment: isTablet
                             ? Alignment.centerLeft
@@ -1000,8 +1010,8 @@ class _AuthResponsiveShell extends StatelessWidget {
             child: Center(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                  horizontal: horizontal ? 28.w : 22.w,
-                  vertical: compactLandscape ? 14.h : 22.h,
+                  horizontal: shellHorizontalPadding,
+                  vertical: shellVerticalPadding,
                 ),
                 child: AnimatedOpacity(
                   opacity: animateIn ? 1 : 0,
@@ -1585,8 +1595,8 @@ class _TermsCheckTile extends StatelessWidget {
           onTap: () => onChanged(!value),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            constraints: BoxConstraints(minHeight: 44.h),
-            padding: EdgeInsets.fromLTRB(10.w, 7.h, 8.w, 7.h),
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
             decoration: BoxDecoration(
               color: value
                   ? const Color(0xFF141312).withOpacity(0.055)
@@ -1608,8 +1618,8 @@ class _TermsCheckTile extends StatelessWidget {
                   side: BorderSide(
                     color: const Color(0xFF141312).withOpacity(0.34),
                   ),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  visualDensity: VisualDensity.standard,
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
@@ -1650,9 +1660,9 @@ class _TermsCheckTile extends StatelessWidget {
                   TextButton(
                     onPressed: onView,
                     style: TextButton.styleFrom(
-                      minimumSize: Size(42.w, 34.h),
-                      padding: EdgeInsets.symmetric(horizontal: 8.w),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: const Size(44, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      tapTargetSize: MaterialTapTargetSize.padded,
                       foregroundColor: SnapFitColors.textSecondaryOf(context),
                     ),
                     child: Text(

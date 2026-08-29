@@ -130,6 +130,7 @@ class AuthService {
       final response = await supabase!.auth.signUp(
         email: email.trim(),
         password: password,
+        emailRedirectTo: Env.authRedirectUrl,
         data: {'name': name.trim(), 'full_name': name.trim()},
       );
       final session = response.session;
