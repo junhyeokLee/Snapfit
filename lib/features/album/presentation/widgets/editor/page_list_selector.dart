@@ -41,12 +41,12 @@ class PageListSelector extends ConsumerWidget {
       builder: (context, constraints) {
         final isVerticalRail = constraints.maxWidth < 120;
         return SizedBox(
-          height: isVerticalRail ? double.infinity : 88.h,
-          width: isVerticalRail ? 60 : null,
+          height: isVerticalRail ? double.infinity : 58.h,
+          width: isVerticalRail ? 56 : null,
           child: ListView.separated(
             padding: isVerticalRail
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
-                : EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 6.h),
+                : EdgeInsets.fromLTRB(14.w, 2.h, 14.w, 2.h),
             scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
             itemCount: pages.length + 1, // 마지막에 + 버튼 추가
             separatorBuilder: (context, index) => SizedBox(
@@ -76,8 +76,8 @@ class PageListSelector extends ConsumerWidget {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: SnapFitMotion.settle,
-                      width: isVerticalRail ? 44 : (isSelected ? 50.w : 46.w),
-                      height: isVerticalRail ? 42 : (isSelected ? 48.h : 44.h),
+                      width: isVerticalRail ? 42 : (isSelected ? 44.w : 40.w),
+                      height: isVerticalRail ? 40 : (isSelected ? 42.h : 38.h),
                       padding: EdgeInsets.all(
                         isVerticalRail ? 3 : (isSelected ? 4.w : 3.w),
                       ),
@@ -168,6 +168,39 @@ class PageListSelector extends ConsumerWidget {
                                 ),
                               ),
                             ),
+                          if (!isVerticalRail)
+                            Positioned(
+                              left: 4.w,
+                              right: 4.w,
+                              bottom: 2.h,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(
+                                          0xFF1F1B16,
+                                        ).withOpacity(0.72)
+                                      : Colors.white.withOpacity(0.66),
+                                  borderRadius: BorderRadius.circular(999.r),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 1.h),
+                                  child: Text(
+                                    label,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 8.0,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : const Color(0xFF5A4634),
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           if (isSelected && canDeleteCurrentPage && !isCover)
                             Positioned(
                               top: -5.h,
@@ -201,21 +234,6 @@ class PageListSelector extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    if (!isVerticalRail) ...[
-                      SizedBox(height: 3.h),
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: isSelected
-                              ? const Color(0xFF5A4634)
-                              : SnapFitColors.textSecondaryOf(context),
-                          fontWeight: isSelected
-                              ? FontWeight.w900
-                              : FontWeight.w700,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               );
@@ -301,8 +319,8 @@ class PageListSelector extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 46.w,
-            height: 44.h,
+            width: 40.w,
+            height: 38.h,
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
               borderRadius: BorderRadius.circular(14.r),
@@ -316,23 +334,12 @@ class PageListSelector extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.add_rounded,
-                  size: 17,
+                  size: 18,
                   color: SnapFitColors.textSecondaryOf(context),
-                ),
-                SizedBox(height: 1.h),
-                Text(
-                  '추가',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: SnapFitColors.textSecondaryOf(context),
-                    fontWeight: FontWeight.w800,
-                  ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 3.h),
-          Text('', style: TextStyle(fontSize: 9)),
         ],
       ),
     );

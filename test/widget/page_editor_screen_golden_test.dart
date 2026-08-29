@@ -256,8 +256,9 @@ void main() {
       final canvasRect = tester.getRect(
         find.byKey(const Key('pageEditorCanvasReveal')),
       );
-      expect(selectorRects.any((rect) => rect.right < canvasRect.left), isTrue);
-      expect(dockRect.left, greaterThan(canvasRect.right));
+      expect(selectorRects.any((rect) => rect.left > canvasRect.right), isTrue);
+      expect(dockRect.top, greaterThan(canvasRect.top));
+      expect(dockRect.bottom, lessThan(390));
       expect(tester.takeException(), isNull);
     },
   );
