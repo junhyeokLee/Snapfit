@@ -734,7 +734,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Text('확인 메일을 보냈어요', style: _titleStyle(context)),
             SizedBox(height: 8.h),
             Text(
-              '메일함에서 인증을 마치면 Snapfit 앨범을 이어서 만들 수 있어요. 기능 연결 전 UI 검증용 상태입니다.',
+              '메일함에서 인증을 마치면 Snapfit 앨범을 이어서 만들 수 있어요. 메일 링크가 열리면 앱이 자동으로 인증 상태를 반영합니다.',
               style: _bodyStyle(context),
             ),
             SizedBox(height: 18.h),
