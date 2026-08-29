@@ -238,6 +238,27 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
     }
   }
 
+  Future<void> requestPasswordReset(String email) async {
+    await ref.read(authServiceProvider).requestPasswordReset(email);
+  }
+
+  Future<void> resendEmailConfirmation(String email) async {
+    await ref.read(authServiceProvider).resendEmailConfirmation(email);
+  }
+
+  Future<String?> handleAuthCallback(Uri uri) async {
+    final redirectType = await ref
+        .read(authServiceProvider)
+        .handleAuthCallback(uri);
+    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+    return redirectType;
+  }
+
+  Future<void> updatePassword(String password) async {
+    await ref.read(authServiceProvider).updatePassword(password);
+    state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
   Future<void> syncConsentIfPresent() async {
     await ref.read(authServiceProvider).syncConsentIfPresent();
   }

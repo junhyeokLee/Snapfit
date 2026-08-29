@@ -11,7 +11,9 @@ import '../../domain/consent_policy.dart';
 import '../viewmodels/auth_view_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.startInPasswordReset = false});
+
+  final bool startInPasswordReset;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -19,20 +21,27 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   _LoginProvider? _loadingProvider;
-  _AuthMode _mode = _AuthMode.login;
+  late _AuthMode _mode;
   bool _animateIn = false;
 
   final _signUpFormKey = GlobalKey<FormState>();
   final _emailLoginFormKey = GlobalKey<FormState>();
+  final _resetPasswordFormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   final _loginEmailController = TextEditingController();
   final _loginPasswordController = TextEditingController();
+  final _resetEmailController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _newPasswordConfirmController = TextEditingController();
   bool _showPassword = false;
   bool _showPasswordConfirm = false;
   bool _showLoginPassword = false;
+  bool _showNewPassword = false;
+  bool _showNewPasswordConfirm = false;
+  String? _pendingConfirmationEmail;
   bool _termsChecked = false;
   bool _privacyChecked = false;
   bool _marketingChecked = false;
@@ -44,6 +53,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    _mode = widget.startInPasswordReset
+        ? _AuthMode.resetPassword
+        : _AuthMode.login;
     ScreenLogger.enter('LoginScreen', '카카오/구글/이메일 로그인 진입 화면');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -59,6 +71,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _passwordConfirmController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
+    _resetEmailController.dispose();
+    _newPasswordController.dispose();
+    _newPasswordConfirmController.dispose();
     super.dispose();
   }
 
@@ -279,6 +294,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _requestPasswordReset() async {
+    FocusScope.of(context).unfocus();
+    final emailError = _validateEmail(_resetEmailController.text);
+    if (emailError != null || _isLoading) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(emailError ?? '잠시 후 다시 시도해주세요.')));
+      return;
+    }
+    setState(() => _loadingProvider = _LoginProvider.email);
+    try {
+      await ref
+          .read(authViewModelProvider.notifier)
+          .requestPasswordReset(_resetEmailController.text.trim());
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('비밀번호 재설정 메일을 보냈어요.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyEmailAuthError(e, isSignUp: false))),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingProvider = null);
+    }
+  }
+
+  Future<void> _resendConfirmationEmail() async {
+    final email =
+        _pendingConfirmationEmail?.trim() ?? _emailController.text.trim();
+    final emailError = _validateEmail(email);
+    if (emailError != null || _isLoading) return;
+    setState(() => _loadingProvider = _LoginProvider.email);
+    try {
+      await ref
+          .read(authViewModelProvider.notifier)
+          .resendEmailConfirmation(email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('인증 메일을 다시 보냈어요.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyEmailAuthError(e, isSignUp: true))),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingProvider = null);
+    }
+  }
+
+  Future<void> _submitNewPassword() async {
+    FocusScope.of(context).unfocus();
+    final valid = _resetPasswordFormKey.currentState?.validate() ?? false;
+    if (!valid || _isLoading) return;
+    setState(() => _loadingProvider = _LoginProvider.email);
+    try {
+      await ref
+          .read(authViewModelProvider.notifier)
+          .updatePassword(_newPasswordController.text);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('비밀번호가 변경되었어요.')));
+      _switchMode(_AuthMode.login);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyEmailAuthError(e, isSignUp: false))),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingProvider = null);
+    }
+  }
+
   Future<void> _submitEmailSignUp() async {
     FocusScope.of(context).unfocus();
     final valid = _signUpFormKey.currentState?.validate() ?? false;
@@ -302,7 +393,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             marketingOptIn: _marketingChecked,
           );
       if (!mounted) return;
-      setState(() => _showSignUpConfirmation = true);
+      setState(() {
+        _pendingConfirmationEmail = _emailController.text.trim();
+        _showSignUpConfirmation = true;
+      });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -330,6 +424,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _AuthMode.login => _buildLoginCard(context),
           _AuthMode.emailLogin => _buildEmailLoginCard(context),
           _AuthMode.signup => _buildSignUpCard(context),
+          _AuthMode.resetRequest ||
+          _AuthMode.resetPassword => _buildResetPasswordCard(context),
         },
       ),
     );
@@ -468,7 +564,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  _resetEmailController.text = _loginEmailController.text
+                      .trim();
+                  _switchMode(_AuthMode.resetRequest);
+                },
                 child: const Text('비밀번호를 잊으셨나요?'),
               ),
             ),
@@ -498,6 +598,129 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  Widget _buildResetPasswordCard(BuildContext context) {
+    final isUpdate = _mode == _AuthMode.resetPassword;
+    return _AuthPaperCard(
+      maxWidth: 500,
+      child: Form(
+        key: _resetPasswordFormKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _CardEyebrow('계정 복구'),
+                      SizedBox(height: 8.h),
+                      Text(
+                        isUpdate ? '새 비밀번호 설정' : '비밀번호 찾기',
+                        style: _titleStyle(context),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: '로그인으로 돌아가기',
+                  onPressed: () => _switchMode(_AuthMode.emailLogin),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              isUpdate
+                  ? '메일 인증 링크가 확인되었어요. 앞으로 사용할 새 비밀번호를 입력해주세요.'
+                  : '가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드릴게요.',
+              style: _bodyStyle(context),
+            ),
+            SizedBox(height: 14.h),
+            if (!isUpdate) ...[
+              _AuthTextField(
+                controller: _resetEmailController,
+                label: '이메일',
+                hint: 'snapfit@example.com',
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                validator: _validateEmail,
+              ),
+              SizedBox(height: 14.h),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _requestPasswordReset,
+                style: _primaryButtonStyle(context),
+                child: _loadingProvider == _LoginProvider.email
+                    ? SizedBox(
+                        width: 18.w,
+                        height: 18.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('재설정 메일 보내기'),
+              ),
+            ] else ...[
+              _AuthTextField(
+                controller: _newPasswordController,
+                label: '새 비밀번호',
+                hint: '8자 이상, 영문+숫자',
+                obscureText: !_showNewPassword,
+                autofillHints: const [AutofillHints.newPassword],
+                validator: _validatePassword,
+                suffixIcon: IconButton(
+                  tooltip: _showNewPassword ? '비밀번호 숨기기' : '비밀번호 보기',
+                  onPressed: () =>
+                      setState(() => _showNewPassword = !_showNewPassword),
+                  icon: Icon(
+                    _showNewPassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              _AuthTextField(
+                controller: _newPasswordConfirmController,
+                label: '새 비밀번호 확인',
+                hint: '한 번 더 입력',
+                obscureText: !_showNewPasswordConfirm,
+                autofillHints: const [AutofillHints.newPassword],
+                validator: (value) => value != _newPasswordController.text
+                    ? '비밀번호가 서로 달라요.'
+                    : null,
+                suffixIcon: IconButton(
+                  tooltip: _showNewPasswordConfirm ? '비밀번호 숨기기' : '비밀번호 보기',
+                  onPressed: () => setState(
+                    () => _showNewPasswordConfirm = !_showNewPasswordConfirm,
+                  ),
+                  icon: Icon(
+                    _showNewPasswordConfirm
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                  ),
+                ),
+              ),
+              SizedBox(height: 14.h),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _submitNewPassword,
+                style: _primaryButtonStyle(context),
+                child: const Text('비밀번호 변경하기'),
+              ),
+            ],
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => _switchMode(_AuthMode.emailLogin),
+              child: const Text('이메일 로그인으로 돌아가기'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSignUpCard(BuildContext context) {
     if (_showSignUpConfirmation) {
       return _AuthPaperCard(
@@ -515,6 +738,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               style: _bodyStyle(context),
             ),
             SizedBox(height: 18.h),
+            OutlinedButton(
+              onPressed: _isLoading ? null : _resendConfirmationEmail,
+              style: _outlineButtonStyle(context),
+              child: const Text('인증 메일 다시 보내기'),
+            ),
+            SizedBox(height: 8.h),
             ElevatedButton(
               onPressed: () => _switchMode(_AuthMode.login),
               style: _primaryButtonStyle(context),
@@ -1403,4 +1632,4 @@ TextStyle _bodyStyle(BuildContext context) {
 
 enum _LoginProvider { kakao, google, email }
 
-enum _AuthMode { login, emailLogin, signup }
+enum _AuthMode { login, emailLogin, signup, resetRequest, resetPassword }

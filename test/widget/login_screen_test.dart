@@ -24,8 +24,13 @@ class FakeAuthViewModel extends AuthViewModel {
   bool googleCalled = false;
   bool emailSignUpCalled = false;
   bool emailLoginCalled = false;
+  bool passwordResetRequested = false;
+  bool confirmationResent = false;
+  bool passwordUpdated = false;
   String? signedUpEmail;
   String? loggedInEmail;
+  String? passwordResetEmail;
+  String? resentEmail;
 
   @override
   FutureOr<UserInfo?> build() => user;
@@ -64,6 +69,23 @@ class FakeAuthViewModel extends AuthViewModel {
   }) async {
     emailLoginCalled = true;
     loggedInEmail = email;
+  }
+
+  @override
+  Future<void> requestPasswordReset(String email) async {
+    passwordResetRequested = true;
+    passwordResetEmail = email;
+  }
+
+  @override
+  Future<void> resendEmailConfirmation(String email) async {
+    confirmationResent = true;
+    resentEmail = email;
+  }
+
+  @override
+  Future<void> updatePassword(String password) async {
+    passwordUpdated = true;
   }
 }
 
@@ -435,5 +457,120 @@ void main() {
 
     expect(fake.emailLoginCalled, isTrue);
     expect(fake.loggedInEmail, 'junja@example.com');
+  });
+
+  testWidgets('forgot password sends reset email request', (tester) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake, size: const Size(390, 1000));
+
+    await tester.ensureVisible(find.text('이메일로 로그인'));
+    await tester.tap(find.text('이메일로 로그인'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'snapfit@example.com'),
+      'junja@example.com',
+    );
+    await tester.tap(find.text('비밀번호를 잊으셨나요?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('비밀번호 찾기'), findsOneWidget);
+    tester
+        .widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, '재설정 메일 보내기'),
+        )
+        .onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(fake.passwordResetRequested, isTrue);
+    expect(fake.passwordResetEmail, 'junja@example.com');
+    expect(find.text('비밀번호 재설정 메일을 보냈어요.'), findsOneWidget);
+  });
+
+  testWidgets('signup confirmation can resend verification email', (
+    tester,
+  ) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake, size: const Size(390, 1200));
+
+    await tester.ensureVisible(find.text('이메일로 새 계정 만들기'));
+    await tester.tap(find.text('이메일로 새 계정 만들기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '앨범에 표시할 이름'),
+      '준자',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'snapfit@example.com'),
+      'junja@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '8자 이상'),
+      'password123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '한 번 더 입력'),
+      'password123',
+    );
+    await tester.tap(find.byType(Checkbox).at(0), warnIfMissed: false);
+    await tester.tap(find.byType(Checkbox).at(1), warnIfMissed: false);
+    await tester.pump();
+    tester
+        .widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '계정 만들기'))
+        .onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    tester
+        .widget<OutlinedButton>(
+          find.widgetWithText(OutlinedButton, '인증 메일 다시 보내기'),
+        )
+        .onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(fake.confirmationResent, isTrue);
+    expect(fake.resentEmail, 'junja@example.com');
+  });
+
+  testWidgets('password recovery mode updates password', (tester) async {
+    final fake = FakeAuthViewModel();
+    tester.view.physicalSize = const Size(390, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authViewModelProvider.overrideWith(() => fake),
+          tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          builder: (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: const LoginScreen(startInPasswordReset: true),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('새 비밀번호 설정'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '8자 이상, 영문+숫자'),
+      'newpass123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '한 번 더 입력'),
+      'newpass123',
+    );
+    tester
+        .widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, '비밀번호 변경하기'),
+        )
+        .onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(fake.passwordUpdated, isTrue);
+    expect(find.text('비밀번호가 변경되었어요.'), findsOneWidget);
   });
 }

@@ -146,6 +146,55 @@ class AuthService {
     throw Exception('Supabase 이메일 가입 환경이 준비되지 않았습니다.');
   }
 
+  Future<void> requestPasswordReset(String email) async {
+    if (supabase != null) {
+      await supabase!.auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: Env.authRedirectUrl,
+      );
+      return;
+    }
+    throw Exception('Supabase 비밀번호 재설정 환경이 준비되지 않았습니다.');
+  }
+
+  Future<void> resendEmailConfirmation(String email) async {
+    if (supabase != null) {
+      await supabase!.auth.resend(
+        email: email.trim(),
+        type: OtpType.signup,
+        emailRedirectTo: Env.authRedirectUrl,
+      );
+      return;
+    }
+    throw Exception('Supabase 인증 메일 재전송 환경이 준비되지 않았습니다.');
+  }
+
+  Future<String?> handleAuthCallback(Uri uri) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.getSessionFromUrl(uri);
+      final auth = _fromSupabaseSession(response.session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return response.redirectType;
+    }
+    throw Exception('Supabase 인증 링크 처리 환경이 준비되지 않았습니다.');
+  }
+
+  Future<AuthResponse> updatePassword(String password) async {
+    if (supabase != null) {
+      await supabase!.auth.updateUser(UserAttributes(password: password));
+      final session = supabase!.auth.currentSession;
+      if (session == null) {
+        throw Exception('비밀번호 변경 후 Supabase 세션을 가져올 수 없습니다.');
+      }
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 비밀번호 변경 환경이 준비되지 않았습니다.');
+  }
+
   Future<AuthResponse> refresh(String refreshToken) async {
     if (supabase != null) {
       final response = await supabase!.auth.refreshSession(refreshToken);
