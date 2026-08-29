@@ -23,7 +23,9 @@ class FakeAuthViewModel extends AuthViewModel {
   bool kakaoCalled = false;
   bool googleCalled = false;
   bool emailSignUpCalled = false;
+  bool emailLoginCalled = false;
   String? signedUpEmail;
+  String? loggedInEmail;
 
   @override
   FutureOr<UserInfo?> build() => user;
@@ -53,6 +55,15 @@ class FakeAuthViewModel extends AuthViewModel {
   }) async {
     emailSignUpCalled = true;
     signedUpEmail = email;
+  }
+
+  @override
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    emailLoginCalled = true;
+    loggedInEmail = email;
   }
 }
 
@@ -375,5 +386,54 @@ void main() {
     expect(fake.emailSignUpCalled, isTrue);
     expect(fake.signedUpEmail, 'junja@example.com');
     expect(find.text('확인 메일을 보냈어요'), findsOneWidget);
+  });
+
+  testWidgets('signup enforces stronger password rules', (tester) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake, size: const Size(390, 1200));
+
+    await tester.ensureVisible(find.text('이메일로 새 계정 만들기'));
+    await tester.tap(find.text('이메일로 새 계정 만들기'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '8자 이상'),
+      'password',
+    );
+    await tester.tap(find.byType(Checkbox).at(0), warnIfMissed: false);
+    await tester.tap(find.byType(Checkbox).at(1), warnIfMissed: false);
+    await tester.pump();
+    tester
+        .widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '계정 만들기'))
+        .onPressed!();
+    await tester.pump();
+
+    expect(find.text('비밀번호는 영문과 숫자를 함께 사용해주세요.'), findsOneWidget);
+  });
+
+  testWidgets('email login submits through auth view model', (tester) async {
+    final fake = FakeAuthViewModel();
+    await pumpLoginScreen(tester, fake, size: const Size(390, 1000));
+
+    await tester.ensureVisible(find.text('이메일로 로그인'));
+    await tester.tap(find.text('이메일로 로그인'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('이메일로 계속하기'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'snapfit@example.com'),
+      'junja@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '비밀번호 입력'),
+      'password123',
+    );
+    tester
+        .widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '이메일로 로그인'))
+        .onPressed!();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(fake.emailLoginCalled, isTrue);
+    expect(fake.loggedInEmail, 'junja@example.com');
   });
 }

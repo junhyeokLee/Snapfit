@@ -23,10 +23,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _animateIn = false;
 
   final _signUpFormKey = GlobalKey<FormState>();
+  final _emailLoginFormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
+  final _loginEmailController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  bool _showPassword = false;
+  bool _showPasswordConfirm = false;
+  bool _showLoginPassword = false;
   bool _termsChecked = false;
   bool _privacyChecked = false;
   bool _marketingChecked = false;
@@ -51,6 +57,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _passwordConfirmController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
     super.dispose();
   }
 
@@ -211,6 +219,66 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  String? _validateEmail(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return '이메일을 입력해주세요.';
+    final emailPattern = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    if (!emailPattern.hasMatch(text)) return '이메일 형식을 확인해주세요.';
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    final text = value ?? '';
+    if (text.length < 8) return '비밀번호는 8자 이상 입력해주세요.';
+    if (text.contains(RegExp(r'\s'))) return '비밀번호에는 공백을 사용할 수 없어요.';
+    if (!text.contains(RegExp(r'[A-Za-z]')) ||
+        !text.contains(RegExp(r'[0-9]'))) {
+      return '비밀번호는 영문과 숫자를 함께 사용해주세요.';
+    }
+    return null;
+  }
+
+  String _friendlyEmailAuthError(Object error, {required bool isSignUp}) {
+    final raw = error.toString().toLowerCase();
+    if (raw.contains('already') || raw.contains('registered')) {
+      return '이미 가입된 이메일이에요. 이메일로 로그인을 시도해주세요.';
+    }
+    if (raw.contains('invalid') || raw.contains('credential')) {
+      return isSignUp ? '이메일 또는 비밀번호 형식을 확인해주세요.' : '이메일 또는 비밀번호가 올바르지 않아요.';
+    }
+    if (raw.contains('confirm') || raw.contains('verified')) {
+      return '이메일 인증을 먼저 완료해주세요.';
+    }
+    if (raw.contains('weak') || raw.contains('password')) {
+      return '비밀번호는 8자 이상, 영문과 숫자를 함께 사용해주세요.';
+    }
+    return isSignUp
+        ? '이메일 가입을 완료하지 못했어요. 잠시 후 다시 시도해주세요.'
+        : '이메일 로그인을 완료하지 못했어요. 잠시 후 다시 시도해주세요.';
+  }
+
+  Future<void> _loginWithEmail() async {
+    FocusScope.of(context).unfocus();
+    final valid = _emailLoginFormKey.currentState?.validate() ?? false;
+    if (!valid || _isLoading) return;
+    setState(() => _loadingProvider = _LoginProvider.email);
+    try {
+      await ref
+          .read(authViewModelProvider.notifier)
+          .loginWithEmail(
+            email: _loginEmailController.text.trim(),
+            password: _loginPasswordController.text,
+          );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyEmailAuthError(e, isSignUp: false))),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingProvider = null);
+    }
+  }
+
   Future<void> _submitEmailSignUp() async {
     FocusScope.of(context).unfocus();
     final valid = _signUpFormKey.currentState?.validate() ?? false;
@@ -235,12 +303,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
       if (!mounted) return;
       setState(() => _showSignUpConfirmation = true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이메일 가입을 완료하지 못했어요. 입력값을 확인하고 다시 시도해주세요.'),
-        ),
+        SnackBar(content: Text(_friendlyEmailAuthError(e, isSignUp: true))),
       );
     } finally {
       if (mounted) setState(() => _loadingProvider = null);
@@ -260,9 +326,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: const Color(0xFFF8EFE2),
       body: _AuthResponsiveShell(
         animateIn: _animateIn,
-        form: _mode == _AuthMode.login
-            ? _buildLoginCard(context)
-            : _buildSignUpCard(context),
+        form: switch (_mode) {
+          _AuthMode.login => _buildLoginCard(context),
+          _AuthMode.emailLogin => _buildEmailLoginCard(context),
+          _AuthMode.signup => _buildSignUpCard(context),
+        },
       ),
     );
   }
@@ -319,17 +387,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           const _DividerWithText('또는'),
           SizedBox(height: 12.h),
           OutlinedButton(
+            onPressed: _isLoading
+                ? null
+                : () => _switchMode(_AuthMode.emailLogin),
+            style: _outlineButtonStyle(context),
+            child: const Text('이메일로 로그인'),
+          ),
+          SizedBox(height: 8.h),
+          TextButton(
             onPressed: _isLoading ? null : () => _switchMode(_AuthMode.signup),
-            style: OutlinedButton.styleFrom(
-              minimumSize: Size.fromHeight(48.h),
-              foregroundColor: const Color(0xFF141312),
-              side: BorderSide(
-                color: const Color(0xFF141312).withOpacity(0.18),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.r),
-              ),
-            ),
             child: const Text('이메일로 새 계정 만들기'),
           ),
           SizedBox(height: 12.h),
@@ -338,6 +404,96 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             onPrivacy: () => _openTerms(TermsPolicyDocType.privacy),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmailLoginCard(BuildContext context) {
+    return _AuthPaperCard(
+      maxWidth: 500,
+      child: Form(
+        key: _emailLoginFormKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _CardEyebrow('이메일 로그인'),
+                      SizedBox(height: 8.h),
+                      Text('이메일로 계속하기', style: _titleStyle(context)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: '소셜 로그인으로 돌아가기',
+                  onPressed: () => _switchMode(_AuthMode.login),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            SizedBox(height: 14.h),
+            _AuthTextField(
+              controller: _loginEmailController,
+              label: '이메일',
+              hint: 'snapfit@example.com',
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              validator: _validateEmail,
+            ),
+            SizedBox(height: 10.h),
+            _AuthTextField(
+              controller: _loginPasswordController,
+              label: '비밀번호',
+              hint: '비밀번호 입력',
+              obscureText: !_showLoginPassword,
+              autofillHints: const [AutofillHints.password],
+              validator: (value) =>
+                  (value == null || value.isEmpty) ? '비밀번호를 입력해주세요.' : null,
+              suffixIcon: IconButton(
+                tooltip: _showLoginPassword ? '비밀번호 숨기기' : '비밀번호 보기',
+                onPressed: () =>
+                    setState(() => _showLoginPassword = !_showLoginPassword),
+                icon: Icon(
+                  _showLoginPassword
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {},
+                child: const Text('비밀번호를 잊으셨나요?'),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _loginWithEmail,
+              style: _primaryButtonStyle(context),
+              child: _loadingProvider == _LoginProvider.email
+                  ? SizedBox(
+                      width: 18.w,
+                      height: 18.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('이메일로 로그인'),
+            ),
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => _switchMode(_AuthMode.signup),
+              child: const Text('새 계정 만들기'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -413,37 +569,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               hint: 'snapfit@example.com',
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
-              validator: (value) {
-                final text = value?.trim() ?? '';
-                if (text.isEmpty) return '이메일을 입력해주세요.';
-                if (!text.contains('@') || !text.contains('.')) {
-                  return '이메일 형식을 확인해주세요.';
-                }
-                return null;
-              },
+              validator: _validateEmail,
             ),
             SizedBox(height: 10.h),
             _AuthTextField(
               controller: _passwordController,
               label: '비밀번호',
               hint: '8자 이상',
-              obscureText: true,
+              obscureText: !_showPassword,
               autofillHints: const [AutofillHints.newPassword],
-              validator: (value) {
-                final text = value ?? '';
-                if (text.length < 8) return '비밀번호는 8자 이상 입력해주세요.';
-                return null;
-              },
+              validator: _validatePassword,
+              suffixIcon: IconButton(
+                tooltip: _showPassword ? '비밀번호 숨기기' : '비밀번호 보기',
+                onPressed: () => setState(() => _showPassword = !_showPassword),
+                icon: Icon(
+                  _showPassword
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                ),
+              ),
             ),
             SizedBox(height: 10.h),
             _AuthTextField(
               controller: _passwordConfirmController,
               label: '비밀번호 확인',
               hint: '한 번 더 입력',
-              obscureText: true,
+              obscureText: !_showPasswordConfirm,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) =>
                   value != _passwordController.text ? '비밀번호가 서로 달라요.' : null,
+              suffixIcon: IconButton(
+                tooltip: _showPasswordConfirm ? '비밀번호 숨기기' : '비밀번호 보기',
+                onPressed: () => setState(
+                  () => _showPasswordConfirm = !_showPasswordConfirm,
+                ),
+                icon: Icon(
+                  _showPasswordConfirm
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                ),
+              ),
             ),
             SizedBox(height: 12.h),
             _TermsCheckTile(
@@ -1007,6 +1172,7 @@ class _AuthTextField extends StatelessWidget {
     this.obscureText = false,
     this.autofillHints,
     this.validator,
+    this.suffixIcon,
   });
 
   final TextEditingController controller;
@@ -1016,6 +1182,7 @@ class _AuthTextField extends StatelessWidget {
   final bool obscureText;
   final Iterable<String>? autofillHints;
   final FormFieldValidator<String>? validator;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -1060,6 +1227,7 @@ class _AuthTextField extends StatelessWidget {
                 width: 1.4,
               ),
             ),
+            suffixIcon: suffixIcon,
             errorStyle: TextStyle(fontSize: 10.5.sp, height: 1.2),
           ),
         ),
@@ -1192,6 +1360,15 @@ class _FooterLink extends StatelessWidget {
   }
 }
 
+ButtonStyle _outlineButtonStyle(BuildContext context) {
+  return OutlinedButton.styleFrom(
+    minimumSize: Size.fromHeight(48.h),
+    foregroundColor: const Color(0xFF141312),
+    side: BorderSide(color: const Color(0xFF141312).withOpacity(0.18)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+  );
+}
+
 ButtonStyle _primaryButtonStyle(BuildContext context) {
   return ElevatedButton.styleFrom(
     minimumSize: Size.fromHeight(52.h),
@@ -1226,4 +1403,4 @@ TextStyle _bodyStyle(BuildContext context) {
 
 enum _LoginProvider { kakao, google, email }
 
-enum _AuthMode { login, signup }
+enum _AuthMode { login, emailLogin, signup }

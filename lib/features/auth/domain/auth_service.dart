@@ -100,6 +100,27 @@ class AuthService {
     throw Exception('Supabase Google 로그인 환경이 준비되지 않았습니다.');
   }
 
+  Future<AuthResponse> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
+      final session = response.session;
+      if (session == null) {
+        throw Exception('Supabase 이메일 로그인 세션을 가져올 수 없습니다.');
+      }
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 이메일 로그인 환경이 준비되지 않았습니다.');
+  }
+
   Future<AuthResponse?> signUpWithEmail({
     required String name,
     required String email,

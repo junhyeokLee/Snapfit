@@ -33,4 +33,17 @@ void main() {
       throwsException,
     );
   });
+
+  test('loginWithEmail requires Supabase auth support', () async {
+    final storage = MockTokenStorage();
+    final service = AuthService(tokenStorage: storage);
+
+    await expectLater(
+      service.loginWithEmail(
+        email: 'junja@example.com',
+        password: 'password123',
+      ),
+      throwsException,
+    );
+  });
 }
