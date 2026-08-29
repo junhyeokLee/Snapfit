@@ -42,6 +42,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _showNewPassword = false;
   bool _showNewPasswordConfirm = false;
   String? _pendingConfirmationEmail;
+  bool _resetEmailSent = false;
+  bool _confirmationEmailResent = false;
+  bool _passwordChangeComplete = false;
   bool _termsChecked = false;
   bool _privacyChecked = false;
   bool _marketingChecked = false;
@@ -309,6 +312,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authViewModelProvider.notifier)
           .requestPasswordReset(_resetEmailController.text.trim());
       if (!mounted) return;
+      setState(() => _resetEmailSent = true);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('비밀번호 재설정 메일을 보냈어요.')));
@@ -333,6 +337,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authViewModelProvider.notifier)
           .resendEmailConfirmation(email);
       if (!mounted) return;
+      setState(() => _confirmationEmailResent = true);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('인증 메일을 다시 보냈어요.')));
@@ -356,10 +361,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authViewModelProvider.notifier)
           .updatePassword(_newPasswordController.text);
       if (!mounted) return;
+      setState(() => _passwordChangeComplete = true);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('비밀번호가 변경되었어요.')));
-      _switchMode(_AuthMode.login);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -411,6 +416,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() {
       _mode = mode;
       _showSignUpConfirmation = false;
+      if (mode != _AuthMode.resetRequest) _resetEmailSent = false;
+      if (mode != _AuthMode.resetPassword) _passwordChangeComplete = false;
+      if (mode != _AuthMode.signup) _confirmationEmailResent = false;
     });
   }
 
@@ -420,6 +428,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: const Color(0xFFF8EFE2),
       body: _AuthResponsiveShell(
         animateIn: _animateIn,
+        mode: _mode,
         form: switch (_mode) {
           _AuthMode.login => _buildLoginCard(context),
           _AuthMode.emailLogin => _buildEmailLoginCard(context),
@@ -647,6 +656,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 autofillHints: const [AutofillHints.email],
                 validator: _validateEmail,
               ),
+              if (_resetEmailSent) ...[
+                SizedBox(height: 12.h),
+                const _InlineAuthNotice(
+                  icon: Icons.mark_email_read_rounded,
+                  text: '입력한 이메일로 재설정 링크를 보냈어요. 메일함을 확인해주세요.',
+                ),
+              ],
               SizedBox(height: 14.h),
               ElevatedButton(
                 onPressed: _isLoading ? null : _requestPasswordReset,
@@ -660,7 +676,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('재설정 메일 보내기'),
+                    : Text(_resetEmailSent ? '재설정 메일 다시 보내기' : '재설정 메일 보내기'),
               ),
             ] else ...[
               _AuthTextField(
@@ -703,11 +719,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
+              if (_passwordChangeComplete) ...[
+                SizedBox(height: 12.h),
+                const _InlineAuthNotice(
+                  icon: Icons.check_circle_rounded,
+                  text: '비밀번호가 변경되었어요. 이제 새 비밀번호로 로그인할 수 있어요.',
+                ),
+              ],
               SizedBox(height: 14.h),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submitNewPassword,
                 style: _primaryButtonStyle(context),
-                child: const Text('비밀번호 변경하기'),
+                child: _loadingProvider == _LoginProvider.email
+                    ? SizedBox(
+                        width: 18.w,
+                        height: 18.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(_passwordChangeComplete ? '다시 변경하기' : '비밀번호 변경하기'),
               ),
             ],
             SizedBox(height: 8.h),
@@ -737,6 +769,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               '메일함에서 인증을 마치면 Snapfit 앨범을 이어서 만들 수 있어요. 메일 링크가 열리면 앱이 자동으로 인증 상태를 반영합니다.',
               style: _bodyStyle(context),
             ),
+            if (_confirmationEmailResent) ...[
+              SizedBox(height: 12.h),
+              const _InlineAuthNotice(
+                icon: Icons.mark_email_read_rounded,
+                text: '방금 인증 메일을 다시 보냈어요. 가장 최근 메일의 링크를 열어주세요.',
+              ),
+            ],
             SizedBox(height: 18.h),
             OutlinedButton(
               onPressed: _isLoading ? null : _resendConfirmationEmail,
@@ -889,9 +928,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 class _AuthResponsiveShell extends StatelessWidget {
-  const _AuthResponsiveShell({required this.animateIn, required this.form});
+  const _AuthResponsiveShell({
+    required this.animateIn,
+    required this.mode,
+    required this.form,
+  });
 
   final bool animateIn;
+  final _AuthMode mode;
   final Widget form;
 
   @override
@@ -902,6 +946,9 @@ class _AuthResponsiveShell extends StatelessWidget {
         final isLandscape = size.width > size.height;
         final isTablet = size.width >= 840;
         final compactLandscape = isLandscape && size.height < 430;
+        final compactPortrait = !isLandscape && size.height < 720;
+        final hidePreviewForCompactForm =
+            compactPortrait && mode != _AuthMode.login;
         final horizontal = isLandscape || isTablet;
         final maxContentWidth = isTablet ? 1180.0 : double.infinity;
 
@@ -912,7 +959,10 @@ class _AuthResponsiveShell extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: isTablet ? 56 : 54,
-                      child: _AuthHeroPane(compact: compactLandscape),
+                      child: _AuthHeroPane(
+                        compact: compactLandscape,
+                        showPreview: true,
+                      ),
                     ),
                     SizedBox(width: isTablet ? 26.w : 12.w),
                     Expanded(
@@ -928,7 +978,10 @@ class _AuthResponsiveShell extends StatelessWidget {
                 )
               : Column(
                   children: [
-                    _AuthHeroPane(compact: size.height < 720),
+                    _AuthHeroPane(
+                      compact: compactPortrait,
+                      showPreview: !hidePreviewForCompactForm,
+                    ),
                     SizedBox(height: 18.h),
                     form,
                   ],
@@ -970,17 +1023,18 @@ class _AuthResponsiveShell extends StatelessWidget {
 }
 
 class _AuthHeroPane extends StatelessWidget {
-  const _AuthHeroPane({required this.compact});
+  const _AuthHeroPane({required this.compact, required this.showPreview});
 
   final bool compact;
+  final bool showPreview;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final isLandscape = size.width > size.height;
     final previewHeight = isLandscape
-        ? (compact ? 150.0 : 250.0)
-        : (compact ? 150.h : 220.h);
+        ? (compact ? 140.0 : 250.0)
+        : (compact ? 124.h : 220.h);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1042,8 +1096,10 @@ class _AuthHeroPane extends StatelessWidget {
             color: const Color(0xFF4F4941),
           ),
         ),
-        SizedBox(height: compact ? 12.h : 20.h),
-        SizedBox(height: previewHeight, child: const _AuthAlbumPreview()),
+        if (showPreview) ...[
+          SizedBox(height: compact ? 10.h : 20.h),
+          SizedBox(height: previewHeight, child: const _AuthAlbumPreview()),
+        ],
         if (isLandscape && !compact) ...[
           SizedBox(height: 18.h),
           Wrap(
@@ -1465,6 +1521,43 @@ class _AuthTextField extends StatelessWidget {
   }
 }
 
+class _InlineAuthNotice extends StatelessWidget {
+  const _InlineAuthNotice({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141312).withOpacity(0.055),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF141312).withOpacity(0.08)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18.sp, color: const Color(0xFF141312)),
+          SizedBox(width: 9.w),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                height: 1.42,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF4F4941),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _TermsCheckTile extends StatelessWidget {
   const _TermsCheckTile({
     required this.value,
@@ -1482,40 +1575,98 @@ class _TermsCheckTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12.r),
-      onTap: () => onChanged(!value),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 3.h),
-        child: Row(
-          children: [
-            Checkbox(
-              value: value,
-              onChanged: (v) => onChanged(v ?? false),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            Expanded(
-              child: Text(
-                '${requiredLabel ? '[필수] ' : '[선택] '}$label',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: requiredLabel ? FontWeight.w800 : FontWeight.w600,
-                  color: requiredLabel
-                      ? const Color(0xFF141312)
-                      : SnapFitColors.textSecondaryOf(context),
-                ),
+    final badgeText = requiredLabel ? '필수' : '선택';
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 3.h),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15.r),
+          onTap: () => onChanged(!value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            constraints: BoxConstraints(minHeight: 44.h),
+            padding: EdgeInsets.fromLTRB(10.w, 7.h, 8.w, 7.h),
+            decoration: BoxDecoration(
+              color: value
+                  ? const Color(0xFF141312).withOpacity(0.055)
+                  : Colors.white.withOpacity(0.48),
+              borderRadius: BorderRadius.circular(15.r),
+              border: Border.all(
+                color: value
+                    ? const Color(0xFF141312).withOpacity(0.12)
+                    : Colors.white.withOpacity(0.70),
               ),
             ),
-            if (onView != null)
-              TextButton(
-                onPressed: onView,
-                style: TextButton.styleFrom(
-                  minimumSize: Size(44.w, 36.h),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            child: Row(
+              children: [
+                Checkbox(
+                  value: value,
+                  onChanged: (v) => onChanged(v ?? false),
+                  activeColor: const Color(0xFF141312),
+                  checkColor: Colors.white,
+                  side: BorderSide(
+                    color: const Color(0xFF141312).withOpacity(0.34),
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
                 ),
-                child: const Text('보기'),
-              ),
-          ],
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: requiredLabel
+                        ? const Color(0xFF141312).withOpacity(0.08)
+                        : Colors.white.withOpacity(0.56),
+                    borderRadius: BorderRadius.circular(999.r),
+                  ),
+                  child: Text(
+                    badgeText,
+                    style: TextStyle(
+                      fontSize: 9.5.sp,
+                      fontWeight: FontWeight.w900,
+                      color: requiredLabel
+                          ? const Color(0xFF141312)
+                          : SnapFitColors.textMutedOf(context),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      height: 1.25,
+                      fontWeight: requiredLabel
+                          ? FontWeight.w800
+                          : FontWeight.w600,
+                      color: requiredLabel
+                          ? const Color(0xFF141312)
+                          : SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                ),
+                if (onView != null)
+                  TextButton(
+                    onPressed: onView,
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(42.w, 34.h),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: SnapFitColors.textSecondaryOf(context),
+                    ),
+                    child: Text(
+                      '보기',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
