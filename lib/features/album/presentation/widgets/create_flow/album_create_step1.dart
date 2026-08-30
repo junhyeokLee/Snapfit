@@ -82,57 +82,37 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 96.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _EditorialHeader(),
-                    SizedBox(height: 12.h),
-                    _CreateStepHero(
-                      cover: widget.selectedCover,
-                      pageCount: widget.selectedPageCount,
-                      titleListenable: _titleController,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > constraints.maxHeight;
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      20.w,
+                      10.h,
+                      20.w,
+                      isWide ? 72.h : 96.h,
                     ),
-                    if (_hasTemplate) ...[
-                      SizedBox(height: 12.h),
-                      _TemplateSummary(
-                        title: widget.templateTitle!.trim(),
-                        previewUrl: widget.templatePreviewImageUrl,
-                      ),
-                    ],
-                    SizedBox(height: 16.h),
-                    _SettingCard(child: _buildTitleBlock(context)),
-                    SizedBox(height: 16.h),
-                    _SettingCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _SectionLabel(
-                            title: '책 비율',
-                            caption: '사진에 맞는 책의 형태를 고르세요.',
+                    child: isWide
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: _buildPreviewGroup()),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: _buildManualSettingsGroup(context),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildPreviewGroup(),
+                              SizedBox(height: 16.h),
+                              _buildManualSettingsGroup(context),
+                            ],
                           ),
-                          SizedBox(height: 12.h),
-                          _buildSizeSelector(context),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    _SettingCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _SectionLabel(
-                            title: '분량',
-                            caption: '처음 분량만 정해두고, 편집 중 언제든 바꿀 수 있어요.',
-                          ),
-                          SizedBox(height: 12.h),
-                          _buildPageCountSelector(context),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             _buildBottomCta(context),
@@ -144,6 +124,63 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
 
   bool get _hasTemplate =>
       widget.templateTitle != null && widget.templateTitle!.trim().isNotEmpty;
+
+  Widget _buildPreviewGroup() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _CreateStepHero(
+          cover: widget.selectedCover,
+          pageCount: widget.selectedPageCount,
+          titleListenable: _titleController,
+        ),
+        if (_hasTemplate) ...[
+          SizedBox(height: 12.h),
+          _TemplateSummary(
+            title: widget.templateTitle!.trim(),
+            previewUrl: widget.templatePreviewImageUrl,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildManualSettingsGroup(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SettingCard(child: _buildTitleBlock(context)),
+        SizedBox(height: 16.h),
+        _SettingCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionLabel(
+                title: '책 비율',
+                caption: '사진에 맞는 책의 형태를 고르세요.',
+              ),
+              SizedBox(height: 12.h),
+              _buildSizeSelector(context),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        _SettingCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionLabel(
+                title: '분량',
+                caption: '처음 분량만 정해두고, 편집 중 언제든 바꿀 수 있어요.',
+              ),
+              SizedBox(height: 12.h),
+              _buildPageCountSelector(context),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildTitleBlock(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
@@ -367,39 +404,6 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   }
 
   int mathMax(int a, int b) => a > b ? a : b;
-}
-
-class _EditorialHeader extends StatelessWidget {
-  const _EditorialHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '새 앨범을 직접 구성해요',
-          style: TextStyle(
-            fontSize: 14.5.sp,
-            height: 1.12,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.7,
-            color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          '제목, 책의 형태, 분량을 정하고 빈 책에서 시작합니다.',
-          style: TextStyle(
-            fontSize: 10.5.sp,
-            height: 1.34,
-            fontWeight: FontWeight.w600,
-            color: SnapFitColors.textSecondaryOf(context),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _SettingCard extends StatelessWidget {
