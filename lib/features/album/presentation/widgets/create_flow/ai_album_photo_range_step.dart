@@ -55,23 +55,19 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
               SizedBox(height: 18.h),
               _RangeCard(
                 title: '최근 30일',
-                meta: '새 사진 중심',
                 emphasized: true,
                 onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
               ),
               _RangeCard(
                 title: '날짜 선택',
-                meta: '기간 기준',
                 onTap: () => onRangeSelected(AiPhotoRange.dateRange),
               ),
               _RangeCard(
                 title: '앨범 선택',
-                meta: '폴더 기준',
                 onTap: () => onRangeSelected(AiPhotoRange.album),
               ),
               _RangeCard(
                 title: '직접 고르기',
-                meta: '선택 사진만',
                 onTap: () => onRangeSelected(AiPhotoRange.manualSelection),
               ),
             ],
@@ -85,13 +81,11 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
 class _RangeCard extends StatelessWidget {
   const _RangeCard({
     required this.title,
-    required this.meta,
     required this.onTap,
     this.emphasized = false,
   });
 
   final String title;
-  final String meta;
   final VoidCallback onTap;
   final bool emphasized;
 
@@ -145,15 +139,6 @@ class _RangeCard extends StatelessWidget {
                           color: SnapFitColors.textPrimaryOf(context),
                           fontSize: 15.5.sp,
                           fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        meta,
-                        style: TextStyle(
-                          color: SnapFitColors.textSecondaryOf(context),
-                          fontSize: 12.5.sp,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

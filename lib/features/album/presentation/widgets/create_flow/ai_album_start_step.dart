@@ -47,8 +47,6 @@ class AiAlbumStartStep extends StatelessWidget {
               _ManualStartCard(onTap: onManualStart),
               SizedBox(height: 14.h),
               _AiStartRow(onTap: onAiStart),
-              SizedBox(height: 28.h),
-              _RecentTemplateStrip(isDark: isDark),
             ],
           ),
         ),
@@ -101,18 +99,6 @@ class _ManualStartCard extends StatelessWidget {
                         height: 1.16,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.45,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '제목 · 비율 · 분량',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 13.sp,
-                        height: 1.28,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -174,17 +160,6 @@ class _AiStartRow extends StatelessWidget {
                         letterSpacing: -0.25,
                       ),
                     ),
-                    SizedBox(height: 5.h),
-                    Text(
-                      '사진 흐름 추천',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -197,75 +172,6 @@ class _AiStartRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _RecentTemplateStrip extends StatelessWidget {
-  const _RecentTemplateStrip({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      (label: '필름', color: const Color(0xFFA3B0BC)),
-      (label: '베이직', color: const Color(0xFFD9C7B0)),
-      (label: '클래식', color: const Color(0xFFBBC5A8)),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '최근 템플릿',
-          style: TextStyle(
-            color: SnapFitColors.textPrimaryOf(context),
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: items.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: index == items.length - 1 ? 0 : 10.w,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 128.h,
-                      decoration: BoxDecoration(
-                        color: item.color,
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.white,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }

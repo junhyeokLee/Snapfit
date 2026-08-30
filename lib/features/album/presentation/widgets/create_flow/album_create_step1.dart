@@ -133,7 +133,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
             onChanged: widget.onTitleChanged,
             maxLength: 50,
             decoration: InputDecoration(
-              hintText: '예: 제주 여름 기록',
+              hintText: '',
               hintStyle: TextStyle(
                 color: SnapFitColors.textMutedOf(context).withOpacity(0.58),
                 fontSize: 16.sp,

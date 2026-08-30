@@ -69,7 +69,6 @@ void main() {
       ),
     );
 
-    expect(find.text('AI 초안'), findsOneWidget);
     expect(find.text('이런 앨범 초안을 준비했어요'), findsNothing);
     expect(find.text('여행의 장면들'), findsOneWidget);
     expect(find.text('추천 사진 1장'), findsOneWidget);

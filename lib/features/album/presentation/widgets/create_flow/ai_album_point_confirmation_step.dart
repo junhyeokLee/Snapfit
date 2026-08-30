@@ -62,16 +62,6 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                   letterSpacing: -0.45,
                 ),
               ),
-              SizedBox(height: 8.h),
-              Text(
-                'AI 초안',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 14.sp,
-                  height: 1.42,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
               SizedBox(height: 18.h),
               _PaperCard(
                 children: [

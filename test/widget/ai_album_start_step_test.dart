@@ -33,7 +33,6 @@ void main() {
 
     expect(find.text('시작 방식'), findsOneWidget);
     expect(find.text('직접 구성'), findsOneWidget);
-    expect(find.text('AI 초안'), findsOneWidget);
     expect(find.text('작은 책으로 남길 순간을 골라볼까요?'), findsNothing);
     expect(find.textContaining('직접 차근차근'), findsNothing);
     expect(find.textContaining('기존 에디터 기능'), findsNothing);
