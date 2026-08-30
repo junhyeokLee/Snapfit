@@ -12,6 +12,7 @@ import '../../ai_album/domain/ai_album_models.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../widgets/create_flow/ai_album_photo_range_step.dart';
+import '../widgets/create_flow/ai_album_recommendation_review_step.dart';
 import '../widgets/create_flow/ai_album_start_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
@@ -46,6 +47,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   bool _hasSelectedCreationMode = false;
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
+  AlbumRecommendationDraft? _pendingAiDraft;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -355,6 +357,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
+              _pendingAiDraft = null;
               _hasSelectedCreationMode = true;
             }),
           );
@@ -370,6 +373,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               );
               setState(() {
                 _selectedAiRange = range;
+                _pendingAiDraft = draft;
                 if (_albumTitle.trim().isEmpty) {
                   _albumTitle = draft.title;
                 }
@@ -382,7 +386,30 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             onBack: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
+              _pendingAiDraft = null;
               _hasSelectedCreationMode = false;
+            }),
+          );
+        }
+        final pendingDraft = _pendingAiDraft;
+        if (selectedAiTheme != null &&
+            _selectedAiRange != null &&
+            pendingDraft != null) {
+          return AiAlbumRecommendationReviewStep(
+            draft: pendingDraft,
+            onAcceptDraft: () => setState(() {
+              _pendingAiDraft = null;
+              if (_albumTitle.trim().isEmpty) {
+                _albumTitle = pendingDraft.title;
+              }
+              _selectedPageCount = pendingDraft.pageCount.clamp(
+                _templateMinPageCount,
+                _maxPageCount,
+              );
+            }),
+            onBack: () => setState(() {
+              _selectedAiRange = null;
+              _pendingAiDraft = null;
             }),
           );
         }
@@ -550,6 +577,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       setState(() {
         _selectedAiTheme = null;
         _selectedAiRange = null;
+        _pendingAiDraft = null;
         _hasSelectedCreationMode = false;
       });
       return true;
