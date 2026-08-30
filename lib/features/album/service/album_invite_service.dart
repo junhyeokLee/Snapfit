@@ -7,6 +7,23 @@ import 'kakao_share_service.dart';
 /// 앨범 초대 서비스
 /// 앨범 생성 후 초대 링크를 생성하고 공유하는 기능 제공
 class AlbumInviteService {
+  static String inviteErrorMessage(Object error) {
+    final text = error.toString().toLowerCase();
+    if (text.contains('unauthorized') ||
+        text.contains('jwt') ||
+        text.contains('auth') ||
+        text.contains('permission')) {
+      return '로그인이 만료되었어요. 다시 로그인한 뒤 초대 링크를 만들어주세요.';
+    }
+    if (text.contains('socket') ||
+        text.contains('timeout') ||
+        text.contains('network') ||
+        text.contains('host lookup')) {
+      return '연결이 불안정해요. 네트워크 상태를 확인한 뒤 다시 시도해주세요.';
+    }
+    return '초대 링크를 만들지 못했어요. 잠시 후 다시 시도해주세요.';
+  }
+
   /// 초대 링크 생성 및 카카오톡 공유
   ///
   /// [ref] WidgetRef (Provider 접근용)
@@ -57,7 +74,7 @@ class AlbumInviteService {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
+        ).showSnackBar(SnackBar(content: Text(inviteErrorMessage(e))));
       }
       return false;
     }
@@ -98,7 +115,7 @@ class AlbumInviteService {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
+        ).showSnackBar(SnackBar(content: Text(inviteErrorMessage(e))));
       }
       return null;
     }

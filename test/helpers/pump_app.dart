@@ -31,5 +31,5 @@ Future<void> pumpSnapFitApp(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  await tester.pump(const Duration(milliseconds: 1200));
 }

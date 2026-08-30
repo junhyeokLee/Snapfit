@@ -14,12 +14,24 @@ class KakaoShareService {
   /// [inviteLink] 초대 링크 URL
   /// [albumTitle] 앨범 제목
   /// [description] 공유 메시지 설명
+  static Uri? parseShareableInviteUri(String raw) {
+    final uri = Uri.tryParse(raw.trim());
+    if (uri == null) return null;
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme != 'https' && scheme != 'http') return null;
+    if (uri.host.trim().isEmpty) return null;
+    return uri;
+  }
+
   static Future<bool> shareInviteLink({
     required String inviteLink,
     required String albumTitle,
     String? description,
   }) async {
     try {
+      final shareUri = parseShareableInviteUri(inviteLink);
+      if (shareUri == null) return false;
+
       // 카카오톡이 설치되어 있는지 확인
       final isAvailable = await ShareClient.instance
           .isKakaoTalkSharingAvailable();
@@ -38,19 +50,13 @@ class KakaoShareService {
           title: shareTitle,
           description: shareDescription,
           imageUrl: Uri.parse(_appLogoUrl), // TODO: 실제 앱 로고 이미지 URL로 변경
-          link: Link(
-            webUrl: Uri.parse(inviteLink),
-            mobileWebUrl: Uri.parse(inviteLink),
-          ),
+          link: Link(webUrl: shareUri, mobileWebUrl: shareUri),
         ),
         social: Social(likeCount: 0, commentCount: 0, sharedCount: 0),
         buttons: [
           Button(
             title: '앨범 참여하기',
-            link: Link(
-              webUrl: Uri.parse(inviteLink),
-              mobileWebUrl: Uri.parse(inviteLink),
-            ),
+            link: Link(webUrl: shareUri, mobileWebUrl: shareUri),
           ),
         ],
       );

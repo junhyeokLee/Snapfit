@@ -45,6 +45,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="snapfit" android:host="billing" />
                 <data android:scheme="snapfit" android:host="order" />
+                <data android:scheme="snapfit" android:host="auth" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

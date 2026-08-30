@@ -917,10 +917,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             );
           },
         );
-        // 기존 앨범 수정은 "저장 완료" 시점에 실제 반영되도록 완료까지 대기
-        if (_editingAlbumId != null) {
-          await uploadFuture;
-        }
+        // 저장 성공을 사용자에게 보여주기 전에 업로드의 치명적 실패(예: 용량 초과)는
+        // 반드시 현재 저장 흐름에서 드러나야 한다. 신규 앨범도 여기서 대기해야
+        // 백그라운드 Future 오류가 유실되거나 빈 커버 앨범으로 넘어가지 않는다.
+        await uploadFuture;
       }
       return createdAlbumId;
     } catch (e) {

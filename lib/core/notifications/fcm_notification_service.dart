@@ -69,7 +69,7 @@ class FcmNotificationService {
     await _syncTopicsFromPrefs();
 
     final token = await _messaging.getToken();
-    AppLogger.debug('[FCM] token: $token');
+    AppLogger.debug('[FCM] token registered=${token?.isNotEmpty == true}');
 
     FirebaseMessaging.onMessage.listen((message) {
       _showForegroundNotification(message);

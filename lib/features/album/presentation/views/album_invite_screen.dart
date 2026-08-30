@@ -306,9 +306,9 @@ class _AlbumInviteScreenState extends ConsumerState<AlbumInviteScreen> {
       setState(() => _inviteLink = inviteResponse.link);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('초대 링크 생성 실패: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AlbumInviteService.inviteErrorMessage(e))),
+      );
     } finally {
       if (mounted) {
         setState(() => _isCreatingInvite = false);

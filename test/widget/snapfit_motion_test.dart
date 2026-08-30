@@ -13,7 +13,7 @@ void main() {
   test('snapFitAlbumOpenRoute uses premium non-zero album opening motion', () {
     final route = snapFitAlbumOpenRoute<void>(page: const SizedBox.shrink());
 
-    expect(route.transitionDuration, const Duration(milliseconds: 520));
-    expect(route.reverseTransitionDuration, const Duration(milliseconds: 260));
+    expect(route.transitionDuration, const Duration(milliseconds: 420));
+    expect(route.reverseTransitionDuration, SnapFitMotion.fast);
   });
 }

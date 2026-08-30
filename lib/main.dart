@@ -18,6 +18,8 @@ import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
+import 'features/auth/presentation/viewmodels/auth_view_model.dart';
+import 'features/auth/presentation/views/login_screen.dart';
 import 'features/profile/data/order_repository.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
@@ -124,6 +126,11 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
     final path = uri.path.toLowerCase();
     final host = uri.host.toLowerCase();
 
+    if (host == 'auth') {
+      await _handleAuthCallback(uri);
+      return;
+    }
+
     if (host != 'order') {
       return;
     }
@@ -159,6 +166,45 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
         const SnackBar(content: Text('주문 결제가 취소되거나 실패했습니다.')),
       );
     }
+  }
+
+  Future<void> _handleAuthCallback(Uri uri) async {
+    try {
+      final redirectType = await ref
+          .read(authViewModelProvider.notifier)
+          .handleAuthCallback(uri);
+      _messengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(
+            redirectType == 'recovery'
+                ? '비밀번호 재설정 링크가 확인되었어요.'
+                : '이메일 인증이 완료되었어요.',
+          ),
+        ),
+      );
+      if (redirectType == 'recovery') {
+        _openPasswordResetScreen();
+      }
+    } catch (e) {
+      _messengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text('인증 링크 처리 실패: $e')),
+      );
+    }
+  }
+
+  void _openPasswordResetScreen() {
+    final nav = _navigatorKey.currentState;
+    if (nav == null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _openPasswordResetScreen(),
+      );
+      return;
+    }
+    nav.push(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(startInPasswordReset: true),
+      ),
+    );
   }
 
   void _openOrderDetail(String orderId) {

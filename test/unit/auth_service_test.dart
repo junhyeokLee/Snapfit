@@ -19,4 +19,50 @@ void main() {
 
     await expectLater(service.refresh('old-refresh'), throwsException);
   });
+
+  test('signUpWithEmail requires Supabase auth support', () async {
+    final storage = MockTokenStorage();
+    final service = AuthService(tokenStorage: storage);
+
+    await expectLater(
+      service.signUpWithEmail(
+        name: '준자',
+        email: 'junja@example.com',
+        password: 'password123',
+      ),
+      throwsException,
+    );
+  });
+
+  test('loginWithEmail requires Supabase auth support', () async {
+    final storage = MockTokenStorage();
+    final service = AuthService(tokenStorage: storage);
+
+    await expectLater(
+      service.loginWithEmail(
+        email: 'junja@example.com',
+        password: 'password123',
+      ),
+      throwsException,
+    );
+  });
+
+  test('password recovery helpers require Supabase auth support', () async {
+    final storage = MockTokenStorage();
+    final service = AuthService(tokenStorage: storage);
+
+    await expectLater(
+      service.requestPasswordReset('junja@example.com'),
+      throwsException,
+    );
+    await expectLater(
+      service.resendEmailConfirmation('junja@example.com'),
+      throwsException,
+    );
+    await expectLater(
+      service.handleAuthCallback(Uri.parse('snapfit://auth/callback')),
+      throwsException,
+    );
+    await expectLater(service.updatePassword('password123'), throwsException);
+  });
 }

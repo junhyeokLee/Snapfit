@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
 
 import '../../../config/env.dart';
@@ -45,6 +46,80 @@ class AuthService {
     );
   }
 
+  Map<String, dynamic> _decodeJwtPayload(String token) {
+    final parts = token.split('.');
+    if (parts.length < 2) return const <String, dynamic>{};
+    try {
+      final normalized = base64Url.normalize(parts[1]);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final payload = jsonDecode(decoded);
+      if (payload is Map<String, dynamic>) return payload;
+      if (payload is Map) return Map<String, dynamic>.from(payload);
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  bool _truthy(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().trim().toLowerCase();
+    return text == 'true' || text == '1' || text == 'yes';
+  }
+
+  String? _stringValue(Map<String, dynamic> source, Iterable<String> keys) {
+    for (final key in keys) {
+      final value = source[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  Future<void> _requireVerifiedProviderEmail(
+    Session session, {
+    required String provider,
+    String? idToken,
+  }) async {
+    final user = session.user;
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final claims = idToken == null || idToken.isEmpty
+        ? const <String, dynamic>{}
+        : _decodeJwtPayload(idToken);
+
+    final email = user.email?.trim().isNotEmpty == true
+        ? user.email!.trim()
+        : _stringValue(claims, const ['email']) ??
+              _stringValue(metadata, const ['email']);
+
+    final emailVerified =
+        _truthy(claims['email_verified']) ||
+        _truthy(claims['verified_email']) ||
+        _truthy(claims['is_email_verified']) ||
+        _truthy(metadata['email_verified']) ||
+        _truthy(metadata['verified_email']) ||
+        _truthy(metadata['is_email_verified']);
+
+    if (email == null || !emailVerified) {
+      try {
+        await supabase?.auth.signOut();
+      } catch (_) {}
+      throw Exception(
+        '$provider 로그인은 인증된 이메일이 필요합니다. 이메일 제공/인증 동의 후 다시 시도해주세요.',
+      );
+    }
+  }
+
+  bool _hasConfirmedEmail(User user) {
+    return user.emailConfirmedAt?.trim().isNotEmpty == true;
+  }
+
+  Future<void> _requireConfirmedEmailSession(Session session) async {
+    if (_hasConfirmedEmail(session.user)) return;
+    try {
+      await supabase?.auth.signOut();
+    } catch (_) {}
+    throw Exception('이메일 인증을 완료한 뒤 다시 로그인해주세요.');
+  }
+
   Future<void> _upsertSupabaseProfile(UserInfo user) async {
     if (supabase == null) return;
     await supabase!.from('profiles').upsert({
@@ -72,6 +147,11 @@ class AuthService {
       if (session == null) {
         throw Exception('Supabase Kakao 로그인 세션을 가져올 수 없습니다.');
       }
+      await _requireVerifiedProviderEmail(
+        session,
+        provider: '카카오',
+        idToken: idToken,
+      );
       final auth = _fromSupabaseSession(session, provider: 'KAKAO');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
@@ -92,12 +172,116 @@ class AuthService {
       if (session == null) {
         throw Exception('Supabase Google 로그인 세션을 가져올 수 없습니다.');
       }
+      await _requireVerifiedProviderEmail(
+        session,
+        provider: '구글',
+        idToken: idToken,
+      );
       final auth = _fromSupabaseSession(session, provider: 'GOOGLE');
       await _upsertSupabaseProfile(auth.user);
       await tokenStorage.saveAuth(auth);
       return auth;
     }
     throw Exception('Supabase Google 로그인 환경이 준비되지 않았습니다.');
+  }
+
+  Future<AuthResponse> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
+      final session = response.session;
+      if (session == null) {
+        throw Exception('Supabase 이메일 로그인 세션을 가져올 수 없습니다.');
+      }
+      await _requireConfirmedEmailSession(session);
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 이메일 로그인 환경이 준비되지 않았습니다.');
+  }
+
+  Future<AuthResponse?> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.signUp(
+        email: email.trim(),
+        password: password,
+        emailRedirectTo: Env.authRedirectUrl,
+        data: {'name': name.trim(), 'full_name': name.trim()},
+      );
+      final session = response.session;
+      if (session == null) {
+        // Supabase email confirmation enabled: no session yet. The UI should
+        // move to the email-confirmation state and wait for the user to verify.
+        return null;
+      }
+      await _requireConfirmedEmailSession(session);
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 이메일 가입 환경이 준비되지 않았습니다.');
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    if (supabase != null) {
+      await supabase!.auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: Env.authRedirectUrl,
+      );
+      return;
+    }
+    throw Exception('Supabase 비밀번호 재설정 환경이 준비되지 않았습니다.');
+  }
+
+  Future<void> resendEmailConfirmation(String email) async {
+    if (supabase != null) {
+      await supabase!.auth.resend(
+        email: email.trim(),
+        type: OtpType.signup,
+        emailRedirectTo: Env.authRedirectUrl,
+      );
+      return;
+    }
+    throw Exception('Supabase 인증 메일 재전송 환경이 준비되지 않았습니다.');
+  }
+
+  Future<String?> handleAuthCallback(Uri uri) async {
+    if (supabase != null) {
+      final response = await supabase!.auth.getSessionFromUrl(uri);
+      await _requireConfirmedEmailSession(response.session);
+      final auth = _fromSupabaseSession(response.session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return response.redirectType;
+    }
+    throw Exception('Supabase 인증 링크 처리 환경이 준비되지 않았습니다.');
+  }
+
+  Future<AuthResponse> updatePassword(String password) async {
+    if (supabase != null) {
+      await supabase!.auth.updateUser(UserAttributes(password: password));
+      final session = supabase!.auth.currentSession;
+      if (session == null) {
+        throw Exception('비밀번호 변경 후 Supabase 세션을 가져올 수 없습니다.');
+      }
+      final auth = _fromSupabaseSession(session, provider: 'EMAIL');
+      await _upsertSupabaseProfile(auth.user);
+      await tokenStorage.saveAuth(auth);
+      return auth;
+    }
+    throw Exception('Supabase 비밀번호 변경 환경이 준비되지 않았습니다.');
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
