@@ -8,12 +8,18 @@ void main() {
   test(
     'collects recent photo assets and converts them into PhotoCandidate values',
     () async {
+      final firstRecentAsset = _asset(
+        'recent-landscape',
+        DateTime(2026, 8, 20),
+        4000,
+        3000,
+      );
       final repository = _FakeGalleryRepository(
         albums: [AssetPathEntity(id: 'camera', name: 'Camera')],
         pages: {
           'camera': [
             _asset('old', DateTime(2026, 1, 1), 4000, 3000),
-            _asset('recent-landscape', DateTime(2026, 8, 20), 4000, 3000),
+            firstRecentAsset,
             _asset('recent-portrait', DateTime(2026, 8, 21), 3000, 4000),
             _asset(
               'recent-screenshot',
@@ -37,6 +43,7 @@ void main() {
         'recent-screenshot',
       ]);
       expect(candidates.first.albumName, 'Camera');
+      expect(candidates.first.asset, same(firstRecentAsset));
       expect(candidates.first.orientation, PhotoOrientation.landscape);
       expect(candidates[1].orientation, PhotoOrientation.portrait);
       expect(candidates[2].isScreenshot, isTrue);

@@ -1,3 +1,5 @@
+import 'package:photo_manager/photo_manager.dart';
+
 enum AlbumTheme {
   couple,
   travel,
@@ -28,6 +30,7 @@ class PhotoCandidate {
     required this.orientation,
     this.albumName,
     this.isScreenshot = false,
+    this.asset,
   });
 
   final String assetId;
@@ -37,6 +40,7 @@ class PhotoCandidate {
   final PhotoOrientation orientation;
   final String? albumName;
   final bool isScreenshot;
+  final AssetEntity? asset;
 
   String get dayKey =>
       '${createdAt.year.toString().padLeft(4, '0')}-'

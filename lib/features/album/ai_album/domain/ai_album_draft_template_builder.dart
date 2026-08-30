@@ -46,6 +46,7 @@ class AiAlbumDraftTemplateBuilder {
           position: const Offset(60, 72),
           width: 380,
           height: 280,
+          asset: coverPhoto.candidate.asset,
           imageTemplate: '4:3',
           imageBackground: 'mat',
         ),
@@ -152,6 +153,7 @@ class AiAlbumDraftTemplateBuilder {
             position: Offset(slot.left, slot.top),
             width: slot.width,
             height: slot.height,
+            asset: photo.candidate.asset,
             imageTemplate: '4:3',
             imageBackground: 'mat',
           );

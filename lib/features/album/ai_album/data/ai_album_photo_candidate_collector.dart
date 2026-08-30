@@ -59,6 +59,7 @@ class AiAlbumPhotoCandidateCollector {
       orientation: _orientationFor(asset.width, asset.height),
       albumName: albumName,
       isScreenshot: _looksLikeScreenshot(asset),
+      asset: asset,
     );
   }
 
