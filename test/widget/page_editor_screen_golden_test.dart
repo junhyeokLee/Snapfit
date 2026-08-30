@@ -71,12 +71,12 @@ Future<void> _loadGoldenFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await korean.load();
 
+  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+  final materialIconPath = flutterRoot == null
+      ? '/opt/data/flutter-sdk-release/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'
+      : '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';
   final materialIcons = FontLoader('MaterialIcons')
-    ..addFont(
-      File(
-        '/opt/data/flutter-sdk-release/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
-      ).readAsBytes().then(ByteData.sublistView),
-    );
+    ..addFont(File(materialIconPath).readAsBytes().then(ByteData.sublistView));
   await materialIcons.load();
 }
 
