@@ -31,77 +31,90 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
       color: background,
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 18.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextButton(
-                onPressed: onBack,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  '이전',
-                  style: TextStyle(
-                    color: SnapFitColors.textSecondaryOf(context),
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              SizedBox(height: 14.h),
-              _DraftTicket(pointCost: pointCost),
-              SizedBox(height: 18.h),
-              Text(
-                '초안 생성',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 23.sp,
-                  height: 1.18,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.45,
-                ),
-              ),
-              SizedBox(height: 18.h),
-              _PaperCard(
-                children: [
-                  _InfoRow(label: '주제', value: _themeLabel(theme)),
-                  _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
-                  _InfoRow(label: '사용 포인트', value: '${_format(pointCost)}P'),
-                  _InfoRow(label: '보유 포인트', value: '${_format(balance)}P'),
-                ],
-              ),
-              SizedBox(height: 22.h),
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: onConfirm,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: SnapFitColors.isDark(context)
-                        ? const Color(0xFFF4F1EA)
-                        : const Color(0xFF1F1F1D),
-                    foregroundColor: SnapFitColors.isDark(context)
-                        ? const Color(0xFF111111)
-                        : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 18.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextButton(
+                      onPressed: onBack,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        '이전',
+                        style: TextStyle(
+                          color: SnapFitColors.textSecondaryOf(context),
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    '초안 만들기',
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.2,
+                    SizedBox(height: 14.h),
+                    _DraftTicket(pointCost: pointCost),
+                    SizedBox(height: 18.h),
+                    Text(
+                      '초안 생성',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 23.sp,
+                        height: 1.18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.45,
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 18.h),
+                    _PaperCard(
+                      children: [
+                        _InfoRow(label: '주제', value: _themeLabel(theme)),
+                        _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
+                        _InfoRow(
+                          label: '사용 포인트',
+                          value: '${_format(pointCost)}P',
+                        ),
+                        _InfoRow(
+                          label: '보유 포인트',
+                          value: '${_format(balance)}P',
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 22.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52.h,
+                      child: ElevatedButton(
+                        onPressed: onConfirm,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: SnapFitColors.isDark(context)
+                              ? const Color(0xFFF4F1EA)
+                              : const Color(0xFF1F1F1D),
+                          foregroundColor: SnapFitColors.isDark(context)
+                              ? const Color(0xFF111111)
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                        ),
+                        child: Text(
+                          '초안 만들기',
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -28,28 +28,35 @@ class AiAlbumStartStep extends StatelessWidget {
       color: background,
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 28.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _AlbumHeroBoard(),
-              SizedBox(height: 20.h),
-              Text(
-                '시작 방식',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 25.sp,
-                  height: 1.12,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.55,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 28.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _AlbumHeroBoard(),
+                    SizedBox(height: 20.h),
+                    Text(
+                      '시작 방식',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 25.sp,
+                        height: 1.12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.55,
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    _ManualStartCard(onTap: onManualStart),
+                    SizedBox(height: 14.h),
+                    _AiStartRow(onTap: onAiStart),
+                  ],
                 ),
               ),
-              SizedBox(height: 18.h),
-              _ManualStartCard(onTap: onManualStart),
-              SizedBox(height: 14.h),
-              _AiStartRow(onTap: onAiStart),
-            ],
+            ),
           ),
         ),
       ),
@@ -267,10 +274,13 @@ class _ManualStartCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 21.sp,
-                color: SnapFitColors.textPrimaryOf(context),
+              Text(
+                '→',
+                style: TextStyle(
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ],
           ),
@@ -326,10 +336,13 @@ class _AiStartRow extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 22.sp,
-                color: SnapFitColors.textMutedOf(context),
+              Text(
+                '›',
+                style: TextStyle(
+                  color: SnapFitColors.textMutedOf(context),
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ],
           ),

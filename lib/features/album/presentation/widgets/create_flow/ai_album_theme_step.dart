@@ -24,85 +24,92 @@ class AiAlbumThemeStep extends StatelessWidget {
       color: background,
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _BackTextButton(onPressed: onBack),
-              SizedBox(height: 14.h),
-              const _MoodPreviewBoard(),
-              SizedBox(height: 18.h),
-              Text(
-                'AI 초안',
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.1,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _BackTextButton(onPressed: onBack),
+                    SizedBox(height: 14.h),
+                    const _MoodPreviewBoard(),
+                    SizedBox(height: 18.h),
+                    Text(
+                      'AI 초안',
+                      style: TextStyle(
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '분위기',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 24.sp,
+                        height: 1.16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    Wrap(
+                      spacing: 10.w,
+                      runSpacing: 10.h,
+                      children: [
+                        _ThemeCard(
+                          theme: AlbumTheme.travel,
+                          title: '여행',
+                          colors: const [Color(0xFF93B7D8), Color(0xFFFFC985)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.family,
+                          title: '가족',
+                          colors: const [Color(0xFFF1C8A6), Color(0xFFB9CFA4)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.baby,
+                          title: '성장',
+                          colors: const [Color(0xFFF6C6D8), Color(0xFFEAE2B7)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.couple,
+                          title: '커플',
+                          colors: const [Color(0xFFECA2A2), Color(0xFFB8A5DF)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.birthday,
+                          title: '기념일',
+                          colors: const [Color(0xFFFFD166), Color(0xFFEF8E72)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.daily,
+                          title: '일상',
+                          colors: const [Color(0xFFC9D8C5), Color(0xFFF2E8D8)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.custom,
+                          title: '직접 입력',
+                          colors: const [Color(0xFFDDD7F3), Color(0xFFE8E8E8)],
+                          onTap: onThemeSelected,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 8.h),
-              Text(
-                '분위기',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 24.sp,
-                  height: 1.16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              SizedBox(height: 18.h),
-              Wrap(
-                spacing: 10.w,
-                runSpacing: 10.h,
-                children: [
-                  _ThemeCard(
-                    theme: AlbumTheme.travel,
-                    title: '여행',
-                    colors: const [Color(0xFF93B7D8), Color(0xFFFFC985)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.family,
-                    title: '가족',
-                    colors: const [Color(0xFFF1C8A6), Color(0xFFB9CFA4)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.baby,
-                    title: '성장',
-                    colors: const [Color(0xFFF6C6D8), Color(0xFFEAE2B7)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.couple,
-                    title: '커플',
-                    colors: const [Color(0xFFECA2A2), Color(0xFFB8A5DF)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.birthday,
-                    title: '기념일',
-                    colors: const [Color(0xFFFFD166), Color(0xFFEF8E72)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.daily,
-                    title: '일상',
-                    colors: const [Color(0xFFC9D8C5), Color(0xFFF2E8D8)],
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.custom,
-                    title: '직접 입력',
-                    colors: const [Color(0xFFDDD7F3), Color(0xFFE8E8E8)],
-                    onTap: onThemeSelected,
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),

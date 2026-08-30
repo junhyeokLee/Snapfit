@@ -26,61 +26,69 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
       color: background,
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _BackTextButton(onPressed: onBack),
-              SizedBox(height: 14.h),
-              _RangePreview(theme: theme),
-              SizedBox(height: 18.h),
-              Text(
-                'AI 초안',
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w900,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _BackTextButton(onPressed: onBack),
+                    SizedBox(height: 14.h),
+                    _RangePreview(theme: theme),
+                    SizedBox(height: 18.h),
+                    Text(
+                      'AI 초안',
+                      style: TextStyle(
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '사진 범위',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 24.sp,
+                        height: 1.16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    _RangeCard(
+                      title: '최근 30일',
+                      subtitle: '가장 자연스러운 기본값',
+                      icon: Icons.auto_awesome_rounded,
+                      emphasized: true,
+                      onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
+                    ),
+                    _RangeCard(
+                      title: '날짜 선택',
+                      subtitle: '여행·기념일만 정확히',
+                      icon: Icons.calendar_month_rounded,
+                      onTap: () => onRangeSelected(AiPhotoRange.dateRange),
+                    ),
+                    _RangeCard(
+                      title: '앨범 선택',
+                      subtitle: '휴대폰 앨범 단위로',
+                      icon: Icons.photo_album_rounded,
+                      onTap: () => onRangeSelected(AiPhotoRange.album),
+                    ),
+                    _RangeCard(
+                      title: '직접 고르기',
+                      subtitle: '넣을 사진만 직접 픽',
+                      icon: Icons.touch_app_rounded,
+                      onTap: () =>
+                          onRangeSelected(AiPhotoRange.manualSelection),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 8.h),
-              Text(
-                '사진 범위',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 24.sp,
-                  height: 1.16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              SizedBox(height: 18.h),
-              _RangeCard(
-                title: '최근 30일',
-                subtitle: '가장 자연스러운 기본값',
-                icon: Icons.auto_awesome_rounded,
-                emphasized: true,
-                onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
-              ),
-              _RangeCard(
-                title: '날짜 선택',
-                subtitle: '여행·기념일만 정확히',
-                icon: Icons.calendar_month_rounded,
-                onTap: () => onRangeSelected(AiPhotoRange.dateRange),
-              ),
-              _RangeCard(
-                title: '앨범 선택',
-                subtitle: '휴대폰 앨범 단위로',
-                icon: Icons.photo_album_rounded,
-                onTap: () => onRangeSelected(AiPhotoRange.album),
-              ),
-              _RangeCard(
-                title: '직접 고르기',
-                subtitle: '넣을 사진만 직접 픽',
-                icon: Icons.touch_app_rounded,
-                onTap: () => onRangeSelected(AiPhotoRange.manualSelection),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -222,10 +230,20 @@ class _RangeCard extends StatelessWidget {
                         : const Color(0xFFEDE7DD),
                     borderRadius: BorderRadius.circular(14.r),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 21.sp,
-                    color: emphasized ? Colors.white : const Color(0xFF6E6558),
+                  child: Center(
+                    child: Container(
+                      width: 14.w,
+                      height: 14.w,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: emphasized
+                              ? Colors.white
+                              : const Color(0xFF6E6558),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(width: 14.w),
@@ -255,10 +273,13 @@ class _RangeCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: SnapFitColors.textMutedOf(context),
-                  size: 22.sp,
+                Text(
+                  '›',
+                  style: TextStyle(
+                    color: SnapFitColors.textMutedOf(context),
+                    fontSize: 27.sp,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
