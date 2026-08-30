@@ -72,21 +72,16 @@ class _AlbumHeroBoard extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 176.h,
-      padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 16.h),
+      height: 238.h,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE4DBCE),
-        ),
+        borderRadius: BorderRadius.circular(32.r),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFFB8A889).withOpacity(0.14),
+                  color: const Color(0xFF5B4A34).withOpacity(0.10),
                   blurRadius: 28,
                   offset: const Offset(0, 14),
                 ),
@@ -95,40 +90,145 @@ class _AlbumHeroBoard extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
+            left: 2.w,
+            top: 10.h,
+            child: Transform.rotate(
+              angle: -0.06,
+              child: _PhotoBookCover(
+                width: 148.w,
+                height: 184.h,
+                title: '제주 여행',
+                paper: const Color(0xFFF6E7D2),
+                photo: const Color(0xFF86B7CA),
+                accent: const Color(0xFFE7A36D),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 126.w,
+            top: 18.h,
+            child: Transform.rotate(
+              angle: 0.045,
+              child: _PhotoBookCover(
+                width: 132.w,
+                height: 166.h,
+                title: '우리집',
+                paper: const Color(0xFFF8F2E7),
+                photo: const Color(0xFFD6B199),
+                accent: const Color(0xFF9CB88D),
+                compact: true,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 4.w,
+            bottom: 12.h,
+            child: _FinishedBookBadge(isDark: isDark),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PhotoBookCover extends StatelessWidget {
+  const _PhotoBookCover({
+    required this.width,
+    required this.height,
+    required this.title,
+    required this.paper,
+    required this.photo,
+    required this.accent,
+    this.compact = false,
+  });
+
+  final double width;
+  final double height;
+  final String title;
+  final Color paper;
+  final Color photo;
+  final Color accent;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      padding: EdgeInsets.all(11.w),
+      decoration: BoxDecoration(
+        color: paper,
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(color: Colors.white.withOpacity(0.78), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
             left: 0,
-            bottom: 0,
-            child: Transform.rotate(
-              angle: -0.12,
-              child: _PreviewPage(
-                width: 116.w,
-                height: 132.h,
-                color: const Color(0xFFF0E4D2),
-                accent: const Color(0xFFD8A06D),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 86.w,
-            top: 0,
-            child: Transform.rotate(
-              angle: 0.07,
-              child: _PreviewPage(
-                width: 122.w,
-                height: 140.h,
-                color: const Color(0xFFE9F4F6),
-                accent: const Color(0xFF8FB9C8),
-              ),
-            ),
-          ),
-          Positioned(
             right: 0,
-            bottom: 6.h,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            top: 0,
+            height: height * (compact ? 0.48 : 0.55),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16.r),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [photo, accent.withOpacity(0.76)],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 12.w,
+                    bottom: 10.h,
+                    child: Container(
+                      width: 34.w,
+                      height: 34.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.30),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 2.w,
+            bottom: compact ? 20.h : 26.h,
+            child: Text(
+              title,
+              style: TextStyle(
+                color: const Color(0xFF29231D),
+                fontSize: compact ? 13.sp : 16.sp,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.45,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 2.w,
+            bottom: 8.h,
+            child: Row(
               children: [
-                _HeroChip(text: 'manual'),
-                SizedBox(height: 8.h),
-                _HeroChip(text: 'ai draft', dark: true),
+                _TinyLine(width: compact ? 25.w : 36.w, color: accent),
+                SizedBox(width: 5.w),
+                _TinyLine(
+                  width: compact ? 16.w : 24.w,
+                  color: accent.withOpacity(0.48),
+                ),
               ],
             ),
           ),
@@ -138,88 +238,47 @@ class _AlbumHeroBoard extends StatelessWidget {
   }
 }
 
-class _PreviewPage extends StatelessWidget {
-  const _PreviewPage({
-    required this.width,
-    required this.height,
-    required this.color,
-    required this.accent,
-  });
-
-  final double width;
-  final double height;
-  final Color color;
-  final Color accent;
+class _FinishedBookBadge extends StatelessWidget {
+  const _FinishedBookBadge({required this.isDark});
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
-      padding: EdgeInsets.all(11.w),
+      width: 78.w,
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: Colors.white.withOpacity(0.72), width: 2),
+        color: isDark ? const Color(0xFF24252B) : const Color(0xFFF3EBDD),
+        borderRadius: BorderRadius.circular(18.r),
       ),
-      child: Stack(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            height: height * 0.42,
-            child: Container(
-              decoration: BoxDecoration(
-                color: accent,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            bottom: 15.h,
-            child: Container(
-              width: width * 0.46,
-              height: 7.h,
-              color: accent.withOpacity(0.56),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            bottom: 3.h,
-            child: Container(
-              width: width * 0.34,
-              height: 7.h,
-              color: accent.withOpacity(0.32),
-            ),
-          ),
+          _TinyLine(width: 36.w, height: 6.h, color: const Color(0xFF8FAF9A)),
+          SizedBox(height: 8.h),
+          _TinyLine(width: 52.w, height: 6.h, color: const Color(0xFFCDAA82)),
+          SizedBox(height: 8.h),
+          _TinyLine(width: 28.w, height: 6.h, color: const Color(0xFFD7C5EF)),
         ],
       ),
     );
   }
 }
 
-class _HeroChip extends StatelessWidget {
-  const _HeroChip({required this.text, this.dark = false});
-  final String text;
-  final bool dark;
+class _TinyLine extends StatelessWidget {
+  const _TinyLine({required this.width, required this.color, this.height});
+  final double width;
+  final double? height;
+  final Color color;
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+      width: width,
+      height: height ?? 7.h,
       decoration: BoxDecoration(
-        color: dark ? const Color(0xFF1F1F1D) : const Color(0xFFEDE6DA),
+        color: color,
         borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: dark ? Colors.white : const Color(0xFF4A4035),
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
-        ),
       ),
     );
   }

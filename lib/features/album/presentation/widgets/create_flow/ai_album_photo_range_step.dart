@@ -105,33 +105,71 @@ class _RangePreview extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 132.h,
-      padding: EdgeInsets.all(14.w),
+      height: 154.h,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(26.r),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE6DED3),
-        ),
+        borderRadius: BorderRadius.circular(28.r),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF5B4A34).withOpacity(0.08),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(child: _MosaicTile(color: _accent(theme), big: true)),
-          SizedBox(width: 8.w),
           Expanded(
-            child: Column(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Expanded(child: _MosaicTile(color: const Color(0xFFECC7A1))),
-                SizedBox(height: 8.h),
-                Expanded(child: _MosaicTile(color: const Color(0xFFB9C8A9))),
+                Expanded(
+                  child: _TravelFrame(color: _accent(theme), height: 96.h),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFECC7A1),
+                    height: 78.h,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFB9C8A9),
+                    height: 88.h,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFD8CAE8),
+                    height: 70.h,
+                  ),
+                ),
               ],
             ),
           ),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: _MosaicTile(color: const Color(0xFFD8CAE8), big: true),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              _TimelineDot(color: _accent(theme)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFECC7A1)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFB9C8A9)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFD8CAE8)),
+            ],
           ),
         ],
       ),
@@ -150,29 +188,46 @@ class _RangePreview extends StatelessWidget {
   };
 }
 
-class _MosaicTile extends StatelessWidget {
-  const _MosaicTile({required this.color, this.big = false});
+class _TravelFrame extends StatelessWidget {
+  const _TravelFrame({required this.color, required this.height});
   final Color color;
-  final bool big;
+  final double height;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(big ? 20.r : 16.r),
-      ),
-      child: Align(
-        alignment: Alignment.bottomRight,
-        child: Container(
-          width: big ? 34.w : 24.w,
-          height: big ? 34.w : 24.w,
-          margin: EdgeInsets.all(8.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.32),
-            shape: BoxShape.circle,
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        child: Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+            width: 22.w,
+            height: 22.w,
+            margin: EdgeInsets.all(7.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.34),
+              shape: BoxShape.circle,
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TimelineDot extends StatelessWidget {
+  const _TimelineDot({required this.color});
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10.w,
+      height: 10.w,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

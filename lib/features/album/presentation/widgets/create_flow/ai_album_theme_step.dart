@@ -213,32 +213,41 @@ class _ThemeCard extends StatelessWidget {
         onTap: () => onTap(theme),
         child: Ink(
           width: 104.w,
-          height: 92.h,
-          padding: EdgeInsets.all(11.w),
+          height: 102.h,
+          padding: EdgeInsets.all(9.w),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1A1B20) : Colors.white,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isDark
                   ? Colors.white.withOpacity(0.10)
-                  : const Color(0xFFE0E2EF),
+                  : const Color(0xFFE4DBCE),
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: const Color(0xFF5B4A34).withOpacity(0.07),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
           ),
           child: Stack(
             children: [
               Positioned.fill(
-                child: _PreviewPhoto(colors: colors, radius: 14.r),
+                child: _TemplateThumbnail(colors: colors, theme: theme),
               ),
               Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
+                left: 6.w,
+                right: 6.w,
+                bottom: 6.h,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 5.h),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.black.withOpacity(0.38)
-                        : Colors.white.withOpacity(0.72),
+                        ? Colors.black.withOpacity(0.40)
+                        : Colors.white.withOpacity(0.80),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
@@ -247,7 +256,7 @@ class _ThemeCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: SnapFitColors.textPrimaryOf(context),
-                      fontSize: 14.5.sp,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.2,
                     ),
@@ -257,6 +266,83 @@ class _ThemeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TemplateThumbnail extends StatelessWidget {
+  const _TemplateThumbnail({required this.colors, required this.theme});
+  final List<Color> colors;
+  final AlbumTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(7.w),
+      decoration: BoxDecoration(
+        color: colors.last.withOpacity(0.34),
+        borderRadius: BorderRadius.circular(15.r),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 18.h,
+            width: 42.w,
+            child: _PreviewPhoto(colors: colors, radius: 11.r),
+          ),
+          Positioned(
+            right: 0,
+            top: 9.h,
+            bottom: 0,
+            width: 38.w,
+            child: _PreviewPhoto(
+              colors: colors.reversed.toList(),
+              radius: 11.r,
+            ),
+          ),
+          Positioned(
+            left: 50.w,
+            top: 3.h,
+            child: _MiniTextBar(width: 20.w, color: colors.first),
+          ),
+          Positioned(
+            left: 50.w,
+            top: 14.h,
+            child: _MiniTextBar(
+              width: 28.w,
+              color: colors.first.withOpacity(0.52),
+            ),
+          ),
+          Positioned(
+            left: 4.w,
+            right: 10.w,
+            bottom: 5.h,
+            child: _MiniTextBar(
+              width: 54.w,
+              color: const Color(0xFF2B2520).withOpacity(0.22),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniTextBar extends StatelessWidget {
+  const _MiniTextBar({required this.width, required this.color});
+  final double width;
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: 5.h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }

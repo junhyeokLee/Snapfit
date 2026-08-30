@@ -161,56 +161,100 @@ class _DraftTicket extends StatelessWidget {
     final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      height: 150.h,
-      padding: EdgeInsets.all(18.w),
+      height: 178.h,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(28.r),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE6DED3),
-        ),
+        borderRadius: BorderRadius.circular(30.r),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF5B4A34).withOpacity(0.09),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
       ),
       child: Stack(
         children: [
           Positioned(
             left: 0,
-            top: 12.h,
-            child: _TicketPage(color: const Color(0xFFEFE1CD)),
-          ),
-          Positioned(
-            left: 58.w,
             top: 0,
-            child: _TicketPage(color: const Color(0xFFE4F3F5), tall: true),
+            child: _TicketPage(color: const Color(0xFFEFE1CD), tall: true),
           ),
           Positioned(
-            left: 114.w,
+            left: 70.w,
             top: 18.h,
-            child: _TicketPage(color: const Color(0xFFE7DDF3)),
+            child: _TicketPage(color: const Color(0xFFE4F3F5)),
           ),
           Positioned(
             right: 0,
-            bottom: 4.h,
+            top: 6.h,
+            child: Container(
+              width: 108.w,
+              padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF24252B)
+                    : const Color(0xFFF7F1E7),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ReceiptLine(width: 48.w, color: const Color(0xFF8FAF9A)),
+                  SizedBox(height: 10.h),
+                  _ReceiptLine(width: 74.w, color: const Color(0xFFCDAA82)),
+                  SizedBox(height: 10.h),
+                  _ReceiptLine(width: 54.w, color: const Color(0xFFD7C5EF)),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            right: 6.w,
+            bottom: 0,
             child: Container(
               width: 52.w,
               height: 52.w,
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF24252B)
-                    : const Color(0xFFF7F1E7),
+                    ? const Color(0xFFF4F1EA)
+                    : const Color(0xFF222222),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.auto_awesome_rounded,
-                size: 22.sp,
-                color: isDark
-                    ? const Color(0xFFEFE1CD)
-                    : const Color(0xFF6E6558),
+              child: Center(
+                child: Text(
+                  '✓',
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF111111) : Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ReceiptLine extends StatelessWidget {
+  const _ReceiptLine({required this.width, required this.color});
+  final double width;
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: 7.h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
