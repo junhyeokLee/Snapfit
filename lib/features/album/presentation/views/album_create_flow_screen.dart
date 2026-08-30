@@ -11,6 +11,7 @@ import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
+import '../widgets/create_flow/ai_album_draft_failure_step.dart';
 import '../widgets/create_flow/ai_album_photo_range_step.dart';
 import '../widgets/create_flow/ai_album_point_confirmation_step.dart';
 import '../widgets/create_flow/ai_album_recommendation_review_step.dart';
@@ -55,6 +56,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
+  String? _aiDraftFailureMessage;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -392,6 +394,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = true;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
+      _aiDraftFailureMessage = null;
     });
 
     final result = await ref
@@ -405,6 +408,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _isGeneratingAiDraft = false;
         _hasConfirmedAiPointCost = true;
         _pendingAiDraft = draft;
+        _aiDraftFailureMessage = null;
         if (_albumTitle.trim().isEmpty) {
           _albumTitle = draft.title;
         }
@@ -420,6 +424,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = false;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
+      _aiDraftFailureMessage = null;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -444,6 +449,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -460,6 +466,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -479,12 +486,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                 _hasConfirmedAiPointCost = false;
                 _isGeneratingAiDraft = false;
                 _pendingAiDraft = null;
+                _aiDraftFailureMessage = null;
               });
             },
             onBack: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
             }),
@@ -492,6 +501,31 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         }
         final pendingDraft = _pendingAiDraft;
         final selectedAiRange = _selectedAiRange;
+        final aiDraftFailureMessage = _aiDraftFailureMessage;
+        if (_isAiCreationMode &&
+            selectedAiTheme != null &&
+            selectedAiRange != null &&
+            aiDraftFailureMessage != null) {
+          return AiAlbumDraftFailureStep(
+            message: aiDraftFailureMessage,
+            onRetryRange: () => setState(() {
+              _selectedAiRange = null;
+              _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
+              _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
+            }),
+            onManualStart: () => setState(() {
+              _selectedAiTheme = null;
+              _selectedAiRange = null;
+              _isAiCreationMode = false;
+              _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
+              _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
+            }),
+          );
+        }
         if (_isAiCreationMode &&
             selectedAiTheme != null &&
             selectedAiRange != null &&
@@ -513,6 +547,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
             }),
           );
         }
