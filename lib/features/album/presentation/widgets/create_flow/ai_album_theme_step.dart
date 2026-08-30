@@ -16,7 +16,8 @@ class AiAlbumThemeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = SnapFitColors.isDark(context)
+    final isDark = SnapFitColors.isDark(context);
+    final background = isDark
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
     return ColoredBox(
@@ -28,47 +29,26 @@ class AiAlbumThemeStep extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton.icon(
-                onPressed: onBack,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 14.sp,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-                label: Text(
-                  '시작 방식 다시 고르기',
-                  style: TextStyle(
-                    color: SnapFitColors.textSecondaryOf(context),
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+              _BackTextButton(onPressed: onBack),
               SizedBox(height: 18.h),
-              _SmallLabel(text: 'AI 초안'),
-              SizedBox(height: 14.h),
               Text(
-                '어떤 앨범으로 정리해볼까요?',
+                'AI 초안',
                 style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 23.sp,
-                  height: 1.18,
+                  color: SnapFitColors.textMutedOf(context),
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -0.45,
+                  letterSpacing: 0.1,
                 ),
               ),
               SizedBox(height: 8.h),
               Text(
-                '선택한 주제는 AI가 사진 흐름과 제목을 제안할 때만 참고해요.',
+                '분위기',
                 style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 14.sp,
-                  height: 1.42,
-                  fontWeight: FontWeight.w600,
+                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 24.sp,
+                  height: 1.16,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
                 ),
               ),
               SizedBox(height: 18.h),
@@ -79,56 +59,39 @@ class AiAlbumThemeStep extends StatelessWidget {
                   _ThemeCard(
                     theme: AlbumTheme.travel,
                     title: '여행',
-                    caption: '날짜와 장소 흐름',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.family,
                     title: '가족',
-                    caption: '함께한 장면 중심',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.baby,
-                    title: '아기·성장',
-                    caption: '변화와 표정 기록',
+                    title: '성장',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.couple,
                     title: '커플',
-                    caption: '둘의 시간',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.birthday,
-                    title: '생일·기념일',
-                    caption: '축하와 하이라이트',
+                    title: '기념일',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.daily,
                     title: '일상',
-                    caption: '남기고 싶은 하루',
                     onTap: onThemeSelected,
                   ),
                   _ThemeCard(
                     theme: AlbumTheme.custom,
                     title: '직접 입력',
-                    caption: '원하는 주제로',
                     onTap: onThemeSelected,
                   ),
                 ],
-              ),
-              SizedBox(height: 18.h),
-              Text(
-                '정답을 고르는 단계가 아니에요. 나중에 제목, 사진, 페이지는 모두 바꿀 수 있어요.',
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 12.5.sp,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
             ],
           ),
@@ -142,62 +105,46 @@ class _ThemeCard extends StatelessWidget {
   const _ThemeCard({
     required this.theme,
     required this.title,
-    required this.caption,
     required this.onTap,
   });
 
   final AlbumTheme theme;
   final String title;
-  final String caption;
   final ValueChanged<AlbumTheme> onTap;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         key: Key('ai_theme_${theme.name}'),
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(20.r),
         onTap: () => onTap(theme),
         child: Ink(
-          width: 108.w,
-          height: 76.h,
+          width: 104.w,
+          height: 82.h,
           padding: EdgeInsets.all(13.w),
           decoration: BoxDecoration(
-            color: SnapFitColors.isDark(context)
-                ? const Color(0xFF1D1C1A)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(18.r),
+            color: isDark ? const Color(0xFF1A1B20) : const Color(0xFFF7F7FF),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: SnapFitColors.isDark(context)
+              color: isDark
                   ? Colors.white.withOpacity(0.10)
-                  : const Color(0xFFE7E1D8),
+                  : const Color(0xFFE0E2EF),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w900,
-                ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Text(
+              title,
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
               ),
-              SizedBox(height: 6.h),
-              Text(
-                caption,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 10.5.sp,
-                  height: 1.2,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -205,23 +152,26 @@ class _ThemeCard extends StatelessWidget {
   }
 }
 
-class _SmallLabel extends StatelessWidget {
-  const _SmallLabel({required this.text});
-  final String text;
+class _BackTextButton extends StatelessWidget {
+  const _BackTextButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE9F4EC),
-        borderRadius: BorderRadius.circular(999.r),
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size(0, 34.h),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(
-        text,
+        '이전',
         style: TextStyle(
-          color: const Color(0xFF4C6A55),
-          fontSize: 11.5.sp,
-          fontWeight: FontWeight.w900,
+          color: SnapFitColors.textSecondaryOf(context),
+          fontSize: 12.5.sp,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

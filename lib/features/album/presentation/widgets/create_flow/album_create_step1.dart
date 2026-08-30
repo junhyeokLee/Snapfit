@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -79,36 +78,23 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 96.h),
+                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 96.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _CreateStepHero(
-                      cover: widget.selectedCover,
-                      pageCount: widget.selectedPageCount,
-                      titleListenable: _titleController,
-                    ),
                     if (_hasTemplate) ...[
-                      SizedBox(height: 10.h),
                       _TemplateSummary(
                         title: widget.templateTitle!.trim(),
                         previewUrl: widget.templatePreviewImageUrl,
                       ),
                     ],
-                    SizedBox(height: 14.h),
                     _buildTitleBlock(context),
                     SizedBox(height: 26.h),
-                    const _SectionLabel(
-                      title: '책 비율',
-                      caption: '사진이 가장 잘 보이는 책의 형태를 고르세요.',
-                    ),
+                    const _SectionLabel(title: '책 비율'),
                     SizedBox(height: 7.h),
                     _buildSizeSelector(context),
                     SizedBox(height: 18.h),
-                    const _SectionLabel(
-                      title: '분량',
-                      caption: '처음 분량만 정하고, 편집 중 언제든 조정할 수 있어요.',
-                    ),
+                    const _SectionLabel(title: '분량'),
                     SizedBox(height: 9.h),
                     _buildPageCountSelector(context),
                   ],
@@ -130,7 +116,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel(title: '앨범 제목', caption: '표지와 내지에 함께 쓰일 이름이에요.'),
+        const _SectionLabel(title: '앨범 제목'),
         SizedBox(height: 6.h),
         Container(
           decoration: BoxDecoration(
@@ -346,194 +332,9 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   int mathMax(int a, int b) => a > b ? a : b;
 }
 
-class _CreateStepHero extends StatelessWidget {
-  final CoverSize? cover;
-  final int pageCount;
-  final ValueListenable<TextEditingValue> titleListenable;
-
-  const _CreateStepHero({
-    required this.cover,
-    required this.pageCount,
-    required this.titleListenable,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final ratio = cover?.ratio ?? 1.0;
-    final previewMaxW = 112.w;
-    final previewMaxH = 92.h;
-    final previewW = ratio >= 1 ? previewMaxW : previewMaxH * ratio;
-    final previewH = ratio >= 1 ? previewMaxW / ratio : previewMaxH;
-
-    return Container(
-      key: const Key('albumCreateStepHero'),
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 18.h),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF1E1B18), const Color(0xFF121110)]
-              : [Colors.white, const Color(0xFFFFF7EC)],
-        ),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE7DED2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
-            blurRadius: 26,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '새 앨범',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        height: 1.12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.65,
-                        color: SnapFitColors.textPrimaryOf(context),
-                      ),
-                    ),
-                    SizedBox(height: 7.h),
-                    Text(
-                      '표지와 분량을 먼저 정해요.',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        height: 1.34,
-                        fontWeight: FontWeight.w700,
-                        color: SnapFitColors.textSecondaryOf(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Text(
-                '${pageCount}쪽',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w900,
-                  color: SnapFitColors.accent,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 18.h),
-          Center(
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: titleListenable,
-              builder: (context, value, _) {
-                final title = value.text.trim().isEmpty
-                    ? '제목 미정'
-                    : value.text.trim();
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned(
-                      right: -8.w,
-                      top: 7.h,
-                      bottom: -7.h,
-                      child: Container(
-                        width: previewW,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : const Color(0xFFE9DAC7),
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      key: const Key('albumCreateHeroPreview'),
-                      width: previewW,
-                      height: previewH,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF2A2621)
-                            : const Color(0xFFF7EAD8),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.14)
-                              : const Color(0xFFD9C7AF),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(
-                              isDark ? 0.32 : 0.12,
-                            ),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        width: 8.w,
-                        height: (previewH - 20.w).clamp(18.0, previewH),
-                        decoration: BoxDecoration(
-                          color: SnapFitColors.accent.withOpacity(0.42),
-                          borderRadius: BorderRadius.circular(999.r),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 18.w,
-                      right: 12.w,
-                      bottom: 12.h,
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.5.sp,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
-                          color: isDark
-                              ? Colors.white.withOpacity(0.82)
-                              : const Color(0xFF2A2520),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _SectionLabel extends StatelessWidget {
   final String title;
-  final String caption;
-
-  const _SectionLabel({required this.title, required this.caption});
+  const _SectionLabel({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -548,16 +349,6 @@ class _SectionLabel extends StatelessWidget {
             fontWeight: FontWeight.w900,
             letterSpacing: -0.25,
             color: SnapFitColors.textPrimaryOf(context),
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          caption,
-          style: TextStyle(
-            fontSize: 12.sp,
-            height: 1.34,
-            fontWeight: FontWeight.w600,
-            color: SnapFitColors.textSecondaryOf(context),
           ),
         ),
       ],

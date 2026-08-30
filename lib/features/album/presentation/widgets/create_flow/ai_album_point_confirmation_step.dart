@@ -36,19 +36,14 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton.icon(
+              TextButton(
                 onPressed: onBack,
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 14.sp,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-                label: Text(
-                  '사진 범위 다시 고르기',
+                child: Text(
+                  '이전',
                   style: TextStyle(
                     color: SnapFitColors.textSecondaryOf(context),
                     fontSize: 12.5.sp,
@@ -58,7 +53,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
               ),
               SizedBox(height: 18.h),
               Text(
-                'AI 초안을 만들어볼까요?',
+                '초안 생성',
                 style: TextStyle(
                   color: SnapFitColors.textPrimaryOf(context),
                   fontSize: 23.sp,
@@ -69,7 +64,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
               Text(
-                '선택한 사진 안에서 어울리는 장면과 앨범 흐름을 먼저 정리해드릴게요.',
+                'AI 초안',
                 style: TextStyle(
                   color: SnapFitColors.textSecondaryOf(context),
                   fontSize: 14.sp,
@@ -86,27 +81,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                   _InfoRow(label: '보유 포인트', value: '${_format(balance)}P'),
                 ],
               ),
-              SizedBox(height: 14.h),
-              Text(
-                '초안은 바로 확정되지 않아요. 결과를 보고 마음에 드는 구성만 선택할 수 있어요.',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 13.sp,
-                  height: 1.42,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
               SizedBox(height: 22.h),
-              Text(
-                '초안 생성이 실패하면 포인트는 차감되지 않아요.',
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 12.5.sp,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 10.h),
               SizedBox(
                 width: double.infinity,
                 height: 52.h,
@@ -125,7 +100,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '${_format(pointCost)}P로 AI 초안 만들기',
+                    '초안 만들기',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w900,

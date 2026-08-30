@@ -69,19 +69,20 @@ void main() {
       ),
     );
 
-    expect(find.text('이런 앨범 초안을 준비했어요'), findsOneWidget);
+    expect(find.text('AI 초안'), findsOneWidget);
+    expect(find.text('이런 앨범 초안을 준비했어요'), findsNothing);
     expect(find.text('여행의 장면들'), findsOneWidget);
     expect(find.text('추천 사진 1장'), findsOneWidget);
     expect(find.text('잠시 빼둔 사진 1장'), findsOneWidget);
     expect(find.text('여행의 시작'), findsOneWidget);
-    expect(find.text('이 구성으로 시작하기'), findsOneWidget);
-    expect(find.text('사진과 문구는 다음 에디터에서 다시 바꿀 수 있어요.'), findsOneWidget);
+    expect(find.text('편집 시작'), findsOneWidget);
+    expect(find.textContaining('사진과 문구는'), findsNothing);
 
-    await tester.tap(find.text('이 구성으로 시작하기'));
+    await tester.tap(find.text('편집 시작'));
     await tester.pump();
     expect(accepted, isTrue);
 
-    await tester.tap(find.text('사진 범위 다시 고르기'));
+    await tester.tap(find.text('이전'));
     await tester.pump();
     expect(back, isTrue);
   });

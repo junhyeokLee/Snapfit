@@ -35,22 +35,23 @@ void main() {
       ),
     );
 
-    expect(find.text('AI 초안을 만들어볼까요?'), findsOneWidget);
+    expect(find.text('초안 생성'), findsOneWidget);
+    expect(find.text('AI 초안을 만들어볼까요?'), findsNothing);
     expect(find.text('주제'), findsOneWidget);
     expect(find.text('여행'), findsOneWidget);
     expect(find.text('사용 포인트'), findsOneWidget);
     expect(find.text('300P'), findsOneWidget);
     expect(find.text('보유 포인트'), findsOneWidget);
     expect(find.text('1,200P'), findsOneWidget);
-    expect(find.text('초안 생성이 실패하면 포인트는 차감되지 않아요.'), findsOneWidget);
+    expect(find.textContaining('실패하면'), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('300P로 AI 초안 만들기'), 120);
-    await tester.tap(find.text('300P로 AI 초안 만들기'));
+    await tester.scrollUntilVisible(find.text('초안 만들기'), 120);
+    await tester.tap(find.text('초안 만들기'));
     await tester.pump();
     expect(confirmed, isTrue);
 
-    await tester.scrollUntilVisible(find.text('사진 범위 다시 고르기'), -120);
-    await tester.tap(find.text('사진 범위 다시 고르기'));
+    await tester.scrollUntilVisible(find.text('이전'), -120);
+    await tester.tap(find.text('이전'));
     await tester.pump();
     expect(back, isTrue);
   });
