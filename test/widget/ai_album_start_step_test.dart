@@ -34,7 +34,9 @@ void main() {
     expect(find.text('작은 책으로 남길 순간을 골라볼까요?'), findsOneWidget);
     expect(find.text('직접 구성하기'), findsOneWidget);
     expect(find.text('AI 초안으로 시작하기'), findsOneWidget);
-    expect(find.text('AI 초안 만들기 300P'), findsOneWidget);
+    expect(find.text('AI 초안 만들기 300P'), findsNothing);
+    expect(find.textContaining('포인트'), findsNothing);
+    expect(find.textContaining('300P'), findsNothing);
 
     expect(find.text('어떤 앨범을 만들까요?'), findsNothing);
     expect(find.text('여행'), findsNothing);

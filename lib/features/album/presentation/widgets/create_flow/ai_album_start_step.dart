@@ -60,7 +60,7 @@ class AiAlbumStartStep extends StatelessWidget {
                 bullets: const [
                   '사진과 문구를 원하는 순서대로 배치',
                   '기존 에디터 기능 그대로 사용',
-                  'AI 포인트 사용 없음',
+                  '처음부터 직접 편집',
                 ],
                 cta: '직접 만들기',
                 highlighted: false,
@@ -71,8 +71,6 @@ class AiAlbumStartStep extends StatelessWidget {
                 title: 'AI 초안으로 시작하기',
                 description: '앨범 주제와 사진 범위를 알려주면, 어울리는 사진과 흐름을 먼저 정리해드려요.',
                 badge: 'AI 도움',
-                pointHint:
-                    freeDraftLabel ?? 'AI 초안 만들기 ${_formatPoint(aiPointCost)}P',
                 cta: 'AI 초안 만들기',
                 highlighted: true,
                 onTap: onAiStart,
@@ -93,17 +91,6 @@ class AiAlbumStartStep extends StatelessWidget {
       ),
     );
   }
-
-  String _formatPoint(int value) {
-    final text = value.toString();
-    final buffer = StringBuffer();
-    for (var i = 0; i < text.length; i++) {
-      final left = text.length - i;
-      buffer.write(text[i]);
-      if (left > 1 && left % 3 == 1) buffer.write(',');
-    }
-    return buffer.toString();
-  }
 }
 
 class _StartOptionCard extends StatelessWidget {
@@ -114,7 +101,6 @@ class _StartOptionCard extends StatelessWidget {
     required this.highlighted,
     required this.onTap,
     this.badge,
-    this.pointHint,
     this.bullets = const [],
   });
 
@@ -124,7 +110,6 @@ class _StartOptionCard extends StatelessWidget {
   final bool highlighted;
   final VoidCallback onTap;
   final String? badge;
-  final String? pointHint;
   final List<String> bullets;
 
   @override
@@ -195,18 +180,6 @@ class _StartOptionCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ),
-              ],
-              if (pointHint != null) ...[
-                SizedBox(height: 10.h),
-                Text(
-                  pointHint!,
-                  style: TextStyle(
-                    color: const Color(0xFF6C5E4B),
-                    fontSize: 12.5.sp,
-                    height: 1.35,
-                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
