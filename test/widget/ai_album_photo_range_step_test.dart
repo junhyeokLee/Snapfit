@@ -31,8 +31,8 @@ void main() {
       ),
     );
 
-    expect(find.text('사진 범위를 정해주세요'), findsOneWidget);
-    expect(find.text('허용한 사진 안에서만 앨범 초안을 준비해요.'), findsOneWidget);
+    expect(find.text('어디까지 살펴볼까요?'), findsOneWidget);
+    expect(find.text('허용한 사진 안에서만 초안을 준비해요.'), findsOneWidget);
     expect(find.text('최근 30일'), findsOneWidget);
     expect(find.text('날짜 선택'), findsOneWidget);
     expect(find.text('앨범 선택'), findsOneWidget);

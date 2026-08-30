@@ -38,7 +38,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     _BackTextButton(onPressed: onBack),
                     SizedBox(height: 14.h),
                     Text(
-                      '사진 범위를 정해주세요',
+                      '어디까지 살펴볼까요?',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 23.sp,
@@ -48,7 +48,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '허용한 사진 안에서만 앨범 초안을 준비해요.',
+                      '허용한 사진 안에서만 초안을 준비해요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 14.5.sp,
@@ -61,7 +61,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     SizedBox(height: 18.h),
                     _RangeCard(
                       title: '최근 30일',
-                      description: '가장 빠르게 ${_themeLabel(theme)} 앨범 초안을 만들어요.',
+                      description: '가장 빠르게 초안을 만들 수 있어요.',
                       onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
                       emphasized: true,
                     ),
@@ -99,19 +99,6 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _themeLabel(AlbumTheme theme) {
-    return switch (theme) {
-      AlbumTheme.couple => '커플',
-      AlbumTheme.travel => '여행',
-      AlbumTheme.family => '가족',
-      AlbumTheme.baby => '아기/성장',
-      AlbumTheme.birthday => '생일',
-      AlbumTheme.friends => '친구',
-      AlbumTheme.daily => '일상',
-      AlbumTheme.custom => '직접 입력',
-    };
   }
 }
 

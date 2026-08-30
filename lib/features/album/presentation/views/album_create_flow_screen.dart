@@ -12,8 +12,10 @@ import '../../ai_album/domain/ai_album_models.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../widgets/create_flow/ai_album_photo_range_step.dart';
+import '../widgets/create_flow/ai_album_point_confirmation_step.dart';
 import '../widgets/create_flow/ai_album_recommendation_review_step.dart';
 import '../widgets/create_flow/ai_album_start_step.dart';
+import '../widgets/create_flow/ai_album_theme_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
 import 'page_editor_screen.dart';
@@ -44,7 +46,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   static const int _maxPageCount = 50;
   int _currentStep = 0;
   String _albumTitle = '';
+  static const int _aiDraftPointCost = 300;
+  static const int _previewPointBalance = 1200;
   bool _hasSelectedCreationMode = false;
+  bool _isAiCreationMode = false;
+  bool _hasConfirmedAiPointCost = false;
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
@@ -341,29 +347,40 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       case 0:
         if (!_hasSelectedCreationMode) {
           return AiAlbumStartStep(
-            onThemeSelected: (theme) {
-              final draft = const AiAlbumCurationEngine().curate(
-                theme: theme,
-                candidates: const [],
-              );
-              setState(() {
-                _selectedAiTheme = theme;
-                _hasSelectedCreationMode = true;
-                if (_albumTitle.trim().isEmpty) {
-                  _albumTitle = draft.title;
-                }
-              });
-            },
+            aiPointCost: _aiDraftPointCost,
+            onAiStart: () => setState(() {
+              _isAiCreationMode = true;
+              _hasSelectedCreationMode = true;
+            }),
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _isAiCreationMode = false;
+              _hasConfirmedAiPointCost = false;
               _hasSelectedCreationMode = true;
             }),
           );
         }
+        if (_isAiCreationMode && _selectedAiTheme == null) {
+          return AiAlbumThemeStep(
+            onThemeSelected: (theme) => setState(() {
+              _selectedAiTheme = theme;
+            }),
+            onBack: () => setState(() {
+              _selectedAiTheme = null;
+              _selectedAiRange = null;
+              _pendingAiDraft = null;
+              _isAiCreationMode = false;
+              _hasConfirmedAiPointCost = false;
+              _hasSelectedCreationMode = false;
+            }),
+          );
+        }
         final selectedAiTheme = _selectedAiTheme;
-        if (selectedAiTheme != null && _selectedAiRange == null) {
+        if (_isAiCreationMode &&
+            selectedAiTheme != null &&
+            _selectedAiRange == null) {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
             onRangeSelected: (range) {
@@ -373,6 +390,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               );
               setState(() {
                 _selectedAiRange = range;
+                _hasConfirmedAiPointCost = false;
                 _pendingAiDraft = draft;
                 if (_albumTitle.trim().isEmpty) {
                   _albumTitle = draft.title;
@@ -387,13 +405,34 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
-              _hasSelectedCreationMode = false;
+              _hasConfirmedAiPointCost = false;
             }),
           );
         }
         final pendingDraft = _pendingAiDraft;
-        if (selectedAiTheme != null &&
-            _selectedAiRange != null &&
+        final selectedAiRange = _selectedAiRange;
+        if (_isAiCreationMode &&
+            selectedAiTheme != null &&
+            selectedAiRange != null &&
+            !_hasConfirmedAiPointCost) {
+          return AiAlbumPointConfirmationStep(
+            theme: selectedAiTheme,
+            range: selectedAiRange,
+            pointCost: _aiDraftPointCost,
+            balance: _previewPointBalance,
+            onConfirm: () => setState(() {
+              _hasConfirmedAiPointCost = true;
+            }),
+            onBack: () => setState(() {
+              _selectedAiRange = null;
+              _hasConfirmedAiPointCost = false;
+              _pendingAiDraft = null;
+            }),
+          );
+        }
+        if (_isAiCreationMode &&
+            selectedAiTheme != null &&
+            selectedAiRange != null &&
             pendingDraft != null) {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
@@ -409,6 +448,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             }),
             onBack: () => setState(() {
               _selectedAiRange = null;
+              _hasConfirmedAiPointCost = false;
               _pendingAiDraft = null;
             }),
           );
@@ -578,6 +618,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _selectedAiTheme = null;
         _selectedAiRange = null;
         _pendingAiDraft = null;
+        _isAiCreationMode = false;
+        _hasConfirmedAiPointCost = false;
         _hasSelectedCreationMode = false;
       });
       return true;
