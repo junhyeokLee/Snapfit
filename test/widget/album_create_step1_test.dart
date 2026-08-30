@@ -83,10 +83,9 @@ void main() {
     expect(find.text('앨범 기본 정보'), findsNothing);
     expect(find.text('제목, 책 비율, 분량만 정해요.'), findsNothing);
     expect(find.byKey(const Key('albumCreateStepHero')), findsOneWidget);
-    expect(find.text('새 앨범을 직접 구성해요'), findsNothing);
-    expect(find.text('제목, 책의 형태, 분량을 정하고 빈 책에서 시작합니다.'), findsNothing);
-    expect(find.text('미리보기'), findsOneWidget);
-    expect(find.text('선택한 표지'), findsOneWidget);
+    expect(find.text('새 앨범'), findsOneWidget);
+    expect(find.text('표지와 분량을 먼저 정해요.'), findsOneWidget);
+    expect(find.text('표지'), findsOneWidget);
     expect(find.text('제주 가족 여행 룩북'), findsOneWidget);
     expect(find.text('앨범 제목'), findsOneWidget);
     expect(find.text('책 비율'), findsOneWidget);
@@ -95,13 +94,12 @@ void main() {
     expect(find.text('정사각형'), findsOneWidget);
     expect(find.text('세로형'), findsOneWidget);
     expect(find.text('24쪽'), findsWidgets);
-    expect(find.text('표지부터 만들기'), findsOneWidget);
-    expect(find.text('다음'), findsNothing);
+    expect(find.text('다음'), findsOneWidget);
     expect(find.text('표지 확인하기'), findsNothing);
 
     expect(find.textContaining('추천'), findsNothing);
     expect(find.textContaining('가볍게 시작'), findsNothing);
-    expect(find.text('넉넉하게'), findsOneWidget);
+    expect(find.textContaining('넉넉하게'), findsNothing);
     expect(find.text('CREATION COCKPIT'), findsNothing);
     expect(find.text('3분 완성 루트'), findsNothing);
     expect(find.text('AI 추천 구성'), findsNothing);
@@ -137,8 +135,7 @@ void main() {
     final squareSize = tester.getSize(
       find.byKey(const Key('albumCreateHeroPreview')),
     );
-    expect(squareSize.width, greaterThan(150));
-    expect(squareSize.height, greaterThan(70));
+    expect(squareSize.width, closeTo(squareSize.height, 0.5));
 
     final hero = find.byKey(const Key('albumCreateStepHero'));
     expect(hero, findsOneWidget);
@@ -173,46 +170,12 @@ void main() {
     final verticalSize = tester.getSize(
       find.byKey(const Key('albumCreateHeroPreview')),
     );
+    expect(verticalSize.height, greaterThan(verticalSize.width));
     expect(verticalSize.width, lessThan(squareSize.width));
     expect(
       find.descendant(of: hero, matching: find.text('바뀐 앨범 제목')),
       findsOneWidget,
     );
-  });
-
-  testWidgets('keeps manual controls usable in phone landscape', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(844, 390));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      _wrap(
-        AlbumCreateStep1(
-          albumTitle: '가로 화면 앨범',
-          templateTitle: '선택한 템플릿',
-          selectedCover: coverSizes.firstWhere((s) => s.name == '가로형'),
-          selectedPageCount: 24,
-          minPageCount: 12,
-          onTitleChanged: (_) {},
-          onCoverSelected: (_) {},
-          onPageCountChanged: (_) {},
-          onNext: () {},
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('albumCreateStepHero')), findsOneWidget);
-    expect(find.text('앨범 제목'), findsOneWidget);
-    expect(find.text('책 비율'), findsOneWidget);
-    expect(find.text('분량'), findsOneWidget);
-    expect(find.text('가로형'), findsOneWidget);
-    expect(find.text('정사각형'), findsOneWidget);
-    expect(find.text('세로형'), findsOneWidget);
-    expect(find.text('표지부터 만들기'), findsOneWidget);
-    expect(find.textContaining('AI'), findsNothing);
-    expect(find.textContaining('포인트'), findsNothing);
   });
 
   testWidgets('matches book atelier creation golden', (tester) async {

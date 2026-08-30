@@ -67,52 +67,52 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDark
-              ? [const Color(0xFF12100E), const Color(0xFF1A1713)]
-              : [const Color(0xFFFBF7EF), const Color(0xFFFFFCF7)],
-        ),
-      ),
+    final background = isDark
+        ? const Color(0xFF111111)
+        : const Color(0xFFFAF8F3);
+
+    return ColoredBox(
+      color: background,
       child: SafeArea(
         top: false,
         child: Column(
           children: [
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWide = constraints.maxWidth > constraints.maxHeight;
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      20.w,
-                      10.h,
-                      20.w,
-                      isWide ? 72.h : 96.h,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 96.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CreateStepHero(
+                      cover: widget.selectedCover,
+                      pageCount: widget.selectedPageCount,
+                      titleListenable: _titleController,
                     ),
-                    child: isWide
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: _buildPreviewGroup()),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: _buildManualSettingsGroup(context),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildPreviewGroup(),
-                              SizedBox(height: 16.h),
-                              _buildManualSettingsGroup(context),
-                            ],
-                          ),
-                  );
-                },
+                    if (_hasTemplate) ...[
+                      SizedBox(height: 10.h),
+                      _TemplateSummary(
+                        title: widget.templateTitle!.trim(),
+                        previewUrl: widget.templatePreviewImageUrl,
+                      ),
+                    ],
+                    SizedBox(height: 14.h),
+                    _buildTitleBlock(context),
+                    SizedBox(height: 26.h),
+                    const _SectionLabel(
+                      title: '책 비율',
+                      caption: '사진이 가장 잘 보이는 책의 형태를 고르세요.',
+                    ),
+                    SizedBox(height: 7.h),
+                    _buildSizeSelector(context),
+                    SizedBox(height: 18.h),
+                    const _SectionLabel(
+                      title: '분량',
+                      caption: '처음 분량만 정하고, 편집 중 언제든 조정할 수 있어요.',
+                    ),
+                    SizedBox(height: 9.h),
+                    _buildPageCountSelector(context),
+                  ],
+                ),
               ),
             ),
             _buildBottomCta(context),
@@ -125,63 +125,6 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   bool get _hasTemplate =>
       widget.templateTitle != null && widget.templateTitle!.trim().isNotEmpty;
 
-  Widget _buildPreviewGroup() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _CreateStepHero(
-          cover: widget.selectedCover,
-          pageCount: widget.selectedPageCount,
-          titleListenable: _titleController,
-        ),
-        if (_hasTemplate) ...[
-          SizedBox(height: 12.h),
-          _TemplateSummary(
-            title: widget.templateTitle!.trim(),
-            previewUrl: widget.templatePreviewImageUrl,
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildManualSettingsGroup(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SettingCard(child: _buildTitleBlock(context)),
-        SizedBox(height: 16.h),
-        _SettingCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionLabel(
-                title: '책 비율',
-                caption: '사진에 맞는 책의 형태를 고르세요.',
-              ),
-              SizedBox(height: 12.h),
-              _buildSizeSelector(context),
-            ],
-          ),
-        ),
-        SizedBox(height: 16.h),
-        _SettingCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionLabel(
-                title: '분량',
-                caption: '처음 분량만 정해두고, 편집 중 언제든 바꿀 수 있어요.',
-              ),
-              SizedBox(height: 12.h),
-              _buildPageCountSelector(context),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTitleBlock(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     return Column(
@@ -191,7 +134,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
         SizedBox(height: 6.h),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF24201C) : const Color(0xFFFBF8F2),
+            color: isDark ? const Color(0xFF1D1C1A) : Colors.white,
             borderRadius: BorderRadius.circular(18.r),
             border: Border.all(
               color: isDark
@@ -207,7 +150,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               hintText: '예: 제주 여름 기록',
               hintStyle: TextStyle(
                 color: SnapFitColors.textMutedOf(context).withOpacity(0.58),
-                fontSize: 12.5.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
               counterText: '',
@@ -215,20 +158,17 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18.r),
                 borderSide: const BorderSide(
-                  color: Color(0xFFB28A5E),
-                  width: 1.4,
+                  color: SnapFitColors.accent,
+                  width: 1.5,
                 ),
               ),
               enabledBorder: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 15.w,
-                vertical: 13.h,
-              ),
+              contentPadding: EdgeInsets.fromLTRB(13.w, 8.h, 13.w, 8.h),
             ),
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 12.5.sp,
-              height: 1.25,
+              fontSize: 15.sp,
+              height: 1.18,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.2,
             ),
@@ -275,7 +215,7 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
               value.text.trim().isNotEmpty && widget.selectedCover != null;
           return SizedBox(
             width: double.infinity,
-            height: 52.h,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: canProceed ? widget.onNext : null,
               style: ElevatedButton.styleFrom(
@@ -298,10 +238,10 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '표지부터 만들기',
+                    '다음',
                     style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -353,9 +293,9 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   Widget _buildPageCountSelector(BuildContext context) {
     final minPage = widget.minPageCount.clamp(1, _maxPageCount);
     final suggested = <({int pages, String body, bool recommended})>[
-      (pages: minPage, body: '가볍게', recommended: false),
-      (pages: mathMax(minPage, 24), body: '알맞게', recommended: false),
-      (pages: mathMax(minPage, 36), body: '넉넉하게', recommended: false),
+      (pages: minPage, body: '기본', recommended: false),
+      (pages: mathMax(minPage, 24), body: '중간', recommended: false),
+      (pages: mathMax(minPage, 36), body: '여유', recommended: false),
     ];
     final options = <({int pages, String body, bool recommended})>[];
     final seen = <int>{};
@@ -406,31 +346,6 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
   int mathMax(int a, int b) => a > b ? a : b;
 }
 
-class _SettingCard extends StatelessWidget {
-  final Widget child;
-
-  const _SettingCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 17.h),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1B1815) : Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE8DED2),
-        ),
-      ),
-      child: child,
-    );
-  }
-}
-
 class _CreateStepHero extends StatelessWidget {
   final CoverSize? cover;
   final int pageCount;
@@ -446,32 +361,33 @@ class _CreateStepHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
     final ratio = cover?.ratio ?? 1.0;
-    final previewMaxW = 124.w;
-    final previewMaxH = 118.h;
-    final previewW = ratio >= 1
-        ? previewMaxW
-        : (previewMaxH * ratio).clamp(86.w, previewMaxW);
-    final previewH = ratio >= 1
-        ? (previewMaxW / ratio).clamp(96.h, previewMaxH)
-        : previewMaxH;
-    final summary = '${cover?.name ?? '책 비율 선택'} / ${pageCount}쪽';
+    final previewMaxW = 112.w;
+    final previewMaxH = 92.h;
+    final previewW = ratio >= 1 ? previewMaxW : previewMaxH * ratio;
+    final previewH = ratio >= 1 ? previewMaxW / ratio : previewMaxH;
 
     return Container(
       key: const Key('albumCreateStepHero'),
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),
+      padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 18.h),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1D1A16) : const Color(0xFFFFFCF7),
-        borderRadius: BorderRadius.circular(28.r),
+        borderRadius: BorderRadius.circular(26.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF1E1B18), const Color(0xFF121110)]
+              : [Colors.white, const Color(0xFFFFF7EC)],
+        ),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE6DCCF),
+              : const Color(0xFFE7DED2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.26 : 0.08),
-            blurRadius: 28,
+            color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
+            blurRadius: 26,
             offset: const Offset(0, 14),
           ),
         ],
@@ -479,17 +395,52 @@ class _CreateStepHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '미리보기',
-            style: TextStyle(
-              fontSize: 12.sp,
-              height: 1.2,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.1,
-              color: SnapFitColors.textMutedOf(context),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '새 앨범',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        height: 1.12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.65,
+                        color: SnapFitColors.textPrimaryOf(context),
+                      ),
+                    ),
+                    SizedBox(height: 7.h),
+                    Text(
+                      '표지와 분량을 먼저 정해요.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        height: 1.34,
+                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textSecondaryOf(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Text(
+                '${pageCount}쪽',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w900,
+                  color: SnapFitColors.accent,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 18.h),
           Center(
             child: ValueListenableBuilder<TextEditingValue>(
               valueListenable: titleListenable,
@@ -497,138 +448,83 @@ class _CreateStepHero extends StatelessWidget {
                 final title = value.text.trim().isEmpty
                     ? '제목 미정'
                     : value.text.trim();
-                return _PaperBookPreview(
-                  width: previewW,
-                  height: previewH,
-                  title: title,
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      right: -8.w,
+                      top: 7.h,
+                      bottom: -7.h,
+                      child: Container(
+                        width: previewW,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : const Color(0xFFE9DAC7),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      key: const Key('albumCreateHeroPreview'),
+                      width: previewW,
+                      height: previewH,
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF2A2621)
+                            : const Color(0xFFF7EAD8),
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.14)
+                              : const Color(0xFFD9C7AF),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(
+                              isDark ? 0.32 : 0.12,
+                            ),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        width: 8.w,
+                        height: (previewH - 20.w).clamp(18.0, previewH),
+                        decoration: BoxDecoration(
+                          color: SnapFitColors.accent.withOpacity(0.42),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 18.w,
+                      right: 12.w,
+                      bottom: 12.h,
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                          color: isDark
+                              ? Colors.white.withOpacity(0.82)
+                              : const Color(0xFF2A2520),
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
           ),
-          SizedBox(height: 9.h),
-          Center(
-            child: Text(
-              summary,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13.sp,
-                height: 1.25,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.2,
-                color: SnapFitColors.textSecondaryOf(context),
-              ),
-            ),
-          ),
         ],
       ),
-    );
-  }
-}
-
-class _PaperBookPreview extends StatelessWidget {
-  final double width;
-  final double height;
-  final String title;
-
-  const _PaperBookPreview({
-    required this.width,
-    required this.height,
-    required this.title,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final coverColor = isDark
-        ? const Color(0xFF2A241D)
-        : const Color(0xFFF3E2C9);
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.16)
-        : const Color(0xFFD8C3A6);
-    final shadowColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : const Color(0xFFE8D6BE);
-    final photoColor = isDark
-        ? Colors.white.withOpacity(0.13)
-        : const Color(0xFFD8B58E).withOpacity(0.70);
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          right: -8.w,
-          bottom: -8.h,
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: shadowColor,
-              borderRadius: BorderRadius.circular(18.r),
-            ),
-          ),
-        ),
-        Container(
-          key: const Key('albumCreateHeroPreview'),
-          width: width,
-          height: height,
-          padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 10.h),
-          decoration: BoxDecoration(
-            color: coverColor,
-            borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(color: borderColor, width: 1.4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.30 : 0.10),
-                blurRadius: 18,
-                offset: const Offset(0, 9),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 6,
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: photoColor,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Container(
-                      margin: EdgeInsets.all(9.w),
-                      width: 42.w,
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color: borderColor.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(999.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10.h),
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  height: 1.18,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.2,
-                  color: isDark
-                      ? Colors.white.withOpacity(0.86)
-                      : const Color(0xFF2A2520),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -647,7 +543,7 @@ class _SectionLabel extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 14.sp,
             height: 1.18,
             fontWeight: FontWeight.w900,
             letterSpacing: -0.25,
@@ -658,7 +554,7 @@ class _SectionLabel extends StatelessWidget {
         Text(
           caption,
           style: TextStyle(
-            fontSize: 10.5.sp,
+            fontSize: 12.sp,
             height: 1.34,
             fontWeight: FontWeight.w600,
             color: SnapFitColors.textSecondaryOf(context),
@@ -730,7 +626,7 @@ class _TemplateSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '선택한 표지',
+                  '표지',
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     height: 1.28,
