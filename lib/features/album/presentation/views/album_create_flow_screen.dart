@@ -11,6 +11,7 @@ import '../../ai_album/domain/ai_album_curation_engine.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
+import '../widgets/create_flow/ai_album_photo_range_step.dart';
 import '../widgets/create_flow/ai_album_start_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
@@ -44,6 +45,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   String _albumTitle = '';
   bool _hasSelectedCreationMode = false;
   AlbumTheme? _selectedAiTheme;
+  AiPhotoRange? _selectedAiRange;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -352,7 +354,35 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             },
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
+              _selectedAiRange = null;
               _hasSelectedCreationMode = true;
+            }),
+          );
+        }
+        final selectedAiTheme = _selectedAiTheme;
+        if (selectedAiTheme != null && _selectedAiRange == null) {
+          return AiAlbumPhotoRangeStep(
+            theme: selectedAiTheme,
+            onRangeSelected: (range) {
+              final draft = const AiAlbumCurationEngine().curate(
+                theme: selectedAiTheme,
+                candidates: const [],
+              );
+              setState(() {
+                _selectedAiRange = range;
+                if (_albumTitle.trim().isEmpty) {
+                  _albumTitle = draft.title;
+                }
+                _selectedPageCount = draft.pageCount.clamp(
+                  _templateMinPageCount,
+                  _maxPageCount,
+                );
+              });
+            },
+            onBack: () => setState(() {
+              _selectedAiTheme = null;
+              _selectedAiRange = null;
+              _hasSelectedCreationMode = false;
             }),
           );
         }
@@ -519,6 +549,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         widget.initialAlbumTitle == null) {
       setState(() {
         _selectedAiTheme = null;
+        _selectedAiRange = null;
         _hasSelectedCreationMode = false;
       });
       return true;

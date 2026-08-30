@@ -11,6 +11,14 @@ enum AlbumTheme {
 
 enum PhotoOrientation { portrait, landscape, square }
 
+enum AiPhotoRange {
+  recent30Days,
+  dateRange,
+  album,
+  manualSelection,
+  limitedLibrary,
+}
+
 class PhotoCandidate {
   const PhotoCandidate({
     required this.assetId,
