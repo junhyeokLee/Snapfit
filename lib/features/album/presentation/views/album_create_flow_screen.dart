@@ -7,8 +7,8 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
-import '../../ai_album/domain/ai_album_curation_engine.dart';
 import '../../ai_album/domain/ai_album_models.dart';
+import '../../data/api/album_provider.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../widgets/create_flow/ai_album_photo_range_step.dart';
@@ -51,6 +51,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   bool _hasSelectedCreationMode = false;
   bool _isAiCreationMode = false;
   bool _hasConfirmedAiPointCost = false;
+  bool _isGeneratingAiDraft = false;
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
@@ -342,6 +343,93 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     );
   }
 
+  Widget _buildAiDraftGenerating() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(28.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 34.w,
+              height: 34.w,
+              child: const CircularProgressIndicator(strokeWidth: 2.8),
+            ),
+            SizedBox(height: 18.h),
+            Text(
+              'AI 초안을 정리하고 있어요',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18.sp,
+                height: 1.25,
+                fontWeight: FontWeight.w900,
+                color: SnapFitColors.textPrimaryOf(context),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              '추천 결과가 만들어진 뒤에만 포인트 차감 대상으로 처리돼요.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.sp,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+                color: SnapFitColors.textSecondaryOf(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _generateAiDraftFromSelection() async {
+    final theme = _selectedAiTheme;
+    final range = _selectedAiRange;
+    if (theme == null || range == null || _isGeneratingAiDraft) return;
+
+    setState(() {
+      _isGeneratingAiDraft = true;
+      _hasConfirmedAiPointCost = false;
+      _pendingAiDraft = null;
+    });
+
+    final result = await ref
+        .read(aiAlbumDraftGenerationServiceProvider)
+        .generate(theme: theme, range: range);
+    if (!mounted) return;
+
+    final draft = result.draft;
+    if (result.shouldChargePoints && draft != null) {
+      setState(() {
+        _isGeneratingAiDraft = false;
+        _hasConfirmedAiPointCost = true;
+        _pendingAiDraft = draft;
+        if (_albumTitle.trim().isEmpty) {
+          _albumTitle = draft.title;
+        }
+        _selectedPageCount = draft.pageCount.clamp(
+          _templateMinPageCount,
+          _maxPageCount,
+        );
+      });
+      return;
+    }
+
+    setState(() {
+      _isGeneratingAiDraft = false;
+      _hasConfirmedAiPointCost = false;
+      _pendingAiDraft = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
+        ),
+      ),
+    );
+  }
+
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
@@ -358,6 +446,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _pendingAiDraft = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
               _hasSelectedCreationMode = true;
             }),
           );
@@ -373,6 +462,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _pendingAiDraft = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
               _hasSelectedCreationMode = false;
             }),
           );
@@ -384,21 +474,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
             onRangeSelected: (range) {
-              final draft = const AiAlbumCurationEngine().curate(
-                theme: selectedAiTheme,
-                candidates: const [],
-              );
               setState(() {
                 _selectedAiRange = range;
                 _hasConfirmedAiPointCost = false;
-                _pendingAiDraft = draft;
-                if (_albumTitle.trim().isEmpty) {
-                  _albumTitle = draft.title;
-                }
-                _selectedPageCount = draft.pageCount.clamp(
-                  _templateMinPageCount,
-                  _maxPageCount,
-                );
+                _isGeneratingAiDraft = false;
+                _pendingAiDraft = null;
               });
             },
             onBack: () => setState(() {
@@ -406,11 +486,18 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiRange = null;
               _pendingAiDraft = null;
               _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
             }),
           );
         }
         final pendingDraft = _pendingAiDraft;
         final selectedAiRange = _selectedAiRange;
+        if (_isAiCreationMode &&
+            selectedAiTheme != null &&
+            selectedAiRange != null &&
+            _isGeneratingAiDraft) {
+          return _buildAiDraftGenerating();
+        }
         if (_isAiCreationMode &&
             selectedAiTheme != null &&
             selectedAiRange != null &&
@@ -420,12 +507,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             range: selectedAiRange,
             pointCost: _aiDraftPointCost,
             balance: _previewPointBalance,
-            onConfirm: () => setState(() {
-              _hasConfirmedAiPointCost = true;
-            }),
+            onConfirm: _generateAiDraftFromSelection,
             onBack: () => setState(() {
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
             }),
           );
@@ -449,6 +535,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             onBack: () => setState(() {
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;
+              _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
             }),
           );

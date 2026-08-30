@@ -9,6 +9,8 @@ import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/album_member_repository.dart';
 import '../../domain/repositories/gallery_repository.dart';
+import '../../ai_album/data/ai_album_photo_candidate_collector.dart';
+import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../service/album_editor_service.dart';
 import '../repositories/supabase_album_repository.dart';
 import '../repositories/supabase_album_member_repository.dart';
@@ -31,6 +33,21 @@ final albumMemberRepositoryProvider = Provider<AlbumMemberRepository>((ref) {
 final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {
   return GalleryRepositoryImpl();
 });
+
+final aiAlbumPhotoCandidateCollectorProvider =
+    Provider<AiAlbumPhotoCandidateCollector>((ref) {
+      return AiAlbumPhotoCandidateCollector(
+        repository: ref.read(galleryRepositoryProvider),
+      );
+    });
+
+final aiAlbumDraftGenerationServiceProvider =
+    Provider<AiAlbumDraftGenerationService>((ref) {
+      final collector = ref.read(aiAlbumPhotoCandidateCollectorProvider);
+      return AiAlbumDraftGenerationService(
+        collectCandidates: (range) => collector.collect(range: range),
+      );
+    });
 
 final storageServiceProvider = Provider<StorageService>((ref) {
   final billingRepository = ref.read(billingRepositoryProvider);
