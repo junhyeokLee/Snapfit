@@ -51,6 +51,8 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: 14.h),
+              _DraftTicket(pointCost: pointCost),
               SizedBox(height: 18.h),
               Text(
                 '초안 생성',
@@ -135,6 +137,124 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
     AiPhotoRange.manualSelection => '직접 고르기',
     AiPhotoRange.limitedLibrary => '선택한 사진',
   };
+}
+
+class _DraftTicket extends StatelessWidget {
+  const _DraftTicket({required this.pointCost});
+  final int pointCost;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      width: double.infinity,
+      height: 150.h,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1B20) : Colors.white,
+        borderRadius: BorderRadius.circular(28.r),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFE6DED3),
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 12.h,
+            child: _TicketPage(color: const Color(0xFFEFE1CD)),
+          ),
+          Positioned(
+            left: 58.w,
+            top: 0,
+            child: _TicketPage(color: const Color(0xFFE4F3F5), tall: true),
+          ),
+          Positioned(
+            left: 114.w,
+            top: 18.h,
+            child: _TicketPage(color: const Color(0xFFE7DDF3)),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 4.h,
+            child: Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF24252B)
+                    : const Color(0xFFF7F1E7),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                size: 22.sp,
+                color: isDark
+                    ? const Color(0xFFEFE1CD)
+                    : const Color(0xFF6E6558),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TicketPage extends StatelessWidget {
+  const _TicketPage({required this.color, this.tall = false});
+  final Color color;
+  final bool tall;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 72.w,
+      height: tall ? 104.h : 90.h,
+      padding: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withOpacity(0.75), width: 2),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 20.h,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.45),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            bottom: 8.h,
+            child: Container(
+              width: 34.w,
+              height: 6.h,
+              color: Colors.black.withOpacity(0.12),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: Container(
+              width: 24.w,
+              height: 6.h,
+              color: Colors.black.withOpacity(0.08),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _PaperCard extends StatelessWidget {
