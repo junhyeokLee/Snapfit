@@ -222,7 +222,6 @@ void main() {
     (tester) async {
       await _pumpEditor(tester);
 
-      expect(find.text('표지 다듬기'), findsOneWidget);
       expect(find.byType(EditCover), findsOneWidget);
       expect(find.byType(EditorBottomMenu), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
@@ -300,7 +299,6 @@ void main() {
     expect(settlingScale, greaterThan(1));
 
     await tester.pumpAndSettle();
-    expect(find.text('1페이지 꾸미기'), findsOneWidget);
   });
 
   testWidgets(

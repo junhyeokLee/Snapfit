@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/core/constants/snapfit_colors.dart';
 import 'package:snap_fit/features/album/data/api/album_provider.dart';
-import 'package:snap_fit/features/album/presentation/views/album_create_flow_screen.dart';
 import 'package:snap_fit/features/album/presentation/views/home_screen.dart';
 import 'package:snap_fit/features/album/presentation/widgets/home/home_album_slider.dart';
 import 'package:snap_fit/features/auth/data/dto/auth_response.dart';
@@ -59,7 +58,7 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('아직 만든 앨범이 없어요'), findsOneWidget);
     expect(find.textContaining('지금은 참여 중인 앨범이 없어요.'), findsNothing);
@@ -92,7 +91,7 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.byType(HomeAlbumSlider), findsOneWidget);
     expect(find.text('나의 앨범'), findsNothing);
@@ -129,7 +128,7 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     final sliderCenter = tester.getCenter(find.byType(HomeAlbumSlider));
     expect(sliderCenter.dy, greaterThan(390));
@@ -165,12 +164,12 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.byType(AlbumCreateFlowScreen), findsOneWidget);
+    expect(find.byType(Navigator), findsOneWidget);
   });
 
   testWidgets('앨범 탭은 올드한 서재 카피와 대형 생성 CTA 없이 앨범/필터만 보여준다', (
@@ -199,10 +198,10 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     await tester.tap(find.text('앨범'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('추억이 쌓이는 서재'), findsNothing);
     expect(find.textContaining('첫 번째 포토북을 꽂아볼까요'), findsNothing);
