@@ -7,8 +7,11 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
+import '../../ai_album/domain/ai_album_curation_engine.dart';
+import '../../ai_album/domain/ai_album_models.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
+import '../widgets/create_flow/ai_album_start_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
 import 'page_editor_screen.dart';
@@ -39,6 +42,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   static const int _maxPageCount = 50;
   int _currentStep = 0;
   String _albumTitle = '';
+  bool _hasSelectedCreationMode = false;
+  AlbumTheme? _selectedAiTheme;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -159,6 +164,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   @override
   void initState() {
     super.initState();
+    _hasSelectedCreationMode =
+        (widget.initialTemplatePages != null &&
+            widget.initialTemplatePages!.isNotEmpty) ||
+        (widget.initialTemplatePagesByAspect != null &&
+            widget.initialTemplatePagesByAspect!.isNotEmpty) ||
+        (widget.initialAlbumTitle != null &&
+            widget.initialAlbumTitle!.trim().isNotEmpty);
+
     if (widget.initialTemplatePagesByAspect != null &&
         widget.initialTemplatePagesByAspect!.isNotEmpty) {
       _templatePagesByAspect = widget.initialTemplatePagesByAspect!.map((k, v) {
@@ -322,6 +335,27 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
+        if (!_hasSelectedCreationMode) {
+          return AiAlbumStartStep(
+            onThemeSelected: (theme) {
+              final draft = const AiAlbumCurationEngine().curate(
+                theme: theme,
+                candidates: const [],
+              );
+              setState(() {
+                _selectedAiTheme = theme;
+                _hasSelectedCreationMode = true;
+                if (_albumTitle.trim().isEmpty) {
+                  _albumTitle = draft.title;
+                }
+              });
+            },
+            onManualStart: () => setState(() {
+              _selectedAiTheme = null;
+              _hasSelectedCreationMode = true;
+            }),
+          );
+        }
         return AlbumCreateStep1(
           albumTitle: _albumTitle,
           templateTitle: widget.initialAlbumTitle,
@@ -478,6 +512,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   /// - Step 1,2,3: 이전 스텝으로 이동
   /// return true 이면 이벤트를 소모했음을 의미 (WillPopScope에서 pop 방지)
   bool _handleBack() {
+    if (_currentStep == 0 &&
+        _hasSelectedCreationMode &&
+        widget.initialTemplatePages == null &&
+        widget.initialTemplatePagesByAspect == null &&
+        widget.initialAlbumTitle == null) {
+      setState(() {
+        _selectedAiTheme = null;
+        _hasSelectedCreationMode = false;
+      });
+      return true;
+    }
     if (_currentStep > 0) {
       setState(() {
         _currentStep -= 1;
