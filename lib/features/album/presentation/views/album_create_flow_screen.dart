@@ -7,6 +7,7 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
+import '../../ai_album/domain/ai_album_draft_template_builder.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
 import '../widgets/create_flow/album_create_step1.dart';
@@ -49,6 +50,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   String _albumTitle = '';
   static const int _aiDraftPointCost = 300;
   static const int _previewPointBalance = 1200;
+  static const AiAlbumDraftTemplateBuilder _aiDraftTemplateBuilder =
+      AiAlbumDraftTemplateBuilder();
   bool _hasSelectedCreationMode = false;
   bool _isAiCreationMode = false;
   bool _hasConfirmedAiPointCost = false;
@@ -558,7 +561,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
             onAcceptDraft: () => setState(() {
+              final aiPages = _aiDraftTemplateBuilder.build(pendingDraft);
+              _resolvedTemplatePages = aiPages;
+              _baseTemplatePages = aiPages;
+              (_templatePagesByAspect ??=
+                      <String, List<List<LayerModel>>>{})[_selectedCover == null
+                      ? 'square'
+                      : _aspectKeyFromCover(_selectedCover!)] =
+                  aiPages;
+              _templateMinPageCount = (aiPages.length - 1).clamp(
+                1,
+                _maxPageCount,
+              );
               _pendingAiDraft = null;
+              _aiDraftFailureMessage = null;
               if (_albumTitle.trim().isEmpty) {
                 _albumTitle = pendingDraft.title;
               }
