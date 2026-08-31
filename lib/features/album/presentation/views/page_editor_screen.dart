@@ -793,8 +793,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   opacity: _isSaving ? 0.45 : 1,
                   child: Container(
                     height: 34.h,
-                    constraints: BoxConstraints(minWidth: 48.w),
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    constraints: BoxConstraints(minWidth: 42.w),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(999.r),
