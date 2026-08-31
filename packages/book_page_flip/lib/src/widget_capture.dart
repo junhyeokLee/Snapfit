@@ -75,11 +75,9 @@ class BookFlipPageRasterizer extends StatefulWidget {
 }
 
 class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
-  late final List<GlobalKey> _keys = List<GlobalKey>.generate(
-    widget.pages.length,
-    (_) => GlobalKey(),
-    growable: false,
-  );
+  final GlobalKey _pageKey = GlobalKey();
+  final List<ui.Image> _images = <ui.Image>[];
+  int _pageIndex = 0;
   bool _captured = false;
 
   @override
@@ -92,28 +90,35 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
 
   Future<void> _capture([int attempt = 0]) async {
     if (_captured || !mounted) return;
-    final boundaries = <RenderRepaintBoundary>[];
-    for (final key in _keys) {
-      final object = key.currentContext?.findRenderObject();
-      if (object is! RenderRepaintBoundary) {
-        // Not laid out yet — try again next frame, then give up rather than spin.
-        if (attempt < 5) {
-          WidgetsBinding.instance
-              .addPostFrameCallback((_) => _capture(attempt + 1));
-        }
-        return;
+    final object = _pageKey.currentContext?.findRenderObject();
+    if (object is! RenderRepaintBoundary) {
+      if (attempt < 12) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _capture(attempt + 1));
       }
-      boundaries.add(object);
+      return;
     }
-    final images = <ui.Image>[];
-    try {
-      for (final boundary in boundaries) {
-        images.add(await boundary.toImage(pixelRatio: widget.pixelRatio));
+    if (object.debugNeedsPaint) {
+      if (attempt < 30) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _capture(attempt + 1));
+      } else {
+        widget.onError?.call(
+          StateError(
+              'BookFlip page $_pageIndex was not painted before capture.'),
+          StackTrace.current,
+        );
       }
+      return;
+    }
+
+    try {
+      _images.add(await object.toImage(pixelRatio: widget.pixelRatio));
     } on Object catch (error, stack) {
-      for (final image in images) {
+      for (final image in _images) {
         image.dispose(); // never leak a partial capture
       }
+      _images.clear();
       final onError = widget.onError;
       if (onError != null) {
         onError(error, stack); // host shows retry UI — never a dead cover
@@ -122,13 +127,31 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
       rethrow;
     }
     if (!mounted) {
-      for (final image in images) {
+      for (final image in _images) {
         image.dispose();
       }
+      _images.clear();
       return;
     }
+
+    if (_images.length < widget.pages.length) {
+      setState(() => _pageIndex += 1);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _capture());
+      return;
+    }
+
     _captured = true;
-    widget.onCaptured(images);
+    widget.onCaptured(List<ui.Image>.of(_images));
+    _images.clear();
+  }
+
+  @override
+  void dispose() {
+    for (final image in _images) {
+      image.dispose();
+    }
+    _images.clear();
+    super.dispose();
   }
 
   @override
@@ -138,20 +161,22 @@ class _BookFlipPageRasterizerState extends State<BookFlipPageRasterizer> {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        for (var i = 0; i < widget.pages.length; i++)
-          Positioned(
-            left: 0,
-            top: 0,
-            width: size.width,
-            height: size.height,
-            child: RepaintBoundary(
-              key: _keys[i],
-              child: Directionality(
-                textDirection: direction,
-                child: widget.pages[i],
+        Positioned(
+          left: 0,
+          top: 0,
+          width: size.width,
+          height: size.height,
+          child: RepaintBoundary(
+            key: _pageKey,
+            child: Directionality(
+              textDirection: direction,
+              child: KeyedSubtree(
+                key: ValueKey<int>(_pageIndex),
+                child: widget.pages[_pageIndex],
               ),
             ),
           ),
+        ),
         Positioned.fill(child: widget.cover),
       ],
     );

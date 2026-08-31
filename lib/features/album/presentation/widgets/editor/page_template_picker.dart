@@ -31,9 +31,16 @@ class PageTemplatePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final templates = pageTemplates;
+    final media = MediaQuery.of(context);
+    final isLandscape = media.size.width > media.size.height;
+    final bottomInset = media.viewPadding.bottom;
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.7,
+        maxHeight: media.size.height * (isLandscape ? 0.86 : 0.74),
+        minHeight: math.min(
+          media.size.height * (isLandscape ? 0.68 : 0.52),
+          460,
+        ),
       ),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
@@ -75,7 +82,7 @@ class PageTemplatePicker extends StatelessWidget {
             ),
             Flexible(
               child: GridView.builder(
-                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h + bottomInset),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 12.w,

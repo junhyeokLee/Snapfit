@@ -44,23 +44,19 @@ double bookFlipGrainAt(double u, double v) {
   const tau = 2.0 * math.pi;
   var g = 0.0;
   // Cloud (low frequency): the broad unevenness of a real sheet.
-  g +=
-      0.55 *
+  g += 0.55 *
       math.sin(tau * (1.30 * u + 0.13)) *
       math.cos(tau * (1.10 * v + 0.27));
-  g +=
-      0.34 *
+  g += 0.34 *
       math.sin(tau * (2.30 * u + 0.61)) *
       math.cos(tau * (1.90 * v + 0.05));
-  g +=
-      0.21 *
+  g += 0.21 *
       math.sin(tau * (3.70 * u + 0.20)) *
       math.cos(tau * (3.10 * v + 0.74));
   // Fiber (anisotropic): parallel laid lines down the page (v), gently waved by u.
   g += 0.30 * math.sin(tau * (4.30 * v + 0.40) + 0.6 * math.sin(tau * 0.7 * u));
   // Tooth (fine): the per-cell texture the highlight sparkles on.
-  g +=
-      0.16 *
+  g += 0.16 *
       math.sin(tau * (4.90 * u + 0.33)) *
       math.cos(tau * (5.30 * v + 0.51));
   // Σ|amplitudes| = 1.56 → normalize into ~[-1,1]; clamp tames the rare stack-up.
@@ -76,18 +72,18 @@ double bookFlipGrainAt(double u, double v) {
 // ─────────────────────────────────────────────────────────────────────────────
 class BookFlipMesh {
   BookFlipMesh({this.nu = kNu, this.nv = kNv})
-    : assert(nu * nv <= 65536, 'nu*nv must fit a Uint16 index (<= 65536)'),
-      n = nu * nv,
-      wx = Float64List(nu * nv),
-      wy = Float64List(nu * nv),
-      wz = Float64List(nu * nv),
-      nrx = Float64List(nu * nv),
-      nry = Float64List(nu * nv),
-      nrz = Float64List(nu * nv),
-      sx = Float64List(nu * nv),
-      sy = Float64List(nu * nv),
-      lum = Float64List(nu * nv),
-      spec = Float64List(nu * nv) {
+      : assert(nu * nv <= 65536, 'nu*nv must fit a Uint16 index (<= 65536)'),
+        n = nu * nv,
+        wx = Float64List(nu * nv),
+        wy = Float64List(nu * nv),
+        wz = Float64List(nu * nv),
+        nrx = Float64List(nu * nv),
+        nry = Float64List(nu * nv),
+        nrz = Float64List(nu * nv),
+        sx = Float64List(nu * nv),
+        sy = Float64List(nu * nv),
+        lum = Float64List(nu * nv),
+        spec = Float64List(nu * nv) {
     // Static triangle index triples (CCW at rest), 2 tris per grid cell. Filled
     // straight into a right-sized Uint16List — no growing list, no per-cell temp
     // arrays. (kNu*kNv < 65536, so the indices fit Uint16; the list also feeds the
@@ -219,19 +215,16 @@ class BookFlipMesh {
     if (phi < 0.0) phi = 0.0;
     if (phi > math.pi) phi = math.pi;
 
-    // SnapFit tuning: bias the curl toward the grabbed/free edge and curl the
-    // paper away from the viewer. The stock package bends the whole leaf toward
-    // the camera from the spine, which made the page feel like it was curling in
-    // the opposite direction for album-style swipes.
+    // Developable bend: preserve the original package's full-sheet arc so the
+    // leaf reads like one continuous page instead of a narrow folding strip.
     double bx, bz;
     if (a < kEpsA) {
       bx = u * leafW; // exact-flat limit (no NaN as a→0).
       bz = 0.0;
     } else {
       final r = leafW / a;
-      final edgeU = 1.0 - math.pow(1.0 - u, 1.72).toDouble();
       bx = r * math.sin(a * u);
-      bz = -r * (1.0 - math.cos(a * edgeU));
+      bz = r * (1.0 - math.cos(a * u));
     }
 
     // Rotate (bx,bz) about the vertical spine axis by phi.
@@ -266,12 +259,10 @@ class BookFlipMesh {
     // [0.._kSagPeak]) the engine is proven over; the phi guard in _world is verified
     // never to fire up to tiltMax=_kTiltHi=0.42, so the pop-free / NaN guarantees hold.
     final amax = curl != null ? bookFlipCurlAmax(curl) : bookFlipAmax(material);
-    final tiltMax = curl != null
-        ? bookFlipCurlTilt(curl)
-        : bookFlipTilt(material);
-    final sagAmp = curl != null
-        ? bookFlipCurlSag(curl)
-        : bookFlipSagAmp(material);
+    final tiltMax =
+        curl != null ? bookFlipCurlTilt(curl) : bookFlipTilt(material);
+    final sagAmp =
+        curl != null ? bookFlipCurlSag(curl) : bookFlipSagAmp(material);
     for (var j = 0; j < nv; j++) {
       for (var i = 0; i < nu; i++) {
         _world(i, j, w, h, tc, grabV, dir, amax, tiltMax, sagAmp);

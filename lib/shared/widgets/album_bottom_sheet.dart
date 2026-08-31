@@ -157,11 +157,12 @@ Future<AssetEntity?> showPhotoSelectionSheet(
     showDragHandle: false,
     builder: (_) {
       return DraggableScrollableSheet(
-        initialChildSize: 0.65,
-        maxChildSize: 0.92,
-        minChildSize: 0.45,
+        initialChildSize: 0.78,
+        maxChildSize: 0.94,
+        minChildSize: 0.54,
         expand: false,
         builder: (context, scrollController) {
+          final bottomInset = MediaQuery.of(context).viewPadding.bottom;
           scrollController.addListener(() {
             if (scrollController.position.pixels >=
                 scrollController.position.maxScrollExtent - 400) {
@@ -340,9 +341,11 @@ Future<AssetEntity?> showPhotoSelectionSheet(
                       )
                     else
                       SliverPadding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 8.h,
+                        padding: EdgeInsets.fromLTRB(
+                          12.w,
+                          8.h,
+                          12.w,
+                          24.h + bottomInset,
                         ),
                         sliver: SliverGrid(
                           key: ValueKey(st.selectedAlbum?.id),

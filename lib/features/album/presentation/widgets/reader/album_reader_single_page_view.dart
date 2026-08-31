@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:book_page_flip/book_page_flip.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
@@ -16,6 +15,7 @@ import '../../controllers/layer_interaction_manager.dart';
 import '../../views/album_reader_inner_detail_screen.dart';
 import '../../views/page_editor_screen.dart';
 import '../cover/cover.dart';
+import '../home/home_cover_frame.dart';
 import 'book_page_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -70,17 +70,24 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
 }
 
 class _AlbumReaderSinglePageViewState
-    extends ConsumerState<AlbumReaderSinglePageView>
-    with SingleTickerProviderStateMixin {
-  static const double _bookFlipControlVelocity = 0.04;
+    extends ConsumerState<AlbumReaderSinglePageView> {
+  static const double _bookFlipControlVelocity = 0.02;
   static const double _bookFlipListVelocity = 6.8;
   static const BookFlipPhysics _bookFlipPhysics = BookFlipPhysics(
-    springStiffness: 155,
-    springDampingRatio: 1.12,
-    commitThreshold: 0.42, // 높을수록 페이지를 더 많이 끌어야 넘어감
-    commitVelocity: 2.8, // 높을수록 짧게 휙 하는 손동작으로는 덜 넘어감
-    velocityLookAhead: 0.015, // 손을 땔 때 속도 예측 영향을 줄여서 조금 움직였는데도 넘어가는 현상 감소
-    settleEpsilon: 0.12,
+    springStiffness: 56,
+    springDampingRatio: 1.08,
+    commitThreshold: 0.44, // 높을수록 페이지를 더 많이 끌어야 넘어감
+    commitVelocity: 3.2, // 높을수록 짧게 휙 하는 손동작으로는 덜 넘어감
+    velocityLookAhead: 0.012, // 손을 땔 때 속도 예측 영향을 줄여서 조금 움직였는데도 넘어가는 현상 감소
+    settleEpsilon: 0.11,
+  );
+  static const BookFlipPhysics _bookFlipControlPhysics = BookFlipPhysics(
+    springStiffness: 64,
+    springDampingRatio: 1.06,
+    commitThreshold: 0.44,
+    commitVelocity: 3.2,
+    velocityLookAhead: 0.012,
+    settleEpsilon: 0.14,
   );
   static const BookFlipPhysics _bookFlipListPhysics = BookFlipPhysics(
     springStiffness: 3400,
@@ -90,6 +97,9 @@ class _AlbumReaderSinglePageViewState
     velocityLookAhead: 0.06,
     settleEpsilon: 0.98,
   );
+  static const double _openSpreadCommitDistance = 136.0;
+  static const double _openSpreadCommitVelocity = 420.0;
+  static const double _openSpreadDragProgressScale = 0.64;
 
   bool _isCoverPressed = false;
   bool _isTurningWithControl = false;
@@ -100,9 +110,32 @@ class _AlbumReaderSinglePageViewState
   int? _animatedTargetSpread;
   Completer<void>? _flipEndCompleter;
   bool _isAnimatingToRequestedSpread = false;
+  bool _isCoverFlipActive = false;
+  int _coverFlipDirection = 0;
+  bool _isDraggingOpenSpread = false;
+  int? _openSpreadPointer;
+  Offset _openSpreadStartLocal = Offset.zero;
+  Offset _openSpreadLastLocal = Offset.zero;
+  double _openSpreadTotalDx = 0;
+  int _openSpreadStartMicros = 0;
+  int _openSpreadStartSpread = 0;
+  int _openSpreadDirection = 0;
+  bool _suppressNextTapUp = false;
+  final GlobalKey _bookFlipCoverBoundaryKey = GlobalKey(
+    debugLabel: 'book_flip_cover_boundary',
+  );
+  final GlobalKey _bookFlipCoverBackBoundaryKey = GlobalKey(
+    debugLabel: 'book_flip_cover_back_boundary',
+  );
+  final GlobalKey _bookFlipFallbackCoverBoundaryKey = GlobalKey(
+    debugLabel: 'book_flip_fallback_cover_boundary',
+  );
 
-  BookFlipPhysics get _activeBookFlipPhysics =>
-      _isAnimatingToRequestedSpread ? _bookFlipListPhysics : _bookFlipPhysics;
+  BookFlipPhysics get _activeBookFlipPhysics => _isAnimatingToRequestedSpread
+      ? _bookFlipListPhysics
+      : _isTurningWithControl
+      ? _bookFlipControlPhysics
+      : _bookFlipPhysics;
 
   @override
   void initState() {
@@ -201,26 +234,85 @@ class _AlbumReaderSinglePageViewState
   Future<void> _turnFocusPage(int direction) async {
     if (widget.allPages.isEmpty) return;
 
-    final currentSpread = _bookFlipController.totalSpreads > 0
-        ? _bookFlipController.currentSpread
-        : _spreadForFocusPage(_focusPageIndex);
+    final currentSpread = _spreadForFocusPage(_focusPageIndex);
     final maxSpread =
         math.max(_bookSpreadCount, _bookFlipController.totalSpreads) - 1;
     final targetSpread = (currentSpread + direction).clamp(0, maxSpread);
     if (targetSpread == currentSpread) return;
 
     if (_bookFlipController.isAnimating) return;
+    if (_bookFlipController.isReady &&
+        _bookFlipController.currentSpread != currentSpread) {
+      _bookFlipController.goToSpread(currentSpread);
+    }
 
+    final isCoverEdgeFlip =
+        (currentSpread <= 0 && direction > 0) ||
+        (currentSpread == 1 && direction < 0);
+
+    if (isCoverEdgeFlip) {
+      setState(() {
+        _isTurningWithControl = true;
+        _isCoverFlipActive = true;
+        _coverFlipDirection = direction;
+        _bookFlipController.goToSpread(currentSpread);
+      });
+      await WidgetsBinding.instance.endOfFrame;
+      await _waitForBookFlipReady();
+    } else {
+      setState(() {
+        _isTurningWithControl = true;
+        _isCoverFlipActive = false;
+        _coverFlipDirection = 0;
+      });
+      await WidgetsBinding.instance.endOfFrame;
+    }
+
+    final flipEnd = isCoverEdgeFlip ? _waitForFlipEnd() : null;
     final started = direction > 0
         ? _bookFlipController.nextSpread(velocity: _bookFlipControlVelocity)
         : _bookFlipController.previousSpread(
             velocity: -_bookFlipControlVelocity,
           );
-    if (started) return;
+    if (started) {
+      if (flipEnd != null) {
+        var completed = true;
+        await flipEnd.timeout(
+          const Duration(milliseconds: 1600),
+          onTimeout: () {
+            completed = false;
+          },
+        );
+        if (mounted) {
+          _clearFlipEndWaiter();
+          final settledSpread =
+              (completed ? targetSpread : _bookFlipController.currentSpread)
+                      .clamp(0, math.max(0, _bookSpreadCount - 1))
+                  as int;
+          final visiblePage = _focusPageForSpread(settledSpread);
+          setState(() {
+            _focusPageIndex = visiblePage;
+            _isTurningWithControl = false;
+            _isCoverFlipActive = false;
+            _coverFlipDirection = 0;
+            _isDraggingOpenSpread = false;
+            _bookFlipController.goToSpread(settledSpread);
+          });
+          await _syncSpreadFromFocus(visiblePage);
+        }
+      }
+      return;
+    }
+    if (isCoverEdgeFlip) {
+      _clearFlipEndWaiter();
+    }
 
     final syncedTarget = _focusPageForSpread(targetSpread);
     setState(() {
       _focusPageIndex = syncedTarget;
+      _isTurningWithControl = false;
+      _isCoverFlipActive = false;
+      _coverFlipDirection = 0;
       _bookFlipController.goToSpread(targetSpread);
     });
     await _syncSpreadFromFocus(syncedTarget);
@@ -278,7 +370,11 @@ class _AlbumReaderSinglePageViewState
 
         if (fromSpread != spreadNow) {
           _bookFlipController.goToSpread(fromSpread);
-          setState(() => _focusPageIndex = _focusPageForSpread(fromSpread));
+          setState(() {
+            _focusPageIndex = _focusPageForSpread(fromSpread);
+            _isCoverFlipActive = false;
+            _coverFlipDirection = 0;
+          });
           await _syncSpreadFromFocus(_focusPageForSpread(fromSpread));
           await Future<void>.delayed(const Duration(milliseconds: 8));
         }
@@ -325,6 +421,9 @@ class _AlbumReaderSinglePageViewState
     _animatedTargetSpread = null;
     setState(() {
       _focusPageIndex = targetPage;
+      _isCoverFlipActive = false;
+      _coverFlipDirection = 0;
+      _isDraggingOpenSpread = false;
       _bookFlipController.goToSpread(spread);
     });
     await _syncSpreadFromFocus(targetPage);
@@ -337,6 +436,15 @@ class _AlbumReaderSinglePageViewState
     final completer = Completer<void>();
     _flipEndCompleter = completer;
     return completer.future;
+  }
+
+  Future<void> _waitForBookFlipReady() async {
+    if (_bookFlipController.isReady) return;
+
+    for (var tick = 0; mounted && tick < 24; tick += 1) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      if (_bookFlipController.isReady) return;
+    }
   }
 
   void _clearFlipEndWaiter() {
@@ -425,7 +533,20 @@ class _AlbumReaderSinglePageViewState
     double pageWidth,
     double pageHeight,
   ) {
-    if (bookPageIndex == 0 || bookPageIndex > widget.allPages.length) {
+    if (bookPageIndex == 0) {
+      return SizedBox(
+        width: pageWidth,
+        height: pageHeight,
+        child: _buildFocusCard(
+          0,
+          pageWidth,
+          pageHeight,
+          cardKey: const ValueKey('book_flip_cover_back_page'),
+          coverBoundaryKey: _bookFlipCoverBackBoundaryKey,
+        ),
+      );
+    }
+    if (bookPageIndex > widget.allPages.length) {
       return _BlankBookPage(pageWidth: pageWidth, pageHeight: pageHeight);
     }
 
@@ -438,12 +559,40 @@ class _AlbumReaderSinglePageViewState
         pageWidth,
         pageHeight,
         cardKey: ValueKey('book_flip_album_page_$albumPageIndex'),
+        coverBoundaryKey: albumPageIndex == 0
+            ? _bookFlipCoverBoundaryKey
+            : null,
       ),
     );
   }
 
   Widget _buildStaticFocusSpread(double pageWidth, double pageHeight) {
     final spread = _spreadForFocusPage(_focusPageIndex);
+    return _buildStaticBookSpread(spread, pageWidth, pageHeight);
+  }
+
+  Widget _buildStaticBookSpread(
+    int spread,
+    double pageWidth,
+    double pageHeight,
+  ) {
+    if (spread <= 0) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: pageWidth,
+          height: pageHeight,
+          child: _buildFocusCard(
+            0,
+            pageWidth,
+            pageHeight,
+            cardKey: const ValueKey('book_flip_fallback_cover_card'),
+            coverBoundaryKey: _bookFlipFallbackCoverBoundaryKey,
+          ),
+        ),
+      );
+    }
+
     final leftBookPage = spread * 2;
     final rightBookPage = leftBookPage + 1;
 
@@ -471,19 +620,133 @@ class _AlbumReaderSinglePageViewState
     setState(() {
       _focusPageIndex = target;
       _isTurningWithControl = false;
+      _isCoverFlipActive = false;
+      _coverFlipDirection = 0;
+      _isDraggingOpenSpread = false;
     });
     unawaited(_syncSpreadFromFocus(target));
     _clearFlipEndWaiter();
   }
 
-  Widget _buildBookFlipFocusReader(double pageWidth, double pageHeight) {
-    Widget fallbackSpread(BuildContext context) => _BookFlipLoadingPlaceholder(
-      pageWidth: pageWidth,
-      pageHeight: pageHeight,
-      child: _buildStaticFocusSpread(pageWidth, pageHeight),
-    );
+  void _handleOpenSpreadPointerDown(PointerDownEvent event) {
+    if ((_isCoverFlipActive || _isTurningWithControl) &&
+        !_bookFlipController.isAnimating) {
+      setState(() {
+        _isCoverFlipActive = false;
+        _isTurningWithControl = false;
+        _coverFlipDirection = 0;
+      });
+    }
+    if (_isCoverFlipActive || _isTurningWithControl) return;
+    if (!_bookFlipController.isReady) return;
+    if (_openSpreadPointer != null) return;
+    final currentSpread = _bookFlipController.totalSpreads > 0
+        ? _bookFlipController.currentSpread
+        : _spreadForFocusPage(_focusPageIndex);
+    if (_bookFlipController.currentSpread != currentSpread) {
+      _bookFlipController.goToSpread(currentSpread);
+    }
+    final started = _bookFlipController.dragStart(event.localPosition);
+    if (!started || !mounted) return;
+    _openSpreadPointer = event.pointer;
+    _openSpreadStartLocal = event.localPosition;
+    _openSpreadLastLocal = event.localPosition;
+    _openSpreadTotalDx = 0;
+    _openSpreadStartMicros = event.timeStamp.inMicroseconds;
+    _openSpreadStartSpread = currentSpread;
+    _openSpreadDirection = 0;
+    setState(() {
+      _isDraggingOpenSpread = true;
+      _suppressNextTapUp = false;
+    });
+  }
 
-    return _SequentialBookFlipPages(
+  void _handleOpenSpreadPointerMove(PointerMoveEvent event) {
+    if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
+    final dx = event.localPosition.dx - _openSpreadLastLocal.dx;
+    _openSpreadLastLocal = event.localPosition;
+    _openSpreadTotalDx += dx;
+    if (_openSpreadTotalDx.abs() > 8) {
+      _suppressNextTapUp = true;
+    }
+    if (_openSpreadDirection == 0 && _openSpreadTotalDx.abs() > 14) {
+      _openSpreadDirection = _openSpreadTotalDx < 0 ? 1 : -1;
+      final maxSpread =
+          math.max(_bookSpreadCount, _bookFlipController.totalSpreads) - 1;
+      final targetSpread = (_openSpreadStartSpread + _openSpreadDirection)
+          .clamp(0, maxSpread);
+      final isCoverEdgeFlip =
+          (_openSpreadStartSpread <= 0 && _openSpreadDirection > 0) ||
+          (_openSpreadStartSpread == 1 && _openSpreadDirection < 0);
+      if (isCoverEdgeFlip &&
+          targetSpread != _openSpreadStartSpread &&
+          mounted) {
+        setState(() {
+          _isCoverFlipActive = true;
+          _coverFlipDirection = _openSpreadDirection;
+        });
+      }
+    }
+    if (_openSpreadDirection != 0) {
+      _bookFlipController.dragToDistance(
+        localPosition: _openSpreadStartLocal,
+        direction: _openSpreadDirection > 0
+            ? FlipDirection.forward
+            : FlipDirection.backward,
+        distance: _openSpreadTotalDx.abs() * _openSpreadDragProgressScale,
+      );
+    }
+  }
+
+  void _handleOpenSpreadPointerUp(PointerUpEvent event) {
+    if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
+    final elapsedSeconds =
+        (event.timeStamp.inMicroseconds - _openSpreadStartMicros) / 1000000.0;
+    final velocity = elapsedSeconds > 0
+        ? _openSpreadTotalDx / elapsedSeconds
+        : 0.0;
+    final shouldCommit =
+        _openSpreadTotalDx.abs() >= _openSpreadCommitDistance ||
+        velocity.abs() >= _openSpreadCommitVelocity;
+    _bookFlipController.dragEndWithDecision(velocity, commit: shouldCommit);
+    _openSpreadPointer = null;
+    _openSpreadStartLocal = Offset.zero;
+    _openSpreadLastLocal = Offset.zero;
+    _openSpreadTotalDx = 0;
+    _openSpreadStartMicros = 0;
+    _openSpreadStartSpread = 0;
+    _openSpreadDirection = 0;
+    if (mounted) setState(() => _isDraggingOpenSpread = false);
+  }
+
+  void _handleOpenSpreadPointerCancel(PointerCancelEvent event) {
+    if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
+    _bookFlipController.dragCancel();
+    _openSpreadPointer = null;
+    _openSpreadStartLocal = Offset.zero;
+    _openSpreadLastLocal = Offset.zero;
+    _openSpreadTotalDx = 0;
+    _openSpreadStartMicros = 0;
+    _openSpreadStartSpread = 0;
+    _openSpreadDirection = 0;
+    if (mounted) setState(() => _isDraggingOpenSpread = false);
+  }
+
+  Widget _buildBookFlipFocusReader(
+    double pageWidth,
+    double pageHeight, {
+    bool silentFallback = false,
+  }) {
+    Widget fallbackSpread(BuildContext context) => silentFallback
+        ? SizedBox(width: pageWidth * 2, height: pageHeight)
+        : _BookFlipLoadingPlaceholder(
+            pageWidth: pageWidth,
+            pageHeight: pageHeight,
+            showPaper: _spreadForFocusPage(_focusPageIndex) > 0,
+            child: _buildStaticFocusSpread(pageWidth, pageHeight),
+          );
+
+    return BookFlip.builder(
       key: ValueKey(
         'book_flip_${_bookPageCount}_${pageWidth.toStringAsFixed(1)}_${pageHeight.toStringAsFixed(1)}',
       ),
@@ -492,33 +755,44 @@ class _AlbumReaderSinglePageViewState
       pixelRatio: 1.0,
       pageBuilder: (context, index) =>
           _buildBookFlipPage(index, pageWidth, pageHeight),
-      bookBuilder: (context, pages) => BookFlip(
-        pages: pages,
-        controller: _bookFlipController,
-        physics: _activeBookFlipPhysics,
-        pageAspectRatio: pageWidth / pageHeight,
-        fit: BookFit.contain,
-        material: const BookFlipMaterial(
-          stiffness: 0.28,
-          weight: 0.34,
-          gloss: 0.0,
-          translucency: 0.0,
-          thickness: 1.05,
-        ),
-        curl: const BookFlipCurl(bend: 0.74, foldTilt: 0.62, droop: 0.28),
-        effects: const BookFlipEffects(
-          gloss: false,
-          grain: false,
-          castShadow: true,
-          spineShadow: false,
-          edge: false,
-          translucency: false,
-        ),
-        meshResolution: 54,
-        onFlipEnd: (spread) => _handleBookSpreadChanged(spread, ended: true),
-        loadingBuilder: fallbackSpread,
-        errorBuilder: fallbackSpread,
+      controller: _bookFlipController,
+      physics: _activeBookFlipPhysics,
+      fit: BookFit.contain,
+      transparentPages: const <int>{0},
+      material: const BookFlipMaterial(
+        stiffness: 0.28,
+        weight: 0.34,
+        gloss: 0.0,
+        translucency: 0.0,
+        thickness: 1.05,
       ),
+      curl: _isCoverFlipActive
+          ? const BookFlipCurl(bend: 0.98, foldTilt: 0.86, droop: 0.34)
+          : const BookFlipCurl(bend: 0.74, foldTilt: 0.62, droop: 0.28),
+      effects: const BookFlipEffects(
+        gloss: false,
+        grain: false,
+        castShadow: true,
+        spineShadow: false,
+        edge: false,
+        translucency: false,
+      ),
+      meshResolution: 54,
+      onFlipStart: (spread, direction) {
+        final isCoverEdgeFlip =
+            (spread <= 0 && direction == FlipDirection.forward) ||
+            (spread == 1 && direction == FlipDirection.backward);
+        if (!isCoverEdgeFlip || !mounted) return;
+        final coverDirection = direction == FlipDirection.forward ? 1 : -1;
+        if (_isCoverFlipActive && _coverFlipDirection == coverDirection) {
+          return;
+        }
+        setState(() {
+          _isCoverFlipActive = true;
+          _coverFlipDirection = coverDirection;
+        });
+      },
+      onFlipEnd: (spread) => _handleBookSpreadChanged(spread, ended: true),
       loadingBuilder: fallbackSpread,
       errorBuilder: fallbackSpread,
     );
@@ -547,6 +821,13 @@ class _AlbumReaderSinglePageViewState
           pageWidth = maxSpreadWidth / 2;
           pageHeight = pageWidth / ratio;
         }
+        final currentSpread = _bookFlipController.totalSpreads > 0
+            ? _bookFlipController.currentSpread
+            : _spreadForFocusPage(_focusPageIndex);
+        final showClosedCover =
+            _focusPageIndex == 0 &&
+            !_bookFlipController.isAnimating &&
+            !_isCoverFlipActive;
         final stageWidth = pageWidth * 2;
         final stageHeight = pageHeight;
         final minTop = isLandscape ? 0.0 : 12.0;
@@ -566,22 +847,131 @@ class _AlbumReaderSinglePageViewState
               left: 0,
               right: 0,
               child: Center(
-                child: Transform.translate(
-                  offset: Offset(stageOffsetX, 0),
-                  child: SizedBox(
-                    width: stageWidth,
-                    height: stageHeight,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTapUp: (details) => _openFocusDetail(
-                        tapX: details.localPosition.dx,
-                        stageWidth: stageWidth,
-                        pageWidth: pageWidth,
-                        pageHeight: pageHeight,
-                      ),
-                      child: _PremiumSpreadStage(
-                        isLandscape: isLandscape,
-                        child: _buildBookFlipFocusReader(pageWidth, pageHeight),
+                child: AnimatedBuilder(
+                  animation: _bookFlipController,
+                  builder: (context, child) {
+                    final flipProgress = _bookFlipController.flipProgress.clamp(
+                      0.0,
+                      1.0,
+                    );
+                    final coverSettleStart = _coverFlipDirection < 0
+                        ? 0.48
+                        : 0.68;
+                    final delayedCoverProgress =
+                        ((flipProgress - coverSettleStart) /
+                                (1.0 - coverSettleStart))
+                            .clamp(0.0, 1.0);
+                    final stageProgress = Curves.easeInOutCubic.transform(
+                      delayedCoverProgress,
+                    );
+                    final coverCenteredOffset = -pageWidth / 2;
+                    var dynamicStageOffset = stageOffsetX;
+                    if (showClosedCover) {
+                      dynamicStageOffset += coverCenteredOffset;
+                    } else if (_isCoverFlipActive && _coverFlipDirection != 0) {
+                      if (_coverFlipDirection > 0) {
+                        dynamicStageOffset += ui.lerpDouble(
+                          coverCenteredOffset,
+                          0,
+                          stageProgress,
+                        )!;
+                      } else {
+                        dynamicStageOffset += ui.lerpDouble(
+                          0,
+                          coverCenteredOffset,
+                          stageProgress,
+                        )!;
+                      }
+                    } else if (currentSpread <= 0 && _focusPageIndex == 0) {
+                      dynamicStageOffset += coverCenteredOffset;
+                    }
+
+                    return Transform.translate(
+                      offset: Offset(dynamicStageOffset, 0),
+                      child: child,
+                    );
+                  },
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 680),
+                    curve: Curves.easeInOutCubic,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: stageWidth,
+                      height: stageHeight,
+                      child: Listener(
+                        behavior: HitTestBehavior.translucent,
+                        onPointerDown: _handleOpenSpreadPointerDown,
+                        onPointerMove: _handleOpenSpreadPointerMove,
+                        onPointerUp: _handleOpenSpreadPointerUp,
+                        onPointerCancel: _handleOpenSpreadPointerCancel,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: showClosedCover
+                              ? () => _turnFocusPage(1)
+                              : null,
+                          onTapUp: (details) {
+                            if (showClosedCover || _isCoverFlipActive) return;
+                            if (_suppressNextTapUp) {
+                              _suppressNextTapUp = false;
+                              return;
+                            }
+                            _openFocusDetail(
+                              tapX: details.localPosition.dx,
+                              stageWidth: stageWidth,
+                              pageWidth: pageWidth,
+                              pageHeight: pageHeight,
+                            );
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              AnimatedBuilder(
+                                animation: _bookFlipController,
+                                builder: (context, bookFlipChild) {
+                                  final controllerSpread =
+                                      _bookFlipController.currentSpread;
+                                  final isCoverEdgeAnimating =
+                                      _isCoverFlipActive &&
+                                      _bookFlipController.isAnimating &&
+                                      _coverFlipDirection > 0 &&
+                                      controllerSpread <= 1;
+                                  return _PremiumSpreadStage(
+                                    isLandscape: isLandscape,
+                                    hidePaper:
+                                        showClosedCover ||
+                                        _isCoverFlipActive ||
+                                        isCoverEdgeAnimating,
+                                    child:
+                                        bookFlipChild ??
+                                        const SizedBox.shrink(),
+                                  );
+                                },
+                                child: IgnorePointer(
+                                  ignoring: true,
+                                  child: Opacity(
+                                    opacity: showClosedCover ? 0.02 : 1.0,
+                                    child: _buildBookFlipFocusReader(
+                                      pageWidth,
+                                      pageHeight,
+                                      silentFallback: showClosedCover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (showClosedCover)
+                                IgnorePointer(
+                                  child: _PremiumSpreadStage(
+                                    isLandscape: isLandscape,
+                                    hidePaper: true,
+                                    child: _buildStaticFocusSpread(
+                                      pageWidth,
+                                      pageHeight,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1039,179 +1429,45 @@ class _BookFlipLoadingPlaceholder extends StatelessWidget {
   const _BookFlipLoadingPlaceholder({
     required this.pageWidth,
     required this.pageHeight,
+    this.showPaper = true,
     this.child,
   });
 
   final double pageWidth;
   final double pageHeight;
+  final bool showPaper;
   final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final spread = SizedBox(
       width: pageWidth * 2,
       height: pageHeight,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFCF5),
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: child ?? const SizedBox.shrink(),
-      ),
+      child: child ?? const SizedBox.shrink(),
     );
-  }
-}
 
-class _SequentialBookFlipPages extends StatefulWidget {
-  const _SequentialBookFlipPages({
-    super.key,
-    required this.pageCount,
-    required this.pageSize,
-    required this.pixelRatio,
-    required this.pageBuilder,
-    required this.bookBuilder,
-    required this.loadingBuilder,
-    required this.errorBuilder,
-  });
+    if (!showPaper) return spread;
 
-  final int pageCount;
-  final Size pageSize;
-  final double pixelRatio;
-  final Widget Function(BuildContext context, int index) pageBuilder;
-  final Widget Function(BuildContext context, List<ui.Image> pages) bookBuilder;
-  final WidgetBuilder loadingBuilder;
-  final WidgetBuilder errorBuilder;
-
-  @override
-  State<_SequentialBookFlipPages> createState() =>
-      _SequentialBookFlipPagesState();
-}
-
-class _SequentialBookFlipPagesState extends State<_SequentialBookFlipPages> {
-  final GlobalKey _captureKey = GlobalKey();
-  final List<ui.Image> _images = [];
-  List<ui.Image>? _bookPages;
-  int _captureIndex = 0;
-  bool _hasError = false;
-  bool _captureScheduled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scheduleCapture();
-  }
-
-  @override
-  void didUpdateWidget(covariant _SequentialBookFlipPages oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.pageCount != widget.pageCount ||
-        oldWidget.pageSize != widget.pageSize ||
-        oldWidget.pixelRatio != widget.pixelRatio) {
-      _disposeImages();
-      _images.clear();
-      _bookPages = null;
-      _captureIndex = 0;
-      _hasError = false;
-      _captureScheduled = false;
-      _scheduleCapture();
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposeImages();
-    super.dispose();
-  }
-
-  void _disposeImages() {
-    for (final image in _images) {
-      image.dispose();
-    }
-  }
-
-  void _scheduleCapture() {
-    if (_captureScheduled || _captureIndex >= widget.pageCount) return;
-    _captureScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) unawaited(_captureCurrentPage());
-    });
-  }
-
-  Future<void> _captureCurrentPage([int attempt = 0]) async {
-    if (!mounted || _captureIndex >= widget.pageCount) return;
-    _captureScheduled = false;
-
-    await Future<void>.delayed(const Duration(milliseconds: 16));
-    if (!mounted || _captureIndex >= widget.pageCount) return;
-
-    final object = _captureKey.currentContext?.findRenderObject();
-    if (object is! RenderRepaintBoundary) {
-      if (attempt < 6) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _captureCurrentPage(attempt + 1),
-        );
-      } else if (mounted) {
-        setState(() => _hasError = true);
-      }
-      return;
-    }
-
-    try {
-      final image = await object.toImage(pixelRatio: widget.pixelRatio);
-      if (!mounted) {
-        image.dispose();
-        return;
-      }
-      setState(() {
-        _images.add(image);
-        _captureIndex += 1;
-        if (_images.length == widget.pageCount) {
-          _bookPages = List<ui.Image>.unmodifiable(_images);
-        }
-      });
-      _scheduleCapture();
-    } on Object {
-      if (mounted) setState(() => _hasError = true);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_hasError) return widget.errorBuilder(context);
-    if (_images.length == widget.pageCount) {
-      return widget.bookBuilder(
-        context,
-        _bookPages ??= List<ui.Image>.unmodifiable(_images),
-      );
-    }
-
-    return Stack(
-      clipBehavior: Clip.none,
-      fit: StackFit.expand,
-      children: [
-        Positioned(
-          left: 0,
-          top: 0,
-          width: widget.pageSize.width,
-          height: widget.pageSize.height,
-          child: IgnorePointer(
-            child: RepaintBoundary(
-              key: _captureKey,
-              child: widget.pageBuilder(context, _captureIndex),
-            ),
-          ),
-        ),
-        Positioned.fill(child: widget.loadingBuilder(context)),
-      ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFCF5),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: spread,
     );
   }
 }
 
 class _PremiumSpreadStage extends StatelessWidget {
-  const _PremiumSpreadStage({required this.child, required this.isLandscape});
+  const _PremiumSpreadStage({
+    required this.child,
+    required this.isLandscape,
+    this.hidePaper = false,
+  });
 
   final Widget child;
   final bool isLandscape;
+  final bool hidePaper;
 
   @override
   Widget build(BuildContext context) {
@@ -1227,6 +1483,10 @@ class _PremiumSpreadStage extends StatelessWidget {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
         final halfWidth = width / 2;
+
+        if (hidePaper) {
+          return ClipRect(child: child);
+        }
 
         Widget pageEdge({required Alignment alignment}) {
           final isRight = alignment == Alignment.centerRight;
@@ -1923,19 +2183,13 @@ class _CoverPageCard extends StatelessWidget {
     // 실제 화면 대비 스케일 계산
     final double scale = pageW / logicalW;
 
-    return Container(
+    final shadowScale = (pageH / 280).clamp(0.45, 1.75);
+
+    return HomeCoverFrame(
       width: pageW,
       height: pageH,
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
+      shadowScale: shadowScale,
+      showShadow: true,
       child: RepaintBoundary(
         key: coverKey,
         child: OverflowBox(

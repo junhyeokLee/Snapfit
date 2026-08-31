@@ -400,8 +400,8 @@ const double _kStiffness0 = 0.62;
 const double _kGloss0 = 0.34;
 
 // Sensitivity + safe clamps for each derived value (tuning only).
-const double _kBendSpan = 0.55, _kAmaxMin = 0.96, _kAmaxHi = 1.72;
-const double _kTiltSpan = 0.55, _kTiltMin = 0.18, _kTiltHi = 0.42;
+const double _kBendSpan = 0.55, _kAmaxMin = 0.96, _kAmaxHi = 2.24;
+const double _kTiltSpan = 0.55, _kTiltMin = 0.18, _kTiltHi = 0.58;
 const double _kSheenSpan = 2.0, _kSheenHardCap = 0.30;
 const double _kShinSpan = 1.7, _kShinMin = 6.0, _kShinMax = 80.0;
 const double _kSagPeak =
@@ -502,6 +502,7 @@ class BookFlipController extends ChangeNotifier {
 
   int _spreadCache;
   _BookFlipState? _state;
+  bool _emitScheduled = false;
 
   /// The spread (open two-page view) shown at rest. Spread 0 is the first two
   /// pages.
@@ -513,6 +514,9 @@ class BookFlipController extends ChangeNotifier {
 
   /// Whether a flip is in progress (dragging or animating).
   bool get isAnimating => _state?._scene.active ?? false;
+
+  /// Whether the book has finished preparing its page texture and can turn.
+  bool get isReady => _state?._phase.value == _BootPhase.ready;
 
   /// Progress of the current turn, 0 (flat) to 1 (turned). Stays 0 when idle.
   double get flipProgress => _state?._scene.t ?? 0.0;
@@ -531,6 +535,50 @@ class BookFlipController extends ChangeNotifier {
   bool previousSpread({double velocity = 0.0}) =>
       _state?._driveFlip(-1, velocity) ?? false;
 
+  /// Starts a user-like drag in book-local coordinates.
+  ///
+  /// This is useful when a parent widget renders its own closed-cover chrome but
+  /// still wants the real page curl to begin from the finger position.
+  bool dragStart(Offset localPosition) {
+    final state = _state;
+    if (state == null || state._phase.value != _BootPhase.ready) return false;
+    state._onDragStart(localPosition);
+    return true;
+  }
+
+  /// Continues a drag started with [dragStart].
+  void dragUpdate(double dx) => _state?._onDragUpdate(dx);
+
+  /// Drives the active drag from an absolute finger travel distance.
+  ///
+  /// Unlike [dragUpdate], this does not accumulate deltas inside the engine. It
+  /// maps the total movement since grab-start to the current curl progress, which
+  /// is useful when a parent gesture recognizer owns the drag stream.
+  bool dragToDistance({
+    required Offset localPosition,
+    required FlipDirection direction,
+    required double distance,
+  }) {
+    final state = _state;
+    if (state == null || state._phase.value != _BootPhase.ready) return false;
+    state._onDragDistance(
+      localPosition,
+      direction == FlipDirection.forward ? 1 : -1,
+      distance,
+    );
+    return true;
+  }
+
+  /// Ends a drag started with [dragStart].
+  void dragEnd(double velocity) => _state?._onDragEnd(velocity);
+
+  /// Ends a parent-driven drag with an explicit commit decision.
+  void dragEndWithDecision(double velocity, {required bool commit}) =>
+      _state?._onDragEnd(velocity, forceCommit: commit);
+
+  /// Cancels a drag started with [dragStart].
+  void dragCancel() => _state?._onDragCancel();
+
   /// Jumps straight to [spread] with no animation — handy for restoring a saved
   /// position.
   void goToSpread(int spread) {
@@ -548,7 +596,22 @@ class BookFlipController extends ChangeNotifier {
   /// Jumps straight to the spread that contains [page] (0-based), no animation.
   void goToPage(int page) => goToSpread(page ~/ 2);
 
-  void _emit() => notifyListeners();
+  void _emit() {
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    final isBuildFrame = phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks;
+    if (!isBuildFrame) {
+      notifyListeners();
+      return;
+    }
+
+    if (_emitScheduled) return;
+    _emitScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _emitScheduled = false;
+      notifyListeners();
+    });
+  }
 }
 
 /// A realistic open-book page-flip widget.
@@ -578,6 +641,7 @@ class BookFlip extends StatefulWidget {
     this.effects = BookFlipEffects.all,
     this.fit = BookFit.contain,
     this.pageAspectRatio,
+    this.transparentPages = const <int>{},
     this.maxTextureDimension = kPageTexMax,
     this.meshResolution = kNu,
     this.onSpreadChanged,
@@ -635,6 +699,7 @@ class BookFlip extends StatefulWidget {
     BookFlipCurl? curl,
     BookFlipEffects effects = BookFlipEffects.all,
     BookFit fit = BookFit.contain,
+    Set<int> transparentPages = const <int>{},
     int maxTextureDimension = kPageTexMax,
     int meshResolution = kNu,
     void Function(int spread)? onSpreadChanged,
@@ -674,6 +739,7 @@ class BookFlip extends StatefulWidget {
       curl: curl,
       effects: effects,
       fit: fit,
+      transparentPages: transparentPages,
       maxTextureDimension: maxTextureDimension,
       meshResolution: meshResolution,
       onSpreadChanged: onSpreadChanged,
@@ -700,6 +766,7 @@ class BookFlip extends StatefulWidget {
     BookFlipCurl? curl,
     BookFlipEffects effects = BookFlipEffects.all,
     BookFit fit = BookFit.contain,
+    Set<int> transparentPages = const <int>{},
     int maxTextureDimension = kPageTexMax,
     int meshResolution = kNu,
     void Function(int spread)? onSpreadChanged,
@@ -721,6 +788,7 @@ class BookFlip extends StatefulWidget {
         curl: curl,
         effects: effects,
         fit: fit,
+        transparentPages: transparentPages,
         maxTextureDimension: maxTextureDimension,
         meshResolution: meshResolution,
         onSpreadChanged: onSpreadChanged,
@@ -765,6 +833,12 @@ class BookFlip extends StatefulWidget {
   /// which keeps the pages' true shape and never distorts them; use
   /// [BookFit.fill] to stretch the book to fill its box.
   final BookFit fit;
+
+  /// Page indices that should not paint an opaque base half.
+  ///
+  /// Useful for cover-only books where index 0 is a structural placeholder
+  /// rather than a real sheet.
+  final Set<int> transparentPages;
 
   /// The width-to-height ratio of a single page, used to lay the book out.
   ///

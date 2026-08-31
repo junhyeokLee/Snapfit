@@ -42,10 +42,10 @@ class PageListSelector extends ConsumerWidget {
         final isVerticalRail = constraints.maxWidth < 120;
         return SizedBox(
           height: isVerticalRail ? double.infinity : 78.h,
-          width: isVerticalRail ? 60 : null,
+          width: isVerticalRail ? 78 : null,
           child: ListView.separated(
             padding: isVerticalRail
-                ? const EdgeInsets.symmetric(horizontal: 6, vertical: 8)
+                ? const EdgeInsets.symmetric(horizontal: 8, vertical: 8)
                 : EdgeInsets.fromLTRB(10.w, 0, 10.w, 4.h),
             scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
             itemCount: pages.length + 1, // 마지막에 + 버튼 추가
@@ -67,7 +67,7 @@ class PageListSelector extends ConsumerWidget {
               final label = isCover ? '표지' : '${index}쪽';
 
               return SizedBox(
-                width: isVerticalRail ? 44 : 30.w,
+                width: isVerticalRail ? 62 : 30.w,
                 child: SnapFitPressable(
                   onTap: () => onPageSelected(index),
                   pressedScale: 0.96,
@@ -80,7 +80,7 @@ class PageListSelector extends ConsumerWidget {
                         curve: SnapFitMotion.settle,
                         width: isVerticalRail ? 44 : (isSelected ? 28.w : 24.w),
                         height: isVerticalRail
-                            ? 42
+                            ? 58
                             : (isSelected ? 48.h : 46.h),
                         padding: EdgeInsets.all(isVerticalRail ? 3 : 2.w),
                         decoration: BoxDecoration(
@@ -154,7 +154,7 @@ class PageListSelector extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                            if (isSelected)
+                            if (isSelected && !isVerticalRail)
                               Positioned(
                                 left: 5.w,
                                 right: 5.w,
@@ -208,6 +208,22 @@ class PageListSelector extends ConsumerWidget {
                           label,
                           style: TextStyle(
                             fontSize: 9.0,
+                            color: isSelected
+                                ? SnapFitColors.accent
+                                : SnapFitColors.textSecondaryOf(context),
+                            fontWeight: isSelected
+                                ? FontWeight.w900
+                                : FontWeight.w700,
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
                             color: isSelected
                                 ? SnapFitColors.accent
                                 : SnapFitColors.textSecondaryOf(context),
@@ -279,24 +295,36 @@ class PageListSelector extends ConsumerWidget {
 
     // 내지: 전체 레이어 렌더링 지원 (AlbumReaderPageContent 활용)
     // 썸네일 크기에 맞게 스케일링된 페이지 내용 표시
-    return AlbumReaderPageContent(
-      layers: page.layers,
-      targetW: 24.w,
-      targetH: 44.h,
-      previewBuilder: LayerBuilder(
-        LayerInteractionManager.preview(ref, () => logicalInnerSize),
-        () => logicalInnerSize,
-      ),
-      baseCanvasSize: logicalInnerSize,
-      backgroundColor: page.backgroundColor != null
-          ? Color(page.backgroundColor!)
-          : null,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final targetW = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : 24.w;
+        final targetH = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : 44.h;
+        return AlbumReaderPageContent(
+          layers: page.layers,
+          targetW: targetW,
+          targetH: targetH,
+          previewBuilder: LayerBuilder(
+            LayerInteractionManager.preview(ref, () => logicalInnerSize),
+            () => logicalInnerSize,
+          ),
+          baseCanvasSize: logicalInnerSize,
+          backgroundColor: page.backgroundColor != null
+              ? Color(page.backgroundColor!)
+              : null,
+        );
+      },
     );
   }
 
   Widget _buildAddButton(BuildContext context) {
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
     return SizedBox(
-      width: 40.w,
+      width: isLandscape ? 62 : 40.w,
       child: SnapFitPressable(
         onTap: onAddPage,
         pressedScale: 0.96,
@@ -305,8 +333,8 @@ class PageListSelector extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 34.w,
-              height: 46.h,
+              width: isLandscape ? 58 : 34.w,
+              height: isLandscape ? 58 : 46.h,
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
                 borderRadius: BorderRadius.circular(14.r),
@@ -322,14 +350,14 @@ class PageListSelector extends ConsumerWidget {
                 children: [
                   Icon(
                     Icons.add_rounded,
-                    size: 17,
+                    size: isLandscape ? 20 : 17,
                     color: SnapFitColors.textSecondaryOf(context),
                   ),
-                  SizedBox(height: 1.h),
+                  SizedBox(height: isLandscape ? 2 : 1.h),
                   Text(
                     '추가',
                     style: TextStyle(
-                      fontSize: 7.5,
+                      fontSize: isLandscape ? 10 : 7.5,
                       color: SnapFitColors.textSecondaryOf(context),
                       fontWeight: FontWeight.w800,
                     ),

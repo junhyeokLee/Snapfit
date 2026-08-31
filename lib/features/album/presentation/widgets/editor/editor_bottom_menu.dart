@@ -121,7 +121,7 @@ class EditorBottomMenu extends StatelessWidget {
 
         return Container(
           height: isVerticalRail ? double.infinity : 90,
-          width: isVerticalRail ? 62 : null,
+          width: isVerticalRail ? 72 : null,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24.r),
             gradient: LinearGradient(
@@ -225,8 +225,8 @@ class EditorBottomMenu extends StatelessWidget {
       child: AnimatedContainer(
         duration: SnapFitMotion.fast,
         curve: SnapFitMotion.settle,
-        width: compact ? 44 : 58,
-        height: compact ? 38 : 66,
+        width: compact ? 54 : 58,
+        height: compact ? 44 : 66,
         padding: compact
             ? EdgeInsets.zero
             : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
@@ -278,7 +278,7 @@ class EditorBottomMenu extends StatelessWidget {
                         : isFeatured
                         ? const Color(0xFF8F6846)
                         : baseColor,
-                    size: compact ? 19 : 22,
+                    size: compact ? 21 : 22,
                   ),
                 ),
               ],

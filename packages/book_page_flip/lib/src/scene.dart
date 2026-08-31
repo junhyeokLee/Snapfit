@@ -21,6 +21,11 @@ class FlipScene extends ChangeNotifier {
   // commits). The painter skips destination wake-compositing for it: there is no
   // page swap to hide, and the would-be landing page is a clamped phantom.
   bool atBoundary = false;
+  // True only for the special single-cover edge transitions. A closed cover is
+  // one visible sheet, not a full spread, so the renderer must not pre-paint the
+  // destination half behind it the way it does for normal inner-page turns.
+  bool coverForwardEdge = false;
+  bool coverBackwardEdge = false;
 
   // Page indices for the current flip (see _PageMap).
   int baseLeft = 0, baseRight = 1, leafFront = 1, leafBack = 2;
@@ -31,6 +36,7 @@ class FlipScene extends ChangeNotifier {
   int cellW = kPageTexW, cellH = kPageTexH;
   // Paper material — shapes the bend, sheen, droop, shadow and edge.
   BookFlipMaterial material = BookFlipMaterial.paper;
+  Set<int> transparentPages = const <int>{};
   // Optional direct page-curve override (null → the material decides the bend).
   BookFlipCurl? curl;
   // Which visual effects are drawn (all on by default = the full look).
@@ -55,6 +61,8 @@ class FlipScene extends ChangeNotifier {
   double _rT = double.nan;
   bool _rActive = false;
   int _rDir = 0;
+  bool _rCoverForwardEdge = false;
+  bool _rCoverBackwardEdge = false;
   double _rGrabV = double.nan;
   int _rBL = -1, _rBR = -1, _rLF = -1, _rLB = -1;
   double _rW = -1, _rH = -1;
@@ -70,6 +78,8 @@ class FlipScene extends ChangeNotifier {
     final changed = t != _rT ||
         active != _rActive ||
         dir != _rDir ||
+        coverForwardEdge != _rCoverForwardEdge ||
+        coverBackwardEdge != _rCoverBackwardEdge ||
         grabV != _rGrabV ||
         baseLeft != _rBL ||
         baseRight != _rBR ||
@@ -87,6 +97,8 @@ class FlipScene extends ChangeNotifier {
     _rT = t;
     _rActive = active;
     _rDir = dir;
+    _rCoverForwardEdge = coverForwardEdge;
+    _rCoverBackwardEdge = coverBackwardEdge;
     _rGrabV = grabV;
     _rBL = baseLeft;
     _rBR = baseRight;

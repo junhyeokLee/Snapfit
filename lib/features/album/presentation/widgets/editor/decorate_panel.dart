@@ -44,6 +44,12 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
   @override
   Widget build(BuildContext context) {
     final surfaceColor = SnapFitColors.surfaceOf(context);
+    final media = MediaQuery.of(context);
+    final isLandscape = media.size.width > media.size.height;
+    final panelHeight = (media.size.height * (isLandscape ? 0.82 : 0.58)).clamp(
+      isLandscape ? 300.0 : 420.0,
+      isLandscape ? 430.0 : 560.0,
+    );
     final content = widget.mode == DecorateSheetMode.sticker
         ? DecorateStickerTab(
             surfaceColor: surfaceColor,
@@ -90,7 +96,7 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
           );
 
     return Container(
-      height: 460.h,
+      height: panelHeight,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(
@@ -98,23 +104,26 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
           topRight: Radius.circular(24.r),
         ),
       ),
-      child: Column(
-        children: [
-          // Handle
-          SizedBox(height: 12.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: SnapFitColors.textPrimaryOf(
-                context,
-              ).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2.r),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            // Handle
+            SizedBox(height: isLandscape ? 8 : 12.h),
+            Container(
+              width: isLandscape ? 36 : 40.w,
+              height: isLandscape ? 3.5 : 4.h,
+              decoration: BoxDecoration(
+                color: SnapFitColors.textPrimaryOf(
+                  context,
+                ).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
-          SizedBox(height: 10.h),
-          Expanded(child: content),
-        ],
+            SizedBox(height: isLandscape ? 8 : 10.h),
+            Expanded(child: content),
+          ],
+        ),
       ),
     );
   }

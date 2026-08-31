@@ -25,6 +25,7 @@ class _BookFlipWidgetPages extends StatefulWidget {
     required this.curl,
     required this.effects,
     required this.fit,
+    required this.transparentPages,
     required this.maxTextureDimension,
     required this.meshResolution,
     required this.onSpreadChanged,
@@ -46,6 +47,7 @@ class _BookFlipWidgetPages extends StatefulWidget {
   final BookFlipCurl? curl;
   final BookFlipEffects effects;
   final BookFit fit;
+  final Set<int> transparentPages;
   final int maxTextureDimension;
   final int meshResolution;
   final void Function(int spread)? onSpreadChanged;
@@ -85,8 +87,7 @@ class _BookFlipWidgetPagesState extends State<_BookFlipWidgetPages> {
     final changed = old.pageCount != widget.pageCount ||
         old.pageSize != widget.pageSize ||
         old.pixelRatio != widget.pixelRatio ||
-        !identical(old.pageBuilder, widget.pageBuilder) ||
-        !identical(old.pageLabel, widget.pageLabel);
+        old.transparentPages != widget.transparentPages;
     if (changed) {
       _disposeImages();
       setState(() {
@@ -141,6 +142,7 @@ class _BookFlipWidgetPagesState extends State<_BookFlipWidgetPages> {
         curl: widget.curl,
         effects: widget.effects,
         fit: widget.fit,
+        transparentPages: widget.transparentPages,
         pageAspectRatio: widget.pageSize.height > 0
             ? widget.pageSize.width / widget.pageSize.height
             : null,

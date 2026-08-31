@@ -21,6 +21,7 @@ class _BookFlipState extends State<BookFlip>
   bool _armed =
       false; // grabbed but not yet moved → leaf idle (long-press inert)
   int _pendingDir = 0;
+  int _lastDragDir = 0;
   double _pendingGrabV = 0.5;
   int _bootGen =
       0; // bumped per _boot; a stale boot aborts at its post-await check
@@ -62,6 +63,7 @@ class _BookFlipState extends State<BookFlip>
     _scene.material = widget.material;
     _scene.curl = widget.curl;
     _scene.effects = widget.effects;
+    _scene.transparentPages = widget.transparentPages;
     unawaited(_boot());
   }
 
@@ -92,6 +94,10 @@ class _BookFlipState extends State<BookFlip>
       _scene.effects = widget.effects;
       _render(); // effect toggles change pixels → repaint (dedupe gates it)
     }
+    if (old.transparentPages != widget.transparentPages) {
+      _scene.transparentPages = widget.transparentPages;
+      _render();
+    }
     if (!identical(old.pages, widget.pages)) {
       // A reload supersedes any in-flight flip: stop the spring and return the
       // scene to idle so the controller can't keep ticking against the (now
@@ -103,6 +109,8 @@ class _BookFlipState extends State<BookFlip>
       _scene
         ..active = false
         ..dir = 0
+        ..coverForwardEdge = false
+        ..coverBackwardEdge = false
         ..t = 0.0;
       _spread = _spread.clamp(0, math.max(0, (widget.pages.length ~/ 2) - 1));
       widget.controller?._spreadCache = _spread;
@@ -158,7 +166,8 @@ class _BookFlipState extends State<BookFlip>
         ..atlas = atlas
         ..atlasCols = cols
         ..cellW = cellW
-        ..cellH = cellH;
+        ..cellH = cellH
+        ..transparentPages = widget.transparentPages;
       _applyPageMap(); // idle map for the opening spread
       _phase.value = _BootPhase.ready;
       // totalSpreads is now known: nudge a listening controller so a "page X of N"
@@ -213,6 +222,8 @@ class _BookFlipState extends State<BookFlip>
       ..dir = dir
       ..active = true
       ..atBoundary = false
+      ..coverForwardEdge = false
+      ..coverBackwardEdge = false
       ..t = 0.0;
     _applyPageMap();
     widget.onFlipStart?.call(
@@ -245,6 +256,8 @@ class _BookFlipState extends State<BookFlip>
     _scene
       ..active = false
       ..dir = 0
+      ..coverForwardEdge = false
+      ..coverBackwardEdge = false
       ..t = 0.0;
     _applyPageMap();
     _render();
@@ -275,14 +288,40 @@ class _BookFlipState extends State<BookFlip>
 
   void _applyPageMap() {
     final s = _spread;
+    _scene
+      ..coverForwardEdge = false
+      ..coverBackwardEdge = false;
     if (_scene.dir >= 0) {
       // forward / idle: right leaf turns left.
+      if (_scene.active && s == 0) {
+        // Closed cover -> first spread is a book edge case. Keep the right side
+        // as the cover leaf while it turns. The back face is the first inner
+        // page, but the renderer only reveals the destination spread late in
+        // the motion so the closed-cover state does not split open too early.
+        _scene.baseLeft = _pg(2);
+        _scene.baseRight = _pg(3);
+        _scene.leafFront = _pg(1);
+        _scene.leafBack = _pg(2);
+        _scene.coverForwardEdge = true;
+        return;
+      }
       _scene.baseLeft = _pg(2 * s);
       _scene.baseRight = _scene.active ? _pg(2 * s + 3) : _pg(2 * s + 1);
       _scene.leafFront = _pg(2 * s + 1);
       _scene.leafBack = _pg(2 * s + 2);
     } else {
       // backward: left leaf turns right.
+      if (_scene.active && s == 1) {
+        // First spread -> closed cover mirrors the edge case above. The left
+        // side should stop showing the inner page as soon as the close begins;
+        // the user is closing the book back to a single cover sheet.
+        _scene.baseLeft = _pg(0);
+        _scene.baseRight = _pg(3);
+        _scene.leafFront = _pg(1);
+        _scene.leafBack = _pg(1);
+        _scene.coverBackwardEdge = true;
+        return;
+      }
       _scene.baseLeft = _scene.active ? _pg(2 * s - 2) : _pg(2 * s);
       _scene.baseRight = _pg(2 * s + 1);
       _scene.leafFront = _pg(2 * s);
@@ -300,7 +339,7 @@ class _BookFlipState extends State<BookFlip>
       // we want the commit to fire when the leaf is visually landed, not after the
       // controller finishes wandering back. No stall, no dangling re-grab window.
       final settled = (_scene.t - _target).abs() < _physics.settleEpsilon &&
-          _ctl.velocity.abs() < 0.06;
+          _ctl.velocity.abs() < 24.0;
       if (settled) _finishAnimation();
     }
   }
@@ -319,6 +358,8 @@ class _BookFlipState extends State<BookFlip>
       ..active = false
       ..dir = 0
       ..atBoundary = false
+      ..coverForwardEdge = false
+      ..coverBackwardEdge = false
       ..t = 0.0;
     _applyPageMap();
     _render();
@@ -347,7 +388,7 @@ class _BookFlipState extends State<BookFlip>
     // real movement in _onDragUpdate, so the press itself is inert.
     final raw = local.dy / _scene.h;
     _pendingGrabV = raw.isFinite ? raw.clamp(0.0, 1.0) : 0.5;
-    _pendingDir = local.dx >= _scene.w * 0.5 ? 1 : -1;
+    _pendingDir = 0;
     _armed = true;
   }
 
@@ -357,6 +398,10 @@ class _BookFlipState extends State<BookFlip>
       if (!_armed) return;
       // First real movement → activate the flip now (onUpdate only fires on actual
       // motion, so a held finger never reaches here).
+      if (_pendingDir == 0) {
+        if (dx.abs() < 0.01) return;
+        _pendingDir = dx < 0 ? 1 : -1;
+      }
       final dir = _pendingDir;
       _atBoundary = dir > 0 ? !_canForward(_spread) : !_canBackward(_spread);
       _scene
@@ -372,8 +417,11 @@ class _BookFlipState extends State<BookFlip>
         dir > 0 ? FlipDirection.forward : FlipDirection.backward,
       );
     }
-    // Drag a full page width to complete a flip. Forward: drag left (dx<0).
-    final delta = (-_scene.dir * dx) / _scene.w;
+    // Dragging turns one leaf, so scale motion against a single page width
+    // instead of the full open spread. This lets a page feel grabbable from
+    // either side of the spread without requiring an across-the-book pull.
+    final pageDragWidth = math.max(1.0, _scene.w * 0.5);
+    final delta = (-_scene.dir * dx) / pageDragWidth;
     var raw = _scene.t + delta;
     if (_atBoundary) {
       raw = boundaryResist(raw); // soft peel, springs back.
@@ -384,15 +432,69 @@ class _BookFlipState extends State<BookFlip>
     _render();
   }
 
-  void _onDragEnd(double vx) {
-    if (!_dragging) return;
+  void _onDragDistance(Offset local, int dir, double distance) {
+    if (_phase.value != _BootPhase.ready || _scene.w <= 0) return;
+
+    _dragging = true;
+    _armed = false;
+    _lastDragDir = dir;
+    if (!_scene.active || _scene.dir != dir) {
+      _ctl.stop();
+      _atBoundary = dir > 0 ? !_canForward(_spread) : !_canBackward(_spread);
+      final rawGrab = local.dy / _scene.h;
+      _scene
+        ..grabV = rawGrab.isFinite ? rawGrab.clamp(0.0, 1.0) : 0.5
+        ..dir = dir
+        ..active = true
+        ..atBoundary = _atBoundary
+        ..t = 0.0;
+      _applyPageMap();
+      widget.onFlipStart?.call(
+        _spread,
+        dir > 0 ? FlipDirection.forward : FlipDirection.backward,
+      );
+    }
+
+    final pageDragWidth = math.max(1.0, _scene.w * 0.5);
+    var raw = (distance.abs() / pageDragWidth).clamp(0.0, 1.0);
+    if (_atBoundary) {
+      raw = boundaryResist(raw);
+    }
+    _scene.t = raw;
+    _render();
+  }
+
+  void _onDragEnd(double vx, {bool? forceCommit}) {
+    if (!_dragging && forceCommit == null) return;
     _dragging = false;
     _armed = false;
-    if (!_scene.active) return; // pure press, never moved → nothing to settle
+    if (!_scene.active) {
+      if (forceCommit == true && _lastDragDir != 0) {
+        final prevSpread = _spread;
+        _spread = (_spread + _lastDragDir).clamp(0, _maxSpread);
+        widget.controller?._spreadCache = _spread;
+        _scene
+          ..dir = 0
+          ..active = false
+          ..atBoundary = false
+          ..coverForwardEdge = false
+          ..coverBackwardEdge = false
+          ..t = 0.0;
+        _applyPageMap();
+        _render();
+        if (_spread != prevSpread) widget.onSpreadChanged?.call(_spread);
+        widget.onFlipEnd?.call(_spread);
+      }
+      _lastDragDir = 0;
+      return; // pure press, never moved → nothing to settle
+    }
     // t-space velocity from the finger (px/s → t/s).
-    final vel = (-_scene.dir * vx) / _scene.w;
+    final pageDragWidth = math.max(1.0, _scene.w * 0.5);
+    final vel = (-_scene.dir * vx) / pageDragWidth;
     if (_atBoundary) {
       _target = 0;
+    } else if (forceCommit != null) {
+      _target = forceCommit ? 1 : 0;
     } else {
       _target = (_scene.t + vel * _physics.velocityLookAhead >
                   _physics.commitThreshold ||
@@ -408,6 +510,7 @@ class _BookFlipState extends State<BookFlip>
       ratio: _physics.springDampingRatio,
     );
     _ctl.value = _scene.t;
+    _lastDragDir = 0;
     unawaited(
       _ctl.animateWith(
           SpringSimulation(spring, _scene.t, _target.toDouble(), vel)),

@@ -23,11 +23,14 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final maxSheetHeight = media.size.height * (compact ? 0.72 : 0.82);
     final radius = compact ? 16.0 : 24.r;
     return Container(
       margin: compact
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+      constraints: BoxConstraints(maxHeight: maxSheetHeight),
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(radius),
@@ -49,99 +52,103 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
       child: SafeArea(
         top: !compact,
         bottom: !compact,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!compact) ...[
-              const SizedBox(height: 6),
-              Container(
-                width: 36.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2.r),
+        minimum: EdgeInsets.only(bottom: compact ? 0 : 10),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!compact) ...[
+                const SizedBox(height: 6),
+                Container(
+                  width: 36.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.textMutedOf(context).withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
-              ),
-              SizedBox(height: 20.h),
-            ] else
-              SizedBox(height: 8.h),
+                SizedBox(height: 20.h),
+              ] else
+                SizedBox(height: 8.h),
 
-            // 상세보기 (onDetail이 전달되었을 때만 노출)
-            if (onDetail != null) ...[
+              // 상세보기 (onDetail이 전달되었을 때만 노출)
+              if (onDetail != null) ...[
+                _SheetItem(
+                  icon: Icons.zoom_in_rounded,
+                  label: '상세보기',
+                  onTap: onDetail!,
+                  compact: compact,
+                ),
+                Divider(
+                  height: 1,
+                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
+                  indent: 20.w,
+                  endIndent: 20.w,
+                ),
+              ],
+
+              // 수정하기
               _SheetItem(
-                icon: Icons.zoom_in_rounded,
-                label: '상세보기',
-                onTap: onDetail!,
+                icon: Icons.edit_note_rounded,
+                label: '수정하기',
+                onTap: onEdit,
                 compact: compact,
               ),
+
               Divider(
                 height: 1,
                 color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
                 indent: 20.w,
                 endIndent: 20.w,
               ),
-            ],
 
-            // 수정하기
-            _SheetItem(
-              icon: Icons.edit_note_rounded,
-              label: '수정하기',
-              onTap: onEdit,
-              compact: compact,
-            ),
+              // 초대하기 (onInvite가 전달되었을 때만 노출)
+              if (onInvite != null) ...[
+                _SheetItem(
+                  icon: Icons.group_add_rounded,
+                  label: '초대하기',
+                  onTap: onInvite!,
+                  compact: compact,
+                ),
+                Divider(
+                  height: 1,
+                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
+                  indent: 20.w,
+                  endIndent: 20.w,
+                ),
+              ],
 
-            Divider(
-              height: 1,
-              color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-              indent: 20.w,
-              endIndent: 20.w,
-            ),
-
-            // 초대하기 (onInvite가 전달되었을 때만 노출)
-            if (onInvite != null) ...[
+              // 제작 확정
               _SheetItem(
-                icon: Icons.group_add_rounded,
-                label: '초대하기',
-                onTap: onInvite!,
+                icon: Icons.lock_outline_rounded,
+                label: '제작 확정하기',
+                iconColor: SnapFitColors.accent,
+                labelColor: SnapFitColors.accent,
+                onTap: onConfirm,
                 compact: compact,
               ),
-              Divider(
-                height: 1,
-                color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                indent: 20.w,
-                endIndent: 20.w,
-              ),
+
+              if (onDelete != null) ...[
+                Divider(
+                  height: 1,
+                  color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
+                  indent: 20.w,
+                  endIndent: 20.w,
+                ),
+                _SheetItem(
+                  icon: Icons.delete_outline_rounded,
+                  label: '삭제하기',
+                  iconColor: Colors.redAccent,
+                  labelColor: Colors.redAccent,
+                  onTap: onDelete!,
+                  compact: compact,
+                ),
+              ],
+
+              SizedBox(height: compact ? 6 : 12.h),
             ],
-
-            // 제작 확정
-            _SheetItem(
-              icon: Icons.lock_outline_rounded,
-              label: '제작 확정하기',
-              iconColor: SnapFitColors.accent,
-              labelColor: SnapFitColors.accent,
-              onTap: onConfirm,
-              compact: compact,
-            ),
-
-            if (onDelete != null) ...[
-              Divider(
-                height: 1,
-                color: SnapFitColors.textMutedOf(context).withOpacity(0.1),
-                indent: 20.w,
-                endIndent: 20.w,
-              ),
-              _SheetItem(
-                icon: Icons.delete_outline_rounded,
-                label: '삭제하기',
-                iconColor: Colors.redAccent,
-                labelColor: Colors.redAccent,
-                onTap: onDelete!,
-                compact: compact,
-              ),
-            ],
-
-            SizedBox(height: compact ? 6 : 8.h),
-          ],
+          ),
         ),
       ),
     );

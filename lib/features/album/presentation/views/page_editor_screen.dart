@@ -690,9 +690,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       return Row(
         children: [
           SizedBox(
-            width: 72,
+            width: 96,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 58, 2, 18),
+              padding: const EdgeInsets.fromLTRB(12, 58, 6, 18),
               child: buildPageSelector(),
             ),
           ),
@@ -722,9 +722,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             ),
           ),
           SizedBox(
-            width: 76,
+            width: 90,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 58, 10, 18),
+              padding: const EdgeInsets.fromLTRB(6, 58, 12, 18),
               child: buildBottomMenu(),
             ),
           ),

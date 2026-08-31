@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
 import '../../views/add_cover_screen.dart';
 import '../../views/album_reader_screen.dart';
+import '../../../domain/entities/album.dart';
 import 'home_delete_album_dialog.dart';
+import 'home_album_paper_open_overlay.dart';
 import '../../../data/api/album_provider.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 
@@ -118,16 +121,51 @@ class HomeAlbumActions {
       }
 
       // 2. 진입 (리더 화면으로 이동)
-      final preparedPages = vm.pages;
-      final opensToSpread = preparedPages.length > 1;
-      final initialSpreadIndex = opensToSpread ? 1 : 0;
+      final initialSpreadIndex = 0;
+      final selectedCover = vm.selectedCover;
+      final baseCanvasSize = Size(
+        kCoverReferenceWidth,
+        kCoverReferenceWidth / selectedCover.ratio,
+      );
+      final fallbackAsset = selectedCover.ratio < 0.88
+          ? 'assets/snapfit_home_portrait.jpg'
+          : selectedCover.ratio > 1.12
+          ? 'assets/snapfit_home_landscape.jpg'
+          : 'assets/snapfit_home_square.jpg';
+      final openOverlay = album is Album
+          ? HomeAlbumPaperOpenOverlay.show(
+              context,
+              album: album,
+              baseCanvasSize: baseCanvasSize,
+              fallbackAsset: fallbackAsset,
+            )
+          : null;
 
+      if (!context.mounted) return;
+      if (openOverlay != null) {
+        await openOverlay.opened;
+        if (!context.mounted) return;
+      }
+
+      // The paper-open overlay owns the visual transition; the route itself
+      // should not add another fold/fade on top of it.
       final routeResult = Navigator.push<Object?>(
         context,
-        snapFitAlbumOpenRoute<Object?>(
-          page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
-        ),
+        openOverlay == null
+            ? snapFitAlbumOpenRoute<Object?>(
+                page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
+              )
+            : PageRouteBuilder<Object?>(
+                pageBuilder: (_, __, ___) =>
+                    AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: SnapFitMotion.fast,
+              ),
       );
+      if (openOverlay != null) {
+        await WidgetsBinding.instance.endOfFrame;
+        await openOverlay.dismiss();
+      }
       final result = await routeResult;
 
       if (result is Map) {

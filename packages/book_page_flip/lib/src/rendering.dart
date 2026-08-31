@@ -79,11 +79,10 @@ class _BookRenderer {
       safe = m.lastBadCount <= m.n * 0.3;
     }
 
-    // L1 — ALWAYS-OPAQUE base (two page halves; zero transparent spots, ever). While
-    // a real committing flip turns, the half the leaf LANDS on is wake-composited so
-    // the leaf→base handoff at commit is pixel-seamless (see _drawBase). A boundary
-    // peel springs back (never commits, and its landing page is a clamped phantom), so
-    // it is excluded — it keeps the plain base.
+    // L1 — base pages. Normal inner-page turns prepaint the landing page under
+    // the curl so the commit is seamless. Cover-edge turns are different: the
+    // cover is a single visible sheet, so prepainting the destination half makes
+    // an empty/next spread appear before the cover actually opens.
     final composite = !idle && safe && !scene.atBoundary;
     _drawBase(canvas, atlas, w, h, spineX, wake: composite ? m : null);
 
@@ -152,13 +151,29 @@ class _BookRenderer {
     final rSplit = spineX.floorToDouble();
     final leftRect = Rect.fromLTRB(0, 0, lSplit, h);
     final rightRect = Rect.fromLTRB(rSplit, 0, w, h);
-    void blit(int page, Rect dst) => canvas.drawImageRect(
-          atlas,
-          _cellRect(page, scene.atlasCols, scene.cellW, scene.cellH)
-              .deflate(0.5),
-          dst,
-          basePaint,
-        );
+    void blit(int page, Rect dst) {
+      if (scene.transparentPages.contains(page)) return;
+      canvas.drawImageRect(
+        atlas,
+        _cellRect(page, scene.atlasCols, scene.cellW, scene.cellH).deflate(0.5),
+        dst,
+        basePaint,
+      );
+    }
+
+    void blitWithOpacity(int page, Rect dst, double opacity) {
+      if (opacity <= 0 || scene.transparentPages.contains(page)) return;
+      if (opacity >= 1) {
+        blit(page, dst);
+        return;
+      }
+      canvas.saveLayer(
+        dst,
+        Paint()..color = Color.fromRGBO(255, 255, 255, opacity.clamp(0.0, 1.0)),
+      );
+      blit(page, dst);
+      canvas.restore();
+    }
 
     final dir = scene.dir;
     if (wake == null || dir == 0) {
@@ -167,11 +182,36 @@ class _BookRenderer {
       blit(scene.baseRight, rightRect);
       return;
     }
+
+    if (scene.coverForwardEdge) {
+      // Closed cover -> first spread. Keep the closed-cover read at the start,
+      // then let the destination pages appear only once the cover is mostly
+      // turned. This avoids the book splitting into a spread on the first few
+      // pixels of a drag while still revealing the next page before commit.
+      if (scene.t > 0.64) {
+        blit(scene.baseLeft, leftRect);
+        blit(scene.baseRight, rightRect);
+      } else {
+        blit(scene.baseRight, rightRect);
+      }
+      return;
+    }
+
+    if (scene.coverBackwardEdge) {
+      // First spread -> closed cover. Once the close starts, do not keep the
+      // previous inner page painted underneath. The moving sheet and landing
+      // cover should be the only visible book content.
+      final reveal = ((scene.t - 0.58) / 0.42).clamp(0.0, 1.0);
+      blitWithOpacity(scene.leafBack, rightRect, reveal);
+      return;
+    }
+
     // Active committing flip. dir>0 lands LEFT, dir<0 lands RIGHT.
     final destRect = dir > 0 ? leftRect : rightRect;
     final srcRect = dir > 0 ? rightRect : leftRect;
     final destOld = dir > 0 ? scene.baseLeft : scene.baseRight; // outgoing page
     final srcPage = dir > 0 ? scene.baseRight : scene.baseLeft; // never swaps
+
     blit(scene.leafBack,
         destRect); // landing page UNDER the leaf — fringes match it
     canvas.save();
@@ -218,6 +258,10 @@ class _BookRenderer {
         _cellRect(scene.leafFront, scene.atlasCols, scene.cellW, scene.cellH);
     final backCell =
         _cellRect(scene.leafBack, scene.atlasCols, scene.cellW, scene.cellH);
+    if (scene.transparentPages.contains(scene.leafFront) &&
+        scene.transparentPages.contains(scene.leafBack)) {
+      return;
+    }
     final fU = frontCell.left, fV = frontCell.top;
     final bU = backCell.left, bV = backCell.top;
     final pw = scene.cellW, ph = scene.cellH;
