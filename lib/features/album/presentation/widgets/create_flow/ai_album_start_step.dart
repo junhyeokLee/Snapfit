@@ -10,12 +10,14 @@ class AiAlbumStartStep extends StatelessWidget {
     required this.onManualStart,
     this.aiPointCost = 300,
     this.freeDraftLabel,
+    this.isFirstAiDraftFree = true,
   });
 
   final VoidCallback onAiStart;
   final VoidCallback onManualStart;
   final int aiPointCost;
   final String? freeDraftLabel;
+  final bool isFirstAiDraftFree;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +54,11 @@ class AiAlbumStartStep extends StatelessWidget {
                     SizedBox(height: 18.h),
                     _ManualStartCard(onTap: onManualStart),
                     SizedBox(height: 14.h),
-                    _AiStartRow(onTap: onAiStart),
+                    _AiStartRow(
+                      onTap: onAiStart,
+                      isFirstAiDraftFree: isFirstAiDraftFree,
+                      freeDraftLabel: freeDraftLabel,
+                    ),
                   ],
                 ),
               ),
@@ -119,6 +125,11 @@ class _AlbumHeroBoard extends StatelessWidget {
                 compact: true,
               ),
             ),
+          ),
+          Positioned(
+            right: 4.w,
+            top: 4.h,
+            child: _FreeDraftPill(isDark: isDark),
           ),
           Positioned(
             right: 4.w,
@@ -238,6 +249,38 @@ class _PhotoBookCover extends StatelessWidget {
   }
 }
 
+class _FreeDraftPill extends StatelessWidget {
+  const _FreeDraftPill({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFFF4F1EA) : const Color(0xFF1F1F1D),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Text(
+        '첫 AI 생성 무료',
+        style: TextStyle(
+          color: isDark ? const Color(0xFF111111) : Colors.white,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.2,
+        ),
+      ),
+    );
+  }
+}
+
 class _FinishedBookBadge extends StatelessWidget {
   const _FinishedBookBadge({required this.isDark});
   final bool isDark;
@@ -350,9 +393,15 @@ class _ManualStartCard extends StatelessWidget {
 }
 
 class _AiStartRow extends StatelessWidget {
-  const _AiStartRow({required this.onTap});
+  const _AiStartRow({
+    required this.onTap,
+    required this.isFirstAiDraftFree,
+    this.freeDraftLabel,
+  });
 
   final VoidCallback onTap;
+  final bool isFirstAiDraftFree;
+  final String? freeDraftLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -392,6 +441,20 @@ class _AiStartRow extends StatelessWidget {
                         letterSpacing: -0.25,
                       ),
                     ),
+                    if (isFirstAiDraftFree || freeDraftLabel != null) ...[
+                      SizedBox(height: 3.h),
+                      Text(
+                        freeDraftLabel ?? '첫 생성은 무료예요',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: SnapFitColors.textMutedOf(context),
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

@@ -12,6 +12,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
     required this.pointCost,
     required this.balance,
     required this.onConfirm,
+    this.isFirstAiDraftFree = true,
     required this.onBack,
   });
 
@@ -19,6 +20,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
   final AiPhotoRange range;
   final int pointCost;
   final int balance;
+  final bool isFirstAiDraftFree;
   final VoidCallback onConfirm;
   final VoidCallback onBack;
 
@@ -56,7 +58,10 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 14.h),
-                    _DraftTicket(pointCost: pointCost),
+                    _DraftTicket(
+                      pointCost: pointCost,
+                      isFirstAiDraftFree: isFirstAiDraftFree,
+                    ),
                     SizedBox(height: 18.h),
                     Text(
                       '초안 생성',
@@ -75,8 +80,12 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                         _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
                         _InfoRow(
                           label: '사용 포인트',
-                          value: '${_format(pointCost)}P',
+                          value: isFirstAiDraftFree
+                              ? '무료'
+                              : '${_format(pointCost)}P',
                         ),
+                        if (isFirstAiDraftFree)
+                          const _InfoRow(label: '무료 혜택', value: '첫 AI 생성 1회'),
                         _InfoRow(
                           label: '보유 포인트',
                           value: '${_format(balance)}P',
@@ -102,7 +111,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          '초안 만들기',
+                          isFirstAiDraftFree ? '무료로 초안 만들기' : '초안 만들기',
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w900,
@@ -153,8 +162,12 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
 }
 
 class _DraftTicket extends StatelessWidget {
-  const _DraftTicket({required this.pointCost});
+  const _DraftTicket({
+    required this.pointCost,
+    required this.isFirstAiDraftFree,
+  });
   final int pointCost;
+  final bool isFirstAiDraftFree;
 
   @override
   Widget build(BuildContext context) {
@@ -227,10 +240,10 @@ class _DraftTicket extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  '✓',
+                  isFirstAiDraftFree ? 'FREE' : '✓',
                   style: TextStyle(
                     color: isDark ? const Color(0xFF111111) : Colors.white,
-                    fontSize: 24.sp,
+                    fontSize: isFirstAiDraftFree ? 13.sp : 24.sp,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -358,12 +371,17 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w900,
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: SnapFitColors.textPrimaryOf(context),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],

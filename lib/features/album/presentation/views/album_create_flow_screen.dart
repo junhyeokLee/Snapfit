@@ -444,6 +444,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         if (!_hasSelectedCreationMode) {
           return AiAlbumStartStep(
             aiPointCost: _aiDraftPointCost,
+            freeDraftLabel: '첫 생성은 무료예요',
+            isFirstAiDraftFree: true,
             onAiStart: () => setState(() {
               _isAiCreationMode = true;
               _hasSelectedCreationMode = true;
@@ -544,6 +546,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             range: selectedAiRange,
             pointCost: _aiDraftPointCost,
             balance: _previewPointBalance,
+            isFirstAiDraftFree: true,
             onConfirm: _generateAiDraftFromSelection,
             onBack: () => setState(() {
               _selectedAiRange = null;
