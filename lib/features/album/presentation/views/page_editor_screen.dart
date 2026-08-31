@@ -831,8 +831,12 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: Theme.of(context).brightness == Brightness.dark
-                  ? SnapFitColors.readerGradientOf(context)
-                  : const [Color(0xFFFAF7F1), Color(0xFFFFFCF7)],
+                  ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
+                  : const [
+                      Color(0xFFFBF5EC),
+                      Color(0xFFF3E4D0),
+                      Color(0xFFFDF9F2),
+                    ],
             ),
           ),
           child: Stack(
@@ -1133,7 +1137,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             value: state!.backgroundUploadProgress,
-                            color: SnapFitColors.accent,
+                            color: const Color(0xFF8F6846),
                             backgroundColor: Colors.white24,
                           ),
                         ),
@@ -1172,14 +1176,14 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             end: Alignment.bottomRight,
             colors: isDark
                 ? const [
-                    Color(0xFF0E1117),
-                    Color(0xFF102A30),
-                    Color(0xFF171423),
+                    Color(0xFF0F1112),
+                    Color(0xFF1D1813),
+                    Color(0xFF111111),
                   ]
                 : const [
-                    Color(0xFFFFF8F1),
-                    Color(0xFFEAFBFD),
-                    Color(0xFFF7F3FF),
+                    Color(0xFFFBF5EC),
+                    Color(0xFFF4E4D0),
+                    Color(0xFFFDF9F2),
                   ],
           ),
         ),
@@ -1190,7 +1194,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               right: -54.w,
               child: _AmbientOrb(
                 size: 190.w,
-                color: SnapFitColors.accent.withOpacity(isDark ? 0.18 : 0.20),
+                color: const Color(
+                  0xFFD5B98F,
+                ).withOpacity(isDark ? 0.14 : 0.24),
               ),
             ),
             Positioned(
@@ -1199,7 +1205,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               child: _AmbientOrb(
                 size: 230.w,
                 color: const Color(
-                  0xFFFFA86B,
+                  0xFFB98B62,
                 ).withOpacity(isDark ? 0.10 : 0.18),
               ),
             ),
@@ -1209,8 +1215,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               child: _AmbientOrb(
                 size: 250.w,
                 color: const Color(
-                  0xFF8B7CFF,
-                ).withOpacity(isDark ? 0.14 : 0.16),
+                  0xFF9CAF8A,
+                ).withOpacity(isDark ? 0.12 : 0.18),
               ),
             ),
           ],
@@ -1231,14 +1237,14 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           colors: isDark
               ? [Colors.white.withOpacity(0.09), Colors.white.withOpacity(0.03)]
               : [
-                  Colors.white.withOpacity(0.72),
-                  const Color(0xFFEAFBFD).withOpacity(0.54),
+                  Colors.white.withOpacity(0.86),
+                  const Color(0xFFF1E1CB).withOpacity(0.70),
                 ],
         ),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.10)
-              : SnapFitColors.deepCharcoal.withOpacity(0.07),
+              : const Color(0xFFDCCDBB),
         ),
         boxShadow: [
           BoxShadow(
@@ -1247,7 +1253,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             offset: const Offset(0, 18),
           ),
           BoxShadow(
-            color: SnapFitColors.accent.withOpacity(isDark ? 0.12 : 0.08),
+            color: const Color(0xFFB98B62).withOpacity(isDark ? 0.10 : 0.10),
             blurRadius: 42,
             offset: const Offset(0, 12),
           ),
@@ -1285,21 +1291,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   width: 34.w,
                   height: 34.w,
                   decoration: BoxDecoration(
-                    color: SnapFitColors.accent.withOpacity(0.12),
+                    color: const Color(0xFFF1E1CB),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.touch_app_outlined,
                     size: 18.sp,
-                    color: SnapFitColors.accent,
+                    color: const Color(0xFF8F6846),
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     isCover
-                        ? '표지에 담을 사진과 제목을 더해 첫인상을 완성해보세요.'
-                        : '사진을 넣고 레이아웃을 고르면 한 쪽의 이야기가 시작돼요.',
+                        ? '표지 사진·제목·레이어를 그대로 편집할 수 있어요.'
+                        : '사진·레이아웃·템플릿·스티커·배경을 아래에서 바로 조정해요.',
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),
                       fontSize: 12.sp,

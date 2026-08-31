@@ -133,19 +133,21 @@ class EditorBottomMenu extends StatelessWidget {
                       const Color(0xFF101820).withOpacity(0.92),
                     ]
                   : [
-                      Colors.white.withOpacity(0.92),
-                      const Color(0xFFEAFBFD).withOpacity(0.72),
-                      const Color(0xFFFFF4EA).withOpacity(0.86),
+                      Colors.white.withOpacity(0.95),
+                      const Color(0xFFF5E8D7).withOpacity(0.92),
+                      const Color(0xFFFCF7EF).withOpacity(0.96),
                     ],
             ),
             border: Border.all(
               color: isDark
                   ? Colors.white.withOpacity(0.10)
-                  : SnapFitColors.deepCharcoal.withOpacity(0.08),
+                  : const Color(0xFFDCCDBB),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.34 : 0.12),
+                color: const Color(
+                  0xFF6C5740,
+                ).withOpacity(isDark ? 0.34 : 0.14),
                 blurRadius: 28,
                 offset: const Offset(0, -12),
               ),
@@ -234,28 +236,25 @@ class EditorBottomMenu extends StatelessWidget {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    SnapFitColors.primaryGradientStart,
-                    SnapFitColors.primaryGradientEnd,
-                  ],
+                  colors: [Color(0xFF2A2520), Color(0xFF6E5942)],
                 )
               : null,
           color: isSelected
               ? null
               : isFeatured
-              ? SnapFitColors.accent.withOpacity(isDark ? 0.16 : 0.10)
-              : Colors.white.withOpacity(isDark ? 0.04 : 0.30),
+              ? const Color(0xFFF1E1CB).withOpacity(isDark ? 0.16 : 0.80)
+              : Colors.white.withOpacity(isDark ? 0.05 : 0.42),
           border: Border.all(
             color: isSelected
                 ? Colors.white.withOpacity(0.20)
                 : isFeatured
-                ? SnapFitColors.accent.withOpacity(0.20)
+                ? const Color(0xFFB98B62).withOpacity(0.26)
                 : SnapFitColors.overlayLightOf(context),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: SnapFitColors.accent.withOpacity(0.24),
+                    color: const Color(0xFF6C5740).withOpacity(0.22),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -277,7 +276,7 @@ class EditorBottomMenu extends StatelessWidget {
                     color: isSelected
                         ? Colors.white
                         : isFeatured
-                        ? SnapFitColors.accent
+                        ? const Color(0xFF8F6846)
                         : baseColor,
                     size: compact ? 19 : 22,
                   ),
@@ -317,7 +316,7 @@ class EditorBottomMenu extends StatelessWidget {
                           color: isSelected
                               ? Colors.white
                               : isFeatured
-                              ? SnapFitColors.accent
+                              ? const Color(0xFF8F6846)
                               : baseColor,
                           fontWeight: isSelected || isFeatured
                               ? FontWeight.w900
