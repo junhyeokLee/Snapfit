@@ -792,9 +792,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   duration: SnapFitMotion.fast,
                   opacity: _isSaving ? 0.45 : 1,
                   child: Container(
-                    height: 36.h,
-                    constraints: BoxConstraints(minWidth: 62.w),
-                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    height: 34.h,
+                    constraints: BoxConstraints(minWidth: 48.w),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(999.r),
@@ -817,7 +817,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 10.5.sp,
+                        fontSize: 12.sp,
                         height: 1.0,
                       ),
                     ),
@@ -834,11 +834,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               end: Alignment.bottomCenter,
               colors: Theme.of(context).brightness == Brightness.dark
                   ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
-                  : const [
-                      Color(0xFFFBF5EC),
-                      Color(0xFFF3E4D0),
-                      Color(0xFFFDF9F2),
-                    ],
+                  : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
             ),
           ),
           child: Stack(
@@ -1176,51 +1172,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? const [
-                    Color(0xFF0F1112),
-                    Color(0xFF1D1813),
-                    Color(0xFF111111),
-                  ]
-                : const [
-                    Color(0xFFFBF5EC),
-                    Color(0xFFF4E4D0),
-                    Color(0xFFFDF9F2),
-                  ],
+                ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
+                : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
           ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -78.h,
-              right: -54.w,
-              child: _AmbientOrb(
-                size: 190.w,
-                color: const Color(
-                  0xFFD5B98F,
-                ).withOpacity(isDark ? 0.14 : 0.24),
-              ),
-            ),
-            Positioned(
-              top: 130.h,
-              left: -86.w,
-              child: _AmbientOrb(
-                size: 230.w,
-                color: const Color(
-                  0xFFB98B62,
-                ).withOpacity(isDark ? 0.10 : 0.18),
-              ),
-            ),
-            Positioned(
-              bottom: 76.h,
-              right: -92.w,
-              child: _AmbientOrb(
-                size: 250.w,
-                color: const Color(
-                  0xFF9CAF8A,
-                ).withOpacity(isDark ? 0.12 : 0.18),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -1564,30 +1518,6 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AmbientOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _AmbientOrb({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow: [
-            BoxShadow(color: color, blurRadius: 70, spreadRadius: 28),
-          ],
         ),
       ),
     );

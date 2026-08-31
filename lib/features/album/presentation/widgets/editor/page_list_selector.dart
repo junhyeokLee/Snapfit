@@ -41,7 +41,7 @@ class PageListSelector extends ConsumerWidget {
       builder: (context, constraints) {
         final isVerticalRail = constraints.maxWidth < 120;
         return SizedBox(
-          height: isVerticalRail ? double.infinity : 82.h,
+          height: isVerticalRail ? double.infinity : 78.h,
           width: isVerticalRail ? 60 : null,
           child: ListView.separated(
             padding: isVerticalRail
@@ -50,7 +50,7 @@ class PageListSelector extends ConsumerWidget {
             scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
             itemCount: pages.length + 1, // 마지막에 + 버튼 추가
             separatorBuilder: (context, index) => SizedBox(
-              width: isVerticalRail ? 0 : 12.w,
+              width: isVerticalRail ? 0 : 8.w,
               height: isVerticalRail ? 8 : 0,
             ),
             itemBuilder: (context, index) {
@@ -76,8 +76,8 @@ class PageListSelector extends ConsumerWidget {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: SnapFitMotion.settle,
-                      width: isVerticalRail ? 44 : (isSelected ? 56.w : 52.w),
-                      height: isVerticalRail ? 42 : (isSelected ? 42.h : 40.h),
+                      width: isVerticalRail ? 44 : (isSelected ? 46.w : 42.w),
+                      height: isVerticalRail ? 42 : (isSelected ? 50.h : 48.h),
                       padding: EdgeInsets.all(
                         isVerticalRail ? 3 : (isSelected ? 4.w : 3.w),
                       ),
@@ -152,8 +152,8 @@ class PageListSelector extends ConsumerWidget {
                             ),
                           if (isSelected)
                             Positioned(
-                              left: 8.w,
-                              right: 8.w,
+                              left: 7.w,
+                              right: 7.w,
                               bottom: -3.h,
                               child: AnimatedContainer(
                                 duration: SnapFitMotion.pageTurnFast,
@@ -276,8 +276,8 @@ class PageListSelector extends ConsumerWidget {
     // 썸네일 크기에 맞게 스케일링된 페이지 내용 표시
     return AlbumReaderPageContent(
       layers: page.layers,
-      targetW: 50.w,
-      targetH: 50.w,
+      targetW: 42.w,
+      targetH: 48.h,
       previewBuilder: LayerBuilder(
         LayerInteractionManager.preview(ref, () => logicalInnerSize),
         () => logicalInnerSize,
@@ -298,8 +298,8 @@ class PageListSelector extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 46.w,
-            height: 44.h,
+            width: 42.w,
+            height: 48.h,
             decoration: BoxDecoration(
               color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
               borderRadius: BorderRadius.circular(14.r),
@@ -328,7 +328,7 @@ class PageListSelector extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
           Text('', style: TextStyle(fontSize: 9)),
         ],
       ),
