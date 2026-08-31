@@ -34,7 +34,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FrameTimingMonitor.start();
   await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // Keep the Android status bar visible but hide the bottom system
+  // navigation bar by default so it does not cover Snapfit's UI.
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top],
+  );
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
