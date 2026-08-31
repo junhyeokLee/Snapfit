@@ -792,8 +792,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   duration: SnapFitMotion.fast,
                   opacity: _isSaving ? 0.45 : 1,
                   child: Container(
-                    height: 34.h,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    height: 36.h,
+                    constraints: BoxConstraints(minWidth: 62.w),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(999.r),
@@ -816,7 +817,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 14.sp,
+                        fontSize: 10.5.sp,
+                        height: 1.0,
                       ),
                     ),
                   ),
@@ -1040,19 +1042,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           ),
                         ),
 
-                        if (_currentMode != EditorMode.none)
-                          Padding(
-                            key: const Key('editorAtelierPanel'),
-                            padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10.h),
-                            child: _EditorToolPanelReveal(
-                              child: _buildInlineToolPanel(
-                                context,
-                                _currentMode,
-                                layers,
-                              ),
-                            ),
-                          ),
-
                         // Bottom Menu (고정)
                         Padding(
                           padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
@@ -1102,9 +1091,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 ),
               ),
 
+              if (_currentMode != EditorMode.none)
+                Positioned(
+                  key: const Key('editorAtelierPanel'),
+                  left: 12.w,
+                  right: 12.w,
+                  bottom: 136.h,
+                  child: _EditorToolPanelReveal(
+                    child: _buildInlineToolPanel(context, _currentMode, layers),
+                  ),
+                ),
+
               if (_showEditorHint &&
                   !_isSaving &&
-                  _interaction.selectedLayerId == null)
+                  _interaction.selectedLayerId == null &&
+                  _currentMode == EditorMode.none)
                 _buildEditorHint(context, isCover: currentPageIndex == 0),
 
               // 저장 중 진행률 오버레이
@@ -1480,7 +1481,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 0.44.sh,
+        height: 0.36.sh,
         decoration: BoxDecoration(
           color: sheetColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
@@ -1507,7 +1508,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(18.w, 8.h, 10.w, 6.h),
+                padding: EdgeInsets.fromLTRB(18.w, 6.h, 10.w, 4.h),
                 child: Row(
                   children: [
                     Expanded(
@@ -1517,7 +1518,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: SnapFitColors.textPrimaryOf(context),
-                          fontSize: 15.sp,
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.35,
                           decoration: TextDecoration.none,
@@ -1529,8 +1530,8 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                       pressedScale: 0.94,
                       borderRadius: BorderRadius.circular(999.r),
                       child: Container(
-                        width: 36.r,
-                        height: 36.r,
+                        width: 32.r,
+                        height: 32.r,
                         decoration: BoxDecoration(
                           color: isDark
                               ? Colors.white.withOpacity(0.08)
@@ -1541,7 +1542,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                         child: Icon(
                           Icons.close_rounded,
                           color: SnapFitColors.textSecondaryOf(context),
-                          size: 19.sp,
+                          size: 17.sp,
                         ),
                       ),
                     ),
