@@ -281,25 +281,6 @@ class EditorBottomMenu extends StatelessWidget {
                     size: compact ? 19 : 22,
                   ),
                 ),
-                if (!compact && item.isAction)
-                  Positioned(
-                    right: -4,
-                    top: -5,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: SnapFitColors.accent,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF171A22)
-                              : Colors.white,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
             if (!compact) ...[

@@ -1387,6 +1387,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       EditorMode.layer => LayerManagerPanel(
         layers: layers,
         interaction: _interaction,
+        showHandle: false,
       ),
       EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
       EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
@@ -1469,55 +1470,95 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
+    final sheetColor = isDark
+        ? const Color(0xF21A1E26)
+        : const Color(0xFFFFFCF7);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.10)
+        : const Color(0xFFE6D8C8);
+
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 0.48.sh,
+        height: 0.44.sh,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xF21A1E26) : const Color(0xF7FFFCF7),
-          borderRadius: BorderRadius.circular(28.r),
-          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          color: sheetColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.32 : 0.12),
-              blurRadius: 26,
-              offset: const Offset(0, -10),
+              color: Colors.black.withOpacity(isDark ? 0.34 : 0.13),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(28.r),
-          child: Stack(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          child: Column(
             children: [
-              Positioned.fill(
+              SizedBox(height: 10.h),
+              Container(
+                width: 42.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: SnapFitColors.textPrimaryOf(context).withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(18.w, 8.h, 10.w, 6.h),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: SnapFitColors.textPrimaryOf(context),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.35,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                    SnapFitPressable(
+                      onTap: onClose,
+                      pressedScale: 0.94,
+                      borderRadius: BorderRadius.circular(999.r),
+                      child: Container(
+                        width: 36.r,
+                        height: 36.r,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.08)
+                              : const Color(0xFFF6EFE6),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: SnapFitColors.textSecondaryOf(context),
+                          size: 19.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: borderColor.withOpacity(0.78),
+              ),
+              Expanded(
                 child: AnimatedSwitcher(
                   duration: SnapFitMotion.fast,
                   switchInCurve: SnapFitMotion.entrance,
                   switchOutCurve: Curves.easeInCubic,
                   child: KeyedSubtree(key: ValueKey(title), child: child),
-                ),
-              ),
-              Positioned(
-                top: 8.h,
-                right: 8.w,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context).withOpacity(0.82),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: SnapFitColors.overlayLightOf(context),
-                    ),
-                  ),
-                  child: IconButton(
-                    tooltip: '$title 닫기',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onClose,
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: SnapFitColors.textSecondaryOf(context),
-                      size: 20.sp,
-                    ),
-                  ),
                 ),
               ),
             ],

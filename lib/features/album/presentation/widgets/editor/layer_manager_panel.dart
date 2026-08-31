@@ -14,11 +14,13 @@ import '../../controllers/layer_interaction_manager.dart';
 class LayerManagerPanel extends ConsumerStatefulWidget {
   final List<LayerModel> layers;
   final LayerInteractionManager interaction;
+  final bool showHandle;
 
   const LayerManagerPanel({
     super.key,
     required this.layers,
     required this.interaction,
+    this.showHandle = true,
   });
 
   @override
@@ -84,21 +86,29 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h),
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(
-                    context,
-                  ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r),
+            if (widget.showHandle) ...[
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.textPrimaryOf(
+                      context,
+                    ).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
+            ] else
+              SizedBox(height: 8.h),
             Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
+              padding: EdgeInsets.fromLTRB(
+                16.w,
+                widget.showHandle ? 8.h : 4.h,
+                16.w,
+                4.h,
+              ),
               child: Text(
                 '항목을 탭하면 캔버스에서 해당 레이어가 선택됩니다.',
                 style: TextStyle(
