@@ -1226,41 +1226,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   }
 
   Widget _buildWorkspaceFrame(BuildContext context, {required Widget child}) {
-    final isDark = SnapFitColors.isDark(context);
-    return Container(
-      padding: EdgeInsets.all(10.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [Colors.white.withOpacity(0.09), Colors.white.withOpacity(0.03)]
-              : [
-                  Colors.white.withOpacity(0.86),
-                  const Color(0xFFF1E1CB).withOpacity(0.70),
-                ],
-        ),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFDCCDBB),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.30 : 0.10),
-            blurRadius: 32,
-            offset: const Offset(0, 18),
-          ),
-          BoxShadow(
-            color: const Color(0xFFB98B62).withOpacity(isDark ? 0.10 : 0.10),
-            blurRadius: 42,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(24.r), child: child),
-    );
+    // The album itself should be the visual object, matching Home/Reader.
+    // Avoid a separate oversized editor card behind it.
+    return Center(child: child);
   }
 
   Widget _buildEditorHint(BuildContext context, {required bool isCover}) {

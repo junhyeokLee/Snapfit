@@ -546,27 +546,24 @@ class EditCoverState extends ConsumerState<EditCover> {
                                         final double logicalH =
                                             logicalW / aspect;
 
-                                        // 모든 커버 유형이 같은 '최대 변' 길이를 갖도록 스케일 계산
-                                        // → 정사각형(500×500)이 세로형(375×500)보다 면적이 더 크게 표시됨
-                                        final double maxLogicalDim =
-                                            logicalW > logicalH
-                                            ? logicalW
-                                            : logicalH;
-                                        final double scaleByMaxDim =
-                                            availW / maxLogicalDim;
-                                        // 높이가 가용 영역을 넘지 않도록 제한
+                                        // Match Home/Reader sizing: fill by cover aspect ratio
+                                        // inside available width/height instead of normalizing every
+                                        // orientation by max side. This keeps portrait/landscape
+                                        // album scale visually consistent across main, read, and edit.
+                                        final double scaleByWidth =
+                                            availW / logicalW;
                                         final double scaleByHeight =
                                             availH / logicalH;
                                         final double scale =
-                                            scaleByMaxDim < scaleByHeight
-                                            ? scaleByMaxDim
+                                            scaleByWidth < scaleByHeight
+                                            ? scaleByWidth
                                             : scaleByHeight;
                                         final double displayW =
                                             logicalW * scale;
                                         final double displayH =
                                             logicalH * scale;
                                         debugPrint(
-                                          '[CoverSize] aspect=$aspect maxLogicalDim=${maxLogicalDim.toStringAsFixed(0)} scaleByMaxDim=${scaleByMaxDim.toStringAsFixed(3)} scaleByH=${scaleByHeight.toStringAsFixed(3)} → scale=${scale.toStringAsFixed(3)} displayW=${displayW.toStringAsFixed(0)} displayH=${displayH.toStringAsFixed(0)}',
+                                          '[CoverSize] aspect=$aspect scaleByW=${scaleByWidth.toStringAsFixed(3)} scaleByH=${scaleByHeight.toStringAsFixed(3)} → scale=${scale.toStringAsFixed(3)} displayW=${displayW.toStringAsFixed(0)} displayH=${displayH.toStringAsFixed(0)}',
                                         );
 
                                         return SizedBox(

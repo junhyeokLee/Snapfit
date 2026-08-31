@@ -323,6 +323,29 @@ void main() {
   );
 
   testWidgets(
+    'page editor landscape keeps album canvas reader-sized beside tool rails',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(844, 390));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(_wrapEditor());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditCover), findsOneWidget);
+      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(
+        find.text('템플릿'),
+        findsNothing,
+      ); // landscape rail is compact icon-only
+
+      final canvasRect = tester.getRect(find.byType(EditCover));
+      final dockRect = tester.getRect(find.byType(EditorBottomMenu));
+      expect(canvasRect.width, greaterThan(180));
+      expect(canvasRect.height, greaterThan(240));
+      expect(dockRect.left, greaterThan(canvasRect.right));
+    },
+  );
+
+  testWidgets(
     'page editor full workspace golden captures canvas dock and layer sheet',
     (tester) async {
       await _pumpEditor(tester);
