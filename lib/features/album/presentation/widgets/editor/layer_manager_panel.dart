@@ -14,11 +14,13 @@ import '../../controllers/layer_interaction_manager.dart';
 class LayerManagerPanel extends ConsumerStatefulWidget {
   final List<LayerModel> layers;
   final LayerInteractionManager interaction;
+  final bool showHandle;
 
   const LayerManagerPanel({
     super.key,
     required this.layers,
     required this.interaction,
+    this.showHandle = true,
   });
 
   @override
@@ -71,7 +73,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
     }
 
     return Container(
-      height: 320.h,
+      height: widget.showHandle ? 320.h : double.infinity,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(
@@ -84,32 +86,40 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h),
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(
-                    context,
-                  ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r),
+            if (widget.showHandle) ...[
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: SnapFitColors.textPrimaryOf(
+                      context,
+                    ).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
+            ] else
+              SizedBox(height: 8.h),
             Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
+              padding: EdgeInsets.fromLTRB(
+                14.w,
+                widget.showHandle ? 8.h : 2.h,
+                14.w,
+                2.h,
+              ),
               child: Text(
                 '항목을 탭하면 캔버스에서 해당 레이어가 선택됩니다.',
                 style: TextStyle(
                   color: SnapFitColors.textMutedOf(context),
-                  fontSize: 11.sp,
+                  fontSize: (widget.showHandle ? 11 : 9.5).sp,
                 ),
               ),
             ),
             Expanded(
               child: ReorderableListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
                 itemCount: _localLayers.length,
                 buildDefaultDragHandles: false,
                 onReorder: (oldIndex, newIndex) {
@@ -157,11 +167,11 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         if (context.mounted) Navigator.of(context).pop();
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: surfaceColor,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
           border: isSelected
               ? Border.all(color: SnapFitColors.accent, width: 2)
               : Border.all(color: SnapFitColors.overlayLightOf(context)),
@@ -177,7 +187,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 12.sp,
+                  fontSize: (widget.showHandle ? 12 : 10.5).sp,
                 ),
               ),
             ),
@@ -186,7 +196,7 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
               child: Icon(
                 Icons.drag_indicator,
                 color: SnapFitColors.textPrimaryOf(context).withOpacity(0.5),
-                size: 22.sp,
+                size: (widget.showHandle ? 22 : 18).sp,
               ),
             ),
           ],
@@ -199,8 +209,8 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
   Widget _buildLayerPreview(BuildContext context, LayerModel layer, int index) {
     final imageOrder = _imageOrderFor(layer, index);
     return Container(
-      width: 44.w,
-      height: 44.w,
+      width: 38.w,
+      height: 38.w,
       decoration: BoxDecoration(
         color: SnapFitColors.textPrimaryOf(context).withOpacity(0.05),
         borderRadius: BorderRadius.circular(8.r),

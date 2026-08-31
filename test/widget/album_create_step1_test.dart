@@ -5,6 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
 
+Future<void> _setPhoneSurface(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+}
+
 Future<void> _loadGoldenFonts() async {
   final robotoLoader = FontLoader('Roboto')
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
@@ -82,9 +91,9 @@ void main() {
     expect(find.text('1 / 3'), findsNothing);
     expect(find.text('앨범 기본 정보'), findsNothing);
     expect(find.text('제목, 책 비율, 분량만 정해요.'), findsNothing);
-    expect(find.byKey(const Key('albumCreateStepHero')), findsOneWidget);
-    expect(find.text('새 앨범'), findsOneWidget);
-    expect(find.text('표지와 분량을 먼저 정해요.'), findsOneWidget);
+    expect(find.byKey(const Key('albumCreateStepHero')), findsNothing);
+    expect(find.text('새 앨범'), findsNothing);
+    expect(find.text('표지와 분량을 먼저 정해요.'), findsNothing);
     expect(find.text('표지'), findsOneWidget);
     expect(find.text('제주 가족 여행 룩북'), findsOneWidget);
     expect(find.text('앨범 제목'), findsOneWidget);
@@ -107,81 +116,39 @@ void main() {
     expect(find.text('표지 먼저 확인하기'), findsNothing);
   });
 
-  testWidgets('hero preview reacts to title and cover ratio changes', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'direct creation stays focused on controls without hero preview',
+    (tester) async {
+      await _setPhoneSurface(tester);
 
-    final squareCover = coverSizes.firstWhere((s) => s.name == '정사각형');
-    final verticalCover = coverSizes.firstWhere((s) => s.name == '세로형');
-
-    await tester.pumpWidget(
-      _wrap(
-        AlbumCreateStep1(
-          albumTitle: '',
-          selectedCover: squareCover,
-          selectedPageCount: 24,
-          onTitleChanged: (_) {},
-          onCoverSelected: (_) {},
-          onPageCountChanged: (_) {},
-          onNext: () {},
+      await tester.pumpWidget(
+        _wrap(
+          AlbumCreateStep1(
+            albumTitle: '',
+            selectedCover: coverSizes.firstWhere((s) => s.name == '정사각형'),
+            selectedPageCount: 24,
+            onTitleChanged: (_) {},
+            onCoverSelected: (_) {},
+            onPageCountChanged: (_) {},
+            onNext: () {},
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('제목 미정'), findsOneWidget);
-    final squareSize = tester.getSize(
-      find.byKey(const Key('albumCreateHeroPreview')),
-    );
-    expect(squareSize.width, closeTo(squareSize.height, 0.5));
-
-    final hero = find.byKey(const Key('albumCreateStepHero'));
-    expect(hero, findsOneWidget);
-
-    await tester.enterText(find.byType(TextField), '바뀐 앨범 제목');
-    await tester.pump();
-    expect(
-      find.descendant(of: hero, matching: find.text('바뀐 앨범 제목')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: hero, matching: find.text('제목 미정')),
-      findsNothing,
-    );
-
-    await tester.pumpWidget(
-      _wrap(
-        AlbumCreateStep1(
-          albumTitle: '바뀐 앨범 제목',
-          selectedCover: verticalCover,
-          selectedPageCount: 24,
-          onTitleChanged: (_) {},
-          onCoverSelected: (_) {},
-          onPageCountChanged: (_) {},
-          onNext: () {},
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(hero, findsOneWidget);
-
-    final verticalSize = tester.getSize(
-      find.byKey(const Key('albumCreateHeroPreview')),
-    );
-    expect(verticalSize.height, greaterThan(verticalSize.width));
-    expect(verticalSize.width, lessThan(squareSize.width));
-    expect(
-      find.descendant(of: hero, matching: find.text('바뀐 앨범 제목')),
-      findsOneWidget,
-    );
-  });
+      expect(find.byKey(const Key('albumCreateStepHero')), findsNothing);
+      expect(find.byKey(const Key('albumCreateHeroPreview')), findsNothing);
+      expect(find.text('앨범 제목'), findsOneWidget);
+      expect(find.text('책 비율'), findsOneWidget);
+      expect(find.text('분량'), findsOneWidget);
+      expect(find.textContaining('AI'), findsNothing);
+      expect(find.textContaining('포인트'), findsNothing);
+    },
+  );
 
   testWidgets('matches book atelier creation golden', (tester) async {
     await _loadGoldenFonts();
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await _setPhoneSurface(tester);
 
     await tester.pumpWidget(
       _wrap(

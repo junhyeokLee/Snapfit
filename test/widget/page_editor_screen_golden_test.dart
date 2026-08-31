@@ -71,12 +71,12 @@ Future<void> _loadGoldenFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await korean.load();
 
+  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+  final materialIconPath = flutterRoot == null
+      ? '/opt/data/flutter-sdk-release/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'
+      : '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';
   final materialIcons = FontLoader('MaterialIcons')
-    ..addFont(
-      File(
-        '/opt/data/flutter-sdk-release/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
-      ).readAsBytes().then(ByteData.sublistView),
-    );
+    ..addFont(File(materialIconPath).readAsBytes().then(ByteData.sublistView));
   await materialIcons.load();
 }
 
@@ -320,6 +320,29 @@ void main() {
           .dy;
       final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
       expect(panelBottom, lessThanOrEqualTo(dockTop + 1));
+    },
+  );
+
+  testWidgets(
+    'page editor landscape keeps album canvas reader-sized beside tool rails',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(844, 390));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(_wrapEditor());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EditCover), findsOneWidget);
+      expect(find.byType(EditorBottomMenu), findsOneWidget);
+      expect(
+        find.text('템플릿'),
+        findsNothing,
+      ); // landscape rail is compact icon-only
+
+      final canvasRect = tester.getRect(find.byType(EditCover));
+      final dockRect = tester.getRect(find.byType(EditorBottomMenu));
+      expect(canvasRect.width, greaterThan(180));
+      expect(canvasRect.height, greaterThan(240));
+      expect(dockRect.left, greaterThan(canvasRect.right));
     },
   );
 

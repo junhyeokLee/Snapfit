@@ -22,131 +22,212 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
     final background = isDark
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
-
     return ColoredBox(
       color: background,
       child: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _BackTextButton(onPressed: onBack),
                     SizedBox(height: 14.h),
+                    _RangePreview(theme: theme),
+                    SizedBox(height: 18.h),
                     Text(
-                      '어디까지 살펴볼까요?',
+                      'AI 초안',
                       style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 23.sp,
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -0.45,
                       ),
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '허용한 사진 안에서만 초안을 준비해요.',
+                      '사진 범위',
                       style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 14.5.sp,
-                        height: 1.42,
-                        fontWeight: FontWeight.w700,
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 24.sp,
+                        height: 1.16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    SizedBox(height: 16.h),
-                    _PrivacyMemo(theme: theme),
                     SizedBox(height: 18.h),
                     _RangeCard(
                       title: '최근 30일',
-                      description: '가장 빠르게 초안을 만들 수 있어요.',
-                      onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
+                      subtitle: '가장 자연스러운 기본값',
+                      icon: Icons.auto_awesome_rounded,
                       emphasized: true,
+                      onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
                     ),
                     _RangeCard(
                       title: '날짜 선택',
-                      description: '여행이나 기념일처럼 기간이 분명할 때 좋아요.',
+                      subtitle: '여행·기념일만 정확히',
+                      icon: Icons.calendar_month_rounded,
                       onTap: () => onRangeSelected(AiPhotoRange.dateRange),
                     ),
                     _RangeCard(
                       title: '앨범 선택',
-                      description: '기기 사진첩의 특정 앨범 안에서만 추천해요.',
+                      subtitle: '휴대폰 앨범 단위로',
+                      icon: Icons.photo_album_rounded,
                       onTap: () => onRangeSelected(AiPhotoRange.album),
                     ),
                     _RangeCard(
                       title: '직접 고르기',
-                      description: '가장 안전하게, 선택한 사진만 Snapfit이 정리해요.',
+                      subtitle: '넣을 사진만 직접 픽',
+                      icon: Icons.touch_app_rounded,
                       onTap: () =>
                           onRangeSelected(AiPhotoRange.manualSelection),
-                    ),
-                    SizedBox(height: 12.h),
-                    Text(
-                      '전체 사진첩이 부담스럽다면 일부 사진만 선택할 수 있어요.',
-                      style: TextStyle(
-                        color: SnapFitColors.textMutedOf(context),
-                        fontSize: 12.5.sp,
-                        height: 1.35,
-                        fontWeight: FontWeight.w600,
-                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _PrivacyMemo extends StatelessWidget {
-  const _PrivacyMemo({required this.theme});
-
+class _RangePreview extends StatelessWidget {
+  const _RangePreview({required this.theme});
   final AlbumTheme theme;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(17.w),
+      height: 154.h,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: SnapFitColors.isDark(context)
-            ? const Color(0xFF1D1C1A)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(
-          color: SnapFitColors.isDark(context)
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFE7E1D8),
-        ),
+        color: isDark ? const Color(0xFF1A1B20) : Colors.white,
+        borderRadius: BorderRadius.circular(28.r),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF5B4A34).withOpacity(0.08),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '사진 접근 전 안내',
-            style: TextStyle(
-              color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.2,
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: _TravelFrame(color: _accent(theme), height: 96.h),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFECC7A1),
+                    height: 78.h,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFB9C8A9),
+                    height: 88.h,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _TravelFrame(
+                    color: const Color(0xFFD8CAE8),
+                    height: 70.h,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 7.h),
-          Text(
-            'Snapfit은 사용자가 허용한 사진 안에서만 날짜별 흐름과 대표 장면을 골라요. 추천 결과를 확인하기 전에는 앨범이 만들어지지 않아요.',
-            style: TextStyle(
-              color: SnapFitColors.textSecondaryOf(context),
-              fontSize: 13.sp,
-              height: 1.45,
-              fontWeight: FontWeight.w600,
-            ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              _TimelineDot(color: _accent(theme)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFECC7A1)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFB9C8A9)),
+              Expanded(
+                child: Container(height: 2.h, color: const Color(0xFFE6DED3)),
+              ),
+              _TimelineDot(color: const Color(0xFFD8CAE8)),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Color _accent(AlbumTheme theme) => switch (theme) {
+    AlbumTheme.travel => const Color(0xFF95B8D1),
+    AlbumTheme.family => const Color(0xFFCDAF8D),
+    AlbumTheme.baby => const Color(0xFFF0B8C9),
+    AlbumTheme.couple => const Color(0xFFE8A0A0),
+    AlbumTheme.birthday => const Color(0xFFF6C15E),
+    AlbumTheme.daily => const Color(0xFFAFC5A5),
+    AlbumTheme.friends => const Color(0xFFB7B0E5),
+    AlbumTheme.custom => const Color(0xFFC9C1E6),
+  };
+}
+
+class _TravelFrame extends StatelessWidget {
+  const _TravelFrame({required this.color, required this.height});
+  final Color color;
+  final double height;
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        child: Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+            width: 22.w,
+            height: 22.w,
+            margin: EdgeInsets.all(7.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.34),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimelineDot extends StatelessWidget {
+  const _TimelineDot({required this.color});
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10.w,
+      height: 10.w,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
@@ -154,13 +235,15 @@ class _PrivacyMemo extends StatelessWidget {
 class _RangeCard extends StatelessWidget {
   const _RangeCard({
     required this.title,
-    required this.description,
+    required this.subtitle,
+    required this.icon,
     required this.onTap,
     this.emphasized = false,
   });
 
   final String title;
-  final String description;
+  final String subtitle;
+  final IconData icon;
   final VoidCallback onTap;
   final bool emphasized;
 
@@ -176,24 +259,49 @@ class _RangeCard extends StatelessWidget {
           onTap: onTap,
           child: Ink(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(16.w, 15.h, 16.w, 15.h),
+            padding: EdgeInsets.fromLTRB(14.w, 13.h, 14.w, 13.h),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF1D1C1A)
-                  : emphasized
-                  ? const Color(0xFFFFFCF5)
-                  : Colors.white,
+                  ? const Color(0xFF1A1B20)
+                  : (emphasized ? const Color(0xFFF7F7FF) : Colors.white),
               borderRadius: BorderRadius.circular(20.r),
               border: Border.all(
                 color: isDark
                     ? Colors.white.withOpacity(0.10)
-                    : emphasized
-                    ? const Color(0xFFD8C8AF)
-                    : const Color(0xFFE7E1D8),
+                    : (emphasized
+                          ? const Color(0xFFBFC7DC)
+                          : const Color(0xFFE7E1D8)),
+                width: emphasized ? 1.5 : 1,
               ),
             ),
             child: Row(
               children: [
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: emphasized
+                        ? const Color(0xFF9DB6C8)
+                        : const Color(0xFFEDE7DD),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 14.w,
+                      height: 14.w,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: emphasized
+                              ? Colors.white
+                              : const Color(0xFF6E6558),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,26 +312,29 @@ class _RangeCard extends StatelessWidget {
                           color: SnapFitColors.textPrimaryOf(context),
                           fontSize: 15.5.sp,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
                         ),
                       ),
-                      SizedBox(height: 5.h),
+                      SizedBox(height: 3.h),
                       Text(
-                        description,
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: SnapFitColors.textSecondaryOf(context),
-                          fontSize: 12.5.sp,
-                          height: 1.35,
-                          fontWeight: FontWeight.w600,
+                          color: SnapFitColors.textMutedOf(context),
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: SnapFitColors.textMutedOf(context),
-                  size: 22.sp,
+                Text(
+                  '›',
+                  style: TextStyle(
+                    color: SnapFitColors.textMutedOf(context),
+                    fontSize: 27.sp,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
@@ -236,25 +347,18 @@ class _RangeCard extends StatelessWidget {
 
 class _BackTextButton extends StatelessWidget {
   const _BackTextButton({required this.onPressed});
-
   final VoidCallback onPressed;
-
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
+    return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
         minimumSize: Size(0, 34.h),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      icon: Icon(
-        Icons.arrow_back_ios_new_rounded,
-        size: 14.sp,
-        color: SnapFitColors.textSecondaryOf(context),
-      ),
-      label: Text(
-        '주제 다시 고르기',
+      child: Text(
+        '이전',
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
           fontSize: 12.5.sp,

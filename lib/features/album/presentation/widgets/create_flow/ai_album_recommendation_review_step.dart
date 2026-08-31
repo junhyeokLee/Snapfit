@@ -37,7 +37,9 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
                     _BackTextButton(onPressed: onBack),
                     SizedBox(height: 14.h),
                     Text(
-                      '이런 앨범 초안을 준비했어요',
+                      'AI 초안',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 23.sp,
@@ -48,7 +50,7 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '마음에 들지 않는 사진은 빼거나 바꿀 수 있어요.',
+                      '사진 · 흐름 · 제외',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 14.sp,
@@ -63,7 +65,6 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
                     SizedBox(height: 14.h),
                     _RecommendationDetails(draft: draft),
                     SizedBox(height: 16.h),
-                    _AssuranceNote(),
                   ],
                 ),
               ),
@@ -87,7 +88,7 @@ class _DraftSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _MemoLabel(text: 'AI 초안'),
+          _MemoLabel(text: '추천 구성'),
           SizedBox(height: 10.h),
           Text(
             draft.title,
@@ -249,7 +250,7 @@ class _BottomCta extends StatelessWidget {
             ),
           ),
           child: Text(
-            '이 구성으로 시작하기',
+            '편집 시작',
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w900,
@@ -257,21 +258,6 @@ class _BottomCta extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _AssuranceNote extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '사진과 문구는 다음 에디터에서 다시 바꿀 수 있어요.',
-      style: TextStyle(
-        color: SnapFitColors.textMutedOf(context),
-        fontSize: 12.5.sp,
-        height: 1.4,
-        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -449,7 +435,7 @@ class _BackTextButton extends StatelessWidget {
         color: SnapFitColors.textSecondaryOf(context),
       ),
       label: Text(
-        '사진 범위 다시 고르기',
+        '이전',
         style: TextStyle(
           color: SnapFitColors.textSecondaryOf(context),
           fontSize: 12.5.sp,

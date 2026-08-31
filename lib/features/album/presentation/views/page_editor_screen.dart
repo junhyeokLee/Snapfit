@@ -793,7 +793,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   opacity: _isSaving ? 0.45 : 1,
                   child: Container(
                     height: 34.h,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    constraints: BoxConstraints(minWidth: 42.w),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(999.r),
@@ -816,7 +817,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 14.sp,
+                        fontSize: 12.sp,
+                        height: 1.0,
                       ),
                     ),
                   ),
@@ -831,8 +833,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: Theme.of(context).brightness == Brightness.dark
-                  ? SnapFitColors.readerGradientOf(context)
-                  : const [Color(0xFFFAF7F1), Color(0xFFFFFCF7)],
+                  ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
+                  : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
             ),
           ),
           child: Stack(
@@ -1036,19 +1038,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           ),
                         ),
 
-                        if (_currentMode != EditorMode.none)
-                          Padding(
-                            key: const Key('editorAtelierPanel'),
-                            padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10.h),
-                            child: _EditorToolPanelReveal(
-                              child: _buildInlineToolPanel(
-                                context,
-                                _currentMode,
-                                layers,
-                              ),
-                            ),
-                          ),
-
                         // Bottom Menu (고정)
                         Padding(
                           padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
@@ -1098,9 +1087,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 ),
               ),
 
+              if (_currentMode != EditorMode.none)
+                Positioned(
+                  key: const Key('editorAtelierPanel'),
+                  left: 12.w,
+                  right: 12.w,
+                  bottom: 136.h,
+                  child: _EditorToolPanelReveal(
+                    child: _buildInlineToolPanel(context, _currentMode, layers),
+                  ),
+                ),
+
               if (_showEditorHint &&
                   !_isSaving &&
-                  _interaction.selectedLayerId == null)
+                  _interaction.selectedLayerId == null &&
+                  _currentMode == EditorMode.none)
                 _buildEditorHint(context, isCover: currentPageIndex == 0),
 
               // 저장 중 진행률 오버레이
@@ -1133,7 +1134,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             value: state!.backgroundUploadProgress,
-                            color: SnapFitColors.accent,
+                            color: const Color(0xFF8F6846),
                             backgroundColor: Colors.white24,
                           ),
                         ),
@@ -1171,90 +1172,18 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? const [
-                    Color(0xFF0E1117),
-                    Color(0xFF102A30),
-                    Color(0xFF171423),
-                  ]
-                : const [
-                    Color(0xFFFFF8F1),
-                    Color(0xFFEAFBFD),
-                    Color(0xFFF7F3FF),
-                  ],
+                ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
+                : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
           ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -78.h,
-              right: -54.w,
-              child: _AmbientOrb(
-                size: 190.w,
-                color: SnapFitColors.accent.withOpacity(isDark ? 0.18 : 0.20),
-              ),
-            ),
-            Positioned(
-              top: 130.h,
-              left: -86.w,
-              child: _AmbientOrb(
-                size: 230.w,
-                color: const Color(
-                  0xFFFFA86B,
-                ).withOpacity(isDark ? 0.10 : 0.18),
-              ),
-            ),
-            Positioned(
-              bottom: 76.h,
-              right: -92.w,
-              child: _AmbientOrb(
-                size: 250.w,
-                color: const Color(
-                  0xFF8B7CFF,
-                ).withOpacity(isDark ? 0.14 : 0.16),
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
   Widget _buildWorkspaceFrame(BuildContext context, {required Widget child}) {
-    final isDark = SnapFitColors.isDark(context);
-    return Container(
-      padding: EdgeInsets.all(10.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [Colors.white.withOpacity(0.09), Colors.white.withOpacity(0.03)]
-              : [
-                  Colors.white.withOpacity(0.72),
-                  const Color(0xFFEAFBFD).withOpacity(0.54),
-                ],
-        ),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.10)
-              : SnapFitColors.deepCharcoal.withOpacity(0.07),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.30 : 0.10),
-            blurRadius: 32,
-            offset: const Offset(0, 18),
-          ),
-          BoxShadow(
-            color: SnapFitColors.accent.withOpacity(isDark ? 0.12 : 0.08),
-            blurRadius: 42,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(24.r), child: child),
-    );
+    // The album itself should be the visual object, matching Home/Reader.
+    // Avoid a separate oversized editor card behind it.
+    return Center(child: child);
   }
 
   Widget _buildEditorHint(BuildContext context, {required bool isCover}) {
@@ -1285,21 +1214,21 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   width: 34.w,
                   height: 34.w,
                   decoration: BoxDecoration(
-                    color: SnapFitColors.accent.withOpacity(0.12),
+                    color: const Color(0xFFF1E1CB),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.touch_app_outlined,
                     size: 18.sp,
-                    color: SnapFitColors.accent,
+                    color: const Color(0xFF8F6846),
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     isCover
-                        ? '표지에 담을 사진과 제목을 더해 첫인상을 완성해보세요.'
-                        : '사진을 넣고 레이아웃을 고르면 한 쪽의 이야기가 시작돼요.',
+                        ? '표지 사진·제목·레이어를 그대로 편집할 수 있어요.'
+                        : '사진·레이아웃·템플릿·스티커·배경을 아래에서 바로 조정해요.',
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),
                       fontSize: 12.sp,
@@ -1413,6 +1342,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       EditorMode.layer => LayerManagerPanel(
         layers: layers,
         interaction: _interaction,
+        showHandle: false,
       ),
       EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
       EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
@@ -1495,27 +1425,90 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = SnapFitColors.isDark(context);
+    final sheetColor = isDark
+        ? const Color(0xF21A1E26)
+        : const Color(0xFFFFFCF7);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.10)
+        : const Color(0xFFE6D8C8);
+
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 0.48.sh,
+        height: 0.36.sh,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xF21A1E26) : const Color(0xF7FFFCF7),
-          borderRadius: BorderRadius.circular(28.r),
-          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+          color: sheetColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.32 : 0.12),
-              blurRadius: 26,
-              offset: const Offset(0, -10),
+              color: Colors.black.withOpacity(isDark ? 0.34 : 0.13),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(28.r),
-          child: Stack(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          child: Column(
             children: [
-              Positioned.fill(
+              SizedBox(height: 10.h),
+              Container(
+                width: 42.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: SnapFitColors.textPrimaryOf(context).withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(18.w, 6.h, 10.w, 4.h),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: SnapFitColors.textPrimaryOf(context),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.35,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                    SnapFitPressable(
+                      onTap: onClose,
+                      pressedScale: 0.94,
+                      borderRadius: BorderRadius.circular(999.r),
+                      child: Container(
+                        width: 32.r,
+                        height: 32.r,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.08)
+                              : const Color(0xFFF6EFE6),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: SnapFitColors.textSecondaryOf(context),
+                          size: 17.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: borderColor.withOpacity(0.78),
+              ),
+              Expanded(
                 child: AnimatedSwitcher(
                   duration: SnapFitMotion.fast,
                   switchInCurve: SnapFitMotion.entrance,
@@ -1523,55 +1516,8 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
                   child: KeyedSubtree(key: ValueKey(title), child: child),
                 ),
               ),
-              Positioned(
-                top: 8.h,
-                right: 8.w,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context).withOpacity(0.82),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: SnapFitColors.overlayLightOf(context),
-                    ),
-                  ),
-                  child: IconButton(
-                    tooltip: '$title 닫기',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onClose,
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: SnapFitColors.textSecondaryOf(context),
-                      size: 20.sp,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AmbientOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _AmbientOrb({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow: [
-            BoxShadow(color: color, blurRadius: 70, spreadRadius: 28),
-          ],
         ),
       ),
     );

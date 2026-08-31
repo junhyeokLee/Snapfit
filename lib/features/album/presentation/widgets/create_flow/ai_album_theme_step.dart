@@ -16,123 +16,174 @@ class AiAlbumThemeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = SnapFitColors.isDark(context)
+    final isDark = SnapFitColors.isDark(context);
+    final background = isDark
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
     return ColoredBox(
       color: background,
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextButton.icon(
-                onPressed: onBack,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 14.sp,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-                label: Text(
-                  '시작 방식 다시 고르기',
-                  style: TextStyle(
-                    color: SnapFitColors.textSecondaryOf(context),
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              SizedBox(height: 18.h),
-              _SmallLabel(text: 'AI 초안'),
-              SizedBox(height: 14.h),
-              Text(
-                '어떤 앨범으로 정리해볼까요?',
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 23.sp,
-                  height: 1.18,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.45,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                '선택한 주제는 AI가 사진 흐름과 제목을 제안할 때만 참고해요.',
-                style: TextStyle(
-                  color: SnapFitColors.textSecondaryOf(context),
-                  fontSize: 14.sp,
-                  height: 1.42,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 18.h),
-              Wrap(
-                spacing: 10.w,
-                runSpacing: 10.h,
-                children: [
-                  _ThemeCard(
-                    theme: AlbumTheme.travel,
-                    title: '여행',
-                    caption: '날짜와 장소 흐름',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.family,
-                    title: '가족',
-                    caption: '함께한 장면 중심',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.baby,
-                    title: '아기·성장',
-                    caption: '변화와 표정 기록',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.couple,
-                    title: '커플',
-                    caption: '둘의 시간',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.birthday,
-                    title: '생일·기념일',
-                    caption: '축하와 하이라이트',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.daily,
-                    title: '일상',
-                    caption: '남기고 싶은 하루',
-                    onTap: onThemeSelected,
-                  ),
-                  _ThemeCard(
-                    theme: AlbumTheme.custom,
-                    title: '직접 입력',
-                    caption: '원하는 주제로',
-                    onTap: onThemeSelected,
-                  ),
-                ],
-              ),
-              SizedBox(height: 18.h),
-              Text(
-                '정답을 고르는 단계가 아니에요. 나중에 제목, 사진, 페이지는 모두 바꿀 수 있어요.',
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 12.5.sp,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _BackTextButton(onPressed: onBack),
+                    SizedBox(height: 14.h),
+                    const _MoodPreviewBoard(),
+                    SizedBox(height: 18.h),
+                    Text(
+                      'AI 초안',
+                      style: TextStyle(
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '분위기',
+                      style: TextStyle(
+                        color: SnapFitColors.textPrimaryOf(context),
+                        fontSize: 24.sp,
+                        height: 1.16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    Wrap(
+                      spacing: 10.w,
+                      runSpacing: 10.h,
+                      children: [
+                        _ThemeCard(
+                          theme: AlbumTheme.travel,
+                          title: '여행',
+                          colors: const [Color(0xFF93B7D8), Color(0xFFFFC985)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.family,
+                          title: '가족',
+                          colors: const [Color(0xFFF1C8A6), Color(0xFFB9CFA4)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.baby,
+                          title: '성장',
+                          colors: const [Color(0xFFF6C6D8), Color(0xFFEAE2B7)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.couple,
+                          title: '커플',
+                          colors: const [Color(0xFFECA2A2), Color(0xFFB8A5DF)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.birthday,
+                          title: '기념일',
+                          colors: const [Color(0xFFFFD166), Color(0xFFEF8E72)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.daily,
+                          title: '일상',
+                          colors: const [Color(0xFFC9D8C5), Color(0xFFF2E8D8)],
+                          onTap: onThemeSelected,
+                        ),
+                        _ThemeCard(
+                          theme: AlbumTheme.custom,
+                          title: '직접 입력',
+                          colors: const [Color(0xFFDDD7F3), Color(0xFFE8E8E8)],
+                          onTap: onThemeSelected,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MoodPreviewBoard extends StatelessWidget {
+  const _MoodPreviewBoard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      width: double.infinity,
+      height: 132.h,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1B20) : Colors.white,
+        borderRadius: BorderRadius.circular(26.r),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFE6DED3),
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFFB8A889).withOpacity(0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _PreviewPhoto(
+                    colors: const [Color(0xFF9DB6C8), Color(0xFFE7D2B8)],
+                    radius: 22.r,
+                  ),
+                ),
+                Positioned(
+                  right: 12.w,
+                  bottom: 12.h,
+                  child: const _PreviewChip(text: 'mood'),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          SizedBox(
+            width: 108.w,
+            child: Column(
+              children: [
+                Expanded(
+                  child: _PreviewPhoto(
+                    colors: const [Color(0xFFECA2A2), Color(0xFFF4E8BE)],
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Expanded(
+                  child: _PreviewPhoto(
+                    colors: const [Color(0xFFADC9A9), Color(0xFFD9C6F1)],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -142,59 +193,74 @@ class _ThemeCard extends StatelessWidget {
   const _ThemeCard({
     required this.theme,
     required this.title,
-    required this.caption,
+    required this.colors,
     required this.onTap,
   });
 
   final AlbumTheme theme;
   final String title;
-  final String caption;
+  final List<Color> colors;
   final ValueChanged<AlbumTheme> onTap;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         key: Key('ai_theme_${theme.name}'),
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(20.r),
         onTap: () => onTap(theme),
         child: Ink(
-          width: 108.w,
-          height: 76.h,
-          padding: EdgeInsets.all(13.w),
+          width: 104.w,
+          height: 102.h,
+          padding: EdgeInsets.all(9.w),
           decoration: BoxDecoration(
-            color: SnapFitColors.isDark(context)
-                ? const Color(0xFF1D1C1A)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(18.r),
+            color: isDark ? const Color(0xFF1A1B20) : Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: SnapFitColors.isDark(context)
+              color: isDark
                   ? Colors.white.withOpacity(0.10)
-                  : const Color(0xFFE7E1D8),
+                  : const Color(0xFFE4DBCE),
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: const Color(0xFF5B4A34).withOpacity(0.07),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w900,
-                ),
+              Positioned.fill(
+                child: _TemplateThumbnail(colors: colors, theme: theme),
               ),
-              SizedBox(height: 6.h),
-              Text(
-                caption,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: SnapFitColors.textMutedOf(context),
-                  fontSize: 10.5.sp,
-                  height: 1.2,
-                  fontWeight: FontWeight.w600,
+              Positioned(
+                left: 6.w,
+                right: 6.w,
+                bottom: 6.h,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.40)
+                        : Colors.white.withOpacity(0.80),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: SnapFitColors.textPrimaryOf(context),
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -205,23 +271,160 @@ class _ThemeCard extends StatelessWidget {
   }
 }
 
-class _SmallLabel extends StatelessWidget {
-  const _SmallLabel({required this.text});
+class _TemplateThumbnail extends StatelessWidget {
+  const _TemplateThumbnail({required this.colors, required this.theme});
+  final List<Color> colors;
+  final AlbumTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(7.w),
+      decoration: BoxDecoration(
+        color: colors.last.withOpacity(0.34),
+        borderRadius: BorderRadius.circular(15.r),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 18.h,
+            width: 42.w,
+            child: _PreviewPhoto(colors: colors, radius: 11.r),
+          ),
+          Positioned(
+            right: 0,
+            top: 9.h,
+            bottom: 0,
+            width: 38.w,
+            child: _PreviewPhoto(
+              colors: colors.reversed.toList(),
+              radius: 11.r,
+            ),
+          ),
+          Positioned(
+            left: 50.w,
+            top: 3.h,
+            child: _MiniTextBar(width: 20.w, color: colors.first),
+          ),
+          Positioned(
+            left: 50.w,
+            top: 14.h,
+            child: _MiniTextBar(
+              width: 28.w,
+              color: colors.first.withOpacity(0.52),
+            ),
+          ),
+          Positioned(
+            left: 4.w,
+            right: 10.w,
+            bottom: 5.h,
+            child: _MiniTextBar(
+              width: 54.w,
+              color: const Color(0xFF2B2520).withOpacity(0.22),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniTextBar extends StatelessWidget {
+  const _MiniTextBar({required this.width, required this.color});
+  final double width;
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: 5.h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+}
+
+class _PreviewPhoto extends StatelessWidget {
+  const _PreviewPhoto({required this.colors, this.radius});
+
+  final List<Color> colors;
+  final double? radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        borderRadius: BorderRadius.circular(radius ?? 16.r),
+      ),
+      child: Align(
+        alignment: Alignment.bottomRight,
+        child: Container(
+          width: 28.w,
+          height: 28.w,
+          margin: EdgeInsets.all(8.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.36),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewChip extends StatelessWidget {
+  const _PreviewChip({required this.text});
   final String text;
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9F4EC),
-        borderRadius: BorderRadius.circular(999.r),
+        color: Colors.black.withOpacity(0.44),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: const Color(0xFF4C6A55),
-          fontSize: 11.5.sp,
+          color: Colors.white,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w900,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+}
+
+class _BackTextButton extends StatelessWidget {
+  const _BackTextButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size(0, 34.h),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        '이전',
+        style: TextStyle(
+          color: SnapFitColors.textSecondaryOf(context),
+          fontSize: 12.5.sp,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

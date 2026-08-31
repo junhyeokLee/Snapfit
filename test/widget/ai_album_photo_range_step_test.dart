@@ -13,7 +13,7 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  testWidgets('explains permission and returns selected photo range', (
+  testWidgets('uses AI-specific range choices without tutorial copy', (
     tester,
   ) async {
     AiPhotoRange? selectedRange;
@@ -31,13 +31,14 @@ void main() {
       ),
     );
 
-    expect(find.text('어디까지 살펴볼까요?'), findsOneWidget);
-    expect(find.text('허용한 사진 안에서만 초안을 준비해요.'), findsOneWidget);
+    expect(find.text('사진 범위'), findsOneWidget);
+    expect(find.text('어디까지 살펴볼까요?'), findsNothing);
+    expect(find.text('허용한 사진 안에서만 초안을 준비해요.'), findsNothing);
     expect(find.text('최근 30일'), findsOneWidget);
     expect(find.text('날짜 선택'), findsOneWidget);
     expect(find.text('앨범 선택'), findsOneWidget);
     expect(find.text('직접 고르기'), findsOneWidget);
-    expect(find.text('전체 사진첩이 부담스럽다면 일부 사진만 선택할 수 있어요.'), findsOneWidget);
+    expect(find.textContaining('전체 사진첩이 부담스럽다면'), findsNothing);
 
     await tester.scrollUntilVisible(find.text('최근 30일'), 120);
     await tester.tap(find.text('최근 30일'));

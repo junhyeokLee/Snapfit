@@ -31,9 +31,13 @@ void main() {
       ),
     );
 
-    expect(find.text('작은 책으로 남길 순간을 골라볼까요?'), findsOneWidget);
-    expect(find.text('직접 구성하기'), findsOneWidget);
-    expect(find.text('AI 초안으로 시작하기'), findsOneWidget);
+    expect(find.text('시작 방식'), findsOneWidget);
+    expect(find.text('직접 구성'), findsOneWidget);
+    expect(find.text('첫 AI 생성 무료'), findsOneWidget);
+    expect(find.text('첫 생성은 무료예요'), findsOneWidget);
+    expect(find.text('작은 책으로 남길 순간을 골라볼까요?'), findsNothing);
+    expect(find.textContaining('직접 차근차근'), findsNothing);
+    expect(find.textContaining('기존 에디터 기능'), findsNothing);
     expect(find.text('AI 초안 만들기 300P'), findsNothing);
     expect(find.textContaining('포인트'), findsNothing);
     expect(find.textContaining('300P'), findsNothing);
@@ -43,13 +47,11 @@ void main() {
     expect(find.text('커플'), findsNothing);
     expect(find.text('가족'), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('AI 초안 만들기'), 120);
-    await tester.tap(find.text('AI 초안 만들기'));
+    await tester.tap(find.text('AI 초안'));
     await tester.pump();
     expect(aiTapped, isTrue);
 
-    await tester.scrollUntilVisible(find.text('직접 만들기'), -120);
-    await tester.tap(find.text('직접 만들기'));
+    await tester.tap(find.text('직접 구성'));
     await tester.pump();
     expect(manualTapped, isTrue);
   });

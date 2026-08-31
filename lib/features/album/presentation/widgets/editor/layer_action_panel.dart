@@ -92,13 +92,20 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SnapFitColors.isDark(context)
+            ? const Color(0xFF1D1A16).withOpacity(0.96)
+            : const Color(0xFFFFFCF7).withOpacity(0.96),
         borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(
+          color: SnapFitColors.isDark(context)
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFDCCDBB),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF6C5740).withOpacity(0.13),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
