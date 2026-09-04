@@ -202,9 +202,17 @@ class _RecommendationDetails extends StatelessWidget {
         children: [
           _SectionTitle(title: '추천 구성', caption: draft.templateTone),
           SizedBox(height: 12.h),
-          _ReasonRow(label: '대표 장면', value: '앨범에 들어가요'),
-          _ReasonRow(label: '표지 후보', value: '첫 인상이 좋은 사진을 우선했어요'),
-          _ReasonRow(label: '잠시 빼둔 사진', value: '흐리거나 비슷한 사진은 초안에서 잠시 제외했어요.'),
+          if (draft.curationNotes.isEmpty) ...[
+            _ReasonRow(label: '대표 장면', value: '앨범에 들어가요'),
+            _ReasonRow(label: '표지 후보', value: '첫 인상이 좋은 사진을 우선했어요'),
+            _ReasonRow(label: '잠시 빼둔 사진', value: '흐리거나 비슷한 사진은 초안에서 잠시 제외했어요.'),
+          ] else
+            ...draft.curationNotes.asMap().entries.map(
+              (entry) => _ReasonRow(
+                label: entry.key == 0 ? 'AI 기준' : '확인 기준',
+                value: entry.value,
+              ),
+            ),
         ],
       ),
     );

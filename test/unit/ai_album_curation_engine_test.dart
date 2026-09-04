@@ -114,5 +114,49 @@ void main() {
         expect(draft.templateTone, contains('여백'));
       },
     );
+
+    test('explains metadata-first curation choices for user review', () {
+      final draft = AiAlbumCurationEngine().curate(
+        theme: AlbumTheme.travel,
+        candidates: [
+          PhotoCandidate(
+            assetId: 'jeju-folder-landscape',
+            createdAt: DateTime(2026, 8, 1, 10),
+            width: 4032,
+            height: 3024,
+            orientation: PhotoOrientation.landscape,
+            albumName: '제주 여행',
+          ),
+          PhotoCandidate(
+            assetId: 'burst-1',
+            createdAt: DateTime(2026, 8, 1, 10, 1),
+            width: 4032,
+            height: 3024,
+            orientation: PhotoOrientation.landscape,
+          ),
+          PhotoCandidate(
+            assetId: 'screenshot',
+            createdAt: DateTime(2026, 8, 2, 12),
+            width: 1170,
+            height: 2532,
+            orientation: PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+          PhotoCandidate(
+            assetId: 'last-day',
+            createdAt: DateTime(2026, 8, 3, 12),
+            width: 4032,
+            height: 3024,
+            orientation: PhotoOrientation.landscape,
+          ),
+        ],
+      );
+
+      expect(draft.curationNotes, isNotEmpty);
+      expect(draft.curationNotes.join(' '), contains('날짜'));
+      expect(draft.curationNotes.join(' '), contains('스크린샷'));
+      expect(draft.curationNotes.join(' '), contains('연속 촬영'));
+      expect(draft.curationNotes.join(' '), contains('앨범/폴더'));
+    });
   });
 }

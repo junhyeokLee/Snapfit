@@ -44,6 +44,12 @@ class AiAlbumCurationEngine {
         excluded.length,
         sections.length,
       ),
+      curationNotes: _curationNotesFor(
+        theme: theme,
+        selected: selected,
+        excluded: excluded,
+        candidates: candidates,
+      ),
     );
   }
 
@@ -55,6 +61,7 @@ class AiAlbumCurationEngine {
     var score = 0.55;
     if (candidate.isHighResolution) score += 0.18;
     if (candidate.isScreenshot) score -= 0.7;
+    if (_albumNameMatchesTheme(candidate.albumName, theme)) score += 0.08;
 
     final closeNeighborCount = all.where((other) {
       if (other.assetId == candidate.assetId) return false;
@@ -78,6 +85,34 @@ class AiAlbumCurationEngine {
     }
 
     return score.clamp(0.0, 1.0).toDouble();
+  }
+
+  bool _albumNameMatchesTheme(String? albumName, AlbumTheme theme) {
+    final normalized = albumName?.toLowerCase() ?? '';
+    if (normalized.isEmpty) return false;
+    return switch (theme) {
+      AlbumTheme.travel =>
+        normalized.contains('travel') ||
+            normalized.contains('trip') ||
+            normalized.contains('여행'),
+      AlbumTheme.family =>
+        normalized.contains('family') || normalized.contains('가족'),
+      AlbumTheme.baby =>
+        normalized.contains('baby') ||
+            normalized.contains('아기') ||
+            normalized.contains('성장'),
+      AlbumTheme.birthday =>
+        normalized.contains('birthday') ||
+            normalized.contains('생일') ||
+            normalized.contains('기념'),
+      AlbumTheme.friends =>
+        normalized.contains('friends') || normalized.contains('친구'),
+      AlbumTheme.couple =>
+        normalized.contains('couple') ||
+            normalized.contains('date') ||
+            normalized.contains('커플'),
+      AlbumTheme.daily || AlbumTheme.custom => false,
+    };
   }
 
   List<String> _reasons(PhotoCandidate candidate, AlbumTheme theme) {
@@ -210,6 +245,78 @@ class AiAlbumCurationEngine {
       AlbumTheme.daily => '하루의 시작',
       AlbumTheme.custom => '이야기의 시작',
     };
+  }
+
+  List<String> _curationNotesFor({
+    required AlbumTheme theme,
+    required List<RecommendedPhoto> selected,
+    required List<PhotoCandidate> excluded,
+    required List<PhotoCandidate> candidates,
+  }) {
+    final notes = <String>[];
+    final selectedDays = selected
+        .map((photo) => photo.candidate.dayKey)
+        .toSet();
+    if (selectedDays.length >= 2) {
+      notes.add('날짜가 이어지는 장면을 앞·중간·마지막 흐름으로 나눴어요.');
+    } else {
+      notes.add('한 날짜 안에서도 대표 장면이 겹치지 않게 골랐어요.');
+    }
+
+    final screenshotCount = excluded
+        .where((photo) => photo.isScreenshot)
+        .length;
+    if (screenshotCount > 0) {
+      notes.add('스크린샷처럼 보이는 사진 $screenshotCount장은 초안에서 제외했어요.');
+    }
+
+    final burstGroupCount = _burstGroupCount(candidates);
+    if (burstGroupCount > 0) {
+      notes.add('연속 촬영처럼 가까운 사진은 대표 장면 위주로 남겼어요.');
+    }
+
+    if (selected.any(
+      (photo) => _albumNameMatchesTheme(photo.candidate.albumName, theme),
+    )) {
+      notes.add('선택한 주제와 맞는 앨범/폴더 이름의 사진을 조금 더 우선했어요.');
+    }
+
+    final themeRatioNote = switch (theme) {
+      AlbumTheme.travel => '여행 앨범은 장소감이 보이는 가로 사진을 우선 확인했어요.',
+      AlbumTheme.couple ||
+      AlbumTheme.family ||
+      AlbumTheme.baby => '인물 중심 앨범은 표정이 잘 보이는 세로 사진을 우선 확인했어요.',
+      AlbumTheme.birthday ||
+      AlbumTheme.friends ||
+      AlbumTheme.daily ||
+      AlbumTheme.custom => '사진 비율이 한쪽으로 치우치지 않게 섞었어요.',
+    };
+    notes.add(themeRatioNote);
+
+    return notes.take(4).toList(growable: false);
+  }
+
+  int _burstGroupCount(List<PhotoCandidate> candidates) {
+    if (candidates.length < 2) return 0;
+    final sorted = [...candidates]
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    var groups = 0;
+    var inGroup = false;
+    for (var i = 1; i < sorted.length; i++) {
+      final close =
+          sorted[i].createdAt
+              .difference(sorted[i - 1].createdAt)
+              .abs()
+              .inMinutes <=
+          3;
+      if (close && !inGroup) {
+        groups++;
+        inGroup = true;
+      } else if (!close) {
+        inGroup = false;
+      }
+    }
+    return groups;
   }
 
   String _summaryFor(

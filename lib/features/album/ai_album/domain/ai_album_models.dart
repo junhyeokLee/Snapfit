@@ -86,6 +86,7 @@ class AlbumRecommendationDraft {
     required this.excludedPhotos,
     required this.storySections,
     required this.summary,
+    this.curationNotes = const [],
     this.requiresUserReview = true,
     this.alreadyCreatedAlbum = false,
     this.reviewCtaLabel = '이 구성으로 시작하기',
@@ -99,6 +100,7 @@ class AlbumRecommendationDraft {
   final List<PhotoCandidate> excludedPhotos;
   final List<StorySection> storySections;
   final String summary;
+  final List<String> curationNotes;
   final bool requiresUserReview;
   final bool alreadyCreatedAlbum;
   final String reviewCtaLabel;
