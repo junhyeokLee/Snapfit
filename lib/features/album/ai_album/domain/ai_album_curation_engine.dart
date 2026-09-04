@@ -7,27 +7,59 @@ class AiAlbumCurationEngine {
     required AlbumTheme theme,
     required List<PhotoCandidate> candidates,
   }) {
-    final scored =
-        candidates.map((candidate) {
-          return RecommendedPhoto(
+    final excluded = <String, ExcludedPhoto>{};
+    final eligible = <RecommendedPhoto>[];
+
+    for (final cluster in _timeClusters(candidates)) {
+      final usable = <RecommendedPhoto>[];
+      for (final candidate in cluster) {
+        final exclusionReasons = _hardExclusionReasons(candidate);
+        if (exclusionReasons.isNotEmpty) {
+          excluded[candidate.assetId] = ExcludedPhoto(
             candidate: candidate,
-            score: _score(candidate, theme, candidates),
-            reasons: _reasons(candidate, theme),
+            reasons: exclusionReasons,
           );
-        }).toList()..sort((a, b) {
-          final scoreCompare = b.score.compareTo(a.score);
-          if (scoreCompare != 0) return scoreCompare;
-          return a.candidate.createdAt.compareTo(b.candidate.createdAt);
-        });
+        } else {
+          usable.add(_recommended(candidate, theme));
+        }
+      }
+      if (usable.isEmpty) continue;
 
-    final excluded = scored
-        .where((photo) => photo.score < 0.45)
-        .map((photo) => photo.candidate)
-        .toList(growable: false);
+      usable.sort(_rankRecommended);
+      final keepCount = cluster.length >= 5 ? 2 : 1;
+      final keepers = usable.take(keepCount).toList(growable: false);
+      final keeperIds = keepers.map((photo) => photo.assetId).toSet();
+      for (final keeper in keepers) {
+        eligible.add(
+          _withReason(
+            keeper,
+            const AiCurationReason(
+              type: AiCurationReasonType.timeClusterRepresentative,
+              message: '비슷한 시간대 사진 중 대표로 골랐어요',
+            ),
+          ),
+        );
+      }
+      if (cluster.length > keepers.length) {
+        for (final candidate in cluster.where(
+          (photo) => !keeperIds.contains(photo.assetId),
+        )) {
+          _addExcludedReason(
+            excluded,
+            candidate,
+            const AiCurationReason(
+              type: AiCurationReasonType.duplicateTimeExcluded,
+              message: '비슷한 시간대 사진이 많아 대표 컷만 먼저 넣었어요',
+            ),
+          );
+        }
+      }
+    }
 
-    final selected = _balancedByDate(
-      scored.where((photo) => photo.score >= 0.45),
+    eligible.sort(
+      (a, b) => a.candidate.createdAt.compareTo(b.candidate.createdAt),
     );
+    final selected = _balancedByDate(eligible, excluded);
     final sections = _buildStorySections(theme, selected);
 
     return AlbumRecommendationDraft(
@@ -36,7 +68,9 @@ class AiAlbumCurationEngine {
       pageCount: _pageCountFor(selected.length),
       templateTone: _templateToneFor(theme),
       recommendedPhotos: selected,
-      excludedPhotos: excluded,
+      excludedPhotos: excluded.values.toList(
+        growable: false,
+      )..sort((a, b) => a.candidate.createdAt.compareTo(b.candidate.createdAt)),
       storySections: sections,
       summary: _summaryFor(
         theme,
@@ -47,28 +81,24 @@ class AiAlbumCurationEngine {
       curationNotes: _curationNotesFor(
         theme: theme,
         selected: selected,
-        excluded: excluded,
+        excluded: excluded.values.toList(growable: false),
         candidates: candidates,
       ),
     );
   }
 
-  double _score(
-    PhotoCandidate candidate,
-    AlbumTheme theme,
-    List<PhotoCandidate> all,
-  ) {
+  RecommendedPhoto _recommended(PhotoCandidate candidate, AlbumTheme theme) {
+    return RecommendedPhoto(
+      candidate: candidate,
+      score: _score(candidate, theme),
+      reasons: _reasons(candidate, theme),
+    );
+  }
+
+  double _score(PhotoCandidate candidate, AlbumTheme theme) {
     var score = 0.55;
     if (candidate.isHighResolution) score += 0.18;
-    if (candidate.isScreenshot) score -= 0.7;
     if (_albumNameMatchesTheme(candidate.albumName, theme)) score += 0.08;
-
-    final closeNeighborCount = all.where((other) {
-      if (other.assetId == candidate.assetId) return false;
-      return other.createdAt.difference(candidate.createdAt).abs().inMinutes <=
-          3;
-    }).length;
-    if (closeNeighborCount > 0) score -= 0.18 * closeNeighborCount;
 
     switch (theme) {
       case AlbumTheme.travel:
@@ -85,6 +115,90 @@ class AiAlbumCurationEngine {
     }
 
     return score.clamp(0.0, 1.0).toDouble();
+  }
+
+  List<List<PhotoCandidate>> _timeClusters(List<PhotoCandidate> candidates) {
+    if (candidates.isEmpty) return const [];
+    final sorted = [...candidates]
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final clusters = <List<PhotoCandidate>>[];
+    var current = <PhotoCandidate>[sorted.first];
+    for (final candidate in sorted.skip(1)) {
+      final previous = current.last;
+      final isClose =
+          candidate.createdAt.difference(previous.createdAt).abs().inMinutes <=
+          3;
+      if (isClose) {
+        current.add(candidate);
+      } else {
+        clusters.add(current);
+        current = [candidate];
+      }
+    }
+    clusters.add(current);
+    return clusters;
+  }
+
+  List<AiCurationReason> _hardExclusionReasons(PhotoCandidate candidate) {
+    final reasons = <AiCurationReason>[];
+    if (candidate.isScreenshot) {
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.screenshotExcluded,
+          message: '스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요',
+        ),
+      );
+    }
+    if (candidate.isLowResolution) {
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.lowResolutionExcluded,
+          message: '크게 넣기엔 해상도가 낮아 잠시 빼뒀어요',
+        ),
+      );
+    }
+    return reasons;
+  }
+
+  int _rankRecommended(RecommendedPhoto a, RecommendedPhoto b) {
+    final scoreCompare = b.score.compareTo(a.score);
+    if (scoreCompare != 0) return scoreCompare;
+    return a.candidate.createdAt.compareTo(b.candidate.createdAt);
+  }
+
+  RecommendedPhoto _withReason(
+    RecommendedPhoto photo,
+    AiCurationReason reason,
+  ) {
+    final hasReason = photo.reasons.any(
+      (existing) => existing.type == reason.type,
+    );
+    if (hasReason) return photo;
+    return RecommendedPhoto(
+      candidate: photo.candidate,
+      score: photo.score,
+      reasons: [...photo.reasons, reason],
+    );
+  }
+
+  void _addExcludedReason(
+    Map<String, ExcludedPhoto> excluded,
+    PhotoCandidate candidate,
+    AiCurationReason reason,
+  ) {
+    final existing = excluded[candidate.assetId];
+    if (existing == null) {
+      excluded[candidate.assetId] = ExcludedPhoto(
+        candidate: candidate,
+        reasons: [reason],
+      );
+      return;
+    }
+    if (existing.reasons.any((current) => current.type == reason.type)) return;
+    excluded[candidate.assetId] = ExcludedPhoto(
+      candidate: candidate,
+      reasons: [...existing.reasons, reason],
+    );
   }
 
   bool _albumNameMatchesTheme(String? albumName, AlbumTheme theme) {
@@ -115,44 +229,97 @@ class AiAlbumCurationEngine {
     };
   }
 
-  List<String> _reasons(PhotoCandidate candidate, AlbumTheme theme) {
-    final reasons = <String>[];
-    if (candidate.isHighResolution) reasons.add('선명한 원본 후보');
+  List<AiCurationReason> _reasons(PhotoCandidate candidate, AlbumTheme theme) {
+    final reasons = <AiCurationReason>[];
+    if (candidate.isHighResolution) {
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.highResolution,
+          message: '크게 넣어도 선명한 사진이에요',
+        ),
+      );
+    }
     if (candidate.orientation == PhotoOrientation.landscape &&
         theme == AlbumTheme.travel) {
-      reasons.add('여행 앨범에 어울리는 장소감');
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.themeOrientation,
+          message: '풍경과 장소감이 잘 살아나는 컷이에요',
+        ),
+      );
     }
     if (candidate.orientation == PhotoOrientation.portrait &&
         (theme == AlbumTheme.couple ||
             theme == AlbumTheme.family ||
             theme == AlbumTheme.baby)) {
-      reasons.add('인물 중심 앨범에 어울리는 비율');
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.themeOrientation,
+          message: '표정과 분위기를 크게 담기 좋은 비율이에요',
+        ),
+      );
     }
-    if (reasons.isEmpty) reasons.add('날짜 흐름을 이어주는 장면');
+    if (_albumNameMatchesTheme(candidate.albumName, theme)) {
+      reasons.add(
+        const AiCurationReason(
+          type: AiCurationReasonType.weakThemeFitExcluded,
+          message: '선택한 주제와 맞는 앨범/폴더의 사진이에요',
+        ),
+      );
+    }
+    reasons.add(
+      const AiCurationReason(
+        type: AiCurationReasonType.dateFlow,
+        message: '이날의 이야기를 이어주는 장면이에요',
+      ),
+    );
     return reasons;
   }
 
-  List<RecommendedPhoto> _balancedByDate(Iterable<RecommendedPhoto> photos) {
+  List<RecommendedPhoto> _balancedByDate(
+    Iterable<RecommendedPhoto> photos,
+    Map<String, ExcludedPhoto> excluded,
+  ) {
     final byDay = <String, List<RecommendedPhoto>>{};
     for (final photo in photos) {
       byDay.putIfAbsent(photo.candidate.dayKey, () => []).add(photo);
     }
     for (final dayPhotos in byDay.values) {
-      dayPhotos.sort((a, b) {
-        final scoreCompare = b.score.compareTo(a.score);
-        if (scoreCompare != 0) return scoreCompare;
-        return a.candidate.createdAt.compareTo(b.candidate.createdAt);
-      });
+      dayPhotos.sort(_rankRecommended);
     }
 
     final result = <RecommendedPhoto>[];
     for (final day in byDay.keys.toList()..sort()) {
-      result.addAll(byDay[day]!.take(6));
+      final dayPhotos = byDay[day]!;
+      result.addAll(dayPhotos.take(6));
+      for (final photo in dayPhotos.skip(6)) {
+        excluded[photo.assetId] = ExcludedPhoto(
+          candidate: photo.candidate,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.dailyLimitExcluded,
+              message: '이날 사진이 많아 균형을 맞추려고 일부만 골랐어요',
+            ),
+          ],
+        );
+      }
     }
     result.sort(
       (a, b) => a.candidate.createdAt.compareTo(b.candidate.createdAt),
     );
-    return result.take(32).toList(growable: false);
+    final selected = result.take(32).toList(growable: false);
+    for (final photo in result.skip(32)) {
+      excluded[photo.assetId] = ExcludedPhoto(
+        candidate: photo.candidate,
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.totalLimitExcluded,
+            message: '전체 앨범 길이에 맞춰 우선순위가 높은 사진부터 담았어요',
+          ),
+        ],
+      );
+    }
+    return selected;
   }
 
   List<StorySection> _buildStorySections(
@@ -175,10 +342,12 @@ class AiAlbumCurationEngine {
     }
 
     final days = byDay.keys.toList()..sort();
+    if (days.length == 1) return _oneDayStorySections(theme, selected);
+
     return [
       StorySection(
         title: _sectionStartTitleFor(theme),
-        description: '앨범의 첫 인상이 되는 대표 장면이에요.',
+        description: _sectionStartDescriptionFor(theme),
         photoAssetIds: byDay[days.first]!.take(3).toList(growable: false),
       ),
       if (days.length > 1)
@@ -188,17 +357,77 @@ class AiAlbumCurationEngine {
             .map(
               (day) => StorySection(
                 title: '$day 흐름',
-                description: '날짜별로 자연스럽게 이어지는 장면을 묶었어요.',
+                description: _sectionMiddleDescriptionFor(theme),
                 photoAssetIds: byDay[day]!.take(6).toList(growable: false),
               ),
             ),
       if (days.length > 1)
         StorySection(
-          title: '마지막 장면',
-          description: '앨범을 닫는 느낌의 사진을 뒤쪽에 배치해요.',
+          title: _sectionEndingTitleFor(theme),
+          description: _sectionEndingDescriptionFor(theme),
           photoAssetIds: byDay[days.last]!.take(3).toList(growable: false),
         ),
     ];
+  }
+
+  List<StorySection> _oneDayStorySections(
+    AlbumTheme theme,
+    List<RecommendedPhoto> selected,
+  ) {
+    final buckets = <_TimeBucket, List<String>>{};
+    for (final photo in selected) {
+      buckets
+          .putIfAbsent(_bucketFor(photo.candidate.createdAt.hour), () => [])
+          .add(photo.assetId);
+    }
+    if (buckets.length == 1) {
+      return [
+        StorySection(
+          title: _sectionStartTitleFor(theme),
+          description: '한 날짜 안에서 대표 장면이 겹치지 않도록 먼저 묶었어요.',
+          photoAssetIds: selected
+              .map((photo) => photo.assetId)
+              .take(6)
+              .toList(growable: false),
+        ),
+      ];
+    }
+    final order = [
+      _TimeBucket.morning,
+      _TimeBucket.afternoon,
+      _TimeBucket.evening,
+    ];
+    return [
+      for (final bucket in order)
+        if (buckets[bucket] != null)
+          StorySection(
+            title: _timeBucketTitle(bucket),
+            description: _timeBucketDescription(bucket, theme),
+            photoAssetIds: buckets[bucket]!.take(6).toList(growable: false),
+          ),
+    ];
+  }
+
+  _TimeBucket _bucketFor(int hour) {
+    if (hour < 12) return _TimeBucket.morning;
+    if (hour < 18) return _TimeBucket.afternoon;
+    return _TimeBucket.evening;
+  }
+
+  String _timeBucketTitle(_TimeBucket bucket) {
+    return switch (bucket) {
+      _TimeBucket.morning => '오전의 준비',
+      _TimeBucket.afternoon => '오후의 하이라이트',
+      _TimeBucket.evening => '저녁의 마무리',
+    };
+  }
+
+  String _timeBucketDescription(_TimeBucket bucket, AlbumTheme theme) {
+    return switch (bucket) {
+      _TimeBucket.morning => '하루가 시작되는 분위기와 첫 장면을 앞쪽에 뒀어요.',
+      _TimeBucket.afternoon => '${_themeLabel(theme)} 앨범의 중심이 되는 장면을 묶었어요.',
+      _TimeBucket.evening => '앨범 끝에 두면 여운이 남는 장면을 뒤쪽에 배치했어요.',
+    };
   }
 
   int _pageCountFor(int photoCount) {
@@ -236,7 +465,7 @@ class AiAlbumCurationEngine {
 
   String _sectionStartTitleFor(AlbumTheme theme) {
     return switch (theme) {
-      AlbumTheme.travel => '여행의 시작',
+      AlbumTheme.travel => '여행의 첫 장면',
       AlbumTheme.couple => '둘의 시작 장면',
       AlbumTheme.family => '함께한 시작',
       AlbumTheme.baby => '성장의 시작',
@@ -247,10 +476,39 @@ class AiAlbumCurationEngine {
     };
   }
 
+  String _sectionEndingTitleFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => '돌아보고 싶은 마무리',
+      AlbumTheme.birthday => '축하의 마무리',
+      _ => '마지막 장면',
+    };
+  }
+
+  String _sectionStartDescriptionFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => '출발의 설렘과 장소 분위기가 보이는 사진을 앞쪽에 뒀어요.',
+      _ => '앨범의 첫 인상이 되는 대표 장면이에요.',
+    };
+  }
+
+  String _sectionMiddleDescriptionFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => '날짜 흐름에 맞춰 여행의 장면이 자연스럽게 이어지도록 묶었어요.',
+      _ => '날짜별로 자연스럽게 이어지는 장면을 묶었어요.',
+    };
+  }
+
+  String _sectionEndingDescriptionFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => '앨범 끝에 두면 여운이 남는 장면을 뒤쪽에 배치했어요.',
+      _ => '앨범을 닫는 느낌의 사진을 뒤쪽에 배치해요.',
+    };
+  }
+
   List<String> _curationNotesFor({
     required AlbumTheme theme,
     required List<RecommendedPhoto> selected,
-    required List<PhotoCandidate> excluded,
+    required List<ExcludedPhoto> excluded,
     required List<PhotoCandidate> candidates,
   }) {
     final notes = <String>[];
@@ -260,11 +518,15 @@ class AiAlbumCurationEngine {
     if (selectedDays.length >= 2) {
       notes.add('날짜가 이어지는 장면을 앞·중간·마지막 흐름으로 나눴어요.');
     } else {
-      notes.add('한 날짜 안에서도 대표 장면이 겹치지 않게 골랐어요.');
+      notes.add('한 날짜 안에서도 시간대별 대표 장면이 겹치지 않게 골랐어요.');
     }
 
     final screenshotCount = excluded
-        .where((photo) => photo.isScreenshot)
+        .where(
+          (photo) => photo.reasons.any(
+            (reason) => reason.type == AiCurationReasonType.screenshotExcluded,
+          ),
+        )
         .length;
     if (screenshotCount > 0) {
       notes.add('스크린샷처럼 보이는 사진 $screenshotCount장은 초안에서 제외했어요.');
@@ -297,26 +559,9 @@ class AiAlbumCurationEngine {
   }
 
   int _burstGroupCount(List<PhotoCandidate> candidates) {
-    if (candidates.length < 2) return 0;
-    final sorted = [...candidates]
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    var groups = 0;
-    var inGroup = false;
-    for (var i = 1; i < sorted.length; i++) {
-      final close =
-          sorted[i].createdAt
-              .difference(sorted[i - 1].createdAt)
-              .abs()
-              .inMinutes <=
-          3;
-      if (close && !inGroup) {
-        groups++;
-        inGroup = true;
-      } else if (!close) {
-        inGroup = false;
-      }
-    }
-    return groups;
+    return _timeClusters(
+      candidates,
+    ).where((cluster) => cluster.length > 1).length;
   }
 
   String _summaryFor(
@@ -325,10 +570,9 @@ class AiAlbumCurationEngine {
     int excludedCount,
     int sectionCount,
   ) {
-    return '날짜별 흐름을 살려 $sectionCount개 묶음으로 나누고, '
-        '비슷한 사진은 대표 장면만 남겼어요. '
-        '${_themeLabel(theme)} 앨범에 어울리는 사진 $selectedCount장을 골랐고, '
-        '$excludedCount장은 접어두었어요.';
+    return '기기 안에서만 사진 정보를 살펴봤어요. 날짜 흐름과 비슷한 장면을 대표 컷 중심으로 정리해 '
+        '$sectionCount개 흐름으로 나누고, ${_themeLabel(theme)} 앨범에 어울리는 '
+        '$selectedCount장을 먼저 골랐어요. $excludedCount장은 편집 단계에서 다시 추가할 수 있어요.';
   }
 
   String _themeLabel(AlbumTheme theme) {
@@ -339,8 +583,10 @@ class AiAlbumCurationEngine {
       AlbumTheme.baby => '아기/성장',
       AlbumTheme.birthday => '생일/기념일',
       AlbumTheme.friends => '친구',
-      AlbumTheme.daily => '일상 기록',
-      AlbumTheme.custom => '직접 입력',
+      AlbumTheme.daily => '일상',
+      AlbumTheme.custom => '맞춤',
     };
   }
 }
+
+enum _TimeBucket { morning, afternoon, evening }

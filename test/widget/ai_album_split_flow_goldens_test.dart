@@ -131,15 +131,32 @@ AlbumRecommendationDraft _draft() {
       RecommendedPhoto(
         candidate: _candidate('a'),
         score: 0.9,
-        reasons: const ['대표 장면'],
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.coverCandidate,
+            message: '대표 장면',
+          ),
+        ],
       ),
       RecommendedPhoto(
         candidate: _candidate('b'),
         score: 0.8,
-        reasons: const ['흐름'],
+        reasons: const [
+          AiCurationReason(type: AiCurationReasonType.dateFlow, message: '흐름'),
+        ],
       ),
     ],
-    excludedPhotos: [_candidate('screenshot')],
+    excludedPhotos: [
+      ExcludedPhoto(
+        candidate: _candidate('screenshot'),
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.screenshotExcluded,
+            message: '스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요',
+          ),
+        ],
+      ),
+    ],
     storySections: const [
       StorySection(title: '첫날', description: '바다와 산책 장면', photoAssetIds: ['a']),
       StorySection(

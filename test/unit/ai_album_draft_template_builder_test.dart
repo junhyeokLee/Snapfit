@@ -17,12 +17,22 @@ void main() {
         RecommendedPhoto(
           candidate: _candidate('photo-1', DateTime(2026, 8, 20), firstAsset),
           score: 0.9,
-          reasons: const ['여행 앨범에 어울리는 장소감'],
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.themeOrientation,
+              message: '여행 앨범에 어울리는 장소감',
+            ),
+          ],
         ),
         RecommendedPhoto(
           candidate: _candidate('photo-2', DateTime(2026, 8, 20), secondAsset),
           score: 0.8,
-          reasons: const ['날짜 흐름을 이어주는 장면'],
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.dateFlow,
+              message: '날짜 흐름을 이어주는 장면',
+            ),
+          ],
         ),
       ],
       excludedPhotos: const [],

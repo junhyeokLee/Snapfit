@@ -33,17 +33,30 @@ void main() {
             orientation: PhotoOrientation.landscape,
           ),
           score: 0.9,
-          reasons: const ['여행 앨범에 어울리는 장소감'],
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.themeOrientation,
+              message: '여행 앨범에 어울리는 장소감',
+            ),
+          ],
         ),
       ],
       excludedPhotos: [
-        PhotoCandidate(
-          assetId: 'screenshot',
-          createdAt: DateTime(2026, 8, 20),
-          width: 1170,
-          height: 2532,
-          orientation: PhotoOrientation.portrait,
-          isScreenshot: true,
+        ExcludedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'screenshot',
+            createdAt: DateTime(2026, 8, 20),
+            width: 1170,
+            height: 2532,
+            orientation: PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.screenshotExcluded,
+              message: '스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요',
+            ),
+          ],
         ),
       ],
       storySections: const [
@@ -104,7 +117,12 @@ void main() {
               orientation: PhotoOrientation.landscape,
             ),
             score: 0.9,
-            reasons: const ['여행 앨범에 어울리는 장소감'],
+            reasons: const [
+              AiCurationReason(
+                type: AiCurationReasonType.themeOrientation,
+                message: '여행 앨범에 어울리는 장소감',
+              ),
+            ],
           ),
         ],
         excludedPhotos: const [],

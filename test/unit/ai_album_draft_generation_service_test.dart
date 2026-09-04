@@ -11,17 +11,17 @@ void main() {
         collectCandidates: (_) async => [
           _candidate(
             'travel-1',
-            DateTime(2026, 8, 20),
+            DateTime(2026, 8, 20, 9),
             PhotoOrientation.landscape,
           ),
           _candidate(
             'travel-2',
-            DateTime(2026, 8, 20),
+            DateTime(2026, 8, 20, 13),
             PhotoOrientation.landscape,
           ),
           _candidate(
             'travel-3',
-            DateTime(2026, 8, 21),
+            DateTime(2026, 8, 21, 10),
             PhotoOrientation.portrait,
           ),
         ],

@@ -21,6 +21,28 @@ enum AiPhotoRange {
   limitedLibrary,
 }
 
+enum AiCurationReasonType {
+  highResolution,
+  themeOrientation,
+  dateFlow,
+  timeClusterRepresentative,
+  coverCandidate,
+  endingCandidate,
+  screenshotExcluded,
+  lowResolutionExcluded,
+  duplicateTimeExcluded,
+  dailyLimitExcluded,
+  totalLimitExcluded,
+  weakThemeFitExcluded,
+}
+
+class AiCurationReason {
+  const AiCurationReason({required this.type, required this.message});
+
+  final AiCurationReasonType type;
+  final String message;
+}
+
 class PhotoCandidate {
   const PhotoCandidate({
     required this.assetId,
@@ -48,6 +70,7 @@ class PhotoCandidate {
       '${createdAt.day.toString().padLeft(2, '0')}';
 
   bool get isHighResolution => width >= 1200 && height >= 1200;
+  bool get isLowResolution => width < 900 || height < 900;
 }
 
 class RecommendedPhoto {
@@ -59,7 +82,16 @@ class RecommendedPhoto {
 
   final PhotoCandidate candidate;
   final double score;
-  final List<String> reasons;
+  final List<AiCurationReason> reasons;
+
+  String get assetId => candidate.assetId;
+}
+
+class ExcludedPhoto {
+  const ExcludedPhoto({required this.candidate, required this.reasons});
+
+  final PhotoCandidate candidate;
+  final List<AiCurationReason> reasons;
 
   String get assetId => candidate.assetId;
 }
@@ -97,7 +129,7 @@ class AlbumRecommendationDraft {
   final int pageCount;
   final String templateTone;
   final List<RecommendedPhoto> recommendedPhotos;
-  final List<PhotoCandidate> excludedPhotos;
+  final List<ExcludedPhoto> excludedPhotos;
   final List<StorySection> storySections;
   final String summary;
   final List<String> curationNotes;
