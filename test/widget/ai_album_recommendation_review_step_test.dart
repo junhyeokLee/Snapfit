@@ -85,7 +85,7 @@ void main() {
     expect(find.text('이런 앨범 초안을 준비했어요'), findsNothing);
     expect(find.text('여행의 장면들'), findsOneWidget);
     expect(find.text('추천 사진 1장'), findsOneWidget);
-    expect(find.text('잠시 빼둔 사진 1장'), findsOneWidget);
+    expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
     expect(find.text('여행의 시작'), findsOneWidget);
     expect(find.text('편집 시작'), findsOneWidget);
     expect(find.textContaining('사진과 문구는'), findsNothing);
@@ -153,10 +153,90 @@ void main() {
         ),
       );
 
-      expect(find.text('AI 기준'), findsOneWidget);
-      expect(find.text('확인 기준'), findsOneWidget);
-      expect(find.textContaining('날짜가 이어지는 장면'), findsOneWidget);
-      expect(find.textContaining('장소감이 보이는 가로 사진'), findsOneWidget);
+      expect(find.text('AI가 이렇게 골랐어요'), findsOneWidget);
+      expect(find.text('테마에 잘 맞는 컷'), findsOneWidget);
+      expect(find.text('추천한 사진'), findsOneWidget);
+      expect(find.text('여행 앨범에 어울리는 장소감'), findsOneWidget);
     },
   );
+
+  testWidgets('surfaces selected and excluded photo reasons in review cards', (
+    tester,
+  ) async {
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.travel,
+      title: '여행의 장면들',
+      pageCount: 10,
+      templateTone: '날짜 흐름이 보이는 따뜻한 여행 기록 템플릿',
+      recommendedPhotos: [
+        RecommendedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'cover-wide',
+            createdAt: DateTime(2026, 8, 20, 9),
+            width: 4000,
+            height: 3000,
+            orientation: PhotoOrientation.landscape,
+          ),
+          score: 0.94,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.highResolution,
+              message: '크게 넣어도 선명한 사진이에요',
+            ),
+            AiCurationReason(
+              type: AiCurationReasonType.timeClusterRepresentative,
+              message: '비슷한 시간대 사진 중 대표로 골랐어요',
+            ),
+          ],
+        ),
+      ],
+      excludedPhotos: [
+        ExcludedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'screen-shot',
+            createdAt: DateTime(2026, 8, 20, 10),
+            width: 1170,
+            height: 2532,
+            orientation: PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.screenshotExcluded,
+              message: '스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요',
+            ),
+          ],
+        ),
+      ],
+      storySections: const [
+        StorySection(
+          title: '여행의 첫 장면',
+          description: '출발의 설렘이 보이는 사진을 앞쪽에 뒀어요.',
+          photoAssetIds: ['cover-wide'],
+        ),
+      ],
+      summary: '기기 안에서만 사진 정보를 살펴봤어요.',
+      curationNotes: const ['기기 안에서만 분석했어요.'],
+    );
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumRecommendationReviewStep(
+          draft: draft,
+          onAcceptDraft: () {},
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('추천한 사진'), findsOneWidget);
+    expect(find.text('크게 넣어도 선명한 사진이에요'), findsOneWidget);
+    expect(find.text('대표 컷'), findsOneWidget);
+    expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
+    expect(find.textContaining('편집 때 다시 추가 가능해요'), findsOneWidget);
+    expect(find.text('스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요'), findsOneWidget);
+  });
 }

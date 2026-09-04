@@ -133,8 +133,12 @@ AlbumRecommendationDraft _draft() {
         score: 0.9,
         reasons: const [
           AiCurationReason(
-            type: AiCurationReasonType.coverCandidate,
-            message: '대표 장면',
+            type: AiCurationReasonType.highResolution,
+            message: '크게 넣어도 선명한 사진이에요',
+          ),
+          AiCurationReason(
+            type: AiCurationReasonType.timeClusterRepresentative,
+            message: '비슷한 시간대 사진 중 대표로 골랐어요',
           ),
         ],
       ),
@@ -142,7 +146,10 @@ AlbumRecommendationDraft _draft() {
         candidate: _candidate('b'),
         score: 0.8,
         reasons: const [
-          AiCurationReason(type: AiCurationReasonType.dateFlow, message: '흐름'),
+          AiCurationReason(
+            type: AiCurationReasonType.themeOrientation,
+            message: '풍경과 장소감이 잘 살아나는 컷이에요',
+          ),
         ],
       ),
     ],
@@ -165,7 +172,7 @@ AlbumRecommendationDraft _draft() {
         photoAssetIds: ['b'],
       ),
     ],
-    summary: '대표 장면 위주로 10쪽 초안을 만들었어요.',
+    summary: '기기 안에서만 사진 정보를 살펴봤어요. 대표 컷 중심으로 10쪽 초안을 만들었어요.',
   );
 }
 
