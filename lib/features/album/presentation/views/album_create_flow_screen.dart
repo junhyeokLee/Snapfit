@@ -563,8 +563,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pendingDraft != null) {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
-            onAcceptDraft: () => setState(() {
-              final aiPages = _aiDraftTemplateBuilder.build(pendingDraft);
+            onAcceptDraft: (acceptedDraft) => setState(() {
+              final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
               _resolvedTemplatePages = aiPages;
               _baseTemplatePages = aiPages;
               (_templatePagesByAspect ??=
@@ -579,9 +579,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _pendingAiDraft = null;
               _aiDraftFailureMessage = null;
               if (_albumTitle.trim().isEmpty) {
-                _albumTitle = pendingDraft.title;
+                _albumTitle = acceptedDraft.title;
               }
-              _selectedPageCount = pendingDraft.pageCount.clamp(
+              _selectedPageCount = acceptedDraft.pageCount.clamp(
                 _templateMinPageCount,
                 _maxPageCount,
               );

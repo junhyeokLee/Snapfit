@@ -136,4 +136,34 @@ class AlbumRecommendationDraft {
   final bool requiresUserReview;
   final bool alreadyCreatedAlbum;
   final String reviewCtaLabel;
+
+  AlbumRecommendationDraft copyWith({
+    AlbumTheme? theme,
+    String? title,
+    int? pageCount,
+    String? templateTone,
+    List<RecommendedPhoto>? recommendedPhotos,
+    List<ExcludedPhoto>? excludedPhotos,
+    List<StorySection>? storySections,
+    String? summary,
+    List<String>? curationNotes,
+    bool? requiresUserReview,
+    bool? alreadyCreatedAlbum,
+    String? reviewCtaLabel,
+  }) {
+    return AlbumRecommendationDraft(
+      theme: theme ?? this.theme,
+      title: title ?? this.title,
+      pageCount: pageCount ?? this.pageCount,
+      templateTone: templateTone ?? this.templateTone,
+      recommendedPhotos: recommendedPhotos ?? this.recommendedPhotos,
+      excludedPhotos: excludedPhotos ?? this.excludedPhotos,
+      storySections: storySections ?? this.storySections,
+      summary: summary ?? this.summary,
+      curationNotes: curationNotes ?? this.curationNotes,
+      requiresUserReview: requiresUserReview ?? this.requiresUserReview,
+      alreadyCreatedAlbum: alreadyCreatedAlbum ?? this.alreadyCreatedAlbum,
+      reviewCtaLabel: reviewCtaLabel ?? this.reviewCtaLabel,
+    );
+  }
 }

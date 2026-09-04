@@ -108,7 +108,7 @@ void main() {
       _wrap(
         AiAlbumRecommendationReviewStep(
           draft: _draft(),
-          onAcceptDraft: () {},
+          onAcceptDraft: (_) {},
           onBack: () {},
         ),
       ),

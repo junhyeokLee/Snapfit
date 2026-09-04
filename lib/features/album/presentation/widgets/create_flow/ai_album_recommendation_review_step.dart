@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
 
-class AiAlbumRecommendationReviewStep extends StatelessWidget {
+class AiAlbumRecommendationReviewStep extends StatefulWidget {
   const AiAlbumRecommendationReviewStep({
     super.key,
     required this.draft,
@@ -13,8 +13,47 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
   });
 
   final AlbumRecommendationDraft draft;
-  final VoidCallback onAcceptDraft;
+  final ValueChanged<AlbumRecommendationDraft> onAcceptDraft;
   final VoidCallback onBack;
+
+  @override
+  State<AiAlbumRecommendationReviewStep> createState() =>
+      _AiAlbumRecommendationReviewStepState();
+}
+
+class _AiAlbumRecommendationReviewStepState
+    extends State<AiAlbumRecommendationReviewStep> {
+  late AlbumRecommendationDraft _draft;
+
+  @override
+  void initState() {
+    super.initState();
+    _draft = widget.draft;
+  }
+
+  @override
+  void didUpdateWidget(AiAlbumRecommendationReviewStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.draft != widget.draft) {
+      _draft = widget.draft;
+    }
+  }
+
+  void _addExcludedPhoto(ExcludedPhoto photo) {
+    final promoted = RecommendedPhoto(
+      candidate: photo.candidate,
+      score: 0.62,
+      reasons: photo.reasons,
+    );
+    setState(() {
+      _draft = _draft.copyWith(
+        recommendedPhotos: [..._draft.recommendedPhotos, promoted],
+        excludedPhotos: _draft.excludedPhotos
+            .where((excluded) => excluded.assetId != photo.assetId)
+            .toList(growable: false),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +73,7 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _BackTextButton(onPressed: onBack),
+                    _BackTextButton(onPressed: widget.onBack),
                     SizedBox(height: 14.h),
                     Text(
                       'AI 초안',
@@ -59,17 +98,20 @@ class AiAlbumRecommendationReviewStep extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 16.h),
-                    _DraftSummaryCard(draft: draft),
+                    _DraftSummaryCard(draft: _draft),
                     SizedBox(height: 14.h),
-                    _StorySectionList(draft: draft),
+                    _StorySectionList(draft: _draft),
                     SizedBox(height: 14.h),
-                    _RecommendationDetails(draft: draft),
+                    _RecommendationDetails(
+                      draft: _draft,
+                      onAddExcludedPhoto: _addExcludedPhoto,
+                    ),
                     SizedBox(height: 16.h),
                   ],
                 ),
               ),
             ),
-            _BottomCta(onAcceptDraft: onAcceptDraft),
+            _BottomCta(onAcceptDraft: () => widget.onAcceptDraft(_draft)),
           ],
         ),
       ),
@@ -190,9 +232,13 @@ class _StorySectionList extends StatelessWidget {
 }
 
 class _RecommendationDetails extends StatelessWidget {
-  const _RecommendationDetails({required this.draft});
+  const _RecommendationDetails({
+    required this.draft,
+    required this.onAddExcludedPhoto,
+  });
 
   final AlbumRecommendationDraft draft;
+  final ValueChanged<ExcludedPhoto> onAddExcludedPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -231,11 +277,38 @@ class _RecommendationDetails extends StatelessWidget {
           ],
           if (draft.excludedPhotos.isNotEmpty) ...[
             SizedBox(height: 12.h),
-            _ReasonGroupLabel(text: '잠시 빼둔 사진 ${draft.excludedPhotos.length}장'),
+            Row(
+              children: [
+                Expanded(
+                  child: _ReasonGroupLabel(
+                    text: '잠시 빼둔 사진 ${draft.excludedPhotos.length}장',
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      onAddExcludedPhoto(draft.excludedPhotos.first),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 5.h,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    foregroundColor: SnapFitColors.textPrimaryOf(context),
+                  ),
+                  child: Text(
+                    '초안에 넣기',
+                    style: TextStyle(
+                      fontSize: 12.2.sp,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             SizedBox(height: 6.h),
             Text(
-              '${excludedReasonLabels.join(', ')} 사진은 초안에서 잠시 제외했어요. '
-              '편집 때 다시 추가 가능해요.',
+              '${excludedReasonLabels.join(', ')} 사진은 잠시 제외했어요. 원하면 다시 넣을 수 있어요.',
               style: TextStyle(
                 color: SnapFitColors.textSecondaryOf(context),
                 fontSize: 12.3.sp,
@@ -245,6 +318,17 @@ class _RecommendationDetails extends StatelessWidget {
             ),
             SizedBox(height: 7.h),
             _ReasonBulletList(messages: _excludedReasonMessages(excluded)),
+          ] else ...[
+            SizedBox(height: 12.h),
+            Text(
+              '원하면 잠시 빼둔 사진도 초안에 넣을 수 있어요. 지금은 모두 초안에 들어갔어요.',
+              style: TextStyle(
+                color: SnapFitColors.textSecondaryOf(context),
+                fontSize: 12.3.sp,
+                height: 1.36,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ],
       ),

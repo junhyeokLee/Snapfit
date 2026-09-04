@@ -76,7 +76,7 @@ void main() {
       _wrap(
         AiAlbumRecommendationReviewStep(
           draft: draft,
-          onAcceptDraft: () => accepted = true,
+          onAcceptDraft: (_) => accepted = true,
           onBack: () => back = true,
         ),
       ),
@@ -147,7 +147,7 @@ void main() {
         _wrap(
           AiAlbumRecommendationReviewStep(
             draft: draft,
-            onAcceptDraft: () {},
+            onAcceptDraft: (_) {},
             onBack: () {},
           ),
         ),
@@ -226,7 +226,7 @@ void main() {
       _wrap(
         AiAlbumRecommendationReviewStep(
           draft: draft,
-          onAcceptDraft: () {},
+          onAcceptDraft: (_) {},
           onBack: () {},
         ),
       ),
@@ -236,7 +236,98 @@ void main() {
     expect(find.text('크게 넣어도 선명한 사진이에요'), findsOneWidget);
     expect(find.text('대표 컷'), findsOneWidget);
     expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
-    expect(find.textContaining('편집 때 다시 추가 가능해요'), findsOneWidget);
+    expect(find.textContaining('원하면 다시 넣을 수 있어요'), findsOneWidget);
     expect(find.text('스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요'), findsOneWidget);
+  });
+
+  testWidgets('lets users add an excluded photo back before editing', (
+    tester,
+  ) async {
+    AlbumRecommendationDraft? acceptedDraft;
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.travel,
+      title: '여행의 장면들',
+      pageCount: 10,
+      templateTone: '대표 컷 중심 여행 템플릿',
+      recommendedPhotos: [
+        RecommendedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'cover-wide',
+            createdAt: DateTime(2026, 8, 20, 9),
+            width: 4000,
+            height: 3000,
+            orientation: PhotoOrientation.landscape,
+          ),
+          score: 0.94,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.highResolution,
+              message: '크게 넣어도 선명한 사진이에요',
+            ),
+          ],
+        ),
+      ],
+      excludedPhotos: [
+        ExcludedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'duplicate-moment',
+            createdAt: DateTime(2026, 8, 20, 9, 2),
+            width: 3900,
+            height: 2900,
+            orientation: PhotoOrientation.landscape,
+          ),
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.duplicateTimeExcluded,
+              message: '비슷한 시간대 사진이 많아 대표 컷만 먼저 넣었어요',
+            ),
+          ],
+        ),
+      ],
+      storySections: const [
+        StorySection(
+          title: '여행의 첫 장면',
+          description: '출발의 설렘이 보이는 사진을 앞쪽에 뒀어요.',
+          photoAssetIds: ['cover-wide'],
+        ),
+      ],
+      summary: '기기 안에서만 사진 정보를 살펴봤어요.',
+    );
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumRecommendationReviewStep(
+          draft: draft,
+          onAcceptDraft: (updatedDraft) => acceptedDraft = updatedDraft,
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('추천 사진 1장'), findsOneWidget);
+    expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
+    await tester.ensureVisible(find.text('초안에 넣기'));
+    await tester.pumpAndSettle();
+    expect(find.text('초안에 넣기'), findsOneWidget);
+
+    await tester.tap(find.text('초안에 넣기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('추천 사진 2장'), findsOneWidget);
+    expect(find.text('잠시 빼둔 사진 0장'), findsOneWidget);
+    expect(find.textContaining('지금은 모두 초안에 들어갔어요'), findsOneWidget);
+
+    await tester.tap(find.text('편집 시작'));
+    await tester.pump();
+
+    expect(acceptedDraft, isNotNull);
+    expect(acceptedDraft!.recommendedPhotos.map((photo) => photo.assetId), [
+      'cover-wide',
+      'duplicate-moment',
+    ]);
+    expect(acceptedDraft!.excludedPhotos, isEmpty);
   });
 }
