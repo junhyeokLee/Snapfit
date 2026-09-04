@@ -81,6 +81,48 @@ void main() {
     expect(result.shouldChargePoints, isFalse);
     expect(result.draft, isNull);
   });
+
+  test('explains denied photo permission without charging points', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async =>
+          throw const AiPhotoCandidateCollectionException(
+            AiPhotoCandidateCollectionFailure.permissionDenied,
+          ),
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.family,
+      range: AiPhotoRange.recent30Days,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.permissionDenied);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.draft, isNull);
+    expect(result.failureMessage, contains('사진 접근 권한'));
+    expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+  });
+
+  test('explains limited library needs a few more photos', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => [
+        _candidate('one', DateTime(2026, 8, 20), PhotoOrientation.square),
+      ],
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.daily,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.failureMessage, contains('선택한 사진이 조금 더 필요해요'));
+    expect(result.failureMessage, contains('기기 안에서만'));
+  });
 }
 
 PhotoCandidate _candidate(

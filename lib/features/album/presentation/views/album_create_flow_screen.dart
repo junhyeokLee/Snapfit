@@ -427,15 +427,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = false;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
-      _aiDraftFailureMessage = null;
+      _aiDraftFailureMessage =
+          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.';
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
-        ),
-      ),
-    );
   }
 
   Widget _buildStepContent() {

@@ -70,6 +70,16 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
+                      '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 12.5.sp,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
                       '포인트는 차감되지 않았어요.',
                       style: TextStyle(
                         color: const Color(0xFF4C6A55),

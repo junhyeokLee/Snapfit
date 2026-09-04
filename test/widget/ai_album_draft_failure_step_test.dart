@@ -34,6 +34,7 @@ void main() {
     expect(find.text('초안을 만들지 못했어요'), findsOneWidget);
     expect(find.text('AI 초안을 만들려면 사진이 조금 더 필요해요.'), findsOneWidget);
     expect(find.text('포인트는 차감되지 않았어요.'), findsOneWidget);
+    expect(find.textContaining('기기 안에서만 확인해요'), findsOneWidget);
     expect(find.text('사진 범위 다시 고르기'), findsOneWidget);
     expect(find.text('직접 구성하기'), findsOneWidget);
     expect(find.textContaining('300P'), findsNothing);
