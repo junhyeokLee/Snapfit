@@ -67,6 +67,80 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'fills extra editor pages with unused local assets after story sections',
+    () {
+      final assets = [
+        for (var i = 1; i <= 6; i++)
+          _asset('photo-$i', DateTime(2026, 8, 20, 10, i)),
+      ];
+      final draft = AlbumRecommendationDraft(
+        theme: AlbumTheme.travel,
+        title: '여행의 장면들',
+        pageCount: 3,
+        templateTone: '대표 컷 중심 여행 템플릿',
+        recommendedPhotos: [
+          for (var i = 0; i < assets.length; i++)
+            RecommendedPhoto(
+              candidate: _candidate(
+                'photo-${i + 1}',
+                DateTime(2026, 8, 20, 10, i),
+                assets[i],
+              ),
+              score: 0.9 - (i * 0.02),
+              reasons: const [
+                AiCurationReason(
+                  type: AiCurationReasonType.highResolution,
+                  message: '크게 넣어도 선명한 사진이에요',
+                ),
+              ],
+            ),
+        ],
+        excludedPhotos: const [],
+        storySections: const [
+          StorySection(
+            title: '여행의 시작',
+            description: '대표 장면을 먼저 배치해요.',
+            photoAssetIds: ['photo-1', 'photo-2', 'photo-3', 'photo-4'],
+          ),
+        ],
+        summary: '대표 컷 중심으로 초안을 만들었어요.',
+      );
+
+      final pages = const AiAlbumDraftTemplateBuilder().build(draft);
+      final innerImageLayers = pages
+          .skip(1)
+          .expand(
+            (page) => page.where((layer) => layer.type == LayerType.image),
+          );
+
+      expect(
+        innerImageLayers.map((layer) => layer.id).toSet(),
+        containsAll([
+          'ai_photo_photo-1',
+          'ai_photo_photo-2',
+          'ai_photo_photo-3',
+          'ai_photo_photo-4',
+          'ai_photo_photo-5',
+          'ai_photo_photo-6',
+        ]),
+      );
+      expect(innerImageLayers.map((layer) => layer.id).toSet(), hasLength(6));
+      expect(
+        pages[2]
+            .where((layer) => layer.type == LayerType.image)
+            .map((layer) => layer.id),
+        ['ai_photo_photo-5', 'ai_photo_photo-6'],
+      );
+      for (final layer in innerImageLayers) {
+        expect(layer.asset, isNotNull);
+        expect(layer.imageUrl, isNull);
+        expect(layer.originalUrl, isNull);
+        expect(layer.previewUrl, isNull);
+      }
+    },
+  );
 }
 
 PhotoCandidate _candidate(String id, DateTime createdAt, AssetEntity asset) {

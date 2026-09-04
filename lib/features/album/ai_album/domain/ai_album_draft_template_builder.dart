@@ -13,21 +13,28 @@ class AiAlbumDraftTemplateBuilder {
       for (final photo in draft.recommendedPhotos) photo.assetId: photo,
     };
 
+    final storyPhotoIds = <String>{};
     for (final section in draft.storySections) {
       final photos = section.photoAssetIds
           .where(photoById.containsKey)
           .map((id) => photoById[id]!)
           .take(4)
           .toList(growable: false);
+      storyPhotoIds.addAll(photos.map((photo) => photo.assetId));
       pages.add(_storyPageLayers(section, photos));
     }
 
+    final extraPhotos = draft.recommendedPhotos
+        .where((photo) => !storyPhotoIds.contains(photo.assetId))
+        .toList(growable: false);
+    var extraPhotoCursor = 0;
     while (pages.length <= draft.pageCount) {
       final index = pages.length;
-      final remaining = draft.recommendedPhotos
-          .skip((index - 1) * 2)
+      final remaining = extraPhotos
+          .skip(extraPhotoCursor)
           .take(2)
           .toList(growable: false);
+      extraPhotoCursor += remaining.length;
       pages.add(_photoPageLayers(index, remaining));
     }
 
