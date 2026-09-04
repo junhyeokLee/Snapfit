@@ -56,7 +56,7 @@ class PageListSelector extends ConsumerWidget {
             itemBuilder: (context, index) {
               // 마지막 아이템 = 페이지 추가 버튼
               if (index == pages.length) {
-                return _buildAddButton(context);
+                return _buildAddButton(context, isVerticalRail: isVerticalRail);
               }
 
               final page = pages[index];
@@ -320,11 +320,9 @@ class PageListSelector extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddButton(BuildContext context) {
-    final isLandscape =
-        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+  Widget _buildAddButton(BuildContext context, {required bool isVerticalRail}) {
     return SizedBox(
-      width: isLandscape ? 62 : 40.w,
+      width: isVerticalRail ? 62 : 30.w,
       child: SnapFitPressable(
         onTap: onAddPage,
         pressedScale: 0.96,
@@ -333,8 +331,8 @@ class PageListSelector extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: isLandscape ? 58 : 34.w,
-              height: isLandscape ? 58 : 46.h,
+              width: isVerticalRail ? 58 : 24.w,
+              height: isVerticalRail ? 58 : 40.h,
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
                 borderRadius: BorderRadius.circular(14.r),
@@ -345,28 +343,12 @@ class PageListSelector extends ConsumerWidget {
                   width: 1,
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_rounded,
-                    size: isLandscape ? 20 : 17,
-                    color: SnapFitColors.textSecondaryOf(context),
-                  ),
-                  SizedBox(height: isLandscape ? 2 : 1.h),
-                  Text(
-                    '추가',
-                    style: TextStyle(
-                      fontSize: isLandscape ? 10 : 7.5,
-                      color: SnapFitColors.textSecondaryOf(context),
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+              child: Icon(
+                Icons.add_rounded,
+                size: isVerticalRail ? 20 : 16,
+                color: SnapFitColors.textSecondaryOf(context),
               ),
             ),
-            SizedBox(height: 2.h),
-            Text('', style: TextStyle(fontSize: 9)),
           ],
         ),
       ),
