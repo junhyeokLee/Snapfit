@@ -10,6 +10,7 @@ import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/data/billing_repository.dart';
+import '../../../profile/presentation/views/billing_management_screen.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../../ai_album/domain/ai_album_draft_generation_service.dart';
@@ -528,7 +529,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     _aiDraftFailureMessage = isInsufficient
         ? 'AI 초안은 준비됐지만, 이 구성을 열기엔 포인트가 부족해요. 현재 포인트를 다시 확인하거나 직접 구성할 수 있어요. 아직 포인트는 차감되지 않았어요.'
         : '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
-    _aiDraftPrimaryCtaLabel = isInsufficient ? '포인트 확인하기' : '사진 범위 다시 고르기';
+    _aiDraftPrimaryCtaLabel = isInsufficient ? '포인트 충전하기' : '사진 범위 다시 고르기';
     _aiDraftPrimaryRecoveryAction = isInsufficient
         ? AiAlbumDraftRecoveryAction.reviewPointCost
         : AiAlbumDraftRecoveryAction.retryPhotoRange;
@@ -582,6 +583,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           _aiDraftPrimaryRecoveryAction = null;
         });
       case AiAlbumDraftRecoveryAction.reviewPointCost:
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const BillingManagementScreen()),
+        );
+        if (!mounted) return;
+        ref.invalidate(myPointBalanceProvider);
         setState(() {
           _hasConfirmedAiPointCost = false;
           _isGeneratingAiDraft = false;

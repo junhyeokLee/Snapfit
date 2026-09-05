@@ -11,6 +11,11 @@ import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
 
+int _pointAmountFromProductId(String productId) {
+  final match = RegExp(r'points_(\d+)').firstMatch(productId);
+  return int.tryParse(match?.group(1) ?? '') ?? 0;
+}
+
 class BillingManagementScreen extends ConsumerStatefulWidget {
   const BillingManagementScreen({super.key});
 
@@ -241,6 +246,7 @@ class _BillingManagementScreenState
   Widget build(BuildContext context) {
     final subscription = ref.watch(mySubscriptionProvider);
     final quota = ref.watch(myStorageQuotaProvider);
+    final pointBalance = ref.watch(myPointBalanceProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
 
@@ -268,6 +274,7 @@ class _BillingManagementScreenState
             SizedBox(height: 12.h),
             _PointPackageCard(
               products: _pointProducts,
+              pointBalance: pointBalance,
               loadingProducts: _loadingProducts,
               purchaseInProgress: _purchaseInProgress,
               onBuy: _buyPoints,
@@ -358,12 +365,14 @@ class _BillingManagementScreenState
 class _PointPackageCard extends StatelessWidget {
   const _PointPackageCard({
     required this.products,
+    required this.pointBalance,
     required this.loadingProducts,
     required this.purchaseInProgress,
     required this.onBuy,
   });
 
   final List<ProductDetails> products;
+  final AsyncValue<int> pointBalance;
   final bool loadingProducts;
   final bool purchaseInProgress;
   final ValueChanged<ProductDetails> onBuy;
@@ -388,6 +397,23 @@ class _PointPackageCard extends StatelessWidget {
               fontSize: 17.sp,
               fontWeight: FontWeight.w800,
               color: textColor,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '현재 포인트',
+            style: TextStyle(fontSize: 12.sp, color: subColor),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            pointBalance.maybeWhen(
+              data: (value) => '${value}P',
+              orElse: () => '확인 중',
+            ),
+            style: TextStyle(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w900,
+              color: SnapFitColors.accent,
             ),
           ),
           SizedBox(height: 8.h),
@@ -418,12 +444,26 @@ class _PointPackageCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          product.title,
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.title,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 3.h),
+                            Text(
+                              '고급 AI 약 ${_pointAmountFromProductId(product.id) ~/ Env.aiAlbumDraftPointCost}회',
+                              style: TextStyle(
+                                color: subColor,
+                                fontSize: 11.5.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Text(
