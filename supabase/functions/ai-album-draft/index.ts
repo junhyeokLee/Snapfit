@@ -26,6 +26,7 @@ export type PhotoCandidatePayload = {
   orientation: PhotoOrientation;
   albumName?: string | null;
   isScreenshot?: boolean;
+  previewStorageUri?: string;
 };
 
 export type AiAlbumDraftRequestPayload = {
@@ -130,6 +131,7 @@ function normalizeCandidate(value: unknown): PhotoCandidatePayload {
     orientation: normalizeOrientation(item.orientation),
     albumName: text(item.albumName) || null,
     isScreenshot: Boolean(item.isScreenshot),
+    previewStorageUri: text(item.previewStorageUri) || undefined,
   };
 }
 

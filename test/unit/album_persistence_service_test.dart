@@ -44,6 +44,16 @@ class FakeStorageService implements StorageService {
       originalGsPath: 'gs://bucket/original.jpg',
     );
   }
+
+  @override
+  Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
+    required String draftId,
+    required List<AssetEntity> assets,
+    int maxDimension = 512,
+  }) async => const [];
+
+  @override
+  Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
 }
 
 class QuotaFailStorageService implements StorageService {
@@ -77,6 +87,16 @@ class QuotaFailStorageService implements StorageService {
     projectedBytes: 1034,
     reason: 'HARD_LIMIT_EXCEEDED',
   );
+
+  @override
+  Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
+    required String draftId,
+    required List<AssetEntity> assets,
+    int maxDimension = 512,
+  }) async => const [];
+
+  @override
+  Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
 }
 
 void main() {

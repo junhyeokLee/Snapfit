@@ -38,6 +38,16 @@ class FakeStorageService implements StorageService {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
   }) async => const UploadedUrls();
+
+  @override
+  Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
+    required String draftId,
+    required List<AssetEntity> assets,
+    int maxDimension = 512,
+  }) async => const [];
+
+  @override
+  Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
 }
 
 class FakeAlbumPersistenceService implements AlbumPersistenceService {

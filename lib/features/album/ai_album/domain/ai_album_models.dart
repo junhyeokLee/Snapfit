@@ -53,6 +53,7 @@ class PhotoCandidate {
     this.albumName,
     this.isScreenshot = false,
     this.asset,
+    this.previewStorageUri,
   });
 
   final String assetId;
@@ -63,6 +64,7 @@ class PhotoCandidate {
   final String? albumName;
   final bool isScreenshot;
   final AssetEntity? asset;
+  final String? previewStorageUri;
 
   String get dayKey =>
       '${createdAt.year.toString().padLeft(4, '0')}-'
@@ -71,6 +73,30 @@ class PhotoCandidate {
 
   bool get isHighResolution => width >= 1200 && height >= 1200;
   bool get isLowResolution => width < 900 || height < 900;
+
+  PhotoCandidate copyWith({
+    String? assetId,
+    DateTime? createdAt,
+    int? width,
+    int? height,
+    PhotoOrientation? orientation,
+    String? albumName,
+    bool? isScreenshot,
+    AssetEntity? asset,
+    String? previewStorageUri,
+  }) {
+    return PhotoCandidate(
+      assetId: assetId ?? this.assetId,
+      createdAt: createdAt ?? this.createdAt,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      orientation: orientation ?? this.orientation,
+      albumName: albumName ?? this.albumName,
+      isScreenshot: isScreenshot ?? this.isScreenshot,
+      asset: asset ?? this.asset,
+      previewStorageUri: previewStorageUri ?? this.previewStorageUri,
+    );
+  }
 }
 
 class RecommendedPhoto {

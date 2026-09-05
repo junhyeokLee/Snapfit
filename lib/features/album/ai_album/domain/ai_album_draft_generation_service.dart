@@ -3,6 +3,8 @@ import 'ai_album_models.dart';
 
 typedef AiPhotoCandidateLoader =
     Future<List<PhotoCandidate>> Function(AiPhotoRange range);
+typedef AdvancedAiAlbumPreviewPreparer =
+    Future<List<PhotoCandidate>> Function(List<PhotoCandidate> candidates);
 
 abstract class AiAlbumDraftProvider {
   const AiAlbumDraftProvider();
@@ -159,15 +161,18 @@ class AiAlbumDraftGenerationService {
   AiAlbumDraftGenerationService({
     required AiPhotoCandidateLoader collectCandidates,
     AiAlbumDraftProvider? draftProvider,
+    AdvancedAiAlbumPreviewPreparer? prepareAdvancedPreviews,
     AiAlbumCurationEngine engine = const AiAlbumCurationEngine(),
     int minimumPhotoCount = 3,
   }) : _collectCandidates = collectCandidates,
        _draftProvider =
            draftProvider ?? MetadataFirstAiAlbumDraftProvider(engine: engine),
+       _prepareAdvancedPreviews = prepareAdvancedPreviews,
        _minimumPhotoCount = minimumPhotoCount;
 
   final AiPhotoCandidateLoader _collectCandidates;
   final AiAlbumDraftProvider _draftProvider;
+  final AdvancedAiAlbumPreviewPreparer? _prepareAdvancedPreviews;
   final int _minimumPhotoCount;
 
   Future<AiAlbumDraftGenerationResult> generate({
@@ -184,10 +189,13 @@ class AiAlbumDraftGenerationService {
         );
       }
 
+      final preparedCandidates = _prepareAdvancedPreviews == null
+          ? candidates
+          : await _prepareAdvancedPreviews(candidates);
       final draft = await _draftProvider.createDraft(
         theme: theme,
         range: range,
-        candidates: candidates,
+        candidates: preparedCandidates,
       );
       if (draft.recommendedPhotos.isEmpty) {
         final excludedForQuality = draft.excludedPhotos.where((photo) {

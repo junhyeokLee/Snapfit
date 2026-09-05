@@ -177,3 +177,40 @@ Deno.test("handleAiAlbumDraftRequest returns advanced provider draft when it suc
   assertEquals(body.requiresUserReview, true);
   assertEquals(body.alreadyCreatedAlbum, false);
 });
+
+Deno.test("handleAiAlbumDraftRequest passes preview storage references to advanced provider", async () => {
+  let receivedPreview: string | undefined;
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "family",
+        range: "limitedLibrary",
+        candidates: [
+          {
+            ...candidates[0],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-1.jpg",
+          },
+          candidates[1],
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => key === "AI_ALBUM_DRAFT_PROVIDER" ? "advanced" : undefined,
+      providers: {
+        advanced: (request) => {
+          receivedPreview = request.candidates[0].previewStorageUri;
+          return buildDraftResponse(request);
+        },
+      },
+    },
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(
+    receivedPreview,
+    "supabase://ai-album-previews/user/draft/photo-1.jpg",
+  );
+});

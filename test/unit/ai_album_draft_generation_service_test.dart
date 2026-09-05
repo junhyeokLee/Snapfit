@@ -272,6 +272,73 @@ void main() {
       expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
     },
   );
+
+  test(
+    'attaches advanced server preview references only after candidates are collected',
+    () async {
+      final seenCandidates = <PhotoCandidate>[];
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate(
+            'photo-1',
+            DateTime(2026, 8, 20),
+            PhotoOrientation.landscape,
+          ),
+          _candidate(
+            'photo-2',
+            DateTime(2026, 8, 21),
+            PhotoOrientation.portrait,
+          ),
+          _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+        ],
+        prepareAdvancedPreviews: (candidates) async {
+          return candidates
+              .map(
+                (candidate) => candidate.copyWith(
+                  previewStorageUri:
+                      'supabase://ai-album-previews/user/draft/${candidate.assetId}.jpg',
+                ),
+              )
+              .toList(growable: false);
+        },
+        draftProvider: _RecordingDraftProvider(seenCandidates),
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(seenCandidates.map((candidate) => candidate.previewStorageUri), [
+        'supabase://ai-album-previews/user/draft/photo-1.jpg',
+        'supabase://ai-album-previews/user/draft/photo-2.jpg',
+        'supabase://ai-album-previews/user/draft/photo-3.jpg',
+      ]);
+    },
+  );
+
+  test('does not prepare previews when photo count is insufficient', () async {
+    var prepared = false;
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => [
+        _candidate('photo-1', DateTime(2026, 8, 20), PhotoOrientation.square),
+      ],
+      prepareAdvancedPreviews: (_) async {
+        prepared = true;
+        return const [];
+      },
+      draftProvider: const MetadataFirstAiAlbumDraftProvider(),
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.travel,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(prepared, isFalse);
+  });
 }
 
 PhotoCandidate _candidate(
@@ -292,6 +359,44 @@ PhotoCandidate _candidate(
     orientation: orientation,
     isScreenshot: isScreenshot,
   );
+}
+
+class _RecordingDraftProvider extends AiAlbumDraftProvider {
+  const _RecordingDraftProvider(this.seenCandidates);
+
+  final List<PhotoCandidate> seenCandidates;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    seenCandidates.addAll(candidates);
+    return AlbumRecommendationDraft(
+      theme: theme,
+      title: '고급 AI 초안',
+      pageCount: 8,
+      templateTone: 'advanced-preview',
+      recommendedPhotos: candidates
+          .map(
+            (candidate) => RecommendedPhoto(
+              candidate: candidate,
+              score: 0.9,
+              reasons: const [
+                AiCurationReason(
+                  type: AiCurationReasonType.themeOrientation,
+                  message: '미리보기 분석 후보예요',
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false),
+      excludedPhotos: const [],
+      storySections: const [],
+      summary: '미리보기 준비 후 서버 초안을 만들어요.',
+    );
+  }
 }
 
 class _FakeAiAlbumDraftProvider extends AiAlbumDraftProvider {

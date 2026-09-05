@@ -102,18 +102,72 @@ void main() {
       );
     },
   );
+
+  test('forwards advanced preview storage references when present', () async {
+    late Map<String, Object?> requestBody;
+    final provider = SupabaseAiAlbumDraftProvider(
+      invokeFunction: (_, body) async {
+        requestBody = body;
+        return {
+          'title': '서버 연결 초안',
+          'pageCount': 8,
+          'recommendedPhotos': [
+            {'assetId': 'photo-1'},
+          ],
+          'storySections': [
+            {
+              'title': '서버 흐름',
+              'description': 'Edge Function 응답',
+              'photoAssetIds': ['photo-1'],
+            },
+          ],
+        };
+      },
+    );
+
+    await provider.createDraft(
+      theme: AlbumTheme.travel,
+      range: AiPhotoRange.limitedLibrary,
+      candidates: [
+        _candidate(
+          'photo-1',
+          DateTime(2026, 8, 20),
+          PhotoOrientation.landscape,
+          previewStorageUri:
+              'supabase://ai-album-previews/user/draft/photo-1.jpg',
+        ),
+        _candidate('photo-2', DateTime(2026, 8, 21), PhotoOrientation.portrait),
+        _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+      ],
+    );
+
+    final candidatesJson = requestBody['candidates'] as List<Object?>;
+    expect(
+      candidatesJson.first,
+      containsPair(
+        'previewStorageUri',
+        'supabase://ai-album-previews/user/draft/photo-1.jpg',
+      ),
+    );
+    expect(
+      candidatesJson[1] as Map<String, Object?>,
+      isNot(contains('previewStorageUri')),
+    );
+  });
 }
 
 PhotoCandidate _candidate(
   String id,
   DateTime createdAt,
-  PhotoOrientation orientation,
-) {
+  PhotoOrientation orientation, {
+  String? previewStorageUri,
+}) {
   return PhotoCandidate(
     assetId: id,
     createdAt: createdAt,
     width: orientation == PhotoOrientation.portrait ? 3000 : 4000,
     height: orientation == PhotoOrientation.landscape ? 3000 : 4000,
     orientation: orientation,
+    previewStorageUri: previewStorageUri,
   );
 }

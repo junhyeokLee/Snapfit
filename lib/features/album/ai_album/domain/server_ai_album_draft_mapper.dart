@@ -32,6 +32,8 @@ class ServerAiAlbumDraftRequest {
       'orientation': candidate.orientation.name,
       'albumName': candidate.albumName,
       'isScreenshot': candidate.isScreenshot,
+      if (candidate.previewStorageUri?.trim().isNotEmpty ?? false)
+        'previewStorageUri': candidate.previewStorageUri,
     };
   }
 }
