@@ -68,4 +68,13 @@ class Env {
     'IAP_PRO_MONTHLY_PRODUCT_ID',
     defaultValue: 'snapfit_pro_monthly',
   );
+
+  /// Enables server-backed AI album draft generation through Supabase Edge
+  /// Function. Keep false until server prompts/model quality and privacy copy
+  /// are production-ready.
+  /// - --dart-define=USE_SERVER_AI_ALBUM_DRAFT=true
+  static const bool useServerAiAlbumDraft = bool.fromEnvironment(
+    'USE_SERVER_AI_ALBUM_DRAFT',
+    defaultValue: false,
+  );
 }

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../config/env.dart';
+
 // Album member repository provider
 import '../../../../core/supabase/supabase_provider.dart';
 import '../../service/album_persistence_service.dart';
@@ -10,6 +12,7 @@ import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/album_member_repository.dart';
 import '../../domain/repositories/gallery_repository.dart';
 import '../../ai_album/data/ai_album_photo_candidate_collector.dart';
+import '../../ai_album/data/supabase_ai_album_draft_provider.dart';
 import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../service/album_editor_service.dart';
 import '../repositories/supabase_album_repository.dart';
@@ -41,11 +44,22 @@ final aiAlbumPhotoCandidateCollectorProvider =
       );
     });
 
+final aiAlbumDraftProviderProvider = Provider<AiAlbumDraftProvider>((ref) {
+  if (Env.useServerAiAlbumDraft) {
+    return SupabaseAiAlbumDraftProvider(
+      supabase: ref.read(supabaseClientProvider),
+    );
+  }
+  return const MetadataFirstAiAlbumDraftProvider();
+});
+
 final aiAlbumDraftGenerationServiceProvider =
     Provider<AiAlbumDraftGenerationService>((ref) {
       final collector = ref.read(aiAlbumPhotoCandidateCollectorProvider);
+      final draftProvider = ref.read(aiAlbumDraftProviderProvider);
       return AiAlbumDraftGenerationService(
         collectCandidates: (range) => collector.collect(range: range),
+        draftProvider: draftProvider,
       );
     });
 
