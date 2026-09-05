@@ -88,7 +88,7 @@ class Env {
 
   /// Native store consumable point product ids. Configure matching ids in
   /// Google Play Console / App Store Connect.
-  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_3500,snapfit_points_11000,snapfit_points_25000
+  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_2500,snapfit_points_8000,snapfit_points_18000
   static const String iapPointProductIdsCsv = String.fromEnvironment(
     'IAP_POINT_PRODUCT_IDS',
     defaultValue:

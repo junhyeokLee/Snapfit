@@ -4,22 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/config/env.dart';
 
 void main() {
-  test('advanced AI defaults to generous premium point cost', () {
+  test('advanced AI defaults to profit-safe premium point cost', () {
     expect(Env.aiAlbumDraftPointCost, 700);
   });
 
   test(
-    'point package migration seeds generous native store consumable products',
+    'point package migration seeds profit-safe native store consumables',
     () {
       final sql = File(
-        'supabase/migrations/20260905200000_ai_album_pricing_adjustment.sql',
+        'supabase/migrations/20260905203000_ai_album_profit_pricing.sql',
       ).readAsStringSync();
 
       expect(sql, contains('SNAPFIT_AI_DRAFT_HYBRID_COST = 700'));
+      expect(sql, contains('snapfit_points_2500'));
+      expect(sql, contains('snapfit_points_8000'));
+      expect(sql, contains('snapfit_points_18000'));
       expect(sql, contains('snapfit_points_3500'));
-      expect(sql, contains('snapfit_points_11000'));
-      expect(sql, contains('snapfit_points_25000'));
-      expect(sql, contains('snapfit_points_1500'));
       expect(sql, contains('is_active = false'));
     },
   );
