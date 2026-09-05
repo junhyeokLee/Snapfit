@@ -448,6 +448,35 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     });
   }
 
+  void _setAiDraftEditorHandoffFailure(
+    AiAlbumDraftEditorReadinessReason reason,
+  ) {
+    final title = switch (reason) {
+      AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
+        '초안에 넣을 사진이 없어요',
+      AiAlbumDraftEditorReadinessReason.pageCountMismatch => '앨범 쪽수를 다시 맞춰야 해요',
+      AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
+      AiAlbumDraftEditorReadinessReason.ready => '앨범 초안을 안전하게 열지 않았어요',
+    };
+    final message = switch (reason) {
+      AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
+        '선택한 범위에서 앨범에 넣을 사진을 찾지 못했어요. 사진 범위를 다시 고르거나 직접 구성해 주세요. 포인트는 차감되지 않았어요.',
+      AiAlbumDraftEditorReadinessReason.pageCountMismatch =>
+        'AI가 고른 쪽수와 실제 편집 쪽수가 달라 바로 열지 않았어요. 새 초안으로 다시 맞춰볼게요. 포인트는 차감되지 않았어요.',
+      AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
+      AiAlbumDraftEditorReadinessReason.ready =>
+        '구성은 만들었지만 편집기에 넣을 사진 레이어를 확인하지 못했어요. 사진을 다시 골라 새 초안을 만들면 안전해요. 포인트는 차감되지 않았어요.',
+    };
+
+    _pendingAiDraft = null;
+    _hasConfirmedAiPointCost = false;
+    _isGeneratingAiDraft = false;
+    _aiDraftFailureTitle = title;
+    _aiDraftFailureMessage = message;
+    _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
+    _aiDraftPrimaryRecoveryAction = AiAlbumDraftRecoveryAction.retryPhotoRange;
+  }
+
   void _handleAiDraftPrimaryRecovery(AiAlbumDraftRecoveryAction? action) {
     switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
       case AiAlbumDraftRecoveryAction.openPhotoSettings:
@@ -610,16 +639,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
             onAcceptDraft: (acceptedDraft) => setState(() {
-              if (!_aiDraftTemplateBuilder.isEditorReady(acceptedDraft)) {
-                _pendingAiDraft = null;
-                _hasConfirmedAiPointCost = false;
-                _isGeneratingAiDraft = false;
-                _aiDraftFailureTitle = '앨범 초안을 안전하게 열지 않았어요';
-                _aiDraftFailureMessage =
-                    '구성은 만들었지만 편집기에 넣을 사진 레이어를 확인하지 못했어요. 사진을 다시 골라 새 초안을 만들면 안전해요. 포인트는 차감되지 않았어요.';
-                _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
-                _aiDraftPrimaryRecoveryAction =
-                    AiAlbumDraftRecoveryAction.retryPhotoRange;
+              final editorReadiness = _aiDraftTemplateBuilder
+                  .validateEditorReady(acceptedDraft);
+              if (!editorReadiness.isReady) {
+                _setAiDraftEditorHandoffFailure(editorReadiness.reason);
                 return;
               }
 

@@ -3,17 +3,58 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/layer.dart';
 import 'ai_album_models.dart';
 
+enum AiAlbumDraftEditorReadinessReason {
+  ready,
+  emptyRecommendedPhotos,
+  pageCountMismatch,
+  missingLocalImageAsset,
+}
+
+class AiAlbumDraftEditorReadiness {
+  const AiAlbumDraftEditorReadiness(this.reason);
+
+  final AiAlbumDraftEditorReadinessReason reason;
+
+  bool get isReady => reason == AiAlbumDraftEditorReadinessReason.ready;
+}
+
 class AiAlbumDraftTemplateBuilder {
   const AiAlbumDraftTemplateBuilder();
 
   bool isEditorReady(AlbumRecommendationDraft draft) {
-    if (draft.pageCount < 1 || draft.recommendedPhotos.isEmpty) return false;
+    return validateEditorReady(draft).isReady;
+  }
+
+  AiAlbumDraftEditorReadiness validateEditorReady(
+    AlbumRecommendationDraft draft,
+  ) {
+    if (draft.recommendedPhotos.isEmpty) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos,
+      );
+    }
+    if (draft.pageCount < 1) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.pageCountMismatch,
+      );
+    }
     final pages = build(draft);
-    if (pages.length != draft.pageCount + 1) return false;
+    if (pages.length != draft.pageCount + 1) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.pageCountMismatch,
+      );
+    }
     final imageLayers = pages.expand(
       (page) => page.where((layer) => layer.type == LayerType.image),
     );
-    return imageLayers.any((layer) => layer.asset != null);
+    if (!imageLayers.any((layer) => layer.asset != null)) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.missingLocalImageAsset,
+      );
+    }
+    return const AiAlbumDraftEditorReadiness(
+      AiAlbumDraftEditorReadinessReason.ready,
+    );
   }
 
   List<List<LayerModel>> build(AlbumRecommendationDraft draft) {

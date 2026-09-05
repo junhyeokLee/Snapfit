@@ -46,6 +46,11 @@ void main() {
       summary: '날짜별 흐름을 살려 1개 묶음으로 나누었어요.',
     );
 
+    final readiness = const AiAlbumDraftTemplateBuilder().validateEditorReady(
+      draft,
+    );
+    expect(readiness.isReady, isTrue);
+    expect(readiness.reason, AiAlbumDraftEditorReadinessReason.ready);
     expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isTrue);
 
     final pages = const AiAlbumDraftTemplateBuilder().build(draft);
@@ -179,7 +184,37 @@ void main() {
       summary: '초안을 준비했어요.',
     );
 
+    final readiness = const AiAlbumDraftTemplateBuilder().validateEditorReady(
+      draft,
+    );
+    expect(readiness.isReady, isFalse);
+    expect(
+      readiness.reason,
+      AiAlbumDraftEditorReadinessReason.missingLocalImageAsset,
+    );
     expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isFalse);
+  });
+
+  test('reports empty recommended photos as not editor-ready', () {
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.daily,
+      title: '일상의 장면들',
+      pageCount: 3,
+      templateTone: '일상 기록 템플릿',
+      recommendedPhotos: const [],
+      excludedPhotos: const [],
+      storySections: const [],
+      summary: '초안을 준비했어요.',
+    );
+
+    final readiness = const AiAlbumDraftTemplateBuilder().validateEditorReady(
+      draft,
+    );
+    expect(readiness.isReady, isFalse);
+    expect(
+      readiness.reason,
+      AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos,
+    );
   });
 
   test('reports draft with page count mismatch as not editor-ready', () {
@@ -206,6 +241,14 @@ void main() {
       summary: '초안을 준비했어요.',
     );
 
+    final readiness = const AiAlbumDraftTemplateBuilder().validateEditorReady(
+      draft,
+    );
+    expect(readiness.isReady, isFalse);
+    expect(
+      readiness.reason,
+      AiAlbumDraftEditorReadinessReason.pageCountMismatch,
+    );
     expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isFalse);
   });
 }
