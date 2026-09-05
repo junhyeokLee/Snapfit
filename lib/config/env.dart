@@ -78,6 +78,29 @@ class Env {
     defaultValue: false,
   );
 
+  /// Premium AI album draft point cost. Tuned for high-quality hybrid
+  /// OpenAI Vision + Claude curation mode.
+  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=900
+  static const int aiAlbumDraftPointCost = int.fromEnvironment(
+    'AI_ALBUM_DRAFT_POINT_COST',
+    defaultValue: 900,
+  );
+
+  /// Native store consumable point product ids. Configure matching ids in
+  /// Google Play Console / App Store Connect.
+  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_1500,snapfit_points_4500,snapfit_points_10000
+  static const String iapPointProductIdsCsv = String.fromEnvironment(
+    'IAP_POINT_PRODUCT_IDS',
+    defaultValue:
+        'snapfit_points_1500,snapfit_points_4500,snapfit_points_10000',
+  );
+
+  static List<String> get iapPointProductIds => iapPointProductIdsCsv
+      .split(',')
+      .map((id) => id.trim())
+      .where((id) => id.isNotEmpty)
+      .toList(growable: false);
+
   /// Enables advanced server photo understanding for AI album drafts. This may
   /// send small preview thumbnails to the server, so keep disabled until the
   /// explicit consent copy, retention policy, and server pipeline are ready.

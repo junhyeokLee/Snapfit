@@ -61,7 +61,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   static const int _maxPageCount = 50;
   int _currentStep = 0;
   String _albumTitle = '';
-  static const int _aiDraftPointCost = 300;
+  static const int _aiDraftPointCost = Env.aiAlbumDraftPointCost;
   static const int _previewPointBalance = 1200;
   static const AiAlbumDraftTemplateBuilder _aiDraftTemplateBuilder =
       AiAlbumDraftTemplateBuilder();

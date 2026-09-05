@@ -16,7 +16,7 @@ type AlbumTheme =
   | "daily"
   | "custom";
 type PhotoOrientation = "portrait" | "landscape" | "square";
-type AiAlbumDraftProviderName = "metadata" | "advanced";
+type AiAlbumDraftProviderName = "metadata" | "advanced" | "hybrid";
 
 export type PhotoCandidatePayload = {
   assetId: string;
@@ -176,7 +176,9 @@ function normalizeOrientation(value: unknown): PhotoOrientation {
 }
 
 function normalizeProvider(value: unknown): AiAlbumDraftProviderName {
-  return text(value).toLowerCase() === "advanced" ? "advanced" : "metadata";
+  const normalized = text(value).toLowerCase();
+  if (normalized === "hybrid") return "hybrid";
+  return normalized === "advanced" ? "advanced" : "metadata";
 }
 
 function isLowResolution(candidate: PhotoCandidatePayload) {
@@ -380,6 +382,141 @@ function createAdvancedVisionProvider(
     const content = text(payload?.choices?.[0]?.message?.content);
     if (!content) throw new Error("advanced_model_empty_response");
     const draft = draftFromAdvancedJson(JSON.parse(content), request);
+    await deletePreviewObjects(previewUris, env, fetcher);
+    return draft;
+  };
+}
+
+function createHybridProvider(
+  env: (key: string) => string | undefined,
+  fetcher: Fetcher,
+): AiAlbumDraftProvider {
+  return async (request) => {
+    const openAiKey = text(env("OPENAI_API_KEY"));
+    const anthropicKey = text(env("ANTHROPIC_API_KEY"));
+    const openAiModel = text(env("OPENAI_MODEL")) || "gpt-4o";
+    const anthropicModel = text(env("ANTHROPIC_MODEL")) || "claude-sonnet-4-5";
+    if (!openAiKey || !anthropicKey) {
+      throw new Error("hybrid_provider_not_configured");
+    }
+
+    const previews = request.candidates
+      .filter((candidate) => text(candidate.previewStorageUri))
+      .slice(0, 8);
+    if (previews.length === 0) throw new Error("advanced_preview_required");
+    const previewUris = previews.map((candidate) =>
+      candidate.previewStorageUri!
+    );
+
+    const imageContent = [] as Record<string, unknown>[];
+    for (const candidate of previews) {
+      imageContent.push({
+        type: "text",
+        text:
+          `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
+            candidate.albumName ?? ""
+          }`,
+      });
+      imageContent.push({
+        type: "image_url",
+        image_url: {
+          url: await previewDataUrl(candidate.previewStorageUri!, env, fetcher),
+          detail: "low",
+        },
+      });
+    }
+
+    const visionResponse = await fetcher(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openAiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: openAiModel,
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+                "Return JSON photoInsights for Korean photobook curation. Use only provided assetId values.",
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text:
+                    "For each preview, describe scene, mood, face/group feel if visible, print suitability, and cover/story potential as JSON {photoInsights:[...]}. Do not include private speculation.",
+                },
+                ...imageContent,
+              ],
+            },
+          ],
+        }),
+      },
+    );
+    if (!visionResponse.ok) throw new Error("hybrid_vision_failed");
+    const visionPayload = await visionResponse.json();
+    const visionContent = text(visionPayload?.choices?.[0]?.message?.content);
+    if (!visionContent) throw new Error("hybrid_vision_empty_response");
+    const visionJson = JSON.parse(visionContent);
+
+    const finalResponse = await fetcher(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": anthropicKey,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: anthropicModel,
+          max_tokens: 1400,
+          temperature: 0.45,
+          system:
+            "You are a Korean photobook editor for Snapfit. Create emotionally strong, album-first draft JSON. Never claim the album is created. Use only provided assetId values.",
+          messages: [
+            {
+              role: "user",
+              content: JSON.stringify({
+                instruction:
+                  "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape.",
+                requiredJsonShape:
+                  JSON.parse(advancedPrompt(request)).requiredJsonShape,
+                theme: request.theme,
+                range: request.range,
+                candidates: request.candidates.map((candidate) => ({
+                  assetId: candidate.assetId,
+                  createdAt: candidate.createdAt,
+                  width: candidate.width,
+                  height: candidate.height,
+                  orientation: candidate.orientation,
+                  albumName: candidate.albumName,
+                  isScreenshot: candidate.isScreenshot,
+                })),
+                photoInsights: visionJson.photoInsights ?? visionJson,
+              }),
+            },
+          ],
+        }),
+      },
+    );
+    if (!finalResponse.ok) throw new Error("hybrid_finalizer_failed");
+    const finalPayload = await finalResponse.json();
+    const finalText = text(
+      Array.isArray(finalPayload?.content)
+        ? finalPayload.content.find((item: Record<string, unknown>) =>
+          item?.type === "text"
+        )?.text
+        : "",
+    );
+    if (!finalText) throw new Error("hybrid_finalizer_empty_response");
+    const draft = draftFromAdvancedJson(JSON.parse(finalText), request);
     await deletePreviewObjects(previewUris, env, fetcher);
     return draft;
   };
@@ -658,6 +795,7 @@ async function createDraftWithProvider(
     metadata: options.providers?.metadata ?? metadataProvider,
     advanced: options.providers?.advanced ??
       createAdvancedVisionProvider(env, fetcher),
+    hybrid: options.providers?.hybrid ?? createHybridProvider(env, fetcher),
   };
 
   if (selectedProvider === "metadata") {
@@ -670,11 +808,11 @@ async function createDraftWithProvider(
   );
   try {
     const draft = await Promise.race([
-      Promise.resolve(providers.advanced(request)),
+      Promise.resolve(providers[selectedProvider](request)),
       providerTimeout<AiAlbumDraftResponsePayload>(timeoutMs),
     ]);
     assertAlbumFirstContract(draft, request);
-    return markProvider(draft, "advanced");
+    return markProvider(draft, selectedProvider);
   } catch (error) {
     const reason = error instanceof Error && error.message
       ? error.message

@@ -392,3 +392,153 @@ Deno.test("default advanced provider falls back when preview references are miss
   assertEquals(body.fallbackUsed, true);
   assertEquals(body.fallbackReason, "advanced_provider_failed");
 });
+
+Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curation", async () => {
+  const calls: string[] = [];
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "family",
+        range: "limitedLibrary",
+        candidates: [
+          {
+            ...candidates[0],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-1.jpg",
+          },
+          {
+            ...candidates[1],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-2.jpg",
+          },
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
+          OPENAI_API_KEY: "test-openai-key",
+          OPENAI_MODEL: "gpt-4o",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          ANTHROPIC_MODEL: "claude-sonnet-4-5",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        calls.push(url);
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          if (init?.method === "DELETE") {
+            return new Response(null, { status: 200 });
+          }
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          return Response.json({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    photoInsights: [
+                      {
+                        assetId: "photo-1",
+                        scene: "바다",
+                        mood: "밝음",
+                        quality: "cover",
+                      },
+                      {
+                        assetId: "photo-2",
+                        scene: "가족",
+                        mood: "따뜻함",
+                        quality: "story",
+                      },
+                    ],
+                  }),
+                },
+              },
+            ],
+          });
+        }
+        if (url === "https://api.anthropic.com/v1/messages") {
+          const body = JSON.parse(init?.body?.toString() ?? "{}");
+          assertEquals(body.model, "claude-sonnet-4-5");
+          assertEquals(body.system.includes("Korean photobook"), true);
+          assertEquals(
+            JSON.stringify(body.messages).includes("photoInsights"),
+            true,
+          );
+          return Response.json({
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  title: "가족의 제주 기록",
+                  pageCount: 10,
+                  templateTone: "warm-family-travel",
+                  summary: "가족의 표정과 여행 장면을 따뜻하게 엮었어요.",
+                  recommendedPhotos: [
+                    {
+                      assetId: "photo-2",
+                      score: 0.98,
+                      reasons: [{
+                        type: "coverCandidate",
+                        message: "가족 분위기가 가장 잘 보여요",
+                      }],
+                    },
+                    {
+                      assetId: "photo-1",
+                      score: 0.92,
+                      reasons: [{
+                        type: "dateFlow",
+                        message: "여행의 시작을 자연스럽게 열어요",
+                      }],
+                    },
+                  ],
+                  excludedPhotos: [
+                    {
+                      assetId: "photo-3",
+                      reasons: [{
+                        type: "screenshotExcluded",
+                        message: "앨범 분위기와 달라 잠시 뺐어요",
+                      }],
+                    },
+                  ],
+                  storySections: [
+                    {
+                      title: "제주에서 함께",
+                      description: "가족 장면을 먼저 보여주는 흐름",
+                      photoAssetIds: ["photo-2", "photo-1"],
+                    },
+                  ],
+                  curationNotes: ["장면 이해와 감성 구성을 나눠서 만들었어요."],
+                }),
+              },
+            ],
+          });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "hybrid");
+  assertEquals(body.fallbackUsed, false);
+  assertEquals(body.title, "가족의 제주 기록");
+  assertEquals(
+    calls.includes("https://api.openai.com/v1/chat/completions"),
+    true,
+  );
+  assertEquals(calls.includes("https://api.anthropic.com/v1/messages"), true);
+});

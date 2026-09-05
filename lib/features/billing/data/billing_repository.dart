@@ -47,6 +47,33 @@ class AiAlbumDraftPointUsageResult {
   final int remainingBalance;
 }
 
+class StorePointPurchaseResult {
+  const StorePointPurchaseResult({
+    required this.productId,
+    required this.grantedPoints,
+    required this.remainingBalance,
+  });
+
+  factory StorePointPurchaseResult.fromJson(Map<String, dynamic> json) {
+    return StorePointPurchaseResult(
+      productId:
+          json['productId']?.toString() ?? json['product_id']?.toString() ?? '',
+      grantedPoints:
+          (json['grantedPoints'] as num?)?.toInt() ??
+          (json['granted_points'] as num?)?.toInt() ??
+          0,
+      remainingBalance:
+          (json['remainingBalance'] as num?)?.toInt() ??
+          (json['remaining_balance'] as num?)?.toInt() ??
+          0,
+    );
+  }
+
+  final String productId;
+  final int grantedPoints;
+  final int remainingBalance;
+}
+
 class BillingRepository {
   BillingRepository({
     required this.tokenStorage,
@@ -147,6 +174,39 @@ class BillingRepository {
       return 'APP_STORE';
     }
     throw Exception('지원하지 않는 인앱결제 플랫폼입니다: ${purchase.verificationData.source}');
+  }
+
+  Future<StorePointPurchaseResult> verifyStorePointPurchase(
+    PurchaseDetails purchase,
+  ) async {
+    if (supabase == null) {
+      throw Exception('Supabase 포인트 구매 검증 환경이 준비되지 않았습니다.');
+    }
+    final transactionId =
+        purchase.purchaseID ??
+        '${purchase.productID}-${purchase.transactionDate ?? DateTime.now().millisecondsSinceEpoch}';
+    final response = await supabase!.functions.invoke(
+      'iap-verify',
+      body: {
+        'platform': _storePlatformFromPurchase(purchase),
+        'productId': purchase.productID,
+        'transactionId': transactionId,
+        'originalTransactionId': transactionId,
+        'purchaseToken': purchase.verificationData.serverVerificationData,
+        'receiptData': purchase.verificationData.localVerificationData,
+        'verificationSource': purchase.verificationData.source,
+        'purchaseType': 'POINTS',
+        'planCode': 'FREE',
+      },
+    );
+    final data =
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    if (data['error'] != null) {
+      throw Exception(data['error']);
+    }
+    final pointPurchase =
+        (data['pointPurchase'] as Map?)?.cast<String, dynamic>() ?? data;
+    return StorePointPurchaseResult.fromJson(pointPurchase);
   }
 
   Future<SubscriptionStatusModel> verifyStorePurchase(
