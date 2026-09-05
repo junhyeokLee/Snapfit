@@ -111,6 +111,30 @@ void main() {
     expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
   });
 
+  test('explains empty limited library as no selected photos', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => const [],
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.daily,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.failureTitle, '선택한 사진을 찾지 못했어요');
+    expect(result.primaryCtaLabel, '사진 더 선택하기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.openLimitedPhotoPicker,
+    );
+    expect(result.failureMessage, contains('허용한 사진 안에서 후보를 찾지 못했어요'));
+    expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+  });
+
   test('explains limited library needs a few more photos', () async {
     final service = AiAlbumDraftGenerationService(
       collectCandidates: (_) async => [

@@ -59,16 +59,22 @@ class AiAlbumDraftGenerationResult {
     AiPhotoRange? range,
   }) {
     final selectedOnly = range == AiPhotoRange.limitedLibrary;
-    final lead = selectedOnly
-        ? '선택한 사진이 조금 더 필요해요.'
-        : 'AI 초안을 만들려면 사진이 조금 더 필요해요.';
+    final noCandidates = actualPhotoCount == 0;
+    final title = noCandidates
+        ? (selectedOnly ? '선택한 사진을 찾지 못했어요' : '사진 후보를 찾지 못했어요')
+        : (selectedOnly ? '선택한 사진 안에서만 살펴봤어요' : '초안을 만들기엔 사진이 조금 적어요');
+    final lead = noCandidates
+        ? (selectedOnly
+              ? '허용한 사진 안에서 후보를 찾지 못했어요.'
+              : '선택한 범위에서 앨범 후보 사진을 찾지 못했어요.')
+        : (selectedOnly ? '선택한 사진이 조금 더 필요해요.' : 'AI 초안을 만들려면 사진이 조금 더 필요해요.');
     final rangeHint = selectedOnly
         ? '사진 접근을 조금 더 허용하거나 범위를 다시 골라 주세요.'
         : '최소 $minimumPhotoCount장 이상 허용해 주세요.';
     return AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.insufficientPhotos,
       shouldChargePoints: false,
-      failureTitle: selectedOnly ? '선택한 사진 안에서만 살펴봤어요' : '초안을 만들기엔 사진이 조금 적어요',
+      failureTitle: title,
       failureMessage:
           '$lead $rangeHint 현재 후보는 $actualPhotoCount장이에요. 기기 안에서만 확인하고 포인트는 차감되지 않았어요.',
       primaryCtaLabel: selectedOnly ? '사진 더 선택하기' : '사진 범위 다시 고르기',
