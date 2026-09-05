@@ -131,7 +131,7 @@ void main() {
     expect(result.primaryCtaLabel, '사진 더 선택하기');
     expect(
       result.primaryRecoveryAction,
-      AiAlbumDraftRecoveryAction.retryPhotoRange,
+      AiAlbumDraftRecoveryAction.openLimitedPhotoPicker,
     );
     expect(result.failureMessage, contains('선택한 사진이 조금 더 필요해요'));
     expect(result.failureMessage, contains('기기 안에서만'));

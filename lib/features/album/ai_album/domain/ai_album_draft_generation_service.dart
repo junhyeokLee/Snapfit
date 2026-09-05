@@ -15,6 +15,7 @@ enum AiAlbumDraftGenerationStatus {
 enum AiAlbumDraftRecoveryAction {
   retryPhotoRange,
   openPhotoSettings,
+  openLimitedPhotoPicker,
   reviewPointCost,
 }
 
@@ -71,7 +72,9 @@ class AiAlbumDraftGenerationResult {
       failureMessage:
           '$lead $rangeHint 현재 후보는 $actualPhotoCount장이에요. 기기 안에서만 확인하고 포인트는 차감되지 않았어요.',
       primaryCtaLabel: selectedOnly ? '사진 더 선택하기' : '사진 범위 다시 고르기',
-      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
+      primaryRecoveryAction: selectedOnly
+          ? AiAlbumDraftRecoveryAction.openLimitedPhotoPicker
+          : AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
   }
 

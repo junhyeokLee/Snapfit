@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
@@ -554,10 +555,24 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     _aiDraftPrimaryRecoveryAction = AiAlbumDraftRecoveryAction.retryPhotoRange;
   }
 
-  void _handleAiDraftPrimaryRecovery(AiAlbumDraftRecoveryAction? action) {
+  Future<void> _handleAiDraftPrimaryRecovery(
+    AiAlbumDraftRecoveryAction? action,
+  ) async {
     switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
       case AiAlbumDraftRecoveryAction.openPhotoSettings:
         openAppSettings();
+      case AiAlbumDraftRecoveryAction.openLimitedPhotoPicker:
+        await PhotoManager.presentLimited(type: RequestType.image);
+        if (!mounted) return;
+        setState(() {
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
       case AiAlbumDraftRecoveryAction.reviewPointCost:
         setState(() {
           _hasConfirmedAiPointCost = false;
