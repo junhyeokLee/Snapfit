@@ -1,4 +1,66 @@
+import 'ai_album_draft_generation_service.dart';
 import 'ai_album_models.dart';
+
+typedef ServerAiAlbumDraftRequester =
+    Future<Map<String, Object?>> Function(ServerAiAlbumDraftRequest request);
+
+class ServerAiAlbumDraftRequest {
+  const ServerAiAlbumDraftRequest({
+    required this.theme,
+    required this.range,
+    required this.candidates,
+  });
+
+  final AlbumTheme theme;
+  final AiPhotoRange range;
+  final List<PhotoCandidate> candidates;
+
+  Map<String, Object?> toJson() {
+    return {
+      'theme': theme.name,
+      'range': range.name,
+      'candidates': candidates.map(_candidateToJson).toList(growable: false),
+    };
+  }
+
+  Map<String, Object?> _candidateToJson(PhotoCandidate candidate) {
+    return {
+      'assetId': candidate.assetId,
+      'createdAt': candidate.createdAt.toIso8601String(),
+      'width': candidate.width,
+      'height': candidate.height,
+      'orientation': candidate.orientation.name,
+      'albumName': candidate.albumName,
+      'isScreenshot': candidate.isScreenshot,
+    };
+  }
+}
+
+class ServerAiAlbumDraftProvider extends AiAlbumDraftProvider {
+  const ServerAiAlbumDraftProvider({
+    required ServerAiAlbumDraftRequester requestDraft,
+    ServerAiAlbumDraftMapper mapper = const ServerAiAlbumDraftMapper(),
+  }) : _requestDraft = requestDraft,
+       _mapper = mapper;
+
+  final ServerAiAlbumDraftRequester _requestDraft;
+  final ServerAiAlbumDraftMapper _mapper;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    final request = ServerAiAlbumDraftRequest(
+      theme: theme,
+      range: range,
+      candidates: candidates,
+    );
+    final json = await _requestDraft(request);
+    return _mapper.map(theme: theme, candidates: candidates, json: json);
+  }
+}
 
 enum ServerAiAlbumDraftMappingFailure {
   malformedResponse,

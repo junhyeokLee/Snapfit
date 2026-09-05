@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_generation_service.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
 import 'package:snap_fit/features/album/ai_album/domain/server_ai_album_draft_mapper.dart';
 
@@ -84,6 +85,128 @@ void main() {
     expect(draft.requiresUserReview, isTrue);
     expect(draft.alreadyCreatedAlbum, isFalse);
   });
+
+  test(
+    'server provider sends theme range and candidate metadata to requester',
+    () async {
+      final candidates = [
+        _candidate(
+          'photo-1',
+          DateTime(2026, 8, 20, 9),
+          PhotoOrientation.landscape,
+        ),
+        _candidate(
+          'photo-2',
+          DateTime(2026, 8, 21, 10),
+          PhotoOrientation.portrait,
+        ),
+        _candidate(
+          'photo-3',
+          DateTime(2026, 8, 22, 11),
+          PhotoOrientation.square,
+        ),
+      ];
+      late ServerAiAlbumDraftRequest received;
+      final provider = ServerAiAlbumDraftProvider(
+        requestDraft: (request) async {
+          received = request;
+          return {
+            'title': '서버 요청 계약 초안',
+            'pageCount': 8,
+            'recommendedPhotos': [
+              {'assetId': 'photo-1'},
+              {'assetId': 'photo-2'},
+            ],
+            'storySections': [
+              {
+                'title': '첫 흐름',
+                'description': '사진 순서 확인',
+                'photoAssetIds': ['photo-1', 'photo-2'],
+              },
+            ],
+          };
+        },
+      );
+
+      final draft = await provider.createDraft(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+        candidates: candidates,
+      );
+
+      expect(received.theme, AlbumTheme.travel);
+      expect(received.range, AiPhotoRange.limitedLibrary);
+      expect(received.candidates, same(candidates));
+      expect(received.toJson(), {
+        'theme': 'travel',
+        'range': 'limitedLibrary',
+        'candidates': [
+          {
+            'assetId': 'photo-1',
+            'createdAt': '2026-08-20T09:00:00.000',
+            'width': 4000,
+            'height': 3000,
+            'orientation': 'landscape',
+            'albumName': null,
+            'isScreenshot': false,
+          },
+          {
+            'assetId': 'photo-2',
+            'createdAt': '2026-08-21T10:00:00.000',
+            'width': 3000,
+            'height': 4000,
+            'orientation': 'portrait',
+            'albumName': null,
+            'isScreenshot': false,
+          },
+          {
+            'assetId': 'photo-3',
+            'createdAt': '2026-08-22T11:00:00.000',
+            'width': 4000,
+            'height': 4000,
+            'orientation': 'square',
+            'albumName': null,
+            'isScreenshot': false,
+          },
+        ],
+      });
+      expect(draft.title, '서버 요청 계약 초안');
+      expect(draft.requiresUserReview, isTrue);
+    },
+  );
+
+  test(
+    'draft service treats invalid server provider response as no-charge failure',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate('photo-1', DateTime(2026, 8, 20), PhotoOrientation.square),
+          _candidate('photo-2', DateTime(2026, 8, 21), PhotoOrientation.square),
+          _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+        ],
+        draftProvider: ServerAiAlbumDraftProvider(
+          requestDraft: (_) async => {
+            'title': '깨진 서버 초안',
+            'pageCount': 8,
+            'recommendedPhotos': [
+              {'assetId': 'not-in-local-candidates'},
+            ],
+          },
+        ),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.daily,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.failed);
+      expect(result.shouldChargePoints, isFalse);
+      expect(result.draft, isNull);
+      expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+    },
+  );
 
   test(
     'rejects server recommended asset ids that are not local candidates',
