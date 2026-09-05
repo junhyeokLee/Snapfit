@@ -1,4 +1,5 @@
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
+import { adminClient } from "../_shared/supabase.ts";
 
 type AiPhotoRange =
   | "recent30Days"
@@ -97,6 +98,35 @@ export type AiAlbumDraftHandlerOptions = {
 const minCandidateCount = 3;
 const maxRecommendedPhotos = 12;
 const defaultProviderTimeoutMs = 8000;
+
+async function logOperationalEvent(event: {
+  eventType: string;
+  requestId?: string;
+  provider?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    if (
+      !Deno.env.get("SUPABASE_URL") ||
+      !Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+    ) {
+      return;
+    }
+    const { error } = await adminClient().from("ai_album_operational_events")
+      .insert({
+        event_type: event.eventType,
+        request_id: event.requestId ?? null,
+        provider: event.provider ?? null,
+        metadata: event.metadata ?? {},
+      });
+    if (error) console.warn("operational_event_log_failed", error.message);
+  } catch (error) {
+    console.warn(
+      "operational_event_log_failed",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
 
 function text(value: unknown) {
   return String(value ?? "").trim();
@@ -845,6 +875,19 @@ export async function handleAiAlbumDraftRequest(
   try {
     const request = parseBody(await req.json());
     const draft = await createDraftWithProvider(request, options);
+    await logOperationalEvent({
+      eventType: "AI_DRAFT_PROVIDER_RESULT",
+      requestId: draft.draftId,
+      provider: draft.provider,
+      metadata: {
+        fallbackUsed: Boolean(draft.fallbackUsed),
+        fallbackReason: draft.fallbackReason ?? null,
+        theme: request.theme,
+        range: request.range,
+        candidateCount: request.candidates.length,
+        recommendedCount: draft.recommendedPhotos.length,
+      },
+    });
     return jsonResponse(draft);
   } catch (error) {
     const code = error instanceof Error ? error.message : "server_error";
@@ -853,6 +896,10 @@ export async function handleAiAlbumDraftRequest(
         code === "invalid_candidate"
         ? 400
         : 500;
+    await logOperationalEvent({
+      eventType: "AI_DRAFT_PROVIDER_ERROR",
+      metadata: { code, status },
+    });
     return jsonResponse(
       {
         error: code,

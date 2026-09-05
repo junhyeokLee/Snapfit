@@ -42,6 +42,30 @@ async function sha256Hex(value: string) {
   ).join("");
 }
 
+async function logOperationalEvent(
+  supabase: ReturnType<typeof adminClient>,
+  event: {
+    userId?: string;
+    eventType: string;
+    platform?: string;
+    productId?: string;
+    transactionId?: string;
+    pointDelta?: number;
+    metadata?: Record<string, unknown>;
+  },
+) {
+  const { error } = await supabase.from("ai_album_operational_events").insert({
+    user_id: event.userId ?? null,
+    event_type: event.eventType,
+    platform: event.platform ?? null,
+    product_id: event.productId ?? null,
+    transaction_id: event.transactionId ?? null,
+    point_delta: event.pointDelta ?? null,
+    metadata: event.metadata ?? {},
+  });
+  if (error) console.warn("operational_event_log_failed", error.message);
+}
+
 function productPlanCode(productId: string, requestedPlanCode: string) {
   const defaultMap: Record<string, string> = {
     snapfit_pro_monthly: "SNAPFIT_PRO_MONTHLY",
@@ -400,6 +424,16 @@ Deno.serve(async (req) => {
     if (purchaseError) throw purchaseError;
 
     if (verification.status !== "VERIFIED") {
+      await logOperationalEvent(supabase, {
+        userId: user.id,
+        eventType: isPointPurchase
+          ? "POINT_PURCHASE_FAILED"
+          : "SUBSCRIPTION_FAILED",
+        platform: verification.platform,
+        productId: verification.productId,
+        transactionId: verification.transactionId,
+        metadata: { status: verification.status },
+      });
       return jsonResponse({
         userId: user.id,
         planCode,
@@ -423,6 +457,19 @@ Deno.serve(async (req) => {
       );
       if (pointGrantError) throw pointGrantError;
       const row = Array.isArray(pointGrant) ? pointGrant[0] : pointGrant;
+      await logOperationalEvent(supabase, {
+        userId: user.id,
+        eventType: row?.already_granted
+          ? "POINT_PURCHASE_DUPLICATE"
+          : "POINT_PURCHASE_VERIFIED",
+        platform: verification.platform,
+        productId: verification.productId,
+        transactionId: verification.transactionId,
+        pointDelta: row?.already_granted
+          ? 0
+          : row?.granted_points ?? pointProduct?.points ?? 0,
+        metadata: { purchaseType: "POINTS" },
+      });
       return jsonResponse({
         userId: user.id,
         status: "VERIFIED",
@@ -431,6 +478,7 @@ Deno.serve(async (req) => {
           productId: row?.product_id ?? verification.productId,
           grantedPoints: row?.granted_points ?? pointProduct?.points ?? 0,
           remainingBalance: row?.remaining_balance ?? 0,
+          alreadyGranted: Boolean(row?.already_granted),
         },
       });
     }
@@ -448,6 +496,15 @@ Deno.serve(async (req) => {
         last_order_id: verification.transactionId,
       });
     if (subscriptionError) throw subscriptionError;
+
+    await logOperationalEvent(supabase, {
+      userId: user.id,
+      eventType: "SUBSCRIPTION_VERIFIED",
+      platform: verification.platform,
+      productId: verification.productId,
+      transactionId: verification.transactionId,
+      metadata: { planCode },
+    });
 
     return jsonResponse({
       userId: user.id,

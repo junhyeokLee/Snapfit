@@ -10,7 +10,8 @@ create or replace function public.grant_point_purchase(
 returns table (
   product_id text,
   granted_points integer,
-  remaining_balance integer
+  remaining_balance integer,
+  already_granted boolean
 )
 language plpgsql
 security definer
@@ -20,6 +21,7 @@ declare
   v_product public.point_products%rowtype;
   v_balance integer;
   v_key text;
+  v_already_granted boolean := false;
 begin
   if p_user_id is null then
     raise exception 'point purchase requires user id' using errcode = '22023';
@@ -73,12 +75,13 @@ begin
     where pw.user_id = p_user_id
     returning pw.balance into v_balance;
   else
+    v_already_granted := true;
     select pw.balance into v_balance
     from public.point_wallets pw
     where pw.user_id = p_user_id;
   end if;
 
-  return query select v_product.product_id, v_product.points, coalesce(v_balance, 0);
+  return query select v_product.product_id, v_product.points, coalesce(v_balance, 0), v_already_granted;
 end;
 $$;
 
