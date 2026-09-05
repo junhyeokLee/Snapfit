@@ -79,6 +79,11 @@ export type AiAlbumDraftProvider = (
   request: AiAlbumDraftRequestPayload,
 ) => Promise<AiAlbumDraftResponsePayload> | AiAlbumDraftResponsePayload;
 
+type Fetcher = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>;
+
 type AiAlbumDraftProviders = Partial<
   Record<AiAlbumDraftProviderName, AiAlbumDraftProvider>
 >;
@@ -86,6 +91,7 @@ type AiAlbumDraftProviders = Partial<
 export type AiAlbumDraftHandlerOptions = {
   env?: (key: string) => string | undefined;
   providers?: AiAlbumDraftProviders;
+  fetch?: Fetcher;
 };
 
 const minCandidateCount = 3;
@@ -302,8 +308,283 @@ function metadataProvider(request: AiAlbumDraftRequestPayload) {
   return buildDraftResponse(request);
 }
 
-function advancedProviderNotConfigured(): never {
-  throw new Error("advanced_provider_not_configured");
+function createAdvancedVisionProvider(
+  env: (key: string) => string | undefined,
+  fetcher: Fetcher,
+): AiAlbumDraftProvider {
+  return async (request) => {
+    const apiKey = text(env("OPENAI_API_KEY"));
+    const model = text(env("OPENAI_MODEL")) || "gpt-4o-mini";
+    if (!apiKey) throw new Error("advanced_provider_not_configured");
+
+    const previews = request.candidates
+      .filter((candidate) => text(candidate.previewStorageUri))
+      .slice(0, 8);
+    if (previews.length === 0) throw new Error("advanced_preview_required");
+
+    const imageContent = [] as Record<string, unknown>[];
+    const previewUris = previews.map((candidate) =>
+      candidate.previewStorageUri!
+    );
+    for (const candidate of previews) {
+      imageContent.push({
+        type: "text",
+        text:
+          `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
+            candidate.albumName ?? ""
+          }`,
+      });
+      imageContent.push({
+        type: "image_url",
+        image_url: {
+          url: await previewDataUrl(candidate.previewStorageUri!, env, fetcher),
+          detail: "low",
+        },
+      });
+    }
+
+    const modelResponse = await fetcher(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.35,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+                "You curate Korean photobook album drafts. Return only JSON. Never claim an album is created. Use only provided assetId values.",
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: advancedPrompt(request),
+                },
+                ...imageContent,
+              ],
+            },
+          ],
+        }),
+      },
+    );
+    if (!modelResponse.ok) throw new Error("advanced_model_failed");
+    const payload = await modelResponse.json();
+    const content = text(payload?.choices?.[0]?.message?.content);
+    if (!content) throw new Error("advanced_model_empty_response");
+    const draft = draftFromAdvancedJson(JSON.parse(content), request);
+    await deletePreviewObjects(previewUris, env, fetcher);
+    return draft;
+  };
+}
+
+function advancedPrompt(request: AiAlbumDraftRequestPayload) {
+  return JSON.stringify({
+    instruction:
+      "Pick a small set of photos for an editable Snapfit album draft. Keep Korean copy short, warm, album-first, and non-technical.",
+    requiredJsonShape: {
+      title: "string",
+      pageCount: "number between 4 and 24",
+      templateTone: "string",
+      summary: "string",
+      recommendedPhotos: [{
+        assetId: "provided assetId",
+        score: 0.0,
+        reasons: [{
+          type: "coverCandidate|dateFlow|themeOrientation",
+          message: "Korean",
+        }],
+      }],
+      excludedPhotos: [{
+        assetId: "provided assetId",
+        reasons: [{
+          type:
+            "screenshotExcluded|lowResolutionExcluded|weakThemeFitExcluded|totalLimitExcluded",
+          message: "Korean",
+        }],
+      }],
+      storySections: [{
+        title: "Korean",
+        description: "Korean",
+        photoAssetIds: ["recommended assetId only"],
+      }],
+      curationNotes: ["Korean"],
+    },
+    theme: request.theme,
+    range: request.range,
+    candidates: request.candidates.map((candidate) => ({
+      assetId: candidate.assetId,
+      createdAt: candidate.createdAt,
+      width: candidate.width,
+      height: candidate.height,
+      orientation: candidate.orientation,
+      albumName: candidate.albumName,
+      isScreenshot: candidate.isScreenshot,
+      hasPreview: Boolean(candidate.previewStorageUri),
+    })),
+  });
+}
+
+function parsePreviewStorageUri(uri: string) {
+  const prefix = "supabase://ai-album-previews/";
+  if (!uri.startsWith(prefix)) throw new Error("invalid_preview_storage_uri");
+  const path = uri.slice(prefix.length);
+  if (!path || path.includes("..")) {
+    throw new Error("invalid_preview_storage_uri");
+  }
+  return path;
+}
+
+function storageObjectUrl(baseUrl: string, path: string) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `${
+    baseUrl.replace(/\/$/, "")
+  }/storage/v1/object/authenticated/ai-album-previews/${encodedPath}`;
+}
+
+async function previewDataUrl(
+  uri: string,
+  env: (key: string) => string | undefined,
+  fetcher: Fetcher,
+) {
+  const supabaseUrl = text(env("SUPABASE_URL"));
+  const serviceRoleKey = text(env("SUPABASE_SERVICE_ROLE_KEY"));
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("advanced_storage_not_configured");
+  }
+  const response = await fetcher(
+    storageObjectUrl(supabaseUrl, parsePreviewStorageUri(uri)),
+    {
+      headers: new Headers({ Authorization: `Bearer ${serviceRoleKey}` }),
+    },
+  );
+  if (!response.ok) throw new Error("advanced_preview_download_failed");
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length === 0) throw new Error("advanced_preview_empty");
+  return `data:${contentType};base64,${base64(bytes)}`;
+}
+
+async function deletePreviewObjects(
+  uris: string[],
+  env: (key: string) => string | undefined,
+  fetcher: Fetcher,
+) {
+  const supabaseUrl = text(env("SUPABASE_URL"));
+  const serviceRoleKey = text(env("SUPABASE_SERVICE_ROLE_KEY"));
+  if (!supabaseUrl || !serviceRoleKey) return;
+  await Promise.allSettled(
+    uris.map(async (uri) => {
+      const response = await fetcher(
+        storageObjectUrl(supabaseUrl, parsePreviewStorageUri(uri)),
+        {
+          method: "DELETE",
+          headers: new Headers({ Authorization: `Bearer ${serviceRoleKey}` }),
+        },
+      );
+      if (!response.ok && response.status !== 404) {
+        throw new Error("advanced_preview_cleanup_failed");
+      }
+    }),
+  );
+}
+
+function base64(bytes: Uint8Array) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function objectList(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> =>
+      Boolean(item) && typeof item === "object"
+    )
+    : [];
+}
+
+function stringList(value: unknown) {
+  return Array.isArray(value) ? value.map(text).filter(Boolean) : [];
+}
+
+function draftFromAdvancedJson(
+  value: unknown,
+  request: AiAlbumDraftRequestPayload,
+): AiAlbumDraftResponsePayload {
+  if (!value || typeof value !== "object") {
+    throw new Error("advanced_model_malformed_json");
+  }
+  const json = value as Record<string, unknown>;
+  const fallback = buildDraftResponse(request);
+  const candidateIds = new Set(
+    request.candidates.map((candidate) => candidate.assetId),
+  );
+  const recommendedPhotos = objectList(json.recommendedPhotos)
+    .map((item, index) => ({
+      assetId: text(item.assetId),
+      score: Math.max(
+        0.5,
+        Math.min(1, Number(item.score) || 0.85 - index * 0.03),
+      ),
+      reasons: objectList(item.reasons).map((reason) => ({
+        type: text(reason.type) || "themeOrientation",
+        message: text(reason.message) || "앨범 흐름에 어울려 골랐어요",
+      })),
+    }))
+    .filter((photo) => candidateIds.has(photo.assetId))
+    .slice(0, maxRecommendedPhotos);
+  if (recommendedPhotos.length === 0) {
+    throw new Error("advanced_model_empty_recommended_photos");
+  }
+  const recommendedIds = new Set(
+    recommendedPhotos.map((photo) => photo.assetId),
+  );
+
+  const excludedPhotos = objectList(json.excludedPhotos)
+    .map((item) => ({
+      assetId: text(item.assetId),
+      reasons: objectList(item.reasons).map((reason) => ({
+        type: text(reason.type) || "weakThemeFitExcluded",
+        message: text(reason.message) || "이번 초안에서는 잠시 빼뒀어요",
+      })),
+    }))
+    .filter((photo) =>
+      candidateIds.has(photo.assetId) && !recommendedIds.has(photo.assetId)
+    );
+
+  return {
+    draftId: `advanced-draft-${crypto.randomUUID()}`,
+    title: text(json.title) || fallback.title,
+    pageCount: Math.max(
+      4,
+      Math.min(24, intValue(json.pageCount, fallback.pageCount)),
+    ),
+    templateTone: text(json.templateTone) || fallback.templateTone,
+    summary: text(json.summary) || "작은 미리보기로 앨범 흐름을 정리했어요.",
+    recommendedPhotos,
+    excludedPhotos,
+    storySections: objectList(json.storySections).map((section) => ({
+      title: text(section.title) || "앨범 흐름",
+      description: text(section.description) ||
+        "함께 보면 자연스러운 장면이에요",
+      photoAssetIds: stringList(section.photoAssetIds).filter((id) =>
+        recommendedIds.has(id)
+      ),
+    })).filter((section) => section.photoAssetIds.length > 0),
+    curationNotes: stringList(json.curationNotes).length > 0
+      ? stringList(json.curationNotes)
+      : ["작은 미리보기로 분위기와 대표 장면을 살펴봤어요."],
+    requiresUserReview: true,
+    alreadyCreatedAlbum: false,
+    reviewCtaLabel: "이 구성으로 시작하기",
+  };
 }
 
 function providerTimeout<T>(timeoutMs: number): Promise<T> {
@@ -328,7 +609,10 @@ function markProvider(
   };
 }
 
-function assertAlbumFirstContract(draft: AiAlbumDraftResponsePayload) {
+function assertAlbumFirstContract(
+  draft: AiAlbumDraftResponsePayload,
+  request: AiAlbumDraftRequestPayload,
+) {
   if (draft.requiresUserReview !== true) {
     throw new Error("provider_contract_requires_user_review");
   }
@@ -341,6 +625,26 @@ function assertAlbumFirstContract(draft: AiAlbumDraftResponsePayload) {
   ) {
     throw new Error("provider_contract_empty_recommended_photos");
   }
+  const candidateIds = new Set(
+    request.candidates.map((candidate) => candidate.assetId),
+  );
+  const recommendedIds = new Set<string>();
+  for (const photo of draft.recommendedPhotos) {
+    if (!candidateIds.has(photo.assetId)) {
+      throw new Error("provider_contract_unknown_asset");
+    }
+    if (recommendedIds.has(photo.assetId)) {
+      throw new Error("provider_contract_duplicate_asset");
+    }
+    recommendedIds.add(photo.assetId);
+  }
+  for (const section of draft.storySections ?? []) {
+    for (const assetId of section.photoAssetIds ?? []) {
+      if (!recommendedIds.has(assetId)) {
+        throw new Error("provider_contract_story_asset_not_recommended");
+      }
+    }
+  }
 }
 
 async function createDraftWithProvider(
@@ -349,9 +653,11 @@ async function createDraftWithProvider(
 ): Promise<AiAlbumDraftResponsePayload> {
   const env = options.env ?? ((key: string) => Deno.env.get(key) ?? undefined);
   const selectedProvider = normalizeProvider(env("AI_ALBUM_DRAFT_PROVIDER"));
+  const fetcher = options.fetch ?? fetch;
   const providers: Required<AiAlbumDraftProviders> = {
     metadata: options.providers?.metadata ?? metadataProvider,
-    advanced: options.providers?.advanced ?? advancedProviderNotConfigured,
+    advanced: options.providers?.advanced ??
+      createAdvancedVisionProvider(env, fetcher),
   };
 
   if (selectedProvider === "metadata") {
@@ -367,7 +673,7 @@ async function createDraftWithProvider(
       Promise.resolve(providers.advanced(request)),
       providerTimeout<AiAlbumDraftResponsePayload>(timeoutMs),
     ]);
-    assertAlbumFirstContract(draft);
+    assertAlbumFirstContract(draft, request);
     return markProvider(draft, "advanced");
   } catch (error) {
     const reason = error instanceof Error && error.message

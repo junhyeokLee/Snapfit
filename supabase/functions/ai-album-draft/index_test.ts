@@ -214,3 +214,181 @@ Deno.test("handleAiAlbumDraftRequest passes preview storage references to advanc
     "supabase://ai-album-previews/user/draft/photo-1.jpg",
   );
 });
+
+Deno.test("default advanced provider downloads previews and maps model JSON", async () => {
+  const calls: string[] = [];
+  const methods: string[] = [];
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "travel",
+        range: "limitedLibrary",
+        candidates: [
+          {
+            ...candidates[0],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-1.jpg",
+          },
+          {
+            ...candidates[1],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-2.jpg",
+          },
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "advanced",
+          OPENAI_API_KEY: "test-openai-key",
+          OPENAI_MODEL: "gpt-test-vision",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        calls.push(url);
+        methods.push(`${init?.method ?? "GET"} ${url}`);
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/") &&
+          init?.method === "DELETE"
+        ) {
+          return new Response(null, { status: 200 });
+        }
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          assertEquals(
+            init?.headers instanceof Headers
+              ? init.headers.get("Authorization")
+              : undefined,
+            "Bearer test-service-role",
+          );
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          const body = JSON.parse(init?.body?.toString() ?? "{}");
+          assertEquals(body.model, "gpt-test-vision");
+          assertEquals(body.response_format.type, "json_object");
+          return Response.json({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    title: "제주의 푸른 장면",
+                    pageCount: 8,
+                    templateTone: "fresh-travel",
+                    summary: "미리보기로 여행의 흐름을 정리했어요.",
+                    recommendedPhotos: [
+                      {
+                        assetId: "photo-2",
+                        score: 0.96,
+                        reasons: [
+                          {
+                            type: "coverCandidate",
+                            message: "대표 장면이에요",
+                          },
+                        ],
+                      },
+                      {
+                        assetId: "photo-1",
+                        score: 0.91,
+                        reasons: [
+                          { type: "dateFlow", message: "여행 흐름을 이어줘요" },
+                        ],
+                      },
+                    ],
+                    excludedPhotos: [
+                      {
+                        assetId: "photo-3",
+                        reasons: [
+                          {
+                            type: "screenshotExcluded",
+                            message: "스크린샷은 제외했어요",
+                          },
+                        ],
+                      },
+                    ],
+                    storySections: [
+                      {
+                        title: "제주 첫날",
+                        description: "바다에서 시작하는 흐름",
+                        photoAssetIds: ["photo-2", "photo-1"],
+                      },
+                    ],
+                    curationNotes: ["작은 미리보기로 분위기를 살펴봤어요."],
+                  }),
+                },
+              },
+            ],
+          });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "advanced");
+  assertEquals(body.fallbackUsed, false);
+  assertEquals(body.title, "제주의 푸른 장면");
+  assertEquals(
+    body.recommendedPhotos.map((photo: { assetId: string }) => photo.assetId),
+    ["photo-2", "photo-1"],
+  );
+  assertEquals(calls.some((url) => url.includes("photo-1.jpg")), true);
+  assertEquals(calls.some((url) => url.includes("photo-2.jpg")), true);
+  assertEquals(
+    methods.some((call) =>
+      call.startsWith("DELETE ") && call.includes("photo-1.jpg")
+    ),
+    true,
+  );
+  assertEquals(
+    methods.some((call) =>
+      call.startsWith("DELETE ") && call.includes("photo-2.jpg")
+    ),
+    true,
+  );
+});
+
+Deno.test("default advanced provider falls back when preview references are missing", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "travel",
+        range: "limitedLibrary",
+        candidates,
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "advanced",
+          OPENAI_API_KEY: "test-openai-key",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: () =>
+        Promise.resolve(new Response("should not fetch", { status: 500 })),
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.fallbackUsed, true);
+  assertEquals(body.fallbackReason, "advanced_provider_failed");
+});
