@@ -6,6 +6,16 @@ import 'ai_album_models.dart';
 class AiAlbumDraftTemplateBuilder {
   const AiAlbumDraftTemplateBuilder();
 
+  bool isEditorReady(AlbumRecommendationDraft draft) {
+    if (draft.pageCount < 1 || draft.recommendedPhotos.isEmpty) return false;
+    final pages = build(draft);
+    if (pages.length != draft.pageCount + 1) return false;
+    final imageLayers = pages.expand(
+      (page) => page.where((layer) => layer.type == LayerType.image),
+    );
+    return imageLayers.any((layer) => layer.asset != null);
+  }
+
   List<List<LayerModel>> build(AlbumRecommendationDraft draft) {
     final pages = <List<LayerModel>>[_coverLayers(draft)];
 

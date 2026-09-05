@@ -610,6 +610,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
             onAcceptDraft: (acceptedDraft) => setState(() {
+              if (!_aiDraftTemplateBuilder.isEditorReady(acceptedDraft)) {
+                _pendingAiDraft = null;
+                _hasConfirmedAiPointCost = false;
+                _isGeneratingAiDraft = false;
+                _aiDraftFailureTitle = '앨범 초안을 안전하게 열지 않았어요';
+                _aiDraftFailureMessage =
+                    '구성은 만들었지만 편집기에 넣을 사진 레이어를 확인하지 못했어요. 사진을 다시 골라 새 초안을 만들면 안전해요. 포인트는 차감되지 않았어요.';
+                _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
+                _aiDraftPrimaryRecoveryAction =
+                    AiAlbumDraftRecoveryAction.retryPhotoRange;
+                return;
+              }
+
               final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
               _resolvedTemplatePages = aiPages;
               _baseTemplatePages = aiPages;

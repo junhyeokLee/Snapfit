@@ -46,6 +46,8 @@ void main() {
       summary: '날짜별 흐름을 살려 1개 묶음으로 나누었어요.',
     );
 
+    expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isTrue);
+
     final pages = const AiAlbumDraftTemplateBuilder().build(draft);
     final coverImage = pages.first.firstWhere((l) => l.type == LayerType.image);
     final storyImages = pages[1]
@@ -141,6 +143,71 @@ void main() {
       }
     },
   );
+
+  test('reports draft without local image assets as not editor-ready', () {
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.daily,
+      title: '일상의 장면들',
+      pageCount: 3,
+      templateTone: '일상 기록 템플릿',
+      recommendedPhotos: [
+        RecommendedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'missing-local-asset',
+            createdAt: DateTime(2026, 8, 20),
+            width: 4000,
+            height: 3000,
+            orientation: PhotoOrientation.landscape,
+          ),
+          score: 0.9,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.highResolution,
+              message: '크게 넣어도 선명한 사진이에요',
+            ),
+          ],
+        ),
+      ],
+      excludedPhotos: const [],
+      storySections: const [
+        StorySection(
+          title: '일상의 시작',
+          description: '첫 장면이에요.',
+          photoAssetIds: ['missing-local-asset'],
+        ),
+      ],
+      summary: '초안을 준비했어요.',
+    );
+
+    expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isFalse);
+  });
+
+  test('reports draft with page count mismatch as not editor-ready', () {
+    final asset = _asset('photo-1', DateTime(2026, 8, 20));
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.daily,
+      title: '일상의 장면들',
+      pageCount: 0,
+      templateTone: '일상 기록 템플릿',
+      recommendedPhotos: [
+        RecommendedPhoto(
+          candidate: _candidate('photo-1', DateTime(2026, 8, 20), asset),
+          score: 0.9,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.highResolution,
+              message: '크게 넣어도 선명한 사진이에요',
+            ),
+          ],
+        ),
+      ],
+      excludedPhotos: const [],
+      storySections: const [],
+      summary: '초안을 준비했어요.',
+    );
+
+    expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isFalse);
+  });
 }
 
 PhotoCandidate _candidate(String id, DateTime createdAt, AssetEntity asset) {
