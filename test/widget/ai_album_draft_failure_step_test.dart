@@ -43,6 +43,45 @@ void main() {
     await tester.pump();
     expect(retryRange, isTrue);
 
+    await tester.ensureVisible(find.text('직접 구성하기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('직접 구성하기'));
+    await tester.pump();
+    expect(manualStart, isTrue);
+  });
+
+  testWidgets('shows permission specific recovery copy and CTA', (
+    tester,
+  ) async {
+    var primary = false;
+    var manualStart = false;
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumDraftFailureStep(
+          title: '사진을 볼 수 없어 초안을 만들지 못했어요',
+          message: 'Snapfit은 허용한 사진 안에서만 앨범 후보를 고를 수 있어요.',
+          primaryActionLabel: '사진 권한 열기',
+          onRetryRange: () => primary = true,
+          onManualStart: () => manualStart = true,
+        ),
+      ),
+    );
+
+    expect(find.text('사진을 볼 수 없어 초안을 만들지 못했어요'), findsOneWidget);
+    expect(find.text('사진 권한 열기'), findsOneWidget);
+    expect(find.text('직접 구성하기'), findsOneWidget);
+    expect(find.textContaining('기기 안에서만 확인해요'), findsOneWidget);
+
+    await tester.tap(find.text('사진 권한 열기'));
+    await tester.pump();
+    expect(primary, isTrue);
+
+    await tester.ensureVisible(find.text('직접 구성하기'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('직접 구성하기'));
     await tester.pump();
     expect(manualStart, isTrue);

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
+import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../ai_album/domain/ai_album_draft_template_builder.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
@@ -59,7 +61,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
+  String? _aiDraftFailureTitle;
   String? _aiDraftFailureMessage;
+  String? _aiDraftPrimaryCtaLabel;
+  AiAlbumDraftRecoveryAction? _aiDraftPrimaryRecoveryAction;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -397,7 +402,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = true;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
+      _aiDraftFailureTitle = null;
       _aiDraftFailureMessage = null;
+      _aiDraftPrimaryCtaLabel = null;
+      _aiDraftPrimaryRecoveryAction = null;
     });
 
     final result = await ref
@@ -411,7 +419,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _isGeneratingAiDraft = false;
         _hasConfirmedAiPointCost = true;
         _pendingAiDraft = draft;
+        _aiDraftFailureTitle = null;
         _aiDraftFailureMessage = null;
+        _aiDraftPrimaryCtaLabel = null;
+        _aiDraftPrimaryRecoveryAction = null;
         if (_albumTitle.trim().isEmpty) {
           _albumTitle = draft.title;
         }
@@ -427,9 +438,32 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = false;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
+      _aiDraftFailureTitle = result.failureTitle ?? '초안을 만들지 못했어요';
       _aiDraftFailureMessage =
           result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.';
+      _aiDraftPrimaryCtaLabel = result.primaryCtaLabel ?? '사진 범위 다시 고르기';
+      _aiDraftPrimaryRecoveryAction =
+          result.primaryRecoveryAction ??
+          AiAlbumDraftRecoveryAction.retryPhotoRange;
     });
+  }
+
+  void _handleAiDraftPrimaryRecovery(AiAlbumDraftRecoveryAction? action) {
+    switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
+      case AiAlbumDraftRecoveryAction.openPhotoSettings:
+        openAppSettings();
+      case AiAlbumDraftRecoveryAction.retryPhotoRange:
+        setState(() {
+          _selectedAiRange = null;
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
+    }
   }
 
   Widget _buildStepContent() {
@@ -448,7 +482,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -465,7 +502,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -485,14 +525,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                 _hasConfirmedAiPointCost = false;
                 _isGeneratingAiDraft = false;
                 _pendingAiDraft = null;
+                _aiDraftFailureTitle = null;
                 _aiDraftFailureMessage = null;
+                _aiDraftPrimaryCtaLabel = null;
+                _aiDraftPrimaryRecoveryAction = null;
               });
             },
             onBack: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
             }),
@@ -500,20 +546,20 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         }
         final pendingDraft = _pendingAiDraft;
         final selectedAiRange = _selectedAiRange;
+        final aiDraftFailureTitle = _aiDraftFailureTitle;
         final aiDraftFailureMessage = _aiDraftFailureMessage;
+        final aiDraftPrimaryCtaLabel = _aiDraftPrimaryCtaLabel;
+        final aiDraftPrimaryRecoveryAction = _aiDraftPrimaryRecoveryAction;
         if (_isAiCreationMode &&
             selectedAiTheme != null &&
             selectedAiRange != null &&
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
+            title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
             message: aiDraftFailureMessage,
-            onRetryRange: () => setState(() {
-              _selectedAiRange = null;
-              _hasConfirmedAiPointCost = false;
-              _isGeneratingAiDraft = false;
-              _pendingAiDraft = null;
-              _aiDraftFailureMessage = null;
-            }),
+            primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
+            onRetryRange: () =>
+                _handleAiDraftPrimaryRecovery(aiDraftPrimaryRecoveryAction),
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
@@ -521,7 +567,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
             }),
           );
         }
@@ -547,7 +596,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
             }),
           );
         }
@@ -571,7 +623,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                 _maxPageCount,
               );
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               if (_albumTitle.trim().isEmpty) {
                 _albumTitle = acceptedDraft.title;
               }

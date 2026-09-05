@@ -6,12 +6,16 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
     super.key,
+    this.title = '초안을 만들지 못했어요',
     required this.message,
+    this.primaryActionLabel = '사진 범위 다시 고르기',
     required this.onRetryRange,
     required this.onManualStart,
   });
 
+  final String title;
   final String message;
+  final String primaryActionLabel;
   final VoidCallback onRetryRange;
   final VoidCallback onManualStart;
 
@@ -49,7 +53,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     _NoChargeBadge(isDark: isDark),
                     SizedBox(height: 16.h),
                     Text(
-                      '초안을 만들지 못했어요',
+                      title,
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 22.sp,
@@ -110,7 +114,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '사진 범위 다시 고르기',
+                    primaryActionLabel,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w900,

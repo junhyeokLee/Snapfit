@@ -100,6 +100,12 @@ void main() {
     expect(result.status, AiAlbumDraftGenerationStatus.permissionDenied);
     expect(result.shouldChargePoints, isFalse);
     expect(result.draft, isNull);
+    expect(result.failureTitle, '사진을 볼 수 없어 초안을 만들지 못했어요');
+    expect(result.primaryCtaLabel, '사진 권한 열기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.openPhotoSettings,
+    );
     expect(result.failureMessage, contains('사진 접근 권한'));
     expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
   });
@@ -120,9 +126,41 @@ void main() {
 
     expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
     expect(result.shouldChargePoints, isFalse);
+    expect(result.failureTitle, '선택한 사진 안에서만 살펴봤어요');
+    expect(result.primaryCtaLabel, '사진 더 선택하기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.retryPhotoRange,
+    );
     expect(result.failureMessage, contains('선택한 사진이 조금 더 필요해요'));
     expect(result.failureMessage, contains('기기 안에서만'));
   });
+
+  test(
+    'generic insufficient photos uses range recovery title and CTA',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate('one', DateTime(2026, 8, 20), PhotoOrientation.square),
+        ],
+        engine: const AiAlbumCurationEngine(),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.daily,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+      expect(result.failureTitle, '초안을 만들기엔 사진이 조금 적어요');
+      expect(result.primaryCtaLabel, '사진 범위 다시 고르기');
+      expect(
+        result.primaryRecoveryAction,
+        AiAlbumDraftRecoveryAction.retryPhotoRange,
+      );
+    },
+  );
 }
 
 PhotoCandidate _candidate(

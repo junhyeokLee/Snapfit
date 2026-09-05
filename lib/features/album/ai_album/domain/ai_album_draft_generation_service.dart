@@ -11,6 +11,8 @@ enum AiAlbumDraftGenerationStatus {
   failed,
 }
 
+enum AiAlbumDraftRecoveryAction { retryPhotoRange, openPhotoSettings }
+
 enum AiPhotoCandidateCollectionFailure { permissionDenied }
 
 class AiPhotoCandidateCollectionException implements Exception {
@@ -24,7 +26,10 @@ class AiAlbumDraftGenerationResult {
     required this.status,
     required this.shouldChargePoints,
     this.draft,
+    this.failureTitle,
     this.failureMessage,
+    this.primaryCtaLabel,
+    this.primaryRecoveryAction,
   });
 
   factory AiAlbumDraftGenerationResult.success(AlbumRecommendationDraft draft) {
@@ -50,8 +55,11 @@ class AiAlbumDraftGenerationResult {
     return AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.insufficientPhotos,
       shouldChargePoints: false,
+      failureTitle: selectedOnly ? '선택한 사진 안에서만 살펴봤어요' : '초안을 만들기엔 사진이 조금 적어요',
       failureMessage:
           '$lead $rangeHint 현재 후보는 $actualPhotoCount장이에요. 기기 안에서만 확인하고 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: selectedOnly ? '사진 더 선택하기' : '사진 범위 다시 고르기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
   }
 
@@ -59,8 +67,11 @@ class AiAlbumDraftGenerationResult {
     return const AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.permissionDenied,
       shouldChargePoints: false,
+      failureTitle: '사진을 볼 수 없어 초안을 만들지 못했어요',
       failureMessage:
           '사진 접근 권한이 필요해요. 설정에서 사진을 몇 장 더 허용한 뒤 다시 시도해 주세요. 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: '사진 권한 열기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.openPhotoSettings,
     );
   }
 
@@ -68,14 +79,20 @@ class AiAlbumDraftGenerationResult {
     return const AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.failed,
       shouldChargePoints: false,
+      failureTitle: '초안을 만들지 못했어요',
       failureMessage: 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: '사진 범위 다시 고르기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
   }
 
   final AiAlbumDraftGenerationStatus status;
   final bool shouldChargePoints;
   final AlbumRecommendationDraft? draft;
+  final String? failureTitle;
   final String? failureMessage;
+  final String? primaryCtaLabel;
+  final AiAlbumDraftRecoveryAction? primaryRecoveryAction;
 }
 
 class AiAlbumDraftGenerationService {
