@@ -60,3 +60,14 @@ final myStorageQuotaProvider = FutureProvider<StorageQuotaStatus>((ref) async {
     );
   }
 });
+
+final myPointBalanceProvider = FutureProvider<int>((ref) async {
+  try {
+    return await ref
+        .read(billingRepositoryProvider)
+        .getMyPointBalance()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    return 0;
+  }
+});

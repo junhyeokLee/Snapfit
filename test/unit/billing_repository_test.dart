@@ -104,6 +104,19 @@ void main() {
     );
   });
 
+  test('reads point wallet balance through injected query', () async {
+    final tokenStorage = MockTokenStorage();
+    when(() => tokenStorage.getUserId()).thenAnswer((_) async => 'user-1');
+    final repository = BillingRepository(
+      tokenStorage: tokenStorage,
+      pointBalanceQuery: () async => {'balance': 2500},
+    );
+
+    final balance = await repository.getMyPointBalance();
+
+    expect(balance, 2500);
+  });
+
   test('preflightStorage requires a Supabase client', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(tokenStorage: tokenStorage);

@@ -62,7 +62,6 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   int _currentStep = 0;
   String _albumTitle = '';
   static const int _aiDraftPointCost = Env.aiAlbumDraftPointCost;
-  static const int _previewPointBalance = 1200;
   static const AiAlbumDraftTemplateBuilder _aiDraftTemplateBuilder =
       AiAlbumDraftTemplateBuilder();
   bool _hasSelectedCreationMode = false;
@@ -476,6 +475,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pointCost: _aiDraftPointCost,
           )
           .timeout(const Duration(seconds: 8));
+      ref.invalidate(myPointBalanceProvider);
     } on AiAlbumDraftPointUsageException catch (error) {
       if (!mounted) return;
       setState(() => _setAiDraftPointUsageFailure(error.failure));
@@ -727,11 +727,14 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             selectedAiTheme != null &&
             selectedAiRange != null &&
             !_hasConfirmedAiPointCost) {
+          final pointBalance = ref
+              .watch(myPointBalanceProvider)
+              .maybeWhen(data: (value) => value, orElse: () => 0);
           return AiAlbumPointConfirmationStep(
             theme: selectedAiTheme,
             range: selectedAiRange,
             pointCost: _aiDraftPointCost,
-            balance: _previewPointBalance,
+            balance: pointBalance,
             isFirstAiDraftFree: true,
             usesServerDraftProvider: widget.usesServerDraftProvider,
             usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,

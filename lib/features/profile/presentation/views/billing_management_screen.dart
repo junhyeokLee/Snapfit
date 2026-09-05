@@ -201,6 +201,7 @@ class _BillingManagementScreenState
             if (purchase.pendingCompletePurchase) {
               await _iap.completePurchase(purchase);
             }
+            ref.invalidate(myPointBalanceProvider);
             if (mounted) {
               setState(() {
                 _purchaseInProgress = false;

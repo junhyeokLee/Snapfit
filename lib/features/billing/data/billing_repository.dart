@@ -13,6 +13,8 @@ typedef RecordAiAlbumDraftSuccessRpc =
       required int pointCost,
     });
 
+typedef PointBalanceQuery = Future<Map<String, dynamic>?> Function();
+
 enum AiAlbumDraftPointUsageFailure { insufficientPoints, unavailable }
 
 class AiAlbumDraftPointUsageException implements Exception {
@@ -79,11 +81,13 @@ class BillingRepository {
     required this.tokenStorage,
     this.supabase,
     this.recordAiAlbumDraftSuccessRpc,
+    this.pointBalanceQuery,
   });
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
   final RecordAiAlbumDraftSuccessRpc? recordAiAlbumDraftSuccessRpc;
+  final PointBalanceQuery? pointBalanceQuery;
 
   Future<String> _requireUserId() async {
     final userId = await tokenStorage.getUserId();
@@ -301,6 +305,25 @@ class BillingRepository {
         error.toString(),
       );
     }
+  }
+
+  Future<int> getMyPointBalance() async {
+    await _requireUserId();
+    final injectedQuery = pointBalanceQuery;
+    if (injectedQuery != null) {
+      final row = await injectedQuery();
+      return (row?['balance'] as num?)?.toInt() ?? 0;
+    }
+    if (supabase != null) {
+      final userId = await _requireUserId();
+      final row = await supabase!
+          .from('point_wallets')
+          .select('balance')
+          .eq('user_id', userId)
+          .maybeSingle();
+      return (row?['balance'] as num?)?.toInt() ?? 0;
+    }
+    throw Exception('Supabase 포인트 조회 환경이 준비되지 않았습니다.');
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {
