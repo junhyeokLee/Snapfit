@@ -80,15 +80,15 @@ class Env {
 
   /// Premium AI album draft point cost. Tuned for high-quality hybrid
   /// OpenAI Vision + Claude curation mode.
-  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=900
+  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=700
   static const int aiAlbumDraftPointCost = int.fromEnvironment(
     'AI_ALBUM_DRAFT_POINT_COST',
-    defaultValue: 900,
+    defaultValue: 700,
   );
 
   /// Native store consumable point product ids. Configure matching ids in
   /// Google Play Console / App Store Connect.
-  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_1500,snapfit_points_4500,snapfit_points_10000
+  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_3500,snapfit_points_11000,snapfit_points_25000
   static const String iapPointProductIdsCsv = String.fromEnvironment(
     'IAP_POINT_PRODUCT_IDS',
     defaultValue:

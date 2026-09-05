@@ -4,23 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/config/env.dart';
 
 void main() {
+  test('advanced AI defaults to generous premium point cost', () {
+    expect(Env.aiAlbumDraftPointCost, 700);
+  });
+
   test(
-    'advanced AI defaults to premium point cost for hybrid quality model',
+    'point package migration seeds generous native store consumable products',
     () {
-      expect(Env.aiAlbumDraftPointCost, 900);
+      final sql = File(
+        'supabase/migrations/20260905200000_ai_album_pricing_adjustment.sql',
+      ).readAsStringSync();
+
+      expect(sql, contains('SNAPFIT_AI_DRAFT_HYBRID_COST = 700'));
+      expect(sql, contains('snapfit_points_3500'));
+      expect(sql, contains('snapfit_points_11000'));
+      expect(sql, contains('snapfit_points_25000'));
+      expect(sql, contains('snapfit_points_1500'));
+      expect(sql, contains('is_active = false'));
     },
   );
-
-  test('point package migration seeds native store consumable products', () {
-    final sql = File(
-      'supabase/migrations/20260905193000_ai_album_hybrid_pricing.sql',
-    ).readAsStringSync();
-
-    expect(sql, contains('SNAPFIT_AI_DRAFT_HYBRID_COST'));
-    expect(sql, contains('snapfit_points_1500'));
-    expect(sql, contains('snapfit_points_4500'));
-    expect(sql, contains('snapfit_points_10000'));
-    expect(sql, contains('POINT_PURCHASE'));
-    expect(sql, contains('grant_point_purchase'));
-  });
 }
