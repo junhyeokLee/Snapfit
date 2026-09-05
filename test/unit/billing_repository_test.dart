@@ -32,6 +32,36 @@ void main() {
     expect(result.remainingBalance, 900);
   });
 
+  test(
+    'maps AI album draft insufficient points into typed exception',
+    () async {
+      final tokenStorage = MockTokenStorage();
+      final repository = BillingRepository(
+        tokenStorage: tokenStorage,
+        recordAiAlbumDraftSuccessRpc:
+            ({required draftId, required pointCost}) async {
+              throw const AiAlbumDraftPointUsageException(
+                AiAlbumDraftPointUsageFailure.insufficientPoints,
+              );
+            },
+      );
+
+      await expectLater(
+        repository.recordAiAlbumDraftSuccess(
+          draftId: 'draft-2',
+          pointCost: 300,
+        ),
+        throwsA(
+          isA<AiAlbumDraftPointUsageException>().having(
+            (error) => error.failure,
+            'failure',
+            AiAlbumDraftPointUsageFailure.insufficientPoints,
+          ),
+        ),
+      );
+    },
+  );
+
   test('AI album draft success requires a non-empty draft id', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(tokenStorage: tokenStorage);

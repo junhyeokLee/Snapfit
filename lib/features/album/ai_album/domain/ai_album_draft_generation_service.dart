@@ -12,7 +12,11 @@ enum AiAlbumDraftGenerationStatus {
   failed,
 }
 
-enum AiAlbumDraftRecoveryAction { retryPhotoRange, openPhotoSettings }
+enum AiAlbumDraftRecoveryAction {
+  retryPhotoRange,
+  openPhotoSettings,
+  reviewPointCost,
+}
 
 enum AiPhotoCandidateCollectionFailure { permissionDenied }
 

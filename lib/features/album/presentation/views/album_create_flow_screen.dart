@@ -7,6 +7,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
 import '../../../billing/data/billing_provider.dart';
+import '../../../billing/data/billing_repository.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../../ai_album/domain/ai_album_draft_generation_service.dart';
@@ -466,19 +467,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pointCost: _aiDraftPointCost,
           )
           .timeout(const Duration(seconds: 8));
+    } on AiAlbumDraftPointUsageException catch (error) {
+      if (!mounted) return;
+      setState(() => _setAiDraftPointUsageFailure(error.failure));
+      return;
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _pendingAiDraft = null;
-        _hasConfirmedAiPointCost = false;
-        _isGeneratingAiDraft = false;
-        _aiDraftFailureTitle = '포인트 상태를 확인하지 못했어요';
-        _aiDraftFailureMessage =
-            '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
-        _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
-        _aiDraftPrimaryRecoveryAction =
-            AiAlbumDraftRecoveryAction.retryPhotoRange;
-      });
+      setState(
+        () => _setAiDraftPointUsageFailure(
+          AiAlbumDraftPointUsageFailure.unavailable,
+        ),
+      );
       return;
     }
 
@@ -506,6 +505,24 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _maxPageCount,
       );
     });
+  }
+
+  void _setAiDraftPointUsageFailure(AiAlbumDraftPointUsageFailure failure) {
+    final isInsufficient =
+        failure == AiAlbumDraftPointUsageFailure.insufficientPoints;
+    _pendingAiDraft = null;
+    _hasConfirmedAiPointCost = false;
+    _isGeneratingAiDraft = false;
+    _aiDraftFailureTitle = isInsufficient
+        ? '포인트가 조금 부족해요'
+        : '포인트 상태를 확인하지 못했어요';
+    _aiDraftFailureMessage = isInsufficient
+        ? 'AI 초안은 준비됐지만, 이 구성을 열기엔 포인트가 부족해요. 현재 포인트를 다시 확인하거나 직접 구성할 수 있어요. 아직 포인트는 차감되지 않았어요.'
+        : '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
+    _aiDraftPrimaryCtaLabel = isInsufficient ? '포인트 확인하기' : '사진 범위 다시 고르기';
+    _aiDraftPrimaryRecoveryAction = isInsufficient
+        ? AiAlbumDraftRecoveryAction.reviewPointCost
+        : AiAlbumDraftRecoveryAction.retryPhotoRange;
   }
 
   void _setAiDraftEditorHandoffFailure(
@@ -541,6 +558,16 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
       case AiAlbumDraftRecoveryAction.openPhotoSettings:
         openAppSettings();
+      case AiAlbumDraftRecoveryAction.reviewPointCost:
+        setState(() {
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
       case AiAlbumDraftRecoveryAction.retryPhotoRange:
         setState(() {
           _selectedAiRange = null;

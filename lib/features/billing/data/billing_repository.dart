@@ -13,6 +13,20 @@ typedef RecordAiAlbumDraftSuccessRpc =
       required int pointCost,
     });
 
+enum AiAlbumDraftPointUsageFailure { insufficientPoints, unavailable }
+
+class AiAlbumDraftPointUsageException implements Exception {
+  const AiAlbumDraftPointUsageException(this.failure, [this.message]);
+
+  final AiAlbumDraftPointUsageFailure failure;
+  final String? message;
+
+  @override
+  String toString() => message == null
+      ? 'AiAlbumDraftPointUsageException($failure)'
+      : 'AiAlbumDraftPointUsageException($failure, $message)';
+}
+
 class AiAlbumDraftPointUsageResult {
   const AiAlbumDraftPointUsageResult({
     required this.usedFreeCredit,
