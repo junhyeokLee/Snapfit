@@ -6,6 +6,7 @@ import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../billing/data/billing_provider.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../../ai_album/domain/ai_album_draft_generation_service.dart';
@@ -448,6 +449,65 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     });
   }
 
+  Future<void> _acceptAiDraft(AlbumRecommendationDraft acceptedDraft) async {
+    final editorReadiness = _aiDraftTemplateBuilder.validateEditorReady(
+      acceptedDraft,
+    );
+    if (!editorReadiness.isReady) {
+      setState(() => _setAiDraftEditorHandoffFailure(editorReadiness.reason));
+      return;
+    }
+
+    try {
+      await ref
+          .read(billingRepositoryProvider)
+          .recordAiAlbumDraftSuccess(
+            draftId: acceptedDraft.draftId,
+            pointCost: _aiDraftPointCost,
+          )
+          .timeout(const Duration(seconds: 8));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _pendingAiDraft = null;
+        _hasConfirmedAiPointCost = false;
+        _isGeneratingAiDraft = false;
+        _aiDraftFailureTitle = '포인트 상태를 확인하지 못했어요';
+        _aiDraftFailureMessage =
+            '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
+        _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
+        _aiDraftPrimaryRecoveryAction =
+            AiAlbumDraftRecoveryAction.retryPhotoRange;
+      });
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
+      _resolvedTemplatePages = aiPages;
+      _baseTemplatePages = aiPages;
+      (_templatePagesByAspect ??=
+              <String, List<List<LayerModel>>>{})[_selectedCover == null
+              ? 'square'
+              : _aspectKeyFromCover(_selectedCover!)] =
+          aiPages;
+      _templateMinPageCount = (aiPages.length - 1).clamp(1, _maxPageCount);
+      _pendingAiDraft = null;
+      _aiDraftFailureTitle = null;
+      _aiDraftFailureMessage = null;
+      _aiDraftPrimaryCtaLabel = null;
+      _aiDraftPrimaryRecoveryAction = null;
+      if (_albumTitle.trim().isEmpty) {
+        _albumTitle = acceptedDraft.title;
+      }
+      _selectedPageCount = acceptedDraft.pageCount.clamp(
+        _templateMinPageCount,
+        _maxPageCount,
+      );
+    });
+  }
+
   void _setAiDraftEditorHandoffFailure(
     AiAlbumDraftEditorReadinessReason reason,
   ) {
@@ -638,39 +698,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pendingDraft != null) {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
-            onAcceptDraft: (acceptedDraft) => setState(() {
-              final editorReadiness = _aiDraftTemplateBuilder
-                  .validateEditorReady(acceptedDraft);
-              if (!editorReadiness.isReady) {
-                _setAiDraftEditorHandoffFailure(editorReadiness.reason);
-                return;
-              }
-
-              final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
-              _resolvedTemplatePages = aiPages;
-              _baseTemplatePages = aiPages;
-              (_templatePagesByAspect ??=
-                      <String, List<List<LayerModel>>>{})[_selectedCover == null
-                      ? 'square'
-                      : _aspectKeyFromCover(_selectedCover!)] =
-                  aiPages;
-              _templateMinPageCount = (aiPages.length - 1).clamp(
-                1,
-                _maxPageCount,
-              );
-              _pendingAiDraft = null;
-              _aiDraftFailureTitle = null;
-              _aiDraftFailureMessage = null;
-              _aiDraftPrimaryCtaLabel = null;
-              _aiDraftPrimaryRecoveryAction = null;
-              if (_albumTitle.trim().isEmpty) {
-                _albumTitle = acceptedDraft.title;
-              }
-              _selectedPageCount = acceptedDraft.pageCount.clamp(
-                _templateMinPageCount,
-                _maxPageCount,
-              );
-            }),
+            onAcceptDraft: _acceptAiDraft,
             onBack: () => setState(() {
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;

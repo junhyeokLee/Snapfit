@@ -77,6 +77,7 @@ AI 앨범은 별도 자동 완성 기능이 아니라, 사용자가 직접 확�
 - 성공 결과만 `shouldChargePoints: true`로 표시한다.
 - 실패/권한/사진 부족/저품질 사진 상태는 모두 `shouldChargePoints: false`다.
 - 현재 큐레이션은 앱 내부 metadata-first 로직이다. 실제 서버 Vision/LLM 응답으로 교체되기 전 단계다.
+- 성공한 초안에는 서버 포인트 기록용 `draftId`가 부여된다.
 
 ### 추천 결과 리뷰
 
@@ -148,6 +149,7 @@ git diff --check
 - `ai_album_draft_usages`: 성공한 AI 초안 사용 기록과 idempotency
 - `ai_album_free_draft_claims`: 사용자별 첫 AI 초안 무료 사용 claim
 - `record_ai_album_draft_success(draft_id, point_cost)`: 성공한 초안에 대해서만 무료 claim 또는 포인트 차감을 원자적으로 처리하는 RPC
+- Flutter `BillingRepository.recordAiAlbumDraftSuccess(...)`: review에서 `이 구성으로 시작하기`를 눌렀을 때 RPC 호출
 
 보안/정책:
 
@@ -157,8 +159,7 @@ git diff --check
 
 남은 작업:
 
-- Flutter 클라이언트에서 성공한 AI 초안 review 진입 시 RPC 호출 연결
-- 포인트 부족 상태를 UI failure/recovery로 연결
+- 포인트 부족/포인트 RPC 실패 상태를 더 구체적인 UI failure/recovery로 연결
 - 실제 포인트 충전/구매/관리자 조정 경로 연결
 
 ### 실제 AI 서버/모델 연동
@@ -239,12 +240,11 @@ AI 초안이 editor로 들어간 뒤 실제 저장/업로드까지 확인해야 
 
 ## 다음 추천 순서
 
-1. Flutter에서 `record_ai_album_draft_success` RPC 연결
-2. 포인트 부족 상태 UI failure/recovery 연결
-3. 제한된 사진 권한 picker의 실제 플랫폼 동작 확인
-4. AI draft 서버/모델 연동 방식 결정
-5. 실제 기기 사진 권한 QA
-6. AI 초안 → editor 저장/업로드 end-to-end 검증
+1. 포인트 부족 상태 UI failure/recovery 구체화
+2. 제한된 사진 권한 picker의 실제 플랫폼 동작 확인
+3. AI draft 서버/모델 연동 방식 결정
+4. 실제 기기 사진 권한 QA
+5. AI 초안 → editor 저장/업로드 end-to-end 검증
 
 ## PR 리뷰 포인트
 

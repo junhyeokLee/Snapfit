@@ -37,6 +37,7 @@ void main() {
       expect(result.status, AiAlbumDraftGenerationStatus.success);
       expect(result.shouldChargePoints, isTrue);
       expect(result.draft, isNotNull);
+      expect(result.draft!.draftId, isNotEmpty);
       expect(result.draft!.recommendedPhotos, hasLength(3));
       expect(result.failureMessage, isNull);
     },

@@ -7,11 +7,42 @@ import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
 
+typedef RecordAiAlbumDraftSuccessRpc =
+    Future<Map<String, dynamic>> Function({
+      required String draftId,
+      required int pointCost,
+    });
+
+class AiAlbumDraftPointUsageResult {
+  const AiAlbumDraftPointUsageResult({
+    required this.usedFreeCredit,
+    required this.chargedPoints,
+    required this.remainingBalance,
+  });
+
+  factory AiAlbumDraftPointUsageResult.fromJson(Map<String, dynamic> json) {
+    return AiAlbumDraftPointUsageResult(
+      usedFreeCredit: json['used_free_credit'] == true,
+      chargedPoints: (json['charged_points'] as num?)?.toInt() ?? 0,
+      remainingBalance: (json['remaining_balance'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  final bool usedFreeCredit;
+  final int chargedPoints;
+  final int remainingBalance;
+}
+
 class BillingRepository {
-  BillingRepository({required this.tokenStorage, this.supabase});
+  BillingRepository({
+    required this.tokenStorage,
+    this.supabase,
+    this.recordAiAlbumDraftSuccessRpc,
+  });
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
+  final RecordAiAlbumDraftSuccessRpc? recordAiAlbumDraftSuccessRpc;
 
   Future<String> _requireUserId() async {
     final userId = await tokenStorage.getUserId();
@@ -133,6 +164,45 @@ class BillingRepository {
       throw Exception(data['error']);
     }
     return SubscriptionStatusModel.fromJson(data);
+  }
+
+  Future<AiAlbumDraftPointUsageResult> recordAiAlbumDraftSuccess({
+    required String draftId,
+    int pointCost = 300,
+  }) async {
+    final normalizedDraftId = draftId.trim();
+    if (normalizedDraftId.isEmpty) {
+      throw ArgumentError.value(draftId, 'draftId', 'draft id is required');
+    }
+    if (pointCost < 0) {
+      throw ArgumentError.value(
+        pointCost,
+        'pointCost',
+        'point cost must be zero or positive',
+      );
+    }
+
+    final injectedRpc = recordAiAlbumDraftSuccessRpc;
+    if (injectedRpc != null) {
+      final row = await injectedRpc(
+        draftId: normalizedDraftId,
+        pointCost: pointCost,
+      );
+      return AiAlbumDraftPointUsageResult.fromJson(row);
+    }
+
+    if (supabase == null) {
+      throw Exception('Supabase 포인트 사용 환경이 준비되지 않았습니다.');
+    }
+
+    final response = await supabase!.rpc(
+      'record_ai_album_draft_success',
+      params: {'p_draft_id': normalizedDraftId, 'p_point_cost': pointCost},
+    );
+    final row = response is List && response.isNotEmpty
+        ? Map<String, dynamic>.from(response.first as Map)
+        : Map<String, dynamic>.from(response as Map);
+    return AiAlbumDraftPointUsageResult.fromJson(row);
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {

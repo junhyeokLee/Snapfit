@@ -110,6 +110,7 @@ class StorySection {
 
 class AlbumRecommendationDraft {
   const AlbumRecommendationDraft({
+    this.draftId = '',
     required this.theme,
     required this.title,
     required this.pageCount,
@@ -124,6 +125,7 @@ class AlbumRecommendationDraft {
     this.reviewCtaLabel = '이 구성으로 시작하기',
   });
 
+  final String draftId;
   final AlbumTheme theme;
   final String title;
   final int pageCount;
@@ -138,6 +140,7 @@ class AlbumRecommendationDraft {
   final String reviewCtaLabel;
 
   AlbumRecommendationDraft copyWith({
+    String? draftId,
     AlbumTheme? theme,
     String? title,
     int? pageCount,
@@ -152,6 +155,7 @@ class AlbumRecommendationDraft {
     String? reviewCtaLabel,
   }) {
     return AlbumRecommendationDraft(
+      draftId: draftId ?? this.draftId,
       theme: theme ?? this.theme,
       title: title ?? this.title,
       pageCount: pageCount ?? this.pageCount,

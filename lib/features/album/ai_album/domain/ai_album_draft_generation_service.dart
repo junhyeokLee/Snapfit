@@ -37,7 +37,14 @@ class AiAlbumDraftGenerationResult {
     return AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.success,
       shouldChargePoints: true,
-      draft: draft,
+      draft: _withDraftId(draft),
+    );
+  }
+
+  static AlbumRecommendationDraft _withDraftId(AlbumRecommendationDraft draft) {
+    if (draft.draftId.trim().isNotEmpty) return draft;
+    return draft.copyWith(
+      draftId: 'ai-draft-${DateTime.now().microsecondsSinceEpoch}',
     );
   }
 
