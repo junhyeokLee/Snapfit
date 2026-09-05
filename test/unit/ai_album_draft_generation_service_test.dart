@@ -44,6 +44,44 @@ void main() {
   );
 
   test(
+    'uses injected draft provider so server generation can replace local curation',
+    () async {
+      final provider = _FakeAiAlbumDraftProvider();
+      final candidates = [
+        _candidate(
+          'server-1',
+          DateTime(2026, 8, 20),
+          PhotoOrientation.landscape,
+        ),
+        _candidate(
+          'server-2',
+          DateTime(2026, 8, 21),
+          PhotoOrientation.portrait,
+        ),
+        _candidate('server-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+      ];
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => candidates,
+        draftProvider: provider,
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+      );
+
+      expect(provider.receivedTheme, AlbumTheme.travel);
+      expect(provider.receivedRange, AiPhotoRange.limitedLibrary);
+      expect(provider.receivedCandidates, same(candidates));
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(result.shouldChargePoints, isTrue);
+      expect(result.draft!.title, '서버가 고른 여행 초안');
+      expect(result.draft!.summary, contains('서버 provider'));
+    },
+  );
+
+  test(
     'does not charge points when photo candidates are insufficient',
     () async {
       final service = AiAlbumDraftGenerationService(
@@ -254,4 +292,50 @@ PhotoCandidate _candidate(
     orientation: orientation,
     isScreenshot: isScreenshot,
   );
+}
+
+class _FakeAiAlbumDraftProvider extends AiAlbumDraftProvider {
+  AlbumTheme? receivedTheme;
+  AiPhotoRange? receivedRange;
+  List<PhotoCandidate>? receivedCandidates;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    receivedTheme = theme;
+    receivedRange = range;
+    receivedCandidates = candidates;
+    return AlbumRecommendationDraft(
+      theme: theme,
+      title: '서버가 고른 여행 초안',
+      pageCount: 10,
+      templateTone: 'server-ready',
+      recommendedPhotos: candidates
+          .map(
+            (candidate) => RecommendedPhoto(
+              candidate: candidate,
+              score: 0.9,
+              reasons: const [
+                AiCurationReason(
+                  type: AiCurationReasonType.themeOrientation,
+                  message: '서버 provider가 고른 사진이에요',
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false),
+      excludedPhotos: const [],
+      storySections: const [
+        StorySection(
+          title: '서버 추천 흐름',
+          description: '서버 응답도 같은 리뷰 화면으로 보여줘요',
+          photoAssetIds: ['server-1'],
+        ),
+      ],
+      summary: '서버 provider 결과도 사용자 리뷰 뒤에만 포인트 차감해요.',
+    );
+  }
 }

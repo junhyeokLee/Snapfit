@@ -4,6 +4,33 @@ import 'ai_album_models.dart';
 typedef AiPhotoCandidateLoader =
     Future<List<PhotoCandidate>> Function(AiPhotoRange range);
 
+abstract class AiAlbumDraftProvider {
+  const AiAlbumDraftProvider();
+
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  });
+}
+
+class MetadataFirstAiAlbumDraftProvider extends AiAlbumDraftProvider {
+  const MetadataFirstAiAlbumDraftProvider({
+    AiAlbumCurationEngine engine = const AiAlbumCurationEngine(),
+  }) : _engine = engine;
+
+  final AiAlbumCurationEngine _engine;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    return _engine.curate(theme: theme, candidates: candidates);
+  }
+}
+
 enum AiAlbumDraftGenerationStatus {
   success,
   insufficientPhotos,
@@ -129,16 +156,18 @@ class AiAlbumDraftGenerationResult {
 }
 
 class AiAlbumDraftGenerationService {
-  const AiAlbumDraftGenerationService({
+  AiAlbumDraftGenerationService({
     required AiPhotoCandidateLoader collectCandidates,
+    AiAlbumDraftProvider? draftProvider,
     AiAlbumCurationEngine engine = const AiAlbumCurationEngine(),
     int minimumPhotoCount = 3,
   }) : _collectCandidates = collectCandidates,
-       _engine = engine,
+       _draftProvider =
+           draftProvider ?? MetadataFirstAiAlbumDraftProvider(engine: engine),
        _minimumPhotoCount = minimumPhotoCount;
 
   final AiPhotoCandidateLoader _collectCandidates;
-  final AiAlbumCurationEngine _engine;
+  final AiAlbumDraftProvider _draftProvider;
   final int _minimumPhotoCount;
 
   Future<AiAlbumDraftGenerationResult> generate({
@@ -155,7 +184,11 @@ class AiAlbumDraftGenerationService {
         );
       }
 
-      final draft = _engine.curate(theme: theme, candidates: candidates);
+      final draft = await _draftProvider.createDraft(
+        theme: theme,
+        range: range,
+        candidates: candidates,
+      );
       if (draft.recommendedPhotos.isEmpty) {
         final excludedForQuality = draft.excludedPhotos.where((photo) {
           return photo.reasons.any(
