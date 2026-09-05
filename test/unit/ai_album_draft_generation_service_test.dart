@@ -11,17 +11,17 @@ void main() {
         collectCandidates: (_) async => [
           _candidate(
             'travel-1',
-            DateTime(2026, 8, 20),
+            DateTime(2026, 8, 20, 9),
             PhotoOrientation.landscape,
           ),
           _candidate(
             'travel-2',
-            DateTime(2026, 8, 20),
+            DateTime(2026, 8, 20, 13),
             PhotoOrientation.landscape,
           ),
           _candidate(
             'travel-3',
-            DateTime(2026, 8, 21),
+            DateTime(2026, 8, 21, 10),
             PhotoOrientation.portrait,
           ),
         ],
@@ -37,8 +37,47 @@ void main() {
       expect(result.status, AiAlbumDraftGenerationStatus.success);
       expect(result.shouldChargePoints, isTrue);
       expect(result.draft, isNotNull);
+      expect(result.draft!.draftId, isNotEmpty);
       expect(result.draft!.recommendedPhotos, hasLength(3));
       expect(result.failureMessage, isNull);
+    },
+  );
+
+  test(
+    'uses injected draft provider so server generation can replace local curation',
+    () async {
+      final provider = _FakeAiAlbumDraftProvider();
+      final candidates = [
+        _candidate(
+          'server-1',
+          DateTime(2026, 8, 20),
+          PhotoOrientation.landscape,
+        ),
+        _candidate(
+          'server-2',
+          DateTime(2026, 8, 21),
+          PhotoOrientation.portrait,
+        ),
+        _candidate('server-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+      ];
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => candidates,
+        draftProvider: provider,
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+      );
+
+      expect(provider.receivedTheme, AlbumTheme.travel);
+      expect(provider.receivedRange, AiPhotoRange.limitedLibrary);
+      expect(provider.receivedCandidates, same(candidates));
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(result.shouldChargePoints, isTrue);
+      expect(result.draft!.title, '서버가 고른 여행 초안');
+      expect(result.draft!.summary, contains('서버 provider'));
     },
   );
 
@@ -81,20 +120,327 @@ void main() {
     expect(result.shouldChargePoints, isFalse);
     expect(result.draft, isNull);
   });
+
+  test('explains denied photo permission without charging points', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async =>
+          throw const AiPhotoCandidateCollectionException(
+            AiPhotoCandidateCollectionFailure.permissionDenied,
+          ),
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.family,
+      range: AiPhotoRange.recent30Days,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.permissionDenied);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.draft, isNull);
+    expect(result.failureTitle, '사진을 볼 수 없어 초안을 만들지 못했어요');
+    expect(result.primaryCtaLabel, '사진 권한 열기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.openPhotoSettings,
+    );
+    expect(result.failureMessage, contains('사진 접근 권한'));
+    expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+  });
+
+  test('explains empty limited library as no selected photos', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => const [],
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.daily,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.failureTitle, '선택한 사진을 찾지 못했어요');
+    expect(result.primaryCtaLabel, '사진 더 선택하기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.openLimitedPhotoPicker,
+    );
+    expect(result.failureMessage, contains('허용한 사진 안에서 후보를 찾지 못했어요'));
+    expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+  });
+
+  test('explains limited library needs a few more photos', () async {
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => [
+        _candidate('one', DateTime(2026, 8, 20), PhotoOrientation.square),
+      ],
+      engine: const AiAlbumCurationEngine(),
+      minimumPhotoCount: 3,
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.daily,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(result.shouldChargePoints, isFalse);
+    expect(result.failureTitle, '선택한 사진 안에서만 살펴봤어요');
+    expect(result.primaryCtaLabel, '사진 더 선택하기');
+    expect(
+      result.primaryRecoveryAction,
+      AiAlbumDraftRecoveryAction.openLimitedPhotoPicker,
+    );
+    expect(result.failureMessage, contains('선택한 사진이 조금 더 필요해요'));
+    expect(result.failureMessage, contains('기기 안에서만'));
+  });
+
+  test(
+    'generic insufficient photos uses range recovery title and CTA',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate('one', DateTime(2026, 8, 20), PhotoOrientation.square),
+        ],
+        engine: const AiAlbumCurationEngine(),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.daily,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+      expect(result.failureTitle, '초안을 만들기엔 사진이 조금 적어요');
+      expect(result.primaryCtaLabel, '사진 범위 다시 고르기');
+      expect(
+        result.primaryRecoveryAction,
+        AiAlbumDraftRecoveryAction.retryPhotoRange,
+      );
+    },
+  );
+
+  test(
+    'explains when enough photos are mostly screenshots or too small',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate(
+            'screenshot-1',
+            DateTime(2026, 8, 20, 9),
+            PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+          _candidate(
+            'tiny-1',
+            DateTime(2026, 8, 20, 10),
+            PhotoOrientation.square,
+            width: 640,
+            height: 640,
+          ),
+          _candidate(
+            'screenshot-2',
+            DateTime(2026, 8, 20, 11),
+            PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+        ],
+        engine: const AiAlbumCurationEngine(),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.daily,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.lowQualityPhotos);
+      expect(result.shouldChargePoints, isFalse);
+      expect(result.draft, isNull);
+      expect(result.failureTitle, '앨범에 어울리는 사진이 조금 부족해요');
+      expect(result.primaryCtaLabel, '사진 범위 다시 고르기');
+      expect(
+        result.primaryRecoveryAction,
+        AiAlbumDraftRecoveryAction.retryPhotoRange,
+      );
+      expect(result.failureMessage, contains('스크린샷이나 작은 이미지는'));
+      expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+    },
+  );
+
+  test(
+    'attaches advanced server preview references only after candidates are collected',
+    () async {
+      final seenCandidates = <PhotoCandidate>[];
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate(
+            'photo-1',
+            DateTime(2026, 8, 20),
+            PhotoOrientation.landscape,
+          ),
+          _candidate(
+            'photo-2',
+            DateTime(2026, 8, 21),
+            PhotoOrientation.portrait,
+          ),
+          _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+        ],
+        prepareAdvancedPreviews: (candidates) async {
+          return candidates
+              .map(
+                (candidate) => candidate.copyWith(
+                  previewStorageUri:
+                      'supabase://ai-album-previews/user/draft/${candidate.assetId}.jpg',
+                ),
+              )
+              .toList(growable: false);
+        },
+        draftProvider: _RecordingDraftProvider(seenCandidates),
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(seenCandidates.map((candidate) => candidate.previewStorageUri), [
+        'supabase://ai-album-previews/user/draft/photo-1.jpg',
+        'supabase://ai-album-previews/user/draft/photo-2.jpg',
+        'supabase://ai-album-previews/user/draft/photo-3.jpg',
+      ]);
+    },
+  );
+
+  test('does not prepare previews when photo count is insufficient', () async {
+    var prepared = false;
+    final service = AiAlbumDraftGenerationService(
+      collectCandidates: (_) async => [
+        _candidate('photo-1', DateTime(2026, 8, 20), PhotoOrientation.square),
+      ],
+      prepareAdvancedPreviews: (_) async {
+        prepared = true;
+        return const [];
+      },
+      draftProvider: const MetadataFirstAiAlbumDraftProvider(),
+    );
+
+    final result = await service.generate(
+      theme: AlbumTheme.travel,
+      range: AiPhotoRange.limitedLibrary,
+    );
+
+    expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+    expect(prepared, isFalse);
+  });
 }
 
 PhotoCandidate _candidate(
   String id,
   DateTime createdAt,
-  PhotoOrientation orientation,
-) {
+  PhotoOrientation orientation, {
+  bool isScreenshot = false,
+  int? width,
+  int? height,
+}) {
   final isLandscape = orientation == PhotoOrientation.landscape;
   final isPortrait = orientation == PhotoOrientation.portrait;
   return PhotoCandidate(
     assetId: id,
     createdAt: createdAt,
-    width: isPortrait ? 3000 : 4000,
-    height: isLandscape ? 3000 : 4000,
+    width: width ?? (isPortrait ? 3000 : 4000),
+    height: height ?? (isLandscape ? 3000 : 4000),
     orientation: orientation,
+    isScreenshot: isScreenshot,
   );
+}
+
+class _RecordingDraftProvider extends AiAlbumDraftProvider {
+  const _RecordingDraftProvider(this.seenCandidates);
+
+  final List<PhotoCandidate> seenCandidates;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    seenCandidates.addAll(candidates);
+    return AlbumRecommendationDraft(
+      theme: theme,
+      title: '고급 AI 초안',
+      pageCount: 8,
+      templateTone: 'advanced-preview',
+      recommendedPhotos: candidates
+          .map(
+            (candidate) => RecommendedPhoto(
+              candidate: candidate,
+              score: 0.9,
+              reasons: const [
+                AiCurationReason(
+                  type: AiCurationReasonType.themeOrientation,
+                  message: '미리보기 분석 후보예요',
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false),
+      excludedPhotos: const [],
+      storySections: const [],
+      summary: '미리보기 준비 후 서버 초안을 만들어요.',
+    );
+  }
+}
+
+class _FakeAiAlbumDraftProvider extends AiAlbumDraftProvider {
+  AlbumTheme? receivedTheme;
+  AiPhotoRange? receivedRange;
+  List<PhotoCandidate>? receivedCandidates;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    receivedTheme = theme;
+    receivedRange = range;
+    receivedCandidates = candidates;
+    return AlbumRecommendationDraft(
+      theme: theme,
+      title: '서버가 고른 여행 초안',
+      pageCount: 10,
+      templateTone: 'server-ready',
+      recommendedPhotos: candidates
+          .map(
+            (candidate) => RecommendedPhoto(
+              candidate: candidate,
+              score: 0.9,
+              reasons: const [
+                AiCurationReason(
+                  type: AiCurationReasonType.themeOrientation,
+                  message: '서버 provider가 고른 사진이에요',
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false),
+      excludedPhotos: const [],
+      storySections: const [
+        StorySection(
+          title: '서버 추천 흐름',
+          description: '서버 응답도 같은 리뷰 화면으로 보여줘요',
+          photoAssetIds: ['server-1'],
+        ),
+      ],
+      summary: '서버 provider 결과도 사용자 리뷰 뒤에만 포인트 차감해요.',
+    );
+  }
 }

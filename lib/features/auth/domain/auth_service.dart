@@ -120,7 +120,6 @@ class AuthService {
     throw Exception('이메일 인증을 완료한 뒤 다시 로그인해주세요.');
   }
 
-
   Future<void> _upsertSupabaseProfile(UserInfo user) async {
     if (supabase == null) return;
     await supabase!.from('profiles').upsert({

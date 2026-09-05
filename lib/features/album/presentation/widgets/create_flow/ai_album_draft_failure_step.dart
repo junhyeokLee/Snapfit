@@ -6,14 +6,22 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
     super.key,
+    this.title = '초안을 만들지 못했어요',
     required this.message,
+    this.primaryActionLabel = '사진 범위 다시 고르기',
     required this.onRetryRange,
     required this.onManualStart,
+    this.usesServerDraftProvider = false,
+    this.usesAdvancedServerAnalysis = false,
   });
 
+  final String title;
   final String message;
+  final String primaryActionLabel;
   final VoidCallback onRetryRange;
   final VoidCallback onManualStart;
+  final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +57,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     _NoChargeBadge(isDark: isDark),
                     SizedBox(height: 16.h),
                     Text(
-                      '초안을 만들지 못했어요',
+                      title,
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 22.sp,
@@ -69,6 +77,20 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 14.h),
+                    Text(
+                      usesAdvancedServerAnalysis
+                          ? '선택한 미리보기 이미지를 서버에서 확인했을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
+                          : usesServerDraftProvider
+                          ? '선택한 사진 정보가 서버로 전송됐을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
+                          : '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 12.5.sp,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
                     Text(
                       '포인트는 차감되지 않았어요.',
                       style: TextStyle(
@@ -100,7 +122,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '사진 범위 다시 고르기',
+                    primaryActionLabel,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w900,

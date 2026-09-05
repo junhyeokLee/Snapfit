@@ -108,7 +108,7 @@ void main() {
       _wrap(
         AiAlbumRecommendationReviewStep(
           draft: _draft(),
-          onAcceptDraft: () {},
+          onAcceptDraft: (_) {},
           onBack: () {},
         ),
       ),
@@ -131,15 +131,39 @@ AlbumRecommendationDraft _draft() {
       RecommendedPhoto(
         candidate: _candidate('a'),
         score: 0.9,
-        reasons: const ['대표 장면'],
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.highResolution,
+            message: '크게 넣어도 선명한 사진이에요',
+          ),
+          AiCurationReason(
+            type: AiCurationReasonType.timeClusterRepresentative,
+            message: '비슷한 시간대 사진 중 대표로 골랐어요',
+          ),
+        ],
       ),
       RecommendedPhoto(
         candidate: _candidate('b'),
         score: 0.8,
-        reasons: const ['흐름'],
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.themeOrientation,
+            message: '풍경과 장소감이 잘 살아나는 컷이에요',
+          ),
+        ],
       ),
     ],
-    excludedPhotos: [_candidate('screenshot')],
+    excludedPhotos: [
+      ExcludedPhoto(
+        candidate: _candidate('screenshot'),
+        reasons: const [
+          AiCurationReason(
+            type: AiCurationReasonType.screenshotExcluded,
+            message: '스크린샷이라 사진 앨범 초안에서는 잠시 빼뒀어요',
+          ),
+        ],
+      ),
+    ],
     storySections: const [
       StorySection(title: '첫날', description: '바다와 산책 장면', photoAssetIds: ['a']),
       StorySection(
@@ -148,7 +172,7 @@ AlbumRecommendationDraft _draft() {
         photoAssetIds: ['b'],
       ),
     ],
-    summary: '대표 장면 위주로 10쪽 초안을 만들었어요.',
+    summary: '기기 안에서만 사진 정보를 살펴봤어요. 대표 컷 중심으로 10쪽 초안을 만들었어요.',
   );
 }
 

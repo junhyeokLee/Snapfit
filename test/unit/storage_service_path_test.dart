@@ -5,6 +5,44 @@ import 'package:snap_fit/core/utils/storage_url_resolver.dart';
 import 'package:snap_fit/features/album/data/api/storage_service.dart';
 
 void main() {
+  test(
+    'ai album preview bucket migration is private user scoped and expirable',
+    () {
+      final sql = File(
+        'supabase/migrations/20260905170000_ai_album_previews_storage.sql',
+      ).readAsStringSync();
+
+      expect(sql, contains("'ai-album-previews'"));
+      expect(sql, contains('public, file_size_limit, allowed_mime_types'));
+      expect(sql, contains('false'));
+      expect(sql, contains('image/webp'));
+      expect(sql, contains('ai_album_previews_own_insert'));
+      expect(sql, contains('ai_album_previews_own_read'));
+      expect(sql, contains('ai_album_previews_own_delete'));
+      expect(sql, contains('delete_expired_ai_album_previews'));
+      expect(sql, contains("bucket_id = 'ai-album-previews'"));
+      expect(sql, contains('(storage.foldername(name))[1] = auth.uid()::text'));
+    },
+  );
+
+  test('advanced AI preview paths are scoped under user and draft folders', () {
+    expect(
+      StorageService.userScopedAiAlbumPreviewPath(
+        userId: 'user-123',
+        draftId: 'draft abc/../x',
+        assetId: 'photo 1/orig',
+      ),
+      'user-123/draft-abc-x/photo-1-orig.jpg',
+    );
+  });
+
+  test('advanced AI preview uri uses private preview bucket', () {
+    expect(
+      StorageService.aiAlbumPreviewStorageUri('user-123/draft-1/photo-1.jpg'),
+      'supabase://ai-album-previews/user-123/draft-1/photo-1.jpg',
+    );
+  });
+
   test('album asset uploads are scoped under authenticated user folder', () {
     expect(
       StorageService.userScopedAlbumAssetPath(

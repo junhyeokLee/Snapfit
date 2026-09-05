@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_manager/photo_manager.dart';
+import '../../../../config/env.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../billing/data/billing_provider.dart';
+import '../../../billing/data/billing_repository.dart';
+import '../../../profile/presentation/views/billing_management_screen.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
+import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../ai_album/domain/ai_album_draft_template_builder.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
@@ -29,6 +36,8 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final String? initialAlbumTitle;
   final List<String>? initialTemplatePreviewImages;
   final CoverSize? initialCoverSize;
+  final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -37,7 +46,12 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialAlbumTitle,
     this.initialTemplatePreviewImages,
     this.initialCoverSize,
-  });
+    bool? usesServerDraftProvider,
+    bool? usesAdvancedServerAnalysis,
+  }) : usesServerDraftProvider =
+           usesServerDraftProvider ?? Env.useServerAiAlbumDraft,
+       usesAdvancedServerAnalysis =
+           usesAdvancedServerAnalysis ?? Env.useAdvancedServerAiAlbumAnalysis;
 
   @override
   ConsumerState<AlbumCreateFlowScreen> createState() =>
@@ -48,8 +62,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   static const int _maxPageCount = 50;
   int _currentStep = 0;
   String _albumTitle = '';
-  static const int _aiDraftPointCost = 300;
-  static const int _previewPointBalance = 1200;
+  static const int _aiDraftPointCost = Env.aiAlbumDraftPointCost;
   static const AiAlbumDraftTemplateBuilder _aiDraftTemplateBuilder =
       AiAlbumDraftTemplateBuilder();
   bool _hasSelectedCreationMode = false;
@@ -59,7 +72,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   AlbumTheme? _selectedAiTheme;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
+  String? _aiDraftFailureTitle;
   String? _aiDraftFailureMessage;
+  String? _aiDraftPrimaryCtaLabel;
+  AiAlbumDraftRecoveryAction? _aiDraftPrimaryRecoveryAction;
 
   CoverSize? _selectedCover;
   int _selectedPageCount = 10;
@@ -373,7 +389,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             ),
             SizedBox(height: 8.h),
             Text(
-              '추천 결과가 만들어진 뒤에만 포인트 차감 대상으로 처리돼요.',
+              '성공 시만 처리. 실패 시 차감 없음.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.sp,
@@ -397,7 +413,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = true;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
+      _aiDraftFailureTitle = null;
       _aiDraftFailureMessage = null;
+      _aiDraftPrimaryCtaLabel = null;
+      _aiDraftPrimaryRecoveryAction = null;
     });
 
     final result = await ref
@@ -411,7 +430,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         _isGeneratingAiDraft = false;
         _hasConfirmedAiPointCost = true;
         _pendingAiDraft = draft;
+        _aiDraftFailureTitle = null;
         _aiDraftFailureMessage = null;
+        _aiDraftPrimaryCtaLabel = null;
+        _aiDraftPrimaryRecoveryAction = null;
         if (_albumTitle.trim().isEmpty) {
           _albumTitle = draft.title;
         }
@@ -427,15 +449,167 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = false;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
-      _aiDraftFailureMessage = null;
+      _aiDraftFailureTitle = result.failureTitle ?? '초안을 만들지 못했어요';
+      _aiDraftFailureMessage =
+          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.';
+      _aiDraftPrimaryCtaLabel = result.primaryCtaLabel ?? '사진 범위 다시 고르기';
+      _aiDraftPrimaryRecoveryAction =
+          result.primaryRecoveryAction ??
+          AiAlbumDraftRecoveryAction.retryPhotoRange;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
-        ),
-      ),
+  }
+
+  Future<void> _acceptAiDraft(AlbumRecommendationDraft acceptedDraft) async {
+    final editorReadiness = _aiDraftTemplateBuilder.validateEditorReady(
+      acceptedDraft,
     );
+    if (!editorReadiness.isReady) {
+      setState(() => _setAiDraftEditorHandoffFailure(editorReadiness.reason));
+      return;
+    }
+
+    try {
+      await ref
+          .read(billingRepositoryProvider)
+          .recordAiAlbumDraftSuccess(
+            draftId: acceptedDraft.draftId,
+            pointCost: _aiDraftPointCost,
+          )
+          .timeout(const Duration(seconds: 8));
+      ref.invalidate(myPointBalanceProvider);
+    } on AiAlbumDraftPointUsageException catch (error) {
+      if (!mounted) return;
+      setState(() => _setAiDraftPointUsageFailure(error.failure));
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(
+        () => _setAiDraftPointUsageFailure(
+          AiAlbumDraftPointUsageFailure.unavailable,
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
+      _resolvedTemplatePages = aiPages;
+      _baseTemplatePages = aiPages;
+      (_templatePagesByAspect ??=
+              <String, List<List<LayerModel>>>{})[_selectedCover == null
+              ? 'square'
+              : _aspectKeyFromCover(_selectedCover!)] =
+          aiPages;
+      _templateMinPageCount = (aiPages.length - 1).clamp(1, _maxPageCount);
+      _pendingAiDraft = null;
+      _aiDraftFailureTitle = null;
+      _aiDraftFailureMessage = null;
+      _aiDraftPrimaryCtaLabel = null;
+      _aiDraftPrimaryRecoveryAction = null;
+      if (_albumTitle.trim().isEmpty) {
+        _albumTitle = acceptedDraft.title;
+      }
+      _selectedPageCount = acceptedDraft.pageCount.clamp(
+        _templateMinPageCount,
+        _maxPageCount,
+      );
+    });
+  }
+
+  void _setAiDraftPointUsageFailure(AiAlbumDraftPointUsageFailure failure) {
+    final isInsufficient =
+        failure == AiAlbumDraftPointUsageFailure.insufficientPoints;
+    _pendingAiDraft = null;
+    _hasConfirmedAiPointCost = false;
+    _isGeneratingAiDraft = false;
+    _aiDraftFailureTitle = isInsufficient
+        ? '포인트가 조금 부족해요'
+        : '포인트 상태를 확인하지 못했어요';
+    _aiDraftFailureMessage = isInsufficient
+        ? 'AI 초안은 준비됐지만, 이 구성을 열기엔 포인트가 부족해요. 현재 포인트를 다시 확인하거나 직접 구성할 수 있어요. 아직 포인트는 차감되지 않았어요.'
+        : '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
+    _aiDraftPrimaryCtaLabel = isInsufficient ? '포인트 충전하기' : '사진 범위 다시 고르기';
+    _aiDraftPrimaryRecoveryAction = isInsufficient
+        ? AiAlbumDraftRecoveryAction.reviewPointCost
+        : AiAlbumDraftRecoveryAction.retryPhotoRange;
+  }
+
+  void _setAiDraftEditorHandoffFailure(
+    AiAlbumDraftEditorReadinessReason reason,
+  ) {
+    final title = switch (reason) {
+      AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
+        '초안에 넣을 사진이 없어요',
+      AiAlbumDraftEditorReadinessReason.pageCountMismatch => '앨범 쪽수를 다시 맞춰야 해요',
+      AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
+      AiAlbumDraftEditorReadinessReason.ready => '앨범 초안을 안전하게 열지 않았어요',
+    };
+    final message = switch (reason) {
+      AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
+        '선택한 범위에서 앨범에 넣을 사진을 찾지 못했어요. 사진 범위를 다시 고르거나 직접 구성해 주세요. 포인트는 차감되지 않았어요.',
+      AiAlbumDraftEditorReadinessReason.pageCountMismatch =>
+        'AI가 고른 쪽수와 실제 편집 쪽수가 달라 바로 열지 않았어요. 새 초안으로 다시 맞춰볼게요. 포인트는 차감되지 않았어요.',
+      AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
+      AiAlbumDraftEditorReadinessReason.ready =>
+        '구성은 만들었지만 편집기에 넣을 사진 레이어를 확인하지 못했어요. 사진을 다시 골라 새 초안을 만들면 안전해요. 포인트는 차감되지 않았어요.',
+    };
+
+    _pendingAiDraft = null;
+    _hasConfirmedAiPointCost = false;
+    _isGeneratingAiDraft = false;
+    _aiDraftFailureTitle = title;
+    _aiDraftFailureMessage = message;
+    _aiDraftPrimaryCtaLabel = '사진 범위 다시 고르기';
+    _aiDraftPrimaryRecoveryAction = AiAlbumDraftRecoveryAction.retryPhotoRange;
+  }
+
+  Future<void> _handleAiDraftPrimaryRecovery(
+    AiAlbumDraftRecoveryAction? action,
+  ) async {
+    switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
+      case AiAlbumDraftRecoveryAction.openPhotoSettings:
+        openAppSettings();
+      case AiAlbumDraftRecoveryAction.openLimitedPhotoPicker:
+        await PhotoManager.presentLimited(type: RequestType.image);
+        if (!mounted) return;
+        setState(() {
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
+      case AiAlbumDraftRecoveryAction.reviewPointCost:
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const BillingManagementScreen()),
+        );
+        if (!mounted) return;
+        ref.invalidate(myPointBalanceProvider);
+        setState(() {
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
+      case AiAlbumDraftRecoveryAction.retryPhotoRange:
+        setState(() {
+          _selectedAiRange = null;
+          _hasConfirmedAiPointCost = false;
+          _isGeneratingAiDraft = false;
+          _pendingAiDraft = null;
+          _aiDraftFailureTitle = null;
+          _aiDraftFailureMessage = null;
+          _aiDraftPrimaryCtaLabel = null;
+          _aiDraftPrimaryRecoveryAction = null;
+        });
+    }
   }
 
   Widget _buildStepContent() {
@@ -454,7 +628,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -471,7 +648,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _isAiCreationMode = false;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -485,20 +665,28 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             _selectedAiRange == null) {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
+            usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             onRangeSelected: (range) {
               setState(() {
                 _selectedAiRange = range;
                 _hasConfirmedAiPointCost = false;
                 _isGeneratingAiDraft = false;
                 _pendingAiDraft = null;
+                _aiDraftFailureTitle = null;
                 _aiDraftFailureMessage = null;
+                _aiDraftPrimaryCtaLabel = null;
+                _aiDraftPrimaryRecoveryAction = null;
               });
             },
             onBack: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
             }),
@@ -506,20 +694,22 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         }
         final pendingDraft = _pendingAiDraft;
         final selectedAiRange = _selectedAiRange;
+        final aiDraftFailureTitle = _aiDraftFailureTitle;
         final aiDraftFailureMessage = _aiDraftFailureMessage;
+        final aiDraftPrimaryCtaLabel = _aiDraftPrimaryCtaLabel;
+        final aiDraftPrimaryRecoveryAction = _aiDraftPrimaryRecoveryAction;
         if (_isAiCreationMode &&
             selectedAiTheme != null &&
             selectedAiRange != null &&
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
+            usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
+            title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
             message: aiDraftFailureMessage,
-            onRetryRange: () => setState(() {
-              _selectedAiRange = null;
-              _hasConfirmedAiPointCost = false;
-              _isGeneratingAiDraft = false;
-              _pendingAiDraft = null;
-              _aiDraftFailureMessage = null;
-            }),
+            primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
+            onRetryRange: () =>
+                _handleAiDraftPrimaryRecovery(aiDraftPrimaryRecoveryAction),
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
@@ -527,7 +717,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
             }),
           );
         }
@@ -541,19 +734,27 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             selectedAiTheme != null &&
             selectedAiRange != null &&
             !_hasConfirmedAiPointCost) {
+          final pointBalance = ref
+              .watch(myPointBalanceProvider)
+              .maybeWhen(data: (value) => value, orElse: () => 0);
           return AiAlbumPointConfirmationStep(
             theme: selectedAiTheme,
             range: selectedAiRange,
             pointCost: _aiDraftPointCost,
-            balance: _previewPointBalance,
+            balance: pointBalance,
             isFirstAiDraftFree: true,
+            usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             onConfirm: _generateAiDraftFromSelection,
             onBack: () => setState(() {
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
               _pendingAiDraft = null;
+              _aiDraftFailureTitle = null;
               _aiDraftFailureMessage = null;
+              _aiDraftPrimaryCtaLabel = null;
+              _aiDraftPrimaryRecoveryAction = null;
             }),
           );
         }
@@ -563,29 +764,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pendingDraft != null) {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
-            onAcceptDraft: () => setState(() {
-              final aiPages = _aiDraftTemplateBuilder.build(pendingDraft);
-              _resolvedTemplatePages = aiPages;
-              _baseTemplatePages = aiPages;
-              (_templatePagesByAspect ??=
-                      <String, List<List<LayerModel>>>{})[_selectedCover == null
-                      ? 'square'
-                      : _aspectKeyFromCover(_selectedCover!)] =
-                  aiPages;
-              _templateMinPageCount = (aiPages.length - 1).clamp(
-                1,
-                _maxPageCount,
-              );
-              _pendingAiDraft = null;
-              _aiDraftFailureMessage = null;
-              if (_albumTitle.trim().isEmpty) {
-                _albumTitle = pendingDraft.title;
-              }
-              _selectedPageCount = pendingDraft.pageCount.clamp(
-                _templateMinPageCount,
-                _maxPageCount,
-              );
-            }),
+            onAcceptDraft: _acceptAiDraft,
             onBack: () => setState(() {
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;

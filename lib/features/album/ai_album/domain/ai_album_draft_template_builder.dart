@@ -3,8 +3,59 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/layer.dart';
 import 'ai_album_models.dart';
 
+enum AiAlbumDraftEditorReadinessReason {
+  ready,
+  emptyRecommendedPhotos,
+  pageCountMismatch,
+  missingLocalImageAsset,
+}
+
+class AiAlbumDraftEditorReadiness {
+  const AiAlbumDraftEditorReadiness(this.reason);
+
+  final AiAlbumDraftEditorReadinessReason reason;
+
+  bool get isReady => reason == AiAlbumDraftEditorReadinessReason.ready;
+}
+
 class AiAlbumDraftTemplateBuilder {
   const AiAlbumDraftTemplateBuilder();
+
+  bool isEditorReady(AlbumRecommendationDraft draft) {
+    return validateEditorReady(draft).isReady;
+  }
+
+  AiAlbumDraftEditorReadiness validateEditorReady(
+    AlbumRecommendationDraft draft,
+  ) {
+    if (draft.recommendedPhotos.isEmpty) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos,
+      );
+    }
+    if (draft.pageCount < 1) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.pageCountMismatch,
+      );
+    }
+    final pages = build(draft);
+    if (pages.length != draft.pageCount + 1) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.pageCountMismatch,
+      );
+    }
+    final imageLayers = pages.expand(
+      (page) => page.where((layer) => layer.type == LayerType.image),
+    );
+    if (!imageLayers.any((layer) => layer.asset != null)) {
+      return const AiAlbumDraftEditorReadiness(
+        AiAlbumDraftEditorReadinessReason.missingLocalImageAsset,
+      );
+    }
+    return const AiAlbumDraftEditorReadiness(
+      AiAlbumDraftEditorReadinessReason.ready,
+    );
+  }
 
   List<List<LayerModel>> build(AlbumRecommendationDraft draft) {
     final pages = <List<LayerModel>>[_coverLayers(draft)];
@@ -13,21 +64,28 @@ class AiAlbumDraftTemplateBuilder {
       for (final photo in draft.recommendedPhotos) photo.assetId: photo,
     };
 
+    final storyPhotoIds = <String>{};
     for (final section in draft.storySections) {
       final photos = section.photoAssetIds
           .where(photoById.containsKey)
           .map((id) => photoById[id]!)
           .take(4)
           .toList(growable: false);
+      storyPhotoIds.addAll(photos.map((photo) => photo.assetId));
       pages.add(_storyPageLayers(section, photos));
     }
 
+    final extraPhotos = draft.recommendedPhotos
+        .where((photo) => !storyPhotoIds.contains(photo.assetId))
+        .toList(growable: false);
+    var extraPhotoCursor = 0;
     while (pages.length <= draft.pageCount) {
       final index = pages.length;
-      final remaining = draft.recommendedPhotos
-          .skip((index - 1) * 2)
+      final remaining = extraPhotos
+          .skip(extraPhotoCursor)
           .take(2)
           .toList(growable: false);
+      extraPhotoCursor += remaining.length;
       pages.add(_photoPageLayers(index, remaining));
     }
 

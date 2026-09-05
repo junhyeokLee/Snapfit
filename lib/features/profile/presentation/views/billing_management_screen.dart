@@ -11,6 +11,11 @@ import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
 
+int _pointAmountFromProductId(String productId) {
+  final match = RegExp(r'points_(\d+)').firstMatch(productId);
+  return int.tryParse(match?.group(1) ?? '') ?? 0;
+}
+
 class BillingManagementScreen extends ConsumerStatefulWidget {
   const BillingManagementScreen({super.key});
 
@@ -24,6 +29,7 @@ class _BillingManagementScreenState
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
   ProductDetails? _monthlyProduct;
+  List<ProductDetails> _pointProducts = const [];
   bool _storeAvailable = false;
   bool _loadingProducts = true;
   bool _purchaseInProgress = false;
@@ -66,13 +72,18 @@ class _BillingManagementScreenState
       }
       final response = await _iap.queryProductDetails({
         Env.iapProMonthlyProductId,
+        ...Env.iapPointProductIds,
       });
       if (!mounted) return;
       setState(() {
         _storeAvailable = true;
-        _monthlyProduct = response.productDetails.isEmpty
-            ? null
-            : response.productDetails.first;
+        _monthlyProduct = response.productDetails
+            .where((product) => product.id == Env.iapProMonthlyProductId)
+            .cast<ProductDetails?>()
+            .firstOrNull;
+        _pointProducts = response.productDetails
+            .where((product) => Env.iapPointProductIds.contains(product.id))
+            .toList(growable: false);
         _loadingProducts = false;
         _statusMessage = response.productDetails.isEmpty
             ? '스토어에 등록된 상품을 찾을 수 없습니다. 상품 ID를 확인해 주세요: ${Env.iapProMonthlyProductId}'
@@ -110,6 +121,32 @@ class _BillingManagementScreenState
       setState(() {
         _purchaseInProgress = false;
         _statusMessage = '결제 시작 실패: $e';
+      });
+    }
+  }
+
+  Future<void> _buyPoints(ProductDetails product) async {
+    if (!_storeAvailable || _purchaseInProgress) return;
+    setState(() {
+      _purchaseInProgress = true;
+      _statusMessage = '포인트 결제를 시작합니다.';
+    });
+    try {
+      final sent = await _iap.buyConsumable(
+        purchaseParam: PurchaseParam(productDetails: product),
+      );
+      if (!mounted) return;
+      if (!sent) {
+        setState(() {
+          _purchaseInProgress = false;
+          _statusMessage = '포인트 결제 요청을 시작하지 못했습니다.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _purchaseInProgress = false;
+        _statusMessage = '포인트 결제 시작 실패: $e';
       });
     }
   }
@@ -162,19 +199,36 @@ class _BillingManagementScreenState
       if (purchase.status == PurchaseStatus.purchased ||
           purchase.status == PurchaseStatus.restored) {
         try {
-          await ref
-              .read(billingRepositoryProvider)
-              .verifyStorePurchase(purchase);
-          if (purchase.pendingCompletePurchase) {
-            await _iap.completePurchase(purchase);
-          }
-          ref.invalidate(mySubscriptionProvider);
-          ref.invalidate(myStorageQuotaProvider);
-          if (mounted) {
-            setState(() {
-              _purchaseInProgress = false;
-              _statusMessage = '구독 권한이 반영되었습니다.';
-            });
+          if (Env.iapPointProductIds.contains(purchase.productID)) {
+            final result = await ref
+                .read(billingRepositoryProvider)
+                .verifyStorePointPurchase(purchase);
+            if (purchase.pendingCompletePurchase) {
+              await _iap.completePurchase(purchase);
+            }
+            ref.invalidate(myPointBalanceProvider);
+            if (mounted) {
+              setState(() {
+                _purchaseInProgress = false;
+                _statusMessage =
+                    '${result.grantedPoints}포인트가 충전되었습니다. 현재 잔액 ${result.remainingBalance}P';
+              });
+            }
+          } else {
+            await ref
+                .read(billingRepositoryProvider)
+                .verifyStorePurchase(purchase);
+            if (purchase.pendingCompletePurchase) {
+              await _iap.completePurchase(purchase);
+            }
+            ref.invalidate(mySubscriptionProvider);
+            ref.invalidate(myStorageQuotaProvider);
+            if (mounted) {
+              setState(() {
+                _purchaseInProgress = false;
+                _statusMessage = '구독 권한이 반영되었습니다.';
+              });
+            }
           }
         } catch (e) {
           if (mounted) {
@@ -192,6 +246,7 @@ class _BillingManagementScreenState
   Widget build(BuildContext context) {
     final subscription = ref.watch(mySubscriptionProvider);
     final quota = ref.watch(myStorageQuotaProvider);
+    final pointBalance = ref.watch(myPointBalanceProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
 
@@ -216,6 +271,14 @@ class _BillingManagementScreenState
             _SubscriptionCard(subscription: subscription),
             SizedBox(height: 12.h),
             _QuotaCard(quota: quota),
+            SizedBox(height: 12.h),
+            _PointPackageCard(
+              products: _pointProducts,
+              pointBalance: pointBalance,
+              loadingProducts: _loadingProducts,
+              purchaseInProgress: _purchaseInProgress,
+              onBuy: _buyPoints,
+            ),
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(18.w),
@@ -294,6 +357,128 @@ class _BillingManagementScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PointPackageCard extends StatelessWidget {
+  const _PointPackageCard({
+    required this.products,
+    required this.pointBalance,
+    required this.loadingProducts,
+    required this.purchaseInProgress,
+    required this.onBuy,
+  });
+
+  final List<ProductDetails> products;
+  final AsyncValue<int> pointBalance;
+  final bool loadingProducts;
+  final bool purchaseInProgress;
+  final ValueChanged<ProductDetails> onBuy;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'AI 앨범 포인트',
+            style: TextStyle(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '현재 포인트',
+            style: TextStyle(fontSize: 12.sp, color: subColor),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            pointBalance.maybeWhen(
+              data: (value) => '${value}P',
+              orElse: () => '확인 중',
+            ),
+            style: TextStyle(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w900,
+              color: SnapFitColors.accent,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '고급 AI 초안 1회는 ${Env.aiAlbumDraftPointCost}P예요. 초안이 만들어지고 리뷰할 수 있을 때만 차감됩니다.',
+            style: TextStyle(fontSize: 12.sp, color: subColor, height: 1.45),
+          ),
+          SizedBox(height: 12.h),
+          if (loadingProducts)
+            Text('포인트 상품을 불러오는 중', style: TextStyle(color: subColor))
+          else if (products.isEmpty)
+            Text('스토어 포인트 상품 준비 중입니다.', style: TextStyle(color: subColor))
+          else
+            ...products.map(
+              (product) => Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: OutlinedButton(
+                  onPressed: purchaseInProgress ? null : () => onBuy(product),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 12.h,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.title,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 3.h),
+                            Text(
+                              '고급 AI 약 ${_pointAmountFromProductId(product.id) ~/ Env.aiAlbumDraftPointCost}회',
+                              style: TextStyle(
+                                color: subColor,
+                                fontSize: 11.5.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        product.price,
+                        style: TextStyle(
+                          color: SnapFitColors.accent,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

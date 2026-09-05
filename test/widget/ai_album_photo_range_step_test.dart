@@ -33,7 +33,7 @@ void main() {
 
     expect(find.text('사진 범위'), findsOneWidget);
     expect(find.text('어디까지 살펴볼까요?'), findsNothing);
-    expect(find.text('허용한 사진 안에서만 초안을 준비해요.'), findsNothing);
+    expect(find.text('원본 사진은 서버로 보내지 않고, 기기 안에서만 살펴봐요.'), findsOneWidget);
     expect(find.text('최근 30일'), findsOneWidget);
     expect(find.text('날짜 선택'), findsOneWidget);
     expect(find.text('앨범 선택'), findsOneWidget);
@@ -45,5 +45,51 @@ void main() {
     await tester.pump();
 
     expect(selectedRange, AiPhotoRange.recent30Days);
+  });
+
+  testWidgets('shows server privacy copy when server draft mode is enabled', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumPhotoRangeStep(
+          theme: AlbumTheme.travel,
+          usesServerDraftProvider: true,
+          onRangeSelected: (_) {},
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(
+      find.textContaining('선택한 사진의 날짜·크기 같은 정보가 서버로 전송돼요'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('원본 사진은 서버로 보내지 않고'), findsNothing);
+  });
+
+  testWidgets('shows advanced server preview copy when enabled', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumPhotoRangeStep(
+          theme: AlbumTheme.travel,
+          usesServerDraftProvider: true,
+          usesAdvancedServerAnalysis: true,
+          onRangeSelected: (_) {},
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴봐요'), findsOneWidget);
+    expect(find.textContaining('날짜·크기 같은 정보'), findsNothing);
   });
 }

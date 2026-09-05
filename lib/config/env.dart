@@ -68,4 +68,45 @@ class Env {
     'IAP_PRO_MONTHLY_PRODUCT_ID',
     defaultValue: 'snapfit_pro_monthly',
   );
+
+  /// Enables server-backed AI album draft generation through Supabase Edge
+  /// Function. Keep false until server prompts/model quality and privacy copy
+  /// are production-ready.
+  /// - --dart-define=USE_SERVER_AI_ALBUM_DRAFT=true
+  static const bool useServerAiAlbumDraft = bool.fromEnvironment(
+    'USE_SERVER_AI_ALBUM_DRAFT',
+    defaultValue: false,
+  );
+
+  /// Premium AI album draft point cost. Tuned for high-quality hybrid
+  /// OpenAI Vision + Claude curation mode.
+  /// - --dart-define=AI_ALBUM_DRAFT_POINT_COST=700
+  static const int aiAlbumDraftPointCost = int.fromEnvironment(
+    'AI_ALBUM_DRAFT_POINT_COST',
+    defaultValue: 700,
+  );
+
+  /// Native store consumable point product ids. Configure matching ids in
+  /// Google Play Console / App Store Connect.
+  /// - --dart-define=IAP_POINT_PRODUCT_IDS=snapfit_points_2500,snapfit_points_8000,snapfit_points_18000
+  static const String iapPointProductIdsCsv = String.fromEnvironment(
+    'IAP_POINT_PRODUCT_IDS',
+    defaultValue:
+        'snapfit_points_1500,snapfit_points_4500,snapfit_points_10000',
+  );
+
+  static List<String> get iapPointProductIds => iapPointProductIdsCsv
+      .split(',')
+      .map((id) => id.trim())
+      .where((id) => id.isNotEmpty)
+      .toList(growable: false);
+
+  /// Enables advanced server photo understanding for AI album drafts. This may
+  /// send small preview thumbnails to the server, so keep disabled until the
+  /// explicit consent copy, retention policy, and server pipeline are ready.
+  /// - --dart-define=USE_ADVANCED_SERVER_AI_ALBUM_ANALYSIS=true
+  static const bool useAdvancedServerAiAlbumAnalysis = bool.fromEnvironment(
+    'USE_ADVANCED_SERVER_AI_ALBUM_ANALYSIS',
+    defaultValue: false,
+  );
 }

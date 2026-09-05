@@ -2,10 +2,17 @@ import 'package:photo_manager/photo_manager.dart';
 import '../../domain/repositories/gallery_repository.dart';
 
 class GalleryRepositoryImpl implements GalleryRepository {
+  GalleryRepositoryImpl({
+    Future<PermissionState> Function()? requestPermissionExtend,
+  }) : _requestPermissionExtend =
+           requestPermissionExtend ?? PhotoManager.requestPermissionExtend;
+
+  final Future<PermissionState> Function() _requestPermissionExtend;
+
   @override
   Future<bool> requestPermission() async {
-    final perm = await PhotoManager.requestPermissionExtend();
-    return perm.isAuth;
+    final perm = await _requestPermissionExtend();
+    return perm.hasAccess;
   }
 
   @override

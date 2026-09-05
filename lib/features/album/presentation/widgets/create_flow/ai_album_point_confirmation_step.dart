@@ -13,6 +13,8 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
     required this.balance,
     required this.onConfirm,
     this.isFirstAiDraftFree = true,
+    this.usesServerDraftProvider = false,
+    this.usesAdvancedServerAnalysis = false,
     required this.onBack,
   });
 
@@ -21,6 +23,8 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
   final int pointCost;
   final int balance;
   final bool isFirstAiDraftFree;
+  final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
   final VoidCallback onConfirm;
   final VoidCallback onBack;
 
@@ -90,8 +94,16 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                           label: '보유 포인트',
                           value: '${_format(balance)}P',
                         ),
+                        const _InfoRow(label: '사용 기준', value: '성공 시만 처리'),
+                        const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
                       ],
                     ),
+                    if (usesServerDraftProvider) ...[
+                      SizedBox(height: 12.h),
+                      _ServerAnalysisConsentCard(
+                        usesAdvancedServerAnalysis: usesAdvancedServerAnalysis,
+                      ),
+                    ],
                     SizedBox(height: 22.h),
                     SizedBox(
                       width: double.infinity,
@@ -159,6 +171,67 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
     AiPhotoRange.manualSelection => '직접 고르기',
     AiPhotoRange.limitedLibrary => '선택한 사진',
   };
+}
+
+class _ServerAnalysisConsentCard extends StatelessWidget {
+  const _ServerAnalysisConsentCard({required this.usesAdvancedServerAnalysis});
+
+  final bool usesAdvancedServerAnalysis;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(15.w, 14.h, 15.w, 14.h),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1B20) : Colors.white,
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.10)
+              : const Color(0xFFE7E1D8),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            usesAdvancedServerAnalysis ? '고급 AI 확인' : '서버 초안 확인',
+            style: TextStyle(
+              color: SnapFitColors.textPrimaryOf(context),
+              fontSize: 14.sp,
+              height: 1.2,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.2,
+            ),
+          ),
+          SizedBox(height: 7.h),
+          Text(
+            usesAdvancedServerAnalysis
+                ? '선택한 사진의 작은 미리보기 이미지를 서버에서 살펴보고 앨범 흐름에 맞는 초안을 만들어요.'
+                : '선택한 사진의 날짜·크기 같은 정보로 서버에서 초안을 만들어요.',
+            style: TextStyle(
+              color: SnapFitColors.textSecondaryOf(context),
+              fontSize: 12.5.sp,
+              height: 1.38,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '초안은 바로 확정되지 않아요. 편집 전에 직접 확인해요.',
+            style: TextStyle(
+              color: const Color(0xFF4C6A55),
+              fontSize: 12.5.sp,
+              height: 1.34,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DraftTicket extends StatelessWidget {

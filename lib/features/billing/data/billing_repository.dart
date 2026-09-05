@@ -7,11 +7,87 @@ import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
 import '../domain/entities/subscription_status.dart';
 
+typedef RecordAiAlbumDraftSuccessRpc =
+    Future<Map<String, dynamic>> Function({
+      required String draftId,
+      required int pointCost,
+    });
+
+typedef PointBalanceQuery = Future<Map<String, dynamic>?> Function();
+
+enum AiAlbumDraftPointUsageFailure { insufficientPoints, unavailable }
+
+class AiAlbumDraftPointUsageException implements Exception {
+  const AiAlbumDraftPointUsageException(this.failure, [this.message]);
+
+  final AiAlbumDraftPointUsageFailure failure;
+  final String? message;
+
+  @override
+  String toString() => message == null
+      ? 'AiAlbumDraftPointUsageException($failure)'
+      : 'AiAlbumDraftPointUsageException($failure, $message)';
+}
+
+class AiAlbumDraftPointUsageResult {
+  const AiAlbumDraftPointUsageResult({
+    required this.usedFreeCredit,
+    required this.chargedPoints,
+    required this.remainingBalance,
+  });
+
+  factory AiAlbumDraftPointUsageResult.fromJson(Map<String, dynamic> json) {
+    return AiAlbumDraftPointUsageResult(
+      usedFreeCredit: json['used_free_credit'] == true,
+      chargedPoints: (json['charged_points'] as num?)?.toInt() ?? 0,
+      remainingBalance: (json['remaining_balance'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  final bool usedFreeCredit;
+  final int chargedPoints;
+  final int remainingBalance;
+}
+
+class StorePointPurchaseResult {
+  const StorePointPurchaseResult({
+    required this.productId,
+    required this.grantedPoints,
+    required this.remainingBalance,
+  });
+
+  factory StorePointPurchaseResult.fromJson(Map<String, dynamic> json) {
+    return StorePointPurchaseResult(
+      productId:
+          json['productId']?.toString() ?? json['product_id']?.toString() ?? '',
+      grantedPoints:
+          (json['grantedPoints'] as num?)?.toInt() ??
+          (json['granted_points'] as num?)?.toInt() ??
+          0,
+      remainingBalance:
+          (json['remainingBalance'] as num?)?.toInt() ??
+          (json['remaining_balance'] as num?)?.toInt() ??
+          0,
+    );
+  }
+
+  final String productId;
+  final int grantedPoints;
+  final int remainingBalance;
+}
+
 class BillingRepository {
-  BillingRepository({required this.tokenStorage, this.supabase});
+  BillingRepository({
+    required this.tokenStorage,
+    this.supabase,
+    this.recordAiAlbumDraftSuccessRpc,
+    this.pointBalanceQuery,
+  });
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
+  final RecordAiAlbumDraftSuccessRpc? recordAiAlbumDraftSuccessRpc;
+  final PointBalanceQuery? pointBalanceQuery;
 
   Future<String> _requireUserId() async {
     final userId = await tokenStorage.getUserId();
@@ -104,6 +180,39 @@ class BillingRepository {
     throw Exception('지원하지 않는 인앱결제 플랫폼입니다: ${purchase.verificationData.source}');
   }
 
+  Future<StorePointPurchaseResult> verifyStorePointPurchase(
+    PurchaseDetails purchase,
+  ) async {
+    if (supabase == null) {
+      throw Exception('Supabase 포인트 구매 검증 환경이 준비되지 않았습니다.');
+    }
+    final transactionId =
+        purchase.purchaseID ??
+        '${purchase.productID}-${purchase.transactionDate ?? DateTime.now().millisecondsSinceEpoch}';
+    final response = await supabase!.functions.invoke(
+      'iap-verify',
+      body: {
+        'platform': _storePlatformFromPurchase(purchase),
+        'productId': purchase.productID,
+        'transactionId': transactionId,
+        'originalTransactionId': transactionId,
+        'purchaseToken': purchase.verificationData.serverVerificationData,
+        'receiptData': purchase.verificationData.localVerificationData,
+        'verificationSource': purchase.verificationData.source,
+        'purchaseType': 'POINTS',
+        'planCode': 'FREE',
+      },
+    );
+    final data =
+        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    if (data['error'] != null) {
+      throw Exception(data['error']);
+    }
+    final pointPurchase =
+        (data['pointPurchase'] as Map?)?.cast<String, dynamic>() ?? data;
+    return StorePointPurchaseResult.fromJson(pointPurchase);
+  }
+
   Future<SubscriptionStatusModel> verifyStorePurchase(
     PurchaseDetails purchase, {
     String planCode = 'SNAPFIT_PRO_MONTHLY',
@@ -133,6 +242,88 @@ class BillingRepository {
       throw Exception(data['error']);
     }
     return SubscriptionStatusModel.fromJson(data);
+  }
+
+  Future<AiAlbumDraftPointUsageResult> recordAiAlbumDraftSuccess({
+    required String draftId,
+    int pointCost = 300,
+  }) async {
+    final normalizedDraftId = draftId.trim();
+    if (normalizedDraftId.isEmpty) {
+      throw ArgumentError.value(draftId, 'draftId', 'draft id is required');
+    }
+    if (pointCost < 0) {
+      throw ArgumentError.value(
+        pointCost,
+        'pointCost',
+        'point cost must be zero or positive',
+      );
+    }
+
+    try {
+      final injectedRpc = recordAiAlbumDraftSuccessRpc;
+      if (injectedRpc != null) {
+        final row = await injectedRpc(
+          draftId: normalizedDraftId,
+          pointCost: pointCost,
+        );
+        return AiAlbumDraftPointUsageResult.fromJson(row);
+      }
+
+      if (supabase == null) {
+        throw const AiAlbumDraftPointUsageException(
+          AiAlbumDraftPointUsageFailure.unavailable,
+          'Supabase 포인트 사용 환경이 준비되지 않았습니다.',
+        );
+      }
+
+      final response = await supabase!.rpc(
+        'record_ai_album_draft_success',
+        params: {'p_draft_id': normalizedDraftId, 'p_point_cost': pointCost},
+      );
+      final row = response is List && response.isNotEmpty
+          ? Map<String, dynamic>.from(response.first as Map)
+          : Map<String, dynamic>.from(response as Map);
+      return AiAlbumDraftPointUsageResult.fromJson(row);
+    } on AiAlbumDraftPointUsageException {
+      rethrow;
+    } on PostgrestException catch (error) {
+      final message = error.message.toLowerCase();
+      if (error.code == 'P0001' || message.contains('insufficient points')) {
+        throw AiAlbumDraftPointUsageException(
+          AiAlbumDraftPointUsageFailure.insufficientPoints,
+          error.message,
+        );
+      }
+      throw AiAlbumDraftPointUsageException(
+        AiAlbumDraftPointUsageFailure.unavailable,
+        error.message,
+      );
+    } catch (error) {
+      throw AiAlbumDraftPointUsageException(
+        AiAlbumDraftPointUsageFailure.unavailable,
+        error.toString(),
+      );
+    }
+  }
+
+  Future<int> getMyPointBalance() async {
+    await _requireUserId();
+    final injectedQuery = pointBalanceQuery;
+    if (injectedQuery != null) {
+      final row = await injectedQuery();
+      return (row?['balance'] as num?)?.toInt() ?? 0;
+    }
+    if (supabase != null) {
+      final userId = await _requireUserId();
+      final row = await supabase!
+          .from('point_wallets')
+          .select('balance')
+          .eq('user_id', userId)
+          .maybeSingle();
+      return (row?['balance'] as num?)?.toInt() ?? 0;
+    }
+    throw Exception('Supabase 포인트 조회 환경이 준비되지 않았습니다.');
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {
