@@ -90,6 +90,8 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                           label: '보유 포인트',
                           value: '${_format(balance)}P',
                         ),
+                        const _InfoRow(label: '사용 기준', value: '성공 시만 처리'),
+                        const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
                       ],
                     ),
                     SizedBox(height: 22.h),

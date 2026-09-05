@@ -378,7 +378,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             ),
             SizedBox(height: 8.h),
             Text(
-              '추천 결과가 만들어진 뒤에만 포인트 차감 대상으로 처리돼요.',
+              '성공 시만 처리. 실패 시 차감 없음.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.sp,
