@@ -7,6 +7,7 @@ typedef AiPhotoCandidateLoader =
 enum AiAlbumDraftGenerationStatus {
   success,
   insufficientPhotos,
+  lowQualityPhotos,
   permissionDenied,
   failed,
 }
@@ -59,6 +60,18 @@ class AiAlbumDraftGenerationResult {
       failureMessage:
           '$lead $rangeHint 현재 후보는 $actualPhotoCount장이에요. 기기 안에서만 확인하고 포인트는 차감되지 않았어요.',
       primaryCtaLabel: selectedOnly ? '사진 더 선택하기' : '사진 범위 다시 고르기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
+    );
+  }
+
+  factory AiAlbumDraftGenerationResult.lowQualityPhotos() {
+    return const AiAlbumDraftGenerationResult._(
+      status: AiAlbumDraftGenerationStatus.lowQualityPhotos,
+      shouldChargePoints: false,
+      failureTitle: '앨범에 어울리는 사진이 조금 부족해요',
+      failureMessage:
+          '스크린샷이나 작은 이미지는 초안에서 잠시 제외했어요. 여행·일상 사진이 더 보이는 범위로 다시 골라 주세요. 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: '사진 범위 다시 고르기',
       primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
   }
@@ -124,6 +137,16 @@ class AiAlbumDraftGenerationService {
 
       final draft = _engine.curate(theme: theme, candidates: candidates);
       if (draft.recommendedPhotos.isEmpty) {
+        final excludedForQuality = draft.excludedPhotos.where((photo) {
+          return photo.reasons.any(
+            (reason) =>
+                reason.type == AiCurationReasonType.screenshotExcluded ||
+                reason.type == AiCurationReasonType.lowResolutionExcluded,
+          );
+        }).length;
+        if (excludedForQuality >= _minimumPhotoCount) {
+          return AiAlbumDraftGenerationResult.lowQualityPhotos();
+        }
         return AiAlbumDraftGenerationResult.insufficientPhotos(
           minimumPhotoCount: _minimumPhotoCount,
           actualPhotoCount: candidates.length,

@@ -161,20 +161,72 @@ void main() {
       );
     },
   );
+
+  test(
+    'explains when enough photos are mostly screenshots or too small',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate(
+            'screenshot-1',
+            DateTime(2026, 8, 20, 9),
+            PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+          _candidate(
+            'tiny-1',
+            DateTime(2026, 8, 20, 10),
+            PhotoOrientation.square,
+            width: 640,
+            height: 640,
+          ),
+          _candidate(
+            'screenshot-2',
+            DateTime(2026, 8, 20, 11),
+            PhotoOrientation.portrait,
+            isScreenshot: true,
+          ),
+        ],
+        engine: const AiAlbumCurationEngine(),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.daily,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.lowQualityPhotos);
+      expect(result.shouldChargePoints, isFalse);
+      expect(result.draft, isNull);
+      expect(result.failureTitle, '앨범에 어울리는 사진이 조금 부족해요');
+      expect(result.primaryCtaLabel, '사진 범위 다시 고르기');
+      expect(
+        result.primaryRecoveryAction,
+        AiAlbumDraftRecoveryAction.retryPhotoRange,
+      );
+      expect(result.failureMessage, contains('스크린샷이나 작은 이미지는'));
+      expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+    },
+  );
 }
 
 PhotoCandidate _candidate(
   String id,
   DateTime createdAt,
-  PhotoOrientation orientation,
-) {
+  PhotoOrientation orientation, {
+  bool isScreenshot = false,
+  int? width,
+  int? height,
+}) {
   final isLandscape = orientation == PhotoOrientation.landscape;
   final isPortrait = orientation == PhotoOrientation.portrait;
   return PhotoCandidate(
     assetId: id,
     createdAt: createdAt,
-    width: isPortrait ? 3000 : 4000,
-    height: isLandscape ? 3000 : 4000,
+    width: width ?? (isPortrait ? 3000 : 4000),
+    height: height ?? (isLandscape ? 3000 : 4000),
     orientation: orientation,
+    isScreenshot: isScreenshot,
   );
 }

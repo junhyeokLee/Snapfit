@@ -85,6 +85,16 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                       onTap: () =>
                           onRangeSelected(AiPhotoRange.manualSelection),
                     ),
+                    SizedBox(height: 14.h),
+                    Text(
+                      '원본 사진은 서버로 보내지 않고, 기기 안에서만 살펴봐요.',
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 12.5.sp,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
               ),
