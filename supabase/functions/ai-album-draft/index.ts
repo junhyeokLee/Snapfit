@@ -16,6 +16,7 @@ type AlbumTheme =
   | "daily"
   | "custom";
 type PhotoOrientation = "portrait" | "landscape" | "square";
+type AiAlbumDraftProviderName = "metadata" | "advanced";
 
 export type PhotoCandidatePayload = {
   assetId: string;
@@ -68,10 +69,27 @@ export type AiAlbumDraftResponsePayload = {
   requiresUserReview: true;
   alreadyCreatedAlbum: false;
   reviewCtaLabel: string;
+  provider?: AiAlbumDraftProviderName;
+  fallbackUsed?: boolean;
+  fallbackReason?: string;
+};
+
+export type AiAlbumDraftProvider = (
+  request: AiAlbumDraftRequestPayload,
+) => Promise<AiAlbumDraftResponsePayload> | AiAlbumDraftResponsePayload;
+
+type AiAlbumDraftProviders = Partial<
+  Record<AiAlbumDraftProviderName, AiAlbumDraftProvider>
+>;
+
+export type AiAlbumDraftHandlerOptions = {
+  env?: (key: string) => string | undefined;
+  providers?: AiAlbumDraftProviders;
 };
 
 const minCandidateCount = 3;
 const maxRecommendedPhotos = 12;
+const defaultProviderTimeoutMs = 8000;
 
 function text(value: unknown) {
   return String(value ?? "").trim();
@@ -79,6 +97,11 @@ function text(value: unknown) {
 
 function numberValue(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function intValue(value: unknown, fallback: number) {
+  const parsed = Number.parseInt(text(value), 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function parseBody(value: unknown): AiAlbumDraftRequestPayload {
@@ -142,6 +165,10 @@ function normalizeOrientation(value: unknown): PhotoOrientation {
   return ["portrait", "landscape", "square"].includes(orientation)
     ? orientation
     : "square";
+}
+
+function normalizeProvider(value: unknown): AiAlbumDraftProviderName {
+  return text(value).toLowerCase() === "advanced" ? "advanced" : "metadata";
 }
 
 function isLowResolution(candidate: PhotoCandidatePayload) {
@@ -269,8 +296,95 @@ export function buildDraftResponse(
   };
 }
 
+function metadataProvider(request: AiAlbumDraftRequestPayload) {
+  return buildDraftResponse(request);
+}
+
+function advancedProviderNotConfigured(): never {
+  throw new Error("advanced_provider_not_configured");
+}
+
+function providerTimeout<T>(timeoutMs: number): Promise<T> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("advanced_provider_timeout")), timeoutMs);
+  });
+}
+
+function markProvider(
+  draft: AiAlbumDraftResponsePayload,
+  provider: AiAlbumDraftProviderName,
+  fallbackUsed = false,
+  fallbackReason?: string,
+): AiAlbumDraftResponsePayload {
+  return {
+    ...draft,
+    provider,
+    fallbackUsed,
+    ...(fallbackReason ? { fallbackReason } : {}),
+    requiresUserReview: true,
+    alreadyCreatedAlbum: false,
+  };
+}
+
+function assertAlbumFirstContract(draft: AiAlbumDraftResponsePayload) {
+  if (draft.requiresUserReview !== true) {
+    throw new Error("provider_contract_requires_user_review");
+  }
+  if (draft.alreadyCreatedAlbum !== false) {
+    throw new Error("provider_contract_already_created_album");
+  }
+  if (
+    !Array.isArray(draft.recommendedPhotos) ||
+    draft.recommendedPhotos.length === 0
+  ) {
+    throw new Error("provider_contract_empty_recommended_photos");
+  }
+}
+
+async function createDraftWithProvider(
+  request: AiAlbumDraftRequestPayload,
+  options: AiAlbumDraftHandlerOptions = {},
+): Promise<AiAlbumDraftResponsePayload> {
+  const env = options.env ?? ((key: string) => Deno.env.get(key) ?? undefined);
+  const selectedProvider = normalizeProvider(env("AI_ALBUM_DRAFT_PROVIDER"));
+  const providers: Required<AiAlbumDraftProviders> = {
+    metadata: options.providers?.metadata ?? metadataProvider,
+    advanced: options.providers?.advanced ?? advancedProviderNotConfigured,
+  };
+
+  if (selectedProvider === "metadata") {
+    return markProvider(await providers.metadata(request), "metadata");
+  }
+
+  const timeoutMs = Math.max(
+    1,
+    intValue(env("AI_ALBUM_DRAFT_TIMEOUT_MS"), defaultProviderTimeoutMs),
+  );
+  try {
+    const draft = await Promise.race([
+      Promise.resolve(providers.advanced(request)),
+      providerTimeout<AiAlbumDraftResponsePayload>(timeoutMs),
+    ]);
+    assertAlbumFirstContract(draft);
+    return markProvider(draft, "advanced");
+  } catch (error) {
+    const reason = error instanceof Error && error.message
+      ? error.message
+      : "advanced_provider_failed";
+    return markProvider(
+      await providers.metadata(request),
+      "metadata",
+      true,
+      reason === "advanced_provider_timeout"
+        ? reason
+        : "advanced_provider_failed",
+    );
+  }
+}
+
 export async function handleAiAlbumDraftRequest(
   req: Request,
+  options: AiAlbumDraftHandlerOptions = {},
 ): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -284,7 +398,7 @@ export async function handleAiAlbumDraftRequest(
 
   try {
     const request = parseBody(await req.json());
-    const draft = buildDraftResponse(request);
+    const draft = await createDraftWithProvider(request, options);
     return jsonResponse(draft);
   } catch (error) {
     const code = error instanceof Error ? error.message : "server_error";
@@ -306,5 +420,5 @@ export async function handleAiAlbumDraftRequest(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleAiAlbumDraftRequest);
+  Deno.serve((req) => handleAiAlbumDraftRequest(req));
 }

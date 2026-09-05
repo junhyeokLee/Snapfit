@@ -81,3 +81,99 @@ Deno.test("handleAiAlbumDraftRequest handles CORS preflight", async () => {
   assertEquals(response.status, 200);
   assertEquals(response.headers.get("Access-Control-Allow-Origin"), "*");
 });
+
+Deno.test("handleAiAlbumDraftRequest uses metadata provider by default", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "travel",
+        range: "limitedLibrary",
+        candidates,
+      }),
+    }),
+    {
+      env: () => undefined,
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.fallbackUsed, false);
+  assertEquals(body.requiresUserReview, true);
+  assertEquals(body.alreadyCreatedAlbum, false);
+});
+
+Deno.test("handleAiAlbumDraftRequest falls back to metadata provider when advanced provider times out", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "travel",
+        range: "limitedLibrary",
+        candidates,
+      }),
+    }),
+    {
+      env: (key) => {
+        if (key === "AI_ALBUM_DRAFT_PROVIDER") return "advanced";
+        if (key === "AI_ALBUM_DRAFT_TIMEOUT_MS") return "1";
+        return undefined;
+      },
+      providers: {
+        advanced: () =>
+          new Promise((resolve) => {
+            setTimeout(() =>
+              resolve(buildDraftResponse({
+                theme: "travel",
+                range: "limitedLibrary",
+                candidates,
+              })), 20);
+          }),
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.fallbackUsed, true);
+  assertEquals(body.fallbackReason, "advanced_provider_timeout");
+  assertEquals(body.requiresUserReview, true);
+  assertEquals(body.alreadyCreatedAlbum, false);
+});
+
+Deno.test("handleAiAlbumDraftRequest returns advanced provider draft when it succeeds", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "family",
+        range: "manualSelection",
+        candidates,
+      }),
+    }),
+    {
+      env: (key) => key === "AI_ALBUM_DRAFT_PROVIDER" ? "advanced" : undefined,
+      providers: {
+        advanced: (request) =>
+          Promise.resolve({
+            ...buildDraftResponse(request),
+            draftId: "advanced-draft-1",
+            title: "가족의 따뜻한 오후",
+            curationNotes: ["작은 미리보기로 분위기를 살펴봤어요."],
+          }),
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "advanced");
+  assertEquals(body.fallbackUsed, false);
+  assertEquals(body.draftId, "advanced-draft-1");
+  assertEquals(body.title, "가족의 따뜻한 오후");
+  assertEquals(body.requiresUserReview, true);
+  assertEquals(body.alreadyCreatedAlbum, false);
+});
