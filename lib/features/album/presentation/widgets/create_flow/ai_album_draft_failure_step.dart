@@ -11,6 +11,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
     this.primaryActionLabel = '사진 범위 다시 고르기',
     required this.onRetryRange,
     required this.onManualStart,
+    this.usesServerDraftProvider = false,
   });
 
   final String title;
@@ -18,6 +19,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
   final String primaryActionLabel;
   final VoidCallback onRetryRange;
   final VoidCallback onManualStart;
+  final bool usesServerDraftProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,9 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
+                      usesServerDraftProvider
+                          ? '선택한 사진 정보가 서버로 전송됐을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
+                          : '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 12.5.sp,

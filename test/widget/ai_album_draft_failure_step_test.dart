@@ -86,4 +86,26 @@ void main() {
     await tester.pump();
     expect(manualStart, isTrue);
   });
+
+  testWidgets(
+    'shows server privacy copy on failure when server draft mode is enabled',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          AiAlbumDraftFailureStep(
+            message: 'AI 초안을 준비하지 못했어요.',
+            usesServerDraftProvider: true,
+            onRetryRange: () {},
+            onManualStart: () {},
+          ),
+        ),
+      );
+
+      expect(find.textContaining('선택한 사진 정보가 서버로 전송됐을 수 있어요'), findsOneWidget);
+      expect(find.textContaining('사진은 업로드하지 않았어요'), findsNothing);
+    },
+  );
 }

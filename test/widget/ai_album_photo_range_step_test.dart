@@ -46,4 +46,25 @@ void main() {
 
     expect(selectedRange, AiPhotoRange.recent30Days);
   });
+
+  testWidgets('shows server privacy copy when server draft mode is enabled', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumPhotoRangeStep(
+          theme: AlbumTheme.travel,
+          usesServerDraftProvider: true,
+          onRangeSelected: (_) {},
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(find.textContaining('선택한 사진 정보가 서버로 전송돼요'), findsOneWidget);
+    expect(find.textContaining('원본 사진은 서버로 보내지 않고'), findsNothing);
+  });
 }

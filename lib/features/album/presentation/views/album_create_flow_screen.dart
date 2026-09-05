@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../../../../config/env.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
@@ -650,6 +651,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             _selectedAiRange == null) {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
+            usesServerDraftProvider: Env.useServerAiAlbumDraft,
             onRangeSelected: (range) {
               setState(() {
                 _selectedAiRange = range;
@@ -686,6 +688,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             selectedAiRange != null &&
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
+            usesServerDraftProvider: Env.useServerAiAlbumDraft,
             title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
             message: aiDraftFailureMessage,
             primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
