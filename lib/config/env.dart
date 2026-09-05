@@ -77,4 +77,13 @@ class Env {
     'USE_SERVER_AI_ALBUM_DRAFT',
     defaultValue: false,
   );
+
+  /// Enables advanced server photo understanding for AI album drafts. This may
+  /// send small preview thumbnails to the server, so keep disabled until the
+  /// explicit consent copy, retention policy, and server pipeline are ready.
+  /// - --dart-define=USE_ADVANCED_SERVER_AI_ALBUM_ANALYSIS=true
+  static const bool useAdvancedServerAiAlbumAnalysis = bool.fromEnvironment(
+    'USE_ADVANCED_SERVER_AI_ALBUM_ANALYSIS',
+    defaultValue: false,
+  );
 }

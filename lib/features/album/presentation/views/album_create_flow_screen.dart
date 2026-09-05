@@ -36,6 +36,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final List<String>? initialTemplatePreviewImages;
   final CoverSize? initialCoverSize;
   final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -45,8 +46,11 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialTemplatePreviewImages,
     this.initialCoverSize,
     bool? usesServerDraftProvider,
+    bool? usesAdvancedServerAnalysis,
   }) : usesServerDraftProvider =
-           usesServerDraftProvider ?? Env.useServerAiAlbumDraft;
+           usesServerDraftProvider ?? Env.useServerAiAlbumDraft,
+       usesAdvancedServerAnalysis =
+           usesAdvancedServerAnalysis ?? Env.useAdvancedServerAiAlbumAnalysis;
 
   @override
   ConsumerState<AlbumCreateFlowScreen> createState() =>
@@ -655,6 +659,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
             usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             onRangeSelected: (range) {
               setState(() {
                 _selectedAiRange = range;
@@ -692,6 +697,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
             usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
             message: aiDraftFailureMessage,
             primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
@@ -727,6 +733,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pointCost: _aiDraftPointCost,
             balance: _previewPointBalance,
             isFirstAiDraftFree: true,
+            usesServerDraftProvider: widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             onConfirm: _generateAiDraftFromSelection,
             onBack: () => setState(() {
               _selectedAiRange = null;

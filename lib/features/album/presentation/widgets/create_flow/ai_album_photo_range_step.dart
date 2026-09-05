@@ -11,12 +11,14 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
     required this.onRangeSelected,
     required this.onBack,
     this.usesServerDraftProvider = false,
+    this.usesAdvancedServerAnalysis = false,
   });
 
   final AlbumTheme theme;
   final ValueChanged<AiPhotoRange> onRangeSelected;
   final VoidCallback onBack;
   final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +91,10 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      usesServerDraftProvider
-                          ? '선택한 사진 정보가 서버로 전송돼요. 초안은 확인 전까지 확정되지 않아요.'
+                      usesAdvancedServerAnalysis
+                          ? '고급 AI를 켜면 선택한 사진의 작은 미리보기 이미지를 서버에서 살펴봐요.'
+                          : usesServerDraftProvider
+                          ? '선택한 사진의 날짜·크기 같은 정보가 서버로 전송돼요. 초안은 확인 전까지 확정되지 않아요.'
                           : '원본 사진은 서버로 보내지 않고, 기기 안에서만 살펴봐요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),

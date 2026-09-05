@@ -12,6 +12,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
     required this.onRetryRange,
     required this.onManualStart,
     this.usesServerDraftProvider = false,
+    this.usesAdvancedServerAnalysis = false,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
   final VoidCallback onRetryRange;
   final VoidCallback onManualStart;
   final bool usesServerDraftProvider;
+  final bool usesAdvancedServerAnalysis;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +78,9 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      usesServerDraftProvider
+                      usesAdvancedServerAnalysis
+                          ? '선택한 미리보기 이미지를 서버에서 확인했을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
+                          : usesServerDraftProvider
                           ? '선택한 사진 정보가 서버로 전송됐을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
                           : '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
                       style: TextStyle(

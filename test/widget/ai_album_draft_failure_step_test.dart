@@ -108,4 +108,31 @@ void main() {
       expect(find.textContaining('사진은 업로드하지 않았어요'), findsNothing);
     },
   );
+
+  testWidgets(
+    'shows advanced server preview failure copy without local upload denial',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          AiAlbumDraftFailureStep(
+            message: 'AI 초안을 준비하지 못했어요.',
+            usesServerDraftProvider: true,
+            usesAdvancedServerAnalysis: true,
+            onRetryRange: () {},
+            onManualStart: () {},
+          ),
+        ),
+      );
+
+      expect(
+        find.textContaining('선택한 미리보기 이미지를 서버에서 확인했을 수 있어요'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('사진은 업로드하지 않았어요'), findsNothing);
+      expect(find.text('포인트는 차감되지 않았어요.'), findsOneWidget);
+    },
+  );
 }

@@ -88,4 +88,34 @@ void main() {
     expect(find.text('실패 시 차감 없음'), findsOneWidget);
     expect(find.text('초안 만들기'), findsOneWidget);
   });
+
+  testWidgets('shows advanced server preview consent with point safety copy', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumPointConfirmationStep(
+          theme: AlbumTheme.family,
+          range: AiPhotoRange.manualSelection,
+          pointCost: 300,
+          balance: 900,
+          usesServerDraftProvider: true,
+          usesAdvancedServerAnalysis: true,
+          onConfirm: () {},
+          onBack: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('고급 AI 확인'), findsOneWidget);
+    expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴보고'), findsOneWidget);
+    expect(find.textContaining('초안은 바로 확정되지 않아요'), findsOneWidget);
+    expect(find.text('성공 시만 처리'), findsOneWidget);
+    expect(find.text('실패 시 차감 없음'), findsOneWidget);
+    expect(find.textContaining('Vision'), findsNothing);
+    expect(find.textContaining('LLM'), findsNothing);
+  });
 }
