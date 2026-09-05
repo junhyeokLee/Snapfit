@@ -67,6 +67,8 @@ enum ServerAiAlbumDraftMappingFailure {
   unknownAsset,
   invalidPageCount,
   emptyRecommendedPhotos,
+  duplicateAsset,
+  storySectionAssetNotRecommended,
 }
 
 class ServerAiAlbumDraftMappingException implements Exception {
@@ -110,6 +112,7 @@ class ServerAiAlbumDraftMapper {
         _readObjectList(json['recommendedPhotos'], field: 'recommendedPhotos')
             .map((item) => _recommendedPhoto(item, candidateById))
             .toList(growable: false);
+    _ensureUniqueAssets(recommendedPhotos.map((photo) => photo.assetId));
     if (recommendedPhotos.isEmpty) {
       throw const ServerAiAlbumDraftMappingException(
         ServerAiAlbumDraftMappingFailure.emptyRecommendedPhotos,
@@ -137,7 +140,11 @@ class ServerAiAlbumDraftMapper {
       ),
       recommendedPhotos: recommendedPhotos,
       excludedPhotos: excludedPhotos,
-      storySections: _storySections(json['storySections'], candidateById),
+      storySections: _storySections(
+        json['storySections'],
+        candidateById,
+        recommendedPhotos.map((photo) => photo.assetId).toSet(),
+      ),
       summary: _readString(json['summary'], fallback: '사진과 앨범 흐름을 먼저 정리했어요.'),
       curationNotes: _readStringList(json['curationNotes']),
       requiresUserReview: true,
@@ -177,12 +184,20 @@ class ServerAiAlbumDraftMapper {
   List<StorySection> _storySections(
     Object? value,
     Map<String, PhotoCandidate> candidateById,
+    Set<String> recommendedAssetIds,
   ) {
     return _readObjectList(value, field: 'storySections', required: false)
         .map((item) {
           final ids = _readStringList(item['photoAssetIds']);
           for (final assetId in ids) {
             _candidateFor(assetId, candidateById);
+            if (!recommendedAssetIds.contains(assetId)) {
+              throw ServerAiAlbumDraftMappingException(
+                ServerAiAlbumDraftMappingFailure
+                    .storySectionAssetNotRecommended,
+                'story section assetId=$assetId',
+              );
+            }
           }
           return StorySection(
             title: _readString(item['title'], fallback: '앨범 흐름'),
@@ -194,6 +209,18 @@ class ServerAiAlbumDraftMapper {
           );
         })
         .toList(growable: false);
+  }
+
+  void _ensureUniqueAssets(Iterable<String> assetIds) {
+    final seen = <String>{};
+    for (final assetId in assetIds) {
+      if (!seen.add(assetId)) {
+        throw ServerAiAlbumDraftMappingException(
+          ServerAiAlbumDraftMappingFailure.duplicateAsset,
+          'duplicate assetId=$assetId',
+        );
+      }
+    }
   }
 
   PhotoCandidate _candidateFor(

@@ -264,6 +264,98 @@ void main() {
       ),
     );
   });
+
+  test(
+    'rejects duplicate server recommended asset ids before editor handoff',
+    () {
+      expect(
+        () => const ServerAiAlbumDraftMapper().map(
+          theme: AlbumTheme.daily,
+          candidates: [
+            _candidate(
+              'photo-1',
+              DateTime(2026, 8, 20),
+              PhotoOrientation.square,
+            ),
+            _candidate(
+              'photo-2',
+              DateTime(2026, 8, 21),
+              PhotoOrientation.square,
+            ),
+            _candidate(
+              'photo-3',
+              DateTime(2026, 8, 22),
+              PhotoOrientation.square,
+            ),
+          ],
+          json: {
+            'title': '중복 추천 초안',
+            'pageCount': 8,
+            'recommendedPhotos': [
+              {'assetId': 'photo-1'},
+              {'assetId': 'photo-1'},
+            ],
+          },
+        ),
+        throwsA(
+          isA<ServerAiAlbumDraftMappingException>().having(
+            (error) => error.failure,
+            'failure',
+            ServerAiAlbumDraftMappingFailure.duplicateAsset,
+          ),
+        ),
+      );
+    },
+  );
+
+  test(
+    'rejects story sections that reference photos outside server recommendations',
+    () {
+      expect(
+        () => const ServerAiAlbumDraftMapper().map(
+          theme: AlbumTheme.travel,
+          candidates: [
+            _candidate(
+              'photo-1',
+              DateTime(2026, 8, 20),
+              PhotoOrientation.square,
+            ),
+            _candidate(
+              'photo-2',
+              DateTime(2026, 8, 21),
+              PhotoOrientation.square,
+            ),
+            _candidate(
+              'photo-3',
+              DateTime(2026, 8, 22),
+              PhotoOrientation.square,
+            ),
+          ],
+          json: {
+            'title': '깨진 흐름 초안',
+            'pageCount': 8,
+            'recommendedPhotos': [
+              {'assetId': 'photo-1'},
+            ],
+            'storySections': [
+              {
+                'title': '깨진 흐름',
+                'description': '추천되지 않은 사진이 섞이면 안 돼요',
+                'photoAssetIds': ['photo-2'],
+              },
+            ],
+          },
+        ),
+        throwsA(
+          isA<ServerAiAlbumDraftMappingException>().having(
+            (error) => error.failure,
+            'failure',
+            ServerAiAlbumDraftMappingFailure.storySectionAssetNotRecommended,
+          ),
+        ),
+      );
+    },
+  );
 }
 
 PhotoCandidate _candidate(
