@@ -196,27 +196,51 @@ class BillingRepository {
       );
     }
 
-    final injectedRpc = recordAiAlbumDraftSuccessRpc;
-    if (injectedRpc != null) {
-      final row = await injectedRpc(
-        draftId: normalizedDraftId,
-        pointCost: pointCost,
+    try {
+      final injectedRpc = recordAiAlbumDraftSuccessRpc;
+      if (injectedRpc != null) {
+        final row = await injectedRpc(
+          draftId: normalizedDraftId,
+          pointCost: pointCost,
+        );
+        return AiAlbumDraftPointUsageResult.fromJson(row);
+      }
+
+      if (supabase == null) {
+        throw const AiAlbumDraftPointUsageException(
+          AiAlbumDraftPointUsageFailure.unavailable,
+          'Supabase 포인트 사용 환경이 준비되지 않았습니다.',
+        );
+      }
+
+      final response = await supabase!.rpc(
+        'record_ai_album_draft_success',
+        params: {'p_draft_id': normalizedDraftId, 'p_point_cost': pointCost},
       );
+      final row = response is List && response.isNotEmpty
+          ? Map<String, dynamic>.from(response.first as Map)
+          : Map<String, dynamic>.from(response as Map);
       return AiAlbumDraftPointUsageResult.fromJson(row);
+    } on AiAlbumDraftPointUsageException {
+      rethrow;
+    } on PostgrestException catch (error) {
+      final message = error.message.toLowerCase();
+      if (error.code == 'P0001' || message.contains('insufficient points')) {
+        throw AiAlbumDraftPointUsageException(
+          AiAlbumDraftPointUsageFailure.insufficientPoints,
+          error.message,
+        );
+      }
+      throw AiAlbumDraftPointUsageException(
+        AiAlbumDraftPointUsageFailure.unavailable,
+        error.message,
+      );
+    } catch (error) {
+      throw AiAlbumDraftPointUsageException(
+        AiAlbumDraftPointUsageFailure.unavailable,
+        error.toString(),
+      );
     }
-
-    if (supabase == null) {
-      throw Exception('Supabase 포인트 사용 환경이 준비되지 않았습니다.');
-    }
-
-    final response = await supabase!.rpc(
-      'record_ai_album_draft_success',
-      params: {'p_draft_id': normalizedDraftId, 'p_point_cost': pointCost},
-    );
-    final row = response is List && response.isNotEmpty
-        ? Map<String, dynamic>.from(response.first as Map)
-        : Map<String, dynamic>.from(response as Map);
-    return AiAlbumDraftPointUsageResult.fromJson(row);
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {

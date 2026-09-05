@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:snap_fit/core/interceptors/token_storage.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 
@@ -31,6 +32,37 @@ void main() {
     expect(result.chargedPoints, 300);
     expect(result.remainingBalance, 900);
   });
+
+  test(
+    'maps Supabase insufficient point errors into typed exception',
+    () async {
+      final tokenStorage = MockTokenStorage();
+      final repository = BillingRepository(
+        tokenStorage: tokenStorage,
+        recordAiAlbumDraftSuccessRpc:
+            ({required draftId, required pointCost}) async {
+              throw const PostgrestException(
+                message: 'insufficient points for AI album draft',
+                code: 'P0001',
+              );
+            },
+      );
+
+      await expectLater(
+        repository.recordAiAlbumDraftSuccess(
+          draftId: 'draft-2',
+          pointCost: 300,
+        ),
+        throwsA(
+          isA<AiAlbumDraftPointUsageException>().having(
+            (error) => error.failure,
+            'failure',
+            AiAlbumDraftPointUsageFailure.insufficientPoints,
+          ),
+        ),
+      );
+    },
+  );
 
   test(
     'maps AI album draft insufficient points into typed exception',
