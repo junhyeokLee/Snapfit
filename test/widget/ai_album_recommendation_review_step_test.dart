@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -329,5 +331,99 @@ void main() {
       'duplicate-moment',
     ]);
     expect(acceptedDraft!.excludedPhotos, isEmpty);
+  });
+
+  testWidgets('disables edit start while accepted draft is being handed off', (
+    tester,
+  ) async {
+    var acceptCalls = 0;
+    var back = false;
+    final acceptCompleter = Completer<void>();
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.travel,
+      title: '여행의 장면들',
+      pageCount: 10,
+      templateTone: '대표 컷 중심 여행 템플릿',
+      recommendedPhotos: [
+        RecommendedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'cover-wide',
+            createdAt: DateTime(2026, 8, 20, 9),
+            width: 4000,
+            height: 3000,
+            orientation: PhotoOrientation.landscape,
+          ),
+          score: 0.94,
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.highResolution,
+              message: '크게 넣어도 선명한 사진이에요',
+            ),
+          ],
+        ),
+      ],
+      excludedPhotos: [
+        ExcludedPhoto(
+          candidate: PhotoCandidate(
+            assetId: 'duplicate-moment',
+            createdAt: DateTime(2026, 8, 20, 9, 2),
+            width: 3900,
+            height: 2900,
+            orientation: PhotoOrientation.landscape,
+          ),
+          reasons: const [
+            AiCurationReason(
+              type: AiCurationReasonType.duplicateTimeExcluded,
+              message: '비슷한 시간대 사진이 많아 대표 컷만 먼저 넣었어요',
+            ),
+          ],
+        ),
+      ],
+      storySections: const [
+        StorySection(
+          title: '여행의 첫 장면',
+          description: '출발의 설렘이 보이는 사진을 앞쪽에 뒀어요.',
+          photoAssetIds: ['cover-wide'],
+        ),
+      ],
+      summary: '기기 안에서만 사진 정보를 살펴봤어요.',
+    );
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _wrap(
+        AiAlbumRecommendationReviewStep(
+          draft: draft,
+          onAcceptDraft: (_) {
+            acceptCalls += 1;
+            return acceptCompleter.future;
+          },
+          onBack: () => back = true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('편집 시작'));
+    await tester.pump();
+
+    expect(acceptCalls, 1);
+    expect(find.text('편집 준비 중'), findsOneWidget);
+
+    await tester.tap(find.text('편집 준비 중'));
+    await tester.tap(find.text('이전'));
+    await tester.ensureVisible(find.text('초안에 넣기'));
+    await tester.tap(find.text('초안에 넣기'));
+    await tester.pump();
+
+    expect(acceptCalls, 1);
+    expect(back, isFalse);
+    expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
+
+    acceptCompleter.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.text('편집 시작'), findsOneWidget);
   });
 }

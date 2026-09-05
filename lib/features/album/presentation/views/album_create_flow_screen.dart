@@ -35,6 +35,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final String? initialAlbumTitle;
   final List<String>? initialTemplatePreviewImages;
   final CoverSize? initialCoverSize;
+  final bool usesServerDraftProvider;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -43,7 +44,9 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialAlbumTitle,
     this.initialTemplatePreviewImages,
     this.initialCoverSize,
-  });
+    bool? usesServerDraftProvider,
+  }) : usesServerDraftProvider =
+           usesServerDraftProvider ?? Env.useServerAiAlbumDraft;
 
   @override
   ConsumerState<AlbumCreateFlowScreen> createState() =>
@@ -651,7 +654,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             _selectedAiRange == null) {
           return AiAlbumPhotoRangeStep(
             theme: selectedAiTheme,
-            usesServerDraftProvider: Env.useServerAiAlbumDraft,
+            usesServerDraftProvider: widget.usesServerDraftProvider,
             onRangeSelected: (range) {
               setState(() {
                 _selectedAiRange = range;
@@ -688,7 +691,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             selectedAiRange != null &&
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
-            usesServerDraftProvider: Env.useServerAiAlbumDraft,
+            usesServerDraftProvider: widget.usesServerDraftProvider,
             title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
             message: aiDraftFailureMessage,
             primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',

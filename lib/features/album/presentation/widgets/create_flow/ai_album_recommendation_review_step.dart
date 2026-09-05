@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -13,7 +15,7 @@ class AiAlbumRecommendationReviewStep extends StatefulWidget {
   });
 
   final AlbumRecommendationDraft draft;
-  final ValueChanged<AlbumRecommendationDraft> onAcceptDraft;
+  final FutureOr<void> Function(AlbumRecommendationDraft) onAcceptDraft;
   final VoidCallback onBack;
 
   @override
@@ -24,6 +26,7 @@ class AiAlbumRecommendationReviewStep extends StatefulWidget {
 class _AiAlbumRecommendationReviewStepState
     extends State<AiAlbumRecommendationReviewStep> {
   late AlbumRecommendationDraft _draft;
+  bool _isAcceptingDraft = false;
 
   @override
   void initState() {
@@ -40,6 +43,8 @@ class _AiAlbumRecommendationReviewStepState
   }
 
   void _addExcludedPhoto(ExcludedPhoto photo) {
+    if (_isAcceptingDraft) return;
+
     final promoted = RecommendedPhoto(
       candidate: photo.candidate,
       score: 0.62,
@@ -53,6 +58,19 @@ class _AiAlbumRecommendationReviewStepState
             .toList(growable: false),
       );
     });
+  }
+
+  Future<void> _handleAcceptDraft() async {
+    if (_isAcceptingDraft) return;
+
+    setState(() => _isAcceptingDraft = true);
+    try {
+      await widget.onAcceptDraft(_draft);
+    } finally {
+      if (mounted) {
+        setState(() => _isAcceptingDraft = false);
+      }
+    }
   }
 
   @override
@@ -73,7 +91,9 @@ class _AiAlbumRecommendationReviewStepState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _BackTextButton(onPressed: widget.onBack),
+                    _BackTextButton(
+                      onPressed: _isAcceptingDraft ? null : widget.onBack,
+                    ),
                     SizedBox(height: 14.h),
                     Text(
                       'AI 초안',
@@ -111,7 +131,10 @@ class _AiAlbumRecommendationReviewStepState
                 ),
               ),
             ),
-            _BottomCta(onAcceptDraft: () => widget.onAcceptDraft(_draft)),
+            _BottomCta(
+              isAcceptingDraft: _isAcceptingDraft,
+              onAcceptDraft: _handleAcceptDraft,
+            ),
           ],
         ),
       ),
@@ -514,8 +537,12 @@ class _ReasonBulletList extends StatelessWidget {
 }
 
 class _BottomCta extends StatelessWidget {
-  const _BottomCta({required this.onAcceptDraft});
+  const _BottomCta({
+    required this.isAcceptingDraft,
+    required this.onAcceptDraft,
+  });
 
+  final bool isAcceptingDraft;
   final VoidCallback onAcceptDraft;
 
   @override
@@ -538,7 +565,7 @@ class _BottomCta extends StatelessWidget {
         width: double.infinity,
         height: 52.h,
         child: ElevatedButton(
-          onPressed: onAcceptDraft,
+          onPressed: isAcceptingDraft ? null : onAcceptDraft,
           style: ElevatedButton.styleFrom(
             elevation: 0,
             backgroundColor: SnapFitColors.isDark(context)
@@ -552,7 +579,7 @@ class _BottomCta extends StatelessWidget {
             ),
           ),
           child: Text(
-            '편집 시작',
+            isAcceptingDraft ? '편집 준비 중' : '편집 시작',
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w900,
@@ -679,7 +706,7 @@ class _MemoLabel extends StatelessWidget {
 class _BackTextButton extends StatelessWidget {
   const _BackTextButton({required this.onPressed});
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
