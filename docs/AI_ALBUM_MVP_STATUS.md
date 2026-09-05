@@ -135,18 +135,31 @@ flutter test
 git diff --check
 ```
 
-## 아직 실제 구현 전인 항목
+## 서버/실기기 후속 항목
 
 ### Supabase / 서버 포인트 연동
 
-현재 포인트 화면은 UX preview와 정책 안내 수준이다.
+`20260905113000_ai_album_points.sql` migration으로 서버 측 포인트 기록 기반을 추가했다.
+
+추가된 항목:
+
+- `point_wallets`: 사용자별 포인트 잔액
+- `point_ledger`: 포인트 증감 audit trail
+- `ai_album_draft_usages`: 성공한 AI 초안 사용 기록과 idempotency
+- `ai_album_free_draft_claims`: 사용자별 첫 AI 초안 무료 사용 claim
+- `record_ai_album_draft_success(draft_id, point_cost)`: 성공한 초안에 대해서만 무료 claim 또는 포인트 차감을 원자적으로 처리하는 RPC
+
+보안/정책:
+
+- 일반 클라이언트는 wallet/ledger/usage를 직접 쓰지 못하고 own read만 가능하다.
+- 실패/권한 부족/사진 부족/저품질/무결성 실패는 RPC를 호출하지 않는 구조로 유지한다.
+- 첫 성공 초안은 무료 claim으로 기록하고, 이후 성공 초안은 잔액이 충분할 때만 포인트를 차감한다.
 
 남은 작업:
 
-- 첫 AI 생성 무료 사용 여부를 사용자별로 저장한다.
-- 성공한 AI 초안에 대해서만 300P 사용 처리를 서버에서 원자적으로 기록한다.
-- 실패/권한 부족/사진 부족/저품질/무결성 실패에서는 포인트를 차감하지 않는다.
-- Flutter 클라이언트가 임의로 포인트를 차감하지 않도록 Supabase RLS 또는 Edge Function 경로로 보호한다.
+- Flutter 클라이언트에서 성공한 AI 초안 review 진입 시 RPC 호출 연결
+- 포인트 부족 상태를 UI failure/recovery로 연결
+- 실제 포인트 충전/구매/관리자 조정 경로 연결
 
 ### 실제 AI 서버/모델 연동
 
@@ -226,11 +239,12 @@ AI 초안이 editor로 들어간 뒤 실제 저장/업로드까지 확인해야 
 
 ## 다음 추천 순서
 
-1. Supabase 포인트 차감/무료 1회 사용 기록 설계
-2. 제한된 사진 권한 picker의 실제 플랫폼 동작 확인
-3. AI draft 서버/모델 연동 방식 결정
-4. 실제 기기 사진 권한 QA
-5. AI 초안 → editor 저장/업로드 end-to-end 검증
+1. Flutter에서 `record_ai_album_draft_success` RPC 연결
+2. 포인트 부족 상태 UI failure/recovery 연결
+3. 제한된 사진 권한 picker의 실제 플랫폼 동작 확인
+4. AI draft 서버/모델 연동 방식 결정
+5. 실제 기기 사진 권한 QA
+6. AI 초안 → editor 저장/업로드 end-to-end 검증
 
 ## PR 리뷰 포인트
 
