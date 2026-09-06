@@ -15,7 +15,16 @@ No secret values belong in this document, Git, Discord, issue comments, or scree
 
 ## Required server secrets before enabling hybrid
 
-Set these in Supabase secrets from the VPS/container terminal, not chat:
+Set these in Supabase secrets from the VPS/container terminal, not chat. Recommended interactive command:
+
+```bash
+cd /srv/projects/Snapfit
+bash scripts/configure_supabase_production_secrets.sh
+```
+
+Do not paste secret values in Discord, GitHub comments, docs, screenshots, or issue text. Type/paste them only into the VPS terminal or Supabase Dashboard secret fields.
+
+Required AI and store values:
 
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL=gpt-4o`
@@ -23,6 +32,15 @@ Set these in Supabase secrets from the VPS/container terminal, not chat:
 - `ANTHROPIC_MODEL=claude-sonnet-4-5`
 - `AI_ALBUM_DRAFT_PROVIDER=hybrid`
 - `AI_ALBUM_DRAFT_TIMEOUT_MS=20000`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `IAP_POINT_PRODUCT_IDS=snapfit_points_2500,snapfit_points_8000,snapfit_points_18000`
+- `GOOGLE_PLAY_PACKAGE_NAME`
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
+- `APP_STORE_ISSUER_ID`
+- `APP_STORE_KEY_ID`
+- `APP_STORE_BUNDLE_ID`
+- `APP_STORE_PRIVATE_KEY`
+- `APP_STORE_ENVIRONMENT=sandbox` during sandbox QA, then production for release
 
 metadata rollback without app release:
 

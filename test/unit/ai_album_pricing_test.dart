@@ -23,4 +23,12 @@ void main() {
       expect(sql, contains('is_active = false'));
     },
   );
+
+  test('Flutter env defaults to active profit-safe point products', () {
+    expect(Env.iapPointProductIds, [
+      'snapfit_points_2500',
+      'snapfit_points_8000',
+      'snapfit_points_18000',
+    ]);
+  });
 }

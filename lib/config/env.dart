@@ -92,7 +92,7 @@ class Env {
   static const String iapPointProductIdsCsv = String.fromEnvironment(
     'IAP_POINT_PRODUCT_IDS',
     defaultValue:
-        'snapfit_points_1500,snapfit_points_4500,snapfit_points_10000',
+        'snapfit_points_2500,snapfit_points_8000,snapfit_points_18000',
   );
 
   static List<String> get iapPointProductIds => iapPointProductIdsCsv
