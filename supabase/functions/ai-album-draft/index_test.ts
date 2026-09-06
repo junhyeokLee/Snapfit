@@ -390,7 +390,68 @@ Deno.test("default advanced provider falls back when preview references are miss
   assertEquals(response.status, 200);
   assertEquals(body.provider, "metadata");
   assertEquals(body.fallbackUsed, true);
-  assertEquals(body.fallbackReason, "advanced_provider_failed");
+  assertEquals(body.fallbackReason, "advanced_preview_required");
+});
+
+Deno.test("hybrid provider keeps safe fallback reason when Anthropic finalizer fails", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "family",
+        range: "limitedLibrary",
+        candidates: [
+          {
+            ...candidates[0],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/photo-1.jpg",
+          },
+          candidates[1],
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          return Response.json({
+            choices: [{
+              message: { content: JSON.stringify({ photoInsights: [] }) },
+            }],
+          });
+        }
+        if (url === "https://api.anthropic.com/v1/messages") {
+          return new Response("provider unavailable", { status: 503 });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.fallbackUsed, true);
+  assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
 });
 
 Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curation", async () => {
