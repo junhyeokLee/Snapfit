@@ -3,8 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'auth_response.freezed.dart';
 part 'auth_response.g.dart';
 
-@freezed
+@Freezed(toStringOverride: false)
 sealed class AuthResponse with _$AuthResponse {
+  const AuthResponse._();
+
   const factory AuthResponse({
     required String accessToken,
     required String refreshToken,
@@ -14,6 +16,11 @@ sealed class AuthResponse with _$AuthResponse {
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) =>
       _$AuthResponseFromJson(json);
+
+  @override
+  String toString() {
+    return 'AuthResponse(accessToken: [REDACTED], refreshToken: [REDACTED], expiresIn: $expiresIn, user: $user)';
+  }
 }
 
 @freezed

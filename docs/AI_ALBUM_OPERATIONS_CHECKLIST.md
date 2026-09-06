@@ -79,6 +79,18 @@ Keep subscription product separate:
 9. Preview objects are cleaned by best-effort deletion and TTL cleanup.
 10. metadata rollback returns usable metadata-only drafts if external providers fail or budget is paused.
 
+## Preview cleanup / privacy gate
+
+- `ai-album-previews` is a private bucket for small consented preview images only.
+- Client and Edge Function paths perform best-effort deletion after draft generation.
+- Before release, run and schedule the TTL cleanup RPC for stale preview objects older than `2 hours`:
+
+```sql
+select public.delete_expired_ai_album_previews(interval '2 hours');
+```
+
+- Verify the cleanup job deletes only `ai-album-previews` objects and never album originals or final album assets.
+
 ## Billing failure UX acceptance
 
 During sandbox and real-device QA, every failed billing state should be understandable without exposing raw store or server internals:
