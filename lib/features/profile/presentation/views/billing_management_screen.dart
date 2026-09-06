@@ -18,7 +18,9 @@ int _pointAmountFromProductId(String productId) {
 }
 
 class BillingManagementScreen extends ConsumerStatefulWidget {
-  const BillingManagementScreen({super.key});
+  const BillingManagementScreen({super.key, this.returnToAiDraftFlow = false});
+
+  final bool returnToAiDraftFlow;
 
   @override
   ConsumerState<BillingManagementScreen> createState() =>
@@ -43,7 +45,11 @@ class _BillingManagementScreenState
       _handlePurchaseUpdates,
       onError: (Object error) {
         if (!mounted) return;
-        setState(() => _statusMessage = '구매 업데이트 수신 실패: $error');
+        setState(
+          () => _statusMessage = billingPurchaseUpdateFailureMessage(
+            message: error.toString(),
+          ),
+        );
       },
     );
     unawaited(_loadStoreProduct());
@@ -285,6 +291,10 @@ class _BillingManagementScreenState
         child: ListView(
           padding: EdgeInsets.all(20.w),
           children: [
+            if (widget.returnToAiDraftFlow) ...[
+              _AiDraftReturnCard(purchaseInProgress: _purchaseInProgress),
+              SizedBox(height: 12.h),
+            ],
             _SubscriptionCard(subscription: subscription),
             SizedBox(height: 12.h),
             _QuotaCard(quota: quota),
@@ -374,6 +384,72 @@ class _BillingManagementScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AiDraftReturnCard extends StatelessWidget {
+  const _AiDraftReturnCard({required this.purchaseInProgress});
+
+  final bool purchaseInProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: SnapFitColors.accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: SnapFitColors.accent.withValues(alpha: 0.24)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'AI 초안 준비 중',
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w800,
+              color: SnapFitColors.accent,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '포인트를 채운 뒤 바로 초안 만들기로 돌아갈 수 있어요.',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+              height: 1.25,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '결제가 끝났다면 잔액을 확인하고 이어서 앨범 초안을 만들면 됩니다.',
+            style: TextStyle(fontSize: 12.sp, color: subColor, height: 1.45),
+          ),
+          SizedBox(height: 12.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: purchaseInProgress
+                  ? null
+                  : () => Navigator.of(context).pop(true),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: SnapFitColors.accent,
+                side: const BorderSide(color: SnapFitColors.accent),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+              child: const Text('AI 초안으로 돌아가기'),
+            ),
+          ),
+        ],
       ),
     );
   }

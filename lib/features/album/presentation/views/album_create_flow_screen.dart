@@ -583,9 +583,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           _aiDraftPrimaryRecoveryAction = null;
         });
       case AiAlbumDraftRecoveryAction.reviewPointCost:
-        await Navigator.push(
+        await Navigator.push<bool>(
           context,
-          MaterialPageRoute(builder: (_) => const BillingManagementScreen()),
+          MaterialPageRoute(
+            builder: (_) =>
+                const BillingManagementScreen(returnToAiDraftFlow: true),
+          ),
         );
         if (!mounted) return;
         ref.invalidate(myPointBalanceProvider);
