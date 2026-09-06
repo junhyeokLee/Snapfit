@@ -809,3 +809,84 @@ Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curat
   );
   assertEquals(calls.includes("https://api.anthropic.com/v1/messages"), true);
 });
+
+Deno.test("hybrid provider cleans preview objects even when finalizer fails", async () => {
+  const methods: string[] = [];
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "family",
+        range: "limitedLibrary",
+        candidates: [
+          {
+            ...candidates[0],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/cleanup-1.jpg",
+          },
+          {
+            ...candidates[1],
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/cleanup-2.jpg",
+          },
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        methods.push(`${init?.method ?? "GET"} ${url}`);
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          if (init?.method === "DELETE") {
+            return new Response(null, { status: 200 });
+          }
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          return Response.json({
+            choices: [{
+              message: { content: JSON.stringify({ photoInsights: [] }) },
+            }],
+          });
+        }
+        if (url === "https://api.anthropic.com/v1/messages") {
+          return new Response("provider unavailable", { status: 503 });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
+  assertEquals(
+    methods.some((call) =>
+      call.startsWith("DELETE ") && call.includes("cleanup-1.jpg")
+    ),
+    true,
+  );
+  assertEquals(
+    methods.some((call) =>
+      call.startsWith("DELETE ") && call.includes("cleanup-2.jpg")
+    ),
+    true,
+  );
+});
