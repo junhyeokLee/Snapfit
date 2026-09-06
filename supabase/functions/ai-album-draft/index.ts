@@ -58,6 +58,14 @@ type StorySectionPayload = {
   photoAssetIds: string[];
 };
 
+type AiTemplateSlotPayload = {
+  slotId: string;
+  pageIndex: number;
+  role: string;
+  hint: string;
+  assetId?: string;
+};
+
 export type AiAlbumDraftResponsePayload = {
   draftId: string;
   title: string;
@@ -68,6 +76,7 @@ export type AiAlbumDraftResponsePayload = {
   excludedPhotos: ExcludedPhotoPayload[];
   storySections: StorySectionPayload[];
   curationNotes: string[];
+  templateSlots: AiTemplateSlotPayload[];
   requiresUserReview: true;
   alreadyCreatedAlbum: false;
   reviewCtaLabel: string;
@@ -264,6 +273,57 @@ function groupSections(
   }));
 }
 
+function buildTemplateSlots(
+  theme: AlbumTheme,
+  pageCount: number,
+): AiTemplateSlotPayload[] {
+  const themeLabel = themeTitle(theme).replace("의 장면들", "");
+  const rolesByTheme: Record<AlbumTheme, string[]> = {
+    travel: ["cover", "landscape", "people", "detail", "ending"],
+    couple: ["cover", "together", "detail", "portrait", "ending"],
+    family: ["cover", "together", "daily", "portrait", "ending"],
+    baby: ["cover", "portrait", "detail", "growth", "ending"],
+    birthday: ["cover", "celebration", "detail", "group", "ending"],
+    friends: ["cover", "group", "detail", "playful", "ending"],
+    daily: ["cover", "daily", "detail", "portrait", "ending"],
+    custom: ["cover", "main", "detail", "portrait", "ending"],
+  };
+  const hintsByRole: Record<string, string> = {
+    cover: `${themeLabel}을 대표하는 사진을 직접 넣어주세요`,
+    landscape: "장소감이 보이는 풍경 사진을 넣어주세요",
+    people: "함께한 사람이 잘 보이는 사진을 넣어주세요",
+    detail: "작은 분위기나 소품 사진을 넣어주세요",
+    ending: "마지막에 남기고 싶은 장면을 넣어주세요",
+    together: "두 사람이나 가족이 함께 나온 사진을 넣어주세요",
+    portrait: "표정이 잘 보이는 인물 사진을 넣어주세요",
+    daily: "일상의 온도가 느껴지는 사진을 넣어주세요",
+    growth: "변화나 성장감이 보이는 사진을 넣어주세요",
+    celebration: "축하 분위기가 가장 잘 보이는 사진을 넣어주세요",
+    group: "여럿이 함께한 사진을 넣어주세요",
+    playful: "즐거운 움직임이 있는 사진을 넣어주세요",
+    main: "가장 중요한 사진을 직접 넣어주세요",
+  };
+  const roles = rolesByTheme[theme];
+  const slots: AiTemplateSlotPayload[] = [
+    {
+      slotId: "cover-main",
+      pageIndex: 0,
+      role: "cover",
+      hint: hintsByRole.cover,
+    },
+  ];
+  for (let pageIndex = 1; pageIndex <= pageCount; pageIndex += 1) {
+    const role = roles[(pageIndex - 1) % roles.length];
+    slots.push({
+      slotId: `p${pageIndex}-${role}`,
+      pageIndex,
+      role,
+      hint: hintsByRole[role] ?? "이 칸에 어울리는 사진을 직접 넣어주세요",
+    });
+  }
+  return slots;
+}
+
 export function buildDraftResponse(
   request: AiAlbumDraftRequestPayload,
 ): AiAlbumDraftResponsePayload {
@@ -274,65 +334,27 @@ export function buildDraftResponse(
   const sorted = [...request.candidates].sort((a, b) =>
     text(a.createdAt).localeCompare(text(b.createdAt))
   );
-  const recommended = sorted
-    .filter((candidate) =>
-      !candidate.isScreenshot && !isLowResolution(candidate)
-    )
-    .slice(0, maxRecommendedPhotos);
-  const recommendedIds = new Set(
-    recommended.map((candidate) => candidate.assetId),
-  );
-  if (recommended.length === 0) throw new Error("empty_recommended_photos");
-
-  const excluded = sorted.filter((candidate) =>
-    !recommendedIds.has(candidate.assetId)
-  );
+  const pageCount = Math.max(4, Math.min(16, Math.ceil(sorted.length / 2) + 4));
   return {
     draftId: `server-draft-${crypto.randomUUID()}`,
     title: themeTitle(request.theme),
-    pageCount: Math.max(8, Math.min(24, recommended.length * 2 + 4)),
+    pageCount,
     templateTone: themeTone(request.theme),
     summary:
-      "사진과 앨범 흐름을 먼저 정리했어요. 초안은 바로 확정되지 않고 편집 전에 확인할 수 있어요.",
-    recommendedPhotos: recommended.map((candidate, index) => ({
-      assetId: candidate.assetId,
-      score: Math.max(0.6, 0.95 - index * 0.04),
-      reasons: [
-        {
-          type: index === 0 ? "coverCandidate" : "dateFlow",
-          message: index === 0
-            ? "표지로 쓰기 좋은 대표 장면이에요"
-            : "앨범 흐름을 자연스럽게 이어줘요",
-        },
-      ],
-    })),
-    excludedPhotos: excluded.map((candidate) => ({
-      assetId: candidate.assetId,
-      reasons: [
-        {
-          type: candidate.isScreenshot
-            ? "screenshotExcluded"
-            : isLowResolution(candidate)
-            ? "lowResolutionExcluded"
-            : "totalLimitExcluded",
-          message: candidate.isScreenshot
-            ? "스크린샷은 잠시 빼뒀어요"
-            : isLowResolution(candidate)
-            ? "작은 이미지는 출력 품질을 위해 잠시 빼뒀어요"
-            : "초안이 너무 길어지지 않도록 잠시 빼뒀어요",
-        },
-      ],
-    })),
-    storySections: groupSections(recommended),
+      "사진은 직접 고르고, AI는 앨범 템플릿과 사진 슬롯만 먼저 잡았어요.",
+    recommendedPhotos: [],
+    excludedPhotos: [],
+    storySections: groupSections([]),
+    templateSlots: buildTemplateSlots(request.theme, pageCount),
     curationNotes: [
-      "서버 초안도 편집 전에 사용자가 확인해요.",
+      "사진첩에서 사진을 자동으로 고르지 않았어요.",
       request.range === "limitedLibrary"
-        ? "허용된 사진 범위 안에서만 초안을 만들었어요."
-        : "선택한 사진 범위 안에서 초안을 만들었어요.",
+        ? "허용된 사진은 템플릿 슬롯 기준을 잡는 데만 참고해요."
+        : "선택한 범위는 템플릿 슬롯 기준을 잡는 데만 참고해요.",
     ],
     requiresUserReview: true,
     alreadyCreatedAlbum: false,
-    reviewCtaLabel: "이 구성으로 시작하기",
+    reviewCtaLabel: "이 템플릿으로 시작하기",
   };
 }
 
@@ -520,13 +542,13 @@ function createHybridProvider(
             max_tokens: 1400,
             temperature: 0.45,
             system:
-              "You are a Korean photobook editor for Snapfit. Create emotionally strong, album-first draft JSON. Never claim the album is created. Use only provided assetId values.",
+              "You are a Korean photobook template designer for Snapfit. Create emotionally strong, album-first template JSON. Do not choose photos for the user. Never imply the album is finished.",
             messages: [
               {
                 role: "user",
                 content: JSON.stringify({
                   instruction:
-                    "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape. 테마와 맞지 않으면 제외하고, 부족하면 recommendedPhotos를 비워서 포인트가 차감되지 않게 하세요.",
+                    "Use the OpenAI vision photoInsights plus candidate metadata only to design a premium editable AI template. Do not choose photos automatically. Return templateSlots, short Korean copy, and empty recommendedPhotos unless the user explicitly assigned a photo. Never imply the album is finished.",
                   themeFitPolicy: themeFitPolicy(request.theme),
                   requiredJsonShape:
                     JSON.parse(advancedPrompt(request)).requiredJsonShape,
@@ -592,41 +614,31 @@ function themeFitPolicy(theme: AlbumTheme) {
 function advancedPrompt(request: AiAlbumDraftRequestPayload) {
   return JSON.stringify({
     instruction:
-      "Pick only photos that truly fit the selected Snapfit album theme. Keep Korean copy short, warm, album-first, and non-technical.",
+      "Design a Snapfit album template. Do not choose photos for the user. Create layout/photo-slot/copy guidance only. Keep Korean copy short, warm, album-first, and non-technical.",
     themeFitPolicy: themeFitPolicy(request.theme),
     strictSelectionRules: [
-      "Every recommended photo must have themeFitScore >= 0.62.",
-      "Set themeFitScore from 0.0 to 1.0 for every recommended/excluded photo.",
-      "If fewer than one photo truly fits, return recommendedPhotos: [] so the app can ask the user to choose a better range without charging points.",
-      "Do not fill the album with generic or unrelated photos just to satisfy count.",
+      "Do not pick photos from the library automatically.",
+      "recommendedPhotos must be [] unless the user explicitly assigned a photo to a slot.",
+      "Create templateSlots with pageIndex, role, and Korean hints so users know which photos to place manually.",
+      "Never imply the album is finished; it is an editable template.",
     ],
     requiredJsonShape: {
       title: "string",
       pageCount: "number between 4 and 24",
       templateTone: "string",
       summary: "string",
-      recommendedPhotos: [{
-        assetId: "provided assetId",
-        score: 0.0,
-        themeFitScore: 0.0,
-        reasons: [{
-          type: "coverCandidate|dateFlow|themeOrientation",
-          message: "Korean",
-        }],
-      }],
-      excludedPhotos: [{
-        assetId: "provided assetId",
-        themeFitScore: 0.0,
-        reasons: [{
-          type:
-            "screenshotExcluded|lowResolutionExcluded|weakThemeFitExcluded|totalLimitExcluded",
-          message: "Korean",
-        }],
+      recommendedPhotos: [],
+      excludedPhotos: [],
+      templateSlots: [{
+        slotId: "stable slot id",
+        pageIndex: "0 for cover, 1+ for inner pages",
+        role: "cover|landscape|portrait|detail|ending",
+        hint: "Korean photo placement hint",
       }],
       storySections: [{
         title: "Korean",
         description: "Korean",
-        photoAssetIds: ["recommended assetId only"],
+        photoAssetIds: [],
       }],
       curationNotes: ["Korean"],
     },
@@ -760,12 +772,25 @@ function draftFromAdvancedJson(
     )
     .slice(0, maxRecommendedPhotos)
     .map(({ themeFitScore: _themeFitScore, ...photo }) => photo);
-  if (recommendedPhotos.length === 0) {
-    throw new Error("themed_candidates_not_found");
-  }
   const recommendedIds = new Set(
     recommendedPhotos.map((photo) => photo.assetId),
   );
+
+  const templateSlots = objectList(json.templateSlots).map((item, index) => ({
+    slotId: text(item.slotId) || `slot-${index + 1}`,
+    pageIndex: Math.max(
+      0,
+      Math.min(24, intValue(item.pageIndex, index === 0 ? 0 : 1)),
+    ),
+    role: text(item.role) || "photo",
+    hint: text(item.hint) || "사진을 직접 넣어주세요",
+    ...(text(item.assetId) && candidateIds.has(text(item.assetId))
+      ? { assetId: text(item.assetId) }
+      : {}),
+  }));
+  if (recommendedPhotos.length === 0 && templateSlots.length === 0) {
+    throw new Error("advanced_model_empty_template_slots");
+  }
 
   const excludedPhotos = objectList(json.excludedPhotos)
     .map((item) => ({
@@ -793,17 +818,20 @@ function draftFromAdvancedJson(
     storySections: objectList(json.storySections).map((section) => ({
       title: text(section.title) || "앨범 흐름",
       description: text(section.description) ||
-        "함께 보면 자연스러운 장면이에요",
+        "사진을 직접 넣으면 자연스럽게 이어지는 장면이에요",
       photoAssetIds: stringList(section.photoAssetIds).filter((id) =>
         recommendedIds.has(id)
       ),
-    })).filter((section) => section.photoAssetIds.length > 0),
+    })),
+    templateSlots: templateSlots.length > 0
+      ? templateSlots
+      : fallback.templateSlots,
     curationNotes: stringList(json.curationNotes).length > 0
       ? stringList(json.curationNotes)
       : ["작은 미리보기로 분위기와 대표 장면을 살펴봤어요."],
     requiresUserReview: true,
     alreadyCreatedAlbum: false,
-    reviewCtaLabel: "이 구성으로 시작하기",
+    reviewCtaLabel: "이 템플릿으로 시작하기",
   };
 }
 
@@ -823,6 +851,7 @@ function safeProviderFallbackReason(reason: string) {
     "advanced_model_empty_response",
     "advanced_model_malformed_json",
     "advanced_model_empty_recommended_photos",
+    "advanced_model_empty_template_slots",
     "themed_candidates_not_found",
     "hybrid_provider_not_configured",
     "hybrid_vision_failed",
@@ -832,6 +861,7 @@ function safeProviderFallbackReason(reason: string) {
     "provider_contract_requires_user_review",
     "provider_contract_already_created_album",
     "provider_contract_empty_recommended_photos",
+    "provider_contract_empty_template_slots",
     "provider_contract_unknown_asset",
     "provider_contract_duplicate_asset",
     "provider_contract_story_asset_not_recommended",
@@ -841,7 +871,8 @@ function safeProviderFallbackReason(reason: string) {
 
 function shouldSkipMetadataFallback(reason: string) {
   return reason === "themed_candidates_not_found" ||
-    reason === "provider_contract_empty_recommended_photos";
+    reason === "provider_contract_empty_recommended_photos" ||
+    reason === "provider_contract_empty_template_slots";
 }
 
 function markProvider(
@@ -870,11 +901,16 @@ function assertAlbumFirstContract(
   if (draft.alreadyCreatedAlbum !== false) {
     throw new Error("provider_contract_already_created_album");
   }
-  if (
-    !Array.isArray(draft.recommendedPhotos) ||
-    draft.recommendedPhotos.length === 0
-  ) {
+  if (!Array.isArray(draft.recommendedPhotos)) {
     throw new Error("provider_contract_empty_recommended_photos");
+  }
+  if (!Array.isArray(draft.templateSlots)) {
+    throw new Error("provider_contract_empty_template_slots");
+  }
+  if (
+    draft.recommendedPhotos.length === 0 && draft.templateSlots.length === 0
+  ) {
+    throw new Error("provider_contract_empty_template_slots");
   }
   const candidateIds = new Set(
     request.candidates.map((candidate) => candidate.assetId),

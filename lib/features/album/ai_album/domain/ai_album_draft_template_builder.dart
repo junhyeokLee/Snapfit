@@ -28,7 +28,7 @@ class AiAlbumDraftTemplateBuilder {
   AiAlbumDraftEditorReadiness validateEditorReady(
     AlbumRecommendationDraft draft,
   ) {
-    if (draft.recommendedPhotos.isEmpty) {
+    if (draft.recommendedPhotos.isEmpty && draft.templateSlots.isEmpty) {
       return const AiAlbumDraftEditorReadiness(
         AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos,
       );
@@ -47,7 +47,8 @@ class AiAlbumDraftTemplateBuilder {
     final imageLayers = pages.expand(
       (page) => page.where((layer) => layer.type == LayerType.image),
     );
-    if (!imageLayers.any((layer) => layer.asset != null)) {
+    if (draft.templateSlots.isEmpty &&
+        !imageLayers.any((layer) => layer.asset != null)) {
       return const AiAlbumDraftEditorReadiness(
         AiAlbumDraftEditorReadinessReason.missingLocalImageAsset,
       );
@@ -58,6 +59,8 @@ class AiAlbumDraftTemplateBuilder {
   }
 
   List<List<LayerModel>> build(AlbumRecommendationDraft draft) {
+    if (draft.templateSlots.isNotEmpty) return _templateSlotPages(draft);
+
     final pages = <List<LayerModel>>[_coverLayers(draft)];
 
     final photoById = {
@@ -90,6 +93,161 @@ class AiAlbumDraftTemplateBuilder {
     }
 
     return pages.take(draft.pageCount + 1).toList(growable: false);
+  }
+
+  List<List<LayerModel>> _templateSlotPages(AlbumRecommendationDraft draft) {
+    final pages = List<List<LayerModel>>.generate(
+      draft.pageCount + 1,
+      (index) => <LayerModel>[],
+      growable: false,
+    );
+    final photoById = {
+      for (final photo in draft.recommendedPhotos) photo.assetId: photo,
+    };
+    for (var index = 0; index < pages.length; index += 1) {
+      pages[index].addAll(_templateTextLayers(draft, index));
+    }
+    for (final slot in draft.templateSlots) {
+      if (slot.pageIndex < 0 || slot.pageIndex >= pages.length) continue;
+      final pageSlots = draft.templateSlots
+          .where((item) => item.pageIndex == slot.pageIndex)
+          .toList(growable: false);
+      final slotIndex = pageSlots.indexWhere(
+        (item) => item.slotId == slot.slotId,
+      );
+      final rect = _slotRectFor(draft.theme, slot, slotIndex.clamp(0, 3));
+      final assignedPhoto = slot.assetId == null
+          ? null
+          : photoById[slot.assetId];
+      pages[slot.pageIndex].add(
+        LayerModel(
+          id: 'ai_slot_${slot.slotId}',
+          type: LayerType.image,
+          position: Offset(rect.left, rect.top),
+          width: rect.width,
+          height: rect.height,
+          asset: assignedPhoto?.candidate.asset,
+          imageTemplate: _slotImageTemplateFor(slot),
+          imageBackground: _imageBackgroundFor(draft.theme),
+        ),
+      );
+      pages[slot.pageIndex].add(
+        LayerModel(
+          id: 'ai_slot_hint_${slot.slotId}',
+          type: LayerType.text,
+          position: Offset(rect.left, rect.bottom + 10),
+          width: rect.width,
+          height: 42,
+          text: slot.hint,
+          textAlign: TextAlign.left,
+          textStyle: const TextStyle(
+            fontSize: 11,
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF7A7066),
+          ),
+          textStyleType: TextStyleType.none,
+        ),
+      );
+    }
+    return pages;
+  }
+
+  List<LayerModel> _templateTextLayers(
+    AlbumRecommendationDraft draft,
+    int pageIndex,
+  ) {
+    if (pageIndex == 0) {
+      return [
+        LayerModel(
+          id: 'ai_template_cover_title',
+          type: LayerType.text,
+          position: const Offset(46, 390),
+          width: 408,
+          height: 84,
+          text: draft.title,
+          textAlign: TextAlign.left,
+          textStyle: const TextStyle(
+            fontSize: 30,
+            height: 1.18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF2A2520),
+          ),
+          textStyleType: TextStyleType.none,
+        ),
+        LayerModel(
+          id: 'ai_template_cover_tone',
+          type: LayerType.text,
+          position: const Offset(48, 482),
+          width: 392,
+          height: 42,
+          text: _themeLabel(draft.theme),
+          textAlign: TextAlign.left,
+          textStyle: const TextStyle(
+            fontSize: 14,
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF6B6258),
+          ),
+          textStyleType: TextStyleType.none,
+        ),
+      ];
+    }
+    final section = draft.storySections.length >= pageIndex
+        ? draft.storySections[pageIndex - 1]
+        : null;
+    return [
+      LayerModel(
+        id: 'ai_template_section_title_$pageIndex',
+        type: LayerType.text,
+        position: const Offset(38, 34),
+        width: 250,
+        height: 48,
+        text: section?.title ?? '사진을 채워주세요',
+        textAlign: TextAlign.left,
+        textStyle: const TextStyle(
+          fontSize: 23,
+          height: 1.18,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF2A2520),
+        ),
+        textStyleType: TextStyleType.none,
+      ),
+      LayerModel(
+        id: 'ai_template_section_desc_$pageIndex',
+        type: LayerType.text,
+        position: const Offset(40, 86),
+        width: 260,
+        height: 52,
+        text: section?.description ?? 'AI가 잡아둔 사진칸에 직접 사진을 넣어요.',
+        textAlign: TextAlign.left,
+        textStyle: const TextStyle(
+          fontSize: 12,
+          height: 1.32,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF6B6258),
+        ),
+        textStyleType: TextStyleType.none,
+      ),
+    ];
+  }
+
+  Rect _slotRectFor(AlbumTheme theme, AiTemplateSlot slot, int index) {
+    if (slot.pageIndex == 0) {
+      final layout = _coverLayoutFor(theme);
+      return layout.photoPosition & layout.photoSize;
+    }
+    final slots = _storySlotsFor(theme, 160);
+    return slots[index.clamp(0, slots.length - 1)];
+  }
+
+  String _slotImageTemplateFor(AiTemplateSlot slot) {
+    return switch (slot.role) {
+      'portrait' => '3:4',
+      'square' => '1:1',
+      'cover' => '4:3',
+      _ => '4:3',
+    };
   }
 
   List<LayerModel> _coverLayers(AlbumRecommendationDraft draft) {

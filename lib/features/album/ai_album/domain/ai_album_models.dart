@@ -134,6 +134,22 @@ class StorySection {
   final List<String> photoAssetIds;
 }
 
+class AiTemplateSlot {
+  const AiTemplateSlot({
+    required this.slotId,
+    required this.pageIndex,
+    required this.role,
+    required this.hint,
+    this.assetId,
+  });
+
+  final String slotId;
+  final int pageIndex;
+  final String role;
+  final String hint;
+  final String? assetId;
+}
+
 class AlbumRecommendationDraft {
   const AlbumRecommendationDraft({
     this.draftId = '',
@@ -145,6 +161,7 @@ class AlbumRecommendationDraft {
     required this.excludedPhotos,
     required this.storySections,
     required this.summary,
+    this.templateSlots = const [],
     this.curationNotes = const [],
     this.requiresUserReview = true,
     this.alreadyCreatedAlbum = false,
@@ -160,6 +177,7 @@ class AlbumRecommendationDraft {
   final List<ExcludedPhoto> excludedPhotos;
   final List<StorySection> storySections;
   final String summary;
+  final List<AiTemplateSlot> templateSlots;
   final List<String> curationNotes;
   final bool requiresUserReview;
   final bool alreadyCreatedAlbum;
@@ -175,6 +193,7 @@ class AlbumRecommendationDraft {
     List<ExcludedPhoto>? excludedPhotos,
     List<StorySection>? storySections,
     String? summary,
+    List<AiTemplateSlot>? templateSlots,
     List<String>? curationNotes,
     bool? requiresUserReview,
     bool? alreadyCreatedAlbum,
@@ -190,6 +209,7 @@ class AlbumRecommendationDraft {
       excludedPhotos: excludedPhotos ?? this.excludedPhotos,
       storySections: storySections ?? this.storySections,
       summary: summary ?? this.summary,
+      templateSlots: templateSlots ?? this.templateSlots,
       curationNotes: curationNotes ?? this.curationNotes,
       requiresUserReview: requiresUserReview ?? this.requiresUserReview,
       alreadyCreatedAlbum: alreadyCreatedAlbum ?? this.alreadyCreatedAlbum,
