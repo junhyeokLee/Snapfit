@@ -72,7 +72,7 @@ class AiAlbumDraftTemplateBuilder {
           .take(4)
           .toList(growable: false);
       storyPhotoIds.addAll(photos.map((photo) => photo.assetId));
-      pages.add(_storyPageLayers(section, photos));
+      pages.add(_storyPageLayers(draft.theme, section, photos));
     }
 
     final extraPhotos = draft.recommendedPhotos
@@ -86,7 +86,7 @@ class AiAlbumDraftTemplateBuilder {
           .take(2)
           .toList(growable: false);
       extraPhotoCursor += remaining.length;
-      pages.add(_photoPageLayers(index, remaining));
+      pages.add(_photoPageLayers(draft.theme, index, remaining));
     }
 
     return pages.take(draft.pageCount + 1).toList(growable: false);
@@ -96,47 +96,48 @@ class AiAlbumDraftTemplateBuilder {
     final coverPhoto = draft.recommendedPhotos.isEmpty
         ? null
         : draft.recommendedPhotos.first;
+    final layout = _coverLayoutFor(draft.theme);
     return [
       if (coverPhoto != null)
         LayerModel(
           id: 'ai_cover_${coverPhoto.assetId}',
           type: LayerType.image,
-          position: const Offset(60, 72),
-          width: 380,
-          height: 280,
+          position: layout.photoPosition,
+          width: layout.photoSize.width,
+          height: layout.photoSize.height,
           asset: coverPhoto.candidate.asset,
-          imageTemplate: '4:3',
-          imageBackground: 'mat',
+          imageTemplate: layout.imageTemplate,
+          imageBackground: layout.imageBackground,
         ),
       LayerModel(
         id: 'ai_cover_title',
         type: LayerType.text,
-        position: const Offset(64, 382),
-        width: 372,
-        height: 86,
+        position: layout.titlePosition,
+        width: layout.titleSize.width,
+        height: layout.titleSize.height,
         text: draft.title,
-        textAlign: TextAlign.left,
-        textStyle: const TextStyle(
-          fontSize: 30,
+        textAlign: layout.textAlign,
+        textStyle: TextStyle(
+          fontSize: layout.titleFontSize,
           height: 1.18,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF2A2520),
+          color: layout.textColor,
         ),
         textStyleType: TextStyleType.none,
       ),
       LayerModel(
         id: 'ai_cover_tone',
         type: LayerType.text,
-        position: const Offset(66, 470),
-        width: 360,
-        height: 46,
+        position: layout.tonePosition,
+        width: layout.toneSize.width,
+        height: layout.toneSize.height,
         text: _themeLabel(draft.theme),
-        textAlign: TextAlign.left,
-        textStyle: const TextStyle(
+        textAlign: layout.textAlign,
+        textStyle: TextStyle(
           fontSize: 14,
           height: 1.25,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF6B6258),
+          color: layout.mutedTextColor,
         ),
         textStyleType: TextStyleType.none,
       ),
@@ -144,6 +145,7 @@ class AiAlbumDraftTemplateBuilder {
   }
 
   List<LayerModel> _storyPageLayers(
+    AlbumTheme theme,
     StorySection section,
     List<RecommendedPhoto> photos,
   ) {
@@ -180,25 +182,25 @@ class AiAlbumDraftTemplateBuilder {
         ),
         textStyleType: TextStyleType.none,
       ),
-      ..._imageGridLayers(photos, top: 160),
+      ..._imageGridLayers(theme, photos, top: 160),
     ];
   }
 
-  List<LayerModel> _photoPageLayers(int index, List<RecommendedPhoto> photos) {
+  List<LayerModel> _photoPageLayers(
+    AlbumTheme theme,
+    int index,
+    List<RecommendedPhoto> photos,
+  ) {
     if (photos.isEmpty) return const [];
-    return _imageGridLayers(photos, top: 52);
+    return _imageGridLayers(theme, photos, top: 52);
   }
 
   List<LayerModel> _imageGridLayers(
+    AlbumTheme theme,
     List<RecommendedPhoto> photos, {
     required double top,
   }) {
-    final slots = <Rect>[
-      Rect.fromLTWH(40, top, 220, 150),
-      Rect.fromLTWH(40, top + 170, 220, 150),
-      Rect.fromLTWH(276, top, 184, 150),
-      Rect.fromLTWH(276, top + 170, 184, 150),
-    ];
+    final slots = _storySlotsFor(theme, top);
     return photos
         .asMap()
         .entries
@@ -212,11 +214,129 @@ class AiAlbumDraftTemplateBuilder {
             width: slot.width,
             height: slot.height,
             asset: photo.candidate.asset,
-            imageTemplate: '4:3',
-            imageBackground: 'mat',
+            imageTemplate: _imageTemplateFor(
+              theme,
+              photo.candidate.orientation,
+            ),
+            imageBackground: _imageBackgroundFor(theme),
           );
         })
         .toList(growable: false);
+  }
+
+  _CoverLayout _coverLayoutFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => const _CoverLayout(
+        photoPosition: Offset(42, 62),
+        photoSize: Size(416, 292),
+        titlePosition: Offset(48, 392),
+        titleSize: Size(404, 88),
+        tonePosition: Offset(50, 490),
+        toneSize: Size(390, 44),
+        imageTemplate: '4:3',
+        imageBackground: 'mat',
+        textAlign: TextAlign.left,
+        titleFontSize: 30,
+      ),
+      AlbumTheme.family => const _CoverLayout(
+        photoPosition: Offset(58, 54),
+        photoSize: Size(384, 330),
+        titlePosition: Offset(58, 410),
+        titleSize: Size(384, 82),
+        tonePosition: Offset(60, 500),
+        toneSize: Size(370, 44),
+        imageTemplate: '1:1',
+        imageBackground: 'soft-shadow',
+        textAlign: TextAlign.center,
+        titleFontSize: 28,
+      ),
+      AlbumTheme.baby => const _CoverLayout(
+        photoPosition: Offset(86, 58),
+        photoSize: Size(328, 328),
+        titlePosition: Offset(52, 414),
+        titleSize: Size(396, 92),
+        tonePosition: Offset(70, 510),
+        toneSize: Size(360, 44),
+        imageTemplate: 'circle-soft',
+        imageBackground: 'pastel',
+        textAlign: TextAlign.center,
+        titleFontSize: 27,
+        textColor: Color(0xFF3E302C),
+        mutedTextColor: Color(0xFF7B6661),
+      ),
+      AlbumTheme.couple => const _CoverLayout(
+        photoPosition: Offset(66, 70),
+        photoSize: Size(368, 300),
+        titlePosition: Offset(56, 402),
+        titleSize: Size(388, 86),
+        tonePosition: Offset(58, 492),
+        toneSize: Size(380, 44),
+        imageTemplate: 'polaroid',
+        imageBackground: 'warm-paper',
+        textAlign: TextAlign.center,
+        titleFontSize: 29,
+      ),
+      _ => const _CoverLayout(
+        photoPosition: Offset(60, 72),
+        photoSize: Size(380, 280),
+        titlePosition: Offset(64, 382),
+        titleSize: Size(372, 86),
+        tonePosition: Offset(66, 470),
+        toneSize: Size(360, 46),
+        imageTemplate: '4:3',
+        imageBackground: 'mat',
+        textAlign: TextAlign.left,
+        titleFontSize: 30,
+      ),
+    };
+  }
+
+  List<Rect> _storySlotsFor(AlbumTheme theme, double top) {
+    return switch (theme) {
+      AlbumTheme.travel => [
+        Rect.fromLTWH(30, top, 260, 164),
+        Rect.fromLTWH(306, top + 18, 156, 132),
+        Rect.fromLTWH(54, top + 190, 172, 150),
+        Rect.fromLTWH(242, top + 188, 220, 152),
+      ],
+      AlbumTheme.family => [
+        Rect.fromLTWH(48, top, 180, 180),
+        Rect.fromLTWH(248, top, 180, 180),
+        Rect.fromLTWH(48, top + 198, 180, 150),
+        Rect.fromLTWH(248, top + 198, 180, 150),
+      ],
+      AlbumTheme.baby => [
+        Rect.fromLTWH(78, top, 150, 150),
+        Rect.fromLTWH(250, top + 24, 150, 150),
+        Rect.fromLTWH(62, top + 198, 172, 132),
+        Rect.fromLTWH(252, top + 196, 172, 132),
+      ],
+      _ => [
+        Rect.fromLTWH(40, top, 220, 150),
+        Rect.fromLTWH(40, top + 170, 220, 150),
+        Rect.fromLTWH(276, top, 184, 150),
+        Rect.fromLTWH(276, top + 170, 184, 150),
+      ],
+    };
+  }
+
+  String _imageTemplateFor(AlbumTheme theme, PhotoOrientation orientation) {
+    return switch (theme) {
+      AlbumTheme.family => '1:1',
+      AlbumTheme.baby =>
+        orientation == PhotoOrientation.portrait ? '3:4' : 'soft-rounded',
+      AlbumTheme.couple => 'polaroid',
+      _ => '4:3',
+    };
+  }
+
+  String _imageBackgroundFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.family => 'soft-shadow',
+      AlbumTheme.baby => 'pastel',
+      AlbumTheme.couple => 'warm-paper',
+      _ => 'mat',
+    };
   }
 
   String _themeLabel(AlbumTheme theme) {
@@ -231,4 +351,34 @@ class AiAlbumDraftTemplateBuilder {
       AlbumTheme.custom => '나만의 기록',
     };
   }
+}
+
+class _CoverLayout {
+  const _CoverLayout({
+    required this.photoPosition,
+    required this.photoSize,
+    required this.titlePosition,
+    required this.titleSize,
+    required this.tonePosition,
+    required this.toneSize,
+    required this.imageTemplate,
+    required this.imageBackground,
+    required this.textAlign,
+    required this.titleFontSize,
+    this.textColor = const Color(0xFF2A2520),
+    this.mutedTextColor = const Color(0xFF6B6258),
+  });
+
+  final Offset photoPosition;
+  final Size photoSize;
+  final Offset titlePosition;
+  final Size titleSize;
+  final Offset tonePosition;
+  final Size toneSize;
+  final String imageTemplate;
+  final String imageBackground;
+  final TextAlign textAlign;
+  final double titleFontSize;
+  final Color textColor;
+  final Color mutedTextColor;
 }

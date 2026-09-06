@@ -9,13 +9,16 @@ class AiAlbumPhotoCandidateCollector {
     required GalleryRepository repository,
     DateTime? now,
     int pageSize = 120,
+    int maxPages = 8,
   }) : _repository = repository,
        _now = now,
-       _pageSize = pageSize;
+       _pageSize = pageSize,
+       _maxPages = maxPages;
 
   final GalleryRepository _repository;
   final DateTime? _now;
   final int _pageSize;
+  final int _maxPages;
 
   Future<List<PhotoCandidate>> collect({
     required AiPhotoRange range,
@@ -28,23 +31,45 @@ class AiAlbumPhotoCandidateCollector {
       );
     }
 
-    final albums = album != null ? [album] : await _repository.loadAlbums();
-    final candidates = <PhotoCandidate>[];
+    final albums = album != null ? [album] : await _albumsForAiRange(range);
+    final candidatesById = <String, PhotoCandidate>{};
     for (final currentAlbum in albums) {
-      final assets = await _repository.loadImagesPaged(
-        currentAlbum,
-        0,
-        _pageSize,
-      );
-      candidates.addAll(
-        assets
-            .where((asset) => _isWithinRange(asset, range))
-            .map((asset) => _candidateFromAsset(asset, currentAlbum.name)),
-      );
+      for (var page = 0; page < _maxPages; page += 1) {
+        final assets = await _repository.loadImagesPaged(
+          currentAlbum,
+          page,
+          _pageSize,
+        );
+        if (assets.isEmpty) break;
+        for (final asset in assets) {
+          if (!_isWithinRange(asset, range)) continue;
+          candidatesById.putIfAbsent(
+            asset.id,
+            () => _candidateFromAsset(asset, currentAlbum.name),
+          );
+        }
+        if (assets.length < _pageSize) break;
+        if (_pageIsOlderThanRange(assets, range)) break;
+      }
     }
 
-    candidates.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final candidates = candidatesById.values.toList(growable: false)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return candidates;
+  }
+
+  Future<List<AssetPathEntity>> _albumsForAiRange(AiPhotoRange range) async {
+    final allPhotosAlbum = await _repository.loadAllPhotosAlbum();
+    if (allPhotosAlbum != null) return [allPhotosAlbum];
+    return _repository.loadAlbums();
+  }
+
+  bool _pageIsOlderThanRange(List<AssetEntity> assets, AiPhotoRange range) {
+    if (range != AiPhotoRange.recent30Days) return false;
+    final threshold = (_now ?? DateTime.now()).subtract(
+      const Duration(days: 30),
+    );
+    return assets.every((asset) => asset.createDateTime.isBefore(threshold));
   }
 
   bool _isWithinRange(AssetEntity asset, AiPhotoRange range) {

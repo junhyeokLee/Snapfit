@@ -39,15 +39,82 @@ void main() {
       ).collect(range: AiPhotoRange.recent30Days);
 
       expect(candidates.map((candidate) => candidate.assetId), [
-        'recent-landscape',
-        'recent-portrait',
         'recent-screenshot',
+        'recent-portrait',
+        'recent-landscape',
       ]);
-      expect(candidates.first.albumName, 'Camera');
-      expect(candidates.first.asset, same(firstRecentAsset));
-      expect(candidates.first.orientation, PhotoOrientation.landscape);
+      expect(candidates.last.albumName, 'Camera');
+      expect(candidates.last.asset, same(firstRecentAsset));
+      expect(candidates.last.orientation, PhotoOrientation.landscape);
       expect(candidates[1].orientation, PhotoOrientation.portrait);
-      expect(candidates[2].isScreenshot, isTrue);
+      expect(candidates.first.isScreenshot, isTrue);
+    },
+  );
+
+  test(
+    'uses the all-photos album and paginates so recent 30 days is not limited to stale folders',
+    () async {
+      final repository = _FakeGalleryRepository(
+        albums: [AssetPathEntity(id: 'old-folder', name: 'Old Folder')],
+        allPhotosAlbum: AssetPathEntity(id: 'all', name: 'Recents'),
+        pages: {
+          'old-folder': [
+            _asset('stale-folder-photo', DateTime(2025, 1, 1), 4000, 3000),
+          ],
+          'all': [
+            _asset('older-page-lead', DateTime(2026, 7, 1), 4000, 3000),
+            _asset('recent-page-zero', DateTime(2026, 8, 15), 4000, 3000),
+            _asset('recent-page-one', DateTime(2026, 8, 29), 3000, 4000),
+          ],
+        },
+        pageSizeOverride: 2,
+      );
+
+      final candidates = await AiAlbumPhotoCandidateCollector(
+        repository: repository,
+        now: DateTime(2026, 8, 30),
+        pageSize: 2,
+      ).collect(range: AiPhotoRange.recent30Days);
+
+      expect(candidates.map((candidate) => candidate.assetId), [
+        'recent-page-one',
+        'recent-page-zero',
+      ]);
+      expect(repository.loadedAlbumIds, ['all', 'all']);
+    },
+  );
+
+  test(
+    'deduplicates assets collected through multiple albums and keeps newest first',
+    () async {
+      final duplicate = _asset('same-photo', DateTime(2026, 8, 29), 4000, 3000);
+      final repository = _FakeGalleryRepository(
+        albums: [
+          AssetPathEntity(id: 'camera', name: 'Camera'),
+          AssetPathEntity(id: 'favorites', name: 'Favorites'),
+        ],
+        pages: {
+          'camera': [
+            duplicate,
+            _asset('older-photo', DateTime(2026, 8, 1), 4000, 3000),
+          ],
+          'favorites': [
+            duplicate,
+            _asset('newest-photo', DateTime(2026, 8, 30), 3000, 4000),
+          ],
+        },
+      );
+
+      final candidates = await AiAlbumPhotoCandidateCollector(
+        repository: repository,
+        now: DateTime(2026, 8, 30),
+      ).collect(range: AiPhotoRange.limitedLibrary);
+
+      expect(candidates.map((candidate) => candidate.assetId), [
+        'newest-photo',
+        'same-photo',
+        'older-photo',
+      ]);
     },
   );
 
@@ -95,14 +162,22 @@ class _FakeGalleryRepository implements GalleryRepository {
     required this.albums,
     required this.pages,
     this.permitted = true,
+    this.allPhotosAlbum,
+    this.pageSizeOverride,
   });
 
   final List<AssetPathEntity> albums;
   final Map<String, List<AssetEntity>> pages;
   final bool permitted;
+  final AssetPathEntity? allPhotosAlbum;
+  final int? pageSizeOverride;
+  final List<String> loadedAlbumIds = [];
 
   @override
   Future<List<AssetPathEntity>> loadAlbums() async => albums;
+
+  @override
+  Future<AssetPathEntity?> loadAllPhotosAlbum() async => allPhotosAlbum;
 
   @override
   Future<List<AssetEntity>> loadImagesPaged(
@@ -110,8 +185,12 @@ class _FakeGalleryRepository implements GalleryRepository {
     int page,
     int size,
   ) async {
-    if (page > 0) return const [];
-    return pages[album.id] ?? const [];
+    loadedAlbumIds.add(album.id);
+    final source = pages[album.id] ?? const [];
+    final effectiveSize = pageSizeOverride ?? size;
+    final start = page * effectiveSize;
+    if (start >= source.length) return const [];
+    return source.skip(start).take(effectiveSize).toList(growable: false);
   }
 
   @override

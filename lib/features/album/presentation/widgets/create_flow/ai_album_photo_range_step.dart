@@ -65,29 +65,16 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     SizedBox(height: 18.h),
                     _RangeCard(
                       title: '최근 30일',
-                      subtitle: '가장 자연스러운 기본값',
+                      subtitle: '휴대폰의 최근 사진만 새 순서로 살펴봐요',
                       icon: Icons.auto_awesome_rounded,
                       emphasized: true,
                       onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
                     ),
                     _RangeCard(
-                      title: '날짜 선택',
-                      subtitle: '여행·기념일만 정확히',
-                      icon: Icons.calendar_month_rounded,
-                      onTap: () => onRangeSelected(AiPhotoRange.dateRange),
-                    ),
-                    _RangeCard(
-                      title: '앨범 선택',
-                      subtitle: '휴대폰 앨범 단위로',
-                      icon: Icons.photo_album_rounded,
-                      onTap: () => onRangeSelected(AiPhotoRange.album),
-                    ),
-                    _RangeCard(
-                      title: '직접 고르기',
-                      subtitle: '넣을 사진만 직접 픽',
-                      icon: Icons.touch_app_rounded,
-                      onTap: () =>
-                          onRangeSelected(AiPhotoRange.manualSelection),
+                      title: '허용한 사진 전체',
+                      subtitle: '최근 사진이 부족할 때 전체에서 찾아요',
+                      icon: Icons.photo_library_rounded,
+                      onTap: () => onRangeSelected(AiPhotoRange.limitedLibrary),
                     ),
                     SizedBox(height: 14.h),
                     Text(
@@ -95,7 +82,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                           ? '고급 AI를 켜면 선택한 사진의 작은 미리보기 이미지를 서버에서 살펴봐요.'
                           : usesServerDraftProvider
                           ? '선택한 사진의 날짜·크기 같은 정보가 서버로 전송돼요. 초안은 확인 전까지 확정되지 않아요.'
-                          : '원본 사진은 서버로 보내지 않고, 기기 안에서만 살펴봐요.',
+                          : '날짜 선택·앨범 선택·직접 고르기는 실제 선택 화면을 붙인 뒤 열게요. 지금은 최근 30일 또는 허용한 사진 전체만 정확히 살펴봐요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 12.5.sp,

@@ -149,6 +149,72 @@ void main() {
     },
   );
 
+  test(
+    'uses visibly different editor layouts for travel family and growth themes',
+    () {
+      final builder = const AiAlbumDraftTemplateBuilder();
+      final photos = [
+        for (var i = 1; i <= 4; i++)
+          RecommendedPhoto(
+            candidate: _candidate(
+              'theme-photo-$i',
+              DateTime(2026, 8, 20, 10, i),
+              _asset('theme-photo-$i', DateTime(2026, 8, 20, 10, i)),
+            ),
+            score: 0.9,
+            reasons: const [
+              AiCurationReason(
+                type: AiCurationReasonType.highResolution,
+                message: '크게 넣어도 선명한 사진이에요',
+              ),
+            ],
+          ),
+      ];
+      AlbumRecommendationDraft draft(AlbumTheme theme) =>
+          AlbumRecommendationDraft(
+            theme: theme,
+            title: theme.name,
+            pageCount: 4,
+            templateTone: theme.name,
+            recommendedPhotos: photos,
+            excludedPhotos: const [],
+            storySections: const [
+              StorySection(
+                title: 'section',
+                description: 'description',
+                photoAssetIds: [
+                  'theme-photo-1',
+                  'theme-photo-2',
+                  'theme-photo-3',
+                ],
+              ),
+            ],
+            summary: 'summary',
+          );
+
+      final travelPages = builder.build(draft(AlbumTheme.travel));
+      final familyPages = builder.build(draft(AlbumTheme.family));
+      final babyPages = builder.build(draft(AlbumTheme.baby));
+      LayerModel coverImage(List<List<LayerModel>> pages) =>
+          pages.first.firstWhere((layer) => layer.type == LayerType.image);
+      List<Offset> storyPositions(List<List<LayerModel>> pages) => pages[1]
+          .where((layer) => layer.type == LayerType.image)
+          .map((layer) => layer.position)
+          .toList(growable: false);
+
+      expect(
+        coverImage(travelPages).position,
+        isNot(coverImage(familyPages).position),
+      );
+      expect(
+        coverImage(familyPages).imageBackground,
+        isNot(coverImage(babyPages).imageBackground),
+      );
+      expect(storyPositions(travelPages), isNot(storyPositions(familyPages)));
+      expect(storyPositions(familyPages), isNot(storyPositions(babyPages)));
+    },
+  );
+
   test('reports draft without local image assets as not editor-ready', () {
     final draft = AlbumRecommendationDraft(
       theme: AlbumTheme.daily,

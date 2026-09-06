@@ -33,11 +33,12 @@ void main() {
 
     expect(find.text('사진 범위'), findsOneWidget);
     expect(find.text('어디까지 살펴볼까요?'), findsNothing);
-    expect(find.text('원본 사진은 서버로 보내지 않고, 기기 안에서만 살펴봐요.'), findsOneWidget);
+    expect(find.textContaining('지금은 최근 30일 또는 허용한 사진 전체만 정확히'), findsOneWidget);
     expect(find.text('최근 30일'), findsOneWidget);
-    expect(find.text('날짜 선택'), findsOneWidget);
-    expect(find.text('앨범 선택'), findsOneWidget);
-    expect(find.text('직접 고르기'), findsOneWidget);
+    expect(find.text('허용한 사진 전체'), findsOneWidget);
+    expect(find.text('날짜 선택'), findsNothing);
+    expect(find.text('앨범 선택'), findsNothing);
+    expect(find.text('직접 고르기'), findsNothing);
     expect(find.textContaining('전체 사진첩이 부담스럽다면'), findsNothing);
 
     await tester.scrollUntilVisible(find.text('최근 30일'), 120);

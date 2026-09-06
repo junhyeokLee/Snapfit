@@ -24,6 +24,15 @@ class GalleryRepositoryImpl implements GalleryRepository {
   }
 
   @override
+  Future<AssetPathEntity?> loadAllPhotosAlbum() async {
+    final albums = await PhotoManager.getAssetPathList(
+      type: RequestType.image,
+      onlyAll: true,
+    );
+    return albums.isEmpty ? null : albums.first;
+  }
+
+  @override
   Future<List<AssetEntity>> loadImagesPaged(
     AssetPathEntity album,
     int page,
