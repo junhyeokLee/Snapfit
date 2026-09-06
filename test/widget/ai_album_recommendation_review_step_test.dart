@@ -426,4 +426,68 @@ void main() {
 
     expect(find.text('편집 시작'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows slot-first AI template review without photo recommendation copy',
+    (tester) async {
+      var accepted = false;
+      final draft = AlbumRecommendationDraft(
+        theme: AlbumTheme.travel,
+        title: '제주의 느린 오후',
+        pageCount: 6,
+        templateTone: 'warm-film',
+        recommendedPhotos: const [],
+        excludedPhotos: const [],
+        storySections: const [
+          StorySection(
+            title: '여행의 시작',
+            description: '첫 장에 넣을 장면을 직접 골라요.',
+            photoAssetIds: [],
+          ),
+        ],
+        summary: '사진은 직접 넣고, AI는 앨범 틀과 문구만 잡았어요.',
+        templateSlots: const [
+          AiTemplateSlot(
+            slotId: 'cover-main',
+            pageIndex: 0,
+            role: 'cover',
+            hint: '대표 사진을 직접 넣어주세요',
+          ),
+          AiTemplateSlot(
+            slotId: 'p1-landscape',
+            pageIndex: 1,
+            role: 'landscape',
+            hint: '장소감이 보이는 사진을 넣어주세요',
+          ),
+        ],
+        reviewCtaLabel: '이 템플릿으로 시작하기',
+      );
+
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _wrap(
+          AiAlbumRecommendationReviewStep(
+            draft: draft,
+            onAcceptDraft: (_) => accepted = true,
+            onBack: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('AI 템플릿'), findsOneWidget);
+      expect(find.text('사진 슬롯 2개'), findsOneWidget);
+      expect(find.text('추천 사진 0장'), findsNothing);
+      expect(find.text('AI가 이렇게 골랐어요'), findsNothing);
+      expect(find.text('템플릿 슬롯'), findsOneWidget);
+      expect(find.text('대표 사진을 직접 넣어주세요'), findsOneWidget);
+      expect(find.text('장소감이 보이는 사진을 넣어주세요'), findsOneWidget);
+      expect(find.text('이 템플릿으로 시작하기'), findsOneWidget);
+
+      await tester.tap(find.text('이 템플릿으로 시작하기'));
+      await tester.pump();
+      expect(accepted, isTrue);
+    },
+  );
 }

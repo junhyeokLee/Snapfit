@@ -622,21 +622,29 @@ class _RatioCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: _CheckDot(selected: selected, alignLeft: true)),
-              if (selected)
-                Text(
-                  '선택',
-                  style: TextStyle(
-                    fontSize: 9.5.sp,
-                    fontWeight: FontWeight.w900,
-                    color: SnapFitColors.isDark(context)
-                        ? const Color(0xFFF4F1EA)
-                        : const Color(0xFF6E5942),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final showSelectedLabel =
+                  selected && constraints.maxWidth >= 48.w;
+              return Row(
+                children: [
+                  Expanded(
+                    child: _CheckDot(selected: selected, alignLeft: true),
                   ),
-                ),
-            ],
+                  if (showSelectedLabel)
+                    Text(
+                      '선택',
+                      style: TextStyle(
+                        fontSize: 9.5.sp,
+                        fontWeight: FontWeight.w900,
+                        color: SnapFitColors.isDark(context)
+                            ? const Color(0xFFF4F1EA)
+                            : const Color(0xFF6E5942),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           SizedBox(height: 7.h),
           Center(
@@ -696,11 +704,19 @@ class _PageCountCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: _CheckDot(selected: selected, alignLeft: true)),
-              _PageStackMark(pages: pages, selected: selected),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final showStackMark = constraints.maxWidth >= 56.w;
+              return Row(
+                children: [
+                  Expanded(
+                    child: _CheckDot(selected: selected, alignLeft: true),
+                  ),
+                  if (showStackMark)
+                    _PageStackMark(pages: pages, selected: selected),
+                ],
+              );
+            },
           ),
           SizedBox(height: 10.h),
           Text(
