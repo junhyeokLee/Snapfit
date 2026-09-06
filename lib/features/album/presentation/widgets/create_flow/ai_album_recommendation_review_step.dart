@@ -109,7 +109,9 @@ class _AiAlbumRecommendationReviewStepState
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '사진 · 흐름 · 제외',
+                      _draft.templateSlots.isNotEmpty
+                          ? '템플릿 · 사진 슬롯 · 문구'
+                          : '사진 · 흐름 · 제외',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 14.sp,
@@ -121,17 +123,23 @@ class _AiAlbumRecommendationReviewStepState
                     _DraftSummaryCard(draft: _draft),
                     SizedBox(height: 14.h),
                     _StorySectionList(draft: _draft),
-                    SizedBox(height: 14.h),
-                    _RecommendationDetails(
-                      draft: _draft,
-                      onAddExcludedPhoto: _addExcludedPhoto,
-                    ),
+                    if (_draft.templateSlots.isNotEmpty) ...[
+                      SizedBox(height: 14.h),
+                      _TemplateSlotList(draft: _draft),
+                    ] else ...[
+                      SizedBox(height: 14.h),
+                      _RecommendationDetails(
+                        draft: _draft,
+                        onAddExcludedPhoto: _addExcludedPhoto,
+                      ),
+                    ],
                     SizedBox(height: 16.h),
                   ],
                 ),
               ),
             ),
             _BottomCta(
+              label: _draft.reviewCtaLabel,
               isAcceptingDraft: _isAcceptingDraft,
               onAcceptDraft: _handleAcceptDraft,
             ),
@@ -180,14 +188,126 @@ class _DraftSummaryCard extends StatelessWidget {
             spacing: 8.w,
             runSpacing: 8.h,
             children: [
-              _InfoChip(text: '추천 사진 ${draft.recommendedPhotos.length}장'),
+              if (draft.templateSlots.isNotEmpty)
+                _InfoChip(text: '사진 슬롯 ${draft.templateSlots.length}개')
+              else
+                _InfoChip(text: '추천 사진 ${draft.recommendedPhotos.length}장'),
               _InfoChip(text: '${draft.pageCount}쪽'),
-              _InfoChip(text: '잠시 빼둔 사진 ${draft.excludedPhotos.length}장'),
+              if (draft.templateSlots.isEmpty ||
+                  draft.excludedPhotos.isNotEmpty)
+                _InfoChip(text: '잠시 빼둔 사진 ${draft.excludedPhotos.length}장'),
             ],
           ),
         ],
       ),
     );
+  }
+}
+
+class _TemplateSlotList extends StatelessWidget {
+  const _TemplateSlotList({required this.draft});
+
+  final AlbumRecommendationDraft draft;
+
+  @override
+  Widget build(BuildContext context) {
+    final slots = draft.templateSlots.take(6).toList(growable: false);
+    return _PaperCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle(
+            title: '템플릿 슬롯',
+            caption: 'AI가 앨범 칸만 잡았어요. 사진은 다음 편집 화면에서 직접 넣고 바꿔요.',
+          ),
+          SizedBox(height: 12.h),
+          ...slots.map((slot) {
+            final pageLabel = slot.pageIndex == 0 ? '표지' : '${slot.pageIndex}쪽';
+            return Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 38.w,
+                    height: 38.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: SnapFitColors.isDark(context)
+                          ? Colors.white.withOpacity(0.08)
+                          : const Color(0xFFF3EEE5),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: SnapFitColors.isDark(context)
+                            ? Colors.white.withOpacity(0.10)
+                            : const Color(0xFFE4D8C9),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 18.sp,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  SizedBox(width: 11.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$pageLabel · ${_roleLabel(slot.role)}',
+                          style: TextStyle(
+                            color: SnapFitColors.textPrimaryOf(context),
+                            fontSize: 13.3.sp,
+                            height: 1.25,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 3.h),
+                        Text(
+                          slot.hint,
+                          style: TextStyle(
+                            color: SnapFitColors.textSecondaryOf(context),
+                            fontSize: 12.4.sp,
+                            height: 1.35,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          if (draft.templateSlots.length > slots.length) ...[
+            SizedBox(height: 2.h),
+            Text(
+              '나머지 ${draft.templateSlots.length - slots.length}개 슬롯은 편집 화면에서 이어서 채울 수 있어요.',
+              style: TextStyle(
+                color: SnapFitColors.textSecondaryOf(context),
+                fontSize: 12.sp,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _roleLabel(String role) {
+    return switch (role) {
+      'cover' => '대표 사진',
+      'landscape' => '풍경/장소',
+      'portrait' => '인물',
+      'detail' => '디테일',
+      'ending' => '마무리',
+      'together' => '함께한 장면',
+      'daily' => '일상 장면',
+      _ => '사진칸',
+    };
   }
 }
 
@@ -202,7 +322,12 @@ class _StorySectionList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(title: '앨범 흐름', caption: '날짜별 흐름이 자연스럽도록 먼저 나눴어요.'),
+          _SectionTitle(
+            title: '앨범 흐름',
+            caption: draft.templateSlots.isNotEmpty
+                ? '사진을 직접 넣으면 자연스럽게 이어질 흐름이에요.'
+                : '날짜별 흐름이 자연스럽도록 먼저 나눴어요.',
+          ),
           SizedBox(height: 12.h),
           ...draft.storySections.map((section) {
             return Padding(
@@ -538,10 +663,12 @@ class _ReasonBulletList extends StatelessWidget {
 
 class _BottomCta extends StatelessWidget {
   const _BottomCta({
+    required this.label,
     required this.isAcceptingDraft,
     required this.onAcceptDraft,
   });
 
+  final String label;
   final bool isAcceptingDraft;
   final VoidCallback onAcceptDraft;
 
@@ -579,7 +706,11 @@ class _BottomCta extends StatelessWidget {
             ),
           ),
           child: Text(
-            isAcceptingDraft ? '편집 준비 중' : '편집 시작',
+            isAcceptingDraft
+                ? '편집 준비 중'
+                : label == '이 구성으로 시작하기'
+                ? '편집 시작'
+                : label,
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w900,
