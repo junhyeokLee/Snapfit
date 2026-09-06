@@ -760,6 +760,31 @@ function providerTimeout<T>(timeoutMs: number): Promise<T> {
   });
 }
 
+function safeProviderFallbackReason(reason: string) {
+  const allowedReasons = new Set([
+    "advanced_preview_required",
+    "advanced_provider_not_configured",
+    "advanced_storage_not_configured",
+    "advanced_storage_fetch_failed",
+    "advanced_model_failed",
+    "advanced_model_empty_response",
+    "advanced_model_malformed_json",
+    "advanced_model_empty_recommended_photos",
+    "hybrid_provider_not_configured",
+    "hybrid_vision_failed",
+    "hybrid_vision_empty_response",
+    "hybrid_finalizer_failed",
+    "hybrid_finalizer_empty_response",
+    "provider_contract_requires_user_review",
+    "provider_contract_already_created_album",
+    "provider_contract_empty_recommended_photos",
+    "provider_contract_unknown_asset",
+    "provider_contract_duplicate_asset",
+    "provider_contract_story_asset_not_recommended",
+  ]);
+  return allowedReasons.has(reason) ? reason : "advanced_provider_failed";
+}
+
 function markProvider(
   draft: AiAlbumDraftResponsePayload,
   provider: AiAlbumDraftProviderName,
@@ -853,7 +878,7 @@ async function createDraftWithProvider(
       true,
       reason === "advanced_provider_timeout"
         ? reason
-        : "advanced_provider_failed",
+        : safeProviderFallbackReason(reason),
     );
   }
 }
