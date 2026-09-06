@@ -687,12 +687,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     Widget buildLandscapeLayout() {
+      const sidePanelTop = 34.0;
+      const sidePanelBottom = 14.0;
       return Row(
         children: [
           SizedBox(
-            width: 96,
+            width: 92,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 58, 6, 18),
+              padding: const EdgeInsets.fromLTRB(
+                10,
+                sidePanelTop,
+                6,
+                sidePanelBottom,
+              ),
               child: buildPageSelector(),
             ),
           ),
@@ -701,30 +708,35 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               children: [
                 Positioned.fill(
                   child: buildCanvasArea(
-                    padding: const EdgeInsets.fromLTRB(12, 58, 12, 18),
+                    padding: const EdgeInsets.fromLTRB(2, 24, 2, 12),
                   ),
                 ),
                 Positioned(
-                  left: 10,
-                  top: 58,
-                  width: 138,
+                  left: 8,
+                  top: sidePanelTop,
+                  width: 126,
                   child: buildLayerActions(),
                 ),
                 if (_currentMode != EditorMode.none)
                   Positioned(
-                    left: 10,
-                    top: 136,
-                    width: 160,
-                    bottom: 18,
+                    left: 8,
+                    top: 104,
+                    width: 148,
+                    bottom: sidePanelBottom,
                     child: SingleChildScrollView(child: buildInlinePanel()),
                   ),
               ],
             ),
           ),
           SizedBox(
-            width: 90,
+            width: 88,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(6, 58, 12, 18),
+              padding: const EdgeInsets.fromLTRB(
+                6,
+                sidePanelTop,
+                10,
+                sidePanelBottom,
+              ),
               child: buildBottomMenu(),
             ),
           ),
@@ -784,45 +796,56 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 12.w),
-              child: SnapFitPressable(
-                onTap: _isSaving ? null : () => _onSaveAlbum(vm, layers),
-                pressedScale: 0.96,
-                borderRadius: BorderRadius.circular(999.r),
-                child: AnimatedOpacity(
-                  duration: SnapFitMotion.fast,
-                  opacity: _isSaving ? 0.45 : 1,
-                  child: Container(
-                    height: 34.h,
-                    constraints: BoxConstraints(minWidth: 42.w),
-                    padding: EdgeInsets.symmetric(horizontal: 8.w),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999.r),
-                      gradient: const LinearGradient(
-                        colors: [
-                          SnapFitColors.primaryGradientStart,
-                          SnapFitColors.primaryGradientEnd,
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: SnapFitColors.accent.withOpacity(0.18),
-                          blurRadius: 12,
-                          offset: const Offset(0, 5),
+              child: Builder(
+                builder: (context) {
+                  final isLandscape =
+                      MediaQuery.sizeOf(context).width >
+                      MediaQuery.sizeOf(context).height;
+                  return SnapFitPressable(
+                    onTap: _isSaving ? null : () => _onSaveAlbum(vm, layers),
+                    pressedScale: 0.96,
+                    borderRadius: BorderRadius.circular(999.r),
+                    child: AnimatedOpacity(
+                      duration: SnapFitMotion.fast,
+                      opacity: _isSaving ? 0.45 : 1,
+                      child: Container(
+                        height: isLandscape ? 30 : 34.h,
+                        constraints: BoxConstraints(
+                          minWidth: isLandscape ? 46 : 42.w,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      '저장',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12.sp,
-                        height: 1.0,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isLandscape ? 12 : 8.w,
+                        ),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999.r),
+                          gradient: const LinearGradient(
+                            colors: [
+                              SnapFitColors.primaryGradientStart,
+                              SnapFitColors.primaryGradientEnd,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: SnapFitColors.accent.withOpacity(0.18),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '저장',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: isLandscape ? 11 : 12.sp,
+                            height: 1.0,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ],

@@ -72,7 +72,7 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
 class _AlbumReaderSinglePageViewState
     extends ConsumerState<AlbumReaderSinglePageView> {
   static const double _bookFlipControlVelocity = 0.02;
-  static const double _bookFlipListVelocity = 6.8;
+  static const double _bookFlipListVelocity = 4.8;
   static const BookFlipPhysics _bookFlipPhysics = BookFlipPhysics(
     springStiffness: 56,
     springDampingRatio: 1.08,
@@ -90,12 +90,12 @@ class _AlbumReaderSinglePageViewState
     settleEpsilon: 0.14,
   );
   static const BookFlipPhysics _bookFlipListPhysics = BookFlipPhysics(
-    springStiffness: 3400,
+    springStiffness: 1900,
     springDampingRatio: 1.08,
     commitThreshold: 0.56,
     commitVelocity: 1.65,
     velocityLookAhead: 0.06,
-    settleEpsilon: 0.98,
+    settleEpsilon: 0.86,
   );
   static const double _openSpreadCommitDistance = 136.0;
   static const double _openSpreadCommitVelocity = 420.0;
@@ -376,7 +376,7 @@ class _AlbumReaderSinglePageViewState
             _coverFlipDirection = 0;
           });
           await _syncSpreadFromFocus(_focusPageForSpread(fromSpread));
-          await Future<void>.delayed(const Duration(milliseconds: 8));
+          await Future<void>.delayed(const Duration(milliseconds: 14));
         }
 
         final turnDirection = latestTarget > fromSpread ? 1 : -1;
@@ -393,7 +393,7 @@ class _AlbumReaderSinglePageViewState
         }
 
         await flipEnd.timeout(
-          const Duration(milliseconds: 58),
+          const Duration(milliseconds: 92),
           onTimeout: () {},
         );
       }
@@ -640,9 +640,10 @@ class _AlbumReaderSinglePageViewState
     if (_isCoverFlipActive || _isTurningWithControl) return;
     if (!_bookFlipController.isReady) return;
     if (_openSpreadPointer != null) return;
-    final currentSpread = _bookFlipController.totalSpreads > 0
+    final focusedSpread = _spreadForFocusPage(_focusPageIndex);
+    final currentSpread = _bookFlipController.isAnimating
         ? _bookFlipController.currentSpread
-        : _spreadForFocusPage(_focusPageIndex);
+        : focusedSpread;
     if (_bookFlipController.currentSpread != currentSpread) {
       _bookFlipController.goToSpread(currentSpread);
     }
@@ -855,7 +856,7 @@ class _AlbumReaderSinglePageViewState
                       1.0,
                     );
                     final coverSettleStart = _coverFlipDirection < 0
-                        ? 0.48
+                        ? 0.72
                         : 0.68;
                     final delayedCoverProgress =
                         ((flipProgress - coverSettleStart) /

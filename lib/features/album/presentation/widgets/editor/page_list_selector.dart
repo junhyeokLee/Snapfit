@@ -66,8 +66,18 @@ class PageListSelector extends ConsumerWidget {
               // 0번은 커버, 1번부터 내지
               final label = isCover ? '표지' : '${index}쪽';
 
+              final itemWidth = isVerticalRail ? 58.0 : 30.w;
+              final thumbWidth = isVerticalRail
+                  ? 42.0
+                  : (isSelected ? 28.w : 24.w);
+              final thumbHeight = isVerticalRail
+                  ? 54.0
+                  : (isSelected ? 48.h : 46.h);
+              final deleteSize = isVerticalRail ? 16.0 : 20.w;
+              final deleteIconSize = isVerticalRail ? 10.0 : 13.sp;
+
               return SizedBox(
-                width: isVerticalRail ? 62 : 30.w,
+                width: itemWidth,
                 child: SnapFitPressable(
                   onTap: () => onPageSelected(index),
                   pressedScale: 0.96,
@@ -78,10 +88,8 @@ class PageListSelector extends ConsumerWidget {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         curve: SnapFitMotion.settle,
-                        width: isVerticalRail ? 44 : (isSelected ? 28.w : 24.w),
-                        height: isVerticalRail
-                            ? 58
-                            : (isSelected ? 48.h : 46.h),
+                        width: thumbWidth,
+                        height: thumbHeight,
                         padding: EdgeInsets.all(isVerticalRail ? 3 : 2.w),
                         decoration: BoxDecoration(
                           color: SnapFitColors.surfaceOf(context),
@@ -171,13 +179,13 @@ class PageListSelector extends ConsumerWidget {
                               ),
                             if (isSelected && canDeleteCurrentPage && !isCover)
                               Positioned(
-                                top: -5.h,
-                                right: -5.w,
+                                top: isVerticalRail ? -4 : -5.h,
+                                right: isVerticalRail ? -4 : -5.w,
                                 child: GestureDetector(
                                   onTap: onDeleteCurrentPage,
                                   child: Container(
-                                    width: 20.w,
-                                    height: 20.w,
+                                    width: deleteSize,
+                                    height: deleteSize,
                                     decoration: BoxDecoration(
                                       color: const Color(
                                         0xFFB96363,
@@ -193,7 +201,7 @@ class PageListSelector extends ConsumerWidget {
                                     ),
                                     child: Icon(
                                       Icons.remove_circle_outline_rounded,
-                                      size: 13.sp,
+                                      size: deleteIconSize,
                                       color: Colors.white,
                                     ),
                                   ),

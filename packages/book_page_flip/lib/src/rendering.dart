@@ -201,7 +201,7 @@ class _BookRenderer {
       // First spread -> closed cover. Once the close starts, do not keep the
       // previous inner page painted underneath. The moving sheet and landing
       // cover should be the only visible book content.
-      final reveal = ((scene.t - 0.58) / 0.42).clamp(0.0, 1.0);
+      final reveal = ((scene.t - 0.78) / 0.22).clamp(0.0, 1.0);
       blitWithOpacity(scene.leafBack, rightRect, reveal);
       return;
     }
