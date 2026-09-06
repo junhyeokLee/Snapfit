@@ -358,62 +358,68 @@ function createAdvancedVisionProvider(
     const previewUris = previews.map((candidate) =>
       candidate.previewStorageUri!
     );
-    for (const candidate of previews) {
-      imageContent.push({
-        type: "text",
-        text:
-          `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
-            candidate.albumName ?? ""
-          }`,
-      });
-      imageContent.push({
-        type: "image_url",
-        image_url: {
-          url: await previewDataUrl(candidate.previewStorageUri!, env, fetcher),
-          detail: "low",
-        },
-      });
-    }
+    try {
+      for (const candidate of previews) {
+        imageContent.push({
+          type: "text",
+          text:
+            `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
+              candidate.albumName ?? ""
+            }`,
+        });
+        imageContent.push({
+          type: "image_url",
+          image_url: {
+            url: await previewDataUrl(
+              candidate.previewStorageUri!,
+              env,
+              fetcher,
+            ),
+            detail: "low",
+          },
+        });
+      }
 
-    const modelResponse = await fetcher(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+      const modelResponse = await fetcher(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            temperature: 0.35,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You curate Korean photobook album drafts. Return only JSON. Never claim an album is created. Use only provided assetId values.",
+              },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: advancedPrompt(request),
+                  },
+                  ...imageContent,
+                ],
+              },
+            ],
+          }),
         },
-        body: JSON.stringify({
-          model,
-          temperature: 0.35,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "You curate Korean photobook album drafts. Return only JSON. Never claim an album is created. Use only provided assetId values.",
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: advancedPrompt(request),
-                },
-                ...imageContent,
-              ],
-            },
-          ],
-        }),
-      },
-    );
-    if (!modelResponse.ok) throw new Error("advanced_model_failed");
-    const payload = await modelResponse.json();
-    const content = text(payload?.choices?.[0]?.message?.content);
-    if (!content) throw new Error("advanced_model_empty_response");
-    const draft = draftFromAdvancedJson(JSON.parse(content), request);
-    await deletePreviewObjects(previewUris, env, fetcher);
-    return draft;
+      );
+      if (!modelResponse.ok) throw new Error("advanced_model_failed");
+      const payload = await modelResponse.json();
+      const content = text(payload?.choices?.[0]?.message?.content);
+      if (!content) throw new Error("advanced_model_empty_response");
+      return draftFromAdvancedJson(JSON.parse(content), request);
+    } finally {
+      await deletePreviewObjects(previewUris, env, fetcher);
+    }
   };
 }
 
@@ -439,117 +445,123 @@ function createHybridProvider(
     );
 
     const imageContent = [] as Record<string, unknown>[];
-    for (const candidate of previews) {
-      imageContent.push({
-        type: "text",
-        text:
-          `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
-            candidate.albumName ?? ""
-          }`,
-      });
-      imageContent.push({
-        type: "image_url",
-        image_url: {
-          url: await previewDataUrl(candidate.previewStorageUri!, env, fetcher),
-          detail: "low",
+    try {
+      for (const candidate of previews) {
+        imageContent.push({
+          type: "text",
+          text:
+            `assetId=${candidate.assetId}; createdAt=${candidate.createdAt}; orientation=${candidate.orientation}; album=${
+              candidate.albumName ?? ""
+            }`,
+        });
+        imageContent.push({
+          type: "image_url",
+          image_url: {
+            url: await previewDataUrl(
+              candidate.previewStorageUri!,
+              env,
+              fetcher,
+            ),
+            detail: "low",
+          },
+        });
+      }
+
+      const visionResponse = await fetcher(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openAiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: openAiModel,
+            temperature: 0.2,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Return JSON photoInsights for Korean photobook curation. Use only provided assetId values.",
+              },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text:
+                      "For each preview, describe scene, mood, face/group feel if visible, print suitability, and cover/story potential as JSON {photoInsights:[...]}. Do not include private speculation.",
+                  },
+                  ...imageContent,
+                ],
+              },
+            ],
+          }),
         },
-      });
+      );
+      if (!visionResponse.ok) throw new Error("hybrid_vision_failed");
+      const visionPayload = await visionResponse.json();
+      const visionContent = text(visionPayload?.choices?.[0]?.message?.content);
+      if (!visionContent) throw new Error("hybrid_vision_empty_response");
+      const visionJson = JSON.parse(visionContent);
+
+      const finalResponse = await fetcher(
+        "https://api.anthropic.com/v1/messages",
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": anthropicKey,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            model: anthropicModel,
+            max_tokens: 1400,
+            temperature: 0.45,
+            system:
+              "You are a Korean photobook editor for Snapfit. Create emotionally strong, album-first draft JSON. Never claim the album is created. Use only provided assetId values.",
+            messages: [
+              {
+                role: "user",
+                content: JSON.stringify({
+                  instruction:
+                    "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape. 테마와 맞지 않으면 제외하고, 부족하면 recommendedPhotos를 비워서 포인트가 차감되지 않게 하세요.",
+                  themeFitPolicy: themeFitPolicy(request.theme),
+                  requiredJsonShape:
+                    JSON.parse(advancedPrompt(request)).requiredJsonShape,
+                  theme: request.theme,
+                  range: request.range,
+                  candidates: request.candidates.map((candidate) => ({
+                    assetId: candidate.assetId,
+                    createdAt: candidate.createdAt,
+                    width: candidate.width,
+                    height: candidate.height,
+                    orientation: candidate.orientation,
+                    albumName: candidate.albumName,
+                    isScreenshot: candidate.isScreenshot,
+                  })),
+                  photoInsights: visionJson.photoInsights ?? visionJson,
+                }),
+              },
+            ],
+          }),
+        },
+      );
+      if (!finalResponse.ok) throw new Error("hybrid_finalizer_failed");
+      const finalPayload = await finalResponse.json();
+      const finalText = text(
+        Array.isArray(finalPayload?.content)
+          ? finalPayload.content.find((item: Record<string, unknown>) =>
+            item?.type === "text"
+          )?.text
+          : "",
+      );
+      if (!finalText) throw new Error("hybrid_finalizer_empty_response");
+      return draftFromAdvancedJson(JSON.parse(finalText), request);
+    } finally {
+      await deletePreviewObjects(previewUris, env, fetcher);
     }
-
-    const visionResponse = await fetcher(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openAiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: openAiModel,
-          temperature: 0.2,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "Return JSON photoInsights for Korean photobook curation. Use only provided assetId values.",
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text:
-                    "For each preview, describe scene, mood, face/group feel if visible, print suitability, and cover/story potential as JSON {photoInsights:[...]}. Do not include private speculation.",
-                },
-                ...imageContent,
-              ],
-            },
-          ],
-        }),
-      },
-    );
-    if (!visionResponse.ok) throw new Error("hybrid_vision_failed");
-    const visionPayload = await visionResponse.json();
-    const visionContent = text(visionPayload?.choices?.[0]?.message?.content);
-    if (!visionContent) throw new Error("hybrid_vision_empty_response");
-    const visionJson = JSON.parse(visionContent);
-
-    const finalResponse = await fetcher(
-      "https://api.anthropic.com/v1/messages",
-      {
-        method: "POST",
-        headers: {
-          "x-api-key": anthropicKey,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          model: anthropicModel,
-          max_tokens: 1400,
-          temperature: 0.45,
-          system:
-            "You are a Korean photobook editor for Snapfit. Create emotionally strong, album-first draft JSON. Never claim the album is created. Use only provided assetId values.",
-          messages: [
-            {
-              role: "user",
-              content: JSON.stringify({
-                instruction:
-                  "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape. 테마와 맞지 않으면 제외하고, 부족하면 recommendedPhotos를 비워서 포인트가 차감되지 않게 하세요.",
-                themeFitPolicy: themeFitPolicy(request.theme),
-                requiredJsonShape:
-                  JSON.parse(advancedPrompt(request)).requiredJsonShape,
-                theme: request.theme,
-                range: request.range,
-                candidates: request.candidates.map((candidate) => ({
-                  assetId: candidate.assetId,
-                  createdAt: candidate.createdAt,
-                  width: candidate.width,
-                  height: candidate.height,
-                  orientation: candidate.orientation,
-                  albumName: candidate.albumName,
-                  isScreenshot: candidate.isScreenshot,
-                })),
-                photoInsights: visionJson.photoInsights ?? visionJson,
-              }),
-            },
-          ],
-        }),
-      },
-    );
-    if (!finalResponse.ok) throw new Error("hybrid_finalizer_failed");
-    const finalPayload = await finalResponse.json();
-    const finalText = text(
-      Array.isArray(finalPayload?.content)
-        ? finalPayload.content.find((item: Record<string, unknown>) =>
-          item?.type === "text"
-        )?.text
-        : "",
-    );
-    if (!finalText) throw new Error("hybrid_finalizer_empty_response");
-    const draft = draftFromAdvancedJson(JSON.parse(finalText), request);
-    await deletePreviewObjects(previewUris, env, fetcher);
-    return draft;
   };
 }
 
