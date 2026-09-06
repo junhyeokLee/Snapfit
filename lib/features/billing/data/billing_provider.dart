@@ -71,3 +71,16 @@ final myPointBalanceProvider = FutureProvider<int>((ref) async {
     return 0;
   }
 });
+
+final myPointLedgerProvider = FutureProvider<List<PointLedgerEntry>>((
+  ref,
+) async {
+  try {
+    return await ref
+        .read(billingRepositoryProvider)
+        .getMyPointLedger()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    return const [];
+  }
+});

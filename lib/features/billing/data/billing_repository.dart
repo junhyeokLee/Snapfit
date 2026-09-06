@@ -14,6 +14,11 @@ typedef RecordAiAlbumDraftSuccessRpc =
     });
 
 typedef PointBalanceQuery = Future<Map<String, dynamic>?> Function();
+typedef PointLedgerQuery =
+    Future<List<Map<String, dynamic>>> Function({
+      required String userId,
+      required int limit,
+    });
 
 enum AiAlbumDraftPointUsageFailure { insufficientPoints, unavailable }
 
@@ -80,18 +85,75 @@ class StorePointPurchaseResult {
   final bool alreadyGranted;
 }
 
+class PointLedgerEntry {
+  const PointLedgerEntry({
+    required this.id,
+    required this.createdAt,
+    required this.amountDelta,
+    required this.reason,
+    this.relatedEntityType,
+    this.relatedEntityId,
+  });
+
+  factory PointLedgerEntry.fromJson(Map<String, dynamic> json) {
+    return PointLedgerEntry(
+      id:
+          (json['id'] as num?)?.toInt() ??
+          (json['ledger_id'] as num?)?.toInt() ??
+          0,
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      amountDelta: (json['amount_delta'] as num?)?.toInt() ?? 0,
+      reason: json['reason']?.toString() ?? '',
+      relatedEntityType: json['related_entity_type']?.toString(),
+      relatedEntityId: json['related_entity_id']?.toString(),
+    );
+  }
+
+  final int id;
+  final DateTime? createdAt;
+  final int amountDelta;
+  final String reason;
+  final String? relatedEntityType;
+  final String? relatedEntityId;
+
+  String get amountLabel =>
+      amountDelta > 0 ? '+${amountDelta}P' : '${amountDelta}P';
+
+  String get title {
+    return switch (reason) {
+      'POINT_PURCHASE' => '포인트 충전',
+      'AI_ALBUM_DRAFT_CHARGE' => 'AI 초안 사용',
+      'AI_ALBUM_DRAFT_FREE' => '첫 AI 초안 무료',
+      'ADMIN_ADJUSTMENT' => amountDelta >= 0 ? '포인트 보정' : '포인트 회수',
+      _ => '포인트 내역',
+    };
+  }
+
+  String get subtitle {
+    return switch (reason) {
+      'POINT_PURCHASE' => '스토어 결제 확인 완료',
+      'AI_ALBUM_DRAFT_CHARGE' => '초안이 만들어지고 리뷰 가능할 때만 차감',
+      'AI_ALBUM_DRAFT_FREE' => '첫 초안 무료 혜택 사용',
+      'ADMIN_ADJUSTMENT' => '고객 지원으로 반영된 내역',
+      _ => '포인트 변동 내역',
+    };
+  }
+}
+
 class BillingRepository {
   BillingRepository({
     required this.tokenStorage,
     this.supabase,
     this.recordAiAlbumDraftSuccessRpc,
     this.pointBalanceQuery,
+    this.pointLedgerQuery,
   });
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
   final RecordAiAlbumDraftSuccessRpc? recordAiAlbumDraftSuccessRpc;
   final PointBalanceQuery? pointBalanceQuery;
+  final PointLedgerQuery? pointLedgerQuery;
 
   Future<String> _requireUserId() async {
     final userId = await tokenStorage.getUserId();
@@ -328,6 +390,27 @@ class BillingRepository {
       return (row?['balance'] as num?)?.toInt() ?? 0;
     }
     throw Exception('Supabase 포인트 조회 환경이 준비되지 않았습니다.');
+  }
+
+  Future<List<PointLedgerEntry>> getMyPointLedger({int limit = 5}) async {
+    final userId = await _requireUserId();
+    final safeLimit = limit.clamp(1, 20);
+    final injectedQuery = pointLedgerQuery;
+    final rows = injectedQuery != null
+        ? await injectedQuery(userId: userId, limit: safeLimit)
+        : supabase != null
+        ? await supabase!
+              .from('point_ledger')
+              .select(
+                'id,created_at,amount_delta,reason,related_entity_type,related_entity_id',
+              )
+              .eq('user_id', userId)
+              .order('created_at', ascending: false)
+              .limit(safeLimit)
+        : throw Exception('Supabase 포인트 내역 조회 환경이 준비되지 않았습니다.');
+    return rows
+        .map((row) => PointLedgerEntry.fromJson(Map<String, dynamic>.from(row)))
+        .toList(growable: false);
   }
 
   Future<SubscriptionStatusModel> cancelSubscription() async {

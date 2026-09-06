@@ -9,6 +9,7 @@ import '../../../../config/env.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../billing/data/billing_provider.dart';
+import '../../../billing/data/billing_repository.dart';
 import '../../../billing/domain/billing_failure_copy.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
 
@@ -229,6 +230,8 @@ class _BillingManagementScreenState
               await _iap.completePurchase(purchase);
             }
             ref.invalidate(myPointBalanceProvider);
+            ref.invalidate(myPointLedgerProvider);
+            ref.invalidate(myPointLedgerProvider);
             if (mounted) {
               setState(() {
                 _purchaseInProgress = false;
@@ -270,6 +273,7 @@ class _BillingManagementScreenState
     final subscription = ref.watch(mySubscriptionProvider);
     final quota = ref.watch(myStorageQuotaProvider);
     final pointBalance = ref.watch(myPointBalanceProvider);
+    final pointLedger = ref.watch(myPointLedgerProvider);
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
 
@@ -286,6 +290,8 @@ class _BillingManagementScreenState
         onRefresh: () async {
           ref.invalidate(mySubscriptionProvider);
           ref.invalidate(myStorageQuotaProvider);
+          ref.invalidate(myPointBalanceProvider);
+          ref.invalidate(myPointLedgerProvider);
           await _loadStoreProduct();
         },
         child: ListView(
@@ -306,6 +312,8 @@ class _BillingManagementScreenState
               purchaseInProgress: _purchaseInProgress,
               onBuy: _buyPoints,
             ),
+            SizedBox(height: 12.h),
+            _PointLedgerCard(ledger: pointLedger),
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(18.w),
@@ -571,6 +579,108 @@ class _PointPackageCard extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PointLedgerCard extends StatelessWidget {
+  const _PointLedgerCard({required this.ledger});
+
+  final AsyncValue<List<PointLedgerEntry>> ledger;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = SnapFitColors.textPrimaryOf(context);
+    final subColor = SnapFitColors.textSecondaryOf(context);
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '최근 포인트 내역',
+            style: TextStyle(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '결제와 AI 초안 사용 내역을 최근 순서로 보여드려요.',
+            style: TextStyle(fontSize: 12.sp, color: subColor, height: 1.45),
+          ),
+          SizedBox(height: 12.h),
+          ledger.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (_, __) => Text(
+              '포인트 내역을 불러오지 못했어요.',
+              style: TextStyle(fontSize: 12.sp, color: subColor),
+            ),
+            data: (entries) {
+              if (entries.isEmpty) {
+                return Text(
+                  '아직 포인트 내역이 없어요.',
+                  style: TextStyle(fontSize: 12.sp, color: subColor),
+                );
+              }
+              return Column(
+                children: entries
+                    .take(5)
+                    .map(
+                      (entry) => Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.title,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  Text(
+                                    entry.subtitle,
+                                    style: TextStyle(
+                                      color: subColor,
+                                      fontSize: 11.5.sp,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              entry.amountLabel,
+                              style: TextStyle(
+                                color: entry.amountDelta >= 0
+                                    ? SnapFitColors.accent
+                                    : subColor,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+              );
+            },
+          ),
         ],
       ),
     );

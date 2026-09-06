@@ -131,6 +131,40 @@ void main() {
     expect(result.alreadyGranted, isTrue);
   });
 
+  test('reads recent point ledger through injected query', () async {
+    final tokenStorage = MockTokenStorage();
+    when(() => tokenStorage.getUserId()).thenAnswer((_) async => 'user-1');
+    final repository = BillingRepository(
+      tokenStorage: tokenStorage,
+      pointLedgerQuery: ({required userId, required limit}) async {
+        expect(userId, 'user-1');
+        expect(limit, 3);
+        return [
+          {
+            'id': 11,
+            'created_at': '2026-09-06T04:00:00Z',
+            'amount_delta': 2500,
+            'reason': 'POINT_PURCHASE',
+          },
+          {
+            'id': 10,
+            'created_at': '2026-09-06T03:00:00Z',
+            'amount_delta': -700,
+            'reason': 'AI_ALBUM_DRAFT_CHARGE',
+          },
+        ];
+      },
+    );
+
+    final ledger = await repository.getMyPointLedger(limit: 3);
+
+    expect(ledger, hasLength(2));
+    expect(ledger.first.title, '포인트 충전');
+    expect(ledger.first.amountLabel, '+2500P');
+    expect(ledger.last.title, 'AI 초안 사용');
+    expect(ledger.last.amountLabel, '-700P');
+  });
+
   test('preflightStorage requires a Supabase client', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(tokenStorage: tokenStorage);
