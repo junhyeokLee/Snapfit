@@ -9,6 +9,7 @@ import '../../../../config/env.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../../billing/data/billing_provider.dart';
+import '../../../billing/domain/billing_failure_copy.dart';
 import '../../../billing/domain/entities/subscription_status.dart';
 
 int _pointAmountFromProductId(String productId) {
@@ -66,7 +67,7 @@ class _BillingManagementScreenState
         setState(() {
           _storeAvailable = false;
           _loadingProducts = false;
-          _statusMessage = '현재 기기에서 스토어 결제를 사용할 수 없습니다.';
+          _statusMessage = billingStoreUnavailableMessage();
         });
         return;
       }
@@ -84,16 +85,23 @@ class _BillingManagementScreenState
         _pointProducts = response.productDetails
             .where((product) => Env.iapPointProductIds.contains(product.id))
             .toList(growable: false);
+        final foundIds = response.productDetails
+            .map((product) => product.id)
+            .toSet();
+        final missingIds = {
+          Env.iapProMonthlyProductId,
+          ...Env.iapPointProductIds,
+        }.difference(foundIds);
         _loadingProducts = false;
-        _statusMessage = response.productDetails.isEmpty
-            ? '스토어에 등록된 상품을 찾을 수 없습니다. 상품 ID를 확인해 주세요: ${Env.iapProMonthlyProductId}'
-            : null;
+        _statusMessage = missingIds.isEmpty
+            ? null
+            : billingMissingProductsMessage(missingIds);
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _loadingProducts = false;
-        _statusMessage = '스토어 상품 조회 실패: $e';
+        _statusMessage = billingProductQueryFailureMessage(e);
       });
     }
   }
@@ -120,7 +128,10 @@ class _BillingManagementScreenState
       if (!mounted) return;
       setState(() {
         _purchaseInProgress = false;
-        _statusMessage = '결제 시작 실패: $e';
+        _statusMessage = billingPurchaseStartFailureMessage(
+          kind: BillingPurchaseKind.subscription,
+          error: e,
+        );
       });
     }
   }
@@ -146,7 +157,10 @@ class _BillingManagementScreenState
       if (!mounted) return;
       setState(() {
         _purchaseInProgress = false;
-        _statusMessage = '포인트 결제 시작 실패: $e';
+        _statusMessage = billingPurchaseStartFailureMessage(
+          kind: BillingPurchaseKind.points,
+          error: e,
+        );
       });
     }
   }
@@ -163,7 +177,7 @@ class _BillingManagementScreenState
       if (!mounted) return;
       setState(() {
         _purchaseInProgress = false;
-        _statusMessage = '구매 복원 실패: $e';
+        _statusMessage = billingVerificationFailureMessage(e);
       });
     }
   }
@@ -178,8 +192,10 @@ class _BillingManagementScreenState
         if (mounted) {
           setState(() {
             _purchaseInProgress = false;
-            _statusMessage =
-                '결제 실패: ${purchase.error?.message ?? purchase.error?.code ?? '알 수 없는 오류'}';
+            _statusMessage = billingPurchaseUpdateFailureMessage(
+              code: purchase.error?.code,
+              message: purchase.error?.message,
+            );
           });
         }
         if (purchase.pendingCompletePurchase) {
@@ -191,7 +207,7 @@ class _BillingManagementScreenState
         if (mounted) {
           setState(() {
             _purchaseInProgress = false;
-            _statusMessage = '결제가 취소되었습니다.';
+            _statusMessage = '결제가 취소되었습니다. 포인트는 차감되지 않았어요.';
           });
         }
         continue;
@@ -210,8 +226,9 @@ class _BillingManagementScreenState
             if (mounted) {
               setState(() {
                 _purchaseInProgress = false;
-                _statusMessage =
-                    '${result.grantedPoints}포인트가 충전되었습니다. 현재 잔액 ${result.remainingBalance}P';
+                _statusMessage = result.alreadyGranted
+                    ? '이미 처리된 구매예요. 현재 잔액 ${result.remainingBalance}P'
+                    : '${result.grantedPoints}포인트가 충전되었습니다. 현재 잔액 ${result.remainingBalance}P';
               });
             }
           } else {
@@ -234,7 +251,7 @@ class _BillingManagementScreenState
           if (mounted) {
             setState(() {
               _purchaseInProgress = false;
-              _statusMessage = '구매 검증 실패: $e';
+              _statusMessage = billingVerificationFailureMessage(e);
             });
           }
         }

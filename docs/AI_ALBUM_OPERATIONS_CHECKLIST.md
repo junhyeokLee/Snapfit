@@ -79,6 +79,18 @@ Keep subscription product separate:
 9. Preview objects are cleaned by best-effort deletion and TTL cleanup.
 10. metadata rollback returns usable metadata-only drafts if external providers fail or budget is paused.
 
+## Billing failure UX acceptance
+
+During sandbox and real-device QA, every failed billing state should be understandable without exposing raw store or server internals:
+
+- Store unavailable: tell the tester to check Google Play/App Store login and sandbox account state.
+- Missing product: mention sandbox/store product registration and show only safe product IDs.
+- Purchase canceled: confirm points were not charged.
+- Network failure: tell the tester to retry or use purchase restore.
+- Verification failure: explain that the purchase was received but server confirmation did not complete; ask the tester to use purchase restore if points are not visible.
+- Duplicate purchase update: explain that the purchase was already handled and points were not double-granted.
+- Credential/server setup failure: say the purchase confirmation server setting is not ready; never show private key, service account, token, receipt, or raw provider payload values.
+
 ## Release gate
 
 Before turning on `AI_ALBUM_DRAFT_PROVIDER=hybrid` for real users:

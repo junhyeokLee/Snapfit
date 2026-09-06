@@ -117,6 +117,20 @@ void main() {
     expect(balance, 2500);
   });
 
+  test('parses duplicate point purchase verification result', () {
+    final result = StorePointPurchaseResult.fromJson({
+      'productId': 'snapfit_points_2500',
+      'grantedPoints': 0,
+      'remainingBalance': 2500,
+      'alreadyGranted': true,
+    });
+
+    expect(result.productId, 'snapfit_points_2500');
+    expect(result.grantedPoints, 0);
+    expect(result.remainingBalance, 2500);
+    expect(result.alreadyGranted, isTrue);
+  });
+
   test('preflightStorage requires a Supabase client', () async {
     final tokenStorage = MockTokenStorage();
     final repository = BillingRepository(tokenStorage: tokenStorage);

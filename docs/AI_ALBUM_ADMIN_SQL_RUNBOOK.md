@@ -158,3 +158,13 @@ Hybrid re-enable after QA:
 ```bash
 SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set   AI_ALBUM_DRAFT_PROVIDER="hybrid"
 ```
+
+## 10. Billing failure UX QA notes
+
+When testing the app, user-facing messages should stay safe and actionable:
+
+- Product not found: verify `snapfit_points_2500`, `snapfit_points_8000`, and `snapfit_points_18000` are registered for the active sandbox/build track.
+- Verification failed: check `POINT_PURCHASE_FAILED` events first, then confirm server-side store credentials from the secure console/terminal only.
+- Duplicate purchase update: expect `POINT_PURCHASE_DUPLICATE` and no second ledger credit.
+- Network failure: ask the tester to retry after connectivity is stable or tap purchase restore.
+- Do not copy raw receipt, transaction payload, private key, service account JSON, or access token values into support notes.

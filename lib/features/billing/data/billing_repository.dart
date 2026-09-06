@@ -54,6 +54,7 @@ class StorePointPurchaseResult {
     required this.productId,
     required this.grantedPoints,
     required this.remainingBalance,
+    this.alreadyGranted = false,
   });
 
   factory StorePointPurchaseResult.fromJson(Map<String, dynamic> json) {
@@ -68,12 +69,15 @@ class StorePointPurchaseResult {
           (json['remainingBalance'] as num?)?.toInt() ??
           (json['remaining_balance'] as num?)?.toInt() ??
           0,
+      alreadyGranted:
+          json['alreadyGranted'] == true || json['already_granted'] == true,
     );
   }
 
   final String productId;
   final int grantedPoints;
   final int remainingBalance;
+  final bool alreadyGranted;
 }
 
 class BillingRepository {
