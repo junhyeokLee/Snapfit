@@ -217,7 +217,7 @@ class AiAlbumDraftGenerationService {
         range: range,
         candidates: preparedCandidates,
       );
-      if (draft.recommendedPhotos.isEmpty) {
+      if (draft.recommendedPhotos.isEmpty && draft.templateSlots.isEmpty) {
         final excludedForQuality = draft.excludedPhotos.where((photo) {
           return photo.reasons.any(
             (reason) =>

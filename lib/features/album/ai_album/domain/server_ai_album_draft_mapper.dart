@@ -71,6 +71,7 @@ enum ServerAiAlbumDraftMappingFailure {
   emptyRecommendedPhotos,
   duplicateAsset,
   storySectionAssetNotRecommended,
+  invalidTemplateSlot,
 }
 
 class ServerAiAlbumDraftMappingException implements Exception {
@@ -115,10 +116,11 @@ class ServerAiAlbumDraftMapper {
             .map((item) => _recommendedPhoto(item, candidateById))
             .toList(growable: false);
     _ensureUniqueAssets(recommendedPhotos.map((photo) => photo.assetId));
-    if (recommendedPhotos.isEmpty) {
+    final templateSlots = _templateSlots(json['templateSlots'], candidateById);
+    if (recommendedPhotos.isEmpty && templateSlots.isEmpty) {
       throw const ServerAiAlbumDraftMappingException(
         ServerAiAlbumDraftMappingFailure.emptyRecommendedPhotos,
-        'recommendedPhotos is empty',
+        'recommendedPhotos and templateSlots are empty',
       );
     }
 
@@ -148,6 +150,7 @@ class ServerAiAlbumDraftMapper {
         recommendedPhotos.map((photo) => photo.assetId).toSet(),
       ),
       summary: _readString(json['summary'], fallback: '사진과 앨범 흐름을 먼저 정리했어요.'),
+      templateSlots: templateSlots,
       curationNotes: _readStringList(json['curationNotes']),
       requiresUserReview: true,
       alreadyCreatedAlbum: false,
@@ -208,6 +211,33 @@ class ServerAiAlbumDraftMapper {
               fallback: '함께 어울리는 사진을 묶었어요',
             ),
             photoAssetIds: ids,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  List<AiTemplateSlot> _templateSlots(
+    Object? value,
+    Map<String, PhotoCandidate> candidateById,
+  ) {
+    return _readObjectList(value, field: 'templateSlots', required: false)
+        .map((item) {
+          final slotId = _requiredString(item['slotId'], field: 'slotId');
+          final pageIndex = _readInt(item['pageIndex'], fallback: -1);
+          if (pageIndex < 0 || pageIndex > maxPageCount) {
+            throw ServerAiAlbumDraftMappingException(
+              ServerAiAlbumDraftMappingFailure.invalidTemplateSlot,
+              'pageIndex=$pageIndex',
+            );
+          }
+          final assetId = _readString(item['assetId']);
+          if (assetId.isNotEmpty) _candidateFor(assetId, candidateById);
+          return AiTemplateSlot(
+            slotId: slotId,
+            pageIndex: pageIndex,
+            role: _readString(item['role'], fallback: 'photo'),
+            hint: _readString(item['hint'], fallback: '사진을 직접 넣어주세요'),
+            assetId: assetId.isEmpty ? null : assetId,
           );
         })
         .toList(growable: false);

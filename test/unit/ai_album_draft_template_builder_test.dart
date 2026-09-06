@@ -317,6 +317,55 @@ void main() {
     );
     expect(const AiAlbumDraftTemplateBuilder().isEditorReady(draft), isFalse);
   });
+
+  test('builds editor-ready empty photo slots from an AI template draft', () {
+    final draft = AlbumRecommendationDraft(
+      theme: AlbumTheme.travel,
+      title: '제주의 느린 오후',
+      pageCount: 2,
+      templateTone: 'warm-film',
+      recommendedPhotos: const [],
+      excludedPhotos: const [],
+      storySections: const [
+        StorySection(
+          title: '표지',
+          description: '대표 사진을 넣는 첫 장',
+          photoAssetIds: [],
+        ),
+      ],
+      summary: '사진은 직접 넣는 AI 템플릿이에요.',
+      templateSlots: const [
+        AiTemplateSlot(
+          slotId: 'cover-main',
+          pageIndex: 0,
+          role: 'cover',
+          hint: '대표 사진을 직접 넣어주세요',
+        ),
+        AiTemplateSlot(
+          slotId: 'p1-landscape',
+          pageIndex: 1,
+          role: 'landscape',
+          hint: '풍경 사진을 넣어주세요',
+        ),
+      ],
+      reviewCtaLabel: '이 템플릿으로 시작하기',
+    );
+
+    final builder = const AiAlbumDraftTemplateBuilder();
+
+    expect(builder.validateEditorReady(draft).isReady, isTrue);
+    final pages = builder.build(draft);
+    expect(pages, hasLength(3));
+    final imageLayers = pages
+        .expand((page) => page)
+        .where((layer) => layer.type == LayerType.image);
+    expect(imageLayers, hasLength(2));
+    expect(imageLayers.every((layer) => layer.asset == null), isTrue);
+    expect(
+      imageLayers.map((layer) => layer.id),
+      contains('ai_slot_cover-main'),
+    );
+  });
 }
 
 PhotoCandidate _candidate(String id, DateTime createdAt, AssetEntity asset) {
