@@ -168,3 +168,15 @@ When testing the app, user-facing messages should stay safe and actionable:
 - Duplicate purchase update: expect `POINT_PURCHASE_DUPLICATE` and no second ledger credit.
 - Network failure: ask the tester to retry after connectivity is stable or tap purchase restore.
 - Do not copy raw receipt, transaction payload, private key, service account JSON, or access token values into support notes.
+
+## 11. Support code lookup
+
+User-facing billing failures may show a short 문의 코드 such as `SF-PAY-7K2D`. The code is intentionally not a raw transaction id, receipt, token, or provider payload. Use it as a support conversation reference first, then search operational events by user/time/product when investigating.
+
+Recommended CS flow:
+
+1. Ask for the 문의 코드, user account email, approximate time, and product name only.
+2. Do not ask the user to paste receipt/token/private key values.
+3. Check `ai_album_operational_events` around the reported time.
+4. Check the user's point ledger with `admin_get_user_point_ledger`.
+5. If needed, use `admin_adjust_user_points` with an idempotency key.

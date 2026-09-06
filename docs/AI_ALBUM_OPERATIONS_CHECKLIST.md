@@ -90,6 +90,7 @@ During sandbox and real-device QA, every failed billing state should be understa
 - Verification failure: explain that the purchase was received but server confirmation did not complete; ask the tester to use purchase restore if points are not visible.
 - Duplicate purchase update: explain that the purchase was already handled and points were not double-granted.
 - Credential/server setup failure: say the purchase confirmation server setting is not ready; never show private key, service account, token, receipt, or raw provider payload values.
+- Support code / 문의 코드: show a short code like `SF-PAY-7K2D` instead of raw transaction id, receipt, token, or provider payload.
 
 ## Release gate
 

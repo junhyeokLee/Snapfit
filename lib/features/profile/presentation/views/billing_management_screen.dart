@@ -184,7 +184,10 @@ class _BillingManagementScreenState
       if (!mounted) return;
       setState(() {
         _purchaseInProgress = false;
-        _statusMessage = billingVerificationFailureMessage(e);
+        _statusMessage = billingVerificationFailureMessage(
+          e,
+          supportCode: snapfitSupportCode(scope: 'PAY', seed: e.toString()),
+        );
       });
     }
   }
@@ -260,7 +263,13 @@ class _BillingManagementScreenState
           if (mounted) {
             setState(() {
               _purchaseInProgress = false;
-              _statusMessage = billingVerificationFailureMessage(e);
+              _statusMessage = billingVerificationFailureMessage(
+                e,
+                supportCode: snapfitSupportCode(
+                  scope: 'PAY',
+                  seed: e.toString(),
+                ),
+              );
             });
           }
         }

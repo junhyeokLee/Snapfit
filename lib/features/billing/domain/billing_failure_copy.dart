@@ -65,30 +65,72 @@ String billingPurchaseUpdateFailureMessage({String? code, String? message}) {
   return '결제가 완료되지 않았어요. 포인트는 차감되지 않았습니다.';
 }
 
-String billingVerificationFailureMessage(Object error) {
+String billingVerificationFailureMessage(Object error, {String? supportCode}) {
   final normalized = error.toString().toLowerCase();
   if (normalized.contains('already') ||
       normalized.contains('duplicate') ||
       normalized.contains('idempot')) {
-    return '이미 처리된 구매예요. 포인트가 중복 충전되지 않도록 확인했습니다.';
+    return _withSupportCode(
+      '이미 처리된 구매예요. 포인트가 중복 충전되지 않도록 확인했습니다.',
+      supportCode,
+    );
   }
   if (normalized.contains('credential') ||
       normalized.contains('secret') ||
       normalized.contains('service account') ||
       normalized.contains('private key')) {
-    return '구매 확인 서버 설정이 아직 준비되지 않았어요. 운영 설정을 확인한 뒤 다시 시도해 주세요.';
+    return _withSupportCode(
+      '구매 확인 서버 설정이 아직 준비되지 않았어요. 운영 설정을 확인한 뒤 다시 시도해 주세요.',
+      supportCode,
+    );
   }
   if (normalized.contains('receipt') ||
       normalized.contains('token') ||
       normalized.contains('transaction') ||
       normalized.contains('verify') ||
       normalized.contains('verification')) {
-    return '구매는 접수됐지만 확인을 완료하지 못했어요. 포인트가 바로 보이지 않으면 구매 복원을 눌러 주세요.';
+    return _withSupportCode(
+      '구매는 접수됐지만 확인을 완료하지 못했어요. 포인트가 바로 보이지 않으면 구매 복원을 눌러 주세요.',
+      supportCode,
+    );
   }
   if (normalized.contains('network') ||
       normalized.contains('timeout') ||
       normalized.contains('connection')) {
-    return '구매 확인 중 네트워크가 불안정했어요. 잠시 후 구매 복원을 눌러 주세요.';
+    return _withSupportCode(
+      '구매 확인 중 네트워크가 불안정했어요. 잠시 후 구매 복원을 눌러 주세요.',
+      supportCode,
+    );
   }
-  return '구매 확인을 완료하지 못했어요. 포인트가 반영되지 않으면 구매 복원을 눌러 주세요.';
+  return _withSupportCode(
+    '구매 확인을 완료하지 못했어요. 포인트가 반영되지 않으면 구매 복원을 눌러 주세요.',
+    supportCode,
+  );
+}
+
+String snapfitSupportCode({required String scope, required String seed}) {
+  final cleanScope = scope
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^A-Z0-9]'), '')
+      .padRight(3, 'X')
+      .substring(0, 3);
+  var hash = 0x811C9DC5;
+  for (final unit in seed.codeUnits) {
+    hash ^= unit;
+    hash = (hash * 0x01000193) & 0xFFFFFFFF;
+  }
+  const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  var value = hash;
+  final buffer = StringBuffer();
+  for (var i = 0; i < 4; i += 1) {
+    buffer.write(alphabet[value & 31]);
+    value = value >> 5;
+  }
+  return 'SF-$cleanScope-${buffer.toString()}';
+}
+
+String _withSupportCode(String message, String? supportCode) {
+  final code = supportCode?.trim();
+  if (code == null || code.isEmpty) return message;
+  return '$message\n문의 코드: $code';
 }
