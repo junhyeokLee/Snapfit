@@ -31,9 +31,12 @@ void main() {
       ),
     );
 
-    expect(find.text('사진 범위'), findsOneWidget);
+    expect(find.text('사진 슬롯 기준'), findsOneWidget);
     expect(find.text('어디까지 살펴볼까요?'), findsNothing);
-    expect(find.textContaining('지금은 최근 30일 또는 허용한 사진 전체만 정확히'), findsOneWidget);
+    expect(
+      find.textContaining('지금은 최근 30일 또는 허용한 사진을 기준으로 슬롯만'),
+      findsOneWidget,
+    );
     expect(find.text('최근 30일'), findsOneWidget);
     expect(find.text('허용한 사진 전체'), findsOneWidget);
     expect(find.text('날짜 선택'), findsNothing);
@@ -66,7 +69,7 @@ void main() {
     );
 
     expect(
-      find.textContaining('선택한 사진의 날짜·크기 같은 정보가 서버로 전송돼요'),
+      find.textContaining('선택한 사진의 날짜·크기 같은 정보로 템플릿 슬롯을 제안해요'),
       findsOneWidget,
     );
     expect(find.textContaining('원본 사진은 서버로 보내지 않고'), findsNothing);

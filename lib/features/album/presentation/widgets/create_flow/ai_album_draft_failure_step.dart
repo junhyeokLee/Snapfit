@@ -6,7 +6,7 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
     super.key,
-    this.title = '초안을 만들지 못했어요',
+    this.title = 'AI 템플릿을 만들지 못했어요',
     required this.message,
     this.primaryActionLabel = '사진 범위 다시 고르기',
     required this.onRetryRange,

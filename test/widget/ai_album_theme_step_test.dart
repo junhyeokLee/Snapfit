@@ -29,8 +29,8 @@ void main() {
       ),
     );
 
-    expect(find.text('AI 초안'), findsOneWidget);
-    expect(find.text('분위기'), findsOneWidget);
+    expect(find.text('AI 템플릿'), findsOneWidget);
+    expect(find.text('어떤 틀로 시작할까요?'), findsOneWidget);
     expect(find.text('어떤 앨범으로 정리해볼까요?'), findsNothing);
     expect(find.textContaining('선택한 주제는'), findsNothing);
     expect(find.text('여행'), findsOneWidget);
@@ -46,6 +46,7 @@ void main() {
     await tester.pump();
     expect(selectedTheme, AlbumTheme.travel);
 
+    await tester.scrollUntilVisible(find.text('이전'), -120);
     await tester.tap(find.text('이전'));
     await tester.pump();
     expect(backTapped, isTrue);

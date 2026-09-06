@@ -83,13 +83,13 @@ void main() {
       await tester.tap(find.text('open billing'));
       await tester.pumpAndSettle();
 
-      expect(find.text('AI 초안으로 돌아가기'), findsOneWidget);
+      expect(find.text('AI 템플릿으로 돌아가기'), findsOneWidget);
       expect(
-        find.textContaining('포인트를 채운 뒤 바로 초안 만들기로 돌아갈 수 있어요'),
+        find.textContaining('포인트를 채운 뒤 바로 AI 템플릿 만들기로 돌아갈 수 있어요'),
         findsOneWidget,
       );
 
-      await tester.tap(find.text('AI 초안으로 돌아가기'));
+      await tester.tap(find.text('AI 템플릿으로 돌아가기'));
       await tester.pumpAndSettle();
 
       expect(popResult, isTrue);
@@ -157,7 +157,7 @@ void main() {
     expect(find.text('최근 포인트 내역'), findsOneWidget);
     expect(find.text('포인트 충전'), findsOneWidget);
     expect(find.text('+2500P'), findsOneWidget);
-    expect(find.text('AI 초안 사용'), findsOneWidget);
+    expect(find.text('AI 템플릿 사용'), findsOneWidget);
     expect(find.text('-700P'), findsOneWidget);
   });
 }

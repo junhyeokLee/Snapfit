@@ -311,16 +311,16 @@ void main() {
 
     expect(find.text('추천 사진 1장'), findsOneWidget);
     expect(find.text('잠시 빼둔 사진 1장'), findsWidgets);
-    await tester.ensureVisible(find.text('초안에 넣기'));
+    await tester.ensureVisible(find.text('템플릿에 넣기'));
     await tester.pumpAndSettle();
-    expect(find.text('초안에 넣기'), findsOneWidget);
+    expect(find.text('템플릿에 넣기'), findsOneWidget);
 
-    await tester.tap(find.text('초안에 넣기'));
+    await tester.tap(find.text('템플릿에 넣기'));
     await tester.pumpAndSettle();
 
     expect(find.text('추천 사진 2장'), findsOneWidget);
     expect(find.text('잠시 빼둔 사진 0장'), findsOneWidget);
-    expect(find.textContaining('지금은 모두 초안에 들어갔어요'), findsOneWidget);
+    expect(find.textContaining('지금은 모두 들어갔어요'), findsOneWidget);
 
     await tester.tap(find.text('편집 시작'));
     await tester.pump();
@@ -413,8 +413,8 @@ void main() {
 
     await tester.tap(find.text('편집 준비 중'));
     await tester.tap(find.text('이전'));
-    await tester.ensureVisible(find.text('초안에 넣기'));
-    await tester.tap(find.text('초안에 넣기'));
+    await tester.ensureVisible(find.text('템플릿에 넣기'));
+    await tester.tap(find.text('템플릿에 넣기'));
     await tester.pump();
 
     expect(acceptCalls, 1);

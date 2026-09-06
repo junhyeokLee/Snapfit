@@ -12,47 +12,52 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  testWidgets('separates manual creation from AI-only theme selection', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'guides manual album creation toward AI template start without photo-library generation copy',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    var aiTapped = false;
-    var manualTapped = false;
+      var aiTapped = false;
+      var manualTapped = false;
 
-    await tester.pumpWidget(
-      _wrap(
-        AiAlbumStartStep(
-          aiPointCost: 300,
-          onAiStart: () => aiTapped = true,
-          onManualStart: () => manualTapped = true,
+      await tester.pumpWidget(
+        _wrap(
+          AiAlbumStartStep(
+            aiPointCost: 300,
+            onAiStart: () => aiTapped = true,
+            onManualStart: () => manualTapped = true,
+          ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('시작 방식'), findsOneWidget);
-    expect(find.text('직접 구성'), findsOneWidget);
-    expect(find.text('첫 AI 생성 무료'), findsOneWidget);
-    expect(find.text('첫 생성은 무료예요'), findsOneWidget);
-    expect(find.text('작은 책으로 남길 순간을 골라볼까요?'), findsNothing);
-    expect(find.textContaining('직접 차근차근'), findsNothing);
-    expect(find.textContaining('기존 에디터 기능'), findsNothing);
-    expect(find.text('AI 초안 만들기 300P'), findsNothing);
-    expect(find.textContaining('포인트'), findsNothing);
-    expect(find.textContaining('300P'), findsNothing);
+      expect(find.text('앨범 만들기'), findsOneWidget);
+      expect(find.text('먼저 앨범 틀을 고르고, 사진은 직접 넣어요'), findsOneWidget);
+      expect(find.text('직접 만들기'), findsOneWidget);
+      expect(find.textContaining('빈 앨범부터 차근차근'), findsOneWidget);
+      expect(find.text('AI 템플릿으로 시작'), findsOneWidget);
+      expect(find.text('분위기에 맞춰 사진 슬롯과 문구를 잡아드려요.'), findsOneWidget);
+      expect(find.text('사진은 직접 고르고 바꿀 수 있어요'), findsOneWidget);
+      expect(find.text('첫 템플릿 무료'), findsOneWidget);
+      expect(find.text('사진첩 자동 생성'), findsNothing);
+      expect(find.text('AI 초안'), findsNothing);
+      expect(find.textContaining('AI가 사진첩'), findsNothing);
+      expect(find.textContaining('사진을 골라'), findsNothing);
+      expect(find.textContaining('포인트'), findsNothing);
+      expect(find.textContaining('300P'), findsNothing);
 
-    expect(find.text('어떤 앨범을 만들까요?'), findsNothing);
-    expect(find.text('여행'), findsNothing);
-    expect(find.text('커플'), findsNothing);
-    expect(find.text('가족'), findsNothing);
+      expect(find.text('어떤 앨범을 만들까요?'), findsNothing);
+      expect(find.text('여행'), findsNothing);
+      expect(find.text('커플'), findsNothing);
+      expect(find.text('가족'), findsNothing);
 
-    await tester.tap(find.text('AI 초안'));
-    await tester.pump();
-    expect(aiTapped, isTrue);
+      await tester.tap(find.text('AI 템플릿으로 시작'));
+      await tester.pump();
+      expect(aiTapped, isTrue);
 
-    await tester.tap(find.text('직접 구성'));
-    await tester.pump();
-    expect(manualTapped, isTrue);
-  });
+      await tester.tap(find.text('직접 만들기'));
+      await tester.pump();
+      expect(manualTapped, isTrue);
+    },
+  );
 }

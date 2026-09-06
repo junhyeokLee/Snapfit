@@ -96,7 +96,9 @@ class AiAlbumDraftGenerationResult {
         ? (selectedOnly
               ? '허용한 사진 안에서 후보를 찾지 못했어요.'
               : '선택한 범위에서 앨범 후보 사진을 찾지 못했어요.')
-        : (selectedOnly ? '선택한 사진이 조금 더 필요해요.' : 'AI 초안을 만들려면 사진이 조금 더 필요해요.');
+        : (selectedOnly
+              ? '선택한 사진이 조금 더 필요해요.'
+              : 'AI 템플릿을 만들려면 기준 사진이 조금 더 필요해요.');
     final rangeHint = selectedOnly
         ? '사진 접근을 조금 더 허용하거나 범위를 다시 골라 주세요.'
         : '최소 $minimumPhotoCount장 이상 허용해 주세요.';
@@ -119,7 +121,7 @@ class AiAlbumDraftGenerationResult {
       shouldChargePoints: false,
       failureTitle: '앨범에 어울리는 사진이 조금 부족해요',
       failureMessage:
-          '스크린샷이나 작은 이미지는 초안에서 잠시 제외했어요. 여행·일상 사진이 더 보이는 범위로 다시 골라 주세요. 포인트는 차감되지 않았어요.',
+          '스크린샷이나 작은 이미지는 템플릿 슬롯에서 잠시 제외했어요. 여행·일상 사진이 더 보이는 범위로 다시 골라 주세요. 포인트는 차감되지 않았어요.',
       primaryCtaLabel: '사진 범위 다시 고르기',
       primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
@@ -147,7 +149,7 @@ class AiAlbumDraftGenerationResult {
     return const AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.permissionDenied,
       shouldChargePoints: false,
-      failureTitle: '사진을 볼 수 없어 초안을 만들지 못했어요',
+      failureTitle: '사진을 볼 수 없어 AI 템플릿을 만들지 못했어요',
       failureMessage:
           '사진 접근 권한이 필요해요. 설정에서 사진을 몇 장 더 허용한 뒤 다시 시도해 주세요. 포인트는 차감되지 않았어요.',
       primaryCtaLabel: '사진 권한 열기',
@@ -159,8 +161,8 @@ class AiAlbumDraftGenerationResult {
     return const AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.failed,
       shouldChargePoints: false,
-      failureTitle: '초안을 만들지 못했어요',
-      failureMessage: 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
+      failureTitle: 'AI 템플릿을 만들지 못했어요',
+      failureMessage: 'AI 템플릿을 준비하지 못했어요. 포인트는 차감되지 않았어요.',
       primaryCtaLabel: '사진 범위 다시 고르기',
       primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
     );
