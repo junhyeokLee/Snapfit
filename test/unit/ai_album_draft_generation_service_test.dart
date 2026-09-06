@@ -139,7 +139,7 @@ void main() {
     expect(result.status, AiAlbumDraftGenerationStatus.permissionDenied);
     expect(result.shouldChargePoints, isFalse);
     expect(result.draft, isNull);
-    expect(result.failureTitle, '사진을 볼 수 없어 초안을 만들지 못했어요');
+    expect(result.failureTitle, '사진을 볼 수 없어 AI 템플릿을 만들지 못했어요');
     expect(result.primaryCtaLabel, '사진 권한 열기');
     expect(
       result.primaryRecoveryAction,
@@ -419,7 +419,7 @@ class _RecordingDraftProvider extends AiAlbumDraftProvider {
     seenCandidates.addAll(candidates);
     return AlbumRecommendationDraft(
       theme: theme,
-      title: '고급 AI 초안',
+      title: '고급 AI 템플릿',
       pageCount: 8,
       templateTone: 'advanced-preview',
       recommendedPhotos: candidates
@@ -438,7 +438,7 @@ class _RecordingDraftProvider extends AiAlbumDraftProvider {
           .toList(growable: false),
       excludedPhotos: const [],
       storySections: const [],
-      summary: '미리보기 준비 후 서버 초안을 만들어요.',
+      summary: '미리보기 준비 후 서버 템플릿을 만들어요.',
     );
   }
 }

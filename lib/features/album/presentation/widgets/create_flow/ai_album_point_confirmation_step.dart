@@ -68,7 +68,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                     ),
                     SizedBox(height: 18.h),
                     Text(
-                      '초안 생성',
+                      'AI 템플릿 생성',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 23.sp,
@@ -89,7 +89,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                               : '${_format(pointCost)}P',
                         ),
                         if (isFirstAiDraftFree)
-                          const _InfoRow(label: '무료 혜택', value: '첫 AI 생성 1회'),
+                          const _InfoRow(label: '무료 혜택', value: '첫 AI 템플릿 1회'),
                         _InfoRow(
                           label: '보유 포인트',
                           value: '${_format(balance)}P',
@@ -123,7 +123,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          isFirstAiDraftFree ? '무료로 초안 만들기' : '초안 만들기',
+                          isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기',
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w900,
@@ -197,7 +197,7 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            usesAdvancedServerAnalysis ? '고급 AI 확인' : '서버 초안 확인',
+            usesAdvancedServerAnalysis ? '고급 AI 템플릿 확인' : 'AI 템플릿 확인',
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
               fontSize: 14.sp,
@@ -209,8 +209,8 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
           SizedBox(height: 7.h),
           Text(
             usesAdvancedServerAnalysis
-                ? '선택한 사진의 작은 미리보기 이미지를 서버에서 살펴보고 앨범 흐름에 맞는 초안을 만들어요.'
-                : '선택한 사진의 날짜·크기 같은 정보로 서버에서 초안을 만들어요.',
+                ? '선택한 사진의 작은 미리보기 이미지를 서버에서 살펴보고 앨범 흐름에 맞는 템플릿을 잡아요.'
+                : '선택한 사진의 날짜·크기 같은 정보로 서버에서 템플릿 슬롯을 잡아요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
               fontSize: 12.5.sp,
@@ -220,7 +220,7 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            '초안은 바로 확정되지 않아요. 편집 전에 직접 확인해요.',
+            '템플릿은 바로 확정되지 않아요. 사진과 구성은 편집 전에 직접 확인해요.',
             style: TextStyle(
               color: const Color(0xFF4C6A55),
               fontSize: 12.5.sp,

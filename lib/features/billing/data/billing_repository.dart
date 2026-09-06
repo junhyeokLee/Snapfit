@@ -122,8 +122,8 @@ class PointLedgerEntry {
   String get title {
     return switch (reason) {
       'POINT_PURCHASE' => '포인트 충전',
-      'AI_ALBUM_DRAFT_CHARGE' => 'AI 초안 사용',
-      'AI_ALBUM_DRAFT_FREE' => '첫 AI 초안 무료',
+      'AI_ALBUM_DRAFT_CHARGE' => 'AI 템플릿 사용',
+      'AI_ALBUM_DRAFT_FREE' => '첫 AI 템플릿 무료',
       'ADMIN_ADJUSTMENT' => amountDelta >= 0 ? '포인트 보정' : '포인트 회수',
       _ => '포인트 내역',
     };

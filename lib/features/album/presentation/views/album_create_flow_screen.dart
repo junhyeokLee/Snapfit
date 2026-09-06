@@ -378,7 +378,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             ),
             SizedBox(height: 18.h),
             Text(
-              'AI 초안을 정리하고 있어요',
+              'AI 템플릿을 잡고 있어요',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18.sp,
@@ -449,9 +449,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _isGeneratingAiDraft = false;
       _hasConfirmedAiPointCost = false;
       _pendingAiDraft = null;
-      _aiDraftFailureTitle = result.failureTitle ?? '초안을 만들지 못했어요';
+      _aiDraftFailureTitle = result.failureTitle ?? 'AI 템플릿을 만들지 못했어요';
       _aiDraftFailureMessage =
-          result.failureMessage ?? 'AI 초안을 준비하지 못했어요. 포인트는 차감되지 않았어요.';
+          result.failureMessage ?? 'AI 템플릿을 준비하지 못했어요. 포인트는 차감되지 않았어요.';
       _aiDraftPrimaryCtaLabel = result.primaryCtaLabel ?? '사진 범위 다시 고르기';
       _aiDraftPrimaryRecoveryAction =
           result.primaryRecoveryAction ??
@@ -527,8 +527,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         ? '포인트가 조금 부족해요'
         : '포인트 상태를 확인하지 못했어요';
     _aiDraftFailureMessage = isInsufficient
-        ? 'AI 초안은 준비됐지만, 이 구성을 열기엔 포인트가 부족해요. 현재 포인트를 다시 확인하거나 직접 구성할 수 있어요. 아직 포인트는 차감되지 않았어요.'
-        : '초안은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
+        ? 'AI 템플릿은 준비됐지만, 이 구성을 열기엔 포인트가 부족해요. 현재 포인트를 다시 확인하거나 직접 구성할 수 있어요. 아직 포인트는 차감되지 않았어요.'
+        : '템플릿은 만들었지만 사용 처리 기준을 확인하지 못해 바로 열지 않았어요. 포인트는 차감되지 않았어요.';
     _aiDraftPrimaryCtaLabel = isInsufficient ? '포인트 충전하기' : '사진 범위 다시 고르기';
     _aiDraftPrimaryRecoveryAction = isInsufficient
         ? AiAlbumDraftRecoveryAction.reviewPointCost
@@ -540,19 +540,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   ) {
     final title = switch (reason) {
       AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
-        '초안에 넣을 사진이 없어요',
+        '템플릿에 넣을 사진 슬롯을 만들지 못했어요',
       AiAlbumDraftEditorReadinessReason.pageCountMismatch => '앨범 쪽수를 다시 맞춰야 해요',
       AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
-      AiAlbumDraftEditorReadinessReason.ready => '앨범 초안을 안전하게 열지 않았어요',
+      AiAlbumDraftEditorReadinessReason.ready => 'AI 템플릿을 안전하게 열지 않았어요',
     };
     final message = switch (reason) {
       AiAlbumDraftEditorReadinessReason.emptyRecommendedPhotos =>
         '선택한 범위에서 앨범에 넣을 사진을 찾지 못했어요. 사진 범위를 다시 고르거나 직접 구성해 주세요. 포인트는 차감되지 않았어요.',
       AiAlbumDraftEditorReadinessReason.pageCountMismatch =>
-        'AI가 고른 쪽수와 실제 편집 쪽수가 달라 바로 열지 않았어요. 새 초안으로 다시 맞춰볼게요. 포인트는 차감되지 않았어요.',
+        'AI가 만든 쪽수와 실제 편집 쪽수가 달라 바로 열지 않았어요. 새 템플릿으로 다시 맞춰볼게요. 포인트는 차감되지 않았어요.',
       AiAlbumDraftEditorReadinessReason.missingLocalImageAsset ||
       AiAlbumDraftEditorReadinessReason.ready =>
-        '구성은 만들었지만 편집기에 넣을 사진 레이어를 확인하지 못했어요. 사진을 다시 골라 새 초안을 만들면 안전해요. 포인트는 차감되지 않았어요.',
+        '구성은 만들었지만 편집기에 넣을 사진 슬롯을 확인하지 못했어요. 새 AI 템플릿으로 다시 만들면 안전해요. 포인트는 차감되지 않았어요.',
     };
 
     _pendingAiDraft = null;
@@ -621,7 +621,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         if (!_hasSelectedCreationMode) {
           return AiAlbumStartStep(
             aiPointCost: _aiDraftPointCost,
-            freeDraftLabel: '첫 생성은 무료예요',
+            freeDraftLabel: '사진은 직접 고르고 바꿀 수 있어요',
             isFirstAiDraftFree: true,
             onAiStart: () => setState(() {
               _isAiCreationMode = true;
@@ -708,7 +708,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return AiAlbumDraftFailureStep(
             usesServerDraftProvider: widget.usesServerDraftProvider,
             usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
-            title: aiDraftFailureTitle ?? '초안을 만들지 못했어요',
+            title: aiDraftFailureTitle ?? 'AI 템플릿을 만들지 못했어요',
             message: aiDraftFailureMessage,
             primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
             onRetryRange: () =>

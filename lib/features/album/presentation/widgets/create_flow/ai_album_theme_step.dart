@@ -38,7 +38,7 @@ class AiAlbumThemeStep extends StatelessWidget {
                     const _MoodPreviewBoard(),
                     SizedBox(height: 18.h),
                     Text(
-                      'AI 초안',
+                      'AI 템플릿',
                       style: TextStyle(
                         color: SnapFitColors.textMutedOf(context),
                         fontSize: 12.sp,
@@ -48,7 +48,7 @@ class AiAlbumThemeStep extends StatelessWidget {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '분위기',
+                      '어떤 틀로 시작할까요?',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 24.sp,

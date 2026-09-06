@@ -42,13 +42,24 @@ class AiAlbumStartStep extends StatelessWidget {
                     const _AlbumHeroBoard(),
                     SizedBox(height: 20.h),
                     Text(
-                      '시작 방식',
+                      '앨범 만들기',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 25.sp,
                         height: 1.12,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.55,
+                      ),
+                    ),
+                    SizedBox(height: 7.h),
+                    Text(
+                      '먼저 앨범 틀을 고르고, 사진은 직접 넣어요',
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 13.5.sp,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.15,
                       ),
                     ),
                     SizedBox(height: 18.h),
@@ -269,7 +280,7 @@ class _FreeDraftPill extends StatelessWidget {
         ],
       ),
       child: Text(
-        '첫 AI 생성 무료',
+        '첫 템플릿 무료',
         style: TextStyle(
           color: isDark ? const Color(0xFF111111) : Colors.white,
           fontSize: 11.sp,
@@ -362,7 +373,7 @@ class _ManualStartCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '직접 구성',
+                      '직접 만들기',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -371,6 +382,19 @@ class _ManualStartCard extends StatelessWidget {
                         height: 1.16,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.45,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      '빈 앨범부터 차근차근 구성해요',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: SnapFitColors.textMutedOf(context),
+                        fontSize: 12.5.sp,
+                        height: 1.3,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.1,
                       ),
                     ),
                   ],
@@ -431,7 +455,7 @@ class _AiStartRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI 초안',
+                      'AI 템플릿으로 시작',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -441,10 +465,23 @@ class _AiStartRow extends StatelessWidget {
                         letterSpacing: -0.25,
                       ),
                     ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      '분위기에 맞춰 사진 슬롯과 문구를 잡아드려요.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: SnapFitColors.textSecondaryOf(context),
+                        fontSize: 12.3.sp,
+                        height: 1.28,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.1,
+                      ),
+                    ),
                     if (isFirstAiDraftFree || freeDraftLabel != null) ...[
-                      SizedBox(height: 3.h),
+                      SizedBox(height: 5.h),
                       Text(
-                        freeDraftLabel ?? '첫 생성은 무료예요',
+                        freeDraftLabel ?? '사진은 직접 고르고 바꿀 수 있어요',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

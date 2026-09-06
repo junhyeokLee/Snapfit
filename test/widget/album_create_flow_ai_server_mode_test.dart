@@ -53,24 +53,24 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('AI 초안').last);
+      await tester.tap(find.text('AI 템플릿으로 시작'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('여행'));
       await tester.pumpAndSettle();
 
       expect(
-        find.textContaining('선택한 사진의 날짜·크기 같은 정보가 서버로 전송돼요'),
+        find.textContaining('선택한 사진의 날짜·크기 같은 정보로 템플릿 슬롯을 제안해요'),
         findsOneWidget,
       );
       expect(find.textContaining('원본 사진은 서버로 보내지 않고'), findsNothing);
 
       await tester.tap(find.text('최근 30일'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('무료로 초안 만들기'), 120);
-      await tester.tap(find.text('무료로 초안 만들기'));
+      await tester.scrollUntilVisible(find.text('무료로 템플릿 만들기'), 120);
+      await tester.tap(find.text('무료로 템플릿 만들기'));
       await tester.pumpAndSettle();
 
-      expect(find.text('초안을 만들지 못했어요'), findsOneWidget);
+      expect(find.text('AI 템플릿을 만들지 못했어요'), findsOneWidget);
       expect(find.textContaining('선택한 사진 정보가 서버로 전송됐을 수 있어요'), findsOneWidget);
       expect(find.text('포인트는 차감되지 않았어요.'), findsOneWidget);
       expect(find.textContaining('편집 시작'), findsNothing);
@@ -125,7 +125,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('AI 초안').last);
+      await tester.tap(find.text('AI 템플릿으로 시작'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('여행'));
       await tester.pumpAndSettle();
@@ -135,9 +135,9 @@ void main() {
       await tester.tap(find.text('최근 30일'));
       await tester.pumpAndSettle();
 
-      expect(find.text('고급 AI 확인'), findsOneWidget);
+      expect(find.text('고급 AI 템플릿 확인'), findsOneWidget);
       expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴보고'), findsOneWidget);
-      expect(find.textContaining('초안은 바로 확정되지 않아요'), findsOneWidget);
+      expect(find.textContaining('템플릿은 바로 확정되지 않아요'), findsOneWidget);
     },
   );
 }

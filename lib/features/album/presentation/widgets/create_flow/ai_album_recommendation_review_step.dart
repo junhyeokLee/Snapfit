@@ -96,7 +96,7 @@ class _AiAlbumRecommendationReviewStepState
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      'AI 초안',
+                      'AI 템플릿',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -320,7 +320,7 @@ class _RecommendationDetails extends StatelessWidget {
                     foregroundColor: SnapFitColors.textPrimaryOf(context),
                   ),
                   child: Text(
-                    '초안에 넣기',
+                    '템플릿에 넣기',
                     style: TextStyle(
                       fontSize: 12.2.sp,
                       fontWeight: FontWeight.w900,
@@ -344,7 +344,7 @@ class _RecommendationDetails extends StatelessWidget {
           ] else ...[
             SizedBox(height: 12.h),
             Text(
-              '원하면 잠시 빼둔 사진도 초안에 넣을 수 있어요. 지금은 모두 초안에 들어갔어요.',
+              '원하면 잠시 빼둔 사진도 템플릿 슬롯에 넣을 수 있어요. 지금은 모두 들어갔어요.',
               style: TextStyle(
                 color: SnapFitColors.textSecondaryOf(context),
                 fontSize: 12.3.sp,
@@ -378,7 +378,7 @@ class _RecommendationDetails extends StatelessWidget {
   List<String> _excludedReasonMessages(List<ExcludedPhoto> photos) {
     return _uniqueMessages(
       photos.expand((photo) => photo.reasons).map((reason) => reason.message),
-      fallback: '초안에는 넣지 않았지만 편집 때 다시 추가 가능해요',
+      fallback: '템플릿에는 넣지 않았지만 편집 때 다시 추가 가능해요',
       maxItems: 2,
     );
   }

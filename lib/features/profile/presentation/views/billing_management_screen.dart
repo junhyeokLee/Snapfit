@@ -426,7 +426,7 @@ class _AiDraftReturnCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AI 초안 준비 중',
+            'AI 템플릿 준비 중',
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w800,
@@ -435,7 +435,7 @@ class _AiDraftReturnCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '포인트를 채운 뒤 바로 초안 만들기로 돌아갈 수 있어요.',
+            '포인트를 채운 뒤 바로 AI 템플릿 만들기로 돌아갈 수 있어요.',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w900,
@@ -463,7 +463,7 @@ class _AiDraftReturnCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999.r),
                 ),
               ),
-              child: const Text('AI 초안으로 돌아가기'),
+              child: const Text('AI 템플릿으로 돌아가기'),
             ),
           ),
         ],
@@ -528,7 +528,7 @@ class _PointPackageCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '고급 AI 초안 1회는 ${Env.aiAlbumDraftPointCost}P예요. 초안이 만들어지고 리뷰할 수 있을 때만 차감됩니다.',
+            '고급 AI 템플릿 1회는 ${Env.aiAlbumDraftPointCost}P예요. 템플릿이 만들어지고 리뷰할 수 있을 때만 차감됩니다.',
             style: TextStyle(fontSize: 12.sp, color: subColor, height: 1.45),
           ),
           SizedBox(height: 12.h),
@@ -623,7 +623,7 @@ class _PointLedgerCard extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            '결제와 AI 초안 사용 내역을 최근 순서로 보여드려요.',
+            '결제와 AI 템플릿 사용 내역을 최근 순서로 보여드려요.',
             style: TextStyle(fontSize: 12.sp, color: subColor, height: 1.45),
           ),
           SizedBox(height: 12.h),
