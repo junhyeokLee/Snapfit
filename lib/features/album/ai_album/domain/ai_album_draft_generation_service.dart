@@ -125,6 +125,24 @@ class AiAlbumDraftGenerationResult {
     );
   }
 
+  factory AiAlbumDraftGenerationResult.themeMismatch({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+  }) {
+    final label = _themeLabel(theme);
+    final selectedOnly = range == AiPhotoRange.limitedLibrary;
+    return AiAlbumDraftGenerationResult._(
+      status: AiAlbumDraftGenerationStatus.insufficientPhotos,
+      shouldChargePoints: false,
+      failureTitle: '$label에 맞는 사진을 찾지 못했어요',
+      failureMessage: selectedOnly
+          ? '허용한 사진 안에서 $label 주제와 맞는 사진을 찾지 못했어요. 더 알맞은 사진을 허용하거나 최근 30일로 다시 살펴봐 주세요. 포인트는 차감되지 않았어요.'
+          : '선택한 범위에서 $label 주제와 맞는 사진을 찾지 못했어요. 기간이나 사진 범위를 다시 골라 주세요. 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: '사진 범위 다시 고르기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
+    );
+  }
+
   factory AiAlbumDraftGenerationResult.permissionDenied() {
     return const AiAlbumDraftGenerationResult._(
       status: AiAlbumDraftGenerationStatus.permissionDenied,
@@ -221,8 +239,27 @@ class AiAlbumDraftGenerationService {
         AiPhotoCandidateCollectionFailure.permissionDenied =>
           AiAlbumDraftGenerationResult.permissionDenied(),
       };
-    } catch (_) {
+    } catch (error) {
+      if (error.toString().contains('themed_candidates_not_found')) {
+        return AiAlbumDraftGenerationResult.themeMismatch(
+          theme: theme,
+          range: range,
+        );
+      }
       return AiAlbumDraftGenerationResult.failed();
     }
   }
+}
+
+String _themeLabel(AlbumTheme theme) {
+  return switch (theme) {
+    AlbumTheme.travel => '여행',
+    AlbumTheme.couple => '커플',
+    AlbumTheme.family => '가족',
+    AlbumTheme.baby => '성장',
+    AlbumTheme.birthday => '기념일',
+    AlbumTheme.friends => '친구',
+    AlbumTheme.daily => '일상',
+    AlbumTheme.custom => '선택한 주제',
+  };
 }

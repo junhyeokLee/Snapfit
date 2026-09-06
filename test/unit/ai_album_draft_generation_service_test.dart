@@ -318,6 +318,50 @@ void main() {
     },
   );
 
+  test(
+    'explains when server finds no photos that truly fit the selected theme',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate(
+            'home-selfie',
+            DateTime(2026, 8, 20),
+            PhotoOrientation.portrait,
+          ),
+          _candidate(
+            'receipt',
+            DateTime(2026, 8, 21),
+            PhotoOrientation.landscape,
+          ),
+          _candidate(
+            'screenshot',
+            DateTime(2026, 8, 22),
+            PhotoOrientation.portrait,
+          ),
+        ],
+        draftProvider: const _ThemedCandidatesNotFoundProvider(),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.limitedLibrary,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
+      expect(result.shouldChargePoints, isFalse);
+      expect(result.draft, isNull);
+      expect(result.failureTitle, '여행에 맞는 사진을 찾지 못했어요');
+      expect(result.failureMessage, contains('주제와 맞는 사진'));
+      expect(result.failureMessage, contains('포인트는 차감되지 않았어요'));
+      expect(result.primaryCtaLabel, '사진 범위 다시 고르기');
+      expect(
+        result.primaryRecoveryAction,
+        AiAlbumDraftRecoveryAction.retryPhotoRange,
+      );
+    },
+  );
+
   test('does not prepare previews when photo count is insufficient', () async {
     var prepared = false;
     final service = AiAlbumDraftGenerationService(
@@ -442,5 +486,18 @@ class _FakeAiAlbumDraftProvider extends AiAlbumDraftProvider {
       ],
       summary: '서버 provider 결과도 사용자 리뷰 뒤에만 포인트 차감해요.',
     );
+  }
+}
+
+class _ThemedCandidatesNotFoundProvider extends AiAlbumDraftProvider {
+  const _ThemedCandidatesNotFoundProvider();
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    throw Exception('themed_candidates_not_found');
   }
 }

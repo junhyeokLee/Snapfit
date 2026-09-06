@@ -515,7 +515,8 @@ function createHybridProvider(
               role: "user",
               content: JSON.stringify({
                 instruction:
-                  "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape.",
+                  "Use the OpenAI vision photoInsights plus candidate metadata to choose a premium editable album draft. Return only the required JSON shape. 테마와 맞지 않으면 제외하고, 부족하면 recommendedPhotos를 비워서 포인트가 차감되지 않게 하세요.",
+                themeFitPolicy: themeFitPolicy(request.theme),
                 requiredJsonShape:
                   JSON.parse(advancedPrompt(request)).requiredJsonShape,
                 theme: request.theme,
@@ -552,10 +553,41 @@ function createHybridProvider(
   };
 }
 
+function themeFitPolicy(theme: AlbumTheme) {
+  const common =
+    "테마와 맞지 않으면 제외하세요. 애매하면 추천하지 말고 excludedPhotos에 넣으세요. 사용자가 리뷰하기 전 앨범이 생성됐다고 쓰지 마세요.";
+  const policies: Record<AlbumTheme, string> = {
+    travel:
+      "여행: 여행지 풍경, 이동, 숙소, 현지 음식, 관광지, 거리/카페, 여행지에서 찍은 인물처럼 그때의 여행 흐름이 보이는 사진만 추천하세요. 집/문서/스크린샷/무관한 셀카는 제외하세요.",
+    couple:
+      "커플: 두 사람이 함께 등장하거나 데이트/기념일/함께 먹은 음식/서로 찍어준 분위기가 명확한 사진만 추천하세요. 단정적으로 관계를 추측하지 말고 '함께한 장면'으로 표현하세요.",
+    family:
+      "가족: 가족 구성원이 함께한 장면, 집/외출/식사/기념일처럼 가족 앨범으로 자연스러운 사진만 추천하세요. 무관한 풍경·문서·스크린샷은 제외하세요.",
+    baby:
+      "성장: 아기/아이의 표정, 손발, 놀이, 생일/돌/월령 변화 등 성장 흐름이 보이는 사진만 추천하세요. 아이와 무관한 사진은 제외하세요.",
+    birthday:
+      "기념일: 케이크, 선물, 축하 자리, 파티, 함께 축하하는 장면처럼 기념일 맥락이 보이는 사진만 추천하세요.",
+    friends:
+      "친구: 여러 사람이 함께한 모임, 여행, 놀이, 식사처럼 친구들과의 장면이 분명한 사진만 추천하세요.",
+    daily:
+      "일상: 평범한 하루의 분위기, 공간, 식사, 산책, 사람/반려동물/물건의 생활감이 보이는 사진을 추천하세요. 문서/스크린샷은 제외하세요.",
+    custom:
+      "직접 입력: 제공된 주제와 사진 분위기가 분명히 맞는 사진만 추천하세요.",
+  };
+  return `${policies[theme]} ${common}`;
+}
+
 function advancedPrompt(request: AiAlbumDraftRequestPayload) {
   return JSON.stringify({
     instruction:
-      "Pick a small set of photos for an editable Snapfit album draft. Keep Korean copy short, warm, album-first, and non-technical.",
+      "Pick only photos that truly fit the selected Snapfit album theme. Keep Korean copy short, warm, album-first, and non-technical.",
+    themeFitPolicy: themeFitPolicy(request.theme),
+    strictSelectionRules: [
+      "Every recommended photo must have themeFitScore >= 0.62.",
+      "Set themeFitScore from 0.0 to 1.0 for every recommended/excluded photo.",
+      "If fewer than one photo truly fits, return recommendedPhotos: [] so the app can ask the user to choose a better range without charging points.",
+      "Do not fill the album with generic or unrelated photos just to satisfy count.",
+    ],
     requiredJsonShape: {
       title: "string",
       pageCount: "number between 4 and 24",
@@ -564,6 +596,7 @@ function advancedPrompt(request: AiAlbumDraftRequestPayload) {
       recommendedPhotos: [{
         assetId: "provided assetId",
         score: 0.0,
+        themeFitScore: 0.0,
         reasons: [{
           type: "coverCandidate|dateFlow|themeOrientation",
           message: "Korean",
@@ -571,6 +604,7 @@ function advancedPrompt(request: AiAlbumDraftRequestPayload) {
       }],
       excludedPhotos: [{
         assetId: "provided assetId",
+        themeFitScore: 0.0,
         reasons: [{
           type:
             "screenshotExcluded|lowResolutionExcluded|weakThemeFitExcluded|totalLimitExcluded",
@@ -700,15 +734,22 @@ function draftFromAdvancedJson(
         0.5,
         Math.min(1, Number(item.score) || 0.85 - index * 0.03),
       ),
+      themeFitScore: Number.isFinite(Number(item.themeFitScore))
+        ? Number(item.themeFitScore)
+        : undefined,
       reasons: objectList(item.reasons).map((reason) => ({
         type: text(reason.type) || "themeOrientation",
         message: text(reason.message) || "앨범 흐름에 어울려 골랐어요",
       })),
     }))
     .filter((photo) => candidateIds.has(photo.assetId))
-    .slice(0, maxRecommendedPhotos);
+    .filter((photo) =>
+      photo.themeFitScore === undefined || photo.themeFitScore >= 0.62
+    )
+    .slice(0, maxRecommendedPhotos)
+    .map(({ themeFitScore: _themeFitScore, ...photo }) => photo);
   if (recommendedPhotos.length === 0) {
-    throw new Error("advanced_model_empty_recommended_photos");
+    throw new Error("themed_candidates_not_found");
   }
   const recommendedIds = new Set(
     recommendedPhotos.map((photo) => photo.assetId),
@@ -770,6 +811,7 @@ function safeProviderFallbackReason(reason: string) {
     "advanced_model_empty_response",
     "advanced_model_malformed_json",
     "advanced_model_empty_recommended_photos",
+    "themed_candidates_not_found",
     "hybrid_provider_not_configured",
     "hybrid_vision_failed",
     "hybrid_vision_empty_response",
@@ -783,6 +825,11 @@ function safeProviderFallbackReason(reason: string) {
     "provider_contract_story_asset_not_recommended",
   ]);
   return allowedReasons.has(reason) ? reason : "advanced_provider_failed";
+}
+
+function shouldSkipMetadataFallback(reason: string) {
+  return reason === "themed_candidates_not_found" ||
+    reason === "provider_contract_empty_recommended_photos";
 }
 
 function markProvider(
@@ -872,6 +919,9 @@ async function createDraftWithProvider(
     const reason = error instanceof Error && error.message
       ? error.message
       : "advanced_provider_failed";
+    if (shouldSkipMetadataFallback(reason)) {
+      throw new Error("themed_candidates_not_found");
+    }
     return markProvider(
       await providers.metadata(request),
       "metadata",
@@ -918,7 +968,7 @@ export async function handleAiAlbumDraftRequest(
     const code = error instanceof Error ? error.message : "server_error";
     const status =
       code === "insufficient_candidates" || code === "invalid_request" ||
-        code === "invalid_candidate"
+        code === "invalid_candidate" || code === "themed_candidates_not_found"
         ? 400
         : 500;
     await logOperationalEvent({
@@ -928,7 +978,9 @@ export async function handleAiAlbumDraftRequest(
     return jsonResponse(
       {
         error: code,
-        message: status === 400
+        message: code === "themed_candidates_not_found"
+          ? "선택한 주제와 맞는 사진을 찾지 못했어요. 사진 범위를 다시 골라 주세요."
+          : status === 400
           ? "AI 앨범 초안 요청 형식을 확인해 주세요."
           : "AI 앨범 초안을 준비하지 못했어요.",
       },

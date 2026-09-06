@@ -454,6 +454,212 @@ Deno.test("hybrid provider keeps safe fallback reason when Anthropic finalizer f
   assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
 });
 
+Deno.test("hybrid finalizer receives strict theme-fit selection rules", async () => {
+  let finalizerPrompt = "";
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "couple",
+        range: "manualSelection",
+        candidates: [
+          {
+            ...candidates[0],
+            assetId: "couple-preview-1",
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/couple-1.jpg",
+          },
+          {
+            ...candidates[1],
+            assetId: "couple-preview-2",
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/couple-2.jpg",
+          },
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          if (init?.method === "DELETE") {
+            return new Response(null, { status: 200 });
+          }
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          return Response.json({
+            choices: [{
+              message: { content: JSON.stringify({ photoInsights: [] }) },
+            }],
+          });
+        }
+        if (url === "https://api.anthropic.com/v1/messages") {
+          const body = JSON.parse(init?.body?.toString() ?? "{}");
+          finalizerPrompt = JSON.stringify(body.messages);
+          return Response.json({
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                title: "둘만의 기록",
+                pageCount: 8,
+                templateTone: "커플 중심",
+                summary: "둘이 함께한 장면만 골랐어요.",
+                recommendedPhotos: [{
+                  assetId: "couple-preview-1",
+                  score: 0.96,
+                  themeFitScore: 0.91,
+                  reasons: [{
+                    type: "themeOrientation",
+                    message: "두 사람이 함께한 분위기가 뚜렷해요",
+                  }],
+                }],
+                excludedPhotos: [{
+                  assetId: "couple-preview-2",
+                  themeFitScore: 0.22,
+                  reasons: [{
+                    type: "weakThemeFitExcluded",
+                    message: "커플 장면으로 보기 어려워 뺐어요",
+                  }],
+                }],
+                storySections: [{
+                  title: "둘의 장면",
+                  description: "함께한 컷만 묶었어요.",
+                  photoAssetIds: ["couple-preview-1"],
+                }],
+                curationNotes: ["커플 기준에 맞는 사진만 남겼어요."],
+              }),
+            }],
+          });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 200);
+  assertEquals(body.provider, "hybrid");
+  assertEquals(finalizerPrompt.includes("themeFitScore"), true);
+  assertEquals(finalizerPrompt.includes("커플"), true);
+  assertEquals(finalizerPrompt.includes("두 사람이 함께"), true);
+  assertEquals(finalizerPrompt.includes("테마와 맞지 않으면 제외"), true);
+});
+
+Deno.test("hybrid provider does not fall back to metadata when no photos fit the selected theme", async () => {
+  const response = await handleAiAlbumDraftRequest(
+    new Request("https://example.test/ai-album-draft", {
+      method: "POST",
+      body: JSON.stringify({
+        theme: "travel",
+        range: "manualSelection",
+        candidates: [
+          {
+            ...candidates[0],
+            assetId: "home-selfie",
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/home-selfie.jpg",
+          },
+          {
+            ...candidates[1],
+            assetId: "receipt",
+            previewStorageUri:
+              "supabase://ai-album-previews/user/draft/receipt.jpg",
+          },
+          candidates[2],
+        ],
+      }),
+    }),
+    {
+      env: (key) => {
+        const values: Record<string, string> = {
+          AI_ALBUM_DRAFT_PROVIDER: "hybrid",
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+        };
+        return values[key];
+      },
+      fetch: async (input, init) => {
+        const url = input.toString();
+        if (
+          url.includes("/storage/v1/object/authenticated/ai-album-previews/")
+        ) {
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "image/jpeg" },
+          });
+        }
+        if (url === "https://api.openai.com/v1/chat/completions") {
+          return Response.json({
+            choices: [{
+              message: { content: JSON.stringify({ photoInsights: [] }) },
+            }],
+          });
+        }
+        if (url === "https://api.anthropic.com/v1/messages") {
+          return Response.json({
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                title: "여행 후보 없음",
+                pageCount: 8,
+                templateTone: "travel",
+                summary: "여행 장면을 찾지 못했어요.",
+                recommendedPhotos: [],
+                excludedPhotos: [
+                  {
+                    assetId: "home-selfie",
+                    themeFitScore: 0.2,
+                    reasons: [{
+                      type: "weakThemeFitExcluded",
+                      message: "여행지/이동/풍경 장면으로 보기 어려워 뺐어요",
+                    }],
+                  },
+                  {
+                    assetId: "receipt",
+                    themeFitScore: 0.1,
+                    reasons: [{
+                      type: "weakThemeFitExcluded",
+                      message: "여행 앨범에 넣을 대표 사진이 아니에요",
+                    }],
+                  },
+                ],
+                storySections: [],
+                curationNotes: [
+                  "테마와 맞는 사진이 없어 초안을 만들지 않았어요.",
+                ],
+              }),
+            }],
+          });
+        }
+        return new Response("unexpected", { status: 500 });
+      },
+    },
+  );
+  const body = await response.json();
+
+  assertEquals(response.status, 400);
+  assertEquals(body.error, "themed_candidates_not_found");
+});
+
 Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curation", async () => {
   const calls: string[] = [];
   const response = await handleAiAlbumDraftRequest(
