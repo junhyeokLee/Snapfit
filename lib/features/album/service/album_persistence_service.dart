@@ -151,6 +151,7 @@ class AlbumPersistenceService {
                 (l.previewUrl ?? l.imageUrl) != null,
           );
           coverPreviewUrl = imageLayer.previewUrl ?? imageLayer.imageUrl;
+          coverOriginalUrl ??= imageLayer.originalUrl;
         } catch (_) {
           // 이미지 레이어가 없으면 coverPreviewUrl은 null 유지
         }

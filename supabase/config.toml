@@ -20,3 +20,5 @@ verify_jwt = true
 
 [functions.album-invites]
 verify_jwt = false
+[functions.ai-album-draft]
+verify_jwt = true

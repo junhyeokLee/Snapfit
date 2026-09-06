@@ -38,6 +38,16 @@ class FakeStorageService implements StorageService {
     int originalMaxDimension = 4096,
     int previewMaxDimension = 1024,
   }) async => const UploadedUrls();
+
+  @override
+  Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
+    required String draftId,
+    required List<AssetEntity> assets,
+    int maxDimension = 512,
+  }) async => const [];
+
+  @override
+  Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {}
 }
 
 class FakeAlbumPersistenceService implements AlbumPersistenceService {
@@ -526,6 +536,77 @@ void main() {
       expect(notifier.pages.length, 2);
       expect(notifier.pages.first.layers.single.id, 'cover-template-layer');
       expect(notifier.pages[1].layers.single.id, 'inner-template-layer');
+    },
+  );
+
+  test(
+    'beginCreatedTemplateAlbumForEdit preserves local AI photo assets for editor upload',
+    () async {
+      final mockRepo = MockAlbumRepository();
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(mockRepo),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(albumEditorViewModelProvider.future);
+      final notifier = container.read(albumEditorViewModelProvider.notifier);
+      final cover = coverSizes.firstWhere((s) => s.name == '정사각형');
+      final coverAsset = MockAssetEntity();
+      final storyAsset = MockAssetEntity();
+      final pages = [
+        [
+          LayerModel(
+            id: 'ai-cover-photo',
+            type: LayerType.image,
+            position: const Offset(60, 72),
+            width: 380,
+            height: 280,
+            asset: coverAsset,
+            imageTemplate: '4:3',
+            imageBackground: 'mat',
+          ),
+        ],
+        [
+          LayerModel(
+            id: 'ai-story-photo',
+            type: LayerType.image,
+            position: const Offset(40, 160),
+            width: 220,
+            height: 150,
+            asset: storyAsset,
+            imageTemplate: '4:3',
+            imageBackground: 'mat',
+          ),
+        ],
+      ];
+
+      notifier.beginCreatedTemplateAlbumForEdit(
+        albumId: 88,
+        albumTitle: 'AI 초안 앨범',
+        pages: pages,
+        initialCover: cover,
+      );
+
+      final coverLayer = notifier.pages.first.layers.single;
+      final storyLayer = notifier.pages[1].layers.single;
+      expect(coverLayer.asset, same(coverAsset));
+      expect(storyLayer.asset, same(storyAsset));
+      expect(coverLayer.imageUrl, isNull);
+      expect(coverLayer.originalUrl, isNull);
+      expect(coverLayer.previewUrl, isNull);
+      expect(storyLayer.imageUrl, isNull);
+      expect(storyLayer.originalUrl, isNull);
+      expect(storyLayer.previewUrl, isNull);
+      expect(notifier.editingAlbumId, 88);
     },
   );
 

@@ -21,6 +21,28 @@ enum AiPhotoRange {
   limitedLibrary,
 }
 
+enum AiCurationReasonType {
+  highResolution,
+  themeOrientation,
+  dateFlow,
+  timeClusterRepresentative,
+  coverCandidate,
+  endingCandidate,
+  screenshotExcluded,
+  lowResolutionExcluded,
+  duplicateTimeExcluded,
+  dailyLimitExcluded,
+  totalLimitExcluded,
+  weakThemeFitExcluded,
+}
+
+class AiCurationReason {
+  const AiCurationReason({required this.type, required this.message});
+
+  final AiCurationReasonType type;
+  final String message;
+}
+
 class PhotoCandidate {
   const PhotoCandidate({
     required this.assetId,
@@ -31,6 +53,7 @@ class PhotoCandidate {
     this.albumName,
     this.isScreenshot = false,
     this.asset,
+    this.previewStorageUri,
   });
 
   final String assetId;
@@ -41,6 +64,7 @@ class PhotoCandidate {
   final String? albumName;
   final bool isScreenshot;
   final AssetEntity? asset;
+  final String? previewStorageUri;
 
   String get dayKey =>
       '${createdAt.year.toString().padLeft(4, '0')}-'
@@ -48,6 +72,31 @@ class PhotoCandidate {
       '${createdAt.day.toString().padLeft(2, '0')}';
 
   bool get isHighResolution => width >= 1200 && height >= 1200;
+  bool get isLowResolution => width < 900 || height < 900;
+
+  PhotoCandidate copyWith({
+    String? assetId,
+    DateTime? createdAt,
+    int? width,
+    int? height,
+    PhotoOrientation? orientation,
+    String? albumName,
+    bool? isScreenshot,
+    AssetEntity? asset,
+    String? previewStorageUri,
+  }) {
+    return PhotoCandidate(
+      assetId: assetId ?? this.assetId,
+      createdAt: createdAt ?? this.createdAt,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      orientation: orientation ?? this.orientation,
+      albumName: albumName ?? this.albumName,
+      isScreenshot: isScreenshot ?? this.isScreenshot,
+      asset: asset ?? this.asset,
+      previewStorageUri: previewStorageUri ?? this.previewStorageUri,
+    );
+  }
 }
 
 class RecommendedPhoto {
@@ -59,7 +108,16 @@ class RecommendedPhoto {
 
   final PhotoCandidate candidate;
   final double score;
-  final List<String> reasons;
+  final List<AiCurationReason> reasons;
+
+  String get assetId => candidate.assetId;
+}
+
+class ExcludedPhoto {
+  const ExcludedPhoto({required this.candidate, required this.reasons});
+
+  final PhotoCandidate candidate;
+  final List<AiCurationReason> reasons;
 
   String get assetId => candidate.assetId;
 }
@@ -78,6 +136,7 @@ class StorySection {
 
 class AlbumRecommendationDraft {
   const AlbumRecommendationDraft({
+    this.draftId = '',
     required this.theme,
     required this.title,
     required this.pageCount,
@@ -86,20 +145,55 @@ class AlbumRecommendationDraft {
     required this.excludedPhotos,
     required this.storySections,
     required this.summary,
+    this.curationNotes = const [],
     this.requiresUserReview = true,
     this.alreadyCreatedAlbum = false,
     this.reviewCtaLabel = '이 구성으로 시작하기',
   });
 
+  final String draftId;
   final AlbumTheme theme;
   final String title;
   final int pageCount;
   final String templateTone;
   final List<RecommendedPhoto> recommendedPhotos;
-  final List<PhotoCandidate> excludedPhotos;
+  final List<ExcludedPhoto> excludedPhotos;
   final List<StorySection> storySections;
   final String summary;
+  final List<String> curationNotes;
   final bool requiresUserReview;
   final bool alreadyCreatedAlbum;
   final String reviewCtaLabel;
+
+  AlbumRecommendationDraft copyWith({
+    String? draftId,
+    AlbumTheme? theme,
+    String? title,
+    int? pageCount,
+    String? templateTone,
+    List<RecommendedPhoto>? recommendedPhotos,
+    List<ExcludedPhoto>? excludedPhotos,
+    List<StorySection>? storySections,
+    String? summary,
+    List<String>? curationNotes,
+    bool? requiresUserReview,
+    bool? alreadyCreatedAlbum,
+    String? reviewCtaLabel,
+  }) {
+    return AlbumRecommendationDraft(
+      draftId: draftId ?? this.draftId,
+      theme: theme ?? this.theme,
+      title: title ?? this.title,
+      pageCount: pageCount ?? this.pageCount,
+      templateTone: templateTone ?? this.templateTone,
+      recommendedPhotos: recommendedPhotos ?? this.recommendedPhotos,
+      excludedPhotos: excludedPhotos ?? this.excludedPhotos,
+      storySections: storySections ?? this.storySections,
+      summary: summary ?? this.summary,
+      curationNotes: curationNotes ?? this.curationNotes,
+      requiresUserReview: requiresUserReview ?? this.requiresUserReview,
+      alreadyCreatedAlbum: alreadyCreatedAlbum ?? this.alreadyCreatedAlbum,
+      reviewCtaLabel: reviewCtaLabel ?? this.reviewCtaLabel,
+    );
+  }
 }

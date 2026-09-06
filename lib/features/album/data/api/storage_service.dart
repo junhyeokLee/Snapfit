@@ -24,6 +24,18 @@ class UploadedUrls {
   });
 }
 
+class AiAlbumPreviewUpload {
+  const AiAlbumPreviewUpload({
+    required this.assetId,
+    required this.path,
+    required this.storageUri,
+  });
+
+  final String assetId;
+  final String path;
+  final String storageUri;
+}
+
 class StorageQuotaExceededException implements Exception {
   final int hardLimitBytes;
   final int usedBytes;
@@ -69,6 +81,40 @@ class StorageService {
       return cleanPath;
     }
     return '$cleanUserId/$cleanPath';
+  }
+
+  static String userScopedAiAlbumPreviewPath({
+    required String userId,
+    required String draftId,
+    required String assetId,
+  }) {
+    final cleanUserId = _storageSegment(userId);
+    if (cleanUserId.isEmpty) {
+      throw StateError('Authenticated user is required for AI album previews.');
+    }
+    final cleanDraftId = _storageSegment(draftId);
+    if (cleanDraftId.isEmpty) {
+      throw ArgumentError.value(draftId, 'draftId', 'Draft id is required.');
+    }
+    final cleanAssetId = _storageSegment(assetId);
+    if (cleanAssetId.isEmpty) {
+      throw ArgumentError.value(assetId, 'assetId', 'Asset id is required.');
+    }
+    return '$cleanUserId/$cleanDraftId/$cleanAssetId.jpg';
+  }
+
+  static String aiAlbumPreviewStorageUri(String path) {
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return 'supabase://ai-album-previews/$cleanPath';
+  }
+
+  static String _storageSegment(String value) {
+    return value
+        .trim()
+        .replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '-')
+        .replaceAll('..', '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .replaceAll(RegExp(r'^[-.]+|[-.]+$'), '');
   }
 
   /// 프로필 사진 업로드 — 리사이즈 후 Supabase Storage URL 반환
@@ -182,6 +228,64 @@ class StorageService {
       originalGsPath: originalGsPath,
       previewGsPath: previewGsPath,
     );
+  }
+
+  Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
+    required String draftId,
+    required List<AssetEntity> assets,
+    int maxDimension = 512,
+  }) async {
+    if (assets.isEmpty) return const [];
+    final supabase = _requireSupabase();
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || userId.trim().isEmpty) {
+      throw StateError('Authenticated user is required for AI album previews.');
+    }
+
+    final uploads = <AiAlbumPreviewUpload>[];
+    for (final asset in assets) {
+      final bytes = await asset.thumbnailDataWithSize(
+        ThumbnailSize.square(maxDimension),
+        format: ThumbnailFormat.jpeg,
+        quality: 72,
+      );
+      if (bytes == null || bytes.isEmpty) continue;
+      final path = userScopedAiAlbumPreviewPath(
+        userId: userId,
+        draftId: draftId,
+        assetId: asset.id,
+      );
+      AppLogger.debug('[StorageUpload] bucket=ai-album-previews path=$path');
+      await supabase.storage
+          .from('ai-album-previews')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploads.add(
+        AiAlbumPreviewUpload(
+          assetId: asset.id,
+          path: path,
+          storageUri: aiAlbumPreviewStorageUri(path),
+        ),
+      );
+    }
+    return uploads;
+  }
+
+  Future<void> deleteAiAlbumPreviews(Iterable<String> paths) async {
+    final normalized = paths
+        .map((path) => path.trim())
+        .where((path) => path.isNotEmpty)
+        .toList(growable: false);
+    if (normalized.isEmpty) return;
+    await _requireSupabase().storage
+        .from('ai-album-previews')
+        .remove(normalized);
   }
 
   /// 커버 전체를 캡처한 PNG 바이트를 업로드해서 대표 이미지로 사용

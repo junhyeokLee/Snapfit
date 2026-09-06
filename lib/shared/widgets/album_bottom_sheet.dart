@@ -137,6 +137,135 @@ class AlbumHeaderDelegate extends SliverPersistentHeaderDelegate {
       true;
 }
 
+class GalleryEmptyOrErrorPanel extends StatelessWidget {
+  const GalleryEmptyOrErrorPanel({
+    super.key,
+    required this.message,
+    required this.onRetry,
+    required this.onOpenPhotoSettings,
+  });
+
+  final Object? message;
+  final VoidCallback onRetry;
+  final VoidCallback onOpenPhotoSettings;
+
+  bool get _isPermissionError {
+    final text = message?.toString() ?? '';
+    return text.contains('권한') || text.toLowerCase().contains('permission');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = _isPermissionError ? '사진 접근 권한이 필요해요' : '이미지 앨범이 비어 있어요';
+    final body = _isPermissionError
+        ? '설정에서 사진을 몇 장 더 허용한 뒤 다시 불러오면 Snapfit이 기기 안에서만 사진을 보여줘요.'
+        : '다른 앨범을 고르거나 사진 접근 범위를 넓힌 뒤 다시 불러와 주세요.';
+    final retryLabel = _isPermissionError ? '다시 시도' : '다시 불러오기';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: SnapFitColors.surfaceOf(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 64.w,
+                height: 64.w,
+                decoration: BoxDecoration(
+                  color: SnapFitColors.overlayLightOf(context),
+                  borderRadius: BorderRadius.circular(22.r),
+                ),
+                child: Icon(
+                  _isPermissionError
+                      ? Icons.photo_library_outlined
+                      : Icons.photo_outlined,
+                  size: 34.sp,
+                  color: SnapFitColors.accent,
+                ),
+              ),
+              SizedBox(height: 18.h),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.35,
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5.sp,
+                  height: 1.45,
+                  fontWeight: FontWeight.w600,
+                  color: SnapFitColors.textSecondaryOf(context),
+                ),
+              ),
+              SizedBox(height: 18.h),
+              if (_isPermissionError) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton.icon(
+                    onPressed: onOpenPhotoSettings,
+                    icon: Icon(Icons.settings_outlined, size: 18.sp),
+                    label: const Text('사진 권한 열기'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: SnapFitColors.accent,
+                      foregroundColor: Colors.white,
+                      textStyle: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+              ],
+              SizedBox(
+                width: double.infinity,
+                height: 46.h,
+                child: OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: Icon(Icons.refresh, size: 18.sp),
+                  label: Text(retryLabel),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: SnapFitColors.textPrimaryOf(context),
+                    side: BorderSide(
+                      color: SnapFitColors.overlayLightOf(context),
+                    ),
+                    textStyle: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.r),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 📸 공통 사진 선택 바텀시트 (실서비스 스타일)
 /// 사진 선택 시 시트를 닫고 [AssetEntity]를 반환. 취소 시 null.
 Future<AssetEntity?> showPhotoSelectionSheet(
@@ -175,58 +304,11 @@ Future<AssetEntity?> showPhotoSelectionSheet(
               final st = ref.watch(galleryProvider);
 
               if ((st.albums.isEmpty && !st.isLoading) || st.error != null) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(24.w),
-                          child: Icon(
-                            Icons.photo_library_outlined,
-                            size: 48.sp,
-                            color: SnapFitColors.textMutedOf(context),
-                          ),
-                        ),
-                        Text(
-                          st.error?.toString() ?? '이미지 앨범이 없습니다.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: SnapFitColors.textSecondaryOf(context),
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        TextButton.icon(
-                          onPressed: () {
-                            ref
-                                .read(galleryProvider.notifier)
-                                .fetchInitialData();
-                          },
-                          icon: Icon(
-                            Icons.refresh,
-                            size: 20.sp,
-                            color: SnapFitColors.accent,
-                          ),
-                          label: Text(
-                            '다시 시도',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: SnapFitColors.accent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                return GalleryEmptyOrErrorPanel(
+                  message: st.error,
+                  onRetry: () =>
+                      ref.read(galleryProvider.notifier).fetchInitialData(),
+                  onOpenPhotoSettings: PhotoManager.openSetting,
                 );
               }
 

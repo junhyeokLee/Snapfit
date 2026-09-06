@@ -104,3 +104,15 @@ AI 초안을 만들려면 300P가 필요해요.
 - 실패했는데 포인트를 차감하지 않는다.
 - `AI가 완성해드립니다`처럼 사용자의 편집 권한을 빼앗는 표현을 쓰지 않는다.
 - 얼굴/감정 분석처럼 민감하게 들리는 표현을 기본 UX에 쓰지 않는다.
+
+
+## Supabase 구현 메모
+
+`20260905113000_ai_album_points.sql` migration으로 AI 초안 포인트 사용의 서버 기록 기반을 추가했다.
+
+- `point_wallets`는 사용자별 잔액을 보관한다.
+- `point_ledger`는 무료 사용/차감/충전/관리자 조정 이력을 남긴다.
+- `ai_album_draft_usages`는 성공한 AI 초안 사용을 `draft_id` 기준으로 idempotent하게 기록한다.
+- `ai_album_free_draft_claims`는 사용자별 첫 AI 초안 무료 사용 여부를 보관한다.
+- 클라이언트는 직접 balance를 수정하지 않고 `record_ai_album_draft_success(draft_id, point_cost)` RPC를 호출해야 한다.
+- 실패 상태에서는 이 RPC를 호출하지 않는다.

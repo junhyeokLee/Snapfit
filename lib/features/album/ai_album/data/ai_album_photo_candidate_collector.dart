@@ -1,6 +1,7 @@
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../domain/repositories/gallery_repository.dart';
+import '../domain/ai_album_draft_generation_service.dart';
 import '../domain/ai_album_models.dart';
 
 class AiAlbumPhotoCandidateCollector {
@@ -21,7 +22,11 @@ class AiAlbumPhotoCandidateCollector {
     AssetPathEntity? album,
   }) async {
     final permitted = await _repository.requestPermission();
-    if (!permitted) return const [];
+    if (!permitted) {
+      throw const AiPhotoCandidateCollectionException(
+        AiPhotoCandidateCollectionFailure.permissionDenied,
+      );
+    }
 
     final albums = album != null ? [album] : await _repository.loadAlbums();
     final candidates = <PhotoCandidate>[];

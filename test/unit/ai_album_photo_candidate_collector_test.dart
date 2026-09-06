@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
 import 'package:snap_fit/features/album/ai_album/data/ai_album_photo_candidate_collector.dart';
+import 'package:snap_fit/features/album/ai_album/domain/ai_album_draft_generation_service.dart';
 import 'package:snap_fit/features/album/domain/repositories/gallery_repository.dart';
 
 void main() {
@@ -49,6 +50,27 @@ void main() {
       expect(candidates[2].isScreenshot, isTrue);
     },
   );
+
+  test('throws a typed permission error when photo access is denied', () async {
+    final repository = _FakeGalleryRepository(
+      albums: [AssetPathEntity(id: 'camera', name: 'Camera')],
+      pages: const {},
+      permitted: false,
+    );
+
+    final collector = AiAlbumPhotoCandidateCollector(repository: repository);
+
+    expect(
+      () => collector.collect(range: AiPhotoRange.recent30Days),
+      throwsA(
+        isA<AiPhotoCandidateCollectionException>().having(
+          (error) => error.failure,
+          'failure',
+          AiPhotoCandidateCollectionFailure.permissionDenied,
+        ),
+      ),
+    );
+  });
 }
 
 AssetEntity _asset(
@@ -69,10 +91,15 @@ AssetEntity _asset(
 }
 
 class _FakeGalleryRepository implements GalleryRepository {
-  _FakeGalleryRepository({required this.albums, required this.pages});
+  _FakeGalleryRepository({
+    required this.albums,
+    required this.pages,
+    this.permitted = true,
+  });
 
   final List<AssetPathEntity> albums;
   final Map<String, List<AssetEntity>> pages;
+  final bool permitted;
 
   @override
   Future<List<AssetPathEntity>> loadAlbums() async => albums;
@@ -88,5 +115,5 @@ class _FakeGalleryRepository implements GalleryRepository {
   }
 
   @override
-  Future<bool> requestPermission() async => true;
+  Future<bool> requestPermission() async => permitted;
 }
