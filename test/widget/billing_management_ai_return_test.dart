@@ -1,3 +1,4 @@
+import '../support/point_purchase_fakes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 import 'package:snap_fit/features/billing/domain/entities/storage_quota.dart';
-import 'package:snap_fit/features/billing/domain/entities/subscription_status.dart';
 import 'package:snap_fit/features/profile/presentation/views/billing_management_screen.dart';
 
 void main() {
@@ -19,14 +19,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            mySubscriptionProvider.overrideWith(
-              (_) async => const SubscriptionStatusModel(
-                userId: 'user-1',
-                planCode: null,
-                status: 'INACTIVE',
-                isActive: false,
-              ),
-            ),
+            pointPurchaseServiceProvider.overrideWith((ref) {
+              final service = fakePointPurchaseService();
+              ref.onDispose(service.dispose);
+              return service;
+            }),
             myStorageQuotaProvider.overrideWith(
               (_) async => const StorageQuotaStatus(
                 userId: 'user-1',
@@ -103,14 +100,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          mySubscriptionProvider.overrideWith(
-            (_) async => const SubscriptionStatusModel(
-              userId: 'user-1',
-              planCode: null,
-              status: 'INACTIVE',
-              isActive: false,
-            ),
-          ),
+          pointPurchaseServiceProvider.overrideWith((ref) {
+            final service = fakePointPurchaseService();
+            ref.onDispose(service.dispose);
+            return service;
+          }),
           myStorageQuotaProvider.overrideWith(
             (_) async => const StorageQuotaStatus(
               userId: 'user-1',
@@ -155,7 +149,9 @@ void main() {
     await tester.scrollUntilVisible(find.text('최근 포인트 내역'), 140);
 
     expect(find.text('최근 포인트 내역'), findsOneWidget);
-    expect(find.text('포인트 충전'), findsOneWidget);
+    expect(find.text('포인트 충전'), findsWidgets);
+    expect(find.textContaining('구독'), findsNothing);
+    expect(find.textContaining('SnapFit Pro'), findsNothing);
     expect(find.text('+2500P'), findsOneWidget);
     expect(find.text('AI 템플릿 사용'), findsOneWidget);
     expect(find.text('-700P'), findsOneWidget);

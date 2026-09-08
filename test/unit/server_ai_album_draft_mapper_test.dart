@@ -388,6 +388,15 @@ void main() {
               'pageIndex': 0,
               'role': 'cover',
               'hint': '여행을 대표하는 사진을 직접 넣어주세요',
+              'left': 0.08,
+              'top': 0.1,
+              'width': 0.84,
+              'height': 0.52,
+              'rotation': -1.5,
+              'imageTemplate': '4:3',
+              'imageBackground': 'mat',
+              'caption': 'cover',
+              'emphasis': 1.7,
             },
             {
               'slotId': 'p1-landscape',
@@ -408,6 +417,10 @@ void main() {
       ]);
       expect(draft.templateSlots.first.pageIndex, 0);
       expect(draft.templateSlots.first.hint, contains('직접'));
+      expect(draft.templateSlots.first.left, 0.08);
+      expect(draft.templateSlots.first.imageTemplate, '4:3');
+      expect(draft.templateSlots.first.caption, 'cover');
+      expect(draft.templateSlots.first.emphasis, 1.7);
       expect(draft.reviewCtaLabel, '이 템플릿으로 시작하기');
     },
   );

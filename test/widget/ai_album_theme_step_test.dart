@@ -30,12 +30,14 @@ void main() {
     );
 
     expect(find.text('AI 템플릿'), findsOneWidget);
-    expect(find.text('어떤 틀로 시작할까요?'), findsOneWidget);
+    expect(find.text('원하는 앨범 무드를 골라주세요'), findsOneWidget);
     expect(find.text('어떤 앨범으로 정리해볼까요?'), findsNothing);
     expect(find.textContaining('선택한 주제는'), findsNothing);
     expect(find.text('여행'), findsOneWidget);
     expect(find.text('가족'), findsOneWidget);
     expect(find.text('직접 입력'), findsOneWidget);
+    expect(find.text('여행 매거진'), findsOneWidget);
+    expect(find.text('패밀리 아카이브'), findsOneWidget);
     expect(find.text('AI 초안 만들기 300P'), findsNothing);
 
     await tester.scrollUntilVisible(

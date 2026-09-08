@@ -66,6 +66,7 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
     required String title,
     required double coverRatio,
     required int targetPages,
+    Map<String, dynamic>? printProduct,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {}

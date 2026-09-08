@@ -37,9 +37,10 @@ void main() {
   test(
     'edge functions write best-effort operational events without secrets',
     () {
-      final iap = File(
+      final iap = [
         'supabase/functions/iap-verify/index.ts',
-      ).readAsStringSync();
+        'supabase/functions/iap-verify/point-purchase.ts',
+      ].map((path) => File(path).readAsStringSync()).join('\n');
       final ai = File(
         'supabase/functions/ai-album-draft/index.ts',
       ).readAsStringSync();

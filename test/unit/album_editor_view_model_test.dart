@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -61,6 +62,7 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
     required String title,
     required double coverRatio,
     required int targetPages,
+    Map<String, dynamic>? printProduct,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {}
@@ -80,6 +82,7 @@ class QuotaFailAlbumPersistenceService implements AlbumPersistenceService {
     required String title,
     required double coverRatio,
     required int targetPages,
+    Map<String, dynamic>? printProduct,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {
@@ -109,6 +112,84 @@ void main() {
       ),
     );
   });
+
+  for (final size in coverSizes.expand(
+    (size) => PrintCoverType.values.map(size.withCoverType),
+  )) {
+    test('saves and restores physical product ${size.productId}', () async {
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(albumEditorViewModelProvider.future);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      vm.resetForCreate(initialCover: size, targetPages: 2);
+      final json = vm.exportFullAlbumLayersJson(const Size(500, 500));
+      expect(jsonDecode(json)['printProduct'], size.printProduct);
+      expect(
+        jsonDecode(
+          vm.exportCoverLayersJson(const Size(500, 500)),
+        )['printProduct'],
+        size.printProduct,
+      );
+      await vm.prepareAlbumForEdit(
+        fakeAlbum(id: 2, ratio: '${size.ratio}', coverLayersJson: json),
+      );
+      final restored = container
+          .read(albumEditorViewModelProvider)
+          .value!
+          .selectedCover;
+      expect(restored.productId, size.productId);
+      expect(restored.realSize, size.realSize);
+      expect(restored.ratio, size.ratio);
+    });
+  }
+
+  test(
+    'legacy portrait retains its canvas and does not gain a print product',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(albumEditorViewModelProvider.future);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      await vm.prepareAlbumForEdit(
+        fakeAlbum(ratio: '0.75', coverLayersJson: '{"pages":[]}'),
+      );
+      final restored = container
+          .read(albumEditorViewModelProvider)
+          .value!
+          .selectedCover;
+      expect(restored.ratio, .75);
+      expect(restored.realSize, const Size(14.5, 19.4));
+      expect(restored.productId, isNull);
+      expect(
+        jsonDecode(
+          vm.exportFullAlbumLayersJson(const Size(500, 500)),
+        ).containsKey('printProduct'),
+        isFalse,
+      );
+    },
+  );
 
   test('resetForCreate initializes cover and pages', () async {
     final mockRepo = MockAlbumRepository();
@@ -536,6 +617,49 @@ void main() {
       expect(notifier.pages.length, 2);
       expect(notifier.pages.first.layers.single.id, 'cover-template-layer');
       expect(notifier.pages[1].layers.single.id, 'inner-template-layer');
+    },
+  );
+
+  test(
+    'explicit creation canvas preserves margins of sparse template pages',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          albumRepositoryProvider.overrideWithValue(MockAlbumRepository()),
+          albumEditorServiceProvider.overrideWithValue(
+            const AlbumEditorService(),
+          ),
+          albumPersistenceServiceProvider.overrideWithValue(
+            FakeAlbumPersistenceService(),
+          ),
+          storageServiceProvider.overrideWithValue(FakeStorageService()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(albumEditorViewModelProvider.future);
+      final vm = container.read(albumEditorViewModelProvider.notifier);
+      final photo = LayerModel(
+        id: 'small-photo',
+        type: LayerType.image,
+        position: const Offset(30, 60),
+        width: 90,
+        height: 120,
+      );
+      vm.beginCreatedTemplateAlbumForEdit(
+        albumId: 42,
+        albumTitle: '여백',
+        pages: [
+          [photo],
+          [photo],
+        ],
+        initialCover: defaultCoverSize,
+        templateCanvasSize: const Size(300, 300),
+      );
+      final actual = vm.pages[1].layers.single;
+      expect(actual.position.dx, closeTo(50, .001));
+      expect(actual.position.dy, closeTo(100, .001));
+      expect(actual.width, closeTo(150, .001));
+      expect(actual.height, closeTo(200, .001));
     },
   );
 

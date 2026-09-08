@@ -1,175 +1,153 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/constants/cover_size.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
-
-Future<void> _setPhoneSurface(WidgetTester tester) async {
-  tester.view.physicalSize = const Size(390, 844);
-  tester.view.devicePixelRatio = 1.0;
-  addTearDown(() {
-    tester.view.resetPhysicalSize();
-    tester.view.resetDevicePixelRatio();
-  });
-}
-
-Future<void> _loadGoldenFonts() async {
-  final robotoLoader = FontLoader('Roboto')
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
-    ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
-  await robotoLoader.load();
-}
-
-Widget _wrap(Widget child) {
-  return ScreenUtilInit(
-    designSize: const Size(390, 844),
-    minTextAdapt: true,
-    builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
-  );
-}
+import 'ai_album_start_step_test.dart' show wrapCreation, loadCreationFonts;
+import '../fixtures/ai_template_design_fixture.dart';
 
 void main() {
-  testWidgets('next button enabled only when title is provided', (
+  testWidgets('title, physical sizes and bounded page count remain editable', (
     tester,
   ) async {
-    String title = '';
-    final selectedCover = coverSizes.first;
-
+    var title = '';
+    var cover = defaultCoverSize;
+    var pages = 10;
     await tester.pumpWidget(
-      _wrap(
-        AlbumCreateStep1(
-          albumTitle: title,
-          selectedCover: selectedCover,
-          selectedPageCount: 10,
-          onTitleChanged: (value) => title = value,
-          onCoverSelected: (_) {},
-          onPageCountChanged: (_) {},
-          onNext: () {},
-        ),
-      ),
-    );
-
-    final buttonFinder = find.byType(ElevatedButton);
-    final button = tester.widget<ElevatedButton>(buttonFinder);
-    expect(button.onPressed, isNull);
-
-    await tester.enterText(find.byType(TextField), '테스트 앨범');
-    await tester.pump();
-
-    final enabledButton = tester.widget<ElevatedButton>(buttonFinder);
-    expect(enabledButton.onPressed, isNotNull);
-  });
-
-  testWidgets('renders book atelier creation step without losing controls', (
-    tester,
-  ) async {
-    var selectedCover = coverSizes.firstWhere((s) => s.name == '정사각형');
-    var pageCount = 24;
-
-    await tester.pumpWidget(
-      _wrap(
+      wrapCreation(
         StatefulBuilder(
-          builder: (context, setState) {
-            return AlbumCreateStep1(
-              albumTitle: '제주 여름 기록',
-              templateTitle: '제주 가족 여행 룩북',
-              selectedCover: selectedCover,
-              selectedPageCount: pageCount,
-              minPageCount: 12,
-              onTitleChanged: (_) {},
-              onCoverSelected: (cover) => setState(() => selectedCover = cover),
-              onPageCountChanged: (count) => setState(() => pageCount = count),
-              onNext: () {},
-            );
-          },
+          builder: (context, setState) => AlbumCreateStep1(
+            albumTitle: title,
+            selectedCover: cover,
+            selectedPageCount: pages,
+            onTitleChanged: (t) => title = t,
+            onCoverSelected: (s) => setState(() => cover = s),
+            onPageCountChanged: (n) => setState(() => pages = n),
+            onNext: () {},
+          ),
         ),
       ),
     );
-
-    expect(find.text('1 / 3'), findsNothing);
-    expect(find.text('앨범 기본 정보'), findsNothing);
-    expect(find.text('제목, 책 비율, 분량만 정해요.'), findsNothing);
-    expect(find.byKey(const Key('albumCreateStepHero')), findsNothing);
-    expect(find.text('새 앨범'), findsNothing);
-    expect(find.text('표지와 분량을 먼저 정해요.'), findsNothing);
-    expect(find.text('표지'), findsOneWidget);
-    expect(find.text('제주 가족 여행 룩북'), findsOneWidget);
-    expect(find.text('앨범 제목'), findsOneWidget);
-    expect(find.text('책 비율'), findsOneWidget);
-    expect(find.text('분량'), findsOneWidget);
-    expect(find.text('가로형'), findsOneWidget);
-    expect(find.text('정사각형'), findsOneWidget);
-    expect(find.text('세로형'), findsOneWidget);
-    expect(find.text('24쪽'), findsWidgets);
-    expect(find.text('다음'), findsOneWidget);
-    expect(find.text('표지 확인하기'), findsNothing);
-
-    expect(find.textContaining('추천'), findsNothing);
-    expect(find.textContaining('가볍게 시작'), findsNothing);
-    expect(find.textContaining('넉넉하게'), findsNothing);
-    expect(find.text('CREATION COCKPIT'), findsNothing);
-    expect(find.text('3분 완성 루트'), findsNothing);
-    expect(find.text('AI 추천 구성'), findsNothing);
-    expect(find.text('기능 유지'), findsNothing);
-    expect(find.text('표지 먼저 확인하기'), findsNothing);
+    expect(
+      tester.widget<ElevatedButton>(find.byType(ElevatedButton)).onPressed,
+      isNull,
+    );
+    await tester.enterText(find.byType(TextField), '우리의 여름');
+    tester.testTextInput.hide();
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<ElevatedButton>(find.byType(ElevatedButton)).onPressed,
+      isNotNull,
+    );
+    expect(find.text('세로형'), findsNothing);
+    for (final size in coverSizes) {
+      expect(
+        find.byKey(ValueKey('print-size-${size.productId}')),
+        findsOneWidget,
+      );
+    }
+    final largeLandscape = find.byKey(
+      const ValueKey('print-size-REDP_250X200_SOFT'),
+    );
+    await tester.ensureVisible(largeLandscape);
+    await tester.tap(largeLandscape);
+    await tester.pumpAndSettle();
+    expect(cover.productId, 'REDP_250X200_SOFT');
+    expect(cover.ratio, 1.25);
+    await tester.ensureVisible(find.byTooltip('페이지 늘리기'));
+    await tester.tap(find.byTooltip('페이지 늘리기'));
+    await tester.pump();
+    expect(pages, 11);
+    expect(title, '우리의 여름');
   });
 
   testWidgets(
-    'direct creation stays focused on controls without hero preview',
+    'unavailable sizes remain disabled when an explicit restriction is supplied',
     (tester) async {
-      await _setPhoneSurface(tester);
-
+      var changes = 0;
       await tester.pumpWidget(
-        _wrap(
+        wrapCreation(
           AlbumCreateStep1(
-            albumTitle: '',
-            selectedCover: coverSizes.firstWhere((s) => s.name == '정사각형'),
-            selectedPageCount: 24,
+            albumTitle: '새 앨범',
+            selectedCover: defaultCoverSize,
+            selectedPageCount: 8,
+            minPageCount: 8,
+            availableCovers: [defaultCoverSize],
+            templateTitle: '내 AI 디자인',
             onTitleChanged: (_) {},
-            onCoverSelected: (_) {},
+            onCoverSelected: (_) => changes++,
             onPageCountChanged: (_) {},
             onNext: () {},
           ),
         ),
       );
-      await tester.pumpAndSettle();
-
-      expect(find.byKey(const Key('albumCreateStepHero')), findsNothing);
-      expect(find.byKey(const Key('albumCreateHeroPreview')), findsNothing);
-      expect(find.text('앨범 제목'), findsOneWidget);
-      expect(find.text('책 비율'), findsOneWidget);
-      expect(find.text('분량'), findsOneWidget);
-      expect(find.textContaining('AI'), findsNothing);
-      expect(find.textContaining('포인트'), findsNothing);
+      final unavailable = find.byKey(
+        const ValueKey('print-size-REDP_250X200_SOFT'),
+      );
+      await tester.ensureVisible(unavailable);
+      await tester.tap(unavailable);
+      expect(changes, 0);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == '페이지 줄이기',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
     },
   );
 
-  testWidgets('matches book atelier creation golden', (tester) async {
-    await _loadGoldenFonts();
-    await _setPhoneSurface(tester);
-
-    await tester.pumpWidget(
-      _wrap(
-        AlbumCreateStep1(
-          albumTitle: '제주 여름 기록',
-          templateTitle: '제주 가족 여행 룩북',
-          selectedCover: coverSizes.firstWhere((s) => s.name == '정사각형'),
-          selectedPageCount: 24,
-          minPageCount: 12,
-          onTitleChanged: (_) {},
-          onCoverSelected: (_) {},
-          onPageCountChanged: (_) {},
-          onNext: () {},
+  for (final size in [
+    const Size(390, 844),
+    const Size(844, 390),
+    const Size(320, 568),
+  ]) {
+    testWidgets('album setup layout $size', (tester) async {
+      await loadCreationFonts();
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final design = templateDesignDraft().design!;
+      await tester.pumpWidget(
+        wrapCreation(
+          AlbumCreateStep1(
+            albumTitle: '제주의 느린 오후',
+            templateTitle: design.concept,
+            sourceLabel: 'AI 템플릿',
+            selectedCover: defaultCoverSize,
+            coverLayers: design
+                .buildLayers(targetSize: coverCanvasBaseSize(design.coverSize))
+                .first,
+            selectedPageCount: 8,
+            minPageCount: 8,
+            availableCovers: coverSizes,
+            onTitleChanged: (_) {},
+            onCoverSelected: (_) {},
+            onPageCountChanged: (_) {},
+            onNext: () {},
+            onChangeDesign: () {},
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await expectLater(
-      find.byType(AlbumCreateStep1),
-      matchesGoldenFile('goldens/album_create_cockpit_390x844.png'),
-    );
-  });
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile(
+          'goldens/creation_setup_${size.width.toInt()}x${size.height.toInt()}.png',
+        ),
+      );
+      if (size.width == 390) {
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('print-cover-hard')),
+        );
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/creation_cover_type_390x844.png'),
+        );
+      }
+    });
+  }
 }

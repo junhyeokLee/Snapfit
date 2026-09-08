@@ -10,12 +10,15 @@ import 'package:snap_fit/features/album/presentation/views/album_create_flow_scr
 import 'package:snap_fit/features/billing/data/billing_provider.dart';
 import 'package:snap_fit/features/billing/data/billing_repository.dart';
 import 'package:snap_fit/core/interceptors/token_storage.dart';
+import '../fixtures/ai_template_design_fixture.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/album_create_step1.dart';
+import 'package:snap_fit/features/album/presentation/widgets/create_flow/template_photo_fill_step.dart';
 
 class _MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
   testWidgets(
-    'server AI flow shows server privacy copy before and after failure',
+    'template flow sends only the brief and returns to it after failure',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -61,30 +64,25 @@ void main() {
 
       await tester.tap(find.text('AI 템플릿으로 시작'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('여행'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.textContaining('선택한 사진의 날짜·크기 같은 정보로 템플릿 슬롯을 제안해요'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('원본 사진은 서버로 보내지 않고'), findsNothing);
-
-      await tester.tap(find.text('최근 30일'));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('무료로 템플릿 만들기'), 120);
-      await tester.tap(find.text('무료로 템플릿 만들기'));
+      await _submitBrief(tester);
+      expect(find.textContaining('사진첩에 접근하거나 사진을 전송하지 않아요'), findsOneWidget);
+      await tester.ensureVisible(find.text('템플릿 만들기'));
+      await tester.tap(find.text('템플릿 만들기'));
       await tester.pumpAndSettle();
 
       expect(find.text('AI 템플릿을 만들지 못했어요'), findsOneWidget);
-      expect(find.textContaining('선택한 사진 정보가 서버로 전송됐을 수 있어요'), findsOneWidget);
+      expect(find.textContaining('사진첩에 접근하거나 사진을 전송하지 않았어요'), findsOneWidget);
       expect(find.text('포인트는 차감되지 않았어요.'), findsOneWidget);
       expect(find.textContaining('편집 시작'), findsNothing);
+      await tester.ensureVisible(find.text('디자인 요청 다시 보기'));
+      await tester.tap(find.text('디자인 요청 다시 보기'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, '제주 바다 사진집'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'advanced server AI flow shows preview consent before generation',
+    'template flow does not ask for photo preview consent even in advanced mode',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -133,17 +131,9 @@ void main() {
 
       await tester.tap(find.text('AI 템플릿으로 시작'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('여행'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴봐요'), findsOneWidget);
-
-      await tester.tap(find.text('최근 30일'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('고급 AI 템플릿 확인'), findsOneWidget);
-      expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴보고'), findsOneWidget);
-      expect(find.textContaining('템플릿은 바로 확정되지 않아요'), findsOneWidget);
+      await _submitBrief(tester);
+      expect(find.textContaining('사진첩에 접근하거나 사진을 전송하지 않아요'), findsOneWidget);
+      expect(find.textContaining('작은 미리보기 이미지를 서버에서 참고해'), findsNothing);
     },
   );
 
@@ -211,25 +201,69 @@ void main() {
 
     await tester.tap(find.text('AI 템플릿으로 시작'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('여행'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('최근 30일'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('무료로 템플릿 만들기'), 120);
-    await tester.tap(find.text('무료로 템플릿 만들기'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('템플릿 슬롯'), findsOneWidget);
-    expect(find.text('추천 사진 0장'), findsNothing);
-    expect(find.text('대표 사진을 직접 넣어주세요'), findsOneWidget);
-
-    await tester.tap(find.text('이 템플릿으로 시작하기'));
+    await _submitBrief(tester, productId: 'REDP_250X200_SOFT', hardcover: true);
+    await tester.ensureVisible(find.text('템플릿 만들기'));
+    await tester.tap(find.text('템플릿 만들기'));
     await tester.pumpAndSettle();
 
     expect(find.text('제주의 느린 오후'), findsWidgets);
-    expect(find.text('책 비율과 분량만 정하면 바로 편집해요'), findsOneWidget);
+    expect(find.text('추천 사진 0장'), findsNothing);
+    expect(find.byKey(const Key('ai_design_page_0')), findsOneWidget);
+
+    await tester.tap(find.text('이 디자인 사용'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('제주의 느린 오후'), findsWidgets);
+    expect(find.text('앨범 설정'), findsOneWidget);
+    final setup = tester.widget<AlbumCreateStep1>(
+      find.byType(AlbumCreateStep1),
+    );
+    expect(setup.selectedCover!.productId, 'REDP_250X200_HARD');
+    expect(setup.selectedCover!.ratio, 1.25);
+    expect(setup.selectedCover!.realSize, const Size(25, 20));
+    await tester.tap(find.text('사진 채우기'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fill-page-0')), findsOneWidget);
+    expect(
+      tester
+          .widget<TemplatePhotoFillStep>(find.byType(TemplatePhotoFillStep))
+          .cover
+          .productId,
+      'REDP_250X200_HARD',
+    );
+    expect(find.text('사진 추가'), findsOneWidget);
     expect(find.text('AI가 이렇게 골랐어요'), findsNothing);
   });
+}
+
+Future<void> _submitBrief(
+  WidgetTester tester, {
+  String? productId,
+  bool hardcover = false,
+}) async {
+  await tester.enterText(
+    find.byKey(const Key('ai_template_brief')),
+    '제주 바다 사진집',
+  );
+  tester.testTextInput.hide();
+  await tester.pumpAndSettle();
+  if (hardcover) {
+    final hard = find.byKey(const ValueKey('print-cover-hard'));
+    await tester.ensureVisible(hard);
+    await tester.tap(hard);
+    await tester.pump();
+  }
+  if (productId != null) {
+    final size = find.byKey(ValueKey('print-size-$productId'));
+    await tester.ensureVisible(size);
+    await tester.tap(size);
+    await tester.pump();
+  }
+  await tester.ensureVisible(
+    find.byKey(const Key('ai_template_brief_continue')),
+  );
+  await tester.tap(find.byKey(const Key('ai_template_brief_continue')));
+  await tester.pumpAndSettle();
 }
 
 PhotoCandidate _candidate(
@@ -248,6 +282,11 @@ PhotoCandidate _candidate(
 
 class _SlotTemplateDraftProvider extends AiAlbumDraftProvider {
   const _SlotTemplateDraftProvider();
+
+  @override
+  Future<AlbumRecommendationDraft> createTemplate(
+    AiTemplateBrief brief,
+  ) async => templateDesignDraft(brief: brief);
 
   @override
   Future<AlbumRecommendationDraft> createDraft({

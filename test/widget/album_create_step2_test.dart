@@ -57,7 +57,7 @@ void main() {
         child: _wrap(
           AlbumCreateStep2(
             albumTitle: '앨범',
-            selectedCover: coverSizes.first,
+            selectedCover: coverSizes.first.withCoverType(PrintCoverType.hard),
             selectedPageCount: 10,
             albumId: 1,
             onNext: () {},
@@ -70,6 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('https://example.com/invite'), findsOneWidget);
+    expect(find.textContaining('하드커버'), findsOneWidget);
   });
 
   testWidgets('toggle allow editing switch', (tester) async {

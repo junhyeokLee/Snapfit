@@ -37,7 +37,7 @@ void main() {
 
     expect(find.text('AI 템플릿 생성'), findsOneWidget);
     expect(find.text('AI 초안을 만들어볼까요?'), findsNothing);
-    expect(find.text('주제'), findsOneWidget);
+    expect(find.text('템플릿 무드'), findsOneWidget);
     expect(find.text('여행'), findsOneWidget);
     expect(find.text('사용 포인트'), findsOneWidget);
     expect(find.text('무료'), findsOneWidget);
@@ -111,8 +111,8 @@ void main() {
     );
 
     expect(find.text('고급 AI 템플릿 확인'), findsOneWidget);
-    expect(find.textContaining('작은 미리보기 이미지를 서버에서 살펴보고'), findsOneWidget);
-    expect(find.textContaining('템플릿은 바로 확정되지 않아요'), findsOneWidget);
+    expect(find.textContaining('작은 미리보기 이미지를 서버에서 참고해'), findsOneWidget);
+    expect(find.textContaining('사진은 자동으로 확정되지 않아요'), findsOneWidget);
     expect(find.text('성공 시만 처리'), findsOneWidget);
     expect(find.text('실패 시 차감 없음'), findsOneWidget);
     expect(find.textContaining('Vision'), findsNothing);

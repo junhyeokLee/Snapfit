@@ -340,12 +340,26 @@ void main() {
           pageIndex: 0,
           role: 'cover',
           hint: '대표 사진을 직접 넣어주세요',
+          left: 0.1,
+          top: 0.12,
+          width: 0.8,
+          height: 0.48,
+          imageTemplate: '4:3',
+          imageBackground: 'mat',
+          caption: 'cover',
+          emphasis: 1.7,
         ),
         AiTemplateSlot(
           slotId: 'p1-landscape',
           pageIndex: 1,
           role: 'landscape',
           hint: '풍경 사진을 넣어주세요',
+          left: 0.08,
+          top: 0.24,
+          width: 0.72,
+          height: 0.36,
+          imageTemplate: '16:9',
+          imageBackground: 'soft-shadow',
         ),
       ],
       reviewCtaLabel: '이 템플릿으로 시작하기',
@@ -364,6 +378,23 @@ void main() {
     expect(
       imageLayers.map((layer) => layer.id),
       contains('ai_slot_cover-main'),
+    );
+    final coverSlot = imageLayers.firstWhere(
+      (layer) => layer.id == 'ai_slot_cover-main',
+    );
+    expect(coverSlot.position.dx, 50);
+    expect(coverSlot.position.dy, 67.2);
+    expect(coverSlot.width, 400);
+    expect(coverSlot.height, 268.8);
+    expect(coverSlot.imageTemplate, '4:3');
+    expect(coverSlot.zIndex, greaterThan(20));
+    expect(
+      pages.first.map((layer) => layer.id),
+      contains('ai_slot_caption_cover-main'),
+    );
+    expect(
+      pages.first.where((layer) => layer.type == LayerType.decoration),
+      isNotEmpty,
     );
   });
 }
