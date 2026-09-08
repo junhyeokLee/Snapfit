@@ -1,145 +1,65 @@
 # SnapFit Production Smoke Test Checklist
 
-Use this checklist after the Supabase production secrets are set. Do not paste secret values into chat or commit them to the repository.
+Current billing supports Apple/Google consumable point purchases. External physical-order checkout has been retired without a replacement. Preserve existing order and payment history. Confirm actual server changes and outstanding setup in [deployment status](PAYMENT_PUSH_DEPLOYMENT_STATUS.md).
 
-## 0. Readiness audit
+## 1. Configuration and local checks
 
-Run from the VPS/container clone:
-
-```bash
-cd /srv/projects/Snapfit
-python3 tool/supabase_readiness_check.py
-```
-
-Expected before real production smoke testing:
-
-- No legacy Spring/backend patterns found.
-- Required Supabase secret names are present.
-- Supabase Edge Functions respond to `OPTIONS`.
-
-If secrets are not set yet, the script will fail only those secret checks and show the missing names without exposing values.
-
-## 1. Required Supabase secrets
-
-Set these directly in the VPS/container shell, never in Discord or GitHub.
-
-### Android IAP
-
-Use either a full JSON service account secret:
+Run from the app repository:
 
 ```bash
-SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set \
-  GOOGLE_PLAY_PACKAGE_NAME='com.yourcompany.snapfit' \
-  GOOGLE_PLAY_SERVICE_ACCOUNT_JSON='<service-account-json>'
+python3 tool/supabase_readiness_check.py --skip-remote
+python3 test/server/test_supabase_readiness.py
+bash -n scripts/configure_supabase_production_secrets.sh
 ```
 
-Or split email/key values:
+When configuring the authorized SnapFit project, use `scripts/configure_supabase_production_secrets.sh` in a private terminal. It does not accept external checkout settings. The helper uploads entered values and then runs remote readiness checks; the commands above are offline.
 
-```bash
-SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set \
-  GOOGLE_PLAY_PACKAGE_NAME='com.yourcompany.snapfit' \
-  GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL='<service-account-email>' \
-  GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY='<private-key>'
-```
+Required payment secrets and product IDs are listed in [payment keys](ORDER_PAYMENT_KEYS.md). Worker credentials/schedules are covered by [point operations](POINT_PURCHASE_OPERATIONS.md) and [push operations](push_notifications.md). Secret-name checks and `OPTIONS` responses do not prove credential validity or successful store purchases.
 
-### iOS IAP
+## 2. Native point purchase tests
 
-```bash
-SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set \
-  APP_STORE_ISSUER_ID='<issuer-id>' \
-  APP_STORE_KEY_ID='<key-id>' \
-  APP_STORE_BUNDLE_ID='<bundle-id>' \
-  APP_STORE_PRIVATE_KEY='<p8-private-key>' \
-  APP_STORE_ENVIRONMENT='sandbox'
-```
+Complete [Android console preparation](ANDROID_POINT_PURCHASE_CHECKLIST.md) or Apple's sandbox setup before these tests. Use the device's native test payment methods and the corresponding configured server environment.
 
-Switch `APP_STORE_ENVIRONMENT` to `production` only after sandbox passes.
+- [ ] All three configured point SKUs load with the correct localized price/currency.
+- [ ] Missing verification configuration blocks opening the native purchase sheet.
+- [ ] Successful purchase adds exactly the configured number of points once.
+- [ ] A repeated receipt does not add points again.
+- [ ] Android consumes only after verified delivery and permits another purchase of the same SKU.
+- [ ] Cancelled/declined/pending purchases do not add points; later approval can complete delivery.
+- [ ] App restart, background/foreground and interrupted network recover unfinished purchases.
+- [ ] Switching app accounts cannot deliver another account's purchase.
+- [ ] Verified refunds reverse the original grant once; spent points remain as debt.
+- [ ] No subscription is sold or activated.
 
-### Operations
+## 3. Auth, albums and templates
 
-```bash
-SUPABASE_TELEMETRY_DISABLED=1 npx supabase@latest secrets set \
-  SNAPFIT_ADDRESS_JUSO_KEY='<juso-key>' \
-  SNAPFIT_ORDER_CHECKOUT_BASE_URL='<checkout-provider-url>' \
-  SNAPFIT_ADMIN_KEY='<admin-key>'
-```
+- [ ] Fresh install and Google/Kakao sign-in succeed.
+- [ ] Profile, logout, session refresh and account deletion work.
+- [ ] Album creation, editing, save and image upload persist after restart.
+- [ ] An invited second account can open and accept its invitation.
+- [ ] Template list/detail/like/use remain functional.
+- [ ] AI generation checks the point balance and charges only the intended cost.
 
-## 1.5. Fast interactive secret setup
+## 4. Push, inbox and support
 
-If the values are available on the VPS, run the helper instead of pasting secrets into chat:
+- [ ] Test foreground, background and terminated-app push receipt and tap navigation.
+- [ ] Read-one and read-all update only the current user's inbox state.
+- [ ] Permission denial, notification preferences and quiet hours are respected.
+- [ ] Logout prevents delivery of the previous account's private notifications.
+- [ ] A support inquiry creates the expected record.
 
-```bash
-cd /srv/projects/Snapfit
-./scripts/configure_supabase_production_secrets.sh
-```
+## 5. Retired checkout and existing order history
 
-The script hides secret input, sets only non-empty values, and runs the full readiness check afterwards.
+- [ ] External checkout, payment retry and manual payment-confirmation actions are absent.
+- [ ] An old payment return link does not mark an order paid or begin production.
+- [ ] Compatibility checkout/confirmation endpoints reject old clients without changing order state.
+- [ ] Existing orders, addresses, tracking and status history remain readable.
+- [ ] Authorized admin handling of existing orders retains historical records and private artifacts.
+- [ ] Address search and admin authorization work for the retained operations.
 
-## 2. Auth smoke tests
+## 6. Legacy backend shutdown gate
 
-- [ ] Fresh install launches without initialization errors.
-- [ ] Google login succeeds and creates/updates `profiles`.
-- [ ] Kakao login succeeds with Supabase Auth ID-token flow.
-- [ ] Logout clears session.
-- [ ] Session refresh works after app restart.
-- [ ] Account deletion calls `account-delete` and removes auth/profile state.
-
-## 3. Album/template smoke tests
-
-- [ ] Create album.
-- [ ] Save cover and pages.
-- [ ] Upload/replace album images.
-- [ ] Reopen app and confirm album state persists.
-- [ ] Generate invite link.
-- [ ] Open invite on another account/device and accept.
-- [ ] Template list/detail loads.
-- [ ] Like/unlike template.
-- [ ] Create album from template.
-
-## 4. Notification/support smoke tests
-
-- [ ] Notification inbox loads.
-- [ ] Mark one notification read.
-- [ ] Mark all notifications read.
-- [ ] Support inquiry creates a row in `support_inquiries`.
-
-## 5. Native IAP smoke tests
-
-Android sandbox:
-
-- [ ] Product `snapfit_pro_monthly` loads from Google Play.
-- [ ] Sandbox purchase completes.
-- [ ] `iap-verify` returns active subscription.
-- [ ] `store_purchases` contains a verified row.
-- [ ] `subscriptions` contains/updates active entitlement.
-- [ ] Restore purchases works.
-
-Apple sandbox:
-
-- [ ] Product `snapfit_pro_monthly` loads from App Store Connect.
-- [ ] Sandbox purchase completes.
-- [ ] `iap-verify` returns active subscription.
-- [ ] `store_purchases` contains a verified row.
-- [ ] `subscriptions` contains/updates active entitlement.
-- [ ] Restore purchases works.
-
-## 6. Physical order/admin smoke tests
-
-- [ ] Address search succeeds through `address-search`.
-- [ ] Physical print order is created.
-- [ ] `order-checkout` returns a provider checkout URL when `SNAPFIT_ORDER_CHECKOUT_BASE_URL` is configured.
-- [ ] Success deep link confirms payment through `order-confirm-payment`.
-- [ ] Print package is generated in private Supabase Storage.
-- [ ] Admin dashboard loads with `SNAPFIT_ADMIN_KEY` or admin JWT.
-- [ ] Admin order list loads.
-- [ ] Admin prepare print package regenerates artifacts.
-- [ ] Admin shipping/delivered transitions work.
-
-## 7. Backend shutdown gate
-
-Only archive or power down Spring after:
-
-- [ ] The readiness script passes.
-- [ ] All smoke tests above pass on real devices/sandbox accounts.
-- [ ] Supabase logs show no unexpected function failures.
-- [ ] Spring logs show no `/api/*` traffic for one release cycle.
+- [ ] The authorized project's configuration checks pass.
+- [ ] Applicable sandbox/device checks pass with results recorded.
+- [ ] Supabase logs show no unexpected failures.
+- [ ] Spring logs show no `/api/*` traffic for one release cycle before archiving Spring.

@@ -1,5 +1,12 @@
 # Template Registry Guardrails
 
+> 2026-09-08: 아래 내용은 구 서버 게시 파이프라인의 보존 문서다.
+> 현재 앱의 공개 카탈로그는 `authoredCollections`의 승인된 무료 37종만 사용한다.
+> 기존 35종에 바람을 수집한 여행과 함께여서 좋은 날을 추가했다. 구 시안을 복원하지 않는다.
+> 최신 확장 범위는 `docs/prose_free_and_luminous_candidate.md`에 기록한다. 새 유료 후보는 미등록이다.
+> `store_latest.json` 병합이나 구 승인 잠금 목록이 공개 노출을 허용하지 않는다.
+> 새 공개 상품은 `docs/free_template_baseline.md`의 기준에 따라 별도로 승인해야 한다.
+
 ## 목표
 
 새 템플릿을 추가하거나 기존 템플릿을 수정할 때,

@@ -29,12 +29,12 @@ python3 tool/supabase_readiness_check.py
 | Avatar uploads | Supabase Storage `avatars` |
 | Notifications | Supabase `notification_inbox` / `notification_reads` |
 | Support inquiries | Supabase `support_inquiries` |
-| Subscription entitlements | Native store IAP + `iap-verify` Edge Function |
-| Legacy external subscription billing | Disabled; `billing-prepare`, `billing-approve`, `billing-webhook` return `410 native_iap_required` |
+| Consumable point purchases | Native Apple/Google IAP + `iap-verify`; `iap-reconcile` refunds |
+| Legacy external subscription billing | Disabled; `billing-prepare`, `billing-approve`, `billing-webhook` return HTTP 410 |
 | Storage quota | Supabase `storage_quotas` |
 | Address search | `address-search` Edge Function |
-| Physical order checkout | `order-checkout` Edge Function |
-| Order confirmation/print package | `order-confirm-payment` + private `print-packages` bucket |
+| External physical order checkout | Retired; no replacement integration |
+| Existing orders/print package | Historical data and authorized admin operations; private `print-packages` bucket |
 | Admin operations | `admin-ops` Edge Function |
 | Template publishing tool | `tool/publish_store_templates_to_server.dart` calls `admin-ops`, not Spring REST |
 
@@ -69,27 +69,37 @@ Apple IAP:
 - `APP_STORE_PRIVATE_KEY`
 - `APP_STORE_ENVIRONMENT`
 
+Workers:
+
+- `SNAPFIT_IAP_RECONCILE_SECRET`
+- `PUSH_DISPATCH_SECRET`
+- `FIREBASE_SERVICE_ACCOUNT_JSON`
+- `PUSH_DELIVERY_ENABLED`
+
 Operations:
 
 - `SNAPFIT_ADDRESS_JUSO_KEY`
-- `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
 - `SNAPFIT_ADMIN_KEY`
 
 Do not paste secret values into chat or commit them to the repository. Set them directly through the Supabase CLI or Dashboard.
 
 ## Current execution priority
 
-The remaining App Store IAP secrets and `SNAPFIT_ORDER_CHECKOUT_BASE_URL` are deferred launch gates, not blockers for continuing Supabase core migration, app UX, and template quality work. Use the core profile while those external-console/provider decisions are pending:
+App Store verification credentials and sandbox product setup can be prepared before the iOS release. Android Play products, service-account API permissions and license testing must likewise be checked before Android sales. See [Android preparation](ANDROID_POINT_PURCHASE_CHECKLIST.md). External physical-order checkout is retired; it is not a deferred provider-selection task.
+
+The core profile checks Android IAP and operations only:
 
 ```bash
 python3 tool/supabase_readiness_check.py --profile supabase-core
 ```
 
-Use the full production profile before App Store subscription launch or physical-order checkout launch:
+The full profile includes both stores, refund workers and push. Passing configuration checks still requires real-device validation:
 
 ```bash
 python3 tool/supabase_readiness_check.py --profile production
 ```
+
+Preserve already applied migrations. Use the follow-up external-payment retirement migration instead of rewriting the original payment migration; actual application status is in [deployment status](PAYMENT_PUSH_DEPLOYMENT_STATUS.md).
 
 ## Final production gate
 
