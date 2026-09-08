@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/notifications/fcm_notification_service.dart';
 import '../../domain/entities/app_notification_item.dart';
 import '../providers/notification_provider.dart';
 
@@ -13,19 +14,6 @@ class NotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
-  bool _didMarkAllOnEnter = false;
-  bool _didMarkAllAfterDataLoad = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (_didMarkAllOnEnter) return;
-      _didMarkAllOnEnter = true;
-      await ref.read(notificationActionProvider).markAllRead();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final inboxAsync = ref.watch(notificationInboxProvider);
@@ -47,7 +35,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         actions: [
           TextButton(
             onPressed: () async {
-              await action.markAllRead();
+              try {
+                await action.markAllRead();
+              } catch (_) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('읽음 처리를 완료하지 못했어요. 다시 시도해주세요.')),
+                );
+              }
             },
             child: const Text('모두 읽음'),
           ),
@@ -67,14 +62,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 ),
               ),
               data: (items) {
-                final hasUnread = items.any((e) => !e.isRead);
-                if (hasUnread && !_didMarkAllAfterDataLoad) {
-                  _didMarkAllAfterDataLoad = true;
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    await action.markAllRead();
-                  });
-                }
-
                 if (items.isEmpty) {
                   return Center(
                     child: Text(
@@ -107,7 +94,28 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                           ),
                         ),
                         ...section.$2.map(
-                          (item) => _NotificationCard(item: item, onTap: () {}),
+                          (item) => _NotificationCard(
+                            item: item,
+                            onTap: () async {
+                              try {
+                                await action.markRead(item.id);
+                                await FcmNotificationService.openNotification({
+                                  ...item.data,
+                                  'type': item.type,
+                                  'notificationId': item.id.toString(),
+                                  'userId': item.userId,
+                                  'deeplink': item.deeplink,
+                                });
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('알림을 열지 못했어요. 다시 시도해주세요.'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ),
                       ],
                     );
