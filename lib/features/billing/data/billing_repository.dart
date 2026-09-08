@@ -2,10 +2,9 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/interceptors/token_storage.dart';
-import '../domain/entities/billing_plan.dart';
 import '../domain/entities/storage_preflight.dart';
 import '../domain/entities/storage_quota.dart';
-import '../domain/entities/subscription_status.dart';
+import '../domain/pending_point_purchase.dart';
 
 typedef RecordAiAlbumDraftSuccessRpc =
     Future<Map<String, dynamic>> Function({
@@ -85,6 +84,17 @@ class StorePointPurchaseResult {
   final bool alreadyGranted;
 }
 
+class PointPurchaseVerificationException implements Exception {
+  const PointPurchaseVerificationException(
+    this.code, {
+    required this.retryable,
+  });
+  final String code;
+  final bool retryable;
+  @override
+  String toString() => code;
+}
+
 class PointLedgerEntry {
   const PointLedgerEntry({
     required this.id,
@@ -122,6 +132,8 @@ class PointLedgerEntry {
   String get title {
     return switch (reason) {
       'POINT_PURCHASE' => '포인트 충전',
+      'POINT_PURCHASE_REFUND' => '포인트 구매 환불',
+      'DIGITAL_ITEM_PURCHASE' => '꾸미기 상품 구매',
       'AI_ALBUM_DRAFT_CHARGE' => 'AI 템플릿 사용',
       'AI_ALBUM_DRAFT_FREE' => '첫 AI 템플릿 무료',
       'ADMIN_ADJUSTMENT' => amountDelta >= 0 ? '포인트 보정' : '포인트 회수',
@@ -132,6 +144,8 @@ class PointLedgerEntry {
   String get subtitle {
     return switch (reason) {
       'POINT_PURCHASE' => '스토어 결제 확인 완료',
+      'POINT_PURCHASE_REFUND' => '환불된 구매의 지급 포인트 회수',
+      'DIGITAL_ITEM_PURCHASE' => '구매한 상품은 계속 사용할 수 있어요',
       'AI_ALBUM_DRAFT_CHARGE' => '초안이 만들어지고 리뷰 가능할 때만 차감',
       'AI_ALBUM_DRAFT_FREE' => '첫 초안 무료 혜택 사용',
       'ADMIN_ADJUSTMENT' => '고객 지원으로 반영된 내역',
@@ -156,34 +170,14 @@ class BillingRepository {
   final PointLedgerQuery? pointLedgerQuery;
 
   Future<String> _requireUserId() async {
-    final userId = await tokenStorage.getUserId();
+    final userId = supabase == null
+        ? await tokenStorage.getUserId()
+        : supabase!.auth.currentUser?.id;
     if (userId == null || userId.trim().isEmpty) {
       throw Exception('로그인이 필요합니다.');
     }
     return userId;
   }
-
-  Map<String, dynamic> _camelBillingPlan(Map<String, dynamic> row) => {
-    'planCode': row['plan_code'],
-    'title': row['title'],
-    'amount': row['amount'],
-    'currency': row['currency'],
-    'periodDays': row['period_days'],
-    'provider': row['provider'],
-  };
-
-  Map<String, dynamic> _camelSubscription(
-    Map<String, dynamic>? row,
-    String userId,
-  ) => {
-    'userId': userId,
-    'planCode': row?['plan_code'],
-    'status': row?['status'] ?? 'INACTIVE',
-    'startedAt': row?['started_at'],
-    'expiresAt': row?['expires_at'],
-    'nextBillingAt': row?['next_billing_at'],
-    'isActive': row?['status'] == 'ACTIVE',
-  };
 
   Map<String, dynamic> _camelQuota(Map<String, dynamic>? row, String userId) {
     final used = (row?['used_bytes'] as num?)?.toInt() ?? 0;
@@ -202,112 +196,89 @@ class BillingRepository {
     };
   }
 
-  Future<List<BillingPlan>> getPlans() async {
-    if (supabase != null) {
-      final rows = await supabase!
-          .from('billing_plans')
-          .select()
-          .eq('is_active', true)
-          .order('amount');
-      return rows
-          .map<BillingPlan>(
-            (e) => BillingPlan.fromJson(
-              _camelBillingPlan(Map<String, dynamic>.from(e)),
-            ),
-          )
-          .toList(growable: false);
-    }
-    throw Exception('Supabase 결제 플랜 환경이 준비되지 않았습니다.');
-  }
-
-  Future<SubscriptionStatusModel> getMySubscription() async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final row = await supabase!
-          .from('subscriptions')
-          .select()
-          .eq('user_id', userId)
-          .maybeSingle();
-      return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
-    }
-    throw Exception('Supabase 구독 조회 환경이 준비되지 않았습니다.');
-  }
-
-  String _storePlatformFromPurchase(PurchaseDetails purchase) {
-    final source = purchase.verificationData.source.toLowerCase();
-    if (source.contains('google') || source.contains('play')) {
-      return 'GOOGLE_PLAY';
-    }
-    if (source.contains('app_store') ||
-        source.contains('appstore') ||
-        source.contains('storekit')) {
-      return 'APP_STORE';
-    }
-    throw Exception('지원하지 않는 인앱결제 플랫폼입니다: ${purchase.verificationData.source}');
-  }
-
   Future<StorePointPurchaseResult> verifyStorePointPurchase(
     PurchaseDetails purchase,
   ) async {
-    if (supabase == null) {
-      throw Exception('Supabase 포인트 구매 검증 환경이 준비되지 않았습니다.');
-    }
-    final transactionId =
-        purchase.purchaseID ??
-        '${purchase.productID}-${purchase.transactionDate ?? DateTime.now().millisecondsSinceEpoch}';
-    final response = await supabase!.functions.invoke(
-      'iap-verify',
-      body: {
-        'platform': _storePlatformFromPurchase(purchase),
-        'productId': purchase.productID,
-        'transactionId': transactionId,
-        'originalTransactionId': transactionId,
-        'purchaseToken': purchase.verificationData.serverVerificationData,
-        'receiptData': purchase.verificationData.localVerificationData,
-        'verificationSource': purchase.verificationData.source,
-        'purchaseType': 'POINTS',
-        'planCode': 'FREE',
-      },
+    final owner = await _requireUserId();
+    return verifyPendingPointPurchase(
+      PendingPointPurchase.fromPurchase(purchase, owner),
     );
-    final data =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    if (data['error'] != null) {
-      throw Exception(data['error']);
-    }
-    final pointPurchase =
-        (data['pointPurchase'] as Map?)?.cast<String, dynamic>() ?? data;
-    return StorePointPurchaseResult.fromJson(pointPurchase);
   }
 
-  Future<SubscriptionStatusModel> verifyStorePurchase(
-    PurchaseDetails purchase, {
-    String planCode = 'SNAPFIT_PRO_MONTHLY',
-  }) async {
-    if (supabase == null) {
-      throw Exception('Supabase 결제 검증 환경이 준비되지 않았습니다.');
+  Future<void> ensurePointPurchaseAvailable(String platform) async {
+    final client = supabase;
+    if (client == null || client.auth.currentUser == null) {
+      throw StateError('purchase_account_required');
     }
-    final transactionId =
-        purchase.purchaseID ??
-        '${purchase.productID}-${purchase.transactionDate ?? DateTime.now().millisecondsSinceEpoch}';
-    final response = await supabase!.functions.invoke(
+    final response = await client.functions.invoke(
       'iap-verify',
-      body: {
-        'platform': _storePlatformFromPurchase(purchase),
-        'productId': purchase.productID,
-        'transactionId': transactionId,
-        'originalTransactionId': transactionId,
-        'purchaseToken': purchase.verificationData.serverVerificationData,
-        'receiptData': purchase.verificationData.localVerificationData,
-        'verificationSource': purchase.verificationData.source,
-        'planCode': planCode,
-      },
+      body: {'action': 'availability', 'platform': platform},
     );
-    final data =
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    if (data['error'] != null) {
-      throw Exception(data['error']);
+    final data = response.data;
+    if (response.status != 200 ||
+        data is! Map ||
+        data['status'] != 'READY' ||
+        data['platform'] != platform ||
+        data['pointsOnly'] != true) {
+      throw StateError('point_purchase_not_configured');
     }
-    return SubscriptionStatusModel.fromJson(data);
+  }
+
+  Future<StorePointPurchaseResult> verifyPendingPointPurchase(
+    PendingPointPurchase purchase,
+  ) async {
+    final client = supabase;
+    if (client == null) throw StateError('Supabase 포인트 구매 검증 환경이 준비되지 않았습니다.');
+    final owner = client.auth.currentUser?.id;
+    if (owner == null ||
+        (purchase.ownerId.isNotEmpty && purchase.ownerId != owner)) {
+      throw StateError('purchase_account_mismatch');
+    }
+    final source = purchase.source.toLowerCase();
+    final platform = source.contains('google')
+        ? 'GOOGLE_PLAY'
+        : source.contains('app_store') || source.contains('storekit')
+        ? 'APP_STORE'
+        : null;
+    if (platform == null) throw StateError('unsupported_purchase_platform');
+    late final FunctionResponse response;
+    try {
+      response = await client.functions.invoke(
+        'iap-verify',
+        body: {
+          'platform': platform,
+          'productId': purchase.productId,
+          'transactionId': purchase.transactionId,
+          'purchaseToken': purchase.serverData,
+          'receiptData': purchase.localData,
+          'verificationSource': purchase.source,
+          'purchaseType': 'POINTS',
+        },
+      );
+    } on FunctionException catch (error) {
+      final details = error.details;
+      final code = details is Map
+          ? details['error']?.toString() ?? 'purchase_verification_failed'
+          : 'purchase_verification_failed';
+      throw PointPurchaseVerificationException(
+        code,
+        retryable:
+            error.status >= 500 ||
+            error.status == 401 ||
+            code.contains('pending'),
+      );
+    }
+    final data = (response.data as Map?)?.cast<String, dynamic>() ?? {};
+    final grant = (data['pointPurchase'] as Map?)?.cast<String, dynamic>();
+    if (response.status != 200 ||
+        data['status'] != 'VERIFIED' ||
+        grant == null ||
+        grant['productId'] != purchase.productId ||
+        grant['grantedPoints'] is! num ||
+        grant['remainingBalance'] is! num) {
+      throw StateError('point_purchase_verification_incomplete');
+    }
+    return StorePointPurchaseResult.fromJson(grant);
   }
 
   Future<AiAlbumDraftPointUsageResult> recordAiAlbumDraftSuccess({
@@ -411,20 +382,6 @@ class BillingRepository {
     return rows
         .map((row) => PointLedgerEntry.fromJson(Map<String, dynamic>.from(row)))
         .toList(growable: false);
-  }
-
-  Future<SubscriptionStatusModel> cancelSubscription() async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final row = await supabase!
-          .from('subscriptions')
-          .update({'status': 'CANCELED'})
-          .eq('user_id', userId)
-          .select()
-          .maybeSingle();
-      return SubscriptionStatusModel.fromJson(_camelSubscription(row, userId));
-    }
-    throw Exception('Supabase 구독 취소 환경이 준비되지 않았습니다.');
   }
 
   Future<StorageQuotaStatus> getMyStorageQuota() async {
