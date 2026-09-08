@@ -14,10 +14,11 @@
         android:maxSdkVersion="29"
         tools:replace="android:maxSdkVersion" />
     <application
-        android:label="snap_fit"
+        android:label="스냅핏"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="snapfit_push" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

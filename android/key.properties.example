@@ -1,0 +1,6 @@
+# Copy to android/key.properties and use your existing Google Play upload key.
+# Relative storeFile paths are resolved from android/; an absolute path also works.
+storeFile=/absolute/path/to/snapfit-upload.jks
+storePassword=replace-with-keystore-password
+keyAlias=replace-with-upload-key-alias
+keyPassword=replace-with-key-password
