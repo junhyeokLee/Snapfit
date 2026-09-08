@@ -1,0 +1,731 @@
+{
+  "id": "studio_island_square",
+  "status": "authored-review-specimen",
+  "aiGenerated": false,
+  "catalogPublishable": false,
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "cover": {
+    "id": "island_cover",
+    "strictLayout": true,
+    "aspect": "square",
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "island_cover_0",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "text": "rect",
+        "fillColor": "#FAFBF8",
+        "cornerRadius": 0
+      },
+      {
+        "id": "island_cover_1",
+        "type": "text",
+        "x": 0.07,
+        "y": 0.035,
+        "w": 0.65,
+        "h": 0.035,
+        "z": 1,
+        "text": "A SUMMER JOURNAL",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.0,
+          "fontWeight": 400,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_2",
+        "type": "text",
+        "x": 0.76,
+        "y": 0.035,
+        "w": 0.17,
+        "h": 0.035,
+        "z": 2,
+        "text": "VOL. 01",
+        "align": "right",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.0,
+          "fontWeight": 400,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_3",
+        "type": "decoration",
+        "x": 0.07,
+        "y": 0.085,
+        "w": 0.86,
+        "h": 0.002,
+        "z": 3,
+        "text": "rect",
+        "fillColor": "#183B2D",
+        "cornerRadius": 0
+      },
+      {
+        "id": "island_cover_4",
+        "type": "text",
+        "x": 0.065,
+        "y": 0.095,
+        "w": 0.88,
+        "h": 0.14,
+        "z": 4,
+        "text": "ISLAND",
+        "align": "left",
+        "style": {
+          "fontFamily": "Raleway",
+          "fontSize": 76.0,
+          "fontWeight": 800,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_5",
+        "type": "text",
+        "x": 0.065,
+        "y": 0.225,
+        "w": 0.88,
+        "h": 0.14,
+        "z": 5,
+        "text": "HOURS.",
+        "align": "left",
+        "style": {
+          "fontFamily": "Raleway",
+          "fontSize": 76.0,
+          "fontWeight": 800,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_6",
+        "type": "image",
+        "x": 0.07,
+        "y": 0.4,
+        "w": 0.86,
+        "h": 0.43,
+        "z": 6,
+        "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_seongsan.jpg",
+        "imageTemplate": "free",
+        "imageBackground": "none",
+        "decorationFillColor": "#DEE4E1"
+      },
+      {
+        "id": "island_cover_7",
+        "type": "decoration",
+        "x": 0.07,
+        "y": 0.4,
+        "w": 0.012,
+        "h": 0.43,
+        "z": 7,
+        "text": "rect",
+        "fillColor": "#DDE993",
+        "cornerRadius": 0
+      },
+      {
+        "id": "island_cover_8",
+        "type": "text",
+        "x": 0.07,
+        "y": 0.85,
+        "w": 0.86,
+        "h": 0.055,
+        "z": 8,
+        "text": "제주에서, 느리게",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 17.0,
+          "fontWeight": 400,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_9",
+        "type": "text",
+        "x": 0.07,
+        "y": 0.93,
+        "w": 0.65,
+        "h": 0.04,
+        "z": 9,
+        "text": "JEJU ISLAND / 2026",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.0,
+          "fontWeight": 400,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "island_cover_10",
+        "type": "text",
+        "x": 0.79,
+        "y": 0.93,
+        "w": 0.14,
+        "h": 0.04,
+        "z": 10,
+        "text": "06.18–21",
+        "align": "right",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.0,
+          "fontWeight": 400,
+          "color": "#183B2D",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "island_1",
+      "strictLayout": true,
+      "aspect": "square",
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "island_1_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#FAFBF8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "island_1_1",
+          "type": "image",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 0.85,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_ocean.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "island_1_2",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.88,
+          "w": 0.7,
+          "h": 0.06,
+          "z": 2,
+          "text": "바람이 먼저 도착한 곳",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 15.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_1_3",
+          "type": "text",
+          "x": 0.85,
+          "y": 0.9,
+          "w": 0.08,
+          "h": 0.04,
+          "z": 3,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "island_2",
+      "strictLayout": true,
+      "aspect": "square",
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "island_2_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#183B2D",
+          "cornerRadius": 0
+        },
+        {
+          "id": "island_2_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.75,
+          "h": 0.04,
+          "z": 1,
+          "text": "CHAPTER ONE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#DDE993",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_2",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.12,
+          "w": 0.75,
+          "h": 0.22,
+          "z": 2,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 116.0,
+            "fontWeight": 400,
+            "color": "#DDE993",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.37,
+          "w": 0.78,
+          "h": 0.105,
+          "z": 3,
+          "text": "서두르지",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 38.0,
+            "fontWeight": 400,
+            "color": "#FAFBF8",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.475,
+          "w": 0.78,
+          "h": 0.105,
+          "z": 4,
+          "text": "않는 날들",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 38.0,
+            "fontWeight": 400,
+            "color": "#FAFBF8",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_5",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.64,
+          "w": 0.54,
+          "h": 0.12,
+          "z": 5,
+          "text": "정해둔 목적지 없이,\n마음이 머무는 쪽으로 걸었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#FAFBF8",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_6",
+          "type": "image",
+          "x": 0.69,
+          "y": 0.65,
+          "w": 0.24,
+          "h": 0.21,
+          "z": 6,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_rocky_coast.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "island_2_7",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 7,
+          "text": "ISLAND HOURS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#DDE993",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_2_8",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 8,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#DDE993",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "island_3",
+      "strictLayout": true,
+      "aspect": "square",
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "island_3_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#FAFBF8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "island_3_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.045,
+          "w": 0.68,
+          "h": 0.04,
+          "z": 1,
+          "text": "FIELD NOTES",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_3_2",
+          "type": "text",
+          "x": 0.81,
+          "y": 0.045,
+          "w": 0.12,
+          "h": 0.04,
+          "z": 2,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_3_3",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.13,
+          "w": 0.86,
+          "h": 0.56,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_aerial.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "island_3_4",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.72,
+          "w": 0.42,
+          "h": 0.1,
+          "z": 4,
+          "text": "섬의 속도",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 32.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_3_5",
+          "type": "text",
+          "x": 0.58,
+          "y": 0.72,
+          "w": 0.35,
+          "h": 0.12,
+          "z": 5,
+          "text": "아무것도 하지 않아도\n충분했던 오후.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_3_6",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 6,
+          "text": "SEONGSAN / JEJU",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_3_7",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 7,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "island_4",
+      "strictLayout": true,
+      "aspect": "square",
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "island_4_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#EFF3E8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "island_4_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.05,
+          "w": 0.84,
+          "h": 0.075,
+          "z": 1,
+          "text": "작은 장면들의 수집",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_4_2",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.2,
+          "w": 0.4,
+          "h": 0.53,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_seongsan.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "island_4_3",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.35,
+          "w": 0.39,
+          "h": 0.43,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_sunset.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "island_4_4",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.765,
+          "w": 0.42,
+          "h": 0.045,
+          "z": 4,
+          "text": "오래 바라본 초록",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 11.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_4_5",
+          "type": "text",
+          "x": 0.54,
+          "y": 0.815,
+          "w": 0.39,
+          "h": 0.045,
+          "z": 5,
+          "text": "해가 기울 때까지",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 11.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_4_6",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 6,
+          "text": "THE LITTLE THINGS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "island_4_7",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 7,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#183B2D",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    }
+  ]
+}

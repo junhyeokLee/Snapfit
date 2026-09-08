@@ -1,0 +1,35 @@
+{
+  "created": "2026-09-07",
+  "mode": "built-in image_gen",
+  "purpose": "Replaceable fictional sample photography for independently authored travel and everyday album drafts. Not AI-generated album layouts.",
+  "notes": [
+    "Original generated PNGs copied without modification.",
+    "Sample images are cleared on album preparation; no paid catalog publication."
+  ],
+  "assets": [
+    {
+      "id": "journey_train",
+      "file": "images/journey_train.png",
+      "prompt": "Create one premium editorial travel photograph for a fictional Mediterranean travel journal. Landscape 3:2, 1536x1024. Interior of a quiet coastal train: a large rectangular window occupies the central 65 percent, through it a sharply resolved turquoise sea, pale rocky shoreline and small coastal buildings; in the foreground a worn forest-green seat edge and a plain ivory tote with a folded coral scarf. A warm clear late-morning day, honest natural light, subtle fine film grain, realistic material texture, clean detailed photography, not a render. No people required, no readable text, tickets, labels, brands or watermarks. Keep interesting window/sea content safely inside the central area so both square and portrait crops still work. This is a single actual photographic scene, not an album mockup, collage or framed artwork. No artificial blur or faded overlay.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-df66d3d4-233d-4895-900e-fadea40634b3.png"
+    },
+    {
+      "id": "journey_market",
+      "file": "images/journey_market.png",
+      "prompt": "One premium editorial travel photograph, 1536x1024 landscape 3:2. Fictional Mediterranean neighborhood market in bright natural morning light. A vendor's pale green wooden tabletop has a blue ceramic bowl of ripe apricots, a small paper bag of lemons, two irregular tomatoes, a folded white linen cloth and a modest bunch of deep red dahlias wrapped in unprinted ivory paper. Wider environmental composition with pale stone wall and green shutter behind, no people, the whole tabletop arrangement visible and centered with margin. Tactile, believable still-life travel diary photography; crisp interesting fine details and realistic shadows, warm-neutral whites, lively green/blue/coral contrast. No readable text or logos or price tags. Not a flat graphic, no artificial blur, not an album mockup, no frame or watermark. A single photograph.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-05fdc043-51e2-429d-807d-317e7e240bc9.png"
+    },
+    {
+      "id": "small_days_breakfast",
+      "file": "images/small_days_breakfast.png",
+      "prompt": "Create one realistic premium editorial lifestyle photograph for a Korean everyday photo journal. Landscape 3:2 1536x1024. A small round white kitchen table beside a sunny window, seen from a gentle high three-quarter angle. Two simple breakfast settings, lilac ceramic plate with toast and butter, pale pistachio bowl with yogurt and strawberries, two clear glasses of water, two small white espresso cups, neatly folded faded pink napkins. A single fresh green branch in a small transparent vase. Bright clean daylight, balanced whites, lavender and fresh yellow-green accents, soft honest shadows and tactile ceramic detail. Minimal real apartment setting with pale gray walls, not beige themed, no clutter. All objects fully visible with a little margin, interesting subjects centered. No people, logos, text, watermarks, fake blur or collage. Photography not illustration, not an album page.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8ac85c7f-5e2e-4b84-bcf9-be60be13920c.png"
+    },
+    {
+      "id": "small_days_walk",
+      "file": "images/small_days_walk.png",
+      "prompt": "One premium documentary lifestyle photograph for an everyday album. Landscape 3:2 1536x1024. Sunday flower-shopping walk on a quiet leafy residential street, close waist-level composition: the arms and torso of a fictional adult wearing a white cotton shirt and muted lilac cardigan, holding a small bunch of coral and lemon-yellow ranunculus with fresh green leaves wrapped in plain white paper. Frame intentionally below the person's face; natural anatomically correct hands holding the bouquet, a pale green canvas tote at hip, softly contextual sidewalk and real gray wall. Bouquet and hands sharp, bright spring daylight, whites neutral, cheerful but sophisticated quiet editorial color, realistic paper texture, no text/brands/watermarks. Keep subject and bouquet centered with substantial breathing room around all edges for flexible square or portrait cropping. No graphic stickers, no blur overlay, no collage, not an album mockup.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-5f84c524-0ded-4556-be73-78385446240b.png"
+    }
+  ]
+}

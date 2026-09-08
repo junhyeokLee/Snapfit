@@ -1,0 +1,57 @@
+{
+  "renderer": "flutter-layer-builder-raster-v1",
+  "specVersion": "REDP_300_HARD_REVIEW_V3_OFFICIAL_20P",
+  "productId": "REDP_300_HARD",
+  "coverType": "HARD",
+  "trimMm": [
+    300.0,
+    300.0
+  ],
+  "pageCount": 20,
+  "sourceInteriorPages": 1,
+  "blankPagesAdded": 19,
+  "missingAssets": [],
+  "warnings": [
+    "vendor_spec_requires_review",
+    "vendor_color_sample_required",
+    "back_cover_uses_front_background",
+    "bleed_uses_edge_extension",
+    "blank_interior_pages_added:19",
+    "page_0_fit_contain_with_margins"
+  ],
+  "imageResolution": [
+    {
+      "page": 0,
+      "layerId": "photo",
+      "widthPx": 3000,
+      "heightPx": 3000,
+      "effectivePpi": 320.2,
+      "decodedWidthPx": 2811,
+      "decodedHeightPx": 2811
+    },
+    {
+      "page": 1,
+      "layerId": "photo",
+      "widthPx": 3000,
+      "heightPx": 3000,
+      "effectivePpi": 317.5,
+      "decodedWidthPx": 2835,
+      "decodedHeightPx": 2835
+    }
+  ],
+  "dpi": 300,
+  "colorSpace": "sRGB",
+  "iccProfileEmbedded": true,
+  "imageEncoding": "JPEG quality 95",
+  "pdfStandard": "PDF-1.4",
+  "fit": "contain",
+  "specVerified": false,
+  "interiorMediaMm": [
+    310.0,
+    310.0
+  ],
+  "coverMediaMm": [
+    661.1,
+    346.0
+  ]
+}

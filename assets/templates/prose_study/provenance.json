@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-09-08",
+  "generator": "built-in image_gen",
+  "collection": "our-prose",
+  "status": "design-study; user approval, print and redistribution reviews pending",
+  "assets": [
+    {
+      "assetPath": "assets/templates/prose_study/botanical_cartouche.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-cb248c43-b390-409a-9592-6a38144e73d7.png",
+      "prompt": "Use case: illustration-story. Asset type: original ornamental botanical cartouche for a Korean literary wedding/couple artbook. This is an isolated decorative illustration, NOT a completed page and NOT typography. Create an exquisitely detailed tall oval wreath with generous empty transparent inner oval occupying about 58 percent of the total width and 68 percent of the height. Asymmetrical but balanced engraved peonies, tiny bellflowers, sinuous acanthus leaves, curling fine stems, a small loosely tied silk ribbon at bottom. Refined contemporary interpretation of copperplate botanical bookplate engraving, complex fine crosshatching and subtly hand-painted matte pigment. Restrained deep mulberry ink, dusty rose petals, cool sage and very small porcelain-blue accents. Rich line detail but airy, no heavy solid frame. Square canvas with full tall oval arrangement centered, outermost leaves and ribbon fully visible, 6 percent clean margins. Genuine transparent alpha in center and outside, absolutely no white or beige paper rectangle, no background wash, no checkerboard. No words, no lettering, no monogram, no numbers, no gold, glitter, shiny 3D, embossing simulation, drop shadows, animals, mockups, existing brands or recognizable emblems. High-detail original print illustration. Intended editable Korean title will be placed separately inside the empty oval."
+    },
+    {
+      "assetPath": "assets/templates/prose_study/woodcut_endpaper.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-4ba77d9d-4d4d-498e-839c-bdffadc60c0a.png",
+      "prompt": "Use case: illustration-story. Create an original flat illustrated endpaper pattern for a contemporary Korean collectible photo artbook. Square full-bleed bitmap, rich oxblood/cherry-red ground (#842B3D), intricately hand-carved ivory botanical stems, curling ribbon-like leaves, small symmetrical tulips and tiny star-shaped blossoms, restrained powder-blue petals, dark forest-green small details. Large confident interlocking S-curves alternating with precise small engraved hatchwork. Sophisticated bold graphic rhythm with visible matte printmaking imperfections, very crisp fine detail, not a watercolor wash and not photorealistic fabric. The scale of motifs should remain legible when cropped into large Korean letterforms. Entire square is an uninterrupted authored pattern with no central empty label, no wreath, no picture frame, no border, no typography, no letters, no numbers, no logos, no shadows, no gold or glitter, no glossy or embossed simulation. Balanced high contrast, ornament with clear structure rather than random flowers. This is ONLY a reusable artwork asset: title, photos, captions and page composition will be separate editable native layers. High resolution, straight-on flat artwork, no book or product mockup."
+    },
+    {
+      "assetPath": "assets/templates/prose_study/woodcut_ink.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-c6b604d0-1ec8-40fa-b626-c1b26099ce5b.png",
+      "reference": "assets/templates/prose_study/woodcut_endpaper.png",
+      "prompt": "Edit this original botanical pattern into a DARK INK TYPOGRAPHY FILL variant. Preserve the exact overall botanical pattern composition and hand-carved hatchwork, no cropping or rearrangement. Replace every ivory, pale-blue and bright area with medium-dark muted burgundy or dark berry red, and keep the background very dark oxblood. Strict tonal range: ALL pixels of the design should read as dark ink on white when masked into lettering, approximately colors #451724 to #944653, no light areas, no white, no cream, no pale-blue. Subtle but visible botanical detail within this narrow dark-red tonal range, matte ink print, not a gradient, not metallic or glossy. Whole square covered with pattern, no letters, no words, no transparency, no border. Used only as texture inside editable Korean letterforms; legibility is paramount."
+    }
+  ],
+  "text": "Korean copy and editable page typography were authored separately. No lettering is baked into the illustration.",
+  "samplePhotos": "Existing project demonstration photos; not newly commissioned or evidence of print resolution.",
+  "revision": 2,
+  "revisionNotes": "Original wreath study was not approved as premium. Revised in the same preview: patterned jacket, editable dark image-filled lettering, archival diptychs, ruled correspondence, and same-photo free-template comparison. No paid release."
+}

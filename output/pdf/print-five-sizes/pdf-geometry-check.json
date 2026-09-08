@@ -1,0 +1,142 @@
+[
+  {
+    "productId": "REDP_200X150_SOFT",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      417.22,
+      160.0
+    ],
+    "trimMm": [
+      407.22,
+      150.0
+    ],
+    "bytes": 364395
+  },
+  {
+    "productId": "REDP_200X150_SOFT",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      210.0,
+      160.0
+    ],
+    "trimMm": [
+      200.0,
+      150.0
+    ],
+    "bytes": 2669854
+  },
+  {
+    "productId": "REDP_200_SOFT",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      417.22,
+      210.0
+    ],
+    "trimMm": [
+      407.22,
+      200.0
+    ],
+    "bytes": 462772
+  },
+  {
+    "productId": "REDP_200_SOFT",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      210.0,
+      210.0
+    ],
+    "trimMm": [
+      200.0,
+      200.0
+    ],
+    "bytes": 3490438
+  },
+  {
+    "productId": "REDP_250X200_SOFT",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      517.22,
+      210.0
+    ],
+    "trimMm": [
+      507.22,
+      200.0
+    ],
+    "bytes": 555123
+  },
+  {
+    "productId": "REDP_250X200_SOFT",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      260.0,
+      210.0
+    ],
+    "trimMm": [
+      250.0,
+      200.0
+    ],
+    "bytes": 4289606
+  },
+  {
+    "productId": "REDP_250_SOFT",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      517.22,
+      260.0
+    ],
+    "trimMm": [
+      507.22,
+      250.0
+    ],
+    "bytes": 672158
+  },
+  {
+    "productId": "REDP_250_SOFT",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      260.0,
+      260.0
+    ],
+    "trimMm": [
+      250.0,
+      250.0
+    ],
+    "bytes": 5283064
+  },
+  {
+    "productId": "REDP_300_SOFT",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      617.22,
+      310.0
+    ],
+    "trimMm": [
+      607.22,
+      300.0
+    ],
+    "bytes": 919166
+  },
+  {
+    "productId": "REDP_300_SOFT",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      310.0,
+      310.0
+    ],
+    "trimMm": [
+      300.0,
+      300.0
+    ],
+    "bytes": 7486354
+  }
+]

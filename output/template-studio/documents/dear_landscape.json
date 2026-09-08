@@ -1,0 +1,785 @@
+{
+  "id": "studio_dear_landscape",
+  "status": "authored-review-specimen",
+  "aiGenerated": false,
+  "catalogPublishable": false,
+  "aspect": "landscape",
+  "designWidth": 500.0,
+  "designHeight": 373.7113402061856,
+  "cover": {
+    "id": "dear_cover",
+    "strictLayout": true,
+    "aspect": "landscape",
+    "designWidth": 500.0,
+    "designHeight": 373.7113402061856,
+    "layers": [
+      {
+        "id": "dear_cover_0",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "text": "rect",
+        "fillColor": "#82283F",
+        "cornerRadius": 0
+      },
+      {
+        "id": "dear_cover_1",
+        "type": "decoration",
+        "x": 0.045,
+        "y": 0.035,
+        "w": 0.91,
+        "h": 0.002,
+        "z": 1,
+        "text": "rect",
+        "fillColor": "#C692A0",
+        "cornerRadius": 0
+      },
+      {
+        "id": "dear_cover_2",
+        "type": "decoration",
+        "x": 0.045,
+        "y": 0.963,
+        "w": 0.91,
+        "h": 0.002,
+        "z": 2,
+        "text": "rect",
+        "fillColor": "#C692A0",
+        "cornerRadius": 0
+      },
+      {
+        "id": "dear_cover_3",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.065,
+        "w": 0.84,
+        "h": 0.04,
+        "z": 3,
+        "text": "LETTERS FROM THE ISLAND",
+        "align": "center",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.0,
+          "fontWeight": 400,
+          "color": "#FFFCFA",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dear_cover_4",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.21,
+        "w": 0.39,
+        "h": 0.24,
+        "z": 4,
+        "text": "Dear,",
+        "align": "left",
+        "style": {
+          "fontFamily": "Cormorant Garamond",
+          "fontSize": 66.0,
+          "fontWeight": 400,
+          "color": "#FFFCFA",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dear_cover_5",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.43,
+        "w": 0.39,
+        "h": 0.24,
+        "z": 5,
+        "text": "Jeju.",
+        "align": "left",
+        "style": {
+          "fontFamily": "Cormorant Garamond",
+          "fontSize": 66.0,
+          "fontWeight": 400,
+          "color": "#FFFCFA",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dear_cover_6",
+        "type": "decoration",
+        "x": 0.51,
+        "y": 0.19,
+        "w": 0.39,
+        "h": 0.58,
+        "z": 6,
+        "text": "rect",
+        "fillColor": "#FFFCFA",
+        "cornerRadius": 0
+      },
+      {
+        "id": "dear_cover_7",
+        "type": "image",
+        "x": 0.53,
+        "y": 0.215,
+        "w": 0.35,
+        "h": 0.475,
+        "z": 7,
+        "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_aerial.jpg",
+        "imageTemplate": "free",
+        "imageBackground": "none",
+        "decorationFillColor": "#DEE4E1"
+      },
+      {
+        "id": "dear_cover_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.78,
+        "w": 0.8,
+        "h": 0.07,
+        "z": 8,
+        "text": "여름이 보낸 편지",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 17.0,
+          "fontWeight": 400,
+          "color": "#FFFCFA",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dear_cover_9",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.905,
+        "w": 0.84,
+        "h": 0.035,
+        "z": 9,
+        "text": "OUR DAYS, KEPT FOREVER / 2026",
+        "align": "center",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.0,
+          "fontWeight": 400,
+          "color": "#FFFCFA",
+          "height": 1.15,
+          "letterSpacing": 0
+        }
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "dear_1",
+      "strictLayout": true,
+      "aspect": "landscape",
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "dear_1_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#FFFCFA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_1_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.84,
+          "h": 0.04,
+          "z": 1,
+          "text": "01 / ARRIVAL",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_1_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.17,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 2,
+          "text": "Somewhere,",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 46.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_1_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.32,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 3,
+          "text": "with you.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 46.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_1_4",
+          "type": "image",
+          "x": 0.56,
+          "y": 0.5,
+          "w": 0.36,
+          "h": 0.31,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_seongsan.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "dear_1_5",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.61,
+          "w": 0.42,
+          "h": 0.15,
+          "z": 5,
+          "text": "낯선 풍경이\n우리의 기억이 되는 순간.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_1_6",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 6,
+          "text": "DEAR, JEJU",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_1_7",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 7,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "dear_2",
+      "strictLayout": true,
+      "aspect": "landscape",
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "dear_2_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#F5ECEE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_2_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.06,
+          "z": 1,
+          "text": "TO. 함께 여행한 우리에게",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_2_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.145,
+          "w": 0.84,
+          "h": 0.002,
+          "z": 2,
+          "text": "rect",
+          "fillColor": "#BE8C98",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_2_3",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.22,
+          "w": 0.46,
+          "h": 0.59,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_aerial.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "dear_2_4",
+          "type": "text",
+          "x": 0.62,
+          "y": 0.2,
+          "w": 0.28,
+          "h": 0.17,
+          "z": 4,
+          "text": "June",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 42.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_2_5",
+          "type": "text",
+          "x": 0.62,
+          "y": 0.39,
+          "w": 0.28,
+          "h": 0.25,
+          "z": 5,
+          "text": "18",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 70.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_2_6",
+          "type": "text",
+          "x": 0.62,
+          "y": 0.69,
+          "w": 0.3,
+          "h": 0.15,
+          "z": 6,
+          "text": "바다가 보이는 쪽으로\n조금 더 걸어가자.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_2_7",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 7,
+          "text": "FROM. JEJU ISLAND",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_2_8",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 8,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "dear_3",
+      "strictLayout": true,
+      "aspect": "landscape",
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "dear_3_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#82283F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_3_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.04,
+          "z": 1,
+          "text": "COLLECTED MOMENTS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#FFFCFA",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_3_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.17,
+          "w": 0.84,
+          "h": 0.46,
+          "z": 2,
+          "text": "rect",
+          "fillColor": "#FFFCFA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_3_3",
+          "type": "image",
+          "x": 0.105,
+          "y": 0.19,
+          "w": 0.79,
+          "h": 0.34,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_sunset.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "dear_3_4",
+          "type": "text",
+          "x": 0.12,
+          "y": 0.56,
+          "w": 0.76,
+          "h": 0.045,
+          "z": 4,
+          "text": "the light we stayed for",
+          "align": "center",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 14.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_3_5",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.73,
+          "w": 0.84,
+          "h": 0.1,
+          "z": 5,
+          "text": "빛이 다할 때까지",
+          "align": "center",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.0,
+            "fontWeight": 400,
+            "color": "#FFFCFA",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_3_6",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 6,
+          "text": "A NOTE TO REMEMBER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#FFFCFA",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_3_7",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 7,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#FFFCFA",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "dear_4",
+      "strictLayout": true,
+      "aspect": "landscape",
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "dear_4_0",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "text": "rect",
+          "fillColor": "#FFFCFA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_4_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "P.S.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 58.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_4_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.29,
+          "w": 0.46,
+          "h": 0.12,
+          "z": 2,
+          "text": "또, 같은 계절에.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 25.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_4_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.48,
+          "w": 0.42,
+          "h": 0.17,
+          "z": 3,
+          "text": "돌아온 뒤에도 문득 떠오를\n그날의 바람, 그때의 우리.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_4_4",
+          "type": "decoration",
+          "x": 0.57,
+          "y": 0.18,
+          "w": 0.35,
+          "h": 0.62,
+          "z": 4,
+          "text": "rect",
+          "fillColor": "#F2E5E7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "dear_4_5",
+          "type": "image",
+          "x": 0.595,
+          "y": 0.205,
+          "w": 0.3,
+          "h": 0.47,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/jeju_travel/images/sources/jeju_rocky_coast.jpg",
+          "imageTemplate": "free",
+          "imageBackground": "none",
+          "decorationFillColor": "#DEE4E1"
+        },
+        {
+          "id": "dear_4_6",
+          "type": "text",
+          "x": 0.595,
+          "y": 0.7,
+          "w": 0.3,
+          "h": 0.07,
+          "z": 6,
+          "text": "see you again",
+          "align": "center",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_4_7",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.93,
+          "w": 0.65,
+          "h": 0.04,
+          "z": 7,
+          "text": "WITH LOVE, ALWAYS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        },
+        {
+          "id": "dear_4_8",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.93,
+          "w": 0.14,
+          "h": 0.04,
+          "z": 8,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.0,
+            "fontWeight": 400,
+            "color": "#82283F",
+            "height": 1.15,
+            "letterSpacing": 0
+          }
+        }
+      ]
+    }
+  ]
+}

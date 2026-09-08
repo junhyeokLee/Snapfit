@@ -1,0 +1,55 @@
+{
+  "createdAt": "2026-09-08",
+  "generator": "built-in image_gen",
+  "status": "development assets; print and redistribution review pending",
+  "assets": [
+    {
+      "file": "olive_press.png",
+      "prompt": "Use case: product-mockup. Asset: a single original premium scrapbook cutout for a Korean photo album app. One delicate pressed olive branch, two fine stems with beautiful sage and deep green slender leaves, elegant asymmetrical botanical herbarium composition, tangible matte dry leaf veins and papery texture. Top-down orthographic studio scan, no perspective, no vase, no scenery, no text. Occupies 80% of a square canvas, generous clear margin. Genuine transparent alpha background (not white, not a checkerboard painted into the image). No sticker outline, no cast shadow, no gold glitter, no logo. Crisp high-resolution natural detail, refined wedding stationery aesthetic.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-b4494aa5-c1e6-488e-8834-0bd9f1e72efd.png",
+      "assetPath": "assets/sticker/studio/olive_press.png"
+    },
+    {
+      "file": "rose_silk.png",
+      "prompt": "Use case: product-mockup. One original album decoration asset: an exquisite dusty rose silk ribbon loosely tied into an asymmetric bow, airy curved long tails, finely frayed silk edges and subtle matte weave. Flat lay top-down studio scan, no perspective. Square canvas with 10% margins, complete object no clipping. Soft diffused lighting with no external cast shadow; understated wedding stationery material, NOT shiny satin or metallic. Genuine transparent alpha background. No white rectangular backdrop, no fake checkerboard, no text, no logo. High-resolution photograph of a real handmade ribbon.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8031e81a-6c2f-431c-b512-073c26d9ee43.png",
+      "assetPath": "assets/sticker/studio/rose_silk.png"
+    },
+    {
+      "file": "coast_stamp.png",
+      "prompt": "Use case: illustration-story. One original collectible travel postage-stamp sticker for a photo album. A single rectangular perforated paper stamp, vertical composition on square transparent canvas, a refined two-color risograph illustration of an Adriatic coastal village, brick-red roof, turquoise sea, off-white paper, intricate thin ink contours and gentle print misregistration. Tiny decorative registration dashes only, NO letters, numbers, words, postal insignia or existing logos. Matte tactile uncoated paper with crisp perforated edges, no worn dirty grunge. Top-down scan, 12% transparent alpha margins, full stamp visible. Actual transparency around the stamp, no white rectangle, no fake checkerboard, no cast shadow, original art not copied from real stamps.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-69670ca7-1146-414e-b630-4fafa4fe7f35.png",
+      "assetPath": "assets/sticker/studio/coast_stamp.png"
+    },
+    {
+      "file": "archive_tag.png",
+      "prompt": "Use case: product-mockup. A single original archive luggage label cutout, fine warm-white cotton cardstock with clipped top corners, small reinforced dark teal eyelet and one loose loop of natural linen thread at top, thin faded petrol-blue double border, a very small burnt-red corner registration bar. Blank center for user-editable text later, absolutely no lettering or numbers. Authentic carefully crafted stationery flat lay, paper grain and thread fibres, matte, no heavy aging or grime. Complete object centered occupying 75% of square canvas. Genuine transparent alpha background including inside thread loop; no solid white backdrop, no checkerboard painted in, no cast shadow. High-resolution crisp edges.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-5fefceef-2c1e-4460-906c-3e2f2c7c443d.png",
+      "assetPath": "assets/sticker/studio/archive_tag.png"
+    },
+    {
+      "file": "gouache_cake.png",
+      "prompt": "Use case: illustration-story. Single original die-cut paper sticker for a refined baby milestone / birthday photo album: a charming little strawberry celebration cake on a small pale aqua pedestal, one slim blue candle, off-white cream, strawberry-red highlights. Beautiful hand-painted opaque gouache, visible drybrush grain and imperfect confident edges, sophisticated children's picture-book illustration, NOT emoji, NOT vector clip art, not 3D. A tiny warm white paper-cut border closely follows silhouette. Centered complete object on a square canvas with clear margins. Genuine transparent alpha background, no floor, no cast shadow, no text, no logo, no checkerboard. High-resolution artwork.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-65fdc274-caea-4de3-88cc-fac55fa8ee67.png",
+      "assetPath": "assets/sticker/studio/gouache_cake.png"
+    },
+    {
+      "file": "paper_rosette.png",
+      "prompt": "Use case: illustration-story. One premium original hand-cut paper rosette sticker for a birthday and childhood scrapbook, folded coral red and pale butter-yellow paper fan rosette with two long irregular pale turquoise ribbon-shaped paper tails. Central disc has only a tiny hand-painted red star, no words or numbers. Realistically tactile folded uncoated paper grain with soft creases, artisan paper craft not plastic, not vector clipart, matte not metallic. Top-down flat-lay cutout of complete single object, well-spaced square composition. Actual transparent alpha background, no solid backdrop, no checkerboard, no cast shadow, no other objects. Fine detailed edges.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-5b9f560b-2c67-423f-8aa9-09a5f2a866c8.png",
+      "assetPath": "assets/sticker/studio/paper_rosette.png"
+    },
+    {
+      "file": "blue_fibre_paper.png",
+      "prompt": "Use case: product-mockup. A single original sheet of pale icy blue handmade paper for an editorial scrapbook, softly irregular deckled fibrous edges, subtle long cotton fibres and just a few tiny embedded blue cornflower petal fragments near two corners, large clean blank central writing area. Completely flat rectangular sheet, slightly wider than tall, top-down scanner view, paper should look high quality and delicate not dirty or noisy. No folds, no text, no shadows, no surrounding objects. High resolution. Actual transparent alpha background around the complete sheet, centered on square canvas with 12% clear margins; NOT a white backdrop or fake checkerboard. Color light cool blue, NOT beige.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-0b89c232-0195-4176-b013-c99ad54cf0b1.png",
+      "assetPath": "assets/sticker/studio/blue_fibre_paper.png"
+    },
+    {
+      "file": "glassine_envelope.png",
+      "prompt": "Use case: product-mockup. Single original translucent glassine paper envelope cutout for a premium scrapbook: an open, empty square glassine envelope with an open triangular flap, very light milky white paper with fine fibres, subtly visible folded seams, a tiny thin muted coral line across the lower lip, no contents. Beautiful tactile flat stationery, matte not shiny cellophane, soft natural scan. Top-down orthographic. Genuine transparent alpha outside AND partially transparent paper surface so an album photo placed underneath can softly show through. Complete object with clear margins. No background, no checkerboard painted in, no cast shadow, no words or logos. High resolution.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-d4c76f48-4c56-46c0-bb9d-0bb3b8724698.png",
+      "assetPath": "assets/sticker/studio/glassine_envelope.png"
+    }
+  ]
+}

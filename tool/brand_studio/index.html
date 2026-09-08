@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f5f2">
+  <title>SnapFit · Brand Studio</title>
+  <link rel="icon" href="assets/app-icon-cyan.png">
+  <link rel="stylesheet" href="studio.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="템플릿 미리보기로 돌아가기"><img src="assets/wordmark-cyan.png" alt="snapfit"><span>브랜드 시안</span></a>
+    <nav class="tabs" role="tablist" aria-label="디자인 보기">
+      <button id="tab-splash" role="tab" aria-selected="true" aria-controls="splash" data-tab="splash">스플래시</button>
+      <button id="tab-identity" role="tab" aria-selected="false" aria-controls="identity" data-tab="identity" tabindex="-1">로고·아이콘</button>
+      <button id="tab-sources" role="tab" aria-selected="false" aria-controls="sources" data-tab="sources" tabindex="-1">무료 영상</button>
+    </nav>
+    <a class="icon-link" href="assets/app-icon-cyan.png" download="snapfit-app-icon-concept.png" title="아이콘 PNG 다운로드" aria-label="아이콘 PNG 다운로드"><i data-lucide="download"></i></a>
+  </header>
+  <main>
+    <section id="splash" class="splash-view" role="tabpanel" aria-labelledby="tab-splash">
+      <div class="preview-toolbar">
+        <span class="asset-label">Coastal memories <small>AI 이미지 시안</small></span>
+        <div class="segmented" role="group" aria-label="화면 방향">
+          <button data-orientation="portrait" aria-pressed="false" title="세로 스플래시"><i data-lucide="rectangle-vertical"></i><span>세로</span></button>
+          <button data-orientation="landscape" aria-pressed="true" title="가로 스플래시"><i data-lucide="rectangle-horizontal"></i><span>가로</span></button>
+        </div>
+        <a id="splashDownload" class="icon-link" href="assets/splash-landscape.png" download="snapfit-splash-landscape.png" aria-label="현재 스플래시 PNG 다운로드" title="PNG 다운로드"><i data-lucide="download"></i></a>
+      </div>
+      <div class="splash-stage" id="splashStage">
+        <img id="splashImage" src="assets/splash-landscape.png" alt="해안 풍경과 커플 사진을 담은 가로 SnapFit 스플래시 시안" fetchpriority="high">
+      </div>
+    </section>
+    <section id="identity" class="identity-view" role="tabpanel" aria-labelledby="tab-identity" hidden>
+      <div class="section-head"><div><span class="eyebrow">SNAPFIT / APP COLORS</span><h1>Album Mark</h1></div><a href="assets/wordmark-cyan.png" download="snapfit-wordmark-concept.png"><i data-lucide="download"></i>로고 PNG</a></div>
+      <div class="wordmark-surface"><img src="assets/wordmark-cyan.png" alt="펼친 앨범 심볼과 snapfit 워드마크" class="wordmark-main"></div>
+      <div class="identity-grid">
+        <section class="icon-study"><div class="study-head"><h2>앱 아이콘</h2><a href="assets/app-icon-cyan.png" download="snapfit-app-icon-concept.png" aria-label="앱 아이콘 원본 다운로드" title="앱 아이콘 원본 다운로드"><i data-lucide="download"></i></a></div>
+          <div class="icon-masks"><figure><img class="app-icon ios" src="assets/app-icon-cyan.png" alt="iOS 형태의 새 앱 아이콘"><figcaption>iOS</figcaption></figure><figure><img class="app-icon android" src="assets/app-icon-cyan.png" alt="Android 원형의 새 앱 아이콘"><figcaption>Android</figcaption></figure></div>
+        </section>
+        <section class="scale-study"><div class="study-head"><h2>작은 크기</h2><span>24–96 px</span></div>
+          <div class="icon-scales"><figure><img class="ios" width="24" height="24" src="assets/app-icon-cyan.png" alt="24픽셀 아이콘"><figcaption>24</figcaption></figure><figure><img class="ios" width="40" height="40" src="assets/app-icon-cyan.png" alt="40픽셀 아이콘"><figcaption>40</figcaption></figure><figure><img class="ios" width="60" height="60" src="assets/app-icon-cyan.png" alt="60픽셀 아이콘"><figcaption>60</figcaption></figure><figure><img class="ios" width="96" height="96" src="assets/app-icon-cyan.png" alt="96픽셀 아이콘"><figcaption>96</figcaption></figure></div>
+          <div class="palette"><div><span style="background:#08b8d0"></span><code>#08B8D0</code></div><div><span style="background:#eafbfd"></span><code>#EAFBFD</code></div><div><span style="background:#121212"></span><code>#121212</code></div><div><span style="background:#ffffff"></span><code>#FFFFFF</code></div></div>
+        </section>
+      </div>
+    </section>
+    <section id="sources" class="sources-view" role="tabpanel" aria-labelledby="tab-sources" hidden>
+      <div class="section-head"><div><span class="eyebrow">FOOTAGE</span><h1>무료 영상</h1></div><span class="checked-date">2026.09.07 확인</span></div>
+      <ol class="source-list">
+        <li><div class="source-title"><span class="source-number">01</span><h2>Pexels</h2><span class="recommendation">먼저 추천</span></div><p>커플 여행 · 해외 풍경. 무료 상업적 사용과 앱 사용 허용, 출처 표기 필수 아님.</p><div class="source-links"><a href="https://www.pexels.com/search/videos/couple%20travel/" target="_blank" rel="noopener noreferrer">커플 여행 영상<i data-lucide="arrow-up-right"></i></a><a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">이용 조건<i data-lucide="arrow-up-right"></i></a></div></li>
+        <li><div class="source-title"><span class="source-number">02</span><h2>Pixabay</h2></div><p>자연 · 바다 · 풍경. 무료 사용과 수정 가능, 출처 표기 필수 아님. 개별 콘텐츠의 추가 권리는 별도 확인.</p><div class="source-links"><a href="https://pixabay.com/videos/search/landscape/" target="_blank" rel="noopener noreferrer">풍경 영상<i data-lucide="arrow-up-right"></i></a><a href="https://pixabay.com/service/license-summary/" target="_blank" rel="noopener noreferrer">이용 조건<i data-lucide="arrow-up-right"></i></a></div></li>
+        <li><div class="source-title"><span class="source-number">03</span><h2>Mixkit</h2></div><p>HD · 4K 영상. 상업용 앱에는 Video Free License 영상만 선택. Restricted License 영상은 제외.</p><div class="source-links"><a href="https://mixkit.co/free-stock-video/" target="_blank" rel="noopener noreferrer">영상 둘러보기<i data-lucide="arrow-up-right"></i></a><a href="https://mixkit.co/license/" target="_blank" rel="noopener noreferrer">이용 조건<i data-lucide="arrow-up-right"></i></a></div></li>
+      </ol>
+      <aside class="source-note"><h2>선택 기준</h2><p>세로 9:16 · 1080p 이상 · 로고를 놓을 여백 · 짧고 차분한 움직임</p><p>인물이 SnapFit을 추천하는 듯한 표현, 상표가 크게 보이는 영상, 원본 영상 재판매는 피하세요. 선택한 영상의 원본 링크와 다운로드 당시 라이선스를 함께 보관하는 것을 권장합니다.</p></aside>
+    </section>
+  </main>
+  <script src="vendor/lucide.js"></script>
+  <script type="module" src="studio.mjs"></script>
+</body>
+</html>
