@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,11 +14,6 @@ class OrderRepository {
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
-  static const Set<String> _allowedPaymentMethods = {
-    'TOSS_PAYMENTS',
-    'NAVERPAY',
-    'KG_INICIS',
-  };
   static const _orderSeenInitPrefix = 'snapfit_order_seen_init_';
   static const _orderSeenPendingPrefix = 'snapfit_order_seen_pending_';
   static const _orderSeenCompletedPrefix = 'snapfit_order_seen_completed_';
@@ -67,6 +64,20 @@ class OrderRepository {
       'printSubmittedAt': row['print_submitted_at']?.toString(),
       'shippedAt': row['shipped_at']?.toString(),
       'deliveredAt': row['delivered_at']?.toString(),
+      'printFulfillmentStatus': row['print_fulfillment_status'],
+      'printCoverPdfPath': row['print_cover_pdf_path'],
+      'printInteriorPdfPath': row['print_interior_pdf_path'],
+      'printManifest': row['print_manifest'],
+      'printCostSnapshot': row['print_cost_snapshot'],
+      'printProductSnapshot': row['print_product_snapshot'],
+      'pricingVersion': row['pricing_version'],
+      'actualPrintCost': row['actual_print_cost'],
+      'actualShippingCost': row['actual_shipping_cost'],
+      'actualPackagingCost': row['actual_packaging_cost'],
+      'contributionMargin': row['contribution_margin'],
+      'printAcceptedAt': row['print_accepted_at'],
+      'fulfillmentMethod': row['fulfillment_method'],
+      'fulfillmentConfirmation': row['fulfillment_confirmation'],
     };
   }
 
@@ -197,146 +208,40 @@ class OrderRepository {
     throw Exception('Supabase 주문 요약 환경이 준비되지 않았습니다.');
   }
 
-  Future<OrderHistoryItem> createTestOrder({
-    String title = '스냅핏 테스트 주문',
-    int amount = 34900,
-  }) async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final row = await supabase!
-          .from('orders')
-          .insert({
-            'user_id': userId,
-            'title': title,
-            'amount': amount,
-            'status': 'PAYMENT_PENDING',
-            'payment_method': 'STORE_IAP',
-          })
-          .select()
-          .single();
-      return OrderHistoryItem.fromJson(
-        _orderRowToJson(Map<String, dynamic>.from(row)),
-      );
-    }
-    throw Exception('Supabase 테스트 주문 환경이 준비되지 않았습니다.');
-  }
-
-  Future<OrderHistoryItem> advanceStatus(String orderId) async {
-    if (supabase == null) {
-      throw Exception('Supabase 주문 상태 변경 환경이 준비되지 않았습니다.');
-    }
-    final current = await supabase!
-        .from('orders')
-        .select('status')
-        .eq('order_id', orderId)
-        .maybeSingle();
-    final status =
-        current?['status']?.toString().toUpperCase() ?? 'PAYMENT_PENDING';
-    final nextStatus = switch (status) {
-      'PAYMENT_PENDING' => 'PAYMENT_COMPLETED',
-      'PAYMENT_COMPLETED' => 'IN_PRODUCTION',
-      'IN_PRODUCTION' || 'PRINTING' => 'SHIPPING',
-      'SHIPPING' => 'DELIVERED',
-      _ => status,
-    };
-    final row = await supabase!
-        .from('orders')
-        .update({'status': nextStatus})
-        .eq('order_id', orderId)
-        .select()
-        .single();
-    return OrderHistoryItem.fromJson(
-      _orderRowToJson(Map<String, dynamic>.from(row)),
-    );
-  }
-
-  Future<OrderHistoryItem> createPrintOrder({
-    required int albumId,
-    required String title,
-    required int amount,
-    required int pageCount,
-    required String paymentMethod,
-    required String recipientName,
-    required String recipientPhone,
-    required String zipCode,
-    required String addressLine1,
-    String? addressLine2,
-    String? deliveryMemo,
-  }) async {
-    final normalizedPaymentMethod = paymentMethod.trim().toUpperCase();
-    if (!_allowedPaymentMethods.contains(normalizedPaymentMethod)) {
-      throw Exception('지원하지 않는 결제수단입니다.');
-    }
-    final normalizedPhone = recipientPhone.replaceAll(RegExp(r'\D'), '');
-    if (!RegExp(r'^\d{10,11}$').hasMatch(normalizedPhone)) {
-      throw Exception('연락처 형식이 올바르지 않습니다.');
-    }
-    final normalizedZip = zipCode.replaceAll(RegExp(r'\D'), '');
-    if (!RegExp(r'^\d{5}$').hasMatch(normalizedZip)) {
-      throw Exception('우편번호 형식이 올바르지 않습니다.');
-    }
-
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final row = await supabase!
-          .from('orders')
-          .insert({
-            'user_id': userId,
-            'album_id': albumId,
-            'title': title.trim(),
-            'amount': amount,
-            'page_count': pageCount,
-            'payment_method': normalizedPaymentMethod,
-            'recipient_name': recipientName.trim(),
-            'recipient_phone': normalizedPhone,
-            'zip_code': normalizedZip,
-            'address_line1': addressLine1.trim(),
-            'address_line2': addressLine2?.trim() ?? '',
-            'delivery_memo': deliveryMemo?.trim() ?? '',
-            'status': 'PAYMENT_PENDING',
-          })
-          .select()
-          .single();
-      return OrderHistoryItem.fromJson(
-        _orderRowToJson(Map<String, dynamic>.from(row)),
-      );
-    }
-    throw Exception('Supabase 주문 생성 환경이 준비되지 않았습니다.');
-  }
-
-  Future<OrderHistoryItem> confirmPayment(String orderId) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'order-confirm-payment',
-        body: {'action': 'confirm', 'orderId': orderId},
-      );
-      return OrderHistoryItem.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 주문 결제확인 환경이 준비되지 않았습니다.');
-  }
-
   Future<OrderQuoteResult> fetchOrderQuote({
     required int albumId,
     int? pageCount,
   }) async {
+    await _requireUserId();
     if (supabase != null) {
-      final pages = pageCount ?? 12;
-      const basePages = 12;
-      const basePrice = 34900;
-      const extraPagePrice = 1200;
-      final extra = pages > basePages ? pages - basePages : 0;
-      return OrderQuoteResult(
-        pageCount: pages,
-        amount: basePrice + extra * extraPagePrice,
-        basePages: basePages,
-        basePrice: basePrice,
-        extraPageCount: extra,
-        extraPagePrice: extraPagePrice,
+      final quote = await supabase!.rpc(
+        'get_print_order_quote',
+        params: {'p_album_id': albumId, 'p_page_count': pageCount},
       );
+      return OrderQuoteResult.fromJson(Map<String, dynamic>.from(quote as Map));
     }
     throw Exception('Supabase 주문 견적 환경이 준비되지 않았습니다.');
+  }
+
+  Future<Map<String, dynamic>> fetchPrintPreviewSnapshot({
+    required int albumId,
+  }) async {
+    await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    final album = Map<String, dynamic>.from(
+      await client.from('albums').select().eq('id', albumId).single(),
+    );
+    final raw = album['cover_layers_json'];
+    final document = raw is String ? jsonDecode(raw) : raw;
+    final pages = document is Map && document['pages'] is List
+        ? const <Map<String, dynamic>>[]
+        : await client
+              .from('album_pages')
+              .select()
+              .eq('album_id', albumId)
+              .order('page_index');
+    return {'album': album, 'pages': pages};
   }
 
   Future<AddressSearchResult> searchAddress({
@@ -361,97 +266,6 @@ class OrderRepository {
       return AddressSearchResult.fromJson(map);
     }
     throw Exception('Supabase 주소검색 환경이 준비되지 않았습니다.');
-  }
-
-  Future<String> buildOrderCheckoutUrl({
-    required String orderId,
-    required String paymentMethod,
-  }) async {
-    final normalizedOrderId = orderId.trim();
-    final normalizedPaymentMethod = paymentMethod.trim().toUpperCase();
-    if (normalizedOrderId.isEmpty ||
-        !RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(normalizedOrderId)) {
-      throw Exception('주문번호 형식이 올바르지 않습니다.');
-    }
-    if (!_allowedPaymentMethods.contains(normalizedPaymentMethod)) {
-      throw Exception('지원하지 않는 결제수단입니다.');
-    }
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'order-checkout',
-        body: {
-          'orderId': normalizedOrderId,
-          'provider': normalizedPaymentMethod,
-        },
-      );
-      final map =
-          (response.data as Map?)?.cast<String, dynamic>() ??
-          <String, dynamic>{};
-      if (map['error'] != null) {
-        throw Exception(map['message'] ?? map['error']);
-      }
-      final checkoutUrl = map['checkoutUrl']?.toString() ?? '';
-      if (checkoutUrl.isEmpty) {
-        throw Exception('결제 URL을 생성하지 못했습니다.');
-      }
-      return checkoutUrl;
-    }
-    throw Exception('Supabase 주문 결제 URL 환경이 준비되지 않았습니다.');
-  }
-
-  Future<OrderHistoryItem> markShipping({
-    required String orderId,
-    required String courier,
-    required String trackingNumber,
-    required String adminKey,
-  }) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'order-confirm-payment',
-        body: {
-          'action': 'shipping',
-          'orderId': orderId,
-          'courier': courier,
-          'trackingNumber': trackingNumber,
-        },
-      );
-      return OrderHistoryItem.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 주문 배송처리 환경이 준비되지 않았습니다.');
-  }
-
-  Future<OrderHistoryItem> markDelivered({
-    required String orderId,
-    required String adminKey,
-  }) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'order-confirm-payment',
-        body: {'action': 'delivered', 'orderId': orderId},
-      );
-      return OrderHistoryItem.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 주문 배송완료 환경이 준비되지 않았습니다.');
-  }
-
-  Future<OrderHistoryItem> preparePrintPackage({
-    required String orderId,
-    required String adminKey,
-  }) async {
-    if (supabase != null) {
-      final response = await supabase!.functions.invoke(
-        'order-confirm-payment',
-        body: {'action': 'preparePrintPackage', 'orderId': orderId},
-      );
-      return OrderHistoryItem.fromJson(
-        (response.data as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
-      );
-    }
-    throw Exception('Supabase 인쇄 패키지 생성 환경이 준비되지 않았습니다.');
   }
 
   String buildAdminPrintPackageUrl(String printPackageJsonUrl) {
@@ -629,6 +443,17 @@ class OrderQuoteResult {
   final int basePrice;
   final int extraPageCount;
   final int extraPagePrice;
+  final int sourcePageCount;
+  final int addedBlankPageCount;
+  final String productCode;
+  final String productName;
+  final bool shippingIncluded;
+  final int maxPages;
+  final Map<String, dynamic> layoutPreview;
+  final Map<String, dynamic> printSpec;
+  final Map<String, dynamic> printProduct;
+  final bool priceIsEstimate;
+  final bool specMissing;
 
   const OrderQuoteResult({
     required this.pageCount,
@@ -637,6 +462,17 @@ class OrderQuoteResult {
     required this.basePrice,
     required this.extraPageCount,
     required this.extraPagePrice,
+    this.sourcePageCount = 0,
+    this.addedBlankPageCount = 0,
+    this.productCode = '',
+    this.productName = '',
+    this.shippingIncluded = false,
+    this.maxPages = 80,
+    this.layoutPreview = const {},
+    this.printSpec = const {},
+    this.printProduct = const {},
+    this.priceIsEstimate = false,
+    this.specMissing = false,
   });
 
   factory OrderQuoteResult.fromJson(Map<String, dynamic> json) {
@@ -646,12 +482,25 @@ class OrderQuoteResult {
     }
 
     return OrderQuoteResult(
-      pageCount: parse(json['pageCount'], fallback: 12),
+      pageCount: parse(json['pageCount']),
       amount: parse(json['amount'], fallback: 0),
-      basePages: parse(json['basePages'], fallback: 12),
+      basePages: parse(json['basePages']),
       basePrice: parse(json['basePrice'], fallback: 0),
       extraPageCount: parse(json['extraPageCount'], fallback: 0),
       extraPagePrice: parse(json['extraPagePrice'], fallback: 0),
+      sourcePageCount: parse(json['sourcePageCount']),
+      addedBlankPageCount: parse(json['addedBlankPageCount']),
+      productCode: json['productCode']?.toString() ?? '',
+      productName: json['productName']?.toString() ?? '',
+      shippingIncluded: json['shippingIncluded'] == true,
+      maxPages: parse(json['maxPages'], fallback: 80),
+      layoutPreview:
+          (json['layoutPreview'] as Map?)?.cast<String, dynamic>() ?? const {},
+      printSpec: (json['spec'] as Map?)?.cast<String, dynamic>() ?? const {},
+      printProduct:
+          (json['printProduct'] as Map?)?.cast<String, dynamic>() ?? const {},
+      priceIsEstimate: json['priceIsEstimate'] == true,
+      specMissing: json['specMissing'] == true,
     );
   }
 }

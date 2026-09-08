@@ -352,7 +352,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   }
 
   Future<void> _showQuotaExceededSheet(BuildContext context) async {
-    final shouldSubscribe = await showModalBottomSheet<bool>(
+    await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: SnapFitColors.surfaceOf(context),
       shape: const RoundedRectangleBorder(
@@ -372,7 +372,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '무료 플랜 용량(1GB)을 초과했습니다. 구독 후 10GB까지 계속 저장할 수 있어요.',
+                  '저장 공간을 초과했습니다. 사용하지 않는 앨범이나 사진을 정리한 뒤 다시 저장해 주세요.',
                   style: TextStyle(
                     color: SnapFitColors.textSecondaryOf(context),
                     fontSize: 13.5,
@@ -380,14 +380,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('준비중'),
-                  ),
-                ),
-                const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -401,11 +393,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         );
       },
     );
-
-    if (shouldSubscribe != true || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('구독 및 결제 기능은 현재 준비중입니다.')));
   }
 
   Future<void> _confirmDeleteCurrentPage(AlbumEditorViewModel vm) async {

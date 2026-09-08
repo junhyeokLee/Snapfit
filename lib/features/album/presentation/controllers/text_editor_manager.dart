@@ -32,6 +32,7 @@ class TextEditorManager {
             initialStyle: safeStyle,
             initialMode: layer.textStyleType,
             initialBubbleColor: layer.bubbleColor,
+            initialAlign: layer.textAlign ?? TextAlign.center,
             onSubmit: (newText, newStyle, mode, color, align) {
               vm.updateLayer(
                 layer.copyWith(
@@ -113,6 +114,7 @@ class TextEditorManager {
             initialStyle: safeStyle,
             initialMode: layer.textStyleType,
             initialBubbleColor: layer.bubbleColor,
+            initialAlign: layer.textAlign ?? TextAlign.center,
             onSubmit: (newText, newStyle, mode, color, align) {
               vm.updateLayer(
                 layer.copyWith(

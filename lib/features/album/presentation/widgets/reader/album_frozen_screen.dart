@@ -115,7 +115,7 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                     child: Column(
                       children: [
                         Text(
-                          '제작이 확정되었습니다!',
+                          '앨범이 완성되었습니다!',
                           style: TextStyle(
                             fontSize: 26.sp,
                             fontWeight: FontWeight.w900,
@@ -125,7 +125,7 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                         ),
                         SizedBox(height: 12.h),
                         Text(
-                          '이제 주문 화면으로 이동할 수 있습니다.\n앨범 수정은 이후에도 계속 가능합니다.',
+                          '인화 주문 결제는 준비 중입니다.\n앨범은 계속 수정할 수 있습니다.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14.sp,
@@ -175,7 +175,7 @@ class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  '주문하러가기',
+                                  '인화 주문 안내',
                                   style: TextStyle(
                                     fontSize: 17.sp,
                                     fontWeight: FontWeight.w800,

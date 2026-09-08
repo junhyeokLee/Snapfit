@@ -39,6 +39,25 @@ class SupabaseAiAlbumDraftProvider extends AiAlbumDraftProvider {
   final ServerAiAlbumDraftMapper _mapper;
 
   @override
+  Future<AlbumRecommendationDraft> createTemplate(AiTemplateBrief brief) async {
+    final response = await _invokeFunction(functionName, {
+      'theme': 'custom',
+      'range': 'manualSelection',
+      'candidates': <Object>[],
+      'designBrief': brief.toJson(),
+    });
+    final json = _asStringObjectMap(response);
+    if (json['error'] != null) {
+      throw SupabaseAiAlbumDraftProviderException(json['error'].toString());
+    }
+    return _mapper.map(
+      theme: AlbumTheme.custom,
+      candidates: const [],
+      json: json,
+    );
+  }
+
+  @override
   Future<AlbumRecommendationDraft> createDraft({
     required AlbumTheme theme,
     required AiPhotoRange range,

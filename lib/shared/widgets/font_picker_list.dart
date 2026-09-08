@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'catalog_favorite_widgets.dart';
 import 'no_glow.dart';
 
 /// 폰트 리스트 (옵션 영역)
@@ -21,117 +21,116 @@ class FontPickerList extends StatefulWidget {
 }
 
 class FontPickerListState extends State<FontPickerList> {
-  late List<GlobalKey> _itemKeys;
-
+  bool _favoritesOnly = false;
   @override
-  void initState() {
-    super.initState();
-    _itemKeys = List<GlobalKey>.generate(
-      widget.families.length,
-      (_) => GlobalKey(),
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant FontPickerList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.families.length != _itemKeys.length) {
-      _itemKeys = List<GlobalKey>.generate(
-        widget.families.length,
-        (_) => GlobalKey(),
+  Widget build(BuildContext context) => CatalogFavoritesBuilder(
+    builder: (context, favorites) {
+      final families = favorites.arrange(
+        widget.families.toSet(),
+        CatalogFavoriteKeys.font,
+        onlyFavorites: _favoritesOnly,
       );
-    }
-  }
-
-  // No dispose() needed
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60.h,
-      child: ScrollConfiguration(
-        behavior: const NoGlow(),
-        child: ListView.separated(
-          controller: widget.controller,
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          physics: const BouncingScrollPhysics(),
-          itemCount: widget.families.length,
-          separatorBuilder: (_, __) => SizedBox(width: 8.w),
-          itemBuilder: (itemContext, i) {
-            final fam = widget.families[i];
-            final sel = fam == widget.current;
-            return Container(
-              key: _itemKeys[i],
-              child: GestureDetector(
-                onTap: () {
-                  widget.onPick(fam);
-                  // 탭한 아이템을 뷰포트 중앙으로 스크롤 (해상도 무관)
-                  if (widget.controller == null) return;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
-                    final key = _itemKeys[i];
-                    final ctx = key.currentContext;
-                    if (ctx == null) return;
-                    final box = ctx.findRenderObject() as RenderBox?;
-                    if (box == null) return;
-                    final itemPos = box.localToGlobal(Offset.zero);
-                    final itemWidth = box.size.width;
-                    final screenWidth = MediaQuery.of(context).size.width;
-                    final target =
-                        widget.controller!.offset +
-                        (itemPos.dx + itemWidth / 2) -
-                        (screenWidth / 2);
-                    final minOffset =
-                        widget.controller!.position.minScrollExtent;
-                    final maxOffset =
-                        widget.controller!.position.maxScrollExtent;
-                    final clamped = target.clamp(minOffset, maxOffset);
-                    widget.controller!.animateTo(
-                      clamped,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    );
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  transform: sel
-                      ? Matrix4.translationValues(0, -6.h, 0)
-                      : Matrix4.identity(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 10.h,
-                  ),
-                  decoration: BoxDecoration(
-                    // 다크/라이트 모드와 무관하게 통일된 대비를 주기 위해 고정 색상 사용
-                    color: sel ? Colors.white : const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: sel
-                          ? const Color(0xFF111827)
-                          : const Color(0xFF9CA3AF),
-                      width: sel ? 1.5 : 1.0,
+      final colors = Theme.of(context).colorScheme;
+      return SizedBox(
+        height: 68,
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: _favoritesOnly ? '전체 폰트 보기' : '즐겨찾는 폰트만 보기',
+              isSelected: _favoritesOnly,
+              icon: const Icon(Icons.star_outline_rounded),
+              selectedIcon: const Icon(Icons.star_rounded),
+              onPressed: () => setState(() => _favoritesOnly = !_favoritesOnly),
+            ),
+            Expanded(
+              child: families.isEmpty
+                  ? TextButton(
+                      onPressed: () => setState(() => _favoritesOnly = false),
+                      child: const Text('즐겨찾는 폰트 없음 · 전체 보기'),
+                    )
+                  : ScrollConfiguration(
+                      behavior: const NoGlow(),
+                      child: ListView.separated(
+                        controller: widget.controller,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        itemCount: families.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (itemContext, index) {
+                          final family = families[index];
+                          final selected = family == widget.current;
+                          return Material(
+                            key: ValueKey(family),
+                            color: colors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 192,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: selected
+                                      ? colors.primary
+                                      : colors.outlineVariant,
+                                  width: selected ? 2 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        widget.onPick(family);
+                                        Scrollable.ensureVisible(
+                                          itemContext,
+                                          alignment: .5,
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          curve: Curves.easeOut,
+                                        );
+                                      },
+                                      child: Semantics(
+                                        button: true,
+                                        selected: selected,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              family,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: family,
+                                                color: colors.onSurface,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  CatalogFavoriteButton(
+                                    itemKey: CatalogFavoriteKeys.font(family),
+                                    label: family,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    fam,
-                    style: TextStyle(
-                      // 선택/비선택 모두 충분한 명도 대비가 나도록 고정 색상 사용
-                      color: sel
-                          ? const Color(0xFF111827)
-                          : const Color(0xFF4B5563),
-                      fontSize: 12.sp,
-                      fontFamily: fam,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
+            ),
+          ],
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
 }

@@ -10,6 +10,7 @@ import '../../features/album/presentation/widgets/editor/top_bar.dart';
 import 'color_palette_list.dart';
 import 'font_picker_list.dart';
 import 'no_glow.dart';
+import 'studio_phrase_picker.dart';
 
 /// 인스타그램 스타일 텍스트 편집 오버레이 (C. 전체 리팩토링)
 /// ----------------------------------------------------------------
@@ -35,6 +36,7 @@ class EditTextOverlay extends StatefulWidget {
   final VoidCallback onCancel;
   final TextStyleType? initialMode;
   final Color? initialBubbleColor;
+  final TextAlign initialAlign;
 
   const EditTextOverlay({
     super.key,
@@ -44,6 +46,7 @@ class EditTextOverlay extends StatefulWidget {
     required this.onCancel,
     this.initialMode,
     this.initialBubbleColor,
+    this.initialAlign = TextAlign.center,
   });
 
   @override
@@ -57,6 +60,7 @@ class _EditTextOverlayState extends State<EditTextOverlay>
   final ScrollController _colorScroll = ScrollController();
   bool _keyboardWasVisible = true;
   bool _initialOpenHandled = false;
+  bool _choosingPhrase = false;
   late final TextEditingController _controller;
   late final FocusNode _focus;
 
@@ -81,6 +85,7 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     'BookMyungjo', // 책 명조 스타일
     'Cormorant Garamond', // 영문 타이틀/본문
     'Figma Hand', // 손글씨 느낌 보조 카피
+    'NanumPen',
     'Roboto',
     'Raleway',
     'Poppins',
@@ -118,7 +123,7 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     _controller = TextEditingController(text: widget.initialText);
     _focus = FocusNode();
 
-    _align = TextAlign.center;
+    _align = widget.initialAlign;
 
     _style = widget.initialStyle;
     _currentFont = widget.initialStyle.fontFamily ?? _fontFamilies.first;
@@ -224,7 +229,7 @@ class _EditTextOverlayState extends State<EditTextOverlay>
   @override
   void didChangeMetrics() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || _choosingPhrase) return;
       final bottomInset = MediaQuery.of(context).viewInsets.bottom;
       final keyboardVisibleNow = bottomInset > 0;
 
@@ -258,6 +263,30 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     _currentFont = family;
     _style = _style.copyWith(fontFamily: family);
   });
+
+  Future<void> _choosePhrase() async {
+    _choosingPhrase = true;
+    _keyboardWasVisible = false;
+    _initialOpenHandled = false;
+    _focus.unfocus();
+    final phrase = await StudioPhrasePicker.show(context);
+    if (!mounted) return;
+    _choosingPhrase = false;
+    if (phrase != null) {
+      setState(() {
+        _controller.value = TextEditingValue(
+          text: phrase.text,
+          selection: TextSelection.collapsed(offset: phrase.text.length),
+        );
+        _style = phrase.lettering.style;
+        _currentFont = phrase.lettering.font;
+        _align = phrase.alignment;
+        _textStyleType = TextStyleType.none;
+        _bubbleColor = null;
+      });
+    }
+    _focus.requestFocus();
+  }
 
   void _submit() {
     final text = _controller.text.trim();
@@ -481,36 +510,46 @@ class _EditTextOverlayState extends State<EditTextOverlay>
       top: false,
       child: Container(
         color: SnapFitColors.overlayStrongOf(context),
-        padding: EdgeInsets.symmetric(vertical: 8.h),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: SizedBox(
-          height: 48.h,
+          height: 48,
           child: ScrollConfiguration(
             behavior: const NoGlow(),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Tooltip(
+                    message: '문구',
+                    child: ToolButton(
+                      key: const ValueKey('studio-phrase-tool'),
+                      label: Icons.format_quote_rounded,
+                      selected: false,
+                      onTap: _choosePhrase,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   ToolButton(
                     label: Icons.text_fields,
                     selected: _panelMode == EditPanelMode.font,
                     onTap: () => _togglePanel(EditPanelMode.font),
                   ),
-                  SizedBox(width: 12.w),
+                  const SizedBox(width: 8),
                   ToolButton(
                     label: Icons.color_lens,
                     selected: _panelMode == EditPanelMode.color,
                     onTap: () => _togglePanel(EditPanelMode.color),
                   ),
-                  SizedBox(width: 12.w),
+                  const SizedBox(width: 8),
                   ToolButton(
                     label: alignIcon(),
                     selected: false,
                     onTap: () => _togglePanel(EditPanelMode.align),
                   ),
-                  SizedBox(width: 12.w),
+                  const SizedBox(width: 8),
                   ToolButton(
                     label: Icons.auto_awesome, // sparkle icon
                     selected: _textStyleType != TextStyleType.none,

@@ -22,3 +22,9 @@ verify_jwt = true
 verify_jwt = false
 [functions.ai-album-draft]
 verify_jwt = true
+
+[functions.push-dispatch]
+verify_jwt = false
+
+[functions.iap-reconcile]
+verify_jwt = false

@@ -42,6 +42,11 @@ class LayerExportMapper {
         LayerType.image => {
           'imageBackground': layer.imageBackground,
           'imageTemplate': layer.imageTemplate,
+          if (layer.imageOffset != null && layer.width > 0 && layer.height > 0)
+            'imageOffsetRatio': {
+              'x': layer.imageOffset!.dx / layer.width,
+              'y': layer.imageOffset!.dy / layer.height,
+            },
           // 운영급: original/preview 우선 저장 + 하위 호환 imageUrl 미러링
           'originalUrl': layer.originalUrl,
           'previewUrl': layer.previewUrl ?? layer.imageUrl,
@@ -145,6 +150,11 @@ class LayerExportMapper {
       // 이미지 전용 데이터
       imageBackground: payload['imageBackground'] as String?,
       imageTemplate: payload['imageTemplate'] as String?,
+      imageOffset: _imageOffsetFromJson(
+        payload['imageOffsetRatio'],
+        width,
+        height,
+      ),
       decorationFillColor: payload['fillColor'] as String?,
       decorationBorderColor: payload['borderColor'] as String?,
       decorationBorderWidth: (payload['borderWidth'] as num?)?.toDouble(),
@@ -153,6 +163,17 @@ class LayerExportMapper {
   }
 
   // --- Helper Methods ---
+
+  static Offset? _imageOffsetFromJson(
+    dynamic value,
+    double width,
+    double height,
+  ) {
+    if (value is! Map) return null;
+    final x = value['x'], y = value['y'];
+    if (x is! num || y is! num || !x.isFinite || !y.isFinite) return null;
+    return Offset(x.toDouble() * width, y.toDouble() * height);
+  }
 
   static TextAlign? _parseTextAlign(String? value) {
     if (value == null) return null;
@@ -213,6 +234,7 @@ class LayerExportMapper {
           ? '#${style.color!.value.toRadixString(16).padLeft(8, '0')}'
           : null,
       'letterSpacing': style.letterSpacing,
+      if (style.height != null) 'height': style.height,
     };
   }
 
@@ -240,6 +262,7 @@ class LayerExportMapper {
     final fontFamily = _normalizeFontFamily(json['fontFamily'] as String?);
     final color = _parseColor(json['color'] as String?);
     final letterSpacing = json['letterSpacing'] as num?;
+    final rawHeight = json['height'];
     return TextStyle(
       fontSize: fontSize,
       fontWeight:
@@ -252,6 +275,9 @@ class LayerExportMapper {
       fontFamily: fontFamily,
       color: color,
       letterSpacing: letterSpacing?.toDouble(),
+      height: rawHeight is num && rawHeight.isFinite && rawHeight > 0
+          ? rawHeight.toDouble()
+          : null,
     );
   }
 

@@ -1,6 +1,10 @@
 -- Recreate point purchase grant RPC with qualified column references so Supabase
 -- plpgsql lint does not confuse return-column names with table columns.
 
+-- The earlier version has three OUT columns. PostgreSQL cannot add the fourth
+-- with CREATE OR REPLACE; explicitly recreate it for fresh migration replays.
+drop function if exists public.grant_point_purchase(uuid, text, text, text);
+
 create or replace function public.grant_point_purchase(
   p_user_id uuid,
   p_product_id text,

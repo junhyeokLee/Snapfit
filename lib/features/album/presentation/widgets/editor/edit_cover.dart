@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/cover_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_toolbar.dart';
@@ -20,6 +21,7 @@ import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
 import '../../../../../shared/widgets/image_frame_style_picker.dart';
+import '../../../../../shared/snapfit_image.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
@@ -57,6 +59,7 @@ class EditCover extends ConsumerStatefulWidget {
 
   /// 생성 플로우에서 템플릿 커버가 비어 보일 때 저장 직전 보정용
   final List<LayerModel>? fallbackTemplateCoverLayers;
+  final Size? fallbackTemplateCanvasSize;
 
   /// 상단 앱바 표시 여부 (PageEditorScreen 내에 임베딩될 때 false)
   final bool showAppBar;
@@ -79,6 +82,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.albumTitle,
     this.targetPages,
     this.fallbackTemplateCoverLayers,
+    this.fallbackTemplateCanvasSize,
     this.showAppBar = true,
     this.showBottomToolbar = true,
     this.interaction,
@@ -323,7 +327,10 @@ class EditCoverState extends ConsumerState<EditCover> {
           widget.fallbackTemplateCoverLayers != null &&
           widget.fallbackTemplateCoverLayers!.isNotEmpty) {
         // 템플릿 유입인데 커버가 비어 저장되는 케이스 방어
-        editorVm.applyTemplateCoverPreview(widget.fallbackTemplateCoverLayers!);
+        editorVm.applyTemplateCoverPreview(
+          widget.fallbackTemplateCoverLayers!,
+          templateCanvasSize: widget.fallbackTemplateCanvasSize,
+        );
       }
       final effectiveLayers =
           ref.read(albumEditorViewModelProvider).value?.layers ?? currentLayers;
@@ -788,11 +795,44 @@ class EditCoverState extends ConsumerState<EditCover> {
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      final currentKey =
-          vm.findLayerById(layer.id)?.imageBackground ??
-          layer.imageBackground ??
-          '';
-      ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
+      final current = vm.findLayerById(layer.id) ?? layer;
+      final currentKey = current.imageBackground ?? '';
+      final source =
+          current.previewUrl ?? current.imageUrl ?? current.originalUrl;
+      final alignment = current.imageAlignment;
+      ImageFrameStylePicker.show(
+        context,
+        currentKey: currentKey,
+        photoAspectRatio: current.width > 0 && current.height > 0
+            ? current.width / current.height
+            : 1,
+        photoBuilder:
+            current.asset == null && (source == null || source.isEmpty)
+            ? null
+            : (_) {
+                if (current.asset != null) {
+                  return Image(
+                    image: AssetEntityImageProvider(current.asset!),
+                    fit: BoxFit.cover,
+                    alignment: alignment,
+                  );
+                }
+                if (source!.startsWith('asset:')) {
+                  return Image.asset(
+                    source.substring(6),
+                    fit: BoxFit.cover,
+                    alignment: alignment,
+                    cacheWidth: 360,
+                  );
+                }
+                return SnapfitImage(
+                  urlOrGs: source,
+                  fit: BoxFit.cover,
+                  alignment: alignment,
+                  memCacheWidth: 360,
+                );
+              },
+      ).then((key) {
         if (key != null && mounted) {
           vm.updateImageFrame(layer.id, key);
           setState(() {});

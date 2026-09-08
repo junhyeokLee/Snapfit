@@ -148,8 +148,8 @@ class _AlbumCreateStep2State extends ConsumerState<AlbumCreateStep2> {
                   ),
                   SizedBox(height: 10.h),
                   Text(
-                    '${widget.albumTitle} · ${widget.selectedCover.name} · ${widget.selectedPageCount}쪽',
-                    maxLines: 1,
+                    '${widget.albumTitle}\n${widget.selectedCover.displayName}${widget.selectedCover.productId == null ? '' : ' · ${widget.selectedCover.coverType.label}'} · ${widget.selectedPageCount}쪽',
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: SnapFitColors.textSecondaryOf(context),

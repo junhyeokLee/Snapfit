@@ -68,6 +68,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
 
   /// 템플릿 유입 시 Step2에서 보여줄 예시 커버 레이어
   final List<LayerModel>? initialTemplateCoverLayers;
+  final Size? initialTemplateCanvasSize;
 
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
@@ -88,6 +89,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.albumTitle,
     this.targetPages,
     this.initialTemplateCoverLayers,
+    this.initialTemplateCanvasSize,
     this.onAlbumCreated,
     this.debugInitialSelectedLayerId,
     this.onRegisterCompleteAction,
@@ -208,13 +210,19 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     if (coverLayers == null || coverLayers.isEmpty) return;
 
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    vm.applyTemplateCoverPreview(coverLayers);
+    vm.applyTemplateCoverPreview(
+      coverLayers,
+      templateCanvasSize: widget.initialTemplateCanvasSize,
+    );
     _templateCoverApplied = true;
 
     // 일부 초기화 루틴에서 레이어가 덮어써지는 경우를 대비해 한 프레임 뒤 재적용
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      vm.applyTemplateCoverPreview(coverLayers);
+      vm.applyTemplateCoverPreview(
+        coverLayers,
+        templateCanvasSize: widget.initialTemplateCanvasSize,
+      );
     });
   }
 
@@ -290,7 +298,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         if (!mounted) return;
         ref
             .read(albumEditorViewModelProvider.notifier)
-            .applyTemplateCoverPreview(widget.initialTemplateCoverLayers!);
+            .applyTemplateCoverPreview(
+              widget.initialTemplateCoverLayers!,
+              templateCanvasSize: widget.initialTemplateCanvasSize,
+            );
         _templateApplyQueued = false;
       });
     }
@@ -320,6 +331,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                         targetPages: widget.targetPages,
                         fallbackTemplateCoverLayers:
                             widget.initialTemplateCoverLayers,
+                        fallbackTemplateCanvasSize:
+                            widget.initialTemplateCanvasSize,
                         onAlbumCreated: widget.onAlbumCreated,
                         onRegisterCompleteAction:
                             widget.onRegisterCompleteAction,

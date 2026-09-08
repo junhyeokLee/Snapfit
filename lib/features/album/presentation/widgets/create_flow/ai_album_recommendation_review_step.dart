@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/constants/cover_size.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
+import 'ai_template_design_review.dart';
 
 class AiAlbumRecommendationReviewStep extends StatefulWidget {
   const AiAlbumRecommendationReviewStep({
     super.key,
     required this.draft,
+    this.targetCover,
     required this.onAcceptDraft,
     required this.onBack,
   });
 
   final AlbumRecommendationDraft draft;
+  final CoverSize? targetCover;
   final FutureOr<void> Function(AlbumRecommendationDraft) onAcceptDraft;
   final VoidCallback onBack;
 
@@ -75,6 +79,15 @@ class _AiAlbumRecommendationReviewStepState
 
   @override
   Widget build(BuildContext context) {
+    if (_draft.design != null) {
+      return AiTemplateDesignReview(
+        design: _draft.design!,
+        targetCover: widget.targetCover,
+        onBack: widget.onBack,
+        onAccept: _handleAcceptDraft,
+        isAccepting: _isAcceptingDraft,
+      );
+    }
     final background = SnapFitColors.isDark(context)
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);

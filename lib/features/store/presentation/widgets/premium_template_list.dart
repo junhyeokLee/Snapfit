@@ -1,14 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/domain/entities/layer.dart';
 import '../../../album/domain/entities/layer_export_mapper.dart';
+import '../../../album/data/bundled_creation_templates.dart';
+import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import '../../domain/entities/premium_template.dart';
 import '../views/template_detail_screen.dart';
+import '../../../point_shop/domain/point_shop_template_key.dart';
+import '../../../point_shop/presentation/point_shop_access.dart';
 import 'template_page_renderer.dart';
 import 'template_preview_frame.dart';
 import '../../data/api/template_provider.dart';
@@ -28,6 +33,8 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
   final PageController _pageController = PageController();
 
   String _recommendedPhotoRange(PremiumTemplate template) {
+    final count = publishedTemplatePhotoCount(template);
+    if (count != null) return '$count장';
     final pages = template.pageCount <= 0 ? 24 : template.pageCount;
     final minPhotos = (pages * 1.6).round().clamp(18, 120);
     final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
@@ -89,16 +96,219 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
     final templatesAsync = ref.watch(templateListProvider);
 
     return templatesAsync.when(
       data: (templates) {
         if (templates.isEmpty) return const SizedBox.shrink();
+        final ordered = favorites.arrange(
+          templates,
+          (t) => CatalogFavoriteKeys.template(t.id),
+        );
         final visibleTemplates = widget.maxItems == null
-            ? templates
-            : templates.take(widget.maxItems!).toList();
+            ? ordered
+            : ordered.take(widget.maxItems!).toList();
         if (visibleTemplates.isEmpty) return const SizedBox.shrink();
+
+        if (visibleTemplates.every(isPublishedCreationTemplate)) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final width = (constraints.maxWidth - 40).clamp(240.0, 420.0);
+              final coverHeight = width.clamp(240.0, 330.0);
+              return Center(
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: coverHeight + 90,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: visibleTemplates.length,
+                          onPageChanged: (index) =>
+                              setState(() => _currentIndex = index),
+                          itemBuilder: (context, index) {
+                            final template = visibleTemplates[index];
+                            return CatalogFavoriteTile(
+                              key: ValueKey(template.id),
+                              itemKey: CatalogFavoriteKeys.template(
+                                template.id,
+                              ),
+                              label: template.title,
+                              child: SnapFitPressable(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => TemplateDetailScreen(
+                                      template: template,
+                                    ),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: coverHeight,
+                                      width: width,
+                                      child: ExcludeSemantics(
+                                        child: CreationCatalogCover(
+                                          template: template,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            template.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0,
+                                            ),
+                                          ),
+                                        ),
+                                        PointShopProductBadge(
+                                          productKey: pointShopTemplateKey(
+                                            template,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        const Icon(
+                                          Icons.chevron_right_rounded,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      '${template.category} · 표지 + 내지 ${template.pageCount}쪽 · 사진 ${_recommendedPhotoRange(template)}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                        letterSpacing: 0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      if (visibleTemplates.length > 5)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              tooltip: '이전 컬렉션',
+                              onPressed: _currentIndex == 0
+                                  ? null
+                                  : () => _pageController.previousPage(
+                                      duration: const Duration(
+                                        milliseconds: 280,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                              icon: const Icon(Icons.chevron_left_rounded),
+                            ),
+                            SizedBox(
+                              width: 70,
+                              child: Text(
+                                '${_currentIndex + 1} / ${visibleTemplates.length}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: '다음 컬렉션',
+                              onPressed:
+                                  _currentIndex == visibleTemplates.length - 1
+                                  ? null
+                                  : () => _pageController.nextPage(
+                                      duration: const Duration(
+                                        milliseconds: 280,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                              icon: const Icon(Icons.chevron_right_rounded),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            for (
+                              var index = 0;
+                              index < visibleTemplates.length;
+                              index++
+                            )
+                              Semantics(
+                                button: true,
+                                selected: _currentIndex == index,
+                                label: visibleTemplates[index].title,
+                                child: Tooltip(
+                                  message: visibleTemplates[index].title,
+                                  child: InkResponse(
+                                    onTap: () => _pageController.animateToPage(
+                                      index,
+                                      duration: const Duration(
+                                        milliseconds: 280,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                                    child: SizedBox(
+                                      width: 44,
+                                      height: 32,
+                                      child: Center(
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 180,
+                                          ),
+                                          width: _currentIndex == index
+                                              ? 18
+                                              : 5,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(
+                                                  alpha: _currentIndex == index
+                                                      ? 0.85
+                                                      : 0.2,
+                                                ),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
 
         return SnapFitFadeIn(
           delay: const Duration(milliseconds: 80),
@@ -152,7 +362,9 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                if (previewUrl.isNotEmpty)
+                                if (isPublishedCreationTemplate(template))
+                                  CreationCatalogCover(template: template)
+                                else if (previewUrl.isNotEmpty)
                                   _buildCoverImage(context, previewUrl)
                                 else if (parsed != null)
                                   LayoutBuilder(
@@ -190,6 +402,13 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       end: Alignment.bottomCenter,
                                       stops: const [0.0, 0.48, 1.0],
                                     ),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 16,
+                                  top: 16,
+                                  child: PointShopProductBadge(
+                                    productKey: pointShopTemplateKey(template),
                                   ),
                                 ),
                                 // Content Text

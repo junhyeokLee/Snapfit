@@ -46,6 +46,8 @@ dependencies:
   dio: ^5.9.0
   supabase_flutter: ^2.9.1
   in_app_purchase: ^3.2.0
+  in_app_purchase_android: 0.5.2
+  in_app_purchase_storekit: 0.4.11+1
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   retrofit: ^4.9.1
@@ -113,7 +115,11 @@ flutter:
     - assets/snapfit_home_landscape.jpg
     - assets/empty_state.png
     - assets/sticker/
+    - assets/sticker/studio/
     - assets/templates/
+    - assets/templates/original_editorial/images/
+    - assets/templates/premium_wind_atlas/
+    - assets/templates/prose_study/
     - assets/templates/save_the_date/images/
     - assets/templates/save_the_date/images/approved_stock/
     - assets/templates/jeju_travel/images/
@@ -137,6 +143,7 @@ flutter:
     - assets/templates/soft_babybook/images/generated/
     - assets/templates/soft_babybook/images/approved_stock/
     - assets/social/
+    - assets/fonts/NanumPenScript-OFL.txt
 
 
   fonts:
@@ -164,6 +171,10 @@ flutter:
         - asset: assets/fonts/Cormorant-Regular.ttf
         - asset: assets/fonts/Cormorant-SemiBold.ttf
           weight: 800
+
+    - family: NanumPen
+      fonts:
+        - asset: assets/fonts/NanumPenScript-Regular.ttf
 
     - family: FigmaHand
       fonts:
@@ -295,19 +306,21 @@ flutter:
 
 flutter_native_splash:
   color: "#101F22"
-  # 앱 시작 시 가운데 라운드 처리된 SnapFit 로고 노출
-  image: assets/snapfit_logo.png
+  # 전체 화면 스플래시는 교체한 사진 이미지를 사용
+  image: assets/splash.png
   android_gravity: fill
-  ios_content_mode: scaleToFill
-  web_image_mode: stretch
+  ios_content_mode: scaleAspectFill
+  web_image_mode: cover
   android_12:
-    color: "#101F22"
+    # Android 12 이상 시스템 스플래시는 정사각형 앱 아이콘만 지원
+    color: "#0AB5D1"
     image: assets/snapfit_logo.png
-    icon_background_color: "#101F22"
+    icon_background_color: "#0AB5D1"
 
 flutter_launcher_icons:
   android: true
   ios: true
-  # 런처 아이콘도 snapfit_logo 하나만 사용
+  # 기본 아이콘과 Android 적응형 아이콘 모두 같은 로고로 재생성
   image_path: "assets/snapfit_logo.png"
-  adaptive_icon_background: "#101F22"
+  adaptive_icon_background: "#0AB5D1"
+  adaptive_icon_foreground: "assets/snapfit_logo.png"

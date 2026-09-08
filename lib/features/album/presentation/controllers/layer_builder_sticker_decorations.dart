@@ -1,6 +1,8 @@
 part of 'layer_builder.dart';
 
 Widget? _buildStickerDecoration(LayerModel layer) {
+  final studioSpec = studioDecorationById(layer.imageBackground);
+  if (studioSpec != null) return StudioDecoration(spec: studioSpec);
   if (layer.imageBackground == 'stickerBlueStar') {
     return CustomPaint(
       size: Size(layer.width, layer.height),

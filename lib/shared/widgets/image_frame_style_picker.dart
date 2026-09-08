@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/point_shop/presentation/point_shop_access.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/snapfit_colors.dart';
+import 'studio_material.dart';
+import 'catalog_favorite_widgets.dart';
 
 /// 이미지 프레임 스타일 정의
 class ImageFrameStyle {
@@ -21,6 +25,198 @@ class ImageFrameStyle {
 /// 사용 가능한 이미지 프레임 스타일 목록
 const List<ImageFrameStyle> imageFrameStyles = [
   ImageFrameStyle(key: '', label: '기본', subtitle: '원본 그대로', category: 'basic'),
+  ImageFrameStyle(
+    key: 'zineContact',
+    label: '필름 콘택트',
+    subtitle: '필름 홀과 블랙 인화지',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'zineDeckle',
+    label: '찢은 프린트',
+    subtitle: '비대칭으로 찢은 종이 가장자리',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'zineTab',
+    label: '코발트 탭 매트',
+    subtitle: '블루 사진 매트와 라임 탭',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'editionLace',
+    label: '로즈 레이스',
+    subtitle: '레이스 자수 사진 창',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'editionHeart',
+    label: '하트 사진',
+    subtitle: '하트 모양 사진 창',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'editionPostage',
+    label: '콜라주 우표',
+    subtitle: '톱니 인화지와 소인',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'editionScallop',
+    label: '물결 매트',
+    subtitle: '리듬 있는 물결 사진 창',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'editionCameo',
+    label: '카메오 창',
+    subtitle: '장식 테두리와 타원 사진',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'editionTriptych',
+    label: '트립틱 사진 창',
+    subtitle: '세 부분으로 나눈 사진 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studyArchWindow',
+    label: '이중 아치 창',
+    subtitle: '곡선 창과 얇은 이중 테두리',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'studyFloatMount',
+    label: '여백 매트',
+    subtitle: '아랫단이 넓은 사진 매트',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studyNotchedMat',
+    label: '모서리 매트',
+    subtitle: '안쪽 모서리를 다듬은 사진 창',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'studioDoubleMat',
+    label: '이중 매트',
+    subtitle: '두 겹의 전시 매트',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioPhotoCorners',
+    label: '사진 코너',
+    subtitle: '아카이브 코너 마운트',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'studioOvalMat',
+    label: '타원 매트',
+    subtitle: '타원 창의 인물 사진',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'studioLinen',
+    label: '린넨 매트',
+    subtitle: '직조 질감과 스티치',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studioPostcard',
+    label: '에어메일 엽서',
+    subtitle: '청록과 적색의 인쇄 테두리',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'studioPostage',
+    label: '우표 인화지',
+    subtitle: '펀칭 가장자리와 사진 여백',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'studioCapsule',
+    label: '캡슐 컷',
+    subtitle: '부드러운 곡선',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioDiagonal',
+    label: '대각 라운드',
+    subtitle: '엇갈리는 두 모서리',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioWave',
+    label: '물결 컷',
+    subtitle: '잔잔한 물결 가장자리',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studioTicket',
+    label: '티켓 컷',
+    subtitle: '여행의 한 조각',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'studioGallery',
+    label: '갤러리 매트',
+    subtitle: '여백이 있는 작품',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioDeckle',
+    label: '수제지 프레임',
+    subtitle: '섬세한 종이 결',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studioInstant',
+    label: '인화지 프레임',
+    subtitle: '넉넉한 아랫단',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'studioFilm',
+    label: '필름 프레임',
+    subtitle: '기록을 담은 필름',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'studioOval',
+    label: '오벌',
+    subtitle: '타원으로 담은 장면',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioRounded',
+    label: '라운드 컷',
+    subtitle: '둥근 네 모서리',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioArch',
+    label: '아치 컷',
+    subtitle: '둥근 창 너머의 사진',
+    category: 'minimal',
+  ),
+  ImageFrameStyle(
+    key: 'studioTorn',
+    label: '찢어진 사진',
+    subtitle: '손으로 찢은 가장자리',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studioSticker',
+    label: '다이컷 스티커',
+    subtitle: '유연한 스티커 외곽',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'studioScallop',
+    label: '우표 컷',
+    subtitle: '오밀조밀한 우표 가장자리',
+    category: 'vintage',
+  ),
   ImageFrameStyle(
     key: 'circle',
     label: '기본 원형',
@@ -263,286 +459,360 @@ const _frameCategories = [
 ];
 
 /// 이미지 프레임 스타일 선택 바텀시트
-class ImageFrameStylePicker extends StatefulWidget {
+class ImageFrameStylePicker extends ConsumerStatefulWidget {
   final String? selectedKey;
   final ValueChanged<String> onSelect;
+  final WidgetBuilder? photoBuilder;
+  final double photoAspectRatio;
 
   const ImageFrameStylePicker({
     super.key,
     required this.selectedKey,
     required this.onSelect,
-  });
+    this.photoBuilder,
+    this.photoAspectRatio = 1,
+  }) : assert(photoAspectRatio > 0 && photoAspectRatio < double.infinity);
 
   static Future<String?> show(
     BuildContext context, {
     required String? currentKey,
-  }) {
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => ImageFrameStylePicker(
-        selectedKey: currentKey,
-        onSelect: (key) => Navigator.pop(ctx, key),
-      ),
-    );
-  }
+    WidgetBuilder? photoBuilder,
+    double photoAspectRatio = 1,
+  }) => showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    constraints: const BoxConstraints(maxWidth: 720),
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => ImageFrameStylePicker(
+      selectedKey: currentKey,
+      photoBuilder: photoBuilder,
+      photoAspectRatio: photoAspectRatio,
+      onSelect: (key) => Navigator.pop(ctx, key),
+    ),
+  );
 
   @override
-  State<ImageFrameStylePicker> createState() => _ImageFrameStylePickerState();
+  ConsumerState<ImageFrameStylePicker> createState() =>
+      _ImageFrameStylePickerState();
 }
 
-class _ImageFrameStylePickerState extends State<ImageFrameStylePicker> {
-  String _selectedCategory = 'all';
+class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
+  String _selectedCategory = 'studio';
+  bool _isApplying = false;
+
+  Future<void> _select(ImageFrameStyle style) async {
+    if (_isApplying) return;
+    _isApplying = true;
+    try {
+      if (style.key.isNotEmpty &&
+          !await ensurePointShopAccess(
+            context,
+            ref,
+            productKey: 'frame:${style.key}',
+            title: style.label,
+          ))
+        return;
+      if (mounted) widget.onSelect(style.key);
+    } finally {
+      _isApplying = false;
+    }
+  }
+
+  bool _favoritesOnly = false;
 
   List<ImageFrameStyle> get _visibleStyles {
     if (_selectedCategory == 'all') return imageFrameStyles;
     return imageFrameStyles
-        .where((s) => s.category == _selectedCategory || s.category == 'basic')
+        .where(
+          (s) =>
+              s.key.isEmpty ||
+              (_selectedCategory == 'studio'
+                  ? StudioMaterial.photoStyles.contains(s.key)
+                  : s.category == _selectedCategory),
+        )
         .toList();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        boxShadow: [
-          BoxShadow(
-            color: SnapFitColors.isDark(context)
-                ? SnapFitColors.accentLight.withOpacity(0.25)
-                : Colors.black.withOpacity(0.18),
-            blurRadius: 20.r,
-            offset: Offset(0, -4.h),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 12.h),
-            // 드래그 핸들
-            Container(
-              width: 48.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: SnapFitColors.overlayMediumOf(context),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            // 제목
-            Text(
-              '사진 프레임 세트',
-              style: TextStyle(
-                color: SnapFitColors.textPrimaryOf(context),
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            // 카테고리 탭
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Row(
-                children: _frameCategories.map((c) {
-                  final key = c['key'] as String;
-                  final label = c['label'] as String;
-                  final bool selected = _selectedCategory == key;
-                  return Padding(
-                    padding: EdgeInsets.only(right: 8.w),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedCategory = key);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 6.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? SnapFitColors.accent.withOpacity(0.12)
-                              : SnapFitColors.overlayLightOf(context),
-                          borderRadius: BorderRadius.circular(999.r),
-                          border: Border.all(
-                            color: selected
-                                ? SnapFitColors.accent
-                                : SnapFitColors.overlayMediumOf(context),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          label,
-                          style: TextStyle(
-                            color: selected
-                                ? SnapFitColors.accent
-                                : SnapFitColors.textSecondaryOf(context),
-                            fontSize: 12.sp,
-                            fontWeight: selected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            // 프레임 스타일 카드 그리드 (조금 더 높게)
-            SizedBox(
-              height: 420.h,
-              child: Padding(
-                padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12.w,
-                    mainAxisSpacing: 16.h,
-                    childAspectRatio: 3 / 4,
-                  ),
-                  itemCount: _visibleStyles.length,
-                  itemBuilder: (context, index) {
-                    final style = _visibleStyles[index];
-                    final isSelected = (widget.selectedKey ?? '') == style.key;
-                    return _FrameStyleItem(
-                      style: style,
-                      isSelected: isSelected,
-                      onTap: () => widget.onSelect(style.key),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    final key = widget.selectedKey ?? '';
+    if (key.isNotEmpty && !StudioMaterial.photoStyles.contains(key)) {
+      _selectedCategory =
+          imageFrameStyles.where((s) => s.key == key).firstOrNull?.category ??
+          'all';
+      if (_selectedCategory == 'basic') _selectedCategory = 'all';
+    }
   }
+
+  @override
+  Widget build(BuildContext context) => CatalogFavoritesBuilder(
+    builder: (context, favorites) => LayoutBuilder(
+      builder: (context, constraints) {
+        final media = MediaQuery.of(context);
+        final available = constraints.hasBoundedHeight
+            ? constraints.maxHeight
+            : media.size.height - media.padding.top;
+        final height = available.clamp(0.0, 680.0);
+        final scale = media.textScaler.scale(12) / 12;
+        final styles = favorites.arrange(
+          _visibleStyles,
+          (s) => CatalogFavoriteKeys.frame(s.key),
+          onlyFavorites: _favoritesOnly,
+        );
+        return SizedBox(
+          height: height,
+          child: Material(
+            color: SnapFitColors.surfaceOf(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            clipBehavior: Clip.antiAlias,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: SnapFitColors.overlayMediumOf(context),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 8),
+                    child: Row(
+                      children: [
+                        CatalogFavoriteFilter(
+                          selected: _favoritesOnly,
+                          onChanged: (value) => setState(() {
+                            _favoritesOnly = value;
+                            _selectedCategory = 'all';
+                          }),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '사진 프레임',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: SnapFitColors.textPrimaryOf(context),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: '닫기',
+                          icon: const Icon(Icons.close_rounded, size: 22),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        for (final category in [
+                          const {'key': 'studio', 'label': '스튜디오'},
+                          ..._frameCategories,
+                        ])
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: ChoiceChip(
+                              label: Text(
+                                category['label']!,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              selected: _selectedCategory == category['key'],
+                              onSelected: (_) => setState(
+                                () => _selectedCategory = category['key']!,
+                              ),
+                              showCheckmark: false,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: styles.isEmpty
+                        ? CatalogFavoritesEmpty(
+                            onShowAll: () => setState(() {
+                              _favoritesOnly = false;
+                              _selectedCategory = 'all';
+                            }),
+                          )
+                        : LayoutBuilder(
+                            builder: (context, grid) {
+                              final columns =
+                                  (grid.maxWidth / (scale > 1.4 ? 180 : 160))
+                                      .floor()
+                                      .clamp(2, 4);
+                              return GridView.builder(
+                                key: ValueKey(_selectedCategory),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  16,
+                                ),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: columns,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      mainAxisExtent: 140 + 68 * scale,
+                                    ),
+                                itemCount: styles.length,
+                                itemBuilder: (context, index) {
+                                  final style = styles[index];
+                                  final tile = _FrameStyleItem(
+                                    key: ValueKey('frame-${style.key}'),
+                                    style: style,
+                                    isSelected:
+                                        (widget.selectedKey ?? '') == style.key,
+                                    photoBuilder: widget.photoBuilder,
+                                    photoAspectRatio: widget.photoAspectRatio,
+                                    onTap: () => _select(style),
+                                  );
+                                  return style.key.isEmpty
+                                      ? tile
+                                      : CatalogFavoriteTile(
+                                          key: ValueKey(
+                                            'favorite-frame-${style.key}',
+                                          ),
+                                          itemKey: CatalogFavoriteKeys.frame(
+                                            style.key,
+                                          ),
+                                          label: style.label,
+                                          child: tile,
+                                        );
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class _FrameStyleItem extends StatelessWidget {
   final ImageFrameStyle style;
   final bool isSelected;
   final VoidCallback onTap;
+  final WidgetBuilder? photoBuilder;
+  final double photoAspectRatio;
 
   const _FrameStyleItem({
+    super.key,
     required this.style,
     required this.isSelected,
     required this.onTap,
+    required this.photoBuilder,
+    required this.photoAspectRatio,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(
-            color: isSelected
-                ? SnapFitColors.accent
-                : SnapFitColors.overlayStrongOf(context),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10.r,
-              offset: Offset(0, 4.h),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    onTap: onTap,
+    selected: isSelected,
+    label: style.label,
+    child: Material(
+      color: SnapFitColors.overlayLightOf(context),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? SnapFitColors.accent
+                  : SnapFitColors.overlayMediumOf(context),
+              width: 1.5,
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(8.w),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned.fill(child: _buildFramePreview(style.key)),
-                    if (style.key == 'polaroid')
-                      Positioned(
-                        top: -2.h,
-                        right: -2.w,
-                        child: Container(
-                          width: 22.w,
-                          height: 22.w,
-                          decoration: BoxDecoration(
-                            color: SnapFitColors.accent,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.star,
-                            size: 12.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    12,
+                    style.key.isEmpty ? 12 : 44,
+                    12,
+                    12,
+                  ),
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: photoAspectRatio,
+                      child: _buildFramePreview(style.key),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.w),
-              child: Column(
-                children: [
-                  Text(
-                    style.label,
-                    style: TextStyle(
-                      color: SnapFitColors.textPrimaryOf(context),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  style.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: SnapFitColors.textPrimaryOf(context),
                   ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    style.subtitle,
-                    style: TextStyle(
-                      color: SnapFitColors.textSecondaryOf(context),
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-            SizedBox(height: 6.h),
-          ],
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  style.subtitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: SnapFitColors.textSecondaryOf(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (style.key.isNotEmpty)
+                PointShopProductBadge(productKey: 'frame:${style.key}')
+              else
+                const Text('무료', style: TextStyle(fontSize: 11)),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildFramePreview(String key) {
-    final placeholder = Container(
-      decoration: const BoxDecoration(color: Color(0xFFE6E9F0)),
-    );
+    final placeholder = photoBuilder == null
+        ? Image.asset(
+            'assets/templates/original_editorial/images/daily_desk.png',
+            fit: BoxFit.cover,
+            cacheWidth: 360,
+            errorBuilder: (_, __, ___) =>
+                const ColoredBox(color: Color(0xFFE6E9F0)),
+          )
+        : Builder(builder: photoBuilder!);
+
+    if (StudioMaterial.photoStyles.contains(key)) {
+      return StudioMaterial(style: key, child: placeholder);
+    }
 
     Widget content;
     switch (key) {

@@ -61,14 +61,6 @@ class Env {
     defaultValue: 'snapfit://auth/callback',
   );
 
-  /// Native store subscription product id.
-  /// Configure the same id in Google Play Console / App Store Connect.
-  /// - --dart-define=IAP_PRO_MONTHLY_PRODUCT_ID=...
-  static const String iapProMonthlyProductId = String.fromEnvironment(
-    'IAP_PRO_MONTHLY_PRODUCT_ID',
-    defaultValue: 'snapfit_pro_monthly',
-  );
-
   /// Enables server-backed AI album draft generation through Supabase Edge
   /// Function. Keep false until server prompts/model quality and privacy copy
   /// are production-ready.

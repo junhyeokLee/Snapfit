@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/templates/studio_word_art_catalog.dart';
 
 import './decorate_sticker_tab.dart';
 import './decorate_color_tab.dart';
@@ -46,9 +47,11 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
     final surfaceColor = SnapFitColors.surfaceOf(context);
     final media = MediaQuery.of(context);
     final isLandscape = media.size.width > media.size.height;
-    final panelHeight = (media.size.height * (isLandscape ? 0.82 : 0.58)).clamp(
-      isLandscape ? 300.0 : 420.0,
-      isLandscape ? 430.0 : 560.0,
+    final preferredHeight = (media.size.height * (isLandscape ? 0.82 : 0.58))
+        .clamp(isLandscape ? 300.0 : 420.0, isLandscape ? 430.0 : 560.0);
+    final panelHeight = preferredHeight.clamp(
+      0.0,
+      media.size.height - media.padding.top - media.viewInsets.bottom,
     );
     final content = widget.mode == DecorateSheetMode.sticker
         ? DecorateStickerTab(
@@ -60,7 +63,13 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
                 editorVm: editorVm,
                 stateVal: stateVal,
               );
-              if (sticker.startsWith('deco:')) {
+              if (sticker.startsWith('wordart:')) {
+                final art = studioWordArtById(
+                  sticker.substring('wordart:'.length),
+                );
+                if (art == null) return;
+                editorVm.addWordArt(art, canvasSize);
+              } else if (sticker.startsWith('deco:')) {
                 final payload = sticker.replaceFirst('deco:', '');
                 final parts = payload.split('@');
                 final style = parts.first;

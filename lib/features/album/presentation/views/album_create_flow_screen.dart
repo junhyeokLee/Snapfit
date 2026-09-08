@@ -13,10 +13,15 @@ import '../../../billing/data/billing_repository.dart';
 import '../../../profile/presentation/views/billing_management_screen.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
+import '../../domain/entities/album_creation_template.dart';
+import '../../../store/domain/entities/premium_template.dart';
+import '../../../store/data/api/template_provider.dart';
+import '../../../store/presentation/views/template_detail_screen.dart';
 import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../ai_album/domain/ai_album_draft_template_builder.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
+import '../../data/album_creation_catalog_provider.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../widgets/create_flow/ai_album_draft_failure_step.dart';
@@ -24,13 +29,15 @@ import '../widgets/create_flow/ai_album_photo_range_step.dart';
 import '../widgets/create_flow/ai_album_point_confirmation_step.dart';
 import '../widgets/create_flow/ai_album_recommendation_review_step.dart';
 import '../widgets/create_flow/ai_album_start_step.dart';
-import '../widgets/create_flow/ai_album_theme_step.dart';
+import '../widgets/create_flow/ai_template_brief_step.dart';
+import '../widgets/create_flow/template_photo_fill_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
 import 'page_editor_screen.dart';
 
 /// 앨범 생성 플로우 화면 (스텝1~3)
 class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
+  final AlbumCreationTemplate? initialCreationTemplate;
   final List<List<LayerModel>>? initialTemplatePages;
   final Map<String, List<List<LayerModel>>>? initialTemplatePagesByAspect;
   final String? initialAlbumTitle;
@@ -41,6 +48,7 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
 
   const AlbumCreateFlowScreen({
     super.key,
+    this.initialCreationTemplate,
     this.initialTemplatePages,
     this.initialTemplatePagesByAspect,
     this.initialAlbumTitle,
@@ -69,7 +77,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   bool _isAiCreationMode = false;
   bool _hasConfirmedAiPointCost = false;
   bool _isGeneratingAiDraft = false;
+  int _aiDraftRequestId = 0;
   AlbumTheme? _selectedAiTheme;
+  AiTemplateBrief? _designBrief;
   AiPhotoRange? _selectedAiRange;
   AlbumRecommendationDraft? _pendingAiDraft;
   String? _aiDraftFailureTitle;
@@ -78,6 +88,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   AiAlbumDraftRecoveryAction? _aiDraftPrimaryRecoveryAction;
 
   CoverSize? _selectedCover;
+  PrintCoverType? _preferredCoverType;
   int _selectedPageCount = 10;
   int _templateMinPageCount = 10;
   bool _allowEditing = true;
@@ -86,9 +97,180 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   List<List<LayerModel>>? _resolvedTemplatePages;
   List<List<LayerModel>>? _baseTemplatePages;
   Map<String, List<List<LayerModel>>>? _templatePagesByAspect;
+  Map<String, Size> _templateCanvasSizes = {};
+  Size? _baseTemplateCanvasSize;
+  String? _templateTitle;
+  String? _templatePreviewUrl;
+  String _sourceLabel = '직접 만들기';
+  bool _showPhotoFill = false;
+  bool _hasFilledPhotos = false;
+  bool _returnToSetupFromHub = false;
+  bool _usesPhysicalTemplateCanvas = false;
+  bool _preserveTemplateTypography = false;
 
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
   VoidCallback? _onCompletePressed;
+
+  void _resetDesign() {
+    _usesPhysicalTemplateCanvas = false;
+    _preserveTemplateTypography = false;
+    _returnToSetupFromHub = false;
+    _resolvedTemplatePages = null;
+    _baseTemplatePages = null;
+    _templatePagesByAspect = null;
+    _templateCanvasSizes = {};
+    _baseTemplateCanvasSize = null;
+    _templateTitle = null;
+    _templatePreviewUrl = null;
+    _templateMinPageCount = 10;
+    _selectedPageCount = _selectedPageCount.clamp(10, _maxPageCount);
+    _sourceLabel = '직접 만들기';
+    _hasFilledPhotos = false;
+    _showPhotoFill = false;
+    _pendingAiDraft = null;
+    _selectedAiTheme = null;
+    _selectedAiRange = null;
+    _hasConfirmedAiPointCost = false;
+    _aiDraftFailureMessage = null;
+  }
+
+  void _useTemplate(AlbumCreationTemplate selection) {
+    _resetDesign();
+    _preserveTemplateTypography = selection.preserveTypography;
+    _usesPhysicalTemplateCanvas = true;
+    _selectedCover = newAlbumCoverSize(
+      selection.cover,
+    ).withCoverType(_preferredCoverType ?? selection.cover.coverType);
+    _preferredCoverType = _selectedCover!.coverType;
+    final sourceKey = AlbumCreationTemplate.variantKey(selection.cover);
+    _templatePagesByAspect = {
+      ...selection.variants,
+      sourceKey: selection.pages,
+    };
+    _baseTemplateCanvasSize =
+        selection.pagesCanvasSize ?? coverCanvasBaseSize(selection.cover);
+    _templateCanvasSizes = {
+      ...selection.variantCanvasSizes,
+      sourceKey: _baseTemplateCanvasSize!,
+    };
+    _baseTemplatePages = selection.pages;
+    _applyTemplateByCoverIfNeeded(_selectedCover!);
+    _templateTitle = selection.title;
+    _templatePreviewUrl = selection.previewUrl;
+    _sourceLabel = '선택한 템플릿';
+    _templateMinPageCount = (selection.pages.length - 1).clamp(
+      1,
+      _maxPageCount,
+    );
+    _selectedPageCount = _templateMinPageCount;
+    if (_albumTitle.trim().isEmpty) _albumTitle = selection.title;
+    _isAiCreationMode = false;
+    _hasSelectedCreationMode = true;
+  }
+
+  Future<void> _selectTemplate(PremiumTemplate template) async {
+    final selection = await Navigator.push<AlbumCreationTemplate>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            TemplateDetailScreen(template: template, selectForCreation: true),
+      ),
+    );
+    if (!mounted || selection == null) return;
+    setState(() => _useTemplate(selection));
+  }
+
+  Future<bool> _confirmDesignChange() async {
+    if (!_hasFilledPhotos) return true;
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('디자인을 변경할까요?'),
+            content: const Text('현재 넣은 사진은 다시 배치해야 해요. 앨범 제목은 유지돼요.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('유지하기'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('변경하기'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _changeDesign() async {
+    if (!await _confirmDesignChange() || !mounted) return;
+    setState(() {
+      _returnToSetupFromHub = true;
+      _hasSelectedCreationMode = false;
+      _isAiCreationMode = false;
+    });
+  }
+
+  Future<void> _selectCover(CoverSize cover) async {
+    if (cover.productId == _selectedCover?.productId) return;
+    final sameSize = cover.sizeProductId == _selectedCover?.sizeProductId;
+    if (!sameSize &&
+        _resolvedTemplatePages != null &&
+        !await _confirmDesignChange())
+      return;
+    if (!mounted) return;
+    setState(() {
+      _selectedCover = cover;
+      _preferredCoverType = cover.coverType;
+      if (!sameSize) {
+        _applyTemplateByCoverIfNeeded(cover);
+        _hasFilledPhotos =
+            _resolvedTemplatePages
+                ?.expand((p) => p)
+                .any((l) => l.asset != null) ??
+            false;
+      }
+    });
+  }
+
+  Widget _buildCreationProgress() {
+    final labels = _resolvedTemplatePages == null
+        ? ['설정', '표지', '편집']
+        : ['설정', '사진', '표지', '편집'];
+    final selected = _currentStep == 0
+        ? 0
+        : _showPhotoFill
+        ? 1
+        : labels.length - 2;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      child: Row(
+        children: [
+          for (var i = 0; i < labels.length; i++) ...[
+            if (i > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 14,
+                  color: SnapFitColors.textMutedOf(context),
+                ),
+              ),
+            Text(
+              labels[i],
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: i == selected ? FontWeight.w700 : FontWeight.w400,
+                color: i == selected
+                    ? SnapFitColors.textPrimaryOf(context)
+                    : SnapFitColors.textMutedOf(context),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
   List<List<LayerModel>> _hydrateTemplatePages(List<List<LayerModel>> pages) {
     final images = widget.initialTemplatePreviewImages ?? const <String>[];
@@ -127,62 +309,56 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     return 'square';
   }
 
-  CoverSize _coverForAspectKey(String key) {
-    final normalized = key.toLowerCase();
-    if (normalized == 'portrait') {
-      return coverSizes.firstWhere(
-        (s) => s.name == '세로형',
-        orElse: () => coverSizes.first,
-      );
-    }
-    if (normalized == 'landscape') {
-      return coverSizes.firstWhere(
-        (s) => s.name == '가로형',
-        orElse: () => coverSizes.last,
-      );
-    }
-    return coverSizes.firstWhere(
-      (s) => s.name == '정사각형',
-      orElse: () => coverSizes.first,
-    );
-  }
-
   CoverSize _resolveInitialCover() {
     if (widget.initialCoverSize != null) {
-      return widget.initialCoverSize!;
+      return newAlbumCoverSize(widget.initialCoverSize);
     }
     final variants = _templatePagesByAspect;
-    if (variants != null && variants.isNotEmpty) {
-      if (variants['portrait']?.isNotEmpty ?? false) {
-        return _coverForAspectKey('portrait');
-      }
-      if (variants['square']?.isNotEmpty ?? false) {
-        return _coverForAspectKey('square');
-      }
-      if (variants['landscape']?.isNotEmpty ?? false) {
-        return _coverForAspectKey('landscape');
-      }
+    if (variants != null &&
+        variants.isNotEmpty &&
+        !variants.containsKey(defaultCoverSize.productId) &&
+        !variants.containsKey('square') &&
+        variants.containsKey('landscape')) {
+      return newAlbumCoverSize(legacyCoverSizes.last);
     }
-    return coverSizes.firstWhere(
-      (s) => s.name == '정사각형',
-      orElse: () => coverSizes.first,
-    );
+    return defaultCoverSize;
   }
 
   void _applyTemplateByCoverIfNeeded(CoverSize cover) {
-    final key = _aspectKeyFromCover(cover);
     final variants = _templatePagesByAspect;
-    final selected = key == 'portrait'
-        ? _baseTemplatePages
-        : variants == null
-        ? null
-        : variants[key];
-    if (selected == null || selected.isEmpty) return;
-    // 기존에 충분한 페이지가 이미 해석된 상태라면,
-    // 페이지 수가 부족한 variant로 덮어쓰지 않도록 방어한다.
-    final currentResolvedCount = _resolvedTemplatePages?.length ?? 0;
-    if (currentResolvedCount > 1 && selected.length <= 1) return;
-    _resolvedTemplatePages = _hydrateTemplatePages(selected);
+    final productKey = AlbumCreationTemplate.variantKey(cover);
+    final sizeKey = cover.sizeProductId;
+    final aspectKey = _aspectKeyFromCover(cover);
+    final key = variants?.containsKey(productKey) == true
+        ? productKey
+        : variants?.containsKey(sizeKey) == true
+        ? sizeKey
+        : variants?.containsKey(aspectKey) == true
+        ? aspectKey
+        : null;
+    var selected = key == null ? _baseTemplatePages : variants?[key];
+    var source = key == null
+        ? _baseTemplateCanvasSize
+        : _templateCanvasSizes[key];
+    if (selected == null || selected.isEmpty) {
+      if (variants == null || variants.isEmpty) return;
+      final fallback = variants.entries.first;
+      selected = fallback.value;
+      source =
+          _templateCanvasSizes[fallback.key] ??
+          _legacyVariantCanvas(fallback.key);
+    }
+    if ((_baseTemplatePages?.length ?? 0) > 1 && selected.length <= 1) {
+      selected = _baseTemplatePages!;
+      source = _baseTemplateCanvasSize;
+    }
+    _resolvedTemplatePages = AlbumCreationTemplate.preparePages(
+      _hydrateTemplatePages(selected),
+      sourceCanvas: source ?? _legacyVariantCanvas(key ?? aspectKey),
+      cover: cover,
+      clearSamplePhotos: false,
+    );
+    _usesPhysicalTemplateCanvas = true;
     _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
       1,
       _maxPageCount,
@@ -191,6 +367,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _templateMinPageCount,
       _maxPageCount,
     );
+  }
+
+  Size _legacyVariantCanvas(String key) {
+    final product = coverSizeForProduct(key);
+    if (product != null) return coverCanvasBaseSize(product);
+    final ratio = key == 'portrait'
+        ? 3 / 4
+        : key == 'landscape'
+        ? 4 / 3
+        : 1.0;
+    return Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
   }
 
   @override
@@ -207,22 +394,36 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     if (widget.initialTemplatePagesByAspect != null &&
         widget.initialTemplatePagesByAspect!.isNotEmpty) {
       _templatePagesByAspect = widget.initialTemplatePagesByAspect!.map((k, v) {
-        return MapEntry(k.toLowerCase(), v);
+        final key = coverSizeForProduct(k)?.productId ?? k.toLowerCase();
+        _templateCanvasSizes[key] = _legacyVariantCanvas(key);
+        return MapEntry(key, v);
       });
     }
     if (widget.initialTemplatePages != null &&
         widget.initialTemplatePages!.isNotEmpty) {
       _baseTemplatePages = _hydrateTemplatePages(widget.initialTemplatePages!);
+      final sourceCover = widget.initialCoverSize ?? defaultCoverSize;
+      _baseTemplateCanvasSize = Size(
+        kCoverReferenceWidth,
+        kCoverReferenceWidth / sourceCover.ratio,
+      );
       _resolvedTemplatePages = _baseTemplatePages;
       (_templatePagesByAspect ??=
-              <String, List<List<LayerModel>>>{})['portrait'] =
+              <String, List<List<LayerModel>>>{})[_aspectKeyFromCover(
+            widget.initialCoverSize ?? defaultCoverSize,
+          )] =
           _baseTemplatePages!;
     }
     if (widget.initialAlbumTitle != null &&
         widget.initialAlbumTitle!.trim().isNotEmpty) {
       _albumTitle = widget.initialAlbumTitle!.trim();
+      _templateTitle = _resolvedTemplatePages == null ? null : _albumTitle;
+      _templatePreviewUrl = widget.initialTemplatePreviewImages?.firstOrNull;
+      _sourceLabel = _templateTitle == null ? '직접 만들기' : '선택한 템플릿';
     }
     _selectedCover = _resolveInitialCover();
+    if (widget.initialCoverSize != null)
+      _preferredCoverType = _selectedCover!.coverType;
     if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
       // cover 제외 내지 페이지 수
       _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
@@ -235,6 +436,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     // 그래야 사용자가 정사각형을 한 번 더 탭하지 않아도 페이지/이미지 크기가 맞게 보인다.
     if (_selectedCover != null) {
       _applyTemplateByCoverIfNeeded(_selectedCover!);
+    }
+    if (widget.initialCreationTemplate != null) {
+      _useTemplate(widget.initialCreationTemplate!);
     }
     ScreenLogger.enter(
       'AlbumCreateFlowScreen',
@@ -252,7 +456,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       child: Scaffold(
         backgroundColor: SnapFitColors.backgroundOf(context),
         appBar: AppBar(
-          toolbarHeight: 52.h,
+          toolbarHeight: 52,
           backgroundColor: SnapFitColors.backgroundOf(context),
           surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
@@ -261,25 +465,25 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             icon: Icon(
               platformBackIcon(),
               color: SnapFitColors.textPrimaryOf(context),
-              size: 18.sp,
+              size: 22,
             ),
             onPressed: _handleBack,
           ),
           title: Text(
             _currentStep == 0
-                ? '새 앨범'
+                ? '앨범 만들기'
                 : _currentStep == 1
-                ? '표지'
+                ? (_showPhotoFill ? '앨범 만들기' : '표지')
                 : '초대',
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w900,
               color: SnapFitColors.textPrimaryOf(context),
-              letterSpacing: -0.25,
+              letterSpacing: 0,
             ),
           ),
           actions: [
-            if (_currentStep == 1)
+            if (_currentStep == 1 && !_showPhotoFill)
               Padding(
                 padding: EdgeInsets.only(right: 8.w),
                 child: Center(
@@ -293,7 +497,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
                     child: Text(
                       '다음',
                       style: TextStyle(
-                        fontSize: 15.sp,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: SnapFitColors.textPrimaryOf(context),
                       ),
@@ -306,60 +510,11 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_currentStep > 0) _buildFlowProgress(),
+            if (_hasSelectedCreationMode && !_isAiCreationMode)
+              _buildCreationProgress(),
             Expanded(child: _buildStepContent()),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFlowProgress() {
-    final totalSteps = 2;
-    final visibleStep = _currentStep.clamp(1, totalSteps);
-    final label = _currentStep == 1 ? '표지에 집중하기' : '초대 설정';
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                '$visibleStep / $totalSteps',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w800,
-                  color: SnapFitColors.textMutedOf(context),
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(999.r),
-                  child: LinearProgressIndicator(
-                    minHeight: 3.h,
-                    value: visibleStep / totalSteps,
-                    backgroundColor: SnapFitColors.overlayLightOf(context),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      SnapFitColors.textPrimaryOf(context),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              height: 1.3,
-              fontWeight: FontWeight.w700,
-              color: SnapFitColors.textSecondaryOf(context),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -408,6 +563,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     final theme = _selectedAiTheme;
     final range = _selectedAiRange;
     if (theme == null || range == null || _isGeneratingAiDraft) return;
+    final requestId = ++_aiDraftRequestId;
 
     setState(() {
       _isGeneratingAiDraft = true;
@@ -421,8 +577,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
 
     final result = await ref
         .read(aiAlbumDraftGenerationServiceProvider)
-        .generate(theme: theme, range: range);
-    if (!mounted) return;
+        .generate(theme: theme, range: range, designBrief: _designBrief);
+    if (!mounted || requestId != _aiDraftRequestId) return;
 
     final draft = result.draft;
     if (result.shouldChargePoints && draft != null) {
@@ -493,14 +649,38 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
 
     if (!mounted) return;
     setState(() {
-      final aiPages = _aiDraftTemplateBuilder.build(acceptedDraft);
+      final proposedCover =
+          _designBrief?.coverSize ??
+          newAlbumCoverSize(acceptedDraft.design?.coverSize ?? _selectedCover);
+      _selectedCover = proposedCover.withCoverType(
+        _designBrief?.coverSize.coverType ??
+            _preferredCoverType ??
+            proposedCover.coverType,
+      );
+      _preferredCoverType = _selectedCover!.coverType;
+      final aiPages =
+          acceptedDraft.design?.buildLayers(
+            targetSize: coverCanvasBaseSize(_selectedCover!),
+          ) ??
+          AlbumCreationTemplate.preparePages(
+            _aiDraftTemplateBuilder.build(acceptedDraft),
+            sourceCanvas: AiAlbumDraftTemplateBuilder.canvasSize,
+            cover: _selectedCover!,
+            clearSamplePhotos: false,
+          );
       _resolvedTemplatePages = aiPages;
       _baseTemplatePages = aiPages;
-      (_templatePagesByAspect ??=
-              <String, List<List<LayerModel>>>{})[_selectedCover == null
-              ? 'square'
-              : _aspectKeyFromCover(_selectedCover!)] =
-          aiPages;
+      final productKey = AlbumCreationTemplate.variantKey(_selectedCover!);
+      _baseTemplateCanvasSize = coverCanvasBaseSize(_selectedCover!);
+      _templatePagesByAspect = {productKey: aiPages};
+      _templateCanvasSizes = {productKey: _baseTemplateCanvasSize!};
+      _templateTitle = acceptedDraft.title;
+      _templatePreviewUrl = null;
+      _sourceLabel = 'AI 템플릿';
+      _usesPhysicalTemplateCanvas = true;
+      _preserveTemplateTypography = acceptedDraft.design?.artDirection != null;
+      _isAiCreationMode = false;
+      _hasFilledPhotos = false;
       _templateMinPageCount = (aiPages.length - 1).clamp(1, _maxPageCount);
       _pendingAiDraft = null;
       _aiDraftFailureTitle = null;
@@ -620,14 +800,22 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       case 0:
         if (!_hasSelectedCreationMode) {
           return AiAlbumStartStep(
+            templates: ref.watch(albumCreationCatalogProvider),
+            onRetry: () {
+              ref.invalidate(templateListProvider);
+              ref.invalidate(albumCreationCatalogProvider);
+            },
+            onTemplateSelected: _selectTemplate,
             aiPointCost: _aiDraftPointCost,
             freeDraftLabel: '사진은 직접 고르고 바꿀 수 있어요',
             isFirstAiDraftFree: true,
             onAiStart: () => setState(() {
+              _resetDesign();
               _isAiCreationMode = true;
               _hasSelectedCreationMode = true;
             }),
             onManualStart: () => setState(() {
+              _resetDesign();
               _selectedAiTheme = null;
               _selectedAiRange = null;
               _pendingAiDraft = null;
@@ -642,10 +830,18 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             }),
           );
         }
-        if (_isAiCreationMode && _selectedAiTheme == null) {
-          return AiAlbumThemeStep(
-            onThemeSelected: (theme) => setState(() {
-              _selectedAiTheme = theme;
+        if (_isAiCreationMode &&
+            (_selectedAiTheme == null ||
+                (_designBrief != null && _selectedAiRange == null))) {
+          return AiTemplateBriefStep(
+            initialBrief: _designBrief,
+            initialCoverSize: _selectedCover,
+            onContinue: (brief) => setState(() {
+              _designBrief = brief;
+              _selectedCover = brief.coverSize;
+              _preferredCoverType = brief.coverSize.coverType;
+              _selectedAiTheme = AlbumTheme.custom;
+              _selectedAiRange = AiPhotoRange.manualSelection;
             }),
             onBack: () => setState(() {
               _selectedAiTheme = null;
@@ -706,13 +902,33 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             selectedAiRange != null &&
             aiDraftFailureMessage != null) {
           return AiAlbumDraftFailureStep(
-            usesServerDraftProvider: widget.usesServerDraftProvider,
-            usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
+            usesServerDraftProvider:
+                _designBrief == null && widget.usesServerDraftProvider,
+            usesAdvancedServerAnalysis:
+                _designBrief == null && widget.usesAdvancedServerAnalysis,
             title: aiDraftFailureTitle ?? 'AI 템플릿을 만들지 못했어요',
             message: aiDraftFailureMessage,
-            primaryActionLabel: aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
-            onRetryRange: () =>
-                _handleAiDraftPrimaryRecovery(aiDraftPrimaryRecoveryAction),
+            primaryActionLabel:
+                _designBrief != null &&
+                    aiDraftPrimaryRecoveryAction !=
+                        AiAlbumDraftRecoveryAction.reviewPointCost
+                ? '디자인 요청 다시 보기'
+                : aiDraftPrimaryCtaLabel ?? '사진 범위 다시 고르기',
+            isTemplateDesign: _designBrief != null,
+            onRetryRange: () {
+              if (_designBrief != null &&
+                  aiDraftPrimaryRecoveryAction !=
+                      AiAlbumDraftRecoveryAction.reviewPointCost) {
+                setState(() {
+                  _selectedAiTheme = null;
+                  _selectedAiRange = null;
+                  _hasConfirmedAiPointCost = false;
+                  _aiDraftFailureMessage = null;
+                });
+              } else {
+                _handleAiDraftPrimaryRecovery(aiDraftPrimaryRecoveryAction);
+              }
+            },
             onManualStart: () => setState(() {
               _selectedAiTheme = null;
               _selectedAiRange = null;
@@ -741,6 +957,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               .watch(myPointBalanceProvider)
               .maybeWhen(data: (value) => value, orElse: () => 0);
           return AiAlbumPointConfirmationStep(
+            designBrief: _designBrief,
             theme: selectedAiTheme,
             range: selectedAiRange,
             pointCost: _aiDraftPointCost,
@@ -750,6 +967,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             usesAdvancedServerAnalysis: widget.usesAdvancedServerAnalysis,
             onConfirm: _generateAiDraftFromSelection,
             onBack: () => setState(() {
+              if (_designBrief != null) _selectedAiTheme = null;
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -767,8 +985,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             pendingDraft != null) {
           return AiAlbumRecommendationReviewStep(
             draft: pendingDraft,
+            targetCover: _designBrief?.coverSize,
             onAcceptDraft: _acceptAiDraft,
             onBack: () => setState(() {
+              if (_designBrief != null) _selectedAiTheme = null;
               _selectedAiRange = null;
               _hasConfirmedAiPointCost = false;
               _isGeneratingAiDraft = false;
@@ -778,22 +998,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         }
         return AlbumCreateStep1(
           albumTitle: _albumTitle,
-          templateTitle: widget.initialAlbumTitle,
-          templatePreviewImageUrl:
-              widget.initialTemplatePreviewImages != null &&
-                  widget.initialTemplatePreviewImages!.isNotEmpty
-              ? widget.initialTemplatePreviewImages!.first
-              : null,
+          templateTitle: _templateTitle,
+          templatePreviewImageUrl: _templatePreviewUrl,
+          sourceLabel: _sourceLabel,
+          coverLayers: _resolvedTemplatePages?.firstOrNull,
+          availableCovers: coverSizes,
+          onChangeDesign: _changeDesign,
           selectedCover: _selectedCover,
           selectedPageCount: _selectedPageCount,
           minPageCount: _templateMinPageCount,
           // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
           // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
           onTitleChanged: (title) => _albumTitle = title,
-          onCoverSelected: (cover) => setState(() {
-            _selectedCover = cover;
-            _applyTemplateByCoverIfNeeded(cover);
-          }),
+          onCoverSelected: _selectCover,
           onPageCountChanged: (count) => setState(
             () => _selectedPageCount = count.clamp(
               _templateMinPageCount,
@@ -804,15 +1021,39 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             final title = _albumTitle.trim();
             if (title.isNotEmpty && _selectedCover != null) {
               _albumTitle = title;
-              setState(() => _currentStep = 1);
+              setState(() {
+                _showPhotoFill = _resolvedTemplatePages != null;
+                _currentStep = 1;
+              });
               return;
             }
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('앨범 제목과 커버 비율을 확인해주세요.')),
+              const SnackBar(content: Text('앨범 제목과 책 크기를 확인해주세요.')),
             );
           },
         );
       case 1:
+        if (_showPhotoFill &&
+            _resolvedTemplatePages != null &&
+            _selectedCover != null) {
+          return TemplatePhotoFillStep(
+            pages: _resolvedTemplatePages!,
+            preserveTypography: _preserveTemplateTypography,
+            cover: _selectedCover!,
+            onChanged: (pages) => setState(() {
+              _resolvedTemplatePages = pages;
+              final productKey = AlbumCreationTemplate.variantKey(
+                _selectedCover!,
+              );
+              _templatePagesByAspect?[productKey] = pages;
+              _templateCanvasSizes[productKey] = coverCanvasBaseSize(
+                _selectedCover!,
+              );
+              _hasFilledPhotos = true;
+            }),
+            onContinue: () => setState(() => _showPhotoFill = false),
+          );
+        }
         // Step 2: 앨범 생성 페이지 (커버 편집 화면)
         if (_selectedCover == null) {
           return const Center(child: CircularProgressIndicator());
@@ -820,6 +1061,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         return AddCoverScreen(
           isFromCreateFlow: true,
           initialCoverSize: _selectedCover,
+          initialTemplateCanvasSize: _usesPhysicalTemplateCanvas
+              ? coverCanvasBaseSize(_selectedCover!)
+              : null,
           albumTitle: _albumTitle, // 앨범 제목 전달
           targetPages: _selectedPageCount, // 목표 페이지 수 전달
           initialTemplateCoverLayers:
@@ -905,11 +1149,23 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
 
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
+      // Keep the cover just edited; only the inner pages come from the template.
+      final cover = _editedCoverLayers();
+      final pages = <List<LayerModel>>[
+        cover,
+        ..._resolvedTemplatePages!.skip(1),
+      ];
+      while (pages.length <= _selectedPageCount) {
+        pages.add(<LayerModel>[]);
+      }
       vm.beginCreatedTemplateAlbumForEdit(
         albumId: dummyAlbum.id,
         albumTitle: _albumTitle,
-        pages: _resolvedTemplatePages!,
+        pages: pages,
         initialCover: _selectedCover,
+        templateCanvasSize: _usesPhysicalTemplateCanvas
+            ? coverCanvasBaseSize(_selectedCover!)
+            : null,
       );
     } else {
       vm.beginCreatedAlbumForEdit(
@@ -927,17 +1183,85 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     );
   }
 
+  List<LayerModel> _editedCoverLayers() {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (vm.pages.isEmpty) return _resolvedTemplatePages!.first;
+    final page = vm.pages.first;
+    if (!_usesPhysicalTemplateCanvas) return [...page.layers];
+    final source =
+        ref.read(albumEditorViewModelProvider).value?.coverCanvasSize ??
+        Size(
+          kCoverReferenceWidth,
+          kCoverReferenceWidth / _selectedCover!.ratio,
+        );
+    final layers = <LayerModel>[
+      if (page.backgroundColor != null)
+        LayerModel(
+          id: 'creation-edited-background',
+          type: LayerType.decoration,
+          position: Offset.zero,
+          width: source.width,
+          height: source.height,
+          imageBackground: 'free',
+          decorationFillColor:
+              '#${page.backgroundColor!.toRadixString(16).padLeft(8, '0')}',
+          zIndex: -100,
+        ),
+      ...page.layers,
+    ];
+    return AlbumCreationTemplate.preparePages(
+      [layers],
+      sourceCanvas: source,
+      cover: _selectedCover!,
+      clearSamplePhotos: false,
+    ).first;
+  }
+
   /// 뒤로가기 처리
   /// - Step 0: 플로우 종료 (Navigator.pop)
   /// - Step 1,2,3: 이전 스텝으로 이동
   /// return true 이면 이벤트를 소모했음을 의미 (WillPopScope에서 pop 방지)
   bool _handleBack() {
     if (_currentStep == 0 &&
+        !_hasSelectedCreationMode &&
+        _returnToSetupFromHub) {
+      setState(() {
+        _returnToSetupFromHub = false;
+        _hasSelectedCreationMode = true;
+      });
+      return true;
+    }
+    if (_currentStep == 0 &&
+        _hasSelectedCreationMode &&
+        _hasFilledPhotos &&
+        !_isAiCreationMode) {
+      _changeDesign();
+      return true;
+    }
+    if (_currentStep == 1 &&
+        !_showPhotoFill &&
+        _resolvedTemplatePages != null) {
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      setState(() {
+        if (vm.pages.isNotEmpty) {
+          _resolvedTemplatePages = [
+            _editedCoverLayers(),
+            ..._resolvedTemplatePages!.skip(1),
+          ];
+        }
+        _showPhotoFill = true;
+        _onCompletePressed = null;
+      });
+      return true;
+    }
+    if (_currentStep == 0 &&
         _hasSelectedCreationMode &&
         widget.initialTemplatePages == null &&
         widget.initialTemplatePagesByAspect == null &&
         widget.initialAlbumTitle == null) {
       setState(() {
+        _aiDraftRequestId += 1;
+        _isGeneratingAiDraft = false;
         _selectedAiTheme = null;
         _selectedAiRange = null;
         _pendingAiDraft = null;

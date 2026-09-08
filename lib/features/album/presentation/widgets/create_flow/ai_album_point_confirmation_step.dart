@@ -7,6 +7,7 @@ import '../../../ai_album/domain/ai_album_models.dart';
 class AiAlbumPointConfirmationStep extends StatelessWidget {
   const AiAlbumPointConfirmationStep({
     super.key,
+    this.designBrief,
     required this.theme,
     required this.range,
     required this.pointCost,
@@ -19,6 +20,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
   });
 
   final AlbumTheme theme;
+  final AiTemplateBrief? designBrief;
   final AiPhotoRange range;
   final int pointCost;
   final int balance;
@@ -30,6 +32,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (designBrief != null) return _buildTemplateConfirmation(context);
     final background = SnapFitColors.isDark(context)
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
@@ -80,8 +83,17 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                     SizedBox(height: 18.h),
                     _PaperCard(
                       children: [
-                        _InfoRow(label: '주제', value: _themeLabel(theme)),
-                        _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
+                        if (designBrief != null) ...[
+                          _InfoRow(label: '디자인 요청', value: designBrief!.prompt),
+                          _InfoRow(
+                            label: '구성',
+                            value: '표지 + 내지 ${designBrief!.pageCount}쪽',
+                          ),
+                          const _InfoRow(label: '사진', value: '디자인 완성 후 직접 추가'),
+                        ] else ...[
+                          _InfoRow(label: '템플릿 무드', value: _themeLabel(theme)),
+                          _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
+                        ],
                         _InfoRow(
                           label: '사용 포인트',
                           value: isFirstAiDraftFree
@@ -98,7 +110,17 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
                         const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
                       ],
                     ),
-                    if (usesServerDraftProvider) ...[
+                    if (designBrief != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: SnapFitColors.textSecondaryOf(context),
+                        ),
+                      ),
+                    ] else if (usesServerDraftProvider) ...[
                       SizedBox(height: 12.h),
                       _ServerAnalysisConsentCard(
                         usesAdvancedServerAnalysis: usesAdvancedServerAnalysis,
@@ -151,6 +173,106 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
       if (left > 1 && left % 3 == 1) out.write(',');
     }
     return out.toString();
+  }
+
+  Widget _buildTemplateConfirmation(BuildContext context) {
+    final brief = designBrief!;
+    final foreground = SnapFitColors.textPrimaryOf(context);
+    return ColoredBox(
+      color: SnapFitColors.isDark(context)
+          ? const Color(0xFF111111)
+          : const Color(0xFFF5F6F4),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: onBack,
+                    tooltip: '요청 수정',
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '이런 앨범을 만들어요',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    brief.prompt,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  Text(
+                    '${brief.coverSize.displayName} · ${brief.coverSize.coverType.label} · 표지 + 내지 ${brief.pageCount}쪽',
+                    style: TextStyle(fontSize: 14, color: foreground),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '디자인 적용 시 최대 ${_format(pointCost)}P · 보유 ${_format(balance)}P',
+                    style: TextStyle(fontSize: 14, color: foreground),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '사용 가능한 무료 혜택은 적용할 때 반영돼요.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: SnapFitColors.textSecondaryOf(context),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton(
+                      onPressed: onConfirm,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF203D35),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        '템플릿 만들기',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   String _themeLabel(AlbumTheme theme) => switch (theme) {
@@ -209,8 +331,8 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
           SizedBox(height: 7.h),
           Text(
             usesAdvancedServerAnalysis
-                ? '선택한 사진의 작은 미리보기 이미지를 서버에서 살펴보고 앨범 흐름에 맞는 템플릿을 잡아요.'
-                : '선택한 사진의 날짜·크기 같은 정보로 서버에서 템플릿 슬롯을 잡아요.',
+                ? '선택한 사진의 작은 미리보기 이미지를 서버에서 참고해 앨범 흐름과 슬롯 구조를 잡아요.'
+                : '선택한 사진의 날짜·크기 같은 정보로 서버에서 템플릿 슬롯과 흐름을 잡아요.',
             style: TextStyle(
               color: SnapFitColors.textSecondaryOf(context),
               fontSize: 12.5.sp,
@@ -220,7 +342,7 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            '템플릿은 바로 확정되지 않아요. 사진과 구성은 편집 전에 직접 확인해요.',
+            '사진은 자동으로 확정되지 않아요. 템플릿을 만든 뒤 편집 화면에서 직접 넣고 바꿔요.',
             style: TextStyle(
               color: const Color(0xFF4C6A55),
               fontSize: 12.5.sp,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../album/data/bundled_creation_templates.dart';
+import '../../../album/presentation/widgets/create_flow/creation_catalog_cover.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/templates/template_catalog_categories.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../core/utils/image_url_policy.dart';
@@ -11,8 +14,13 @@ import '../../domain/entities/premium_template.dart';
 import '../widgets/premium_template_list.dart';
 import '../widgets/template_preview_frame.dart';
 import 'template_detail_screen.dart';
+import '../../../point_shop/domain/point_shop_template_key.dart';
+import '../../../point_shop/presentation/point_shop_access.dart';
+import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 String _storeRecommendedPhotoRange(PremiumTemplate template) {
+  final count = publishedTemplatePhotoCount(template);
+  if (count != null) return '$count장';
   final pages = template.pageCount <= 0 ? 24 : template.pageCount;
   final minPhotos = (pages * 1.6).round().clamp(18, 120);
   final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
@@ -41,6 +49,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = '전체';
+  bool _favoritesOnly = false;
 
   @override
   void initState() {
@@ -56,7 +65,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
     final templatesAsync = ref.watch(templateListProvider);
 
     return Scaffold(
@@ -72,7 +84,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             if (!categories.contains(_selectedCategory)) {
               _selectedCategory = '전체';
             }
-            final filteredTemplates = _filterTemplates(templates);
+            final filteredTemplates = favorites.arrange(
+              _filterTemplates(templates),
+              (t) => CatalogFavoriteKeys.template(t.id),
+              onlyFavorites: _favoritesOnly,
+            );
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(templateListProvider);
@@ -92,14 +108,31 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                               ? categories.length - 1
                               : 0,
                         ),
-                        const SizedBox(height: 22),
-                        const _StoreSectionHeader(
-                          title: '이번 주 추천 무드',
-                          subtitle: '완성된 포토북이 먼저 떠오르는 템플릿',
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: CatalogFavoriteFilter(
+                              selected: _favoritesOnly,
+                              onChanged: (value) => setState(() {
+                                _favoritesOnly = value;
+                                _selectedCategory = '전체';
+                                _searchController.clear();
+                              }),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        const PremiumTemplateList(maxItems: 3),
-                        const SizedBox(height: 26),
+                        if (!_favoritesOnly) ...[
+                          const SizedBox(height: 22),
+                          const _StoreSectionHeader(
+                            title: '스냅핏 컬렉션',
+                            subtitle: '표지와 내지 24쪽',
+                          ),
+                          const SizedBox(height: 12),
+                          const PremiumTemplateList(maxItems: 3),
+                          const SizedBox(height: 26),
+                        ],
+                        if (_favoritesOnly) const SizedBox(height: 18),
                         _StoreDiscoveryControls(
                           categories: categories,
                           selectedCategory: _selectedCategory,
@@ -110,6 +143,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         ),
                         const SizedBox(height: 18),
                         _AllTemplatesHeader(
+                          favoritesOnly: _favoritesOnly,
                           visibleCount: filteredTemplates.length,
                           totalCount: templates.length,
                           selectedCategory: _selectedCategory,
@@ -121,23 +155,40 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                     sliver: filteredTemplates.isEmpty
-                        ? const SliverToBoxAdapter(child: _EmptyState())
+                        ? SliverToBoxAdapter(
+                            child: _favoritesOnly
+                                ? CatalogFavoritesEmpty(
+                                    onShowAll: () => setState(() {
+                                      _favoritesOnly = false;
+                                      _selectedCategory = '전체';
+                                      _searchController.clear();
+                                    }),
+                                  )
+                                : const _EmptyState(),
+                          )
                         : SliverGrid(
                             gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 280,
+                                  mainAxisExtent: 320,
                                   mainAxisSpacing: 16,
                                   crossAxisSpacing: 14,
-                                  childAspectRatio: 0.58,
                                 ),
                             delegate: SliverChildBuilderDelegate((
                               context,
                               index,
                             ) {
                               final template = filteredTemplates[index];
-                              return _TemplateGridCard(
-                                template: template,
-                                onTap: () => _openDetail(template),
+                              return CatalogFavoriteTile(
+                                key: ValueKey('store-template-${template.id}'),
+                                itemKey: CatalogFavoriteKeys.template(
+                                  template.id,
+                                ),
+                                label: template.title,
+                                child: _TemplateGridCard(
+                                  template: template,
+                                  onTap: () => _openDetail(template),
+                                ),
                               );
                             }, childCount: filteredTemplates.length),
                           ),
@@ -152,13 +203,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   List<String> _templateCategories(List<PremiumTemplate> templates) {
-    final values =
-        templates
-            .map((template) => (template.category ?? '').trim())
-            .where((category) => category.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
+    final values = orderedTemplateTopics(
+      templates.map((template) => (template.category ?? '').trim()),
+    );
     return ['전체', ...values];
   }
 
@@ -195,195 +242,35 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 class _StoreHero extends StatelessWidget {
   final int totalCount;
   final int categoryCount;
-
   const _StoreHero({required this.totalCount, required this.categoryCount});
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return SnapFitFadeIn(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? const [
-                    Color(0xFF101827),
-                    Color(0xFF221527),
-                    Color(0xFF101114),
-                  ]
-                : const [
-                    Color(0xFFFFF4E4),
-                    Color(0xFFEAFBFD),
-                    Color(0xFFF7ECFF),
-                  ],
-          ),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.05),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.34 : 0.10),
-              blurRadius: 34,
-              offset: const Offset(0, 18),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Text(
+            '완성 템플릿',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
+              color: SnapFitColors.textPrimaryOf(context),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: Stack(
-            children: [
-              const Positioned(
-                right: -34,
-                top: -32,
-                child: _StoreHeroOrb(size: 142, color: Color(0x553BDDF2)),
-              ),
-              const Positioned(
-                left: -28,
-                bottom: -36,
-                child: _StoreHeroOrb(size: 126, color: Color(0x44FFB86B)),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(
-                              alpha: isDark ? 0.10 : 0.70,
-                            ),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.18),
-                            ),
-                          ),
-                          child: Text(
-                            'TEMPLATE STORE',
-                            style: TextStyle(
-                              color: SnapFitColors.accent,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: SnapFitColors.primaryGradient,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: SnapFitColors.accent.withValues(
-                                  alpha: 0.30,
-                                ),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.auto_awesome_rounded,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      '오늘의 사진을\n작품처럼',
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 29,
-                        fontWeight: FontWeight.w900,
-                        height: 1.08,
-                        letterSpacing: -0.8,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '가족, 여행, 아기, 커플의 순간을 바로 완성할 수 있는 포토북 템플릿을 골라보세요.',
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.48,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const _StoreHeroCta(label: '무드별 둘러보기'),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 7,
-                      runSpacing: 7,
-                      children: [
-                        _StoreHeroStat(label: '템플릿 $totalCount개'),
-                        _StoreHeroStat(label: '무드 $categoryCount종'),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      height: 96,
-                      child: Stack(
-                        children: const [
-                          Positioned(
-                            left: 0,
-                            top: 10,
-                            child: _StoreHeroMiniCard(
-                              width: 78,
-                              label: '가족',
-                              colors: [Color(0xFFFFE2C5), Color(0xFFFFF7ED)],
-                              angle: -0.12,
-                            ),
-                          ),
-                          Positioned(
-                            left: 64,
-                            top: 0,
-                            child: _StoreHeroMiniCard(
-                              width: 88,
-                              label: '여행',
-                              colors: [Color(0xFFE0F7FF), Color(0xFFFFFFFF)],
-                              angle: 0.06,
-                            ),
-                          ),
-                          Positioned(
-                            left: 138,
-                            top: 16,
-                            child: _StoreHeroMiniCard(
-                              width: 76,
-                              label: '웨딩',
-                              colors: [Color(0xFFF4E7FF), Color(0xFFFFF8FB)],
-                              angle: 0.13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
-      ),
-    );
-  }
+        Text(
+          '$totalCount종',
+          style: TextStyle(
+            fontSize: 13,
+            color: SnapFitColors.textMutedOf(context),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _StoreSectionHeader extends StatelessWidget {
@@ -404,7 +291,7 @@ class _StoreSectionHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900,
-              letterSpacing: -0.2,
+              letterSpacing: 0,
               color: SnapFitColors.textPrimaryOf(context),
             ),
           ),
@@ -419,194 +306,6 @@ class _StoreSectionHeader extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StoreHeroCta extends StatelessWidget {
-  const _StoreHeroCta({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: SnapFitColors.textPrimaryOf(context),
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: SnapFitColors.isDark(context) ? 0.28 : 0.12,
-            ),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.auto_stories_rounded,
-            size: 15,
-            color: SnapFitColors.backgroundOf(context),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: SnapFitColors.backgroundOf(context),
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StoreHeroStat extends StatelessWidget {
-  const _StoreHeroStat({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.58),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-          color: SnapFitColors.textSecondaryOf(context),
-        ),
-      ),
-    );
-  }
-}
-
-class _StoreHeroMiniCard extends StatelessWidget {
-  const _StoreHeroMiniCard({
-    required this.width,
-    required this.colors,
-    required this.angle,
-    required this.label,
-  });
-
-  final double width;
-  final List<Color> colors;
-  final double angle;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: angle,
-      child: Container(
-        width: width,
-        height: 86,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.86),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Container(
-          alignment: Alignment.bottomLeft,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(13),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 2,
-                left: 2,
-                right: 2,
-                child: Container(
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.40),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 2,
-                bottom: 22,
-                child: Container(
-                  width: 22,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.34),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 2,
-                bottom: 22,
-                child: Container(
-                  width: 28,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.28),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: SnapFitColors.deepCharcoal.withValues(alpha: 0.62),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StoreHeroOrb extends StatelessWidget {
-  const _StoreHeroOrb({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -635,7 +334,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '무드별 템플릿 찾기',
+                '주제별 템플릿',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -644,7 +343,7 @@ class _StoreDiscoveryControls extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '사진의 장면과 어울리는 포토북 스타일을 골라보세요.',
+                '${categories.length - 1}가지 주제',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -656,11 +355,12 @@ class _StoreDiscoveryControls extends StatelessWidget {
                 controller: searchController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: '가족, 여행, 아기, 커플 템플릿 검색',
+                  hintText: '주제, 분위기, 이름 검색',
                   prefixIcon: const Icon(Icons.search_rounded, size: 20),
                   suffixIcon: searchController.text.isEmpty
                       ? null
                       : IconButton(
+                          tooltip: '검색 지우기',
                           onPressed: searchController.clear,
                           icon: const Icon(Icons.close_rounded),
                         ),
@@ -697,21 +397,22 @@ class _StoreDiscoveryControls extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        SizedBox(
-          height: 42,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              return _StoreCategoryPill(
-                label: category,
-                selected: category == selectedCategory,
-                onTap: () => onCategoryChanged(category),
-              );
-            },
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemCount: categories.length,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Wrap(
+            key: const ValueKey('store-topic-filters'),
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final category in categories)
+                IntrinsicWidth(
+                  child: _StoreCategoryPill(
+                    label: category,
+                    selected: category == selectedCategory,
+                    onTap: () => onCategoryChanged(category),
+                  ),
+                ),
+            ],
           ),
         ),
       ],
@@ -732,48 +433,51 @@ class _StoreCategoryPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SnapFitPressable(
-      onTap: onTap,
-      pressedScale: 0.97,
-      borderRadius: BorderRadius.circular(999),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        height: 40,
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected
-              ? SnapFitColors.accent.withValues(
-                  alpha: SnapFitColors.isDark(context) ? 0.24 : 0.14,
-                )
-              : SnapFitColors.surfaceOf(context).withValues(alpha: 0.78),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
+    return Semantics(
+      selected: selected,
+      child: SnapFitPressable(
+        onTap: onTap,
+        pressedScale: 0.97,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
             color: selected
-                ? SnapFitColors.accent.withValues(alpha: 0.42)
-                : SnapFitColors.overlayLightOf(context),
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: SnapFitColors.isDark(context) ? 0.22 : 0.08,
+                ? SnapFitColors.accent.withValues(
+                    alpha: SnapFitColors.isDark(context) ? 0.24 : 0.14,
+                  )
+                : SnapFitColors.surfaceOf(context).withValues(alpha: 0.78),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? SnapFitColors.accent.withValues(alpha: 0.42)
+                  : SnapFitColors.overlayLightOf(context),
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: SnapFitColors.isDark(context) ? 0.22 : 0.08,
+                      ),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
                     ),
-                    blurRadius: 12,
-                    offset: const Offset(0, 5),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            color: selected
-                ? SnapFitColors.textPrimaryOf(context)
-                : SnapFitColors.textSecondaryOf(context),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              color: selected
+                  ? SnapFitColors.textPrimaryOf(context)
+                  : SnapFitColors.textSecondaryOf(context),
+            ),
           ),
         ),
       ),
@@ -785,18 +489,26 @@ class _AllTemplatesHeader extends StatelessWidget {
   final int visibleCount;
   final int totalCount;
   final String selectedCategory;
+  final bool favoritesOnly;
 
   const _AllTemplatesHeader({
     required this.visibleCount,
     required this.totalCount,
     required this.selectedCategory,
+    required this.favoritesOnly,
   });
 
   @override
   Widget build(BuildContext context) {
     final isAll = selectedCategory == '전체';
-    final title = isAll ? '전체 템플릿' : '$selectedCategory 템플릿';
-    final subtitle = isAll
+    final title = favoritesOnly
+        ? '즐겨찾는 템플릿'
+        : isAll
+        ? '전체 템플릿'
+        : '$selectedCategory 템플릿';
+    final subtitle = favoritesOnly
+        ? '저장한 컬렉션 $visibleCount개'
+        : isAll
         ? '분위기별로 고른 $visibleCount개의 포토북 스타일'
         : '$selectedCategory 분위기에 어울리는 $visibleCount개';
     return Padding(
@@ -845,60 +557,105 @@ class _TemplateGridCard extends StatelessWidget {
     const labelColor = SnapFitColors.accent;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SnapFitPressable(
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
+      label:
+          '${template.title} 룩북 보기 '
+          '${template.category ?? '포토북'} · 내지 ${template.pageCount}쪽',
       onTap: onTap,
-      pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark
-              ? SnapFitColors.surfaceOf(context)
-              : const Color(0xFFFFFCF7),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(11, 13, 11, 6),
-                      child: _StoreTemplateSampleStack(template: template),
-                    ),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.00),
-                            Colors.black.withValues(alpha: 0.05),
-                            Colors.black.withValues(alpha: 0.30),
-                          ],
-                          stops: const [0, 0.56, 1],
-                        ),
+      child: SnapFitPressable(
+        onTap: onTap,
+        pressedScale: 0.98,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? SnapFitColors.surfaceOf(context)
+                : const Color(0xFFFFFCF7),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: SnapFitColors.overlayLightOf(context)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(11, 13, 11, 6),
+                        child: _StoreTemplateSampleStack(template: template),
                       ),
-                    ),
-                    if (label != null)
+                      if (!isPublishedCreationTemplate(template))
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.00),
+                                Colors.black.withValues(alpha: 0.05),
+                                Colors.black.withValues(alpha: 0.30),
+                              ],
+                              stops: const [0, 0.56, 1],
+                            ),
+                          ),
+                        ),
                       Positioned(
                         top: 10,
                         left: 10,
+                        child: PointShopProductBadge(
+                          productKey: pointShopTemplateKey(template),
+                        ),
+                      ),
+                      if (label != null)
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(999),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.10),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: labelColor,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        right: 10,
+                        bottom: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 9,
-                            vertical: 5,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.92),
@@ -911,104 +668,75 @@ class _TemplateGridCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: Text(
-                            label,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: labelColor,
-                              letterSpacing: 0.3,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '룩북 보기',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: SnapFitColors.textPrimaryOf(context),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 14,
+                                color: SnapFitColors.textPrimaryOf(context),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    Positioned(
-                      right: 10,
-                      bottom: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(999),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.10),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '룩북 보기',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                color: SnapFitColors.textPrimaryOf(context),
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              size: 14,
-                              color: SnapFitColors.textPrimaryOf(context),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 9, 12, 11),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      template.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
-                        color: SnapFitColors.textPrimaryOf(context),
-                      ),
-                    ),
-                    if ((template.subTitle ?? '').trim().isNotEmpty) ...[
-                      const SizedBox(height: 3),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 9, 12, 11),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        template.subTitle!.trim(),
+                        template.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: SnapFitColors.textSecondaryOf(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
+                      ),
+                      if ((template.subTitle ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          template.subTitle!.trim(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: SnapFitColors.textSecondaryOf(context),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      Text(
+                        '${template.category ?? '포토북'} · ${template.pageCount}쪽 · 사진 ${_storeRecommendedPhotoRange(template)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: SnapFitColors.textMutedOf(context),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 4),
-                    Text(
-                      '${template.category ?? '포토북'} · ${template.pageCount}쪽 · 사진 ${_storeRecommendedPhotoRange(template)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: SnapFitColors.textMutedOf(context),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1188,6 +916,9 @@ class _StoreTemplateSampleStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isPublishedCreationTemplate(template)) {
+      return CreationCatalogCover(template: template);
+    }
     final urls = <String>[
       _storeCoverPreviewUrl(template),
       ...template.previewImages.map((e) => e.trim()),

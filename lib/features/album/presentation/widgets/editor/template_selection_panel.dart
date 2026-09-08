@@ -9,6 +9,7 @@ import '../../../../../core/constants/cover_size.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../../../core/constants/page_templates.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 /// 페이지 템플릿 선택 바텀시트
 /// - 여러 레이아웃 템플릿, 슬롯 간 여백 있음
@@ -25,9 +26,13 @@ class TemplateSelectionPanel extends ConsumerStatefulWidget {
 class _TemplateSelectionPanelState
     extends ConsumerState<TemplateSelectionPanel> {
   String? _selectedId;
+  bool _favoritesOnly = false;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final aspect = vm.selectedCover.ratio > 0
         ? vm.selectedCover.ratio
@@ -36,10 +41,14 @@ class _TemplateSelectionPanelState
     final double baseW = kCoverReferenceWidth;
     final Size canvasSize = Size(baseW, baseW / aspect);
 
-    final templates = pageTemplates;
+    final templates = favorites.arrange(
+      pageTemplates,
+      (t) => CatalogFavoriteKeys.layout(t.id),
+      onlyFavorites: _favoritesOnly,
+    );
 
     final maxSheetHeight = (MediaQuery.sizeOf(context).height * 0.78).clamp(
-      420.0,
+      0.0,
       620.0,
     );
 
@@ -96,34 +105,53 @@ class _TemplateSelectionPanelState
               ),
             ),
             SizedBox(height: 14.h),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: CatalogFavoriteFilter(
+                selected: _favoritesOnly,
+                onChanged: (value) => setState(() => _favoritesOnly = value),
+              ),
+            ),
             Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12.w,
-                    mainAxisSpacing: 12.h,
-                    childAspectRatio: 1 / 1.18,
-                  ),
-                  itemCount: templates.length,
-                  itemBuilder: (context, index) {
-                    final template = templates[index];
-                    final isSelected = _selectedId == template.id;
-                    return RepaintBoundary(
-                      child: _TemplateCard(
-                        template: template,
-                        isSelected: isSelected,
-                        pageRatio: aspect,
-                        onTap: () {
-                          setState(() => _selectedId = template.id);
-                          vm.applyTemplateToCurrentPage(template, canvasSize);
-                          Navigator.of(context).pop();
+                child: templates.isEmpty
+                    ? CatalogFavoritesEmpty(
+                        onShowAll: () => setState(() => _favoritesOnly = false),
+                      )
+                    : GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12.w,
+                          mainAxisSpacing: 12.h,
+                          childAspectRatio: 1 / 1.18,
+                        ),
+                        itemCount: templates.length,
+                        itemBuilder: (context, index) {
+                          final template = templates[index];
+                          final isSelected = _selectedId == template.id;
+                          return CatalogFavoriteTile(
+                            key: ValueKey(template.id),
+                            itemKey: CatalogFavoriteKeys.layout(template.id),
+                            label: template.name,
+                            child: RepaintBoundary(
+                              child: _TemplateCard(
+                                template: template,
+                                isSelected: isSelected,
+                                pageRatio: aspect,
+                                onTap: () {
+                                  setState(() => _selectedId = template.id);
+                                  vm.applyTemplateToCurrentPage(
+                                    template,
+                                    canvasSize,
+                                  );
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ),
+                          );
                         },
                       ),
-                    );
-                  },
-                ),
               ),
             ),
             SizedBox(height: 12.h),
@@ -198,7 +226,7 @@ class _TemplateCard extends StatelessWidget {
                     if (isSelected)
                       Positioned(
                         top: 8.h,
-                        right: 8.w,
+                        left: 8.w,
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 7.w,

@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --help|-h)
+      cat <<'HELP'
+Usage: scripts/configure_supabase_production_secrets.sh
+
+Configure SnapFit point IAP, push, AI and operations secrets.
+HELP
+      exit 0
+      ;;
+    *) echo "Unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
 PROJECT_REF="${SUPABASE_PROJECT_REF:-rrbhxdtriummqpztpjrk}"
+if [[ "$PROJECT_REF" != "rrbhxdtriummqpztpjrk" ]]; then
+  echo "Refusing to configure a different project. This script targets only SnapFit rrbhxdtriummqpztpjrk." >&2
+  exit 1
+fi
 ENV_FILE="$(mktemp)"
 chmod 600 "$ENV_FILE"
 trap 'rm -f "$ENV_FILE"' EXIT
@@ -19,7 +38,7 @@ read_value() {
     read -r -p "$prompt: " value
   else
     read -r -s -p "$prompt: " value
-    echo ""
+    echo "" >&2
   fi
   if [[ -z "$value" ]]; then
     value="$default_value"
@@ -36,8 +55,14 @@ append_if_present() {
 import os
 name = os.environ['NAME']
 value = os.environ['VALUE']
-escaped = value.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"')
-print(f'{name}="{escaped}"')
+# A JSON credential contains escaped PEM newlines. Double-quoted dotenv values
+# decode those escapes again in the Supabase CLI and can corrupt the JSON/key.
+if "'" not in value and '\n' not in value and '\r' not in value:
+    print(f"{name}='{value}'")
+else:
+    # Interactive inputs are one line. Multiline/private key inputs should use
+    # literal \\n as explained above so they can be preserved verbatim.
+    raise SystemExit(f'{name}: use a single-line value without apostrophes; nothing was uploaded')
 PYENV
     echo "queued $name"
   else
@@ -63,7 +88,6 @@ ANTHROPIC_KEY="$(read_value ANTHROPIC_API_KEY)"
 ANTHROPIC_MODEL="$(read_value ANTHROPIC_MODEL plain claude-sonnet-4-5)"
 AI_PROVIDER="$(read_value AI_ALBUM_DRAFT_PROVIDER plain hybrid)"
 AI_TIMEOUT="$(read_value AI_ALBUM_DRAFT_TIMEOUT_MS plain 20000)"
-SUPABASE_SERVICE_ROLE="$(read_value SUPABASE_SERVICE_ROLE_KEY)"
 GOOGLE_PACKAGE="$(read_value GOOGLE_PLAY_PACKAGE_NAME plain)"
 GOOGLE_JSON="$(read_value GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)"
 GOOGLE_EMAIL="$(read_value GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL plain)"
@@ -72,11 +96,9 @@ APP_ISSUER="$(read_value APP_STORE_ISSUER_ID plain)"
 APP_KEY_ID="$(read_value APP_STORE_KEY_ID plain)"
 APP_BUNDLE="$(read_value APP_STORE_BUNDLE_ID plain)"
 APP_PRIVATE_KEY="$(read_value APP_STORE_PRIVATE_KEY)"
-APP_ENV="$(read_value APP_STORE_ENVIRONMENT plain sandbox)"
-POINT_PRODUCTS="$(read_value IAP_POINT_PRODUCT_IDS plain snapfit_points_2500,snapfit_points_8000,snapfit_points_18000)"
+APP_ENV="$(read_value APP_STORE_ENVIRONMENT plain production)"
 ADMIN_KEY="$(read_value SNAPFIT_ADMIN_KEY)"
 JUSO_KEY="$(read_value SNAPFIT_ADDRESS_JUSO_KEY)"
-CHECKOUT_URL="$(read_value SNAPFIT_ORDER_CHECKOUT_BASE_URL plain)"
 
 append_if_present OPENAI_API_KEY "$OPENAI_KEY"
 append_if_present OPENAI_MODEL "$OPENAI_MODEL"
@@ -84,7 +106,6 @@ append_if_present ANTHROPIC_API_KEY "$ANTHROPIC_KEY"
 append_if_present ANTHROPIC_MODEL "$ANTHROPIC_MODEL"
 append_if_present AI_ALBUM_DRAFT_PROVIDER "$AI_PROVIDER"
 append_if_present AI_ALBUM_DRAFT_TIMEOUT_MS "$AI_TIMEOUT"
-append_if_present SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE"
 append_if_present GOOGLE_PLAY_PACKAGE_NAME "$GOOGLE_PACKAGE"
 append_if_present GOOGLE_PLAY_SERVICE_ACCOUNT_JSON "$GOOGLE_JSON"
 append_if_present GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL "$GOOGLE_EMAIL"
@@ -94,10 +115,21 @@ append_if_present APP_STORE_KEY_ID "$APP_KEY_ID"
 append_if_present APP_STORE_BUNDLE_ID "$APP_BUNDLE"
 append_if_present APP_STORE_PRIVATE_KEY "$APP_PRIVATE_KEY"
 append_if_present APP_STORE_ENVIRONMENT "$APP_ENV"
-append_if_present IAP_POINT_PRODUCT_IDS "$POINT_PRODUCTS"
 append_if_present SNAPFIT_ADMIN_KEY "$ADMIN_KEY"
 append_if_present SNAPFIT_ADDRESS_JUSO_KEY "$JUSO_KEY"
-append_if_present SNAPFIT_ORDER_CHECKOUT_BASE_URL "$CHECKOUT_URL"
+
+# Service/worker keys belong only to Supabase; never copy these into Flutter defines.
+# SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY are managed by Supabase; do not prompt for them.
+for setting in \
+  SNAPFIT_IAP_RECONCILE_SECRET \
+  PUSH_DISPATCH_SECRET \
+  FIREBASE_SERVICE_ACCOUNT_JSON; do
+  setting_value="$(read_value "$setting")"
+  append_if_present "$setting" "$setting_value"
+done
+# Push delivery stays disabled until credentials, device registration and schedule are verified.
+setting_value="$(read_value PUSH_DELIVERY_ENABLED plain false)"
+append_if_present PUSH_DELIVERY_ENABLED "$setting_value"
 
 if [[ ! -s "$ENV_FILE" ]]; then
   echo "No values queued. Nothing to set."

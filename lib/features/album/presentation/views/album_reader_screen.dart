@@ -23,7 +23,7 @@ import '../../data/api/album_provider.dart';
 import '../../../billing/data/billing_provider.dart';
 import 'page_editor_screen.dart';
 import 'album_invite_screen.dart';
-import 'print_order_checkout_screen.dart';
+import 'print_order_unavailable_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   final int initialSpreadIndex;
@@ -369,7 +369,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             ),
             SizedBox(width: 8.w),
             Text(
-              '제작 확정',
+              '앨범 완성',
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w800,
@@ -379,7 +379,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           ],
         ),
         content: Text(
-          '제작 확정 후 주문 화면으로 이동할 수 있습니다.\n앨범 수정은 이후에도 계속 가능합니다.\n\n지금 제작을 확정하시겠습니까?',
+          '인화 주문 결제는 준비 중입니다.\n앨범 수정은 이후에도 계속 가능합니다.\n\n완성된 앨범을 확인하시겠습니까?',
           style: TextStyle(
             fontSize: 14.sp,
             color: SnapFitColors.textSecondaryOf(context),
@@ -472,9 +472,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
           }
 
           unawaited(
-            _pushAdaptiveRoute<bool>(
+            _pushAdaptiveRoute<void>(
               MaterialPageRoute(
-                builder: (_) => PrintOrderCheckoutScreen(
+                builder: (_) => PrintOrderUnavailableScreen(
                   albumId: album.id,
                   albumTitle: album.title.trim().isEmpty
                       ? '스냅핏 앨범'
@@ -482,15 +482,7 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
                   pageCount: vm.pages.length,
                 ),
               ),
-            ).then((ordered) {
-              if (ordered == true && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('주문이 접수되었습니다. 주문내역에서 진행 상태를 확인해주세요.'),
-                  ),
-                );
-              }
-            }),
+            ),
           );
         },
       );

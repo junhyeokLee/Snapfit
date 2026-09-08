@@ -5,6 +5,9 @@ Widget _buildFramedImageImpl(
   LayerModel layer,
   Widget image,
 ) {
+  if (StudioMaterial.photoStyles.contains(layer.imageBackground)) {
+    return StudioMaterial(style: layer.imageBackground!, child: image);
+  }
   Widget framed;
   switch (layer.imageBackground) {
     case "circle":

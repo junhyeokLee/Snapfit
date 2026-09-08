@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../point_shop/presentation/point_shop_access.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/design_templates.dart';
+import '../../../../../core/templates/template_catalog_categories.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -12,6 +14,7 @@ import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../cover/cover.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../domain/entities/layer.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
@@ -26,7 +29,9 @@ class DesignTemplatePanel extends ConsumerStatefulWidget {
 
 class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
   String? _selectedId;
+  bool _isApplying = false;
   String _selectedCategory = '전체';
+  bool _favoritesOnly = false;
   final Set<String> _warmedThumbs = <String>{};
 
   Size _effectiveLogicalCanvasSize({
@@ -41,7 +46,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final stateVal = ref.watch(albumEditorViewModelProvider).value;
     final Size canvasSize = _effectiveLogicalCanvasSize(
@@ -58,12 +66,14 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     final hasCatalogData = catalogAsync.hasValue && catalogAsync.value != null;
     // 기존 값이 있더라도 로딩 중에는 리스트를 숨겨 "보였다가 바뀌는" 느낌을 제거
     final isCatalogLoading = catalogAsync.isLoading;
-    final allTemplates = hasCatalogData ? catalogAsync.value! : designTemplates;
+    final allTemplates = hasCatalogData
+        ? catalogAsync.value!
+        : publishedDesignTemplates;
 
-    final categories = <String>{
+    final categories = <String>[
       '전체',
-      ...allTemplates.map((t) => t.category).where((c) => c.trim().isNotEmpty),
-    }.toList();
+      ...orderedTemplateTopics(allTemplates.map((t) => t.category)),
+    ];
 
     int _countByCategory(String category) {
       if (category == '전체') {
@@ -72,7 +82,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
       return allTemplates.where((t) => t.category == category).length;
     }
 
-    final templates =
+    final orderedTemplates =
         allTemplates
             // 커버/페이지 모두 동일 템플릿 목록을 노출한다.
             .where((_) => true)
@@ -98,6 +108,11 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
             return a.name.compareTo(b.name);
           });
 
+    final templates = favorites.arrange(
+      orderedTemplates,
+      (t) => CatalogFavoriteKeys.design(t.id),
+      onlyFavorites: _favoritesOnly,
+    );
     _warmUpPreviewThumbs(templates);
 
     return Container(
@@ -159,6 +174,16 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: CatalogFavoriteFilter(
+                        selected: _favoritesOnly,
+                        onChanged: (value) => setState(() {
+                          _favoritesOnly = value;
+                          _selectedCategory = '전체';
+                        }),
+                      ),
+                    ),
                     for (final c in categories)
                       Padding(
                         padding: EdgeInsets.only(right: 8.w),
@@ -207,6 +232,13 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           ),
                         ),
                       )
+                    : templates.isEmpty
+                    ? CatalogFavoritesEmpty(
+                        onShowAll: () => setState(() {
+                          _favoritesOnly = false;
+                          _selectedCategory = '전체';
+                        }),
+                      )
                     : GridView.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -218,23 +250,41 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                         itemBuilder: (context, index) {
                           final template = templates[index];
                           final isSelected = _selectedId == template.id;
-                          return _buildTemplateCard(
-                            context,
-                            template: template,
-                            isSelected: isSelected,
-                            logicalCanvasSize: canvasSize,
-                            templateSourceSize: templateSourceSize,
-                            ref: ref,
-                            onTap: () {
-                              setState(() => _selectedId = template.id);
-                              vm.applyDesignTemplateToCurrentPage(
-                                template,
-                                canvasSize,
-                              );
-                              if (widget.closeOnApply) {
-                                Navigator.of(context).pop();
-                              }
-                            },
+                          return CatalogFavoriteTile(
+                            key: ValueKey(template.id),
+                            itemKey: CatalogFavoriteKeys.design(template.id),
+                            label: template.name,
+                            child: _buildTemplateCard(
+                              context,
+                              template: template,
+                              isSelected: isSelected,
+                              logicalCanvasSize: canvasSize,
+                              templateSourceSize: templateSourceSize,
+                              ref: ref,
+                              onTap: () async {
+                                if (_isApplying) return;
+                                _isApplying = true;
+                                try {
+                                  if (!await ensurePointShopAccess(
+                                    context,
+                                    ref,
+                                    productKey: 'template:${template.id}',
+                                    title: template.name,
+                                  ))
+                                    return;
+                                  if (!mounted) return;
+                                  setState(() => _selectedId = template.id);
+                                  vm.applyDesignTemplateToCurrentPage(
+                                    template,
+                                    canvasSize,
+                                  );
+                                  if (widget.closeOnApply && context.mounted)
+                                    Navigator.of(context).pop();
+                                } finally {
+                                  _isApplying = false;
+                                }
+                              },
+                            ),
                           );
                         },
                       ),
@@ -407,17 +457,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 ),
               ),
               SizedBox(height: 3.h),
-              Text(
-                template.isFeatured ? '추천 템플릿' : '바로 적용 가능',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10.5.sp,
-                  fontWeight: FontWeight.w700,
-                  color: SnapFitColors.textMutedOf(context),
-                  height: 1,
-                ),
-              ),
+              PointShopProductBadge(productKey: 'template:${template.id}'),
             ],
           ),
         ),

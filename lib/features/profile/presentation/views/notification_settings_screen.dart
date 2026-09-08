@@ -13,8 +13,8 @@ class NotificationSettingsScreen extends StatefulWidget {
       _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState
-    extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
+    with WidgetsBindingObserver {
   bool _loading = true;
 
   bool all = true;
@@ -29,7 +29,19 @@ class _NotificationSettingsScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _load();
   }
 
   Future<void> _load() async {
@@ -53,11 +65,6 @@ class _NotificationSettingsScreenState
       switch (key) {
         case FcmNotificationService.kAll:
           all = value;
-          order = value;
-          invite = value;
-          comment = value;
-          marketing = value;
-          newTemplate = value;
           break;
         case FcmNotificationService.kOrder:
           order = value;
@@ -78,17 +85,25 @@ class _NotificationSettingsScreenState
           nightMute = value;
           break;
       }
-      all = order && invite && comment && marketing && newTemplate;
     });
-    await FcmNotificationService.updateSettings(
-      all: all,
-      order: order,
-      invite: invite,
-      comment: comment,
-      marketing: marketing,
-      newTemplate: newTemplate,
-      nightMute: nightMute,
-    );
+    try {
+      await FcmNotificationService.updateSettings(
+        all: all,
+        order: order,
+        invite: invite,
+        comment: comment,
+        marketing: marketing,
+        newTemplate: newTemplate,
+        nightMute: nightMute,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('설정은 저장했지만 서버 연결이 지연되고 있어요. 연결되면 다시 적용합니다.'),
+        ),
+      );
+    }
   }
 
   Future<void> _requestPermission() async {
@@ -160,13 +175,6 @@ class _NotificationSettingsScreenState
             subtitle: '앨범 초대, 권한 변경, 협업 알림',
             value: invite,
             onChanged: (v) => _toggle(FcmNotificationService.kInvite, v),
-          ),
-          _switchTile(
-            context,
-            title: '댓글/반응 알림',
-            subtitle: '댓글, 좋아요 등 상호작용 알림',
-            value: comment,
-            onChanged: (v) => _toggle(FcmNotificationService.kComment, v),
           ),
           _switchTile(
             context,

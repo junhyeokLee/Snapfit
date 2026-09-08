@@ -19,12 +19,13 @@ import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../album/presentation/views/album_category_screen.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/domain/entities/storage_quota.dart';
-import '../../../billing/domain/entities/subscription_status.dart';
 import '../../data/order_repository.dart';
 import 'notification_settings_screen.dart';
 import 'admin_order_management_screen.dart';
 import 'admin_template_management_screen.dart';
 import 'billing_management_screen.dart';
+import '../widgets/my_point_balance_card.dart';
+import 'admin_point_shop_management_screen.dart';
 import 'order_history_screen.dart';
 import 'support_inquiry_screen.dart';
 import 'terms_policy_screen.dart';
@@ -55,6 +56,17 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
+  Future<void> _openPointCharge() async {
+    await Navigator.push(
+      context,
+      snapFitRoute(page: const BillingManagementScreen()),
+    );
+    if (mounted) {
+      ref.invalidate(myPointBalanceProvider);
+      ref.invalidate(myPointLedgerProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_logged) {
@@ -63,7 +75,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     }
     final authAsync = ref.watch(authViewModelProvider);
     final albumsAsync = ref.watch(homeViewModelProvider);
-    final subscriptionAsync = ref.watch(mySubscriptionProvider);
+    final pointBalanceAsync = ref.watch(myPointBalanceProvider);
     final storageQuotaAsync = ref.watch(myStorageQuotaProvider);
     final orderSummaryAsync = ref.watch(myOrderSummaryProvider);
     final userInfo = authAsync.asData?.value;
@@ -71,6 +83,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final textColor = SnapFitColors.textPrimaryOf(context);
     final subColor = SnapFitColors.textSecondaryOf(context);
     final hasAdminOrderAccess = Env.orderAdminKey.trim().isNotEmpty;
+    final hasPointShopAdminAccess = ref.watch(pointShopAdminAccessProvider);
     final currentUserId = userInfo?.id.toString() ?? '';
     final albums = albumsAsync.asData?.value ?? const [];
     final sharedAlbums = albums.where((a) {
@@ -102,8 +115,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     userInfo,
                     textColor,
                     subColor,
-                    subscriptionAsync,
+                    pointBalanceAsync,
                   ),
+                  SizedBox(height: 12.h),
+                  MyPointBalanceCard(onCharge: _openPointCharge),
                   SizedBox(height: 12.h),
                   _buildStatsRow(
                     context,
@@ -178,18 +193,36 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       _menuRow(
                         context: context,
                         icon: Icons.credit_card_rounded,
-                        title: '구독 및 결제 관리',
-                        subtitle: '저장공간과 프리미엄 상태 관리',
+                        title: '포인트 충전',
+                        subtitle: '포인트 충전과 사용 내역 확인',
                         trailingDot: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            snapFitRoute(page: const BillingManagementScreen()),
-                          );
-                        },
+                        onTap: _openPointCharge,
                       ),
                     ],
                   ),
+                  if (hasPointShopAdminAccess) ...[
+                    SizedBox(height: 12.h),
+                    _buildMenuSection(
+                      context: context,
+                      title: '포인트 상점 관리',
+                      subtitle: '판매할 상품과 포인트 가격 설정',
+                      rows: [
+                        _menuRow(
+                          context: context,
+                          icon: Icons.price_change_outlined,
+                          title: '상품 가격 관리',
+                          subtitle: '템플릿·스티커·문구·프레임',
+                          trailingDot: false,
+                          onTap: () => Navigator.push(
+                            context,
+                            snapFitRoute(
+                              page: const AdminPointShopManagementScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   if (hasAdminOrderAccess) ...[
                     SizedBox(height: 12.h),
                     _buildMenuSection(
@@ -318,7 +351,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                                   builder: (ctx) => AlertDialog(
                                     title: const Text('회원 탈퇴'),
                                     content: const Text(
-                                      '정말 탈퇴하시겠어요?\n앨범/주문/구독/프로필 정보가 모두 삭제되며 복구할 수 없습니다.',
+                                      '정말 탈퇴하시겠어요?\n앨범/주문/포인트/프로필 정보가 모두 삭제되며 복구할 수 없습니다.',
                                     ),
                                     actions: [
                                       TextButton(
@@ -449,27 +482,18 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     UserInfo? userInfo,
     Color textColor,
     Color subColor,
-    AsyncValue<SubscriptionStatusModel> subscriptionAsync,
+    AsyncValue<int> pointBalanceAsync,
   ) {
     final name = userInfo?.name ?? '사용자';
     final email = _displayEmail(userInfo);
     final profileUrl = userInfo?.profileImageUrl;
 
-    final membershipLabel = subscriptionAsync.maybeWhen(
-      data: (sub) => sub.isActive ? '✪ SnapFit Pro 구독중' : '구독 미이용',
-      orElse: () => '구독 상태 확인중...',
+    final membershipLabel = pointBalanceAsync.maybeWhen(
+      data: (points) => '보유 포인트 ${points}P',
+      orElse: () => '포인트 확인 중...',
     );
-    final membershipBg = subscriptionAsync.maybeWhen(
-      data: (sub) =>
-          sub.isActive ? SnapFitColors.accentLight : SnapFitStylePalette.gray,
-      orElse: () => SnapFitStylePalette.gray,
-    );
-    final membershipColor = subscriptionAsync.maybeWhen(
-      data: (sub) => sub.isActive
-          ? SnapFitColors.accent
-          : SnapFitColors.textSecondaryOf(context),
-      orElse: () => SnapFitColors.textSecondaryOf(context),
-    );
+    final membershipBg = SnapFitColors.accentLight;
+    final membershipColor = SnapFitColors.accent;
 
     return SnapFitFadeIn(
       delay: const Duration(milliseconds: 80),

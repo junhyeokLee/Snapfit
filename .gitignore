@@ -32,6 +32,11 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+# Local AI evaluation prompts, model responses and review artifacts
+/output/ai-template-evaluations/
+/output/template-preview/
+/output/brand-studio/
+/tool/brand_studio/node_modules/
 
 # Symbolication related
 app.*.symbols

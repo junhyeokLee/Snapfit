@@ -53,7 +53,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '사진 슬롯 기준',
+                      '참고할 사진 범위',
                       style: TextStyle(
                         color: SnapFitColors.textPrimaryOf(context),
                         fontSize: 24.sp,
@@ -65,14 +65,14 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                     SizedBox(height: 18.h),
                     _RangeCard(
                       title: '최근 30일',
-                      subtitle: '휴대폰의 최근 사진만 새 순서로 살펴봐요',
+                      subtitle: '최근 분위기와 촬영 흐름만 참고해 템플릿을 잡아요',
                       icon: Icons.auto_awesome_rounded,
                       emphasized: true,
                       onTap: () => onRangeSelected(AiPhotoRange.recent30Days),
                     ),
                     _RangeCard(
                       title: '허용한 사진 전체',
-                      subtitle: '최근 사진이 부족할 때 전체에서 찾아요',
+                      subtitle: '전체 사진 흐름에서 어울리는 슬롯 구성을 찾아요',
                       icon: Icons.photo_library_rounded,
                       onTap: () => onRangeSelected(AiPhotoRange.limitedLibrary),
                     ),
@@ -81,8 +81,8 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
                       usesAdvancedServerAnalysis
                           ? '고급 AI를 켜면 선택한 사진의 작은 미리보기 이미지를 서버에서 살펴봐요.'
                           : usesServerDraftProvider
-                          ? '선택한 사진의 날짜·크기 같은 정보로 템플릿 슬롯을 제안해요. 사진은 확인 전까지 확정되지 않아요.'
-                          : '날짜 선택·앨범 선택·직접 고르기는 실제 선택 화면을 붙인 뒤 열게요. 지금은 최근 30일 또는 허용한 사진을 기준으로 슬롯만 잡아요.',
+                          ? '선택한 사진의 날짜·크기 같은 정보로 템플릿 슬롯을 제안해요. 사진은 자동 확정되지 않아요.'
+                          : '날짜 선택·앨범 선택·직접 고르기는 실제 선택 화면을 붙인 뒤 열게요. 지금은 최근 30일 또는 허용한 사진을 참고해 슬롯만 잡아요.',
                       style: TextStyle(
                         color: SnapFitColors.textSecondaryOf(context),
                         fontSize: 12.5.sp,

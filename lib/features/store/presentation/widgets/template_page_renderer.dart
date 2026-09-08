@@ -3,7 +3,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/outline_text_style.dart';
+import '../../../../shared/widgets/studio_material.dart';
+import '../../../../shared/widgets/studio_decoration.dart';
+import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/utils/image_url_policy.dart';
+import '../../../../core/utils/text_image_shader.dart';
 import '../../../album/domain/entities/layer.dart';
 import 'template_preview_frame.dart';
 
@@ -17,6 +22,10 @@ class TemplatePageRenderer extends StatelessWidget {
   /// true면 레이어 내용을 content bounds 기준으로 재정규화(레거시),
   /// false면 템플릿 좌표계를 그대로 스케일링(피그마 정합 우선).
   final bool normalizeToContentBounds;
+  final bool preserveTypography;
+
+  /// Bounds decoded image memory in document previews without changing sources.
+  final int? imageDecodeWidth;
   final Map<String, File>? localFiles;
   final VoidCallback? onImageTap;
   final Function(String layerId)? onLayerTap;
@@ -29,6 +38,8 @@ class TemplatePageRenderer extends StatelessWidget {
     this.showCanvasChrome = false,
     this.designCanvasSize,
     this.normalizeToContentBounds = false,
+    this.preserveTypography = false,
+    this.imageDecodeWidth,
     this.localFiles,
     this.onImageTap,
     this.onLayerTap,
@@ -138,28 +149,46 @@ class TemplatePageRenderer extends StatelessWidget {
     final drawX = x.isFinite ? x : 0.0;
     final drawY = y.isFinite ? y : 0.0;
 
-    if (layer.type == LayerType.image) {
+    final imageUrl = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+    if (layer.type == LayerType.image ||
+        (layer.type == LayerType.sticker && imageUrl != null)) {
+      final fit =
+          layer.type == LayerType.sticker &&
+              layer.imageBackground != 'rasterCover'
+          ? BoxFit.contain
+          : BoxFit.cover;
       final localFile = localFiles?[layer.id];
-      final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+      final url = imageUrl;
       final frame = layer.imageBackground;
 
       Widget imageContent;
       if (localFile != null) {
-        imageContent = Image.file(localFile, fit: BoxFit.cover);
+        imageContent = Image.file(
+          localFile,
+          fit: fit,
+          alignment: layer.imageAlignment,
+          cacheWidth: imageDecodeWidth,
+        );
       } else if (url != null && bundledTemplateAssetPath(url) != null) {
         imageContent = Image.asset(
           bundledTemplateAssetPath(url)!,
-          fit: BoxFit.cover,
+          fit: fit,
+          alignment: layer.imageAlignment,
+          cacheWidth: imageDecodeWidth,
         );
       } else if (url != null && url.startsWith('asset:')) {
         imageContent = Image.asset(
           url.substring('asset:'.length),
-          fit: BoxFit.cover,
+          fit: fit,
+          alignment: layer.imageAlignment,
+          cacheWidth: imageDecodeWidth,
         );
       } else if (url != null) {
         imageContent = Image.network(
           imageUrlByVariant(url, variant: ImageVariant.detail),
-          fit: BoxFit.cover,
+          fit: fit,
+          alignment: layer.imageAlignment,
+          cacheWidth: imageDecodeWidth,
           loadingBuilder: (context, child, progress) {
             if (progress == null) return child;
             return const TemplatePaperPlaceholder(compact: true);
@@ -169,7 +198,21 @@ class TemplatePageRenderer extends StatelessWidget {
           },
         );
       } else {
-        imageContent = const TemplatePaperPlaceholder(compact: true);
+        final slotColor = _parseHexColor(layer.decorationFillColor);
+        imageContent = slotColor == null
+            ? const TemplatePaperPlaceholder(compact: true)
+            : ColoredBox(
+                color: slotColor,
+                child: Center(
+                  child: Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: math.min(24, math.min(drawW, drawH) * .16),
+                    color: slotColor.computeLuminance() > .5
+                        ? Colors.black38
+                        : Colors.white54,
+                  ),
+                ),
+              );
       }
 
       Widget layerWidget;
@@ -255,16 +298,25 @@ class TemplatePageRenderer extends StatelessWidget {
           ? math.min(baseFont, (drawH * 0.82).clamp(10.0, 220.0))
           : (baseFont * scaleY).clamp(6.0, 260.0).toDouble();
       final maxFontByBox = math.max(8.0, drawH * (isMultiLine ? 0.42 : 0.82));
-      final scaledFont = math.min(rawScaledFont, maxFontByBox);
+      final scaledFont = preserveTypography
+          ? baseFont * scaleY
+          : math.min(rawScaledFont, maxFontByBox);
       final effectiveHeight = math.max(
         style.height ?? (isMultiLine ? 1.15 : 1.0),
         isMultiLine ? 0.82 : 1.0,
       );
-      final effectiveStyle = style.copyWith(
+      final baseStyle = style.copyWith(
         fontSize: scaledFont,
+        letterSpacing: preserveTypography ? 0 : style.letterSpacing,
         color: style.color ?? Colors.black,
         height: effectiveHeight,
       );
+      final effectiveStyle = switch (layer.textFillMode?.toLowerCase()) {
+        'outline' => outlineTextStyle(baseStyle),
+        'sticker' => stickerTextStyle(baseStyle),
+        'papercut' => paperCutTextStyle(baseStyle),
+        _ => baseStyle,
+      };
       final effectiveStrut = StrutStyle(
         fontFamily: effectiveStyle.fontFamily,
         fontSize: scaledFont,
@@ -301,6 +353,9 @@ class TemplatePageRenderer extends StatelessWidget {
                     )
                   : Text(
                       textValue,
+                      textScaler: preserveTypography
+                          ? TextScaler.noScaling
+                          : null,
                       textAlign: layer.textAlign ?? TextAlign.center,
                       softWrap: true,
                       strutStyle: effectiveStrut,
@@ -348,6 +403,16 @@ class TemplatePageRenderer extends StatelessWidget {
     required double canvasHeight,
   }) {
     final bg = layer.imageBackground ?? '';
+    final studioSpec = studioDecorationById(bg);
+    if (studioSpec != null) return StudioDecoration(spec: studioSpec);
+    if (StudioMaterial.decorationStyles.contains(bg)) {
+      return StudioMaterial(
+        style: bg,
+        child: ColoredBox(
+          color: _parseHexColor(layer.decorationFillColor) ?? Colors.white,
+        ),
+      );
+    }
     final rawRadius = layer.decorationCornerRadius;
     final radiusPx = rawRadius == null
         ? null
@@ -522,6 +587,9 @@ class TemplatePageRenderer extends StatelessWidget {
   }
 
   Widget _applyImageFrame(Widget child, String? frame) {
+    if (StudioMaterial.photoStyles.contains(frame)) {
+      return StudioMaterial(style: frame!, child: child);
+    }
     if (frame == null || frame.isEmpty) return child;
 
     switch (frame) {
@@ -983,12 +1051,7 @@ class _StoreImageClipTextState extends State<_StoreImageClipText> {
     }
     return ShaderMask(
       blendMode: BlendMode.srcIn,
-      shaderCallback: (_) => ImageShader(
-        _image!,
-        TileMode.clamp,
-        TileMode.clamp,
-        Matrix4.identity().storage,
-      ),
+      shaderCallback: (bounds) => textImageCoverShader(_image!, bounds),
       child: Text(
         widget.text,
         textAlign: widget.textAlign,

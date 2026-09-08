@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,14 +17,21 @@ class AdminOpsRepository {
     required String adminKey,
     Map<String, dynamic>? body,
   }) async {
-    if (supabase == null) return <String, dynamic>{};
+    if (supabase == null) throw StateError('관리자 서버 연결이 준비되지 않았습니다.');
     final response = await supabase!.functions.invoke(
       'admin-ops',
       body: {'action': action, 'adminKey': adminKey, ...?body},
       headers: {'X-Admin-Key': adminKey},
     );
-    return (response.data as Map?)?.cast<String, dynamic>() ??
-        <String, dynamic>{};
+    final data = (response.data as Map?)?.cast<String, dynamic>();
+    if (data == null || data['error'] != null) {
+      throw StateError(
+        data?['message']?.toString() ??
+            data?['error']?.toString() ??
+            '관리자 응답이 올바르지 않습니다.',
+      );
+    }
+    return data;
   }
 
   Future<AdminDashboardData> fetchDashboard({required String adminKey}) async {
@@ -93,6 +102,173 @@ class AdminOpsRepository {
     }
     throw Exception('Supabase 관리자 인쇄 패키지 환경이 준비되지 않았습니다.');
   }
+
+  Future<Map<String, dynamic>> getPrintSnapshot({
+    required String adminKey,
+    required String orderId,
+  }) => _invoke(
+    'getPrintSnapshot',
+    adminKey: adminKey,
+    body: {'orderId': orderId},
+  );
+
+  Future<OrderHistoryItem> configurePrintSpec({
+    required String adminKey,
+    required String orderId,
+    required double spineMm,
+    required String evidence,
+    Map<String, dynamic>? coverGeometry,
+  }) async => OrderHistoryItem.fromJson(
+    await _invoke(
+      'configurePrintSpec',
+      adminKey: adminKey,
+      body: {
+        'orderId': orderId,
+        'spineMm': spineMm,
+        'evidence': evidence,
+        if (coverGeometry != null) 'coverGeometry': coverGeometry,
+      },
+    ),
+  );
+
+  Future<Map<String, dynamic>> createPrintUploads({
+    required String adminKey,
+    required String orderId,
+  }) => _invoke(
+    'createPrintUploads',
+    adminKey: adminKey,
+    body: {'orderId': orderId},
+  );
+
+  Future<void> uploadPrintPdfs({
+    required Map<String, dynamic> upload,
+    required Uint8List coverPdf,
+    required Uint8List interiorPdf,
+  }) async {
+    final client = supabase;
+    if (client == null) throw StateError('관리자 서버 연결이 준비되지 않았습니다.');
+    final bucket = upload['bucket']?.toString();
+    if (bucket != 'print-packages') throw StateError('인쇄 파일 저장소가 올바르지 않습니다.');
+    Future<void> put(String part, Uint8List bytes) async {
+      final target =
+          (upload[part] as Map?)?.cast<String, dynamic>() ?? const {};
+      final path = target['path']?.toString() ?? '';
+      final token = target['token']?.toString() ?? '';
+      if (path.isEmpty || token.isEmpty)
+        throw StateError('인쇄 파일 업로드 권한이 없습니다.');
+      await client.storage
+          .from(bucket!)
+          .uploadBinaryToSignedUrl(
+            path,
+            token,
+            bytes,
+            const FileOptions(contentType: 'application/pdf'),
+          );
+    }
+
+    await put('cover', coverPdf);
+    await put('interior', interiorPdf);
+  }
+
+  Future<OrderHistoryItem> finalizePrintPackage({
+    required String adminKey,
+    required String orderId,
+    required String uploadId,
+    required Map<String, dynamic> manifest,
+  }) async => OrderHistoryItem.fromJson(
+    await _invoke(
+      'finalizePrintPackage',
+      adminKey: adminKey,
+      body: {'orderId': orderId, 'uploadId': uploadId, 'manifest': manifest},
+    ),
+  );
+
+  Future<Map<String, dynamic>> getPrintDownloadLinks({
+    required String adminKey,
+    required String orderId,
+  }) => _invoke(
+    'getPrintDownloadLinks',
+    adminKey: adminKey,
+    body: {'orderId': orderId},
+  );
+
+  Future<OrderHistoryItem> markPrintReviewed({
+    required String adminKey,
+    required String orderId,
+    required String reviewNote,
+  }) async => OrderHistoryItem.fromJson(
+    await _invoke(
+      'markPrintReviewed',
+      adminKey: adminKey,
+      body: {
+        'orderId': orderId,
+        'vendorSpecConfirmed': true,
+        'reviewNote': reviewNote,
+      },
+    ),
+  );
+
+  Future<OrderHistoryItem> submitPrintVendor({
+    required String adminKey,
+    required String orderId,
+    required String vendorOrderId,
+    required int actualPrintCost,
+    required int actualShippingCost,
+    required int actualPackagingCost,
+    required String fulfillmentMethod,
+    required bool senderLabelConfirmed,
+    required bool priceSlipOmittedConfirmed,
+    required bool promotionalMaterialsOmittedConfirmed,
+    required bool vendorSpecConfirmed,
+    required String confirmationNote,
+  }) async => OrderHistoryItem.fromJson(
+    await _invoke(
+      'submitPrintVendor',
+      adminKey: adminKey,
+      body: {
+        'orderId': orderId,
+        'vendorOrderId': vendorOrderId,
+        'actualPrintCost': actualPrintCost,
+        'actualShippingCost': actualShippingCost,
+        'actualPackagingCost': actualPackagingCost,
+        'fulfillmentMethod': fulfillmentMethod,
+        'senderLabelConfirmed': senderLabelConfirmed,
+        'priceSlipOmittedConfirmed': priceSlipOmittedConfirmed,
+        'promotionalMaterialsOmittedConfirmed':
+            promotionalMaterialsOmittedConfirmed,
+        'vendorSpecConfirmed': vendorSpecConfirmed,
+        'evidence': confirmationNote,
+      },
+    ),
+  );
+
+  Future<Map<String, dynamic>> evaluatePrintCosts({
+    required String adminKey,
+    required String orderId,
+    required int actualPrintCost,
+    required int actualShippingCost,
+    required int actualPackagingCost,
+  }) => _invoke(
+    'evaluatePrintCosts',
+    adminKey: adminKey,
+    body: {
+      'orderId': orderId,
+      'actualPrintCost': actualPrintCost,
+      'actualShippingCost': actualShippingCost,
+      'actualPackagingCost': actualPackagingCost,
+    },
+  );
+
+  Future<OrderHistoryItem> acceptPrintVendor({
+    required String adminKey,
+    required String orderId,
+  }) async => OrderHistoryItem.fromJson(
+    await _invoke(
+      'acceptPrintVendor',
+      adminKey: adminKey,
+      body: {'orderId': orderId},
+    ),
+  );
 
   Future<OrderHistoryItem> markShipping({
     required String adminKey,

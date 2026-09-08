@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/constants/cover_size.dart';
 import '../../../domain/entities/album.dart';
 import 'home_focus_wrap.dart';
 import 'home_album_cover_thumbnail.dart';
@@ -74,10 +73,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   @override
   Widget build(BuildContext context) {
-    final coverSize = coverSizes.firstWhere(
-      (s) => s.ratio.toString() == widget.album.ratio,
-      orElse: () => coverSizes.first,
-    );
+    final coverSize = widget.album.physicalCoverSize;
     final focus = _focusFactor();
 
     return Padding(
@@ -104,10 +100,14 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
               : (314.w)
                     .clamp(258.0, math.min(328.w, stageMaxHeight * 0.78))
                     .toDouble();
+          final previewCm = math.max(
+            20.0,
+            math.max(coverSize.realSize.width, coverSize.realSize.height),
+          );
           final contentWidth =
-              squareReferenceSide * coverSize.realSize.width / 20;
+              squareReferenceSide * coverSize.realSize.width / previewCm;
           final contentHeight =
-              squareReferenceSide * coverSize.realSize.height / 20;
+              squareReferenceSide * coverSize.realSize.height / previewCm;
           final pageDelta = (widget.index - widget.currentPage).clamp(
             -1.0,
             1.0,

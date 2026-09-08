@@ -1,5 +1,6 @@
 import 'ai_album_curation_engine.dart';
 import 'ai_album_models.dart';
+import 'ai_template_text_preflight.dart';
 
 typedef AiPhotoCandidateLoader =
     Future<List<PhotoCandidate>> Function(AiPhotoRange range);
@@ -8,6 +9,10 @@ typedef AdvancedAiAlbumPreviewPreparer =
 
 abstract class AiAlbumDraftProvider {
   const AiAlbumDraftProvider();
+
+  Future<AlbumRecommendationDraft> createTemplate(AiTemplateBrief brief) {
+    throw UnsupportedError('template_provider_not_configured');
+  }
 
   Future<AlbumRecommendationDraft> createDraft({
     required AlbumTheme theme,
@@ -168,6 +173,21 @@ class AiAlbumDraftGenerationResult {
     );
   }
 
+  factory AiAlbumDraftGenerationResult.templateFailed({
+    bool qualityFailure = false,
+  }) {
+    return AiAlbumDraftGenerationResult._(
+      status: AiAlbumDraftGenerationStatus.failed,
+      shouldChargePoints: false,
+      failureTitle: qualityFailure ? '디자인을 조금 더 다듬어야 해요' : 'AI 템플릿을 만들지 못했어요',
+      failureMessage: qualityFailure
+          ? '페이지 배치나 가독성이 기준에 맞지 않아 전달하지 않았어요. 요청을 다듬어 다시 시도해 주세요. 포인트는 차감되지 않았어요.'
+          : '지금 디자인을 생성하지 못했어요. 요청 내용은 그대로 남겨두었어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.',
+      primaryCtaLabel: '디자인 요청 다시 보기',
+      primaryRecoveryAction: AiAlbumDraftRecoveryAction.retryPhotoRange,
+    );
+  }
+
   final AiAlbumDraftGenerationStatus status;
   final bool shouldChargePoints;
   final AlbumRecommendationDraft? draft;
@@ -181,25 +201,42 @@ class AiAlbumDraftGenerationService {
   AiAlbumDraftGenerationService({
     required AiPhotoCandidateLoader collectCandidates,
     AiAlbumDraftProvider? draftProvider,
+    AiAlbumDraftProvider? templateProvider,
     AdvancedAiAlbumPreviewPreparer? prepareAdvancedPreviews,
     AiAlbumCurationEngine engine = const AiAlbumCurationEngine(),
     int minimumPhotoCount = 3,
   }) : _collectCandidates = collectCandidates,
        _draftProvider =
            draftProvider ?? MetadataFirstAiAlbumDraftProvider(engine: engine),
+       _templateProvider = templateProvider ?? draftProvider,
        _prepareAdvancedPreviews = prepareAdvancedPreviews,
        _minimumPhotoCount = minimumPhotoCount;
 
   final AiPhotoCandidateLoader _collectCandidates;
   final AiAlbumDraftProvider _draftProvider;
+  final AiAlbumDraftProvider? _templateProvider;
   final AdvancedAiAlbumPreviewPreparer? _prepareAdvancedPreviews;
   final int _minimumPhotoCount;
 
   Future<AiAlbumDraftGenerationResult> generate({
     required AlbumTheme theme,
     required AiPhotoRange range,
+    AiTemplateBrief? designBrief,
   }) async {
     try {
+      if (designBrief != null) {
+        final draft = await (_templateProvider ?? _draftProvider)
+            .createTemplate(designBrief);
+        if (draft.design == null ||
+            draft.pageCount != designBrief.pageCount ||
+            draft.design!.aspect != designBrief.aspect) {
+          return AiAlbumDraftGenerationResult.templateFailed(
+            qualityFailure: true,
+          );
+        }
+        validateAiTemplateText(draft.design!);
+        return AiAlbumDraftGenerationResult.success(draft);
+      }
       final candidates = await _collectCandidates(range);
       if (candidates.length < _minimumPhotoCount) {
         return AiAlbumDraftGenerationResult.insufficientPhotos(
@@ -217,14 +254,18 @@ class AiAlbumDraftGenerationService {
         range: range,
         candidates: preparedCandidates,
       );
+      final excludedForQuality = draft.excludedPhotos.where((photo) {
+        return photo.reasons.any(
+          (reason) =>
+              reason.type == AiCurationReasonType.screenshotExcluded ||
+              reason.type == AiCurationReasonType.lowResolutionExcluded,
+        );
+      }).length;
+      if (draft.recommendedPhotos.isEmpty &&
+          excludedForQuality >= _minimumPhotoCount) {
+        return AiAlbumDraftGenerationResult.lowQualityPhotos();
+      }
       if (draft.recommendedPhotos.isEmpty && draft.templateSlots.isEmpty) {
-        final excludedForQuality = draft.excludedPhotos.where((photo) {
-          return photo.reasons.any(
-            (reason) =>
-                reason.type == AiCurationReasonType.screenshotExcluded ||
-                reason.type == AiCurationReasonType.lowResolutionExcluded,
-          );
-        }).length;
         if (excludedForQuality >= _minimumPhotoCount) {
           return AiAlbumDraftGenerationResult.lowQualityPhotos();
         }
@@ -242,6 +283,13 @@ class AiAlbumDraftGenerationService {
           AiAlbumDraftGenerationResult.permissionDenied(),
       };
     } catch (error) {
+      if (designBrief != null) {
+        return AiAlbumDraftGenerationResult.templateFailed(
+          qualityFailure:
+              error is FormatException ||
+              error.toString().contains('template_quality_failed'),
+        );
+      }
       if (error.toString().contains('themed_candidates_not_found')) {
         return AiAlbumDraftGenerationResult.themeMismatch(
           theme: theme,

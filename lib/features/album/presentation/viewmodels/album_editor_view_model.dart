@@ -12,6 +12,8 @@ import '../../data/api/storage_service.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/album_page.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/templates/studio_decoration_catalog.dart';
+import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../core/constants/design_templates.dart';
 import '../../../../core/constants/cover_theme.dart';
 import '../../../../core/constants/page_templates.dart';
@@ -34,8 +36,7 @@ abstract class AlbumEditorState with _$AlbumEditorState {
     /// 현재 페이지의 레이어들(UI가 바로 그릴 데이터)
     @Default([]) List<LayerModel> layers,
 
-    @Default(CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)))
-    CoverSize selectedCover,
+    @Default(defaultCoverSize) CoverSize selectedCover,
 
     @Default(CoverTheme.classic) CoverTheme selectedTheme,
 
@@ -75,7 +76,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   String? _initialAlbumTitle;
 
   CoverTheme _selectedTheme = CoverTheme.classic;
-  CoverSize _cover = coverSizes.first;
+  CoverSize _cover = defaultCoverSize;
 
   /// [Rescale Fix] 커버와 내지의 마지막 캔버스 크기를 별도로 관리하여 왜곡 방지
   Size _lastCoverCanvasSize = Size.zero;
@@ -133,12 +134,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }) {
     _clearAllHistory();
     _pages.clear();
-    _cover =
-        initialCover ??
-        coverSizes.firstWhere(
-          (s) => s.name == '세로형',
-          orElse: () => coverSizes.first,
-        );
+    _cover = newAlbumCoverSize(initialCover);
     _selectedTheme = initialTheme ?? CoverTheme.classic;
     _pages.add(_service.createPage(index: 0, isCover: true));
 
@@ -175,13 +171,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required String albumTitle,
     required List<List<LayerModel>> pages,
     CoverSize? initialCover,
+    Size? templateCanvasSize,
   }) {
-    final chosenCover =
-        initialCover ??
-        coverSizes.firstWhere(
-          (s) => s.name == '세로형',
-          orElse: () => coverSizes.first,
-        );
+    final chosenCover = newAlbumCoverSize(initialCover);
 
     _clearAllHistory();
     _pages.clear();
@@ -202,6 +194,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         final mapped = _remapTemplatePageLayers(
           sourceLayers: source,
           targetCanvas: targetCanvas,
+          sourceCanvasOverride: templateCanvasSize,
         );
         final page = _service.createPage(index: i, isCover: isCover);
         page.layers
@@ -238,23 +231,30 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   List<LayerModel> _remapTemplatePageLayers({
     required List<LayerModel> sourceLayers,
     required Size targetCanvas,
+    Size? sourceCanvasOverride,
   }) {
     if (sourceLayers.isEmpty) return const [];
     final bounds = _templateBounds(sourceLayers);
     final looksNormalized =
-        bounds.width <= 2.5 && bounds.height <= 2.5 && bounds.left >= -1.0;
+        sourceCanvasOverride == null &&
+        bounds.width <= 2.5 &&
+        bounds.height <= 2.5 &&
+        bounds.left >= -1.0;
 
     // 이미 타깃 캔버스와 거의 같으면 재스케일하지 않는다.
     if (!looksNormalized &&
+        sourceCanvasOverride == null &&
         (bounds.width - targetCanvas.width).abs() <= 1.0 &&
         (bounds.height - targetCanvas.height).abs() <= 1.0) {
       return sourceLayers.map((l) => l.copyWith()).toList(growable: false);
     }
 
-    final sourceCanvas = looksNormalized
-        ? _normalizedTemplateCanvasFor(targetCanvas)
-        : _estimateTemplateSourceCanvas(sourceLayers);
-    final sourceOrigin = looksNormalized
+    final sourceCanvas =
+        sourceCanvasOverride ??
+        (looksNormalized
+            ? _normalizedTemplateCanvasFor(targetCanvas)
+            : _estimateTemplateSourceCanvas(sourceLayers));
+    final sourceOrigin = looksNormalized || sourceCanvasOverride != null
         ? Offset.zero
         : _estimateTemplateSourceOrigin(sourceLayers);
     final sx = targetCanvas.width / math.max(1.0, sourceCanvas.width);
@@ -290,6 +290,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           final scaledStyle = style?.copyWith(
             fontSize: style.fontSize == null
                 ? null
+                : sourceCanvasOverride != null
+                ? style.fontSize! * uniformScale
                 : (style.fontSize! * uniformScale).clamp(8.0, 220.0).toDouble(),
             letterSpacing: style.letterSpacing == null
                 ? null
@@ -301,6 +303,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             width: nw,
             height: nh,
             textStyle: scaledStyle,
+            decorationCornerRadius:
+                sourceCanvasOverride != null &&
+                    (layer.decorationCornerRadius ?? 0) > 1
+                ? layer.decorationCornerRadius! * uniformScale
+                : layer.decorationCornerRadius,
+            decorationBorderWidth:
+                sourceCanvasOverride != null &&
+                    (layer.decorationBorderWidth ?? 0) > 1
+                ? layer.decorationBorderWidth! * uniformScale
+                : layer.decorationBorderWidth,
           );
         })
         .toList(growable: false);
@@ -472,11 +484,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 생성 플로우 Step2에서 템플릿 예시 커버를 미리 보여줄 때 사용
-  void applyTemplateCoverPreview(List<LayerModel> coverLayers) {
+  void applyTemplateCoverPreview(
+    List<LayerModel> coverLayers, {
+    Size? templateCanvasSize,
+  }) {
     if (_pages.isEmpty || coverLayers.isEmpty) return;
     final mapped = _remapTemplatePageLayers(
       sourceLayers: coverLayers,
       targetCanvas: _coverReferenceSize,
+      sourceCanvasOverride: templateCanvasSize,
     );
     final extracted = _extractTemplateBackgroundForEditing(
       mapped,
@@ -596,12 +612,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     required String albumTitle,
     required List<List<LayerModel>> pages,
     CoverSize? initialCover,
+    Size? templateCanvasSize,
   }) {
     if (albumId <= 0) return;
     startLocalTemplateAlbum(
       albumTitle: albumTitle,
       pages: pages,
       initialCover: initialCover,
+      templateCanvasSize: templateCanvasSize,
     );
     _editingAlbumId = albumId;
     final prev = state.value ?? const AlbumEditorState();
@@ -621,14 +639,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       }
     }
 
-    final parsedRatio = double.tryParse(effective.ratio);
-    final coverSize = parsedRatio == null
-        ? coverSizes.first
-        : coverSizes.reduce((best, candidate) {
-            final bestDelta = (best.ratio - parsedRatio).abs();
-            final candidateDelta = (candidate.ratio - parsedRatio).abs();
-            return candidateDelta < bestDelta ? candidate : best;
-          });
+    final coverSize = effective.physicalCoverSize;
     _cover = coverSize;
 
     // 테마 초기화 (전 상태 유출 방지)
@@ -862,6 +873,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       } else {
         // 신규 생성 모드: 메타데이터만으로 ID 먼저 발급
         final tempJson = jsonEncode({
+          if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
           'layers': currentLayers
               .map(
                 (l) => LayerExportMapper.toJson(
@@ -906,6 +918,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
           themeLabel: themeLabel,
           title: title ?? '',
           coverRatio: _cover.ratio,
+          printProduct: _cover.printProduct,
           targetPages: resolvedTargetPages,
           swallowErrors: _editingAlbumId == null,
           onProgress: (completed, total) {
@@ -956,8 +969,12 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
     // 캔버스 비율에 따라 과도하게 잘리지 않도록 동적 크기 적용
     // (내지/커버 모두 동일 체감 크기 유지)
-    final double width = (canvasSize.width * 0.54).clamp(150.0, 320.0);
-    final double height = (width * 0.84).clamp(120.0, 280.0);
+    final studioSpec = studioDecorationByAsset(assetPath);
+    final studioSize = studioSpec?.fittedSize(canvasSize);
+    final double width =
+        studioSize?.width ?? (canvasSize.width * 0.54).clamp(150.0, 320.0);
+    final double height =
+        studioSize?.height ?? (width * 0.84).clamp(120.0, 280.0);
 
     final pos = Offset(
       (canvasSize.width - width) / 2,
@@ -977,7 +994,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       zIndex: nextZ,
     );
 
-    currentPage.layers.add(layer);
+    // New artwork is not a photo slot and must survive photo replacement.
+    currentPage.layers.add(
+      studioSpec == null ? layer : layer.copyWith(type: LayerType.sticker),
+    );
     _emit();
   }
 
@@ -992,8 +1012,13 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     final currentPage = _pages[_currentPageIndex];
     final nextZ = _nextZIndex(currentPage);
     final base = (canvasSize.width * 0.18).clamp(42.0, 120.0) * scale;
-    final width = base.clamp(22.0, canvasSize.width * 0.36);
-    final height = (base * 0.9).clamp(20.0, canvasSize.height * 0.3);
+    final studioSize = studioDecorationById(
+      styleKey,
+    )?.fittedSize(canvasSize, scale: scale);
+    final width =
+        studioSize?.width ?? base.clamp(22.0, canvasSize.width * 0.36);
+    final height =
+        studioSize?.height ?? (base * 0.9).clamp(20.0, canvasSize.height * 0.3);
     final pos = Offset(
       (canvasSize.width - width) / 2,
       (canvasSize.height - height) / 2,
@@ -1009,6 +1034,27 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       zIndex: nextZ,
     );
     currentPage.layers.add(layer);
+    _emit();
+  }
+
+  void addWordArt(StudioWordArt art, Size canvasSize) {
+    if (_pages.isEmpty ||
+        !canvasSize.width.isFinite ||
+        !canvasSize.height.isFinite ||
+        canvasSize.isEmpty)
+      return;
+    final layers = art.buildLayers(canvasSize);
+    final page = _pages[_currentPageIndex];
+    final nextZ = _nextZIndex(page);
+    // One insertion is one undo step, including its paper and lettering.
+    _recordUndo();
+    page.layers.addAll([
+      for (var index = 0; index < layers.length; index++)
+        layers[index].copyWith(
+          id: UniqueKey().toString(),
+          zIndex: nextZ + index,
+        ),
+    ]);
     _emit();
   }
 
@@ -1947,12 +1993,16 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// UI LayerModel → 서버 저장 스키마 변환은 LayerExportMapper 책임
   String exportCoverLayersJson(Size canvasSize) {
     if (_pages.isEmpty) {
-      return jsonEncode({'layers': []});
+      return jsonEncode({
+        if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
+        'layers': [],
+      });
     }
 
     final coverPage = _pages.first;
 
     return jsonEncode({
+      if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
       'layers': coverPage.layers
           .map(
             (layer) => LayerExportMapper.toJson(
@@ -2040,6 +2090,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             .toList(),
       };
     }).toList();
-    return jsonEncode({'pages': pagesJson});
+    return jsonEncode({
+      if (_cover.printProduct != null) 'printProduct': _cover.printProduct,
+      'pages': pagesJson,
+    });
   }
 }

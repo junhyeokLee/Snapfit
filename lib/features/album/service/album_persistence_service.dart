@@ -95,6 +95,7 @@ class AlbumPersistenceService {
     required String title,
     required double coverRatio,
     required int targetPages,
+    Map<String, dynamic>? printProduct,
     bool swallowErrors = true,
     void Function(int completed, int total)? onProgress,
   }) async {
@@ -121,6 +122,7 @@ class AlbumPersistenceService {
 
       // 4. 최종 JSON 생성 (실제 서버 URL 포함)
       final json = jsonEncode({
+        if (printProduct != null) 'printProduct': printProduct,
         'layers': updatedLayers
             .map(
               (l) => LayerExportMapper.toJson(
