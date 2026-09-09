@@ -26,11 +26,48 @@ class ImageFrameStyle {
 const List<ImageFrameStyle> imageFrameStyles = [
   ImageFrameStyle(key: '', label: '기본', subtitle: '원본 그대로', category: 'basic'),
   ImageFrameStyle(
+    key: 'materialLaceMount',
+    label: '자수 코너 매트',
+    subtitle: '레이스 모서리와 얇은 사진 매트',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'materialTwinWindow',
+    label: '엇갈린 두 창',
+    subtitle: '한 장의 사진이 이어지는 두 개의 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'materialLinenOval',
+    label: '리넨 자수 타원',
+    subtitle: '직조 원단과 타원형 사진 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'materialNotebookMount',
+    label: '제본 노트 프레임',
+    subtitle: '펀칭과 가는 노트 선',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'materialScallopMount',
+    label: '로즈 꽃잎 매트',
+    subtitle: '물결 가장자리와 이중 테두리',
+    category: 'pastel',
+  ),
+  ImageFrameStyle(
+    key: 'materialSlideMount',
+    label: '아카이브 슬라이드',
+    subtitle: '사선 사진 창과 정밀한 마운트',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
     key: 'zineContact',
     label: '필름 콘택트',
     subtitle: '필름 홀과 블랙 인화지',
     category: 'vintage',
   ),
+  ...atelierEditionFrameStyles,
   ImageFrameStyle(
     key: 'zineDeckle',
     label: '찢은 프린트',
@@ -444,6 +481,81 @@ const List<ImageFrameStyle> imageFrameStyles = [
     label: '베이퍼 스트리트',
     subtitle: 'Acid',
     category: 'urban',
+  ),
+];
+
+const atelierEditionFrameStyles = [
+  ImageFrameStyle(
+    key: 'atelierDeepMat',
+    label: '세 겹 단차 액자',
+    subtitle: '깊이가 다른 세 겹 매트',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierFolio',
+    label: '양문 폴리오',
+    subtitle: '접지선과 손바느질 제본',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierKeyhole',
+    label: '키홀 아치',
+    subtitle: '곡선 천장과 넓은 하단 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierCrossRibbon',
+    label: '교차 리본 인화지',
+    subtitle: '사진 귀퉁이를 감싼 리본',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierNegative',
+    label: '네거티브 인화 스트립',
+    subtitle: '필름 구멍과 가장자리 인쇄',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'atelierEnvelope',
+    label: '편지 봉투 속 사진',
+    subtitle: '접힌 봉투에 끼운 인화지',
+    category: 'vintage',
+  ),
+  ImageFrameStyle(
+    key: 'atelierOxford',
+    label: '옥스퍼드 체크 매트',
+    subtitle: '가는 격자와 사진 테두리',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierCoastline',
+    label: '해안선 오려내기',
+    subtitle: '비대칭으로 굽이치는 사진 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierWeave',
+    label: '페이퍼 위빙',
+    subtitle: '서로 엇갈린 종이 직조',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierDeco',
+    label: '아르데코 계단 창',
+    subtitle: '계단형 실루엣과 세 겹 금선',
+    category: 'classic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierAccordion',
+    label: '아코디언 접지',
+    subtitle: '한 사진이 이어지는 세 개의 창',
+    category: 'artistic',
+  ),
+  ImageFrameStyle(
+    key: 'atelierCornerFold',
+    label: '접힌 코너 매트',
+    subtitle: '사선 절개와 뒷면이 보이는 접힘',
+    category: 'pastel',
   ),
 ];
 

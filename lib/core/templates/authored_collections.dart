@@ -19,6 +19,24 @@ part 'authored_wind_atlas.dart';
 part 'authored_prose_study.dart';
 part 'authored_prose_album.dart';
 part 'authored_luminous_edition.dart';
+part 'authored_travel_keepsake_archive.dart';
+part 'authored_heirloom_studies.dart';
+part 'authored_heirloom_layouts.dart';
+part 'authored_vow_edition.dart';
+part 'authored_premium_volumes.dart';
+part 'authored_volume_daily_pet.dart';
+part 'authored_volume_family_couple.dart';
+part 'authored_volume_travel_baby.dart';
+part 'authored_volume_wedding.dart';
+part 'authored_concept_wave.dart';
+part 'authored_concept_wedding.dart';
+part 'authored_concept_coast.dart';
+part 'authored_concept_reading.dart';
+part 'authored_concept_life.dart';
+part 'authored_concept_baby.dart';
+part 'authored_concept_family.dart';
+part 'authored_concept_couple.dart';
+part 'authored_concept_pet.dart';
 
 /// Original authored compositions. Never used as fallback output for AI.
 enum CollectionAspect {

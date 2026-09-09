@@ -6,7 +6,11 @@ Widget _buildFramedImageImpl(
   Widget image,
 ) {
   if (StudioMaterial.photoStyles.contains(layer.imageBackground)) {
-    return StudioMaterial(style: layer.imageBackground!, child: image);
+    return StudioMaterial(
+      style: layer.imageBackground!,
+      printImages: builder.printImages,
+      child: image,
+    );
   }
   Widget framed;
   switch (layer.imageBackground) {

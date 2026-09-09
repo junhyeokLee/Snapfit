@@ -4,6 +4,7 @@ import 'package:snap_fit/core/templates/authored_collections.dart';
 import 'package:snap_fit/core/templates/data_template_engine.dart';
 import 'package:snap_fit/core/templates/template_document_pages.dart';
 import 'package:snap_fit/features/album/domain/entities/layer.dart';
+import 'package:snap_fit/features/point_shop/domain/premium_volume_registration.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
 import 'lightbound_preview.dart';
 import 'prose_comparison.dart';
@@ -13,23 +14,37 @@ List<List<LayerModel>> luminousPages(
   CollectionAspect aspect, {
   LuminousCopy copy = const LuminousCopy(),
   bool photos = true,
-}) => templateDocumentPages(buildLuminousEdition(aspect, copy: copy))
-    .map(
-      (p) => DataTemplateEngine.buildLayersFromJson(p, aspect.canvas)
-          .map(
-            (l) => !photos && l.type == LayerType.image
-                ? l.copyWith(clearImage: true)
-                : l,
-          )
-          .toList(),
-    )
-    .toList();
+  int? innerPages,
+}) =>
+    templateDocumentPages(
+          innerPages == null
+              ? buildLuminousEdition(aspect, copy: copy)
+              : PremiumVolume.travel.document(
+                  aspect,
+                  innerPages: innerPages,
+                  travelCopy: copy,
+                ),
+        )
+        .map(
+          (p) => DataTemplateEngine.buildLayersFromJson(p, aspect.canvas)
+              .map(
+                (l) => !photos && l.type == LayerType.image
+                    ? l.copyWith(clearImage: true)
+                    : l,
+              )
+              .toList(),
+        )
+        .toList();
 
-bool luminousCopyFits(LuminousCopy copy) {
+bool luminousCopyFits(LuminousCopy copy, {int? innerPages}) {
   if ([copy.first, copy.second, copy.third].any((v) => v.trim().isEmpty))
     return false;
   for (final aspect in CollectionAspect.values) {
-    for (final l in luminousPages(aspect, copy: copy).expand((p) => p)) {
+    for (final l in luminousPages(
+      aspect,
+      copy: copy,
+      innerPages: innerPages,
+    ).expand((p) => p)) {
       if (l.type != LayerType.text) continue;
       final painter = TextPainter(
         text: TextSpan(text: l.text, style: l.textStyle),
@@ -47,18 +62,66 @@ bool luminousCopyFits(LuminousCopy copy) {
   return true;
 }
 
-class LuminousEditionPreview extends StatelessWidget {
+class LuminousEditionPreview extends StatefulWidget {
   const LuminousEditionPreview({super.key});
+  @override
+  State<LuminousEditionPreview> createState() => _LuminousEditionPreviewState();
+}
+
+class _LuminousEditionPreviewState extends State<LuminousEditionPreview> {
+  int selectedPages = PremiumVolume.travel.extendedPages;
+  int? get volumePages => selectedPages >= 24 ? selectedPages : null;
   @override
   Widget build(BuildContext context) => AuthoredDraftPreview<LuminousCopy>(
     title: luminousEditionTitle,
-    chapters: luminousEditionSpreads,
-    editionLabel: '유료 후보 · 미등록',
+    prioritizePageCount: true,
+    chapters: volumePages == null
+        ? luminousEditionSpreads
+        : (PremiumVolume.travel.document(
+                    CollectionAspect.square,
+                    innerPages: volumePages,
+                  )['chapters']
+                  as List)
+              .map((c) => c['title'] as String)
+              .toList(),
+    revision: selectedPages,
+    coverRevision: selectedPages,
+    editionLabel: volumePages == null
+        ? '디자인 승인 · 미등록'
+        : '$selectedPages쪽 · ${premiumVolumeLaunchPointPrice}P · 출시 대기',
     initialCopy: const LuminousCopy(),
-    buildPages: (aspect, copy, photos) =>
-        luminousPages(aspect, copy: copy, photos: photos),
-    copySheet: (copy) => LuminousCopySheet(copy: copy),
+    buildPages: (aspect, copy, photos) => luminousPages(
+      aspect,
+      copy: copy,
+      photos: photos,
+      innerPages: volumePages,
+    ),
+    copySheet: (copy) => LuminousCopySheet(copy: copy, innerPages: volumePages),
     extraControls: [
+      PopupMenuButton<int>(
+        tooltip: '판본 선택',
+        icon: const Icon(Icons.collections_bookmark_outlined),
+        initialValue: selectedPages,
+        onSelected: (value) => setState(() => selectedPages = value),
+        itemBuilder: (_) => const [
+          PopupMenuItem(value: 24, child: Text('24쪽 기본판')),
+          PopupMenuItem(value: 36, child: Text('36쪽 확장판')),
+          PopupMenuDivider(),
+          PopupMenuItem(value: 8, child: Text('승인 8쪽 기준본')),
+        ],
+      ),
+      IconButton(
+        tooltip: '유료 시안 목록',
+        icon: const Icon(Icons.grid_view_outlined),
+        onPressed: () {
+          final navigator = Navigator.of(context);
+          if (ModalRoute.of(context)?.settings.arguments == 'premium-studies') {
+            navigator.pop();
+          } else {
+            navigator.pushReplacementNamed('/premium-studies');
+          }
+        },
+      ),
       IconButton(
         tooltip: '꾸밈 재료',
         icon: const Icon(Icons.auto_awesome_mosaic_outlined),
@@ -81,9 +144,35 @@ class LuminousEditionPreview extends StatelessWidget {
   );
 }
 
+class TravelKeepsakeArchivePreview extends StatelessWidget {
+  const TravelKeepsakeArchivePreview({super.key});
+
+  @override
+  Widget build(BuildContext context) => AuthoredDraftPreview<void>(
+    title: travelKeepsakeArchiveTitle,
+    chapters: travelKeepsakeArchiveSpreads,
+    editionLabel: '20쪽 보관본',
+    initialCopy: null,
+    buildPages: (aspect, _, photos) =>
+        templateDocumentPages(buildTravelKeepsakeArchive(aspect))
+            .map(
+              (page) =>
+                  DataTemplateEngine.buildLayersFromJson(page, aspect.canvas)
+                      .map(
+                        (layer) => !photos && layer.type == LayerType.image
+                            ? layer.copyWith(clearImage: true)
+                            : layer,
+                      )
+                      .toList(),
+            )
+            .toList(),
+  );
+}
+
 class LuminousCopySheet extends StatefulWidget {
-  const LuminousCopySheet({super.key, required this.copy});
+  const LuminousCopySheet({super.key, required this.copy, this.innerPages});
   final LuminousCopy copy;
+  final int? innerPages;
   @override
   State<LuminousCopySheet> createState() => _LuminousCopySheetState();
 }
@@ -113,7 +202,7 @@ class _LuminousCopySheetState extends State<LuminousCopySheet> {
       names: fields[3].text.trim(),
       date: fields[4].text.trim(),
     );
-    if (!luminousCopyFits(copy)) {
+    if (!luminousCopyFits(copy, innerPages: widget.innerPages)) {
       setState(() => error = '제목을 채우고 문구 길이를 확인해 주세요.');
       return;
     }

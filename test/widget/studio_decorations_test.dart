@@ -220,6 +220,7 @@ void main() {
           await tester.scrollUntilVisible(
             find.text('코스모스 압화'),
             120,
+            maxScrolls: studioDecorations.length * 2,
             scrollable: find.descendant(
               of: find.byType(GridView),
               matching: find.byType(Scrollable),
@@ -249,6 +250,15 @@ void main() {
           );
           await tester.tap(find.text('테이프'));
           await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.text('핀스트라이프'),
+            120,
+            scrollable: find.descendant(
+              of: find.byType(GridView),
+              matching: find.byType(Scrollable),
+            ),
+          );
+          await tester.pumpAndSettle();
           await tester.tap(find.text('핀스트라이프'));
           expect(
             selected,
@@ -266,7 +276,12 @@ void main() {
   }
 
   for (final size in [const Size(240, 120), const Size(120, 240)]) {
-    for (final frame in {...studyPhotoFrames, ...editionPhotoFrames}) {
+    for (final frame in {
+      ...studyPhotoFrames,
+      ...editionPhotoFrames,
+      ...keepsakePhotoFrames,
+      ...atelierEditionPhotoFrames,
+    }) {
       testWidgets('$size/$frame: native photo frame matches preview pixels', (
         tester,
       ) async {
@@ -402,7 +417,9 @@ void main() {
         }
         final pixels = image.width * image.height;
         expect(transparent / pixels, greaterThan(.12));
-        expect(solid / pixels, greaterThan(.15));
+        // The diagonal pencil intentionally has a slender silhouette.
+        final minimumSolid = spec.id == 'wavePencil' ? .10 : .15;
+        expect(solid / pixels, greaterThan(minimumSolid), reason: spec.id);
         expect(image.width / image.height, closeTo(spec.aspectRatio, .001));
         image.dispose();
         codec.dispose();

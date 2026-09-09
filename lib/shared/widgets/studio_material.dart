@@ -1,9 +1,12 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import '../../core/templates/studio_photo_frame_catalog.dart';
 import 'study_photo_frame.dart';
 import 'edition_photo_frame.dart';
+import 'keepsake_photo_frame.dart';
+import 'atelier_edition_frame.dart';
 
 /// Normalized paths keep the same cut edge in thumbnails, editor and reader.
 class StudioMaterial extends StatelessWidget {
@@ -12,11 +15,13 @@ class StudioMaterial extends StatelessWidget {
     required this.style,
     required this.child,
     this.paperColor = Colors.white,
+    this.printImages,
   });
 
   final String style;
   final Widget child;
   final Color paperColor;
+  final Map<String, ui.Image>? printImages;
 
   static const newPhotoStyles = newStudioPhotoFrames;
   static const photoStyles = studioPhotoFrames;
@@ -28,6 +33,10 @@ class StudioMaterial extends StatelessWidget {
   };
 
   static EdgeInsets photoInsets(String style, Size size) {
+    if (atelierEditionPhotoFrames.contains(style))
+      return AtelierEditionFrame.insets(style, size);
+    if (keepsakePhotoFrames.contains(style))
+      return KeepsakePhotoFrame.insets(style, size);
     if (editionPhotoFrames.contains(style))
       return EditionPhotoFrame.insets(style, size);
     if (studyPhotoFrames.contains(style))
@@ -62,6 +71,19 @@ class StudioMaterial extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      if (atelierEditionPhotoFrames.contains(style))
+        return AtelierEditionFrame(style: style, child: child);
+      if (keepsakePhotoFrames.contains(style)) {
+        final path = keepsakeFrameAssets[style];
+        final loaded = path == null ? null : printImages?['asset:$path'];
+        if (printImages != null && path != null && loaded == null)
+          throw StateError('print_frame_material_not_loaded:$style');
+        return KeepsakePhotoFrame(
+          style: style,
+          materialImage: loaded,
+          child: child,
+        );
+      }
       if (editionPhotoFrames.contains(style))
         return EditionPhotoFrame(style: style, child: child);
       if (studyPhotoFrames.contains(style))
@@ -122,6 +144,10 @@ class StudioMaterialClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
+    if (atelierEditionPhotoFrames.contains(style))
+      return AtelierEditionFrame.outer(style, size);
+    if (keepsakePhotoFrames.contains(style))
+      return KeepsakePhotoFrame.outer(style, size);
     final w = size.width, h = size.height;
     final unit = math.min(w, h);
     switch (style) {

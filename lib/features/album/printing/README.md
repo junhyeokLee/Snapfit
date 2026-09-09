@@ -55,8 +55,12 @@ decoded pixels per page, a dimension over 16384 pixels, or a source file over
 
 Output is PDF 1.4 with 300 DPI JPEG-quality-95 artwork, explicit MediaBox,
 TrimBox/BleedBox, and an embedded standard sRGB ICC profile. It is not PDF/X or
-CMYK. Vendor color acceptance and the exact page-count-specific production guide
-must be confirmed separately; `spec.verified == false` remains a review warning.
+CMYK. The vendor reply shared on 2026-09-10 confirms RGB artwork for photographic
+paper and gives no recommended ICC profile; sRGB remains our rendering standard.
+The vendor offers no advance file review. SnapFit must compare the exact
+page-count-specific cover template and check its own physical sample;
+`spec.verified == false` remains a review warning. See the
+[recorded reply](../../../../docs/print/vendors/redprinting/reply-shared-2026-09-10.md).
 Flutter render errors abort instead of printing an ErrorWidget or placeholder.
 
 Verification:

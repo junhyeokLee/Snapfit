@@ -1,0 +1,3441 @@
+{
+  "id": "snapfit_concept_reading-room_landscape",
+  "collectionId": "reading-room",
+  "editionId": "reading-room-24",
+  "title": "문장을 모으는 생활",
+  "category": "일상",
+  "concept": "코발트 연필과 책등, 읽고 적는 일상의 조판",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "landscape",
+  "designWidth": 500.0,
+  "designHeight": 373.7113402061856,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 373.7113402061856,
+    "layers": [
+      {
+        "id": "reading-room_landscape_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "reading-room_landscape_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "reading-room_landscape_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#111C23",
+        "cornerRadius": 0,
+        "opacity": 0.2
+      },
+      {
+        "id": "reading-room_landscape_0_part_3",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.095,
+        "w": 0.85,
+        "h": 0.002140689655172414,
+        "z": 3,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "reading-room_landscape_0_part_4",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 4,
+        "text": "A READING LIFE / 03",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 7.100515463917526,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "reading-room_landscape_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.13,
+        "w": 0.86,
+        "h": 0.32,
+        "z": 5,
+        "text": "문장을\n모으는 생활",
+        "align": "left",
+        "style": {
+          "fontFamily": "BookMyungjo",
+          "fontSize": 35.128865979381445,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "reading-room_landscape_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.5,
+        "w": 0.8,
+        "h": 0.08,
+        "z": 6,
+        "text": "읽고 적으며 남긴 장면들",
+        "align": "left",
+        "style": {
+          "fontFamily": "BookMyungjo",
+          "fontSize": 11.211340206185566,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "reading-room_landscape_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.83,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 7,
+        "text": "지우의 독서 기록",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 10.09020618556701,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "reading-room_landscape_0_part_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.91,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 8,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 7.100515463917526,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "문장을 모으는 생활",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EDF0F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_1_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "A READING LIFE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_1_part_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.135,
+          "w": 0.84,
+          "h": 0.002140689655172414,
+          "z": 2,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_1_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.19,
+          "w": 0.84,
+          "h": 0.18,
+          "z": 3,
+          "text": "Contents",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 45.96649484536083,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_1_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.41,
+          "w": 0.85,
+          "h": 0.12,
+          "z": 4,
+          "text": "책상에 앉기 전",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.291237113402065,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_1_part_5",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.6,
+          "w": 0.25225515463917525,
+          "h": 0.26999999999999996,
+          "z": 5,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_1_part_6",
+          "type": "text",
+          "x": 0.135,
+          "y": 0.635,
+          "w": 0.42,
+          "h": 0.17,
+          "z": 6,
+          "text": "책 한 권\n노트 한 권\n짧아진 연필",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 10.837628865979383,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_1_part_7",
+          "type": "sticker",
+          "x": 0.65,
+          "y": 0.59,
+          "w": 0.20927835051546392,
+          "h": 0.28,
+          "z": 7,
+          "imageUrl": "asset:assets/sticker/studio/wave_pencil.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "책상에 앉기 전",
+      "role": "reading-opening-index",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D9E3EE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_2_part_1",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.065,
+          "w": 0.9,
+          "h": 0.72,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_2_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.845,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 2,
+          "text": "창을 열고 책상을 조금 비웠다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "책상에 앉기 전",
+      "role": "desk-room-plate",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_3_part_1",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.09,
+          "w": 0.46414948453608257,
+          "h": 0.4600000000000001,
+          "z": 1,
+          "style": "atelierArchiveSeal",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_3_part_2",
+          "type": "text",
+          "x": 0.245,
+          "y": 0.225,
+          "w": 0.53,
+          "h": 0.13,
+          "z": 2,
+          "text": "Ex Libris",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 33.634020618556704,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_3_part_3",
+          "type": "text",
+          "x": 0.235,
+          "y": 0.385,
+          "w": 0.54,
+          "h": 0.085,
+          "z": 3,
+          "text": "지우의 독서 기록",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.211340206185566,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_3_part_4",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.64,
+          "w": 0.79,
+          "h": 0.002140689655172414,
+          "z": 4,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_3_part_5",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.72,
+          "w": 0.79,
+          "h": 0.12,
+          "z": 5,
+          "text": "오늘 펼친 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 25.41237113402062,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오늘 펼친 책",
+      "role": "book-exlibris",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE5ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_4_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.1,
+          "w": 0.84,
+          "h": 0.62,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_4_part_2",
+          "type": "sticker",
+          "x": 0.69,
+          "y": 0.61,
+          "w": 0.12457044673539518,
+          "h": 0.25,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/material_bookmark.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_4_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.83,
+          "w": 0.57,
+          "h": 0.055,
+          "z": 3,
+          "text": "READING NOTES / 02",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오늘 펼친 책",
+      "role": "open-book-frame",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F6F7F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_5_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "IN THE MARGINS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_5_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.21,
+          "w": 0.82,
+          "h": 0.27,
+          "z": 2,
+          "text": "밑줄 대신\n사진",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 35.50257731958763,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_5_underline",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.485,
+          "w": 0.42,
+          "h": 0.012,
+          "z": 3,
+          "fillColor": "#356BB0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_5_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.63,
+          "w": 0.73,
+          "h": 0.16,
+          "z": 4,
+          "text": "좋아하는 구절 옆에\n그날의 풍경을 놓아 두었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 14.201030927835053,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_5_part_5",
+          "type": "sticker",
+          "x": 0.7,
+          "y": 0.76,
+          "w": 0.08969072164948454,
+          "h": 0.12,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/wave_pencil.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "밑줄 대신 사진",
+      "role": "underline-typographic",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E3EAF0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_6_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.64,
+          "h": 0.44,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "materialNotebookMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_6_part_2",
+          "type": "decoration",
+          "x": 0.33,
+          "y": 0.52,
+          "w": 0.3083118556701031,
+          "h": 0.33,
+          "z": 2,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_6_part_3",
+          "type": "text",
+          "x": 0.4,
+          "y": 0.6,
+          "w": 0.45,
+          "h": 0.19,
+          "z": 3,
+          "text": "다 읽고 나서도\n접어 둔 페이지가\n자꾸 생각났다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.211340206185566,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_6_part_4",
+          "type": "sticker",
+          "x": 0.5,
+          "y": 0.485,
+          "w": 0.05979381443298969,
+          "h": 0.08,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/material_clip.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "밑줄 대신 사진",
+      "role": "book-and-margin-note",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_7_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.06,
+          "w": 0.66,
+          "h": 0.8,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_7_part_2",
+          "type": "text",
+          "x": 0.755,
+          "y": 0.2,
+          "w": 0.21,
+          "h": 0.23,
+          "z": 2,
+          "text": "창가의\n자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.443298969072163,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_7_part_3",
+          "type": "text",
+          "x": 0.75,
+          "y": 0.79,
+          "w": 0.23,
+          "h": 0.055,
+          "z": 3,
+          "text": "04 / HOME",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "창가의 자리",
+      "role": "window-room-vertical",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_8_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.79,
+          "h": 0.19,
+          "z": 1,
+          "text": "14:30",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 67.26804123711341,
+            "fontWeight": 400,
+            "color": "#EDF2F4",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_8_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.4,
+          "w": 0.63,
+          "h": 0.38,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_8_part_3",
+          "type": "text",
+          "x": 0.52,
+          "y": 0.27,
+          "w": 0.38,
+          "h": 0.12,
+          "z": 3,
+          "text": "같은 자리에서\n한 장 더",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#F1F5F5",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_8_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.845,
+          "w": 0.81,
+          "h": 0.055,
+          "z": 4,
+          "text": "오후에는 책장을 더 천천히 넘겼다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#F1F5F5",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "창가의 자리",
+      "role": "window-time-study",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E4ECE4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_9_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Outside",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 50.451030927835056,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_9_part_2",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.285,
+          "w": 0.88,
+          "h": 0.48,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "atelierOxford",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_9_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.815,
+          "w": 0.81,
+          "h": 0.095,
+          "z": 3,
+          "text": "밖에서 읽는 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.443298969072163,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "밖에서 읽는 날",
+      "role": "reading-outside",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_10_part_1",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.09,
+          "w": 0.3453092783505155,
+          "h": 0.5500000000000002,
+          "z": 1,
+          "style": "materialSpecimenPocket",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_10_part_2",
+          "type": "image",
+          "x": 0.17,
+          "y": 0.19,
+          "w": 0.51,
+          "h": 0.36,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_10_part_3",
+          "type": "sticker",
+          "x": 0.72,
+          "y": 0.25,
+          "w": 0.15945017182130583,
+          "h": 0.32,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_bookmark.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_10_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.74,
+          "w": 0.79,
+          "h": 0.12,
+          "z": 4,
+          "text": "가방에 넣은 책 한 권",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 18.311855670103093,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_10_part_5",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.865,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 5,
+          "text": "가볍게 나갔다가 오래 앉아 있었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "밖에서 읽는 날",
+      "role": "picnic-pocket-layout",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE7EC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_11_part_1",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.07,
+          "w": 0.41,
+          "h": 0.58,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_walk.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_11_part_2",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.29,
+          "w": 0.4,
+          "h": 0.41,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_11_part_3",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.8,
+          "w": 0.82,
+          "h": 0.1,
+          "z": 3,
+          "text": "돌아오는 길",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 21.675257731958766,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아오는 길",
+      "role": "walk-tall-prints",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_12_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.21,
+          "h": 0.2,
+          "z": 1,
+          "text": "06",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 59.79381443298969,
+            "fontWeight": 400,
+            "color": "#A8BDD1",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_12_part_2",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.34,
+          "w": 0.18,
+          "h": 0.22,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioSticker",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_12_part_3",
+          "type": "decoration",
+          "x": 0.31,
+          "y": 0.145,
+          "w": 0.36436855670103097,
+          "h": 0.39,
+          "z": 3,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_12_part_4",
+          "type": "text",
+          "x": 0.38,
+          "y": 0.23,
+          "w": 0.46,
+          "h": 0.1,
+          "z": 4,
+          "text": "오늘 가져온 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 14.201030927835053,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_12_part_5",
+          "type": "text",
+          "x": 0.38,
+          "y": 0.34,
+          "w": 0.46,
+          "h": 0.17,
+          "z": 5,
+          "text": "책갈피 한 장\n제철 과일 조금\n천천히 걷던 기분",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 10.463917525773196,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_12_part_6",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.655,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 6,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_12_part_7",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.72,
+          "w": 0.8,
+          "h": 0.17,
+          "z": 7,
+          "text": "책을 덮은 뒤의\n시간도 남긴다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.443298969072163,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아오는 길",
+      "role": "walk-receipt-note",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#ECEEE7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_13_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "BETWEEN BREAKFAST & A BOOK",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_13_part_2",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.195,
+          "w": 0.91,
+          "h": 0.57,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_13_part_3",
+          "type": "sticker",
+          "x": 0.8,
+          "y": 0.145,
+          "w": 0.05979381443298969,
+          "h": 0.08,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_clip.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_13_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.83,
+          "w": 0.72,
+          "h": 0.09,
+          "z": 4,
+          "text": "책과 식탁 사이",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.06958762886598,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "책과 식탁 사이",
+      "role": "breakfast-and-book",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9FAF5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_14_part_1",
+          "type": "image",
+          "x": 0.11,
+          "y": 0.09,
+          "w": 0.54,
+          "h": 0.43,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_14_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.62,
+          "w": 0.8,
+          "h": 0.19,
+          "z": 2,
+          "text": "읽다가,\n차를 끓이다가",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 22.048969072164947,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_14_part_3",
+          "type": "sticker",
+          "x": 0.7,
+          "y": 0.28,
+          "w": 0.2018041237113402,
+          "h": 0.27,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_pencil.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_14_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.85,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 4,
+          "text": "평범해서 더 오래 남기고 싶은 장면.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "책과 식탁 사이",
+      "role": "daily-still-life-notes",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D6E2E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_15_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.83,
+          "h": 0.17,
+          "z": 1,
+          "text": "In company",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 37.37113402061856,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_15_part_2",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.28,
+          "w": 0.89,
+          "h": 0.5,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_friends.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_15_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.82,
+          "w": 0.8,
+          "h": 0.09,
+          "z": 3,
+          "text": "함께 읽은 시간",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.443298969072163,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 읽은 시간",
+      "role": "reading-together-plate",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_16_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.065,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "A CONVERSATION / 08",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.15,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 2,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_16_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.2,
+          "w": 0.17,
+          "h": 0.11,
+          "z": 3,
+          "text": "Q.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 29.896907216494846,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_part_4",
+          "type": "text",
+          "x": 0.3,
+          "y": 0.235,
+          "w": 0.6,
+          "h": 0.1,
+          "z": 4,
+          "text": "어떤 문장이 남았어?",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 13.45360824742268,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.39,
+          "w": 0.17,
+          "h": 0.11,
+          "z": 5,
+          "text": "A.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 29.896907216494846,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_part_6",
+          "type": "text",
+          "x": 0.3,
+          "y": 0.42,
+          "w": 0.6,
+          "h": 0.17,
+          "z": 6,
+          "text": "다 읽고 나서\n처음으로 돌아가게 한 문장.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 10.837628865979383,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_part_7",
+          "type": "image",
+          "x": 0.57,
+          "y": 0.67,
+          "w": 0.33,
+          "h": 0.22,
+          "z": 7,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_16_part_8",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.76,
+          "w": 0.41,
+          "h": 0.075,
+          "z": 8,
+          "text": "같은 책, 다른 밑줄.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 8.969072164948454,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 9,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 10,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 읽은 시간",
+      "role": "conversation-transcript",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7ECED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_17_part_1",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.08,
+          "w": 0.5138530927835051,
+          "h": 0.5499999999999999,
+          "z": 1,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_17_part_2",
+          "type": "text",
+          "x": 0.155,
+          "y": 0.15,
+          "w": 0.7,
+          "h": 0.055,
+          "z": 2,
+          "text": "NOTES / 09",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_17_part_3",
+          "type": "text",
+          "x": 0.16,
+          "y": 0.28,
+          "w": 0.66,
+          "h": 0.22,
+          "z": 3,
+          "text": "좋아하는 구절 옆에 날짜를 적었다.\n그날의 풍경도 함께 남겨 둔다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_17_part_4",
+          "type": "sticker",
+          "x": 0.59,
+          "y": 0.43,
+          "w": 0.16443298969072165,
+          "h": 0.22,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/wave_pencil.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_17_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.77,
+          "w": 0.82,
+          "h": 0.12,
+          "z": 5,
+          "text": "노트에 남긴 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 22.048969072164947,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "노트에 남긴 것",
+      "role": "notebook-document",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAFAF5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_18_part_1",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.075,
+          "w": 0.64,
+          "h": 0.5,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "materialNotebookMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_18_part_2",
+          "type": "image",
+          "x": 0.5,
+          "y": 0.61,
+          "w": 0.41,
+          "h": 0.27,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_18_part_3",
+          "type": "sticker",
+          "x": 0.24,
+          "y": 0.045,
+          "w": 0.05605670103092783,
+          "h": 0.075,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_clip.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_18_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.71,
+          "w": 0.34,
+          "h": 0.13,
+          "z": 4,
+          "text": "사진 뒤에도\n한 줄을 적었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "노트에 남긴 것",
+      "role": "notebook-desk-inset",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#234A87",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_19_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.065,
+          "w": 0.85,
+          "h": 0.23,
+          "z": 1,
+          "text": "Again",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 71.00515463917526,
+            "fontWeight": 400,
+            "color": "#EDF4F4",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_19_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.34,
+          "w": 0.81,
+          "h": 0.26,
+          "z": 2,
+          "text": "다시 찾은\n문장",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 31.76546391752578,
+            "fontWeight": 400,
+            "color": "#F3F5F3",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_19_part_3",
+          "type": "sticker",
+          "x": 0.74,
+          "y": 0.62,
+          "w": 0.129553264604811,
+          "h": 0.26,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_bookmark.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_19_part_4",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.735,
+          "w": 0.59,
+          "h": 0.14,
+          "z": 4,
+          "text": "같은 문장이\n다르게 읽히는 날.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.70618556701031,
+            "fontWeight": 400,
+            "color": "#F3F5F3",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다시 찾은 문장",
+      "role": "rereading-number",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E5EBEC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_20_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.09,
+          "w": 0.82,
+          "h": 0.64,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_20_blue_marker",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.775,
+          "w": 0.08,
+          "h": 0.015,
+          "z": 2,
+          "fillColor": "#356BB0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_20_part_3",
+          "type": "text",
+          "x": 0.22,
+          "y": 0.8,
+          "w": 0.68,
+          "h": 0.075,
+          "z": 3,
+          "text": "접어 둔 자리를 다시 펼쳤다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 8.969072164948454,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다시 찾은 문장",
+      "role": "reopened-book",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_21_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.07,
+          "w": 0.82,
+          "h": 0.13,
+          "z": 1,
+          "text": "한 달의 책상",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 23.54381443298969,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_21_part_2",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.27,
+          "w": 0.53,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "atelierNegative",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_21_part_3",
+          "type": "image",
+          "x": 0.655,
+          "y": 0.27,
+          "w": 0.26,
+          "h": 0.22,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_21_part_4",
+          "type": "image",
+          "x": 0.655,
+          "y": 0.54,
+          "w": 0.26,
+          "h": 0.22,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_21_part_5",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 5,
+          "text": "2026. 06",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "한 달의 책상",
+      "role": "month-contact-sheet",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE6EB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_22_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.055,
+          "w": 0.82,
+          "h": 0.2,
+          "z": 1,
+          "text": "Index",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 59.79381443298969,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.34,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 2,
+          "fillColor": "#9AAFC0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_22_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.36700000000000005,
+          "w": 0.12,
+          "h": 0.055,
+          "z": 3,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_4",
+          "type": "text",
+          "x": 0.27,
+          "y": 0.36000000000000004,
+          "w": 0.62,
+          "h": 0.085,
+          "z": 4,
+          "text": "창가에서 읽은 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.47000000000000003,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 5,
+          "fillColor": "#9AAFC0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_22_part_6",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.49700000000000005,
+          "w": 0.12,
+          "h": 0.055,
+          "z": 6,
+          "text": "02",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_7",
+          "type": "text",
+          "x": 0.27,
+          "y": 0.49000000000000005,
+          "w": 0.62,
+          "h": 0.085,
+          "z": 7,
+          "text": "가방에 넣어 간 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_8",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.6000000000000001,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 8,
+          "fillColor": "#9AAFC0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_22_part_9",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.6270000000000001,
+          "w": 0.12,
+          "h": 0.055,
+          "z": 9,
+          "text": "03",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_10",
+          "type": "text",
+          "x": 0.27,
+          "y": 0.6200000000000001,
+          "w": 0.62,
+          "h": 0.085,
+          "z": 10,
+          "text": "친구와 이야기한 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_11",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.73,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 11,
+          "fillColor": "#9AAFC0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_22_part_12",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.757,
+          "w": 0.12,
+          "h": 0.055,
+          "z": 12,
+          "text": "04",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_part_13",
+          "type": "text",
+          "x": 0.27,
+          "y": 0.75,
+          "w": 0.62,
+          "h": 0.085,
+          "z": 13,
+          "text": "다시 펼친 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.958762886597938,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 14,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 15,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "한 달의 책상",
+      "role": "month-index",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAFAF5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.075,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "TO BE CONTINUED",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 7.100515463917526,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_23_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.2,
+          "w": 0.81,
+          "h": 0.25,
+          "z": 2,
+          "text": "다음 책을\n펼치며",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 30.270618556701034,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_23_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.535,
+          "w": 0.8,
+          "h": 0.002140689655172414,
+          "z": 3,
+          "fillColor": "#244993",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_23_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.6,
+          "w": 0.78,
+          "h": 0.16,
+          "z": 4,
+          "text": "좋아하는 구절 옆에 날짜를 적었다.\n그날의 풍경도 함께 남겨 둔다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.211340206185566,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_23_part_5",
+          "type": "sticker",
+          "x": 0.67,
+          "y": 0.73,
+          "w": 0.11211340206185566,
+          "h": 0.15,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/wave_pencil.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_23_part_6",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.82,
+          "w": 0.53,
+          "h": 0.075,
+          "z": 6,
+          "text": "지우의 독서 기록",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 8.969072164948454,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 책을 펼치며",
+      "role": "reading-colophon",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 373.7113402061856,
+      "layers": [
+        {
+          "id": "reading-room_landscape_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE6E8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "reading-room_landscape_24_part_1",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.09,
+          "w": 0.8,
+          "h": 0.64,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "reading-room_landscape_24_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.8,
+          "w": 0.83,
+          "h": 0.1,
+          "z": 2,
+          "text": "아직 읽고 싶은 날이 많다",
+          "align": "center",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 13.079896907216497,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "reading-room_landscape_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "문장을 모으는 생활",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "reading-room_landscape_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 6.72680412371134,
+            "fontWeight": 400,
+            "color": "#244993",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 책을 펼치며",
+      "role": "reading-last-plate",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "책상에 앉기 전",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "오늘 펼친 책",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "밑줄 대신 사진",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "창가의 자리",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "밖에서 읽는 날",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "돌아오는 길",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "책과 식탁 사이",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "함께 읽은 시간",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "노트에 남긴 것",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "다시 찾은 문장",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "한 달의 책상",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "다음 책을 펼치며",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

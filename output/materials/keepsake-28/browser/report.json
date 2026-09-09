@@ -1,0 +1,29 @@
+[
+  {
+    "width": 390,
+    "height": 844,
+    "passed": true,
+    "screenshots": 5,
+    "errors": [],
+    "failed": [],
+    "api": []
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "passed": true,
+    "screenshots": 5,
+    "errors": [],
+    "failed": [],
+    "api": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "passed": true,
+    "screenshots": 5,
+    "errors": [],
+    "failed": [],
+    "api": []
+  }
+]

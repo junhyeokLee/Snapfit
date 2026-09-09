@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +14,7 @@ import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import 'package:snap_fit/features/album/domain/entities/layer_export_mapper.dart';
 import 'package:snap_fit/features/album/domain/entities/album_creation_template.dart';
 import 'package:snap_fit/features/store/presentation/widgets/template_page_renderer.dart';
+
 import '../../tool/template_studio/luminous_edition_preview.dart';
 import '../widget/ai_album_start_step_test.dart'
     show loadCreationFonts, wrapCreation;
@@ -164,7 +166,33 @@ void main() {
                       backing.opacity == 1 &&
                       backing.decorationFillColor != null &&
                       paperContainsText(backing, l);
-                  if (!paperBackedPhotoOverlay)
+                  final coverTypeZones = [
+                    Rect.fromLTWH(
+                      .06 * aspect.canvas.width,
+                      .04 * aspect.canvas.height,
+                      .88 * aspect.canvas.width,
+                      .21 * aspect.canvas.height,
+                    ),
+                    Rect.fromLTWH(
+                      .06 * aspect.canvas.width,
+                      .90 * aspect.canvas.height,
+                      .88 * aspect.canvas.width,
+                      .075 * aspect.canvas.height,
+                    ),
+                  ];
+                  final safeCoverOverlay =
+                      premium &&
+                      page.$1 == 0 &&
+                      o.type == LayerType.image &&
+                      o.zIndex < l.zIndex &&
+                      sourceLayer['overlayImageId'] == o.id &&
+                      l.rotation == 0 &&
+                      coverTypeZones.any(
+                        (zone) =>
+                            zone.contains(r.topLeft) &&
+                            zone.contains(r.bottomRight),
+                      );
+                  if (!paperBackedPhotoOverlay && !safeCoverOverlay)
                     issues.add('${l.id} overlaps ${o.id}');
                 }
               }
@@ -198,6 +226,26 @@ void main() {
               }
               final w = images.first.width.toDouble(),
                   h = images.first.height.toDouble();
+              for (var i = 1; i + 1 < images.length; i += 2) {
+                final spreadRecorder = ui.PictureRecorder();
+                final spreadCanvas = Canvas(spreadRecorder);
+                spreadCanvas.drawImage(images[i], Offset.zero, Paint());
+                spreadCanvas.drawImage(images[i + 1], Offset(w, 0), Paint());
+                final spreadPicture = spreadRecorder.endRecording();
+                final spreadImage = await spreadPicture.toImage(
+                  (w * 2).ceil(),
+                  h.ceil(),
+                );
+                await File(
+                  '${dir.path}/spread-${(i + 1) ~/ 2}.png',
+                ).writeAsBytes(
+                  (await spreadImage.toByteData(
+                    format: ui.ImageByteFormat.png,
+                  ))!.buffer.asUint8List(),
+                );
+                spreadImage.dispose();
+                spreadPicture.dispose();
+              }
               final recorder = ui.PictureRecorder(), canvas = Canvas(recorder);
               canvas.drawColor(const Color(0xFFE2E5E4), BlendMode.src);
               for (final e in images.indexed) {

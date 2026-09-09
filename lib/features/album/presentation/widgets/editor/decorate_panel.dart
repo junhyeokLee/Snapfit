@@ -47,8 +47,8 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
     final surfaceColor = SnapFitColors.surfaceOf(context);
     final media = MediaQuery.of(context);
     final isLandscape = media.size.width > media.size.height;
-    final preferredHeight = (media.size.height * (isLandscape ? 0.82 : 0.58))
-        .clamp(isLandscape ? 300.0 : 420.0, isLandscape ? 430.0 : 560.0);
+    final preferredHeight = (media.size.height * (isLandscape ? 0.90 : 0.90))
+        .clamp(isLandscape ? 300.0 : 520.0, isLandscape ? 600.0 : 900.0);
     final panelHeight = preferredHeight.clamp(
       0.0,
       media.size.height - media.padding.top - media.viewInsets.bottom,

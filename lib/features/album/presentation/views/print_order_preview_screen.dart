@@ -9,6 +9,7 @@ import '../../../../core/constants/snapfit_colors.dart';
 import '../../../profile/data/order_repository.dart';
 import '../../printing/album_print_exporter.dart';
 import '../../printing/print_album_document.dart';
+import '../widgets/print_fulfillment_notice.dart';
 
 final printPreviewExporterProvider = Provider<AlbumPrintExporter>(
   (ref) => AlbumPrintExporter(),
@@ -247,7 +248,7 @@ class _PrintOrderPreviewScreenState
                       : '결제 서비스 준비 전 참고 금액입니다.',
                 ),
                 if (quote.priceIsEstimate)
-                  const Text('이 크기의 제작비는 추정치이며 업체 견적 확인 후 확정됩니다.'),
+                  const Text('이 크기의 제작비는 추정치이며 업체 주문창의 실제 청구금액 확인 후 확정됩니다.'),
                 if (quote.specMissing) ...[
                   const SizedBox(height: 12),
                   const Text(
@@ -372,6 +373,8 @@ class _PrintOrderPreviewScreenState
                   child: const Text('내지 PDF 보기·저장'),
                 ),
               ],
+              const SizedBox(height: 24),
+              const PrintFulfillmentNotice(),
               const SizedBox(height: 24),
               const FilledButton(onPressed: null, child: Text('인화 주문 결제 준비 중')),
               const SizedBox(height: 8),

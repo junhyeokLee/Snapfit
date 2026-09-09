@@ -47,9 +47,9 @@ class _TemplateSelectionPanelState
       onlyFavorites: _favoritesOnly,
     );
 
-    final maxSheetHeight = (MediaQuery.sizeOf(context).height * 0.78).clamp(
+    final maxSheetHeight = (MediaQuery.sizeOf(context).height * 0.90).clamp(
       0.0,
-      620.0,
+      900.0,
     );
 
     return Container(

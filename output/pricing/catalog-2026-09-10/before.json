@@ -1,0 +1,78 @@
+{
+  "project": "rrbhxdtriummqpztpjrk",
+  "capturedAt": "2026-09-09T17:03:13.360Z",
+  "rows": [
+    {
+      "asset_id": "daily-cabinet",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:daily-cabinet",
+      "title": "하루의 수집함",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "first-year-keepsake",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:first-year-keepsake",
+      "title": "너의 첫 계절",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "lightbound",
+      "is_active": true,
+      "kind": "template",
+      "point_price": 700,
+      "product_key": "template:lightbound",
+      "title": "빛으로 엮은 우리",
+      "updated_at": "2026-09-08 16:20:25.399112+00"
+    },
+    {
+      "asset_id": "luminous-edition",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:luminous-edition",
+      "title": "둘만의 여행",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "table-stories",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:table-stories",
+      "title": "우리 집 식탁",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "two-tickets",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:two-tickets",
+      "title": "둘이 모은 장면",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "vow-keepsake",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:vow-keepsake",
+      "title": "약속을 묶은 책",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    },
+    {
+      "asset_id": "walk-and-nap",
+      "is_active": false,
+      "kind": "template",
+      "point_price": null,
+      "product_key": "template:walk-and-nap",
+      "title": "산책하고 낮잠",
+      "updated_at": "2026-09-09 11:54:30.902381+00"
+    }
+  ]
+}

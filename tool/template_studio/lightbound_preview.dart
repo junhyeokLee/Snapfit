@@ -65,8 +65,9 @@ class AuthoredDraftPreview<T> extends StatefulWidget {
     required this.chapters,
     required this.initialCopy,
     required this.buildPages,
-    required this.copySheet,
+    this.copySheet,
     this.editionLabel = '무료',
+    this.prioritizePageCount = false,
     this.extraControls = const [],
     this.revision,
     this.coverRevision,
@@ -76,8 +77,9 @@ class AuthoredDraftPreview<T> extends StatefulWidget {
   final List<String> chapters;
   final T initialCopy;
   final List<List<LayerModel>> Function(CollectionAspect, T, bool) buildPages;
-  final Widget Function(T) copySheet;
+  final Widget Function(T)? copySheet;
   final String editionLabel;
+  final bool prioritizePageCount;
   final List<Widget> extraControls;
   final Object? revision;
   final Object? coverRevision;
@@ -128,12 +130,14 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
   });
 
   Future<void> _edit() async {
+    final copySheet = widget.copySheet;
+    if (copySheet == null) return;
     final next = await showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       constraints: const BoxConstraints(maxWidth: 560),
-      builder: (_) => widget.copySheet(_copy),
+      builder: (_) => copySheet(_copy),
     );
     if (next == null || !mounted) return;
     setState(() {
@@ -160,6 +164,11 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
           }
         },
         itemBuilder: (_) => [
+          const PopupMenuItem(
+            value: '/premium-studies',
+            child: Text('유료 시안 모아보기'),
+          ),
+          const PopupMenuDivider(),
           for (final collection in authoredCollections)
             PopupMenuItem(
               value: '/${collection.id}',
@@ -168,7 +177,11 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
           const PopupMenuDivider(),
           const PopupMenuItem(
             value: '/luminous-edition',
-            child: Text('겹쳐진 순간 · 유료 후보'),
+            child: Text('둘만의 여행 · 유료 후보'),
+          ),
+          const PopupMenuItem(
+            value: '/travel-keepsake-20',
+            child: Text('둘만의 여행 · 20쪽 보관본'),
           ),
           const PopupMenuItem(value: '/frames', child: Text('사진 프레임')),
           const PopupMenuItem(value: '/materials', child: Text('종이·스티커')),
@@ -211,11 +224,12 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
               ),
           ],
         ),
-        IconButton(
-          tooltip: '문구 편집',
-          onPressed: _edit,
-          icon: const Icon(Icons.edit_note_rounded, size: 23),
-        ),
+        if (widget.copySheet != null)
+          IconButton(
+            tooltip: '문구 편집',
+            onPressed: _edit,
+            icon: const Icon(Icons.edit_note_rounded, size: 23),
+          ),
         IconButton(
           tooltip: _overview ? '책으로 보기' : '전체 펼침 보기',
           onPressed: () => setState(() => _overview = !_overview),
@@ -261,7 +275,9 @@ class _AuthoredDraftPreviewState<T> extends State<AuthoredDraftPreview<T>> {
               children: [
                 Expanded(
                   child: Text(
-                    '${widget.editionLabel} · 표지 + 내지 ${_pages.length - 1}쪽',
+                    widget.prioritizePageCount
+                        ? '내지 ${_pages.length - 1}쪽 · 표지 별도 · ${widget.editionLabel}'
+                        : '${widget.editionLabel} · 표지 + 내지 ${_pages.length - 1}쪽',
                     style: const TextStyle(fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

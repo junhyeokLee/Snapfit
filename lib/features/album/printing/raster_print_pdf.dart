@@ -7,7 +7,8 @@ import 'srgb_profile.dart';
 
 /// PDF 1.4 writer for opaque 300 dpi sRGB page artwork, JPEG quality 95.
 /// Flutter has already composited text, clips, frames and transparency exactly.
-/// No PDF/X or CMYK claim is made; vendor colour acceptance remains in preflight.
+/// No PDF/X or CMYK claim is made. RGB suits the vendor's photographic paper;
+/// sRGB is our output standard, with colour appearance checked in our sample.
 class RasterPrintPdf {
   final List<_RasterPage> _pages = [];
   int _encodedBytes = 0;

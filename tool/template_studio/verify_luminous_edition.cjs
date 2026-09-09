@@ -5,7 +5,12 @@ const {chromium} = require('playwright');
 const {expect} = require('playwright/test');
 const {PNG} = require('pngjs');
 const root = process.env.TEMPLATE_PREVIEW_URL || 'http://127.0.0.1:4323';
-const out = path.resolve('output/template-preview/luminous-edition/browser');
+const chapters = ['도착한 곳, 챙겨 온 것', '골목의 장면과 카페', '해변과 짧은 편지', '사진 한 장, 엽서 한 장'];
+const reviewedSpreads = process.env.TEMPLATE_REVIEW_SPREADS
+  ? process.env.TEMPLATE_REVIEW_SPREADS.split(',').map(Number)
+  : chapters.map((_, i) => i + 1);
+assert(reviewedSpreads.length > 0 && reviewedSpreads.every(i => Number.isInteger(i) && i >= 1 && i <= chapters.length));
+const out = path.resolve(`output/template-preview/luminous-edition/${process.env.TEMPLATE_REVIEW_SPREADS ? 'browser-focus' : 'browser'}`);
 fs.mkdirSync(out, {recursive: true});
 async function choose(page, label, item) {
   await page.getByRole('button', {name: label === '시안 선택' ? /시안 선택/ : label, exact: label !== '시안 선택'}).click();
@@ -37,21 +42,23 @@ async function shot(page, name) {
     for (const viewport of [{width:390,height:844},{width:844,height:390},{width:1440,height:900}]) {
       const context = await browser.newContext({viewport});
       const page = await context.newPage();
-      page.setDefaultTimeout(15000);
+      page.setDefaultTimeout(30000);
       const errors = [], failures = [], api = [];
       page.on('pageerror', e => errors.push(e.message));
       page.on('response', r => {if (r.status() >= 400) failures.push(r.url());});
       page.on('request', r => {if (/\.supabase\.co|api\.openai\.com|api\.anthropic\.com/.test(r.url())) api.push(r.url());});
       await page.goto(`${root}/?collection=luminous-edition#/luminous-edition`);
-      await page.waitForSelector('flt-semantics-placeholder', {state: 'attached'});
+      await page.waitForSelector('flt-semantics-placeholder', {state: 'attached', timeout:60000});
       await page.locator('flt-semantics-placeholder').evaluate(e => e.click());
       await expect(page.getByRole('button', {name: /^표지 미리보기/})).toBeVisible({timeout: 20000});
-      await expect.poll(() => page.locator('body').ariaSnapshot(), {timeout:20000}).toContain('유료 후보 · 미등록');
+      await choose(page, '판본 선택', '승인 8쪽 기준본');
+      await expect.poll(() => page.locator('body').ariaSnapshot(), {timeout:20000}).toContain('디자인 승인 · 미등록');
       for (const ratio of ['세로형', '정사각형', '가로형']) {
         await choose(page, '앨범 규격', ratio);
         await choose(page, '목차', '표지');
         await shot(page, `${viewport.width}-${ratio}-cover.png`);
-        for (const [i, title] of ['가장 가까운 장면들'].entries()) {
+        for (const [i, title] of chapters.entries()) {
+          if (!reviewedSpreads.includes(i + 1)) continue;
           await choose(page, '목차', `${i * 2 + 1}–${i * 2 + 2} / ${title}`);
           await expect(page.getByRole('button', {name: new RegExp(`^${i * 2 + 1}쪽 미리보기`)})).toBeVisible();
           await shot(page, `${viewport.width}-${ratio}-spread-${i + 1}.png`);
@@ -85,8 +92,8 @@ async function shot(page, name) {
       await shot(page, `${viewport.width}-phrases.png`);
       await page.getByRole('button', {name:'Back', exact:true}).click();
       await expect(page.getByRole('button', {name:/^표지 미리보기.*반짝인/})).toBeVisible();
-      await page.getByLabel('겹쳐진 순간 즐겨찾기 추가', {exact:true}).click();
-      await expect(page.getByLabel('겹쳐진 순간 즐겨찾기 해제', {exact:true})).toBeVisible();
+      await page.getByLabel('둘만의 여행 즐겨찾기 추가', {exact:true}).click();
+      await expect(page.getByLabel('둘만의 여행 즐겨찾기 해제', {exact:true})).toBeVisible();
       await page.getByRole('button', {name:'무료와 비교', exact:true}).click();
       await shot(page, `${viewport.width}-free-comparison.png`);
       await page.getByRole('button', {name:'같은 사진으로 비교', exact:true}).click();
@@ -96,10 +103,19 @@ async function shot(page, name) {
       await expect.poll(() => page.locator('body').ariaSnapshot(), {timeout:20000}).toContain('함께여서 좋은 날');
       await page.getByRole('button', {name:'Back', exact:true}).click();
       await expect(page.getByRole('button', {name:/^표지 미리보기.*반짝인/})).toBeVisible();
+      await choose(page, '시안 선택', '둘만의 여행 · 20쪽 보관본');
+      await expect.poll(() => page.locator('body').ariaSnapshot()).toContain('20쪽 보관본');
+      await expect(page.getByRole('button', {name:'문구 편집', exact:true})).toHaveCount(0);
+      for (const ratio of ['세로형', '정사각형', '가로형']) {
+        await choose(page, '앨범 규격', ratio);
+        await choose(page, '목차', '19–20 / 여행을 꺼내 보는 날');
+        await expect(page.getByRole('button', {name: /^19쪽 미리보기/})).toBeVisible();
+        await shot(page, `${viewport.width}-archive-${ratio}.png`);
+      }
       await choose(page, '시안 선택', '함께여서 좋은 날');
       await expect.poll(() => page.locator('body').ariaSnapshot(), {timeout:20000}).toContain('무료 · 표지 + 내지 24쪽');
       assert.deepEqual(errors, []); assert.deepEqual(failures, []); assert.deepEqual(api, []);
-      checks.push({viewport, ratios:3, pages:3, editedTitle:true, materials:true, materialFavorite:true, materialEnlargement:true, favorite:true, freeComparison:true, freeRoute:true});
+      checks.push({viewport, ratios:3, pages:chapters.length * 2 + 1, reviewedSpreads, archivePages:21, archiveReadOnly:true, editedTitle:true, materials:true, materialFavorite:true, materialEnlargement:true, favorite:true, freeComparison:true, freeRoute:true});
       console.log(`${viewport.width}: candidate passed`);
       await context.close();
     }

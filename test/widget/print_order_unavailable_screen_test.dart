@@ -64,6 +64,11 @@ void main() {
       expect(repositoryReads, 0);
       expect(routeResult, 'not-returned');
       expect(find.text('기존 주문 내역 보기'), findsOneWidget);
+      await tester.ensureVisible(find.text('제작·배송 참고 안내'));
+      expect(find.textContaining('영업일 5~6일'), findsOneWidget);
+      expect(find.textContaining('택배 배송 기간 별도'), findsOneWidget);
+      expect(find.textContaining('주문번호 스티커'), findsOneWidget);
+      expect(repositoryReads, 0);
       await tester.ensureVisible(find.text('앨범으로 돌아가기'));
       await tester.tap(find.text('앨범으로 돌아가기'));
       await tester.pumpAndSettle();

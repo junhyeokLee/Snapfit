@@ -5,9 +5,10 @@ import '../../../core/templates/studio_word_art_catalog.dart';
 import '../../../shared/widgets/image_frame_style_picker.dart';
 import 'point_shop_product.dart';
 import 'point_shop_template_key.dart';
+import 'premium_volume_registration.dart';
 
-/// Public assets available for an administrator to configure. Opening the admin
-/// screen never persists these descriptors or chooses a paid price for them.
+/// Public assets and explicitly registered drafts available to administrators.
+/// Opening this list never persists prices or publishes candidate artwork.
 final pointShopKnownProducts = List<PointShopProduct>.unmodifiable([
   for (final collection in authoredCollections)
     PointShopProduct(
@@ -18,6 +19,8 @@ final pointShopKnownProducts = List<PointShopProduct>.unmodifiable([
       pointPrice: null,
       isActive: false,
     ),
+  ...pendingPremiumVolumeProducts,
+  ...pendingConceptVolumeProducts,
   for (final decoration in studioDecorations)
     PointShopProduct(
       productKey: 'sticker:${decoration.id}',

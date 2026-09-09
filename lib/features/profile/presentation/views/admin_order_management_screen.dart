@@ -14,6 +14,7 @@ import '../../../../core/utils/app_error_mapper.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
 import '../../data/admin_ops_repository.dart';
 import '../../../album/printing/album_print_exporter.dart';
+import '../../../album/printing/redprinting_fulfillment_policy.dart';
 import '../../data/order_repository.dart';
 import '../../domain/entities/order_history_item.dart';
 
@@ -731,7 +732,9 @@ class _PrintFulfillmentSheetState
 
   Future<void> _copyOrder() async {
     final lines = [
-      'SnapFit 주문번호: ${_order.orderId}',
+      '${RedprintingFulfillmentPolicy.senderName} 주문번호: ${_order.orderId}',
+      '발송자명: ${RedprintingFulfillmentPolicy.senderName}',
+      RedprintingFulfillmentPolicy.directShippingInstructions,
       '레드프린팅 내 파일 포토북 / ${_order.printProductLabel} / 1권',
       '제작 상품: ${_order.printProduct?.id ?? '확인 필요'}',
       '내지 ${_order.pageCount ?? '-'}페이지 · 표지 PDF와 내지 PDF 별도 업로드',
@@ -920,7 +923,7 @@ class _PrintFulfillmentSheetState
                           ],
                         ),
                         Text(
-                          '발송인 SnapFit 표기: ${evidence('senderLabelConfirmed')}\n금액 명세서 제외: ${evidence('priceSlipOmittedConfirmed')}\n홍보물 동봉 제외: ${evidence('promotionalMaterialsOmittedConfirmed')}\n업체 작업 규격: ${evidence('vendorSpecConfirmed')}',
+                          '발송인 표시 확인: ${evidence('senderLabelConfirmed')}\n금액 명세서 제외: ${evidence('priceSlipOmittedConfirmed')}\n홍보물 동봉 제외: ${evidence('promotionalMaterialsOmittedConfirmed')}\n업체 작업 규격: ${evidence('vendorSpecConfirmed')}',
                         ),
                         if (confirmations['evidence'] != null)
                           Text('확인 근거: ${confirmations['evidence']}'),
@@ -1086,7 +1089,9 @@ class _VendorSubmissionDialogState extends State<_VendorSubmissionDialog> {
                 contentPadding: EdgeInsets.zero,
                 value: _sender,
                 onChanged: (v) => setState(() => _sender = v == true),
-                title: const Text('발송인 SnapFit 표기 확인'),
+                title: const Text(
+                  '발송인 ${RedprintingFulfillmentPolicy.senderName} 표기 확인',
+                ),
               ),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,

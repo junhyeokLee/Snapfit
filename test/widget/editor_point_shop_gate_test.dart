@@ -85,8 +85,8 @@ void main() {
             value = phrase.id;
             picker = StudioPhrasePicker(onSelect: (p) => applied.add(p.id));
           case 'frame':
-            id = 'zineContact';
-            label = '필름 콘택트';
+            id = 'materialLaceMount';
+            label = '자수 코너 매트';
             value = id;
             picker = ImageFrameStylePicker(
               selectedKey: null,

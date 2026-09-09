@@ -2,13 +2,23 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../features/album/domain/entities/layer.dart';
 
+part 'atelier_word_art_catalog.dart';
+
 /// Text and stationery remain separate editable layers, not a flattened image.
 class StudioWordArt {
-  const StudioWordArt(this.id, this.label, this.text, {this.square = false});
+  const StudioWordArt(
+    this.id,
+    this.label,
+    this.text, {
+    this.square = false,
+    this.canvasSize,
+  });
 
   final String id, label, text;
   final bool square;
-  Size get sourceSize => square ? const Size(300, 300) : const Size(500, 192);
+  final Size? canvasSize;
+  Size get sourceSize =>
+      canvasSize ?? (square ? const Size(300, 300) : const Size(500, 192));
   String get insertionValue => 'wordart:$id';
   String get productKey => 'phrase:collage-$id';
   String get favoriteKey => 'textStyle:luminous-edition:$id';
@@ -23,22 +33,37 @@ class StudioWordArt {
       (canvas.width - source.width * scale) / 2,
       (canvas.height - source.height * scale) / 2,
     );
-    return [
-      for (final layer in _sourceLayers())
-        layer.copyWith(
-          position: origin + layer.position * scale,
-          width: layer.width * scale,
-          height: layer.height * scale,
-          textStyle: layer.textStyle?.copyWith(
-            fontSize: layer.textStyle!.fontSize! * scale,
-          ),
+    return _sourceLayers().map((layer) {
+      var result = layer.copyWith(
+        position: origin + layer.position * scale,
+        width: layer.width * scale,
+        height: layer.height * scale,
+        textStyle: layer.textStyle?.copyWith(
+          fontSize: layer.textStyle!.fontSize! * scale,
         ),
-    ];
+      );
+      if (id.startsWith('atelier-') && layer.type == LayerType.text) {
+        // Font hinting rounds line metrics at the inserted size, not the source size.
+        final measure = TextPainter(
+          text: TextSpan(text: result.text, style: result.textStyle),
+          textDirection: TextDirection.ltr,
+          textAlign: result.textAlign ?? TextAlign.center,
+        )..layout(maxWidth: result.width);
+        final height = measure.height;
+        measure.dispose();
+        result = result.copyWith(
+          position: result.position + Offset(0, (result.height - height) / 2),
+          height: height,
+        );
+      }
+      return result;
+    }).toList();
   }
 
   List<LayerModel> previewLayers() => _sourceLayers();
 
   List<LayerModel> _sourceLayers() {
+    if (id.startsWith('atelier-')) return _atelierWordArtLayers(this);
     LayerModel paper(String key, Rect rect) => LayerModel(
       id: '$id-paper',
       type: LayerType.decoration,
@@ -153,6 +178,7 @@ const studioWordArts = [
   StudioWordArt('ribbon', '리본 문구', '오늘도, 네 편!'),
   StudioWordArt('seal', '레이스 메달 문구', '소중한\n우리', square: true),
   StudioWordArt('outline', '아웃라인 명조', '우리의 순간'),
+  ...atelierWordArts,
 ];
 
 StudioWordArt? studioWordArtById(String id) =>

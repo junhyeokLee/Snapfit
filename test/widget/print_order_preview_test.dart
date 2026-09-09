@@ -125,6 +125,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pump();
       expect(find.text('내지 2 / 20 · 추가 빈 페이지'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('빈 페이지'), -200);
       expect(find.text('빈 페이지'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.widgetWithText(FilledButton, '인화 주문 결제 준비 중'),
@@ -134,6 +135,9 @@ void main() {
         find.widgetWithText(FilledButton, '인화 주문 결제 준비 중'),
       );
       expect(disabledPayment.onPressed, isNull);
+      expect(find.textContaining('영업일 5~6일'), findsOneWidget);
+      expect(find.textContaining('택배 배송 기간 별도'), findsOneWidget);
+      expect(find.textContaining('주문번호 스티커'), findsOneWidget);
       final generate = find.widgetWithText(FilledButton, '표지·내지 검수용 PDF 만들기');
       expect(tester.widget<FilledButton>(generate).onPressed, isNull);
       await tester.scrollUntilVisible(find.byType(CheckboxListTile), -200);

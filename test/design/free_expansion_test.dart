@@ -47,10 +47,10 @@ void main() {
     )..addFont(rootBundle.load('assets/fonts/Eulyoo1945-Regular.ttf'))).load();
   });
   test(
-    'thirty-six free collections, six travel and five per other category',
+    'thirty-seven free collections, six travel/couple and five per other category',
     () {
-      expect(authoredCollections.length, 36);
-      expect(bundledCreationTemplates.map((t) => t.id).toSet().length, 36);
+      expect(authoredCollections.length, 37);
+      expect(bundledCreationTemplates.map((t) => t.id).toSet().length, 37);
       for (final category in [
         '웨딩',
         '여행',
@@ -62,7 +62,7 @@ void main() {
       ]) {
         expect(
           authoredCollections.where((c) => c.category == category).length,
-          category == '여행' ? 6 : 5,
+          ['여행', '커플·기념일'].contains(category) ? 6 : 5,
         );
       }
       expect(

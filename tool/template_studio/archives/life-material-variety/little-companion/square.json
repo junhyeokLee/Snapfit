@@ -1,0 +1,3058 @@
+{
+  "id": "snapfit_concept_little-companion_square",
+  "collectionId": "little-companion",
+  "editionId": "little-companion-24",
+  "title": "작은 동거인",
+  "category": "반려동물",
+  "concept": "직조 장난감과 관찰 노트, 함께 사는 집의 풍경",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "little-companion_square_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "little-companion_square_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "little-companion_square_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#132124",
+        "cornerRadius": 0,
+        "opacity": 0.25
+      },
+      {
+        "id": "little-companion_square_0_part_3",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 3,
+        "text": "A LITTLE COMPANION / 07",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "little-companion_square_0_part_4",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.106,
+        "w": 0.85,
+        "h": 0.0016,
+        "z": 4,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "little-companion_square_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.57,
+        "w": 0.85,
+        "h": 0.24,
+        "z": 5,
+        "text": "작은\n동거인",
+        "align": "left",
+        "style": {
+          "fontFamily": "BookMyungjo",
+          "fontSize": 41.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "little-companion_square_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.85,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 6,
+        "text": "보리의 생활 기록",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "little-companion_square_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.92,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 7,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "작은 동거인",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F7F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_1_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "MEET OUR LITTLE COMPANION",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_1_part_2",
+          "type": "sticker",
+          "x": 0.32,
+          "y": 0.17,
+          "w": 0.38,
+          "h": 0.38,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_rope_ball.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_1_part_3",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.23,
+          "w": 0.22,
+          "h": 0.21,
+          "z": 3,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 80.0,
+            "fontWeight": 400,
+            "color": "#B78E70",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_1_part_4",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.6,
+          "w": 0.82,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#31666A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_1_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.66,
+          "w": 0.82,
+          "h": 0.11,
+          "z": 5,
+          "text": "우리 집의 새 식구",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 27.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_1_part_6",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.82,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 6,
+          "text": "오늘부터 같이 살자. 네 자리는 여기야.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 새 식구",
+      "role": "new-housemate-introduction",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDEAE4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_2_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.065,
+          "w": 0.89,
+          "h": 0.71,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "atelierOxford",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_2_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.815,
+          "w": 0.84,
+          "h": 0.095,
+          "z": 2,
+          "text": "집이 조금 달라졌다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 새 식구",
+      "role": "first-housemate-portrait",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_3_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Hello, Bori",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 52.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_3_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.29,
+          "w": 0.45,
+          "h": 0.45,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_3_part_3",
+          "type": "text",
+          "x": 0.6,
+          "y": 0.39,
+          "w": 0.32,
+          "h": 0.23,
+          "z": 3,
+          "text": "이름  보리\n좋아하는 것  햇볕\n특기  곁에 있기",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_3_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.075,
+          "z": 4,
+          "text": "너를 소개합니다",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너를 소개합니다",
+      "role": "companion-profile",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E5E9DD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_4_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.08,
+          "w": 0.64,
+          "h": 0.51,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_4_part_2",
+          "type": "sticker",
+          "x": 0.7,
+          "y": 0.44,
+          "w": 0.2,
+          "h": 0.2,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_bowl.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_4_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.71,
+          "w": 0.81,
+          "h": 0.18,
+          "z": 3,
+          "text": "너의 물건도\n하나씩 늘었다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너를 소개합니다",
+      "role": "profile-belongings",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE9E5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_5_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE BEST SPOT IN THE HOUSE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_5_part_2",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.18,
+          "w": 0.88,
+          "h": 0.6,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_5_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.82,
+          "h": 0.095,
+          "z": 3,
+          "text": "아침의 단골 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아침의 단골 자리",
+      "role": "sunlit-morning-portrait",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_6_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.095,
+          "w": 0.81,
+          "h": 0.22,
+          "z": 1,
+          "text": "햇볕이 먼저\n자리를 잡으면",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 32.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_6_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.46,
+          "w": 0.43499999999999994,
+          "h": 0.29,
+          "z": 2,
+          "style": "lifeCompanionTab",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_6_part_3",
+          "type": "text",
+          "x": 0.15089999999999998,
+          "y": 0.5412,
+          "w": 0.31754999999999994,
+          "h": 0.1595,
+          "z": 3,
+          "text": "조용히 다가와\n햇볕 속에 앉는다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 14.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_6_part_4",
+          "type": "image",
+          "x": 0.67,
+          "y": 0.57,
+          "w": 0.25,
+          "h": 0.26,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_6_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.85,
+          "w": 0.45,
+          "h": 0.0016,
+          "z": 5,
+          "fillColor": "#31666A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아침의 단골 자리",
+      "role": "morning-observation-note",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6E9DC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_7_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Play time",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 57.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_7_part_2",
+          "type": "sticker",
+          "x": 0.12,
+          "y": 0.3,
+          "w": 0.44,
+          "h": 0.44,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_rope_ball.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_7_part_3",
+          "type": "image",
+          "x": 0.69,
+          "y": 0.43,
+          "w": 0.23,
+          "h": 0.29,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_7_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.815,
+          "w": 0.82,
+          "h": 0.095,
+          "z": 4,
+          "text": "가장 좋아하는 장난감",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 21.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "가장 좋아하는 장난감",
+      "role": "favorite-toy-object",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_8_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "FAVORITES, IN NO PARTICULAR ORDER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_8_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.18,
+          "w": 0.46,
+          "h": 0.41,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_8_part_3",
+          "type": "sticker",
+          "x": 0.65,
+          "y": 0.27,
+          "w": 0.21,
+          "h": 0.21,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_mouse.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_8_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.72,
+          "w": 0.81,
+          "h": 0.175,
+          "z": 4,
+          "text": "새것보다\n오래 물고 놀던 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 26.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "가장 좋아하는 장난감",
+      "role": "toy-scorecard",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE7E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_9_part_1",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.075,
+          "w": 0.69,
+          "h": 0.63,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_nap.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_9_part_2",
+          "type": "text",
+          "x": 0.79,
+          "y": 0.25,
+          "w": 0.16,
+          "h": 0.18,
+          "z": 2,
+          "text": "05",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 60.0,
+            "fontWeight": 400,
+            "color": "#A07B63",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_9_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.81,
+          "w": 0.81,
+          "h": 0.1,
+          "z": 3,
+          "text": "놀다가 쉬다가",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 26.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "놀다가 쉬다가",
+      "role": "play-and-rest-photo",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_10_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.1,
+          "w": 0.8,
+          "h": 0.22,
+          "z": 1,
+          "text": "네가 정하는\n하루의 속도",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 33.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_10_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.46,
+          "w": 0.43,
+          "h": 0.33,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_nap.png",
+          "frame": "studioRounded",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_10_part_3",
+          "type": "text",
+          "x": 0.59,
+          "y": 0.58,
+          "w": 0.32,
+          "h": 0.16,
+          "z": 3,
+          "text": "열심히 놀고\n아주 오래 쉬기.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 17.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_10_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.845,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 4,
+          "text": "방해하지 않는 시간도 필요해.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "놀다가 쉬다가",
+      "role": "resting-rhythm",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E8E8DB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_11_part_1",
+          "type": "image",
+          "x": 0.065,
+          "y": 0.1,
+          "w": 0.87,
+          "h": 0.65,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "studioArch",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_11_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.84,
+          "h": 0.095,
+          "z": 2,
+          "text": "간식 소리가 나면",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "간식 소리가 나면",
+      "role": "snack-listening",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F6EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_12_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "Did you hear that?",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 40.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_12_part_2",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.29,
+          "w": 0.38,
+          "h": 0.39,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "materialScallopMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_12_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.36,
+          "w": 0.39,
+          "h": 0.25,
+          "z": 3,
+          "text": "어디에 있다가도\n제일 먼저\n달려오는 너",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 18.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_12_part_4",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.79,
+          "w": 0.35200000000000004,
+          "h": 0.11,
+          "z": 4,
+          "style": "atelierRibbonPlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_12_part_5",
+          "type": "text",
+          "x": 0.14928000000000002,
+          "y": 0.8208000000000001,
+          "w": 0.2569600000000001,
+          "h": 0.0605,
+          "z": 5,
+          "text": "조금씩, 약속한 만큼만.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "간식 소리가 나면",
+      "role": "snack-cupboard-record",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE8E7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_13_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.075,
+          "w": 0.83,
+          "h": 0.23,
+          "z": 1,
+          "text": "창가를 지키는\n시간",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 36.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_13_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.4,
+          "w": 0.85,
+          "h": 0.4,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_13_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.86,
+          "w": 0.81,
+          "h": 0.055,
+          "z": 3,
+          "text": "YOUR WINDOW, YOUR WORLD",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "창가를 지키는 시간",
+      "role": "window-watch",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_14_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.095,
+          "w": 0.42,
+          "h": 0.46,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "atelierKeyhole",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_14_part_2",
+          "type": "decoration",
+          "x": 0.58,
+          "y": 0.23,
+          "w": 0.20520000000000002,
+          "h": 0.27,
+          "z": 2,
+          "style": "materialWalkLedger",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_14_part_3",
+          "type": "text",
+          "x": 0.6087279999999999,
+          "y": 0.30560000000000004,
+          "w": 0.14979600000000004,
+          "h": 0.14850000000000002,
+          "z": 3,
+          "text": "창밖의 손님\n오늘의 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_14_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.7,
+          "w": 0.81,
+          "h": 0.18,
+          "z": 4,
+          "text": "무엇을 그렇게\n오래 보고 있을까",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 25.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "창가를 지키는 시간",
+      "role": "window-observation-card",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E1E7DB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_15_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "A DAY OUTSIDE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_15_part_2",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.185,
+          "w": 0.88,
+          "h": 0.57,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_15_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.815,
+          "w": 0.81,
+          "h": 0.1,
+          "z": 3,
+          "text": "외출을 준비하며",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "외출을 준비하며",
+      "role": "outside-day-keepsake",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F7F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_16_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.1,
+          "w": 0.81,
+          "h": 0.205,
+          "z": 1,
+          "text": "낯선 하루 끝에\n익숙한 자리로",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 30.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_16_part_2",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.425,
+          "w": 0.48,
+          "h": 0.38,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_nap.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_16_part_3",
+          "type": "sticker",
+          "x": 0.66,
+          "y": 0.57,
+          "w": 0.2,
+          "h": 0.2,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_leash.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_16_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.85,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 4,
+          "text": "돌아오면 꼭 확인하는 자기 물건.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "외출을 준비하며",
+      "role": "back-from-outside",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2E9E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_17_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "Little habits",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 52.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "little-companion_square_17_part_2",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.3,
+          "w": 0.4,
+          "h": 0.42,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_17_part_3",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.3,
+          "w": 0.39,
+          "h": 0.24,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_17_part_4",
+          "type": "sticker",
+          "x": 0.63,
+          "y": 0.59,
+          "w": 0.21,
+          "h": 0.21,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/life_mouse.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_17_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.81,
+          "h": 0.075,
+          "z": 5,
+          "text": "너의 작은 버릇",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너의 작은 버릇",
+      "role": "little-habits-triptych",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_18_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.06,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "THINGS ONLY WE KNOW",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_18_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.185,
+          "w": 0.81,
+          "h": 0.21,
+          "z": 2,
+          "text": "잠들기 전에는\n꼭 한 바퀴",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 33.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_18_part_3",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.5,
+          "w": 0.42500000000000004,
+          "h": 0.34,
+          "z": 3,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_18_part_4",
+          "type": "text",
+          "x": 0.15950000000000003,
+          "y": 0.5952000000000001,
+          "w": 0.31025,
+          "h": 0.18700000000000006,
+          "z": 4,
+          "text": "문 앞에서 기다리고\n부르면 눈을 맞춘다.\n오래 보고 싶은 습관.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너의 작은 버릇",
+      "role": "habits-written-down",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE8E2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_19_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.075,
+          "w": 0.89,
+          "h": 0.69,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_nap.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_19_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.84,
+          "h": 0.095,
+          "z": 2,
+          "text": "나란히 쉬는 오후",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나란히 쉬는 오후",
+      "role": "side-by-side-afternoon",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F6EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_20_part_1",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.085,
+          "w": 0.37,
+          "h": 0.39,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_nap.png",
+          "frame": "materialLinenOval",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_20_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.18,
+          "w": 0.38,
+          "h": 0.23,
+          "z": 2,
+          "text": "말없이\n곁에 있어도",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_20_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.565,
+          "w": 0.82,
+          "h": 0.0016,
+          "z": 3,
+          "fillColor": "#31666A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_20_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.675,
+          "w": 0.81,
+          "h": 0.16,
+          "z": 4,
+          "text": "같이 있다는 건\n생각보다 큰 위로가 됐다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 19.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나란히 쉬는 오후",
+      "role": "companion-quiet-note",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E4E8D9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_21_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.075,
+          "w": 0.68,
+          "h": 0.53,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_21_part_2",
+          "type": "decoration",
+          "x": 0.71,
+          "y": 0.48,
+          "w": 0.23,
+          "h": 0.13142857142857142,
+          "z": 2,
+          "style": "materialNamePatch",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_21_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.79,
+          "w": 0.81,
+          "h": 0.11,
+          "z": 3,
+          "text": "오래 쓴 물건들",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 26.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 쓴 물건들",
+      "role": "well-loved-belongings",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_22_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "WELL LOVED, WELL KEPT",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_22_part_2",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.2,
+          "w": 0.20879999999999999,
+          "h": 0.29,
+          "z": 2,
+          "style": "heirloomPetTag",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_22_part_3",
+          "type": "decoration",
+          "x": 0.51,
+          "y": 0.24,
+          "w": 0.375,
+          "h": 0.25,
+          "z": 3,
+          "style": "lifeCompanionTab",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_22_part_4",
+          "type": "text",
+          "x": 0.5625,
+          "y": 0.31,
+          "w": 0.27375,
+          "h": 0.1375,
+          "z": 4,
+          "text": "가장 많이 가지고 논 것\n아직 버릴 수 없는 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_22_part_5",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.59,
+          "w": 0.76,
+          "h": 0.25,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_keepsakes.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 쓴 물건들",
+      "role": "toy-archive-label",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.11,
+          "w": 0.8,
+          "h": 0.24,
+          "z": 1,
+          "text": "내일도\n같이 살자",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 39.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_23_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.455,
+          "w": 0.81,
+          "h": 0.19,
+          "z": 2,
+          "text": "말없이 곁에 있어 주는 너에게.\n우리의 평범한 하루를 남겨 둔다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 17.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_23_part_3",
+          "type": "sticker",
+          "x": 0.1,
+          "y": 0.7,
+          "w": 0.18,
+          "h": 0.18,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_bowl.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_23_part_4",
+          "type": "decoration",
+          "x": 0.44,
+          "y": 0.78,
+          "w": 0.47,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#31666A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_23_part_5",
+          "type": "text",
+          "x": 0.44,
+          "y": 0.825,
+          "w": 0.47,
+          "h": 0.075,
+          "z": 5,
+          "text": "보리의 생활 기록",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "내일도 같이 살자",
+      "role": "tomorrow-together-letter",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "little-companion_square_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE8E3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "little-companion_square_24_part_1",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.065,
+          "w": 0.83,
+          "h": 0.68,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/pet_cat.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "little-companion_square_24_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.81,
+          "w": 0.84,
+          "h": 0.11,
+          "z": 2,
+          "text": "오늘도 네가 있어서",
+          "align": "center",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.5,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "little-companion_square_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "작은 동거인",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "little-companion_square_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#31666A",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "내일도 같이 살자",
+      "role": "last-housemate-portrait",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "우리 집의 새 식구",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "너를 소개합니다",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "아침의 단골 자리",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "가장 좋아하는 장난감",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "놀다가 쉬다가",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "간식 소리가 나면",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "창가를 지키는 시간",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "외출을 준비하며",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "너의 작은 버릇",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "나란히 쉬는 오후",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "오래 쓴 물건들",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "내일도 같이 살자",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

@@ -13,6 +13,11 @@ import 'atelier_preview.dart';
 import 'wind_atlas_preview.dart';
 import 'prose_study_preview.dart';
 import 'luminous_edition_preview.dart';
+import 'heirloom_preview.dart';
+import 'concept_volume_preview.dart';
+import 'luminous_materials.dart';
+import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 
 // Local collection workbench. No credentials, AI requests or publishing.
 void main() => runApp(const TemplatePreviewWorkbench());
@@ -25,8 +30,12 @@ class TemplatePreviewWorkbench extends StatelessWidget {
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SnapFit · 템플릿 스튜디오',
-      initialRoute: Uri.base.queryParameters['studio'] == 'atelier'
+      initialRoute: Uri.base.queryParameters['materials'] == 'keepsake'
+          ? '/keepsake-materials'
+          : Uri.base.queryParameters['studio'] == 'atelier'
           ? '/atelier'
+          : Uri.base.queryParameters['catalog'] == 'premium'
+          ? '/premium-studies'
           : Uri.base.queryParameters['catalog'] == 'store'
           ? '/store'
           : Uri.base.queryParameters['frames'] == 'true'
@@ -35,13 +44,21 @@ class TemplatePreviewWorkbench extends StatelessWidget {
               'wind-atlas' => '/wind-atlas',
               'our-prose' => '/our-prose',
               'luminous-edition' => '/luminous-edition',
+              'travel-keepsake-20' => '/travel-keepsake-20',
               'journey' => '/journey',
               'small-days' => '/small-days',
+              final id when ConceptVolume.byId(id ?? '') != null => '/$id',
+              final id when HeirloomStudy.byId(id ?? '') != null => '/$id',
               final id when FreeCollectionVolume.byId(id ?? '') != null =>
                 '/$id',
               _ => '/',
             },
       routes: {
+        '/premium-studies': (_) => const PremiumStudiesCatalog(),
+        for (final volume in ConceptVolume.values)
+          '/${volume.id}': (_) => ConceptVolumePreview(volume: volume),
+        for (final study in HeirloomStudy.values)
+          '/${study.id}': (_) => HeirloomPreview(study: study),
         '/store': (_) => ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
@@ -54,11 +71,24 @@ class TemplatePreviewWorkbench extends StatelessWidget {
         for (final volume in FreeCollectionVolume.values)
           '/${volume.id}': (_) => FreeCollectionPreview(volume: volume),
         '/frames': (_) => const FramePreview(),
-        '/materials': (_) => const MaterialPreview(),
+        '/keepsake-materials': (_) => const LuminousMaterials(newOnly: true),
+        '/materials': (_) => ProviderScope(
+          // Isolated local workbench only; never reaches the purchase backend.
+          overrides: [
+            pointShopAccessGateProvider.overrideWithValue(
+              (context, ref, {required productKey, required title}) async =>
+                  true,
+            ),
+            pointShopCatalogProvider.overrideWith((ref) async => []),
+            ownedPointShopKeysProvider.overrideWith((ref) async => {}),
+          ],
+          child: const MaterialPreview(),
+        ),
         '/atelier': (_) => const AtelierPreview(),
         '/wind-atlas': (_) => const WindAtlasPreview(),
         '/our-prose': (_) => const ProseStudyPreview(),
         '/luminous-edition': (_) => const LuminousEditionPreview(),
+        '/travel-keepsake-20': (_) => const TravelKeepsakeArchivePreview(),
       },
       theme: ThemeData(
         useMaterial3: true,

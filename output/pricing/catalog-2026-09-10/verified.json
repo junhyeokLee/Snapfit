@@ -1,0 +1,2024 @@
+{
+  "revision": "2026-09-10-catalog-5",
+  "project": "rrbhxdtriummqpztpjrk",
+  "status": "applied-and-read-verified",
+  "verifiedAt": "2026-09-09T17:05:18.796Z",
+  "summary": {
+    "total": 134,
+    "free": 49,
+    "activePaidMaterials": 71,
+    "heldTemplates": 14
+  },
+  "rows": [
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:atelierAccordion",
+        "remaining_balance": 0,
+        "title": "아코디언 접지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:atelierAccordion"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:atelierCoastline",
+        "remaining_balance": 0,
+        "title": "해안선 오려내기"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:atelierCoastline"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierCornerFold",
+        "remaining_balance": 0,
+        "title": "접힌 코너 매트"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierCornerFold"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierCrossRibbon",
+        "remaining_balance": 0,
+        "title": "교차 리본 인화지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierCrossRibbon"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "frame:atelierDeco",
+        "remaining_balance": 0,
+        "title": "아르데코 계단 창"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "frame:atelierDeco"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierDeepMat",
+        "remaining_balance": 0,
+        "title": "세 겹 단차 액자"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierDeepMat"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:atelierEnvelope",
+        "remaining_balance": 0,
+        "title": "편지 봉투 속 사진"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:atelierEnvelope"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:atelierFolio",
+        "remaining_balance": 0,
+        "title": "양문 폴리오"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:atelierFolio"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:atelierKeyhole",
+        "remaining_balance": 0,
+        "title": "키홀 아치"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:atelierKeyhole"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierNegative",
+        "remaining_balance": 0,
+        "title": "네거티브 인화 스트립"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierNegative"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierOxford",
+        "remaining_balance": 0,
+        "title": "옥스퍼드 체크 매트"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierOxford"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:atelierWeave",
+        "remaining_balance": 0,
+        "title": "페이퍼 위빙"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:atelierWeave"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:materialLaceMount",
+        "remaining_balance": 0,
+        "title": "자수 코너 매트"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:materialLaceMount"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "frame:materialLinenOval",
+        "remaining_balance": 0,
+        "title": "리넨 자수 타원"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "frame:materialLinenOval"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:materialNotebookMount",
+        "remaining_balance": 0,
+        "title": "제본 노트 프레임"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:materialNotebookMount"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:materialScallopMount",
+        "remaining_balance": 0,
+        "title": "로즈 꽃잎 매트"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:materialScallopMount"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:materialSlideMount",
+        "remaining_balance": 0,
+        "title": "아카이브 슬라이드"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:materialSlideMount"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "frame:materialTwinWindow",
+        "remaining_balance": 0,
+        "title": "엇갈린 두 창"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "frame:materialTwinWindow"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-anniversary",
+        "remaining_balance": 0,
+        "title": "기념일 숫자 조판"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-anniversary"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-archive",
+        "remaining_balance": 0,
+        "title": "타원 인장 북타이틀"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-archive"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-boarding",
+        "remaining_balance": 0,
+        "title": "탑승권 타이포"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-boarding"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-cinema",
+        "remaining_balance": 0,
+        "title": "시네마 크레딧 타이틀"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-cinema"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-diary",
+        "remaining_balance": 0,
+        "title": "손글씨 다이어리"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-diary"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-first-time",
+        "remaining_balance": 0,
+        "title": "첫 순간 기록지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-first-time"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-first-year",
+        "remaining_balance": 0,
+        "title": "첫돌 숫자 포스터"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-first-year"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-index",
+        "remaining_balance": 0,
+        "title": "색인형 기록 제목"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-index"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-laughter",
+        "remaining_balance": 0,
+        "title": "컬러 컷페이퍼 조판"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-laughter"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-postcard",
+        "remaining_balance": 0,
+        "title": "도시 엽서 레터링"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-postcard"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-promise",
+        "remaining_balance": 0,
+        "title": "엇갈린 명조 서약"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-promise"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-ribbon",
+        "remaining_balance": 0,
+        "title": "실크 리본 시그니처"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-ribbon"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-route",
+        "remaining_balance": 0,
+        "title": "노선도 에디토리얼"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-route"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 400,
+        "product_key": "phrase:collage-atelier-vow",
+        "remaining_balance": 0,
+        "title": "압인 청첩장 타이틀"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 400,
+      "product_key": "phrase:collage-atelier-vow"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-walk",
+        "remaining_balance": 0,
+        "title": "산책 저널 레터링"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-walk"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "phrase:collage-atelier-weekend",
+        "remaining_balance": 0,
+        "title": "주말 레시피 타이틀"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "phrase:collage-atelier-weekend"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:atelierArchiveSeal",
+        "remaining_balance": 0,
+        "title": "아카이브 타원 인장"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:atelierArchiveSeal"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:atelierBoardingStub",
+        "remaining_balance": 0,
+        "title": "절취선 탑승 반권"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:atelierBoardingStub"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:atelierColorSlips",
+        "remaining_balance": 0,
+        "title": "오려 붙인 컬러 종이"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:atelierColorSlips"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:atelierCornerBrackets",
+        "remaining_balance": 0,
+        "title": "네 귀퉁이 포토 홀더"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:atelierCornerBrackets"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:atelierGridLeaf",
+        "remaining_balance": 0,
+        "title": "접힌 모눈 인쇄지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:atelierGridLeaf"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:atelierPostalBand",
+        "remaining_balance": 0,
+        "title": "두 겹 우편 띠"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:atelierPostalBand"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:atelierRibbonPlate",
+        "remaining_balance": 0,
+        "title": "접은 실크 라벨"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:atelierRibbonPlate"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:atelierTitlePlate",
+        "remaining_balance": 0,
+        "title": "서체용 이중 압인판"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:atelierTitlePlate"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeBasket",
+        "remaining_balance": 0,
+        "title": "일요일 버드나무 바구니"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeBasket"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeBib",
+        "remaining_balance": 0,
+        "title": "민트 거즈 턱받이"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeBib"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeBonnet",
+        "remaining_balance": 0,
+        "title": "처음 쓴 코튼 보닛"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeBonnet"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeBowl",
+        "remaining_balance": 0,
+        "title": "청록 테두리 세라믹 식기"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeBowl"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:lifeCompanionTab",
+        "remaining_balance": 0,
+        "title": "색인형 관찰 카드"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:lifeCompanionTab"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeFeltMouse",
+        "remaining_balance": 0,
+        "title": "작은 양모 장난감"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeFeltMouse"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeGingham",
+        "remaining_balance": 0,
+        "title": "접어 둔 체크 피크닉 천"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeGingham"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:lifeHomeNote",
+        "remaining_balance": 0,
+        "title": "접어 둔 생활 메모"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:lifeHomeNote"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeHouseKey",
+        "remaining_balance": 0,
+        "title": "우리 집 열쇠와 코튼 고리"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeHouseKey"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeMug",
+        "remaining_balance": 0,
+        "title": "숲색 법랑 컵"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeMug"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:lifePicnicSlip",
+        "remaining_balance": 0,
+        "title": "절취선 피크닉 카드"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:lifePicnicSlip"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:lifeRattle",
+        "remaining_balance": 0,
+        "title": "첫 놀이 나무 딸랑이"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:lifeRattle"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeRopeBall",
+        "remaining_balance": 0,
+        "title": "손때 묻은 직조 공"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeRopeBall"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeSlippers",
+        "remaining_balance": 0,
+        "title": "나란한 코튼 실내화"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeSlippers"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:lifeVase",
+        "remaining_balance": 0,
+        "title": "창가의 올리브 화병"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:lifeVase"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:lifeWardrobeLabel",
+        "remaining_balance": 0,
+        "title": "봉제선 성장 라벨"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:lifeWardrobeLabel"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialAirLetter",
+        "remaining_balance": 0,
+        "title": "접힌 항공 편지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialAirLetter"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialBlindEmboss",
+        "remaining_balance": 0,
+        "title": "압인 문장 카드"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialBlindEmboss"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:materialBookmark",
+        "remaining_balance": 0,
+        "title": "마블링 책갈피"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:materialBookmark"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:materialBooties",
+        "remaining_balance": 0,
+        "title": "첫 니트 신발"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:materialBooties"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:materialClip",
+        "remaining_balance": 0,
+        "title": "은빛 아카이브 집게"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:materialClip"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialContourMap",
+        "remaining_balance": 0,
+        "title": "등고선 여행지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialContourMap"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialCrossStitchBand",
+        "remaining_balance": 0,
+        "title": "크로스 스티치 띠"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialCrossStitchBand"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialIndexTabs",
+        "remaining_balance": 0,
+        "title": "컬러 인덱스 탭"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialIndexTabs"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:materialLace",
+        "remaining_balance": 0,
+        "title": "자수 레이스 코너"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:materialLace"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:materialLeash",
+        "remaining_balance": 0,
+        "title": "세이지 산책 끈"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:materialLeash"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:materialLinen",
+        "remaining_balance": 0,
+        "title": "숲색 리넨 조각"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:materialLinen"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialMonthDial",
+        "remaining_balance": 0,
+        "title": "열두 달 기록 원판"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialMonthDial"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialNamePatch",
+        "remaining_balance": 0,
+        "title": "이름 자수 패치"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialNamePatch"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialRecipeFoldout",
+        "remaining_balance": 0,
+        "title": "접어 둔 레시피"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialRecipeFoldout"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:materialRose",
+        "remaining_balance": 0,
+        "title": "간직한 장미"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:materialRose"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialScallopNote",
+        "remaining_balance": 0,
+        "title": "꽃잎 가장자리 노트"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialScallopNote"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:materialShell",
+        "remaining_balance": 0,
+        "title": "해변에서 주운 조개"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:materialShell"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialSpecimenPocket",
+        "remaining_balance": 0,
+        "title": "표본 보관 포켓"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialSpecimenPocket"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 100,
+        "product_key": "sticker:materialTicketDuo",
+        "remaining_balance": 0,
+        "title": "나란한 두 좌석"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 100,
+      "product_key": "sticker:materialTicketDuo"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialTransitPunch",
+        "remaining_balance": 0,
+        "title": "펀칭 여행 태그"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialTransitPunch"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialVellumBand",
+        "remaining_balance": 0,
+        "title": "반투명 봉합 띠"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialVellumBand"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "sticker:materialWalkLedger",
+        "remaining_balance": 0,
+        "title": "산책 관찰 수첩"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "sticker:materialWalkLedger"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:wavePencil",
+        "remaining_balance": 0,
+        "title": "짧아진 코발트 연필"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:wavePencil"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 200,
+        "product_key": "sticker:waveSeaGlass",
+        "remaining_balance": 0,
+        "title": "파도가 다듬은 유리"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 200,
+      "product_key": "sticker:waveSeaGlass"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": false,
+        "owned": false,
+        "point_price": 300,
+        "product_key": "sticker:waveSilkKnot",
+        "remaining_balance": 0,
+        "title": "실크 매듭과 은빛 링"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 300,
+      "product_key": "sticker:waveSilkKnot"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:a-day-with-you",
+        "remaining_balance": 0,
+        "title": "너의 하루를 따라"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:a-day-with-you"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:a-picnic-together",
+        "remaining_balance": 0,
+        "title": "함께 떠난 소풍"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:a-picnic-together"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:across-generations",
+        "remaining_balance": 0,
+        "title": "세대를 잇는 사진"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:across-generations"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:across-the-sea",
+        "remaining_balance": 0,
+        "title": "바다를 건너"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:across-the-sea"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:around-our-table",
+        "remaining_balance": 0,
+        "title": "한 식탁의 이야기"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:around-our-table"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:better-together",
+        "remaining_balance": 0,
+        "title": "함께라서 좋은 날"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:better-together"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:city-collector",
+        "remaining_balance": 0,
+        "title": "도시의 수집가"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:city-collector"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:collected-by-two",
+        "remaining_balance": 0,
+        "title": "둘이 모은 조각"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:collected-by-two"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:daily-cabinet",
+        "remaining_balance": 0,
+        "title": "하루의 수집함"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:daily-cabinet"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:dates-of-us",
+        "remaining_balance": 0,
+        "title": "너와 나의 날짜들"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:dates-of-us"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:first-birthday",
+        "remaining_balance": 0,
+        "title": "처음 맞는 생일"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:first-birthday"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:first-wardrobe",
+        "remaining_balance": 0,
+        "title": "너의 작은 옷장"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:first-wardrobe"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:first-year-keepsake",
+        "remaining_balance": 0,
+        "title": "너의 첫 계절"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:first-year-keepsake"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:garden-promise",
+        "remaining_balance": 0,
+        "title": "정원에서의 약속"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:garden-promise"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:growing-in-color",
+        "remaining_balance": 0,
+        "title": "알록달록 자라는 날"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:growing-in-color"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:journey",
+        "remaining_balance": 0,
+        "title": "여행의 결"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:journey"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:lightbound",
+        "remaining_balance": 0,
+        "title": "빛으로 엮은 우리"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:lightbound"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:little-companion",
+        "remaining_balance": 0,
+        "title": "작은 동거인"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:little-companion"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:little-footsteps",
+        "remaining_balance": 0,
+        "title": "작은 걸음의 기록"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:little-footsteps"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:love-letters",
+        "remaining_balance": 0,
+        "title": "사랑의 편지"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:love-letters"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:luminous-edition",
+        "remaining_balance": 0,
+        "title": "둘만의 여행"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:luminous-edition"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:one-fine-film",
+        "remaining_balance": 0,
+        "title": "영화 같던 하루"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:one-fine-film"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-family-year",
+        "remaining_balance": 0,
+        "title": "우리 집의 사계절"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-family-year"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-good-company",
+        "remaining_balance": 0,
+        "title": "우리의 좋은 사이"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-good-company"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-little-companion",
+        "remaining_balance": 0,
+        "title": "우리 집 작은 가족"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-little-companion"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-prose",
+        "remaining_balance": 0,
+        "title": "함께여서 좋은 날"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-prose"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-vows",
+        "remaining_balance": 0,
+        "title": "우리의 서약"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-vows"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:our-walking-promise",
+        "remaining_balance": 0,
+        "title": "산책이라는 약속"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:our-walking-promise"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:reading-room",
+        "remaining_balance": 0,
+        "title": "문장을 모으는 생활"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:reading-room"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:scenes-for-two",
+        "remaining_balance": 0,
+        "title": "둘만의 장면"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:scenes-for-two"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:seasonal-table",
+        "remaining_balance": 0,
+        "title": "계절의 식탁"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:seasonal-table"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:seasons-of-love",
+        "remaining_balance": 0,
+        "title": "사랑이 머문 계절"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:seasons-of-love"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:shapes-of-naps",
+        "remaining_balance": 0,
+        "title": "낮잠의 모양"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:shapes-of-naps"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:shared-seasons",
+        "remaining_balance": 0,
+        "title": "같이 사는 계절"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:shared-seasons"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:shore-days",
+        "remaining_balance": 0,
+        "title": "해변에서 보낸 날"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:shore-days"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:silk-vows",
+        "remaining_balance": 0,
+        "title": "서약의 결"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:silk-vows"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:slow-paths",
+        "remaining_balance": 0,
+        "title": "느리게 걷는 길"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:slow-paths"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:small-days",
+        "remaining_balance": 0,
+        "title": "작은 날의 기록"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:small-days"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:still-us",
+        "remaining_balance": 0,
+        "title": "오래도록 우리"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:still-us"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 1800,
+        "product_key": "template:sunday-picnic",
+        "remaining_balance": 0,
+        "title": "일요일의 피크닉"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 1800,
+      "product_key": "template:sunday-picnic"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:table-stories",
+        "remaining_balance": 0,
+        "title": "우리 집 식탁"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:table-stories"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:taste-archive",
+        "remaining_balance": 0,
+        "title": "취향 보관함"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:taste-archive"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:the-kindest-face",
+        "remaining_balance": 0,
+        "title": "가장 다정한 얼굴"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:the-kindest-face"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:travel-postbox",
+        "remaining_balance": 0,
+        "title": "여행의 우편함"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:travel-postbox"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:two-tickets",
+        "remaining_balance": 0,
+        "title": "둘이 모은 장면"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:two-tickets"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:vow-keepsake",
+        "remaining_balance": 0,
+        "title": "약속을 묶은 책"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:vow-keepsake"
+    },
+    {
+      "access": {
+        "available": false,
+        "is_free": false,
+        "owned": false,
+        "point_price": 2500,
+        "product_key": "template:walk-and-nap",
+        "remaining_balance": 0,
+        "title": "산책하고 낮잠"
+      },
+      "is_active": false,
+      "matches_expected": true,
+      "point_price": 2500,
+      "product_key": "template:walk-and-nap"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:weekend-temperature",
+        "remaining_balance": 0,
+        "title": "주말의 온도"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:weekend-temperature"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:wind-atlas",
+        "remaining_balance": 0,
+        "title": "바람을 수집한 여행"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:wind-atlas"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:you-are-spring",
+        "remaining_balance": 0,
+        "title": "너라는 봄"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:you-are-spring"
+    },
+    {
+      "access": {
+        "available": true,
+        "is_free": true,
+        "owned": false,
+        "point_price": 0,
+        "product_key": "template:your-first-year",
+        "remaining_balance": 0,
+        "title": "너의 첫해"
+      },
+      "is_active": true,
+      "matches_expected": true,
+      "point_price": 0,
+      "product_key": "template:your-first-year"
+    }
+  ]
+}

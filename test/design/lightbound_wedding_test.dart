@@ -47,7 +47,7 @@ void main() {
   });
 
   test('free baseline is independent, honestly counted and never paid', () {
-    expect(bundledCreationTemplates.length, 36);
+    expect(bundledCreationTemplates.length, 37);
     expect(bundledCreationTemplates.every((t) => !t.isPremium), isTrue);
     expect(authoredCollections.any((c) => c.id == 'lightbound'), isTrue);
     for (final aspect in CollectionAspect.values) {

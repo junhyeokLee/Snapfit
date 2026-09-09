@@ -1,5 +1,10 @@
 import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
+
+part 'keepsake_material_catalog.dart';
+part 'atelier_composition_catalog.dart';
+part 'concept_wave_material_catalog.dart';
 
 enum StudioDecorationCategory {
   paper('종이'),
@@ -43,9 +48,15 @@ class StudioDecorationSpec {
 
 /// Stable keys are stored in album documents. Keep old decorations untouched.
 const studioDecorations = [
+  ...conceptWaveDecorations,
+  ...keepsakeDecorations,
+  ...atelierCompositionDecorations,
   ...zineDecorations,
   ...luminousDecorations,
   ...atelierDecorations,
+  ...travelDecorations,
+  ...heirloomDecorations,
+  ...vowEditionDecorations,
   StudioDecorationSpec(
     'studioCottonRag',
     '수제지 조각',
@@ -140,6 +151,195 @@ const studioDecorations = [
     StudioDecorationCategory.sticker,
     .76,
     .26,
+  ),
+];
+
+const travelDecorations = [
+  ...travelJournalDecorations,
+  StudioDecorationSpec(
+    'studioTravelMap',
+    '접어 둔 여행 지도',
+    StudioDecorationCategory.paper,
+    1.4,
+    .64,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'studioTravelTicket',
+    '여행 승차권',
+    StudioDecorationCategory.paper,
+    2.5,
+    .52,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'studioPostalMark',
+    '여행 소인',
+    StudioDecorationCategory.sticker,
+    1.8,
+    .28,
+    collection: '여행 기록',
+  ),
+];
+
+const heirloomDecorations = [
+  StudioDecorationSpec(
+    'heirloomVowPaper',
+    '서약서 제본지',
+    StudioDecorationCategory.paper,
+    .78,
+    .72,
+    collection: '웨딩 기록',
+  ),
+  StudioDecorationSpec(
+    'heirloomLibraryCard',
+    '수집함 도서 카드',
+    StudioDecorationCategory.paper,
+    .72,
+    .48,
+    collection: '일상 수집',
+  ),
+  StudioDecorationSpec(
+    'heirloomGrowthRuler',
+    '첫해의 기록 자',
+    StudioDecorationCategory.paper,
+    3.8,
+    .74,
+    collection: '성장 기록',
+  ),
+  StudioDecorationSpec(
+    'heirloomTableLinen',
+    '식탁의 체크 리넨',
+    StudioDecorationCategory.paper,
+    1.24,
+    .76,
+    collection: '함께한 식탁',
+  ),
+  StudioDecorationSpec(
+    'heirloomCinemaStub',
+    '둘이 앉은 영화표',
+    StudioDecorationCategory.paper,
+    2.6,
+    .58,
+    collection: '둘의 기록',
+  ),
+  StudioDecorationSpec(
+    'heirloomPetTag',
+    '산책 가방 이름표',
+    StudioDecorationCategory.sticker,
+    .72,
+    .22,
+    collection: '산책 수첩',
+  ),
+];
+
+const vowEditionDecorations = [
+  StudioDecorationSpec(
+    'heirloomVowEnvelope',
+    '서약을 담은 봉투',
+    StudioDecorationCategory.paper,
+    1.5,
+    .62,
+    collection: '웨딩 기록',
+  ),
+  StudioDecorationSpec(
+    'heirloomVowPlaceCard',
+    '피로연 접이 카드',
+    StudioDecorationCategory.paper,
+    2.15,
+    .46,
+    collection: '웨딩 기록',
+  ),
+  StudioDecorationSpec(
+    'heirloomVowSeal',
+    '올리브 압인 봉인',
+    StudioDecorationCategory.sticker,
+    1,
+    .17,
+    collection: '웨딩 기록',
+  ),
+];
+
+const travelJournalDecorations = [
+  StudioDecorationSpec(
+    'travelDocumentPocket',
+    '반투명 여행 서류 포켓',
+    StudioDecorationCategory.paper,
+    3.2,
+    .76,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelMarketReceipt',
+    '시장에서 받은 영수증',
+    StudioDecorationCategory.paper,
+    .58,
+    .28,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelStayTag',
+    '숙소 키 태그',
+    StudioDecorationCategory.sticker,
+    .56,
+    .20,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelCafeReceipt',
+    '카페 영수증',
+    StudioDecorationCategory.paper,
+    .58,
+    .28,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelCafeCoaster',
+    '종이 코스터',
+    StudioDecorationCategory.sticker,
+    1,
+    .30,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelPostcard',
+    '여행 엽서 뒷면',
+    StudioDecorationCategory.paper,
+    1.48,
+    .58,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelLuggageLabel',
+    '수하물 라벨',
+    StudioDecorationCategory.sticker,
+    2.8,
+    .48,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelNotebook',
+    '떼어 둔 여행 노트',
+    StudioDecorationCategory.paper,
+    .80,
+    .56,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelPhotoSleeve',
+    '반투명 사진 보관지',
+    StudioDecorationCategory.paper,
+    1.25,
+    .64,
+    collection: '여행 기록',
+  ),
+  StudioDecorationSpec(
+    'travelContourSlip',
+    '해안 등고선 종이',
+    StudioDecorationCategory.paper,
+    .82,
+    .52,
+    collection: '여행 기록',
   ),
 ];
 

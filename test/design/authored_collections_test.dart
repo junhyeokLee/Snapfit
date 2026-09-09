@@ -83,7 +83,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(_fonts);
   test('only approved free originals survive catalog refresh', () {
-    expect(bundledCreationTemplates.length, 36);
+    expect(bundledCreationTemplates.length, 37);
     final server = bundledCreationTemplates.first.copyWith(
       id: 321,
       title: 'Server title',
@@ -93,7 +93,7 @@ void main() {
       server,
       ...bundledCreationTemplates,
     ]);
-    expect(result.length, 36);
+    expect(result.length, 37);
     expect(result.any((t) => t.id == server.id), false);
     expect(
       bundledCreationTemplates.every((t) => !t.isPremium && t.id < 0),
@@ -387,6 +387,19 @@ void main() {
             'studioLinen',
             'studioPostcard',
             'studioPostage',
+            'atelierCornerFold',
+            'zineContact',
+            'zineDeckle',
+            'zineTab',
+            'editionLace',
+            'editionHeart',
+            'editionPostage',
+            'editionScallop',
+            'editionCameo',
+            'editionTriptych',
+            'studyArchWindow',
+            'studyFloatMount',
+            'studyNotchedMat',
           };
           expect(
             path.contains(const Offset(.1, .1)),

@@ -37,11 +37,13 @@ class PageListSelector extends ConsumerWidget {
     final selectedTheme = editorState?.selectedTheme;
     final selectedCover = editorState?.selectedCover;
 
+    final coverRatio = selectedCover?.ratio ?? 1.0; // width/height
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isVerticalRail = constraints.maxWidth < 120;
         return SizedBox(
-          height: isVerticalRail ? double.infinity : 78.h,
+          height: isVerticalRail ? double.infinity : 92.h,
           width: isVerticalRail ? 78 : null,
           child: ListView.separated(
             padding: isVerticalRail
@@ -50,13 +52,17 @@ class PageListSelector extends ConsumerWidget {
             scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
             itemCount: pages.length + 1, // 마지막에 + 버튼 추가
             separatorBuilder: (context, index) => SizedBox(
-              width: isVerticalRail ? 0 : 4.w,
+              width: isVerticalRail ? 0 : 5.w,
               height: isVerticalRail ? 8 : 0,
             ),
             itemBuilder: (context, index) {
               // 마지막 아이템 = 페이지 추가 버튼
               if (index == pages.length) {
-                return _buildAddButton(context, isVerticalRail: isVerticalRail);
+                return _buildAddButton(
+                  context,
+                  isVerticalRail: isVerticalRail,
+                  coverRatio: coverRatio,
+                );
               }
 
               final page = pages[index];
@@ -66,13 +72,14 @@ class PageListSelector extends ConsumerWidget {
               // 0번은 커버, 1번부터 내지
               final label = isCover ? '표지' : '${index}쪽';
 
-              final itemWidth = isVerticalRail ? 58.0 : 30.w;
-              final thumbWidth = isVerticalRail
-                  ? 42.0
-                  : (isSelected ? 28.w : 24.w);
+              // 커버 비율에 맞춰 썸네일 크기 계산 (비율 보존)
               final thumbHeight = isVerticalRail
                   ? 54.0
-                  : (isSelected ? 48.h : 46.h);
+                  : (isSelected ? 56.h : 52.h);
+              final thumbWidth = isVerticalRail
+                  ? 42.0
+                  : (thumbHeight * coverRatio).clamp(32.0, 80.0);
+              final itemWidth = isVerticalRail ? 58.0 : thumbWidth + 8.0;
               final deleteSize = isVerticalRail ? 16.0 : 20.w;
               final deleteIconSize = isVerticalRail ? 10.0 : 13.sp;
 
@@ -261,7 +268,7 @@ class PageListSelector extends ConsumerWidget {
     dynamic selectedTheme,
     dynamic selectedCover,
   }) {
-    final ratio = selectedCover?.ratio ?? 3 / 4;
+    final ratio = selectedCover?.ratio ?? 1.0;
     final logicalInnerSize = Size(
       kCoverReferenceWidth,
       kCoverReferenceWidth / ratio,
@@ -328,9 +335,15 @@ class PageListSelector extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddButton(BuildContext context, {required bool isVerticalRail}) {
+  Widget _buildAddButton(
+    BuildContext context, {
+    required bool isVerticalRail,
+    double coverRatio = 1.0,
+  }) {
+    final btnH = isVerticalRail ? 58.0 : 52.h;
+    final btnW = isVerticalRail ? 58.0 : (btnH * coverRatio).clamp(32.0, 80.0);
     return SizedBox(
-      width: isVerticalRail ? 62 : 30.w,
+      width: isVerticalRail ? 62 : btnW + 8.0,
       child: SnapFitPressable(
         onTap: onAddPage,
         pressedScale: 0.96,
@@ -339,8 +352,8 @@ class PageListSelector extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: isVerticalRail ? 58 : 24.w,
-              height: isVerticalRail ? 58 : 40.h,
+              width: isVerticalRail ? 58 : btnW,
+              height: isVerticalRail ? 58 : btnH,
               decoration: BoxDecoration(
                 color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
                 borderRadius: BorderRadius.circular(14.r),

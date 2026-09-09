@@ -3,6 +3,7 @@ import 'package:snap_fit/core/templates/authored_collections.dart';
 import 'package:snap_fit/features/album/data/bundled_creation_templates.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_known_products.dart';
 import 'package:snap_fit/features/point_shop/domain/point_shop_template_key.dart';
+import 'package:snap_fit/features/point_shop/domain/premium_volume_registration.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 
 void main() {
@@ -76,7 +77,18 @@ void main() {
           'phrase:collage-bold-cut',
         ]),
       );
-      expect(keys, isNot(contains('template:luminous-edition')));
+      expect(
+        keys,
+        containsAll(pendingPremiumVolumeProducts.map((p) => p.productKey)),
+      );
+      expect(
+        keys,
+        containsAll(pendingConceptVolumeProducts.map((p) => p.productKey)),
+      );
+      expect(
+        bundledCreationTemplates.map((p) => p.title),
+        isNot(contains(PremiumVolume.travel.title)),
+      );
       for (final collection in retiredAuthoredCollections) {
         expect(keys, isNot(contains(pointShopAuthoredTemplateKey(collection))));
       }

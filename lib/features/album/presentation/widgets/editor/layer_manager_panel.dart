@@ -74,8 +74,11 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
       );
     }
 
+    final sheetHeight = widget.showHandle
+        ? (MediaQuery.sizeOf(context).height * 0.90).clamp(520.0, 900.0)
+        : double.infinity;
     return Container(
-      height: widget.showHandle ? 320.h : double.infinity,
+      height: sheetHeight,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(

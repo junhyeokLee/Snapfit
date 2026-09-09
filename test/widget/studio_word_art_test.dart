@@ -108,7 +108,7 @@ void main() {
             expect(saved.textFillMode, layer.textFillMode);
             expect(saved.imageBackground, layer.imageBackground);
             if (layer.type == LayerType.text) {
-              expect(saved.text, art.text);
+              expect(saved.text, layer.text);
               expect(saved.textStyle!.fontFamily, layer.textStyle!.fontFamily);
               final painter = TextPainter(
                 text: TextSpan(text: layer.text, style: layer.textStyle),
@@ -129,8 +129,8 @@ void main() {
             vm.pages.first.layers.map((l) => l.id),
             inserted.map((l) => l.id),
           );
-          final text = vm.pages.first.layers.singleWhere(
-            (l) => l.type == LayerType.text,
+          final text = vm.pages.first.layers.firstWhere(
+            (l) => l.type == LayerType.text && l.text == art.text,
           );
           vm.updateLayer(text.copyWith(text: '나의 기록'));
           expect(
@@ -193,7 +193,16 @@ void main() {
         final vm = container.read(albumEditorViewModelProvider.notifier);
         vm.resetForCreate(targetPages: 2);
         vm.updatePageLayers([], recordHistory: false);
-        await tester.ensureVisible(find.text('블루 포켓 카메라'));
+        await tester.scrollUntilVisible(
+          find.text('블루 포켓 카메라'),
+          220,
+          scrollable: find
+              .descendant(
+                of: find.byType(GridView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('블루 포켓 카메라'));
         await tester.pumpAndSettle();
@@ -221,6 +230,41 @@ void main() {
         expect(vm.pages.first.layers.last.textFillMode, 'papercut');
         vm.undo();
         expect(vm.pages.first.layers.length, 1);
+        await tester.scrollUntilVisible(
+          find.text('압인 청첩장 타이틀'),
+          180,
+          scrollable: find
+              .descendant(
+                of: find.byType(GridView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tester.tap(find.byTooltip('압인 청첩장 타이틀 즐겨찾기 추가'));
+        await tester.pumpAndSettle();
+        expect(
+          CatalogFavorites.instance.contains(atelierWordArts.first.favoriteKey),
+          true,
+        );
+        await tester.scrollUntilVisible(
+          find.text('압인 청첩장 타이틀'),
+          -180,
+          scrollable: find
+              .descendant(
+                of: find.byType(GridView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tester.tap(find.text('압인 청첩장 타이틀'));
+        await tester.pumpAndSettle();
+        expect(gates.last, atelierWordArts.first.productKey);
+        expect(
+          vm.pages.first.layers.where((l) => l.type == LayerType.text),
+          hasLength(3),
+        );
+        vm.undo();
+        expect(vm.pages.first.layers.length, 1);
         expect(tester.takeException(), isNull);
       },
     );
@@ -240,7 +284,9 @@ void main() {
           height: 900,
           child: Wrap(
             children: [
-              for (final art in studioWordArts)
+              for (final art in studioWordArts.where(
+                (a) => !a.id.startsWith('atelier-'),
+              ))
                 SizedBox(
                   width: 360,
                   height: 300,
@@ -282,7 +328,9 @@ void main() {
     const size = Size(500, 650);
     for (final art in studioWordArts) {
       final layers = art.buildLayers(size);
-      final text = layers.singleWhere((l) => l.type == LayerType.text);
+      final text = layers.singleWhere(
+        (l) => l.type == LayerType.text && l.text == art.text,
+      );
       final builder = LayerBuilder(_Interaction(), () => size);
       await tester.pumpWidget(
         Directionality(

@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+# Generated visual-test diagnostics; approved golden baselines remain tracked.
+/test/**/failures/
 # Local AI evaluation prompts, model responses and review artifacts
 /output/ai-template-evaluations/
 /output/template-preview/

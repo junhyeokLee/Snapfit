@@ -95,7 +95,22 @@ void main() {
         for (final title in ['여행의 결', '작은 날의 기록', '빛으로 엮은 우리']) {
           await tester.tap(find.byTooltip('시안 선택'));
           await tester.pumpAndSettle();
-          expect(find.byType(PopupMenuItem<String>), findsNWidgets(41));
+          expect(
+            tester
+                .widgetList<PopupMenuItem<String>>(
+                  find.byType(PopupMenuItem<String>),
+                )
+                .map((item) => item.value),
+            unorderedEquals([
+              for (final collection in authoredCollections) '/${collection.id}',
+              '/premium-studies',
+              '/luminous-edition',
+              '/travel-keepsake-20',
+              '/frames',
+              '/materials',
+              '/atelier',
+            ]),
+          );
           for (final retired in retiredAuthoredCollections) {
             expect(find.text(retired.title), findsNothing);
           }

@@ -7,6 +7,8 @@ import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../point_shop/data/point_shop_provider.dart';
 import '../../../point_shop/domain/point_shop_known_products.dart';
 import '../../../point_shop/domain/point_shop_product.dart';
+import '../../../point_shop/domain/premium_volume_registration.dart';
+import '../../../point_shop/domain/point_shop_launch_pricing.dart';
 
 /// UI visibility follows the same app-metadata claim as public.is_admin().
 /// Product writes still require the server's RLS permission on every request.
@@ -56,6 +58,10 @@ class _AdminPointShopManagementScreenState
         onSave: (updated) async {
           if (!ref.read(pointShopAdminAccessProvider)) {
             throw StateError('admin_access_required');
+          }
+          if (isPendingTemplateProduct(updated.productKey) &&
+              updated.isActive) {
+            throw StateError('premium_volume_release_pending');
           }
           await ref.read(pointShopRepositoryProvider).saveProduct(updated);
           ref.invalidate(pointShopCatalogProvider);
@@ -130,7 +136,7 @@ class _AdminPointShopManagementScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('현재 공개된 상품에서 판매할 항목을 선택하세요. 가격은 저장 전까지 적용되지 않습니다.'),
+              const Text('공개 상품과 출시 대기 상품'),
               const SizedBox(height: 12),
               TextField(
                 decoration: const InputDecoration(
@@ -174,7 +180,13 @@ class _AdminPointShopManagementScreenState
                   itemBuilder: (context, index) {
                     final item = products[index];
                     final saved = configured.containsKey(item.productKey);
-                    final price = !saved
+                    final contents = pendingTemplateContentsLabel(
+                      item.productKey,
+                    );
+                    final launch = pointShopLaunchPrices[item.productKey];
+                    final price = contents != null
+                        ? '${item.pointPrice == null ? '가격 미설정' : '${item.pointPrice}P'} · 출시 대기'
+                        : !saved
                         ? '현재 무료 · 가격 미설정'
                         : item.pointPrice == null
                         ? '가격 미설정 · 판매 중지'
@@ -187,7 +199,9 @@ class _AdminPointShopManagementScreenState
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        '${_kindLabels[item.kind] ?? item.kind} · $price',
+                        '${_kindLabels[item.kind] ?? item.kind} · $price'
+                        '${launch == null ? '' : '\n출시 책정가 ${launch.points}P · 현재 판매가와 별도'}'
+                        '${contents == null ? '' : '\n$contents'}',
                       ),
                       trailing: const Icon(Icons.edit_outlined),
                       onTap: () => _edit(item, configured: saved),
@@ -219,6 +233,8 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
   late bool _active;
   bool _saving = false;
   String? _error;
+  bool get _releasePending =>
+      isPendingTemplateProduct(widget.product.productKey);
 
   @override
   void initState() {
@@ -226,7 +242,7 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
     _price = TextEditingController(
       text: widget.product.pointPrice?.toString() ?? '',
     );
-    _active = widget.product.isActive;
+    _active = !_releasePending && widget.product.isActive;
   }
 
   @override
@@ -257,7 +273,7 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
           assetId: widget.product.assetId,
           title: widget.product.title,
           pointPrice: value,
-          isActive: _active,
+          isActive: !_releasePending && _active,
         ),
       );
       if (mounted) Navigator.pop(context, true);
@@ -279,9 +295,31 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!widget.configured) ...[
+            if (_releasePending) ...[
+              Text(pendingTemplateContentsLabel(widget.product.productKey)!),
+              const SizedBox(height: 12),
+              const Text('출시 대기 · 스토어 연결 및 결제 검증 전'),
+              const SizedBox(height: 16),
+            ] else if (!widget.configured) ...[
               const Text('현재 무료로 제공 중이며 저장된 가격이 없습니다.'),
               const SizedBox(height: 16),
+            ],
+            if (pointShopLaunchPrices[widget.product.productKey]
+                case final launch?) ...[
+              Text('출시 책정가 ${launch.points}P'),
+              Text(launch.reason, style: Theme.of(context).textTheme.bodySmall),
+              TextButton.icon(
+                key: const ValueKey('point-shop-use-launch-price'),
+                icon: const Icon(Icons.price_check),
+                label: const Text('책정가 입력'),
+                onPressed: _saving
+                    ? null
+                    : () => setState(() {
+                        _price.text = launch.points.toString();
+                        _error = null;
+                      }),
+              ),
+              const SizedBox(height: 8),
             ],
             TextField(
               key: const ValueKey('point-shop-price'),
@@ -298,9 +336,13 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('판매 활성화'),
-              subtitle: const Text('중지해도 기존 구매 내역은 유지됩니다.'),
+              subtitle: Text(
+                _releasePending
+                    ? '현재는 가격만 저장할 수 있습니다.'
+                    : '중지해도 기존 구매 내역은 유지됩니다.',
+              ),
               value: _active,
-              onChanged: _saving
+              onChanged: _saving || _releasePending
                   ? null
                   : (value) => setState(() => _active = value),
             ),

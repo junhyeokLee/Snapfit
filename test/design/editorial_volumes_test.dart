@@ -41,7 +41,7 @@ void main() {
   setUpAll(loadCreationFonts);
 
   test('two independent 24-page collections are free, never paid', () {
-    expect(bundledCreationTemplates.length, 36);
+    expect(bundledCreationTemplates.length, 37);
     expect(bundledCreationTemplates.every((t) => !t.isPremium), isTrue);
     for (final aspect in CollectionAspect.values) {
       final old = [

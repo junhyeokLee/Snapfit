@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/shared/widgets/studio_decoration.dart';
+import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
+import 'package:snap_fit/shared/widgets/studio_word_art_preview.dart';
 import 'package:snap_fit/features/album/presentation/controllers/layer_builder.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/decorate_sticker_tab.dart';
 
@@ -16,9 +18,15 @@ class _MaterialPreviewState extends State<MaterialPreview> {
   StudioDecorationSpec _selected = studioDecorations.first;
   Color _background = const Color(0xFFE5E9E4);
   String? _legacy;
+  StudioWordArt? get _wordArt => _legacy?.startsWith('wordart:') == true
+      ? studioWordArtById(_legacy!.substring(8))
+      : null;
+  String get _label =>
+      _wordArt?.label ?? (_legacy == null ? _selected.label : '기존 장식');
 
   Widget _artwork() {
     final value = _legacy;
+    if (_wordArt case final art?) return StudioWordArtPreview(art: art);
     if (value == null) return StudioDecoration(spec: _selected);
     if (value.startsWith('asset:')) {
       return Image.asset(value.substring(6), fit: BoxFit.contain);
@@ -55,12 +63,11 @@ class _MaterialPreviewState extends State<MaterialPreview> {
                       padding: const EdgeInsets.fromLTRB(36, 16, 36, 8),
                       child: Center(
                         child: AspectRatio(
-                          aspectRatio: _legacy == null
-                              ? _selected.aspectRatio
-                              : 1,
+                          aspectRatio:
+                              _wordArt?.sourceSize.aspectRatio ??
+                              (_legacy == null ? _selected.aspectRatio : 1),
                           child: Semantics(
-                            label:
-                                '${_legacy == null ? _selected.label : '기존 장식'} 크게 보기',
+                            label: '$_label 크게 보기',
                             child: RepaintBoundary(child: _artwork()),
                           ),
                         ),
@@ -73,7 +80,7 @@ class _MaterialPreviewState extends State<MaterialPreview> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _legacy == null ? _selected.label : '기존 장식',
+                          _label,
                           style: TextStyle(
                             fontSize: 13,
                             color: _background.computeLuminance() < .3

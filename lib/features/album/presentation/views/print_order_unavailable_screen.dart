@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../profile/presentation/views/order_history_screen.dart';
+import '../widgets/print_fulfillment_notice.dart';
 import 'print_order_preview_screen.dart';
 
 class PrintOrderUnavailableScreen extends StatelessWidget {
@@ -112,6 +113,8 @@ class PrintOrderUnavailableScreen extends StatelessWidget {
               ),
               child: const Text('기존 주문 내역 보기'),
             ),
+            SizedBox(height: 24.h),
+            const PrintFulfillmentNotice(),
           ],
         ),
       ),

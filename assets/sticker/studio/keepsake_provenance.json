@@ -1,0 +1,18 @@
+{
+  "createdAt": "2026-09-09",
+  "generator": "Built-in image_gen",
+  "purpose": "Original individual transparent cutouts for the SnapFit material editor",
+  "processing": "Original generated PNG copied unchanged; alpha retained. No stock downloads or template artwork reuse.",
+  "distributionReview": "pending; this provenance is not a legal clearance",
+  "assets": [
+    {"file":"material_lace.png","source":"exec-0b9f6df6-6952-4e3e-9262-a949409ceae8.png","promptSummary":"Ivory cotton lace L-shaped photo corner; overhead macro; transparent holes and background"},
+    {"file":"material_shell.png","source":"exec-5be0b673-764c-447a-9bc7-4684536bb89f.png","promptSummary":"Single weathered pale coral and ivory scallop shell; matte overhead macro cutout"},
+    {"file":"material_bookmark.png","source":"exec-c94e708c-be61-4c2c-aa89-6b0e3a1597a6.png","promptSummary":"Deckled teal and coral hand-marbled cotton bookmark with punched hole"},
+    {"file":"material_booties.png","source":"exec-da476de3-cb0b-4d13-b704-433f5e7143f1.png","promptSummary":"Pair of butter-yellow and milk-white hand-knitted newborn booties; transparent background"},
+    {"file":"material_linen.png","source":"exec-353379be-876e-4cdf-9e79-d28afac7b434.png","promptSummary":"Frayed forest-green and natural-white gingham linen swatch with stitched hem"},
+    {"file":"material_rose.png","source":"exec-50f07b47-9009-4d01-a9f6-77d06ddc6c59.png","promptSummary":"Papery claret dried rose specimen with short stem and two olive leaves"},
+    {"file":"material_leash.png","source":"exec-a5e84273-a668-4743-83a0-1c8d0ec2707a.png","promptSummary":"Braided sage cotton leash loop with brushed brass clasp; overhead isolated textile"},
+    {"file":"material_clip.png","source":"exec-35cb12e7-f992-4889-86d1-c939e58f4071.png","promptSummary":"Single brushed nickel bulldog clip with clear hanging hole; product cutout"}
+  ],
+  "originalDirectory": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b"
+}

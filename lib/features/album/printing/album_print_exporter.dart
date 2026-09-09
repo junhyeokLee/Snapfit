@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
+import '../../../../core/templates/studio_photo_frame_catalog.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/storage_url_resolver.dart';
 import '../domain/entities/layer.dart';
@@ -340,6 +341,9 @@ class AlbumPrintExporter {
         continue;
       }
       final source = printOriginalSource(layer);
+      final frameAsset = keepsakeFrameAssets[layer.imageBackground];
+      if (frameAsset != null)
+        request(layer, 'asset:$frameAsset', contain: true);
       request(
         layer,
         source,
