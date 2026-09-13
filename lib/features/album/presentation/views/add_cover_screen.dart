@@ -360,16 +360,12 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       canUndo: canUndo,
                       canRedo: canRedo,
                       onUndo: () {
-                        ref
-                            .read(albumEditorViewModelProvider.notifier)
-                            .undo();
+                        ref.read(albumEditorViewModelProvider.notifier).undo();
                         _interaction.clearSelection();
                         setState(() {});
                       },
                       onRedo: () {
-                        ref
-                            .read(albumEditorViewModelProvider.notifier)
-                            .redo();
+                        ref.read(albumEditorViewModelProvider.notifier).redo();
                         _interaction.clearSelection();
                         setState(() {});
                       },
