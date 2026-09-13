@@ -14,9 +14,32 @@ import 'life_concept_paper.dart';
 
 /// The picker, editor and template renderer share the same material artwork.
 class StudioDecoration extends StatelessWidget {
-  const StudioDecoration({super.key, required this.spec, this.printImage});
+  const StudioDecoration({
+    super.key,
+    required this.spec,
+    this.printImage,
+    this.preview = false,
+  });
   final StudioDecorationSpec spec;
+  final bool preview;
   final ui.Image? printImage;
+
+  Widget _asset(String path) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      return Image.asset(
+        path,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        cacheWidth: preview && width.isFinite && width > 0
+            ? (width * MediaQuery.devicePixelRatioOf(context)).ceil().clamp(
+                1,
+                4096,
+              )
+            : null,
+      );
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +51,7 @@ class StudioDecoration extends StatelessWidget {
           filterQuality: FilterQuality.high,
         );
       }
-      return Image.asset(
-        path,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.medium,
-      );
+      return _asset(path);
     }
     if (spec.id.startsWith('material')) return KeepsakeStationery(id: spec.id);
     if (lifeVarietyPapers.any((s) => s.id == spec.id))
@@ -60,11 +79,7 @@ class StudioDecoration extends StatelessWidget {
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.high,
                       )
-                    : Image.asset(
-                        'assets/sticker/studio/pressed_cosmos.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.medium,
-                      ),
+                    : _asset('assets/sticker/studio/pressed_cosmos.png'),
               ),
             )
           : const SizedBox.expand(),

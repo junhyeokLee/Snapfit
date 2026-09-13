@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../core/templates/template_catalog_categories.dart';
+import '../providers/store_catalog_provider.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../core/utils/image_url_policy.dart';
@@ -65,11 +65,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      CatalogFavoritesBuilder(builder: _buildCatalog);
-
-  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
-    final templatesAsync = ref.watch(templateListProvider);
+  Widget build(BuildContext context) {
+    final catalogProvider = storeCatalogProvider((
+      query: _searchController.text,
+      category: _selectedCategory,
+      favoritesOnly: _favoritesOnly,
+    ));
+    ref.listen(catalogProvider, (_, next) {
+      if (next.isLoading) return;
+      final catalog = next.asData?.value;
+      if (catalog != null && catalog.category != _selectedCategory) {
+        setState(() => _selectedCategory = catalog.category);
+      }
+    });
+    final templatesAsync = ref.watch(catalogProvider);
 
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
@@ -79,16 +88,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           error: (_, __) => _StoreErrorView(
             onRetry: () => ref.invalidate(templateListProvider),
           ),
-          data: (templates) {
-            final categories = _templateCategories(templates);
-            if (!categories.contains(_selectedCategory)) {
-              _selectedCategory = '전체';
-            }
-            final filteredTemplates = favorites.arrange(
-              _filterTemplates(templates),
-              (t) => CatalogFavoriteKeys.template(t.id),
-              onlyFavorites: _favoritesOnly,
-            );
+          data: (catalog) {
+            final templates = catalog.templates;
+            final categories = catalog.categories;
+            final filteredTemplates = catalog.filtered;
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(templateListProvider);
@@ -135,7 +138,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         if (_favoritesOnly) const SizedBox(height: 18),
                         _StoreDiscoveryControls(
                           categories: categories,
-                          selectedCategory: _selectedCategory,
+                          selectedCategory: catalog.category,
                           searchController: _searchController,
                           onCategoryChanged: (category) {
                             setState(() => _selectedCategory = category);
@@ -146,7 +149,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           favoritesOnly: _favoritesOnly,
                           visibleCount: filteredTemplates.length,
                           totalCount: templates.length,
-                          selectedCategory: _selectedCategory,
+                          selectedCategory: catalog.category,
                         ),
                         const SizedBox(height: 14),
                       ]),
@@ -200,35 +203,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ),
     );
-  }
-
-  List<String> _templateCategories(List<PremiumTemplate> templates) {
-    final values = orderedTemplateTopics(
-      templates.map((template) => (template.category ?? '').trim()),
-    );
-    return ['전체', ...values];
-  }
-
-  List<PremiumTemplate> _filterTemplates(List<PremiumTemplate> templates) {
-    final query = _searchController.text.trim().toLowerCase();
-    return templates
-        .where((template) {
-          final category = (template.category ?? '').trim();
-          final categoryMatches =
-              _selectedCategory == '전체' || category == _selectedCategory;
-          if (!categoryMatches) return false;
-          if (query.isEmpty) return true;
-          final tags = (template.tags ?? const <String>[]).join(' ');
-          final haystack = [
-            template.title,
-            template.subTitle ?? '',
-            template.description ?? '',
-            category,
-            tags,
-          ].join(' ').toLowerCase();
-          return haystack.contains(query);
-        })
-        .toList(growable: false);
   }
 
   void _openDetail(PremiumTemplate template) {
@@ -917,7 +891,7 @@ class _StoreTemplateSampleStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isPublishedCreationTemplate(template)) {
-      return CreationCatalogCover(template: template);
+      return CreationCatalogCover(template: template, previewDecode: true);
     }
     final urls = <String>[
       _storeCoverPreviewUrl(template),

@@ -157,6 +157,7 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                                       child: ExcludeSemantics(
                                         child: CreationCatalogCover(
                                           template: template,
+                                          previewDecode: true,
                                         ),
                                       ),
                                     ),
@@ -363,7 +364,10 @@ class _PremiumTemplateListState extends ConsumerState<PremiumTemplateList> {
                               fit: StackFit.expand,
                               children: [
                                 if (isPublishedCreationTemplate(template))
-                                  CreationCatalogCover(template: template)
+                                  CreationCatalogCover(
+                                    template: template,
+                                    previewDecode: true,
+                                  )
                                 else if (previewUrl.isNotEmpty)
                                   _buildCoverImage(context, previewUrl)
                                 else if (parsed != null)

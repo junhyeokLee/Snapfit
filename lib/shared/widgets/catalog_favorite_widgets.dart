@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/templates/catalog_favorites_provider.dart';
 import '../../core/templates/catalog_favorites.dart';
 export '../../core/templates/catalog_favorites.dart';
 export '../../core/templates/catalog_favorite_keys.dart';
 
-class CatalogFavoritesBuilder extends StatefulWidget {
+/// Standalone artwork galleries predate Riverpod. Preserve their embedding API
+/// without creating extra containers in the normal, already-scoped app tree.
+Widget _withCatalogScope(BuildContext context, Widget child) {
+  try {
+    ProviderScope.containerOf(context, listen: false);
+    return child;
+  } on StateError {
+    return ProviderScope(child: child);
+  }
+}
+
+class CatalogFavoritesBuilder extends StatelessWidget {
   const CatalogFavoritesBuilder({super.key, required this.builder});
   final Widget Function(BuildContext, CatalogFavorites) builder;
   @override
-  State<CatalogFavoritesBuilder> createState() =>
-      _CatalogFavoritesBuilderState();
-}
-
-class _CatalogFavoritesBuilderState extends State<CatalogFavoritesBuilder> {
-  late final CatalogFavorites favorites = CatalogFavorites.instance;
-  @override
-  void initState() {
-    super.initState();
-    favorites.load();
-  }
-
-  @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: favorites,
-    builder: (context, _) => widget.builder(context, favorites),
+  Widget build(BuildContext context) => _withCatalogScope(
+    context,
+    Consumer(
+      builder: (context, ref, _) {
+        ref.watch(catalogFavoriteOrderProvider);
+        return builder(context, ref.watch(catalogFavoritesProvider));
+      },
+    ),
   );
 }
 
@@ -34,52 +39,61 @@ class CatalogFavoriteButton extends StatelessWidget {
   });
   final String itemKey, label;
   @override
-  Widget build(BuildContext context) => CatalogFavoritesBuilder(
-    builder: (context, favorites) {
-      final selected = favorites.contains(itemKey);
-      final tooltip = '$label 즐겨찾기 ${selected ? '해제' : '추가'}';
-      Future<void> toggle() async {
-        final messenger = ScaffoldMessenger.maybeOf(context);
-        if (!await favorites.toggle(itemKey) &&
-            messenger != null &&
-            messenger.mounted) {
-          messenger.showSnackBar(
-            const SnackBar(content: Text('즐겨찾기를 저장하지 못했어요. 다시 시도해 주세요.')),
-          );
-        }
-      }
-
-      return Semantics(
-        button: true,
-        toggled: selected,
-        label: tooltip,
-        excludeSemantics: true,
-        onTap: toggle,
-        child: IconButton.filledTonal(
-          key: ValueKey('favorite-$itemKey'),
-          tooltip: tooltip,
-          style: IconButton.styleFrom(
-            minimumSize: const Size(44, 44),
-            maximumSize: const Size(44, 44),
-            padding: EdgeInsets.zero,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            foregroundColor: selected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 160),
-            child: Icon(
-              selected ? Icons.star_rounded : Icons.star_outline_rounded,
-              key: ValueKey(selected),
-              size: 22,
-            ),
-          ),
-          onPressed: toggle,
-        ),
-      );
-    },
+  Widget build(BuildContext context) => _withCatalogScope(
+    context,
+    _CatalogFavoriteSelection(itemKey: itemKey, label: label),
   );
+}
+
+class _CatalogFavoriteSelection extends ConsumerWidget {
+  const _CatalogFavoriteSelection({required this.itemKey, required this.label});
+  final String itemKey, label;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favorites = ref.watch(catalogFavoritesProvider);
+    final selected = ref.watch(catalogFavoriteProvider(itemKey));
+    final tooltip = '$label 즐겨찾기 ${selected ? '해제' : '추가'}';
+    Future<void> toggle() async {
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (!await favorites.toggle(itemKey) &&
+          messenger != null &&
+          messenger.mounted) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('즐겨찾기를 저장하지 못했어요. 다시 시도해 주세요.')),
+        );
+      }
+    }
+
+    return Semantics(
+      button: true,
+      toggled: selected,
+      label: tooltip,
+      excludeSemantics: true,
+      onTap: toggle,
+      child: IconButton.filledTonal(
+        key: ValueKey('favorite-$itemKey'),
+        tooltip: tooltip,
+        style: IconButton.styleFrom(
+          minimumSize: const Size(44, 44),
+          maximumSize: const Size(44, 44),
+          padding: EdgeInsets.zero,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          foregroundColor: selected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          child: Icon(
+            selected ? Icons.star_rounded : Icons.star_outline_rounded,
+            key: ValueKey(selected),
+            size: 22,
+          ),
+        ),
+        onPressed: toggle,
+      ),
+    );
+  }
 }
 
 /// Sibling hit targets keep bookmarking separate from applying/opening an item.

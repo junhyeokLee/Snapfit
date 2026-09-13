@@ -960,6 +960,35 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _emit();
   }
 
+  /// Interprets chooser payloads at the editor boundary, not in the View.
+  /// Typography is supplied by the UI; document coordinates stay VM-owned.
+  bool insertMaterial(String sticker, {required double emojiFontSize}) {
+    final ratio = selectedCover.ratio > 0 ? selectedCover.ratio : 3 / 4;
+    final canvasSize = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+    if (sticker.startsWith('wordart:')) {
+      final art = studioWordArtById(sticker.substring('wordart:'.length));
+      if (art == null) return false;
+      addWordArt(art, canvasSize);
+    } else if (sticker.startsWith('deco:')) {
+      final payload = sticker.replaceFirst('deco:', '');
+      final parts = payload.split('@');
+      final style = parts.first;
+      final scale = parts.length > 1 ? (double.tryParse(parts[1]) ?? 1.0) : 1.0;
+      addDecorationSticker(style, canvasSize, scale: scale);
+    } else if (sticker.startsWith('asset:')) {
+      final assetPath = sticker.replaceFirst('asset:', '');
+      addAssetSticker(assetPath, canvasSize);
+    } else {
+      addTextLayer(
+        sticker,
+        style: TextStyle(fontSize: emojiFontSize),
+        mode: TextStyleType.none,
+        canvasSize: canvasSize,
+      );
+    }
+    return true;
+  }
+
   /// 앱 번들 에셋 스티커 추가 (예: assets/sticker/scrap1.png)
   void addAssetSticker(String assetPath, Size canvasSize) {
     if (_pages.isEmpty) return;
