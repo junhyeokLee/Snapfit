@@ -92,8 +92,10 @@ class AlbumViewModel extends _$AlbumViewModel {
       } else {
         state = AsyncError(e, st);
       }
+      rethrow;
     } catch (e, st) {
       state = AsyncError(e, st);
+      rethrow;
     }
   }
 }

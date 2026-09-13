@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -112,6 +113,55 @@ void main() {
       ),
     );
   });
+
+  for (final networkFailure in [false, true]) {
+    test(
+      'saveFullAlbum reports database failure and permits retry network=$networkFailure',
+      () async {
+        final repo = MockAlbumRepository();
+        final error = networkFailure
+            ? DioException(
+                requestOptions: RequestOptions(path: '/albums/1'),
+                type: DioExceptionType.connectionTimeout,
+              )
+            : StateError('database update failed');
+        var failing = true;
+        var calls = 0;
+        when(() => repo.updateAlbum(any(), any())).thenAnswer((_) async {
+          calls++;
+          if (failing) throw error;
+          return fakeAlbum(id: 1);
+        });
+        final container = ProviderContainer(
+          overrides: [
+            albumRepositoryProvider.overrideWithValue(repo),
+            albumEditorServiceProvider.overrideWithValue(
+              const AlbumEditorService(),
+            ),
+            albumPersistenceServiceProvider.overrideWithValue(
+              FakeAlbumPersistenceService(),
+            ),
+            storageServiceProvider.overrideWithValue(FakeStorageService()),
+          ],
+        );
+        addTearDown(container.dispose);
+        await container.read(albumEditorViewModelProvider.future);
+        final vm = container.read(albumEditorViewModelProvider.notifier);
+        await vm.prepareAlbumForEdit(fakeAlbum(id: 1));
+        vm.setCoverCanvasSize(const Size(500, 500));
+        vm.updatePageBackgroundColor(0xFFFFC107);
+        final before = vm.exportFullAlbumLayersJson(const Size(500, 500));
+        expect(await vm.saveFullAlbum(), isFalse);
+        expect(container.read(albumEditorViewModelProvider).hasError, isTrue);
+        expect(vm.exportFullAlbumLayersJson(const Size(500, 500)), before);
+        expect(calls, networkFailure ? 3 : 1);
+        failing = false;
+        expect(await vm.saveFullAlbum(), isTrue);
+        expect(container.read(albumEditorViewModelProvider).hasError, isFalse);
+        expect(vm.exportFullAlbumLayersJson(const Size(500, 500)), before);
+      },
+    );
+  }
 
   for (final size in coverSizes.expand(
     (size) => PrintCoverType.values.map(size.withCoverType),
