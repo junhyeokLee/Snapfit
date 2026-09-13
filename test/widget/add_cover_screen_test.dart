@@ -319,7 +319,7 @@ void main() {
       expect(find.text('레이아웃'), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
       expect(find.text('레이어'), findsOneWidget);
-      expect(find.text('스티커'), findsOneWidget);
+      expect(find.text('꾸미기'), findsOneWidget);
       expect(find.text('배경'), findsOneWidget);
       expect(find.text('표지 완성'), findsOneWidget);
       expect(find.textContaining('함께 볼 사람'), findsNothing);

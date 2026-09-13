@@ -1081,39 +1081,39 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                                   ),
                                 ),
                                 EditorBottomMenu(
-                              currentMode: _currentMode,
-                              isCover: currentPageIndex == 0,
-                              showCoverMenuItem: false,
-                              canUndo: canUndo,
-                              canRedo: canRedo,
-                              onUndo: () {
-                                vm.undo();
-                                _interaction.clearSelection();
-                                if (mounted) setState(() {});
-                              },
-                              onRedo: () {
-                                vm.redo();
-                                _interaction.clearSelection();
-                                if (mounted) setState(() {});
-                              },
-                              onModeChanged: (mode) =>
-                                  _handleModeChange(mode, layers),
-                              onAddPhoto: () {
-                                // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
-                                final size =
-                                    (currentPageIndex == 0 &&
-                                        (_canvasSize.width <= 0 ||
-                                            _canvasSize.height <= 0))
-                                    ? Size(
-                                        kCoverReferenceWidth,
-                                        kCoverReferenceWidth / aspect,
-                                      )
-                                    : _canvasSize;
-                                _toolbarActionHandler.addPhoto(size);
-                              },
-                              onCover: () =>
-                                  _toolbarActionHandler.openCoverTheme(),
-                            ),
+                                  currentMode: _currentMode,
+                                  isCover: currentPageIndex == 0,
+                                  showCoverMenuItem: false,
+                                  canUndo: canUndo,
+                                  canRedo: canRedo,
+                                  onUndo: () {
+                                    vm.undo();
+                                    _interaction.clearSelection();
+                                    if (mounted) setState(() {});
+                                  },
+                                  onRedo: () {
+                                    vm.redo();
+                                    _interaction.clearSelection();
+                                    if (mounted) setState(() {});
+                                  },
+                                  onModeChanged: (mode) =>
+                                      _handleModeChange(mode, layers),
+                                  onAddPhoto: () {
+                                    // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
+                                    final size =
+                                        (currentPageIndex == 0 &&
+                                            (_canvasSize.width <= 0 ||
+                                                _canvasSize.height <= 0))
+                                        ? Size(
+                                            kCoverReferenceWidth,
+                                            kCoverReferenceWidth / aspect,
+                                          )
+                                        : _canvasSize;
+                                    _toolbarActionHandler.addPhoto(size);
+                                  },
+                                  onCover: () =>
+                                      _toolbarActionHandler.openCoverTheme(),
+                                ),
                               ],
                             ),
                           ),
@@ -1419,18 +1419,18 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return switch (mode) {
-          EditorMode.sticker =>
-            const DecoratePanel(mode: DecorateSheetMode.sticker),
-          EditorMode.backgroundColor =>
-            const DecoratePanel(mode: DecorateSheetMode.backgroundColor),
+          EditorMode.sticker => const DecoratePanel(
+            mode: DecorateSheetMode.sticker,
+          ),
+          EditorMode.backgroundColor => const DecoratePanel(
+            mode: DecorateSheetMode.backgroundColor,
+          ),
           EditorMode.layer => LayerManagerPanel(
             layers: layers,
             interaction: _interaction,
           ),
-          EditorMode.layout =>
-            const TemplateSelectionPanel(title: '레이아웃'),
-          EditorMode.template =>
-            const DesignTemplatePanel(closeOnApply: false),
+          EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
+          EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
           _ => const SizedBox.shrink(),
         };
       },

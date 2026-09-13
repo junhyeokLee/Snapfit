@@ -139,7 +139,7 @@ void main() {
       () => mockRepo.updateAlbum(1, captureAny()),
     ).captured.single;
     expect(captured.coverLayersJson, contains('REDP_300_SOFT'));
-    expect(captured.coverLayersJson, contains('\"trimWidthMm\":300'));
+    expect(captured.coverLayersJson, contains('"trimWidthMm":300'));
     expect(captured.coverPreviewUrl, 'gs://bucket/preview.jpg');
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
   });

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
@@ -24,13 +26,22 @@ Future<void> _loadGoldenFonts() async {
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
   await robotoLoader.load();
+  await (FontLoader(
+    'MaterialIcons',
+  )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
 }
 
 Widget _wrap(Widget child) {
-  return ScreenUtilInit(
-    designSize: const Size(390, 844),
-    minTextAdapt: true,
-    builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+  return ProviderScope(
+    overrides: [
+      pointShopCatalogProvider.overrideWith((ref) async => []),
+      ownedPointShopKeysProvider.overrideWith((ref) async => <String>{}),
+    ],
+    child: ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+    ),
   );
 }
 
