@@ -14,6 +14,11 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
       ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'));
     await loader.load();
+    await (FontLoader('NotoSans')
+          ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
+          ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
+          ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf')))
+        .load();
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();

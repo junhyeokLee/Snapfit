@@ -67,7 +67,7 @@ void main() {
         '레이아웃',
         '템플릿',
         '레이어',
-        '스티커',
+        '꾸미기',
         '배경',
       ]) {
         await _dragDockUntilVisible(tester, label);
@@ -112,7 +112,7 @@ void main() {
         ),
       );
 
-      for (final label in ['글', '사진', '레이아웃', '템플릿', '레이어', '스티커', '배경']) {
+      for (final label in ['글', '사진', '레이아웃', '템플릿', '레이어', '꾸미기', '배경']) {
         await _dragDockUntilVisible(tester, label);
         expect(find.text(label), findsOneWidget, reason: label);
       }

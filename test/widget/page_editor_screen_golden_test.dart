@@ -186,8 +186,12 @@ Widget _wrapEditor() {
 }
 
 Future<void> _pumpEditorToEntryMotion(WidgetTester tester) async {
-  await tester.binding.setSurfaceSize(const Size(390, 844));
-  addTearDown(() => tester.binding.setSurfaceSize(null));
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
   await tester.pumpWidget(_wrapEditor());
   for (var i = 0; i < 12; i += 1) {
     await tester.pump(const Duration(milliseconds: 16));
@@ -207,8 +211,12 @@ double _firstOpacityUnder(WidgetTester tester, Key key) {
 }
 
 Future<void> _pumpEditor(WidgetTester tester) async {
-  await tester.binding.setSurfaceSize(const Size(390, 844));
-  addTearDown(() => tester.binding.setSurfaceSize(null));
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
   await tester.pumpWidget(_wrapEditor());
   await tester.pumpAndSettle();
 }
@@ -313,32 +321,37 @@ void main() {
     expect(find.byKey(const Key('pageEditorCanvasReveal')), findsOneWidget);
   });
 
-  testWidgets(
-    'editor tool opens inline atelier panel without modal route jump',
-    (tester) async {
-      await _pumpEditor(tester);
+  testWidgets('portrait editor tool opens a dismissible layer sheet', (
+    tester,
+  ) async {
+    await _pumpEditor(tester);
 
-      await tester.tap(find.text('레이어'));
-      await tester.pump(const Duration(milliseconds: 180));
+    await tester.ensureVisible(find.text('레이어'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('레이어'));
+    await tester.pump(const Duration(milliseconds: 180));
 
-      expect(find.byKey(const Key('editorAtelierPanel')), findsOneWidget);
-      expect(find.byType(LayerManagerPanel), findsOneWidget);
-      expect(find.byType(EditorBottomMenu), findsOneWidget);
-      expect(find.byType(BottomSheet), findsNothing);
+    await tester.pumpAndSettle();
+    expect(find.byType(LayerManagerPanel), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(tester.takeException(), isNull);
 
-      final panelBottom = tester
-          .getBottomLeft(find.byKey(const Key('editorAtelierPanel')))
-          .dy;
-      final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
-      expect(panelBottom, lessThanOrEqualTo(dockTop + 1));
-    },
-  );
+    // Portrait intentionally uses the same modal tools as cover editing.
+    Navigator.of(tester.element(find.byType(LayerManagerPanel))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(LayerManagerPanel), findsNothing);
+    expect(find.byType(EditorBottomMenu), findsOneWidget);
+  });
 
   testWidgets(
     'page editor landscape keeps album canvas reader-sized beside tool rails',
     (tester) async {
-      await tester.binding.setSurfaceSize(const Size(844, 390));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.view.physicalSize = const Size(844, 390);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       await tester.pumpWidget(_wrapEditor());
       await tester.pumpAndSettle();
 
@@ -369,6 +382,8 @@ void main() {
         matchesGoldenFile('goldens/page_editor_workspace_390x844.png'),
       );
 
+      await tester.ensureVisible(find.text('레이어'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('레이어'));
       await tester.pumpAndSettle();
 
