@@ -18,9 +18,17 @@ import 'core/theme/theme_mode_controller.dart';
 import 'core/utils/app_logger.dart';
 import 'core/utils/frame_timing_monitor.dart';
 import 'features/album/presentation/views/add_cover_screen.dart';
+import 'features/album/data/api/album_provider.dart';
+import 'features/album/presentation/widgets/home/home_album_actions.dart';
+import 'features/billing/data/billing_provider.dart';
+import 'features/billing/data/point_purchase_service.dart';
+import 'features/notification/presentation/providers/notification_provider.dart';
+import 'features/notification/presentation/views/notification_screen.dart';
+import 'features/store/data/api/template_provider.dart';
+import 'features/store/presentation/views/template_detail_screen.dart';
 import 'features/auth/presentation/viewmodels/auth_view_model.dart';
 import 'features/auth/presentation/views/login_screen.dart';
-import 'features/profile/data/order_repository.dart';
+import 'features/profile/domain/order_deep_link.dart';
 import 'features/profile/presentation/views/order_history_screen.dart';
 import 'features/splash/presentation/views/splash_screen.dart';
 import 'firebase_options.dart';
@@ -55,7 +63,6 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await FcmNotificationService.initialize();
 
   if (Env.kakaoNativeAppKey.isNotEmpty) {
     KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
@@ -82,20 +89,36 @@ class MoaEditorApp extends ConsumerStatefulWidget {
   ConsumerState<MoaEditorApp> createState() => _MoaEditorAppState();
 }
 
-class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
+class _MoaEditorAppState extends ConsumerState<MoaEditorApp>
+    with WidgetsBindingObserver {
   final AppLinks _appLinks = AppLinks();
-  final Set<String> _handledPrintOrderIds = <String>{};
   final GlobalKey<ScaffoldMessengerState> _messengerKey =
       GlobalKey<ScaffoldMessengerState>();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? _linkSub;
+  StreamSubscription<AuthState>? _authSub;
+  late final PointPurchaseService _pointPurchases;
   String? _lastOpenedOrderDetailId;
   DateTime? _lastOpenedOrderDetailAt;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _pointPurchases = ref.read(pointPurchaseServiceProvider)..start();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
+      ref.invalidate(myPointBalanceProvider);
+      ref.invalidate(myPointLedgerProvider);
+      ref.invalidate(notificationInboxProvider);
+      ref.invalidate(notificationUnreadCountProvider);
+      if (event.session != null) unawaited(_pointPurchases.recover());
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(
+        FcmNotificationService.initialize(onNotificationTap: _openNotification),
+      );
+      unawaited(_pointPurchases.recover());
       ref.read(themeModeControllerProvider.notifier).loadFromStorage();
       TemplateUpdateNotificationService.checkAndNotifyIfUpdated();
       _initDeepLinkListener();
@@ -104,8 +127,16 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _linkSub?.cancel();
+    _authSub?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed)
+      unawaited(_pointPurchases.recover());
   }
 
   Future<void> _initDeepLinkListener() async {
@@ -128,47 +159,68 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
       return;
     }
 
-    final path = uri.path.toLowerCase();
-    final host = uri.host.toLowerCase();
-
-    if (host == 'auth') {
+    if (uri.host.toLowerCase() == 'auth') {
       await _handleAuthCallback(uri);
       return;
     }
 
-    if (host != 'order') {
-      return;
-    }
+    final orderId = orderDetailIdFromUri(uri);
+    if (orderId != null) _openOrderDetail(orderId);
+  }
 
-    final orderId = uri.queryParameters['orderId']?.trim() ?? '';
-    if (path.contains('detail')) {
+  Future<void> _openNotification(Map<String, dynamic> data) async {
+    if (!mounted) return;
+    final nav = _navigatorKey.currentState;
+    if (nav == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null || (data['userId'] != null && data['userId'] != user.id))
+      return;
+    final uri = Uri.tryParse(data['deeplink']?.toString() ?? '');
+    String? value(String key) =>
+        data[key]?.toString() ?? uri?.queryParameters[key];
+    final orderId = value('orderId');
+    if (orderId != null && orderId.isNotEmpty) {
       _openOrderDetail(orderId);
       return;
     }
-
-    if (orderId.isEmpty) return;
-    if (_handledPrintOrderIds.contains(orderId)) return;
-    _handledPrintOrderIds.add(orderId);
-
-    if (path.contains('success')) {
-      try {
-        await ref.read(orderRepositoryProvider).confirmPayment(orderId);
-        ref.invalidate(myOrderHistoryProvider);
-        _messengerKey.currentState?.showSnackBar(
-          const SnackBar(content: Text('주문 결제가 완료되어 제작 단계로 반영되었습니다.')),
-        );
-        _openOrderDetail(orderId);
-      } catch (e) {
-        _messengerKey.currentState?.showSnackBar(
-          SnackBar(content: Text('주문 결제 반영 실패: $e')),
-        );
+    try {
+      final albumId = int.tryParse(value('albumId') ?? '');
+      if (albumId != null) {
+        final album = await ref
+            .read(albumRepositoryProvider)
+            .fetchAlbum(albumId.toString());
+        if (mounted &&
+            nav.context.mounted &&
+            Supabase.instance.client.auth.currentUser?.id == user.id) {
+          await HomeAlbumActions.openAlbum(nav.context, ref, album);
+        }
+        return;
       }
-      return;
-    }
-
-    if (path.contains('fail')) {
+      final templateId = int.tryParse(value('templateId') ?? '');
+      if (templateId != null) {
+        final template = await ref
+            .read(templateRepositoryProvider)
+            .getTemplate(templateId);
+        if (mounted &&
+            Supabase.instance.client.auth.currentUser?.id == user.id) {
+          unawaited(
+            nav.push(
+              MaterialPageRoute(
+                builder: (_) => TemplateDetailScreen(template: template),
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      unawaited(
+        nav.push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+      );
+    } catch (_) {
       _messengerKey.currentState?.showSnackBar(
-        const SnackBar(content: Text('주문 결제가 취소되거나 실패했습니다.')),
+        const SnackBar(
+          content: Text('알림의 내용을 열 수 없습니다. 접근 권한이나 삭제 여부를 확인해 주세요.'),
+        ),
       );
     }
   }
@@ -241,7 +293,7 @@ class _MoaEditorAppState extends ConsumerState<MoaEditorApp> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeControllerProvider);
     return MaterialApp(
-      title: 'SnapFit',
+      title: '스냅핏',
       debugShowCheckedModeBanner: false,
       theme: SnapFitTheme.light(),
       darkTheme: SnapFitTheme.dark(),

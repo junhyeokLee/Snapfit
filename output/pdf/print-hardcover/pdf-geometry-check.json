@@ -1,0 +1,142 @@
+[
+  {
+    "productId": "REDP_200X150_HARD",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      461.1,
+      196.0
+    ],
+    "trimMm": [
+      421.1,
+      156.0
+    ],
+    "bytes": 460721
+  },
+  {
+    "productId": "REDP_200X150_HARD",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      210.0,
+      160.0
+    ],
+    "trimMm": [
+      200.0,
+      150.0
+    ],
+    "bytes": 2669854
+  },
+  {
+    "productId": "REDP_200_HARD",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      461.1,
+      246.0
+    ],
+    "trimMm": [
+      421.1,
+      206.0
+    ],
+    "bytes": 566735
+  },
+  {
+    "productId": "REDP_200_HARD",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      210.0,
+      210.0
+    ],
+    "trimMm": [
+      200.0,
+      200.0
+    ],
+    "bytes": 3490438
+  },
+  {
+    "productId": "REDP_250X200_HARD",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      561.1,
+      246.0
+    ],
+    "trimMm": [
+      521.1,
+      206.0
+    ],
+    "bytes": 671871
+  },
+  {
+    "productId": "REDP_250X200_HARD",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      260.0,
+      210.0
+    ],
+    "trimMm": [
+      250.0,
+      200.0
+    ],
+    "bytes": 4289606
+  },
+  {
+    "productId": "REDP_250_HARD",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      561.1,
+      296.0
+    ],
+    "trimMm": [
+      521.1,
+      256.0
+    ],
+    "bytes": 798966
+  },
+  {
+    "productId": "REDP_250_HARD",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      260.0,
+      260.0
+    ],
+    "trimMm": [
+      250.0,
+      250.0
+    ],
+    "bytes": 5283064
+  },
+  {
+    "productId": "REDP_300_HARD",
+    "file": "cover.pdf",
+    "pages": 1,
+    "mediaMm": [
+      661.1,
+      346.0
+    ],
+    "trimMm": [
+      621.1,
+      306.0
+    ],
+    "bytes": 1065347
+  },
+  {
+    "productId": "REDP_300_HARD",
+    "file": "interior.pdf",
+    "pages": 20,
+    "mediaMm": [
+      310.0,
+      310.0
+    ],
+    "trimMm": [
+      300.0,
+      300.0
+    ],
+    "bytes": 7486354
+  }
+]

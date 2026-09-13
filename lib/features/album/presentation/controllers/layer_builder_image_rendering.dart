@@ -6,19 +6,7 @@ BoxFit _imageFitForLayerImpl(LayerModel layer) {
 }
 
 /// 사진 위치 조정용 imageOffset(픽셀)을 Image alignment(-1.0~1.0)로 변환
-Alignment _imageAlignmentForLayerImpl(LayerModel layer) {
-  final offset = layer.imageOffset ?? Offset.zero;
-  if (offset == Offset.zero) return Alignment.center;
-
-  // 레이어 박스 크기를 기준으로 정규화해서 -1.0 ~ 1.0 범위로 매핑
-  final w = layer.width > 0 ? layer.width : 1.0;
-  final h = layer.height > 0 ? layer.height : 1.0;
-  final nx = (offset.dx / (w * 0.5)).clamp(-1.0, 1.0);
-  // 화면에서 손가락을 위로 드래그하면 offset.dy는 -값이므로,
-  // 위로 드래그했을 때 사진 내용도 함께 위로 올라가도록 부호를 반대로 매핑
-  final ny = (-offset.dy / (h * 0.5)).clamp(-1.0, 1.0);
-  return Alignment(nx, ny);
-}
+Alignment _imageAlignmentForLayerImpl(LayerModel layer) => layer.imageAlignment;
 
 /// 이미지 레이어 빌드
 Widget _buildImageImpl(
@@ -44,6 +32,35 @@ Widget _buildImageImpl(
 
   final fit = _imageFitForLayerImpl(layer);
   final alignment = _imageAlignmentForLayerImpl(layer);
+
+  if (builder.printImages != null) {
+    final url = layer.originalUrl ?? layer.imageUrl ?? layer.previewUrl;
+    final image = builder.printImages![url];
+    if (image == null)
+      throw StateError('print_original_not_loaded:${layer.id}');
+    final contain =
+        layer.imageBackground != 'rasterCover' &&
+        (layer.type == LayerType.sticker ||
+            (url?.startsWith('asset:assets/sticker/') ?? false));
+    return builder.interaction.buildInteractiveLayer(
+      layer: layer,
+      baseWidth: layer.width,
+      baseHeight: layer.height,
+      isCover: isCover,
+      child: Opacity(
+        opacity: layer.opacity,
+        child: builder._buildFramedImage(
+          layer,
+          RawImage(
+            image: image,
+            fit: contain ? BoxFit.contain : fit,
+            alignment: alignment,
+            filterQuality: FilterQuality.high,
+          ),
+        ),
+      ),
+    );
+  }
 
   if (layer.asset != null) {
     // 아직 업로드 전: 로컬 AssetEntity로 표시
@@ -85,8 +102,9 @@ Widget _buildImageImpl(
   if (url.startsWith('asset:')) {
     final assetPath = url.substring('asset:'.length);
     final shouldContainAsset =
-        layer.type == LayerType.sticker ||
-        assetPath.startsWith('assets/sticker/');
+        layer.imageBackground != 'rasterCover' &&
+        (layer.type == LayerType.sticker ||
+            assetPath.startsWith('assets/sticker/'));
     return builder.interaction.buildInteractiveLayer(
       layer: layer,
       baseWidth: layer.width,

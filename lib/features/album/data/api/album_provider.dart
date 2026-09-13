@@ -61,6 +61,9 @@ final aiAlbumDraftGenerationServiceProvider =
       return AiAlbumDraftGenerationService(
         collectCandidates: (range) => collector.collect(range: range),
         draftProvider: draftProvider,
+        templateProvider: SupabaseAiAlbumDraftProvider(
+          supabase: ref.read(supabaseClientProvider),
+        ),
         prepareAdvancedPreviews:
             Env.useServerAiAlbumDraft && Env.useAdvancedServerAiAlbumAnalysis
             ? (candidates) async {

@@ -1,0 +1,3003 @@
+{
+  "id": "snapfit_concept_shared-seasons_square",
+  "collectionId": "shared-seasons",
+  "editionId": "shared-seasons-24",
+  "title": "같이 사는 계절",
+  "category": "커플·기념일",
+  "concept": "집 열쇠와 생활 메모, 두 사람의 사계절 기록",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "shared-seasons_square_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shared-seasons_square_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "shared-seasons_square_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#132124",
+        "cornerRadius": 0,
+        "opacity": 0.25
+      },
+      {
+        "id": "shared-seasons_square_0_part_3",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 3,
+        "text": "OUR SHARED SEASONS / 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_square_0_part_4",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.106,
+        "w": 0.85,
+        "h": 0.0016,
+        "z": 4,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shared-seasons_square_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.58,
+        "w": 0.85,
+        "h": 0.24,
+        "z": 5,
+        "text": "같이 사는\n계절",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 41.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_square_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.85,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 6,
+        "text": "서연과 지우",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_square_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.92,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 7,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "같이 사는 계절",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F4F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_1_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "A HOME FOR TWO",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_1_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.16,
+          "w": 0.82,
+          "h": 0.14,
+          "z": 2,
+          "text": "Two keys, one home",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 36.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_square_1_part_3",
+          "type": "sticker",
+          "x": 0.06,
+          "y": 0.38,
+          "w": 0.37,
+          "h": 0.37,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_1_part_4",
+          "type": "text",
+          "x": 0.48,
+          "y": 0.43,
+          "w": 0.44,
+          "h": 0.23,
+          "z": 4,
+          "text": "우리의\n문을 열고",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 32.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_1_part_5",
+          "type": "decoration",
+          "x": 0.48,
+          "y": 0.72,
+          "w": 0.42,
+          "h": 0.0016,
+          "z": 5,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_1_part_6",
+          "type": "text",
+          "x": 0.48,
+          "y": 0.78,
+          "w": 0.43,
+          "h": 0.115,
+          "z": 6,
+          "text": "각자의 하루가\n같은 곳으로 돌아온다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리의 문을 열고",
+      "role": "our-door-opening",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE7E2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_2_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.10166666666666667,
+          "w": 0.91,
+          "h": 0.6066666666666667,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_2_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.8,
+          "w": 0.84,
+          "h": 0.105,
+          "z": 2,
+          "text": "돌아오면 네가 있다",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 26.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리의 문을 열고",
+      "role": "homecoming-portrait",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EBE5E9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_3_part_1",
+          "type": "image",
+          "x": 0.065,
+          "y": 0.08,
+          "w": 0.64,
+          "h": 0.58,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "atelierOxford",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_3_part_2",
+          "type": "sticker",
+          "x": 0.74,
+          "y": 0.27,
+          "w": 0.18,
+          "h": 0.18,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_3_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.71,
+          "w": 0.83,
+          "h": 0.19,
+          "z": 3,
+          "text": "두 사람이\n고른 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 28.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "두 사람이 고른 자리",
+      "role": "our-chosen-corner",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_4_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.075,
+          "w": 0.83,
+          "h": 0.15,
+          "z": 1,
+          "text": "Yours & mine",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 48.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_square_4_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.33,
+          "w": 0.42,
+          "h": 0.37,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_4_part_3",
+          "type": "text",
+          "x": 0.57,
+          "y": 0.38,
+          "w": 0.35,
+          "h": 0.26,
+          "z": 3,
+          "text": "창가에는 책상을.\n현관에는 작은 선반을.\n서로의 자리는 넉넉히.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 15.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_4_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.83,
+          "w": 0.81,
+          "h": 0.075,
+          "z": 4,
+          "text": "취향이 조금씩 나란해졌다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "두 사람이 고른 자리",
+      "role": "things-we-agreed-on",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DEE7DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_5_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE MORNING ROUTINE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_5_part_2",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.18,
+          "w": 0.89,
+          "h": 0.6,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_5_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.82,
+          "h": 0.1,
+          "z": 3,
+          "text": "아침의 순서",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 24.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아침의 순서",
+      "role": "morning-table",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_6_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.1,
+          "w": 0.79,
+          "h": 0.23,
+          "z": 1,
+          "text": "두 잔을\n꺼내는 일",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 37.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_6_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.46,
+          "w": 0.3875,
+          "h": 0.31,
+          "z": 2,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_6_part_3",
+          "type": "text",
+          "x": 0.14425000000000002,
+          "y": 0.5468000000000001,
+          "w": 0.28287500000000004,
+          "h": 0.1705,
+          "z": 3,
+          "text": "먼저 일어난 사람이\n물을 올려놓는다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_6_part_4",
+          "type": "image",
+          "x": 0.68,
+          "y": 0.56,
+          "w": 0.24,
+          "h": 0.25,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_6_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.86,
+          "w": 0.48,
+          "h": 0.0016,
+          "z": 5,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아침의 순서",
+      "role": "two-cups-note",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E4E7DA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_7_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.065,
+          "w": 0.89,
+          "h": 0.72,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_market.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_7_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.835,
+          "w": 0.84,
+          "h": 0.075,
+          "z": 2,
+          "text": "오늘 저녁은 뭘 먹을까?",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "장 보러 가는 길",
+      "role": "market-weekend",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F6F3F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_8_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "For dinner",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 53.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_square_8_part_2",
+          "type": "image",
+          "x": 0.57,
+          "y": 0.3,
+          "w": 0.35,
+          "h": 0.36,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioScallop",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_8_part_3",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.32,
+          "w": 0.43,
+          "h": 0.27741935483870966,
+          "z": 3,
+          "style": "materialRecipeFoldout",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_8_part_4",
+          "type": "text",
+          "x": 0.1187,
+          "y": 0.4115483870967742,
+          "w": 0.0989,
+          "h": 0.14980645161290324,
+          "z": 4,
+          "text": "채소\n계란\n제철 과일",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 11.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_8_part_5",
+          "type": "text",
+          "x": 0.2692,
+          "y": 0.4115483870967742,
+          "w": 0.2107,
+          "h": 0.14980645161290324,
+          "z": 5,
+          "text": "자주 먹는 것과\n처음 고른 것.\n같이 요리하기.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_8_part_6",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.765,
+          "w": 0.82,
+          "h": 0.14,
+          "z": 6,
+          "text": "장 보러 가는 길도\n같이 걸으면 약속이 된다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 17.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "장 보러 가는 길",
+      "role": "grocery-list",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE5E0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_9_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.075,
+          "w": 0.81,
+          "h": 0.24,
+          "z": 1,
+          "text": "같이 만든\n저녁",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 39.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_9_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.395,
+          "w": 0.85,
+          "h": 0.4,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_table.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_9_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.855,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 3,
+          "text": "AT OUR TABLE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "같이 만든 저녁",
+      "role": "dinner-for-two",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_10_part_1",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.1,
+          "w": 0.51,
+          "h": 0.46,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "materialLinenOval",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_10_part_2",
+          "type": "sticker",
+          "x": 0.66,
+          "y": 0.27,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/material_linen.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_10_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.675,
+          "w": 0.81,
+          "h": 0.19,
+          "z": 3,
+          "text": "잘 먹었습니다,\n오늘도.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 29.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "같이 만든 저녁",
+      "role": "dinner-conversation",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2E3E9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_11_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "STAYING IN / 06",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_11_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.18,
+          "w": 0.67,
+          "h": 0.57,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_11_part_3",
+          "type": "sticker",
+          "x": 0.8,
+          "y": 0.36,
+          "w": 0.1,
+          "h": 0.15000000000000002,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_bookmark.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_11_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.81,
+          "w": 0.79,
+          "h": 0.1,
+          "z": 4,
+          "text": "비 오는 주말",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 24.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "비 오는 주말",
+      "role": "rainy-window-reading",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_12_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.105,
+          "w": 0.79,
+          "h": 0.23,
+          "z": 1,
+          "text": "아무 데도\n가지 않기로",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 37.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_12_part_2",
+          "type": "image",
+          "x": 0.56,
+          "y": 0.46,
+          "w": 0.36,
+          "h": 0.31,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_12_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.57,
+          "w": 0.4,
+          "h": 0.18,
+          "z": 3,
+          "text": "각자 책을 읽다가\n같은 장면에 웃었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_12_part_4",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.845,
+          "w": 0.82,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "비 오는 주말",
+      "role": "rainy-day-letter",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DFE7E2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_13_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.09666666666666668,
+          "w": 0.91,
+          "h": 0.6066666666666667,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_cafe.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_13_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.795,
+          "w": 0.84,
+          "h": 0.11,
+          "z": 2,
+          "text": "집 밖의 단골 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 24.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "집 밖의 단골 자리",
+      "role": "regular-cafe-table",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F2F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_14_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "The usual, please",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 40.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_square_14_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.29,
+          "w": 0.45,
+          "h": 0.43,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_cafe.png",
+          "frame": "atelierKeyhole",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_14_part_3",
+          "type": "decoration",
+          "x": 0.61,
+          "y": 0.4,
+          "w": 0.29,
+          "h": 0.19333333333333333,
+          "z": 3,
+          "style": "atelierTitlePlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_14_part_4",
+          "type": "text",
+          "x": 0.6506,
+          "y": 0.4541333333333334,
+          "w": 0.21169999999999994,
+          "h": 0.10633333333333335,
+          "z": 4,
+          "text": "네가 고르는 메뉴\n내가 앉는 쪽",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 11.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_14_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.81,
+          "h": 0.075,
+          "z": 5,
+          "text": "말하지 않아도 아는 것들이 늘었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "집 밖의 단골 자리",
+      "role": "regular-order-card",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EBE1E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_15_part_1",
+          "type": "image",
+          "x": 0.065,
+          "y": 0.075,
+          "w": 0.87,
+          "h": 0.58,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_15_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.705,
+          "w": 0.79,
+          "h": 0.19,
+          "z": 2,
+          "text": "기념일의\n작은 준비",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기념일의 작은 준비",
+      "role": "anniversary-preparations",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_16_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "ANOTHER YEAR WITH YOU",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_16_part_2",
+          "type": "image",
+          "x": 0.16249999999999998,
+          "y": 0.23,
+          "w": 0.675,
+          "h": 0.45000000000000007,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_16_part_3",
+          "type": "sticker",
+          "x": 0.76,
+          "y": 0.73,
+          "w": 0.08666666666666667,
+          "h": 0.13,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_rose.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_16_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.755,
+          "w": 0.62,
+          "h": 0.15,
+          "z": 4,
+          "text": "거창하지 않아도\n꼭 챙기고 싶은 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 20.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기념일의 작은 준비",
+      "role": "anniversary-with-you",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_17_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.09,
+          "w": 0.8,
+          "h": 0.24,
+          "z": 1,
+          "text": "서로에게\n남긴 말",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 37.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_17_part_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.44,
+          "w": 0.3276,
+          "h": 0.39,
+          "z": 2,
+          "style": "materialAirLetter",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_17_part_3",
+          "type": "text",
+          "x": 0.125864,
+          "y": 0.5492,
+          "w": 0.239148,
+          "h": 0.21450000000000005,
+          "z": 3,
+          "text": "같이 사는 일에는\n작은 다정함이 필요했다.\n오늘도 먼저 물어봐 줘서 고마워.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_17_part_4",
+          "type": "sticker",
+          "x": 0.79,
+          "y": 0.69,
+          "w": 0.14,
+          "h": 0.14,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서로에게 남긴 말",
+      "role": "letter-for-you",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DBE5DF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_18_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.08,
+          "w": 0.82,
+          "h": 0.67,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_18_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.825,
+          "w": 0.81,
+          "h": 0.075,
+          "z": 2,
+          "text": "서랍에 넣어 둔 고마운 마음.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서로에게 남긴 말",
+      "role": "letter-keepsakes",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2E6DC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_19_part_1",
+          "type": "image",
+          "x": 0.07999999999999996,
+          "y": 0.145,
+          "w": 0.8400000000000001,
+          "h": 0.56,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_walk.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_19_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.06,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 2,
+          "text": "A SEASON TOGETHER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_19_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.79,
+          "w": 0.84,
+          "h": 0.115,
+          "z": 3,
+          "text": "계절이 바뀌는 동안",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "계절이 바뀌는 동안",
+      "role": "seasonal-walk",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F5F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_20_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.09,
+          "w": 0.81,
+          "h": 0.2,
+          "z": 1,
+          "text": "커튼을 바꾸고\n같은 길을 걷고",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 28.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_20_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.4,
+          "w": 0.43,
+          "h": 0.35,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_20_part_3",
+          "type": "image",
+          "x": 0.57,
+          "y": 0.52,
+          "w": 0.35,
+          "h": 0.3,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_walk.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_20_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.845,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 4,
+          "text": "집도 우리를 조금씩 닮아 간다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "계절이 바뀌는 동안",
+      "role": "seasonal-home-pair",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#ECE5E8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_21_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "SMALL THINGS, SHARED",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_21_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.19,
+          "w": 0.46,
+          "h": 0.37,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_21_part_3",
+          "type": "sticker",
+          "x": 0.62,
+          "y": 0.27,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_21_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.67,
+          "w": 0.81,
+          "h": 0.21,
+          "z": 4,
+          "text": "우리 집의\n작은 물건",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 31.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 작은 물건",
+      "role": "home-object-cabinet",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F6F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_22_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Our everyday",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 47.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_square_22_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.3,
+          "w": 0.38,
+          "h": 0.23,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_22_part_3",
+          "type": "image",
+          "x": 0.535,
+          "y": 0.3,
+          "w": 0.39,
+          "h": 0.23,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_22_part_4",
+          "type": "image",
+          "x": 0.3125,
+          "y": 0.61,
+          "w": 0.375,
+          "h": 0.25,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_cafe.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 작은 물건",
+      "role": "ordinary-days-contact",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.1,
+          "w": 0.8,
+          "h": 0.24,
+          "z": 1,
+          "text": "돌아올 곳이\n있다는 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 36.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_23_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.45,
+          "w": 0.81,
+          "h": 0.2,
+          "z": 2,
+          "text": "사소한 하루를 나누는 사이가 됐다.\n내일도 같은 문을 열고 들어오자.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 17.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_23_part_3",
+          "type": "sticker",
+          "x": 0.1,
+          "y": 0.7,
+          "w": 0.18,
+          "h": 0.18,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_23_part_4",
+          "type": "decoration",
+          "x": 0.46,
+          "y": 0.775,
+          "w": 0.45,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_23_part_5",
+          "type": "text",
+          "x": 0.46,
+          "y": 0.82,
+          "w": 0.45,
+          "h": 0.075,
+          "z": 5,
+          "text": "서연과 지우",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아올 곳이 있다는 것",
+      "role": "returning-home-letter",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shared-seasons_square_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE7E2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_square_24_part_1",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.09666666666666668,
+          "w": 0.85,
+          "h": 0.5666666666666667,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_square_24_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.78,
+          "w": 0.84,
+          "h": 0.12,
+          "z": 2,
+          "text": "내일도 같은 문을 열고",
+          "align": "center",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_square_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_square_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아올 곳이 있다는 것",
+      "role": "last-shared-portrait",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "우리의 문을 열고",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "두 사람이 고른 자리",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "아침의 순서",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "장 보러 가는 길",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "같이 만든 저녁",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "비 오는 주말",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "집 밖의 단골 자리",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "기념일의 작은 준비",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "서로에게 남긴 말",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "계절이 바뀌는 동안",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "우리 집의 작은 물건",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "돌아올 곳이 있다는 것",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

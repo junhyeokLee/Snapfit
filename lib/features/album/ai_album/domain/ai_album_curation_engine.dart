@@ -61,11 +61,12 @@ class AiAlbumCurationEngine {
     );
     final selected = _balancedByDate(eligible, excluded);
     final sections = _buildStorySections(theme, selected);
+    final pageCount = _pageCountFor(selected.length);
 
     return AlbumRecommendationDraft(
       theme: theme,
       title: _titleFor(theme),
-      pageCount: _pageCountFor(selected.length),
+      pageCount: pageCount,
       templateTone: _templateToneFor(theme),
       recommendedPhotos: selected,
       excludedPhotos: excluded.values.toList(
@@ -78,6 +79,7 @@ class AiAlbumCurationEngine {
         excluded.length,
         sections.length,
       ),
+      templateSlots: _premiumTemplateSlotsFor(theme, pageCount, sections),
       curationNotes: _curationNotesFor(
         theme: theme,
         selected: selected,
@@ -437,6 +439,229 @@ class AiAlbumCurationEngine {
     return 24;
   }
 
+  List<AiTemplateSlot> _premiumTemplateSlotsFor(
+    AlbumTheme theme,
+    int pageCount,
+    List<StorySection> sections,
+  ) {
+    final slots = <AiTemplateSlot>[];
+    slots.add(
+      _slot(
+        'cover-hero',
+        0,
+        'cover',
+        _coverHintFor(theme),
+        left: 0.08,
+        top: 0.08,
+        width: 0.84,
+        height: 0.56,
+        imageTemplate: _coverImageTemplateFor(theme),
+        imageBackground: _premiumImageBackgroundFor(theme, isCover: true),
+        emphasis: 1.7,
+      ),
+    );
+
+    for (var page = 1; page <= pageCount; page += 1) {
+      final section = page - 1 < sections.length ? sections[page - 1] : null;
+      final pattern = _pagePatternFor(theme, page);
+      for (var index = 0; index < pattern.length; index += 1) {
+        final spec = pattern[index];
+        slots.add(
+          _slot(
+            'p$page-${spec.role}-$index',
+            page,
+            spec.role,
+            _slotHintFor(theme, spec.role, section),
+            left: spec.left,
+            top: spec.top,
+            width: spec.width,
+            height: spec.height,
+            rotation: spec.rotation,
+            imageTemplate: spec.imageTemplate,
+            imageBackground: _premiumImageBackgroundFor(theme),
+            caption: spec.caption,
+            emphasis: spec.emphasis,
+          ),
+        );
+      }
+    }
+    return slots;
+  }
+
+  AiTemplateSlot _slot(
+    String slotId,
+    int pageIndex,
+    String role,
+    String hint, {
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    double rotation = 0,
+    String? imageTemplate,
+    String? imageBackground,
+    String? caption,
+    double emphasis = 1,
+  }) {
+    return AiTemplateSlot(
+      slotId: slotId,
+      pageIndex: pageIndex,
+      role: role,
+      hint: hint,
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      rotation: rotation,
+      imageTemplate: imageTemplate,
+      imageBackground: imageBackground,
+      caption: caption,
+      emphasis: emphasis,
+    );
+  }
+
+  List<_SlotSpec> _pagePatternFor(AlbumTheme theme, int page) {
+    final phase = page % 4;
+    return switch (theme) {
+      AlbumTheme.travel => switch (phase) {
+        1 => const [
+          _SlotSpec(0.06, 0.26, 0.60, 0.38, 'landscape', '4:3', emphasis: 1.35),
+          _SlotSpec(0.69, 0.17, 0.25, 0.25, 'detail', '1:1', caption: 'detail'),
+          _SlotSpec(
+            0.53,
+            0.68,
+            0.36,
+            0.20,
+            'panorama',
+            '16:9',
+            caption: 'place',
+          ),
+        ],
+        2 => const [
+          _SlotSpec(
+            0.12,
+            0.13,
+            0.76,
+            0.42,
+            'landscape',
+            '16:9',
+            emphasis: 1.55,
+          ),
+          _SlotSpec(0.16, 0.63, 0.29, 0.24, 'detail', '1:1'),
+          _SlotSpec(0.53, 0.61, 0.30, 0.27, 'portrait', '3:4'),
+        ],
+        3 => const [
+          _SlotSpec(0.08, 0.18, 0.38, 0.56, 'portrait', '3:4', emphasis: 1.2),
+          _SlotSpec(0.52, 0.21, 0.37, 0.24, 'detail', '4:3'),
+          _SlotSpec(0.52, 0.51, 0.37, 0.24, 'ending', '4:3'),
+        ],
+        _ => const [
+          _SlotSpec(0.07, 0.20, 0.86, 0.55, 'hero', '4:3', emphasis: 1.7),
+        ],
+      },
+      AlbumTheme.family => switch (phase) {
+        1 => const [
+          _SlotSpec(0.10, 0.18, 0.36, 0.36, 'together', '1:1'),
+          _SlotSpec(0.54, 0.18, 0.36, 0.36, 'portrait', '1:1'),
+          _SlotSpec(0.18, 0.62, 0.64, 0.24, 'detail', '4:3'),
+        ],
+        2 => const [
+          _SlotSpec(0.12, 0.15, 0.76, 0.52, 'hero', '4:3', emphasis: 1.5),
+        ],
+        _ => const [
+          _SlotSpec(0.09, 0.17, 0.38, 0.58, 'portrait', '3:4'),
+          _SlotSpec(0.53, 0.19, 0.36, 0.25, 'detail', '4:3'),
+          _SlotSpec(0.53, 0.50, 0.36, 0.25, 'together', '4:3'),
+        ],
+      },
+      AlbumTheme.baby => switch (phase) {
+        1 => const [
+          _SlotSpec(0.19, 0.13, 0.62, 0.48, 'portrait', '1:1', emphasis: 1.45),
+          _SlotSpec(0.14, 0.68, 0.28, 0.20, 'detail', '1:1'),
+          _SlotSpec(0.58, 0.68, 0.28, 0.20, 'detail', '1:1'),
+        ],
+        _ => const [
+          _SlotSpec(0.11, 0.16, 0.34, 0.50, 'portrait', '3:4'),
+          _SlotSpec(0.52, 0.18, 0.37, 0.24, 'detail', '4:3'),
+          _SlotSpec(0.52, 0.50, 0.31, 0.31, 'daily', '1:1'),
+        ],
+      },
+      AlbumTheme.couple => switch (phase) {
+        1 => const [
+          _SlotSpec(0.10, 0.18, 0.80, 0.48, 'hero', '4:3', emphasis: 1.6),
+          _SlotSpec(0.19, 0.72, 0.27, 0.20, 'detail', '1:1', rotation: -1.5),
+          _SlotSpec(0.55, 0.70, 0.27, 0.20, 'detail', '1:1', rotation: 1.2),
+        ],
+        _ => const [
+          _SlotSpec(0.12, 0.14, 0.34, 0.58, 'portrait', '3:4', rotation: -1),
+          _SlotSpec(0.54, 0.22, 0.34, 0.48, 'portrait', '3:4', rotation: 1),
+        ],
+      },
+      _ => switch (phase) {
+        1 => const [
+          _SlotSpec(0.10, 0.16, 0.80, 0.48, 'hero', '4:3', emphasis: 1.45),
+          _SlotSpec(0.18, 0.71, 0.26, 0.18, 'detail', '1:1'),
+          _SlotSpec(0.56, 0.71, 0.26, 0.18, 'detail', '1:1'),
+        ],
+        2 => const [
+          _SlotSpec(0.12, 0.15, 0.33, 0.54, 'portrait', '3:4'),
+          _SlotSpec(0.52, 0.18, 0.36, 0.24, 'detail', '4:3'),
+          _SlotSpec(0.52, 0.49, 0.36, 0.24, 'daily', '4:3'),
+        ],
+        _ => const [
+          _SlotSpec(0.09, 0.19, 0.82, 0.54, 'hero', '4:3', emphasis: 1.5),
+        ],
+      },
+    };
+  }
+
+  String _coverHintFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.travel => '여행의 장소감이 가장 크게 느껴지는 대표 컷',
+      AlbumTheme.family => '가족이 함께 보이는 가장 따뜻한 장면',
+      AlbumTheme.baby => '표정과 성장감이 또렷한 메인 사진',
+      AlbumTheme.couple => '둘의 분위기를 한 번에 보여주는 표지 컷',
+      AlbumTheme.birthday => '축하 분위기가 가장 강한 대표 장면',
+      AlbumTheme.friends => '함께한 에너지가 잘 보이는 단체/하이라이트 컷',
+      AlbumTheme.daily => '하루의 온도가 느껴지는 가장 조용한 장면',
+      AlbumTheme.custom => '앨범의 분위기를 정하는 대표 사진',
+    };
+  }
+
+  String _slotHintFor(AlbumTheme theme, String role, StorySection? section) {
+    final sectionPrefix = section == null ? '' : '${section.title}에 어울리는 ';
+    return switch (role) {
+      'hero' => '${sectionPrefix}가장 크게 보여줄 대표 사진',
+      'panorama' => '${sectionPrefix}공간감이 살아나는 넓은 사진',
+      'portrait' => '${sectionPrefix}표정이나 인물이 또렷한 세로 사진',
+      'detail' => '${sectionPrefix}작은 디테일이나 분위기 컷',
+      'ending' => '${sectionPrefix}앨범을 닫는 여운 있는 장면',
+      'together' => '${sectionPrefix}함께 있는 순간이 잘 보이는 사진',
+      'daily' => '${sectionPrefix}일상의 질감이 느껴지는 컷',
+      _ => '${sectionPrefix}${_themeLabel(theme)} 흐름에 맞는 사진',
+    };
+  }
+
+  String _coverImageTemplateFor(AlbumTheme theme) {
+    return switch (theme) {
+      AlbumTheme.baby || AlbumTheme.family => '1:1',
+      AlbumTheme.couple => 'polaroid',
+      _ => '4:3',
+    };
+  }
+
+  String _premiumImageBackgroundFor(AlbumTheme theme, {bool isCover = false}) {
+    return switch (theme) {
+      AlbumTheme.family => isCover ? 'soft-shadow' : 'mat',
+      AlbumTheme.baby => 'pastel',
+      AlbumTheme.couple => isCover ? 'warm-paper' : 'polaroid',
+      AlbumTheme.birthday => 'sticker',
+      AlbumTheme.friends => 'film',
+      AlbumTheme.daily => 'soft-shadow',
+      AlbumTheme.travel || AlbumTheme.custom => isCover ? 'mat' : 'soft-shadow',
+    };
+  }
+
   String _titleFor(AlbumTheme theme) {
     return switch (theme) {
       AlbumTheme.travel => '여행의 장면들',
@@ -590,3 +815,27 @@ class AiAlbumCurationEngine {
 }
 
 enum _TimeBucket { morning, afternoon, evening }
+
+class _SlotSpec {
+  const _SlotSpec(
+    this.left,
+    this.top,
+    this.width,
+    this.height,
+    this.role,
+    this.imageTemplate, {
+    this.rotation = 0,
+    this.caption,
+    this.emphasis = 1,
+  });
+
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final String role;
+  final String imageTemplate;
+  final double rotation;
+  final String? caption;
+  final double emphasis;
+}

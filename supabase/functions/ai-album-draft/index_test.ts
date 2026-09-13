@@ -35,7 +35,7 @@ const candidates: PhotoCandidatePayload[] = [
   },
 ];
 
-Deno.test("buildDraftResponse returns reviewable album-first JSON contract", () => {
+Deno.test("buildDraftResponse returns reviewable AI template contract without auto-selecting photos", () => {
   const draft = buildDraftResponse({
     theme: "travel",
     range: "limitedLibrary",
@@ -44,16 +44,15 @@ Deno.test("buildDraftResponse returns reviewable album-first JSON contract", () 
 
   assertExists(draft.draftId);
   assertEquals(draft.title, "여행의 장면들");
-  assertEquals(draft.pageCount, 8);
+  assertEquals(draft.pageCount, 6);
   assertEquals(draft.requiresUserReview, true);
   assertEquals(draft.alreadyCreatedAlbum, false);
-  assertEquals(draft.recommendedPhotos.map((photo) => photo.assetId), [
-    "photo-1",
-    "photo-2",
-  ]);
-  assertEquals(draft.excludedPhotos.map((photo) => photo.assetId), ["photo-3"]);
-  assertEquals(draft.storySections[0].photoAssetIds, ["photo-1", "photo-2"]);
-  assertEquals(draft.summary.includes("앨범"), true);
+  assertEquals(draft.recommendedPhotos, []);
+  assertEquals(draft.excludedPhotos, []);
+  assertEquals(draft.templateSlots[0].slotId, "cover-main");
+  assertEquals(draft.templateSlots[0].hint.includes("직접"), true);
+  assertEquals(draft.reviewCtaLabel, "이 템플릿으로 시작하기");
+  assertEquals(draft.summary.includes("템플릿"), true);
 });
 
 Deno.test("handleAiAlbumDraftRequest rejects malformed candidate payload", async () => {
@@ -454,7 +453,7 @@ Deno.test("hybrid provider keeps safe fallback reason when Anthropic finalizer f
   assertEquals(body.fallbackReason, "hybrid_finalizer_failed");
 });
 
-Deno.test("hybrid finalizer receives strict theme-fit selection rules", async () => {
+Deno.test("hybrid finalizer receives slot-first AI template rules", async () => {
   let finalizerPrompt = "";
   const response = await handleAiAlbumDraftRequest(
     new Request("https://example.test/ai-album-draft", {
@@ -520,30 +519,21 @@ Deno.test("hybrid finalizer receives strict theme-fit selection rules", async ()
                 title: "둘만의 기록",
                 pageCount: 8,
                 templateTone: "커플 중심",
-                summary: "둘이 함께한 장면만 골랐어요.",
-                recommendedPhotos: [{
-                  assetId: "couple-preview-1",
-                  score: 0.96,
-                  themeFitScore: 0.91,
-                  reasons: [{
-                    type: "themeOrientation",
-                    message: "두 사람이 함께한 분위기가 뚜렷해요",
-                  }],
-                }],
-                excludedPhotos: [{
-                  assetId: "couple-preview-2",
-                  themeFitScore: 0.22,
-                  reasons: [{
-                    type: "weakThemeFitExcluded",
-                    message: "커플 장면으로 보기 어려워 뺐어요",
-                  }],
+                summary: "사진은 직접 넣고, AI는 커플 템플릿만 잡았어요.",
+                recommendedPhotos: [],
+                excludedPhotos: [],
+                templateSlots: [{
+                  slotId: "cover-main",
+                  pageIndex: 0,
+                  role: "cover",
+                  hint: "둘이 함께 나온 대표 사진을 직접 넣어주세요",
                 }],
                 storySections: [{
                   title: "둘의 장면",
-                  description: "함께한 컷만 묶었어요.",
-                  photoAssetIds: ["couple-preview-1"],
+                  description: "함께한 사진을 직접 채워요.",
+                  photoAssetIds: [],
                 }],
-                curationNotes: ["커플 기준에 맞는 사진만 남겼어요."],
+                curationNotes: ["사진첩에서 사진을 자동으로 고르지 않았어요."],
               }),
             }],
           });
@@ -556,13 +546,16 @@ Deno.test("hybrid finalizer receives strict theme-fit selection rules", async ()
 
   assertEquals(response.status, 200);
   assertEquals(body.provider, "hybrid");
-  assertEquals(finalizerPrompt.includes("themeFitScore"), true);
+  assertEquals(finalizerPrompt.includes("templateSlots"), true);
   assertEquals(finalizerPrompt.includes("커플"), true);
-  assertEquals(finalizerPrompt.includes("두 사람이 함께"), true);
-  assertEquals(finalizerPrompt.includes("테마와 맞지 않으면 제외"), true);
+  assertEquals(finalizerPrompt.includes("Do not choose photos"), true);
+  assertEquals(
+    finalizerPrompt.includes("Never imply the album is finished"),
+    true,
+  );
 });
 
-Deno.test("hybrid provider does not fall back to metadata when no photos fit the selected theme", async () => {
+Deno.test("hybrid provider falls back to slot-first template when photo selection is unsafe", async () => {
   const response = await handleAiAlbumDraftRequest(
     new Request("https://example.test/ai-album-draft", {
       method: "POST",
@@ -656,8 +649,11 @@ Deno.test("hybrid provider does not fall back to metadata when no photos fit the
   );
   const body = await response.json();
 
-  assertEquals(response.status, 400);
-  assertEquals(body.error, "themed_candidates_not_found");
+  assertEquals(response.status, 200);
+  assertEquals(body.fallbackUsed, true);
+  assertEquals(body.provider, "metadata");
+  assertEquals(body.recommendedPhotos, []);
+  assertEquals(body.templateSlots[0].slotId, "cover-main");
 });
 
 Deno.test("hybrid provider uses OpenAI vision insights and Anthropic final curation", async () => {

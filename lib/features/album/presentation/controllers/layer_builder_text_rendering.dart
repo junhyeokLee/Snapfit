@@ -489,8 +489,13 @@ Widget _buildPlainTextWithFill({
 }) {
   // 피그마 정합 우선: 레이어 높이 기준 강제 축소를 하지 않고
   // 템플릿에서 전달된 폰트 크기를 그대로 사용한다.
-  final renderStyle = style;
   final mode = (layer.textFillMode ?? 'solid').trim().toLowerCase();
+  final renderStyle = switch (mode) {
+    'outline' => outlineTextStyle(style),
+    'sticker' => stickerTextStyle(style),
+    'papercut' => paperCutTextStyle(style),
+    _ => style,
+  };
   final imageUrl = _resolveTextFillUrl(builder, layer);
   if (mode == 'textcutout') {
     return _CutoutText(
@@ -500,6 +505,20 @@ Widget _buildPlainTextWithFill({
     );
   }
   if (mode == 'imageclip' && imageUrl.isNotEmpty) {
+    if (builder.printImages != null) {
+      final image = builder.printImages![imageUrl];
+      if (image == null)
+        throw StateError('print_text_image_not_loaded:${layer.id}');
+      return ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: (bounds) => textImageCoverShader(image, bounds),
+        child: Text(
+          layer.text ?? '',
+          style: renderStyle.copyWith(color: Colors.white),
+          textAlign: align,
+        ),
+      );
+    }
     return _ImageClipText(
       text: layer.text ?? '',
       style: renderStyle,
@@ -623,14 +642,7 @@ class _ImageClipTextState extends State<_ImageClipText> {
     }
     return ShaderMask(
       blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) {
-        return ImageShader(
-          _image!,
-          TileMode.clamp,
-          TileMode.clamp,
-          Matrix4.identity().storage,
-        );
-      },
+      shaderCallback: (bounds) => textImageCoverShader(_image!, bounds),
       child: Text(
         widget.text,
         style: widget.style.copyWith(color: Colors.white),

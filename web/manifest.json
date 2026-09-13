@@ -1,6 +1,6 @@
 {
-    "name": "snap_fit",
-    "short_name": "snap_fit",
+    "name": "스냅핏",
+    "short_name": "스냅핏",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

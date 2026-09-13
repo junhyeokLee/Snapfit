@@ -161,7 +161,7 @@ void main() {
     expect(ledger, hasLength(2));
     expect(ledger.first.title, '포인트 충전');
     expect(ledger.first.amountLabel, '+2500P');
-    expect(ledger.last.title, 'AI 초안 사용');
+    expect(ledger.last.title, 'AI 템플릿 사용');
     expect(ledger.last.amountLabel, '-700P');
   });
 

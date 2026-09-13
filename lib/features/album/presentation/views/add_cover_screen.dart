@@ -68,6 +68,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
 
   /// 템플릿 유입 시 Step2에서 보여줄 예시 커버 레이어
   final List<LayerModel>? initialTemplateCoverLayers;
+  final Size? initialTemplateCanvasSize;
 
   /// 앨범 생성 완료 콜백 (플로우에서 사용)
   final Function(int albumId)? onAlbumCreated;
@@ -88,6 +89,7 @@ class AddCoverScreen extends ConsumerStatefulWidget {
     this.albumTitle,
     this.targetPages,
     this.initialTemplateCoverLayers,
+    this.initialTemplateCanvasSize,
     this.onAlbumCreated,
     this.debugInitialSelectedLayerId,
     this.onRegisterCompleteAction,
@@ -208,13 +210,19 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
     if (coverLayers == null || coverLayers.isEmpty) return;
 
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    vm.applyTemplateCoverPreview(coverLayers);
+    vm.applyTemplateCoverPreview(
+      coverLayers,
+      templateCanvasSize: widget.initialTemplateCanvasSize,
+    );
     _templateCoverApplied = true;
 
     // 일부 초기화 루틴에서 레이어가 덮어써지는 경우를 대비해 한 프레임 뒤 재적용
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      vm.applyTemplateCoverPreview(coverLayers);
+      vm.applyTemplateCoverPreview(
+        coverLayers,
+        templateCanvasSize: widget.initialTemplateCanvasSize,
+      );
     });
   }
 
@@ -269,6 +277,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
   Widget build(BuildContext context) {
     final asyncState = ref.watch(albumEditorViewModelProvider);
     final layers = asyncState.value?.layers ?? [];
+    final canUndo = asyncState.value?.canUndo ?? false;
+    final canRedo = asyncState.value?.canRedo ?? false;
 
     final debugSelectedId = widget.debugInitialSelectedLayerId;
     if (debugSelectedId != null &&
@@ -290,7 +300,10 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
         if (!mounted) return;
         ref
             .read(albumEditorViewModelProvider.notifier)
-            .applyTemplateCoverPreview(widget.initialTemplateCoverLayers!);
+            .applyTemplateCoverPreview(
+              widget.initialTemplateCoverLayers!,
+              templateCanvasSize: widget.initialTemplateCanvasSize,
+            );
         _templateApplyQueued = false;
       });
     }
@@ -320,6 +333,8 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                         targetPages: widget.targetPages,
                         fallbackTemplateCoverLayers:
                             widget.initialTemplateCoverLayers,
+                        fallbackTemplateCanvasSize:
+                            widget.initialTemplateCanvasSize,
                         onAlbumCreated: widget.onAlbumCreated,
                         onRegisterCompleteAction:
                             widget.onRegisterCompleteAction,
@@ -342,6 +357,22 @@ class _AddCoverScreenState extends ConsumerState<AddCoverScreen> {
                       ),
                       onStartEditing: () =>
                           _coverEditorKey.currentState?.submitCover(),
+                      canUndo: canUndo,
+                      canRedo: canRedo,
+                      onUndo: () {
+                        ref
+                            .read(albumEditorViewModelProvider.notifier)
+                            .undo();
+                        _interaction.clearSelection();
+                        setState(() {});
+                      },
+                      onRedo: () {
+                        ref
+                            .read(albumEditorViewModelProvider.notifier)
+                            .redo();
+                        _interaction.clearSelection();
+                        setState(() {});
+                      },
                     )
                   else
                     EditorBottomMenu(
@@ -517,12 +548,20 @@ class _CoverAtelierActionBar extends StatefulWidget {
   final ValueChanged<EditorMode> onModeChanged;
   final VoidCallback onAddPhoto;
   final VoidCallback onStartEditing;
+  final bool canUndo;
+  final bool canRedo;
+  final VoidCallback? onUndo;
+  final VoidCallback? onRedo;
 
   const _CoverAtelierActionBar({
     required this.currentMode,
     required this.onModeChanged,
     required this.onAddPhoto,
     required this.onStartEditing,
+    this.canUndo = false,
+    this.canRedo = false,
+    this.onUndo,
+    this.onRedo,
   });
 
   @override
@@ -602,18 +641,16 @@ class _CoverAtelierActionBarState extends State<_CoverAtelierActionBar>
                         ),
                       ),
                     ),
-                    Flexible(
-                      child: Text(
-                        '템플릿 · 스티커 · 배경까지 편집',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w700,
-                          color: SnapFitColors.textMutedOf(context),
-                        ),
-                      ),
+                    _CoverHistoryButton(
+                      icon: Icons.undo_rounded,
+                      enabled: widget.canUndo,
+                      onTap: widget.onUndo ?? () {},
+                    ),
+                    SizedBox(width: 4.w),
+                    _CoverHistoryButton(
+                      icon: Icons.redo_rounded,
+                      enabled: widget.canRedo,
+                      onTap: widget.onRedo ?? () {},
                     ),
                   ],
                 ),
@@ -694,6 +731,50 @@ class _CoverAtelierPressScaleState extends State<_CoverAtelierPressScale> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
         child: widget.child,
+      ),
+    );
+  }
+}
+
+class _CoverHistoryButton extends StatelessWidget {
+  const _CoverHistoryButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 140),
+        opacity: enabled ? 1.0 : 0.28,
+        child: Container(
+          width: 34.r,
+          height: 34.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : const Color(0xFFEDE8E0),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.12)
+                  : const Color(0xFFD5CDBF),
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 17,
+            color: SnapFitColors.textPrimaryOf(context),
+          ),
+        ),
       ),
     );
   }

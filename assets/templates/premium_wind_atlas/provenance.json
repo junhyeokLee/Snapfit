@@ -1,0 +1,19 @@
+{
+  "createdAt": "2026-09-08",
+  "generator": "built-in image_gen",
+  "collection": "wind-atlas",
+  "status": "free bundled collection; print and redistribution review pending",
+  "assets": [
+    {
+      "assetPath": "assets/templates/premium_wind_atlas/coast_watercolor.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-c6d4036a-8a5b-45f0-bbcb-edaedcd8d35b.png",
+      "prompt": "Use case: illustration-story. Asset type: original fine-art illustration for an editable premium Korean travel photobook, not a finished page. Create a single elegant panoramic watercolor and fine dry-ink drawing of an imagined Mediterranean coastal town: pale limestone houses climbing a hillside at the far left, a winding terracotta stair, one slender cypress, expansive luminous teal sea with a tiny white sailboat toward the middle-right. Cultivated contemporary travel-journal illustration, exquisitely observed architectural details, loose transparent pigment blooms, handmade watercolor edges, delicate graphite accents, editorial publishing quality. Landscape composition 3:2, art occupies the lower two thirds, no boxed border. Main pigments jade teal, cobalt blue, muted coral roofs, pale stone, small sun-yellow accents. Genuine transparent alpha background around the watercolor silhouette, especially clear top margin; no white rectangular background, no fake checkerboard. No words, labels, logos, real maps, photo inserts, collage, page mockup, drop shadow, glitter, plastic shine. Entire artwork visible with generous outer margins. High-resolution master suitable for a large printed page."
+    },
+    {
+      "assetPath": "assets/templates/premium_wind_atlas/lemon_botanical.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-fb676c5a-76e6-414c-a38d-ab77092e78ea.png",
+      "prompt": "Use case: illustration-story. Asset: a single original botanical illustration cutout for a collectible travel photobook, NOT a finished page or logo. Paint one airy diagonal lemon branch with two ripe Sicilian lemons, tiny cream blossoms, slender curling stems and slender deep jade leaves. Fine botanical watercolor with precisely observed veining, slightly translucent pigment, delicate dry-brush and colored-pencil details, warm lemon yellow and cool blue-green foliage. Contemporary fine-art travel stationery, elegant and mature, not clipart, not emoji, not flat vector. Square composition with the whole branch visible, 12 percent clear margins, asymmetrical sweep from lower left to upper right. Genuine transparent alpha background, no paper rectangle, no background colour or fake checkerboard, no shadow, no words or text. No ribbon, stamp, frame, border, bow, glitter or gold effect. Crisp high resolution."
+    }
+  ],
+  "samplePhotos": "Existing project sample photographs are used only as replaceable demonstration images. They are not new commissioned photographs or evidence of print resolution."
+}

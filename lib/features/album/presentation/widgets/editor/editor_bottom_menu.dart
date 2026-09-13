@@ -72,7 +72,7 @@ class EditorBottomMenu extends StatelessWidget {
             ),
             _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
             _EditorMenuItem(
-              '스티커',
+              '꾸미기',
               Icons.emoji_emotions_outlined,
               EditorMode.sticker,
             ),
@@ -103,7 +103,7 @@ class EditorBottomMenu extends StatelessWidget {
             ),
             _EditorMenuItem('레이어', Icons.layers_rounded, EditorMode.layer),
             _EditorMenuItem(
-              '스티커',
+              '꾸미기',
               Icons.emoji_emotions_outlined,
               EditorMode.sticker,
             ),

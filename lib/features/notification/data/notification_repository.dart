@@ -5,109 +5,77 @@ import '../domain/entities/app_notification_item.dart';
 
 class NotificationRepository {
   NotificationRepository({required this.tokenStorage, this.supabase});
-
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
 
-  Future<String> _requireUserId() async {
-    final id = await tokenStorage.getResolvedUserId();
-    if (id == null || id.trim().isEmpty) {
-      throw Exception('로그인이 필요합니다.');
-    }
+  String _requireUserId() {
+    final id = supabase?.auth.currentUser?.id;
+    if (id == null || id.isEmpty) throw Exception('로그인이 필요합니다.');
     return id;
   }
 
-  AppNotificationItem _fromInboxRow(
-    Map<String, dynamic> row,
-    Set<int> readIds,
-  ) {
-    final id = (row['id'] as num?)?.toInt() ?? -1;
-    return AppNotificationItem.fromJson({
-      'id': id,
-      'type': row['type']?.toString() ?? 'general',
-      'title': row['title']?.toString() ?? '알림',
-      'body': row['body']?.toString() ?? '',
-      'deeplink': row['deeplink']?.toString(),
-      'createdAt': row['created_at']?.toString(),
-      'isRead': readIds.contains(id),
-    });
-  }
+  String get _cutoff => DateTime.now()
+      .toUtc()
+      .subtract(const Duration(days: 90))
+      .toIso8601String();
 
   Future<List<AppNotificationItem>> fetchInbox({int limit = 50}) async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final rows = await supabase!
-          .from('notification_inbox')
-          .select()
-          .order('created_at', ascending: false)
-          .limit(limit);
-      final readRows = await supabase!
-          .from('notification_reads')
-          .select('notification_id')
-          .eq('user_id', userId);
-      final readIds = readRows
-          .map<int>((e) => (e['notification_id'] as num?)?.toInt() ?? -1)
-          .where((e) => e >= 0)
-          .toSet();
-      return rows
-          .map<AppNotificationItem>(
-            (e) => _fromInboxRow(Map<String, dynamic>.from(e), readIds),
-          )
-          .toList(growable: false);
-    }
-    throw Exception('Supabase 알림함 환경이 준비되지 않았습니다.');
+    final userId = _requireUserId();
+    final rows = await supabase!
+        .from('notifications')
+        .select()
+        .eq('user_id', userId)
+        .gte('created_at', _cutoff)
+        .order('created_at', ascending: false)
+        .limit(limit.clamp(1, 100));
+    return rows
+        .map(
+          (row) => AppNotificationItem.fromJson({
+            ...row,
+            'createdAt': row['created_at'],
+            'isRead': row['is_read'],
+            'userId': row['user_id'],
+          }),
+        )
+        .toList(growable: false);
   }
 
   Future<int> fetchUnreadCount() async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final inbox = await supabase!.from('notification_inbox').select('id');
-      final read = await supabase!
-          .from('notification_reads')
-          .select('notification_id')
-          .eq('user_id', userId);
-      final readIds = read
-          .map<int>((e) => (e['notification_id'] as num?)?.toInt() ?? -1)
-          .toSet();
-      return inbox
-          .where((e) => !readIds.contains((e['id'] as num?)?.toInt() ?? -1))
-          .length;
-    }
-    throw Exception('Supabase 알림 카운트 환경이 준비되지 않았습니다.');
+    final userId = _requireUserId();
+    return await supabase!
+        .from('notifications')
+        .count(CountOption.exact)
+        .eq('user_id', userId)
+        .eq('is_read', false)
+        .gte('created_at', _cutoff);
   }
 
   Future<void> markRead(int notificationId) async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      await supabase!.from('notification_reads').upsert({
-        'notification_id': notificationId,
-        'user_id': userId,
-      });
-      return;
-    }
-    throw Exception('Supabase 알림 읽음 처리 환경이 준비되지 않았습니다.');
+    final userId = _requireUserId();
+    await supabase!
+        .from('notifications')
+        .update({
+          'is_read': true,
+          'read_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('user_id', userId)
+        .eq('id', notificationId)
+        .eq('is_read', false);
   }
 
   Future<void> markAllRead() async {
-    final userId = await _requireUserId();
-    if (supabase != null) {
-      final rows = await supabase!.from('notification_inbox').select('id');
-      for (final row in rows) {
-        final id = (row['id'] as num?)?.toInt();
-        if (id != null) {
-          await supabase!.from('notification_reads').upsert({
-            'notification_id': id,
-            'user_id': userId,
-          });
-        }
-      }
-      return;
-    }
-    throw Exception('Supabase 알림 전체 읽음 처리 환경이 준비되지 않았습니다.');
+    final userId = _requireUserId();
+    // A single idempotent UPDATE: no client iteration or INSERT/UPSERT policy mismatch.
+    await supabase!
+        .from('notifications')
+        .update({
+          'is_read': true,
+          'read_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('user_id', userId)
+        .eq('is_read', false)
+        .gte('created_at', _cutoff);
   }
 
-  Future<int> fetchRetentionDays() async {
-    if (supabase != null) return 90;
-    return 90;
-  }
+  Future<int> fetchRetentionDays() async => 90;
 }

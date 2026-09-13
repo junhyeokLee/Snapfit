@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,9 +8,7 @@ import 'dart:async';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../core/utils/app_error_mapper.dart';
-import '../../../../config/env.dart';
 import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
-import '../../data/admin_ops_repository.dart';
 import '../../data/order_repository.dart';
 import '../../domain/entities/order_history_item.dart';
 
@@ -196,7 +193,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
           children: [
             Row(
               children: [
-                _statusChip(context, order.statusLabel),
+                _statusChip(context, order.customerStatusLabel),
                 const Spacer(),
                 Text(
                   '주문번호 ${order.orderId}',
@@ -288,156 +285,6 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
 
-    Future<void> preparePrintPackageForQa() async {
-      try {
-        final updated = await ref
-            .read(adminOpsRepositoryProvider)
-            .preparePrintPackage(
-              orderId: order.orderId,
-              adminKey: Env.orderAdminKey,
-            );
-        setState(() {
-          _refreshSeed++;
-        });
-        if (!mounted) return;
-        final url = updated.printPackageJsonUrl?.trim() ?? '';
-        if (url.isNotEmpty) {
-          await copy(
-            ref.read(orderRepositoryProvider).buildAdminPrintPackageUrl(url),
-            '인쇄 패키지 URL',
-          );
-        } else {
-          _showToast('인쇄 패키지를 준비했습니다.');
-        }
-      } catch (e) {
-        if (!mounted) return;
-        _showToast('인쇄 패키지 준비 실패: ${AppErrorMapper.toUserMessage(e)}');
-      }
-    }
-
-    Future<void> openPrintPackage() async {
-      final raw = order.printPackageJsonUrl?.trim() ?? '';
-      if (raw.isEmpty) return;
-      final url = ref
-          .read(orderRepositoryProvider)
-          .buildAdminPrintPackageUrl(raw);
-      final uri = Uri.tryParse(url);
-      if (uri == null) {
-        _showToast('인쇄 패키지 URL 형식이 올바르지 않습니다.');
-        return;
-      }
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-
-    Future<void> openAdminPrintAsset(String? rawUrl, String label) async {
-      final raw = rawUrl?.trim() ?? '';
-      if (raw.isEmpty) return;
-      final url = ref
-          .read(orderRepositoryProvider)
-          .buildAdminPrintPackageUrl(raw);
-      final uri = Uri.tryParse(url);
-      if (uri == null) {
-        _showToast('$label URL 형식이 올바르지 않습니다.');
-        return;
-      }
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-
-    Future<void> markShippingForQa() async {
-      final courierController = TextEditingController(
-        text: (order.courier ?? '').trim().isEmpty ? 'CJ대한통운' : order.courier,
-      );
-      final trackingController = TextEditingController(
-        text: (order.trackingNumber ?? '').trim(),
-      );
-
-      final ok = await showDialog<bool>(
-        context: context,
-        builder: (dCtx) {
-          return AlertDialog(
-            title: const Text('배송 시작 처리(QA)'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: courierController,
-                  decoration: const InputDecoration(labelText: '택배사'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: trackingController,
-                  decoration: const InputDecoration(labelText: '송장번호'),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dCtx, false),
-                child: const Text('취소'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(dCtx, true),
-                child: const Text('처리'),
-              ),
-            ],
-          );
-        },
-      );
-
-      if (ok != true) return;
-      final courier = courierController.text.trim();
-      final tracking = trackingController.text.trim();
-      if (courier.isEmpty || tracking.isEmpty) {
-        if (!mounted) return;
-        _showToast('택배사/송장번호를 입력해주세요.');
-        return;
-      }
-
-      try {
-        await ref
-            .read(adminOpsRepositoryProvider)
-            .markShipping(
-              orderId: order.orderId,
-              courier: courier,
-              trackingNumber: tracking,
-              adminKey: Env.orderAdminKey,
-            );
-        setState(() {
-          _refreshSeed++;
-        });
-        ref.invalidate(myOrderSummaryProvider);
-        if (!mounted) return;
-        _showToast('배송중 상태로 변경되었습니다.');
-      } catch (e) {
-        if (!mounted) return;
-        _showToast('배송 시작 처리 실패: ${AppErrorMapper.toUserMessage(e)}');
-      }
-    }
-
-    Future<void> markDeliveredForQa() async {
-      try {
-        await ref
-            .read(adminOpsRepositoryProvider)
-            .markDelivered(orderId: order.orderId, adminKey: Env.orderAdminKey);
-        setState(() {
-          _refreshSeed++;
-        });
-        ref.invalidate(myOrderSummaryProvider);
-        if (!mounted) return;
-        _showToast('배송완료 상태로 변경되었습니다.');
-      } catch (e) {
-        if (!mounted) return;
-        _showToast('배송 완료 처리 실패: ${AppErrorMapper.toUserMessage(e)}');
-      }
-    }
-
-    final canAdminControl = kDebugMode && Env.orderAdminKey.trim().isNotEmpty;
-    final canMarkShipping = order.status == 'IN_PRODUCTION';
-    final canMarkDelivered = order.status == 'SHIPPING';
-    final hasPrintPackage = (order.printPackageJsonUrl ?? '').trim().isNotEmpty;
-    final hasPrintZip = (order.printFileZipUrl ?? '').trim().isNotEmpty;
-    final hasPrintPdf = (order.printFilePdfUrl ?? '').trim().isNotEmpty;
-
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: SnapFitColors.surfaceOf(context),
@@ -499,7 +346,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                     ],
                   ),
                   SizedBox(height: 10.h),
-                  _statusChip(context, order.statusLabel),
+                  _statusChip(context, order.customerStatusLabel),
                   SizedBox(height: 12.h),
                   Text(
                     order.title,
@@ -585,144 +432,22 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                       ),
                     ),
                   ],
-                  if (canAdminControl &&
-                      (canMarkShipping || canMarkDelivered)) ...[
-                    SizedBox(height: 10.h),
-                    Divider(color: SnapFitColors.overlayLightOf(context)),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'QA 상태 전환',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w800,
-                        color: textColor,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        if (canMarkShipping)
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: markShippingForQa,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: SnapFitColors.accent,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                              ),
-                              child: const Text('배송 시작'),
-                            ),
-                          ),
-                        if (canMarkShipping && canMarkDelivered)
-                          SizedBox(width: 8.w),
-                        if (canMarkDelivered)
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: markDeliveredForQa,
-                              child: const Text('배송 완료'),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                  SizedBox(height: 10.h),
-                  Divider(color: SnapFitColors.overlayLightOf(context)),
-                  SizedBox(height: 8.h),
                   Text(
                     '결제완료: ${formatDateTime(order.paymentConfirmedAt)}',
                     style: TextStyle(fontSize: 12.sp, color: textColor),
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '인쇄접수: ${formatDateTime(order.printSubmittedAt)}',
+                    '제작사 접수완료: ${formatDateTime(order.printAcceptedAt)}',
                     style: TextStyle(fontSize: 12.sp, color: textColor),
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '인쇄패키지: ${formatDateTime(order.printPackageGeneratedAt)}'
-                    '${order.printAssetCount == null ? '' : ' · ${order.printAssetCount}개 파일'}',
+                    order.status == 'PAYMENT_COMPLETED'
+                        ? '결제 완료 후 인쇄 파일 검수와 제작 접수를 진행합니다.'
+                        : '${order.pageCount ?? '-'}페이지 · 200×200mm 소프트커버',
                     style: TextStyle(fontSize: 12.sp, color: textColor),
                   ),
-                  if (canAdminControl) ...[
-                    SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: hasPrintPackage
-                                ? openPrintPackage
-                                : preparePrintPackageForQa,
-                            icon: Icon(
-                              hasPrintPackage
-                                  ? Icons.open_in_new_rounded
-                                  : Icons.inventory_2_outlined,
-                              size: 16,
-                            ),
-                            label: Text(
-                              hasPrintPackage ? '인쇄 패키지 열기' : '인쇄 패키지 생성',
-                            ),
-                          ),
-                        ),
-                        if (hasPrintPackage) ...[
-                          SizedBox(width: 8.w),
-                          IconButton.outlined(
-                            onPressed: () => copy(
-                              ref
-                                  .read(orderRepositoryProvider)
-                                  .buildAdminPrintPackageUrl(
-                                    order.printPackageJsonUrl!,
-                                  ),
-                              '인쇄 패키지 URL',
-                            ),
-                            icon: const Icon(Icons.copy_rounded),
-                            tooltip: '인쇄 패키지 URL 복사',
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (hasPrintZip || hasPrintPdf) ...[
-                      SizedBox(height: 8.h),
-                      Row(
-                        children: [
-                          if (hasPrintZip)
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => openAdminPrintAsset(
-                                  order.printFileZipUrl,
-                                  'ZIP',
-                                ),
-                                icon: const Icon(
-                                  Icons.archive_outlined,
-                                  size: 16,
-                                ),
-                                label: const Text('ZIP 다운로드'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: SnapFitColors.accent,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                ),
-                              ),
-                            ),
-                          if (hasPrintZip && hasPrintPdf) SizedBox(width: 8.w),
-                          if (hasPrintPdf)
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => openAdminPrintAsset(
-                                  order.printFilePdfUrl,
-                                  'PDF',
-                                ),
-                                icon: const Icon(
-                                  Icons.picture_as_pdf_outlined,
-                                  size: 16,
-                                ),
-                                label: const Text('PDF 열기'),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ],
-                  SizedBox(height: 4.h),
                   Text(
                     '배송시작: ${formatDateTime(order.shippedAt)}',
                     style: TextStyle(fontSize: 12.sp, color: textColor),

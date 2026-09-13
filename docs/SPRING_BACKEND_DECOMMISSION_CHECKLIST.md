@@ -12,10 +12,10 @@ Current runtime paths:
 - Templates/design catalog: Supabase `templates` / `template_likes`.
 - Albums/members/invites: Supabase DB + Supabase Storage + `album-invites` Edge Function.
 - Notifications/support: Supabase tables.
-- Billing entitlement: native store IAP flow + `iap-verify` Edge Function.
-- Legacy external subscription billing: disabled; `billing-prepare`, `billing-approve`, and `billing-webhook` return `410 native_iap_required`.
+- Point purchases: native Apple/Google consumable IAP + `iap-verify`, with scheduled `iap-reconcile` refund handling. No subscription is sold.
+- Legacy external subscription billing: disabled; `billing-prepare`, `billing-approve`, and `billing-webhook` return HTTP 410.
 - Admin operations: `admin-ops` Edge Function.
-- Orders/print package: `order-confirm-payment` / `admin-ops.preparePrintPackage` generate private Supabase Storage artifacts.
+- Existing orders/print package: history and authorized admin operations remain available. External checkout/confirmation are retired with no replacement provider.
 
 Remaining non-Spring compatibility code:
 
@@ -31,33 +31,21 @@ Remaining non-Spring compatibility code:
    - Current Supabase package creates JSON/ZIP/summary PDF and includes source images where reachable.
    - If the vendor requires press-ready flattened PDFs, add a renderer pipeline for album layer JSON.
 4. Address search requires `SNAPFIT_ADDRESS_JUSO_KEY` to be set as a Supabase secret.
-5. Physical order checkout requires `SNAPFIT_ORDER_CHECKOUT_BASE_URL` to be set as a Supabase secret.
-6. Admin screens require `SNAPFIT_ADMIN_KEY` or an admin JWT role.
-7. Run production smoke tests for auth, album save/upload, checkout/address search, IAP, admin, notifications, and support.
+5. Admin screens require `SNAPFIT_ADMIN_KEY` or an admin JWT role.
+6. Run production smoke tests for auth, album save/upload, address search, point IAP, retained order history, admin, notifications, and support.
 
 ## Safe shutdown sequence
 
 1. Keep Spring backend running while Supabase flows are tested with production data.
-2. Keep `SNAPFIT_IAP_MOCK_VERIFY` unset/false and configure real Google Play/App Store secrets.
+2. Configure Google Play/App Store verification credentials; mock verification has been removed.
 3. Run `python3 tool/supabase_readiness_check.py` and ensure it passes.
 4. Run physical-device smoke tests from `docs/PRODUCTION_SMOKE_TEST_CHECKLIST.md`.
 5. Monitor production logs/network traffic and confirm no `/api/*` traffic reaches Spring for one full release cycle.
 6. Archive Spring only after the release cycle is clean.
 
-## Current Supabase secret audit
+## Supabase configuration reference
 
-Current audit shows only Supabase built-in secrets are present. These production secrets still need to be set directly in Supabase before the final smoke-test pass:
-
-- `GOOGLE_PLAY_PACKAGE_NAME`
-- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
-- `APP_STORE_ISSUER_ID`
-- `APP_STORE_KEY_ID`
-- `APP_STORE_BUNDLE_ID`
-- `APP_STORE_PRIVATE_KEY`
-- `APP_STORE_ENVIRONMENT`
-- `SNAPFIT_ADDRESS_JUSO_KEY`
-- `SNAPFIT_ORDER_CHECKOUT_BASE_URL`
-- `SNAPFIT_ADMIN_KEY`
+Current remote secret presence and deployment outcomes are recorded in [deployment status](PAYMENT_PUSH_DEPLOYMENT_STATUS.md). Do not infer current configuration from the original migration audit. The current payment key list is in [point payment keys](ORDER_PAYMENT_KEYS.md); push/worker settings are in [release instructions](POINT_PAYMENTS_AND_PUSH_RELEASE.md). There is no external checkout key setup or optional activation path.
 
 ## Automated readiness check
 

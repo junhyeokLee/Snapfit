@@ -1,4 +1,7 @@
 import 'package:photo_manager/photo_manager.dart';
+import 'ai_template_design.dart';
+
+export 'ai_template_design.dart';
 
 enum AlbumTheme {
   couple,
@@ -134,8 +137,46 @@ class StorySection {
   final List<String> photoAssetIds;
 }
 
+class AiTemplateSlot {
+  const AiTemplateSlot({
+    required this.slotId,
+    required this.pageIndex,
+    required this.role,
+    required this.hint,
+    this.assetId,
+    this.left,
+    this.top,
+    this.width,
+    this.height,
+    this.rotation = 0,
+    this.imageTemplate,
+    this.imageBackground,
+    this.caption,
+    this.emphasis = 1,
+  });
+
+  final String slotId;
+  final int pageIndex;
+  final String role;
+  final String hint;
+  final String? assetId;
+  final double? left;
+  final double? top;
+  final double? width;
+  final double? height;
+  final double rotation;
+  final String? imageTemplate;
+  final String? imageBackground;
+  final String? caption;
+  final double emphasis;
+
+  bool get hasCustomFrame =>
+      left != null && top != null && width != null && height != null;
+}
+
 class AlbumRecommendationDraft {
   const AlbumRecommendationDraft({
+    this.design,
     this.draftId = '',
     required this.theme,
     required this.title,
@@ -145,6 +186,7 @@ class AlbumRecommendationDraft {
     required this.excludedPhotos,
     required this.storySections,
     required this.summary,
+    this.templateSlots = const [],
     this.curationNotes = const [],
     this.requiresUserReview = true,
     this.alreadyCreatedAlbum = false,
@@ -152,6 +194,7 @@ class AlbumRecommendationDraft {
   });
 
   final String draftId;
+  final AiTemplateDesign? design;
   final AlbumTheme theme;
   final String title;
   final int pageCount;
@@ -160,6 +203,7 @@ class AlbumRecommendationDraft {
   final List<ExcludedPhoto> excludedPhotos;
   final List<StorySection> storySections;
   final String summary;
+  final List<AiTemplateSlot> templateSlots;
   final List<String> curationNotes;
   final bool requiresUserReview;
   final bool alreadyCreatedAlbum;
@@ -175,12 +219,14 @@ class AlbumRecommendationDraft {
     List<ExcludedPhoto>? excludedPhotos,
     List<StorySection>? storySections,
     String? summary,
+    List<AiTemplateSlot>? templateSlots,
     List<String>? curationNotes,
     bool? requiresUserReview,
     bool? alreadyCreatedAlbum,
     String? reviewCtaLabel,
   }) {
     return AlbumRecommendationDraft(
+      design: design,
       draftId: draftId ?? this.draftId,
       theme: theme ?? this.theme,
       title: title ?? this.title,
@@ -190,6 +236,7 @@ class AlbumRecommendationDraft {
       excludedPhotos: excludedPhotos ?? this.excludedPhotos,
       storySections: storySections ?? this.storySections,
       summary: summary ?? this.summary,
+      templateSlots: templateSlots ?? this.templateSlots,
       curationNotes: curationNotes ?? this.curationNotes,
       requiresUserReview: requiresUserReview ?? this.requiresUserReview,
       alreadyCreatedAlbum: alreadyCreatedAlbum ?? this.alreadyCreatedAlbum,

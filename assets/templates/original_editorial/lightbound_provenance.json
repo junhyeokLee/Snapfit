@@ -1,0 +1,36 @@
+{
+  "created": "2026-09-07",
+  "mode": "built-in image_gen",
+  "purpose": "Replaceable fictional sample photography for the independently authored 24-page Lightbound draft, not live AI template output.",
+  "notes": [
+    "Original generated PNGs copied without modification.",
+    "Person scenes use petal_couple.png as an identity and wardrobe reference.",
+    "Print quality and commercial release rights have not been approved."
+  ],
+  "assets": [
+    {
+      "id": "lightbound_ceremony",
+      "file": "images/lightbound_ceremony.png",
+      "prompt": "Use case: identity-preserve. Asset type: ONE replaceable sample photograph for an independently editable wedding photobook, NOT a page layout. Input image is a reference for the SAME fictional adult couple, their faces, hair and clothes. Create a different moment at this wedding: medium-distance documentary photo of them facing each other exchanging vows in a sunlit olive garden beside pale stone architecture. Bride in the same plain ivory silk sleeveless V-neck dress, groom in same charcoal suit and black tie. They hold hands gently, look at one another with quiet emotion. Both full bodies clearly in the central 55% with generous space above and below, no officiant, no guests in this particular photo. Subtle loose ivory flowers in the surrounding garden. Realistic faces and hands, clear fine detail, neutral luminous daylight, authentic greens, no yellow or sepia grade. Camera slightly side on, generous context for portrait/square crops. Single sharp realistic 3:2 landscape photograph, no words, logos, watermark, graphic design, collage, borders, flare, artificial blur overlay.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-6601184c-3b3b-4ef9-af80-9c6b5b124b4b.png"
+    },
+    {
+      "id": "lightbound_guests",
+      "file": "images/lightbound_guests.png",
+      "prompt": "Use case: identity-preserve. Asset type: ONE replaceable photo sample for an editable wedding album. Reference image is the same fictional adult bride and groom; preserve their faces, hair, ivory V-neck silk dress and charcoal suit. New scene: a joyful candid wedding group photograph in the same pale stone and olive garden, the couple in the middle with FOUR adult family members/friends close around them, six adults in total, everyone naturally laughing together, one older woman gently holding the bride's arm. Refined muted formal clothing in soft lilac, sage and dark charcoal; no clones. A real small family gathering, not a row of fashion models. Medium-wide eye level documentary framing, all faces and hands clear and comfortably within central 75%, enough margin above heads and either side, no cropped heads. Consistent natural daylight, luminous true skin, crisp facial detail, calm greens, no yellow grading or exaggerated bokeh. Single 3:2 landscape photographic image. No text, branding, watermark, borders, collage or album page graphic.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-ea386c7e-53cb-43b6-a04d-f24c7021b060.png"
+    },
+    {
+      "id": "lightbound_twilight",
+      "file": "images/lightbound_twilight.png",
+      "prompt": "Use case: identity-preserve. Asset type: one realistic sample photograph for a wedding photobook, not an album design. Reference is the same fictional adult bride and groom; preserve their identity, dark hair, simple ivory V-neck silk dress and charcoal suit. Create a close, quiet documentary portrait of the couple from waist up, standing beside a pale stone wall at the end of their wedding day, their foreheads almost touching, gently smiling, hands naturally joined at waist level. Early cool evening light but well-exposed, bright clear faces and ivory silk, natural muted garden green. Different intimate camera composition from the full-body reference. Both faces grouped centrally and safely inside middle 55% for vertical and square cropping, generous margins above heads. Authentic photographic skin and cloth detail, discreet romance, no fashion gloss or stylized color grade, no dark silhouette, lens flare, bokeh overlays or blur. One landscape 3:2 photograph, no typography, branding, watermark, border, collage or graphic elements.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-45022538-59b7-438e-9b89-ad67799ea3b1.png"
+    },
+    {
+      "id": "lightbound_cake",
+      "file": "images/lightbound_cake.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: ONE high-quality replaceable wedding album sample photograph, NOT a page design. A refined intimate garden wedding cake still life, one small two-tier round white buttercream cake with a few tiny fresh ivory and pale pink flowers on the side, on a simple pale ceramic pedestal centered on an ivory linen table. A cake knife and two small white plates with silver dessert forks nearby, delicate olive leaves, pale stone garden wall and soft greenery. Cake fully visible with ample breathing room on every side and above, occupies center 50%, realistic scale, beautiful tactile buttercream and linen. Bright diffuse daylight, fresh true whites and restrained sage/pink accents, sharply resolved near-subject details, natural photographic background depth without blur overlays. Quiet contemporary editorial composition at eye-level slightly above tabletop, wide 3:2 single photograph suitable for portrait/square crops. No people, words, cake topper text, brand marks, watermark, collage, borders, gold decoration, lens flare or sepia color grade.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-bc41cd63-6c2f-4fbb-b596-cfa3442aa03d.png"
+    }
+  ]
+}

@@ -71,6 +71,7 @@ enum ServerAiAlbumDraftMappingFailure {
   emptyRecommendedPhotos,
   duplicateAsset,
   storySectionAssetNotRecommended,
+  invalidTemplateSlot,
 }
 
 class ServerAiAlbumDraftMappingException implements Exception {
@@ -115,10 +116,11 @@ class ServerAiAlbumDraftMapper {
             .map((item) => _recommendedPhoto(item, candidateById))
             .toList(growable: false);
     _ensureUniqueAssets(recommendedPhotos.map((photo) => photo.assetId));
-    if (recommendedPhotos.isEmpty) {
+    final templateSlots = _templateSlots(json['templateSlots'], candidateById);
+    if (recommendedPhotos.isEmpty && templateSlots.isEmpty) {
       throw const ServerAiAlbumDraftMappingException(
         ServerAiAlbumDraftMappingFailure.emptyRecommendedPhotos,
-        'recommendedPhotos is empty',
+        'recommendedPhotos and templateSlots are empty',
       );
     }
 
@@ -132,6 +134,12 @@ class ServerAiAlbumDraftMapper {
             .toList(growable: false);
 
     return AlbumRecommendationDraft(
+      design: json['design'] == null
+          ? null
+          : AiTemplateDesign.fromJson(
+              Map<String, Object?>.from(json['design'] as Map),
+              pageCount,
+            ),
       draftId: _readString(json['draftId']),
       theme: theme,
       title: _readString(json['title'], fallback: _fallbackTitleFor(theme)),
@@ -148,6 +156,7 @@ class ServerAiAlbumDraftMapper {
         recommendedPhotos.map((photo) => photo.assetId).toSet(),
       ),
       summary: _readString(json['summary'], fallback: '사진과 앨범 흐름을 먼저 정리했어요.'),
+      templateSlots: templateSlots,
       curationNotes: _readStringList(json['curationNotes']),
       requiresUserReview: true,
       alreadyCreatedAlbum: false,
@@ -211,6 +220,52 @@ class ServerAiAlbumDraftMapper {
           );
         })
         .toList(growable: false);
+  }
+
+  List<AiTemplateSlot> _templateSlots(
+    Object? value,
+    Map<String, PhotoCandidate> candidateById,
+  ) {
+    return _readObjectList(value, field: 'templateSlots', required: false)
+        .map((item) {
+          final slotId = _requiredString(item['slotId'], field: 'slotId');
+          final pageIndex = _readInt(item['pageIndex'], fallback: -1);
+          if (pageIndex < 0 || pageIndex > maxPageCount) {
+            throw ServerAiAlbumDraftMappingException(
+              ServerAiAlbumDraftMappingFailure.invalidTemplateSlot,
+              'pageIndex=$pageIndex',
+            );
+          }
+          final assetId = _readString(item['assetId']);
+          if (assetId.isNotEmpty) _candidateFor(assetId, candidateById);
+          return AiTemplateSlot(
+            slotId: slotId,
+            pageIndex: pageIndex,
+            role: _readString(item['role'], fallback: 'photo'),
+            hint: _readString(item['hint'], fallback: '사진을 직접 넣어주세요'),
+            assetId: assetId.isEmpty ? null : assetId,
+            left: _readOptionalUnitDouble(item['left']),
+            top: _readOptionalUnitDouble(item['top']),
+            width: _readOptionalUnitDouble(item['width']),
+            height: _readOptionalUnitDouble(item['height']),
+            rotation: _readDouble(item['rotation'], fallback: 0),
+            imageTemplate: _readNullableString(item['imageTemplate']),
+            imageBackground: _readNullableString(item['imageBackground']),
+            caption: _readNullableString(item['caption']),
+            emphasis: _readDouble(
+              item['emphasis'],
+              fallback: 1,
+            ).clamp(0.2, 2.0).toDouble(),
+          );
+        })
+        .toList(growable: false);
+  }
+
+  double? _readOptionalUnitDouble(Object? value) {
+    if (value == null) return null;
+    final parsed = _readDouble(value, fallback: double.nan);
+    if (parsed.isNaN) return null;
+    return parsed.clamp(0.0, 1.0).toDouble();
   }
 
   void _ensureUniqueAssets(Iterable<String> assetIds) {
@@ -303,6 +358,11 @@ class ServerAiAlbumDraftMapper {
   String _readString(Object? value, {String fallback = ''}) {
     if (value is String && value.trim().isNotEmpty) return value.trim();
     return fallback;
+  }
+
+  String? _readNullableString(Object? value) {
+    final text = _readString(value);
+    return text.isEmpty ? null : text;
   }
 
   List<String> _readStringList(Object? value) {

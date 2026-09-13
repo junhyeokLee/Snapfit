@@ -352,7 +352,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   }
 
   Future<void> _showQuotaExceededSheet(BuildContext context) async {
-    final shouldSubscribe = await showModalBottomSheet<bool>(
+    await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: SnapFitColors.surfaceOf(context),
       shape: const RoundedRectangleBorder(
@@ -372,7 +372,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '무료 플랜 용량(1GB)을 초과했습니다. 구독 후 10GB까지 계속 저장할 수 있어요.',
+                  '저장 공간을 초과했습니다. 사용하지 않는 앨범이나 사진을 정리한 뒤 다시 저장해 주세요.',
                   style: TextStyle(
                     color: SnapFitColors.textSecondaryOf(context),
                     fontSize: 13.5,
@@ -380,14 +380,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('준비중'),
-                  ),
-                ),
-                const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -401,11 +393,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         );
       },
     );
-
-    if (shouldSubscribe != true || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('구독 및 결제 기능은 현재 준비중입니다.')));
   }
 
   Future<void> _confirmDeleteCurrentPage(AlbumEditorViewModel vm) async {
@@ -767,32 +754,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               }
             },
           ),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _EditorMiniHistoryButton(
-                icon: Icons.undo_rounded,
-                enabled: canUndo,
-                tooltip: '되돌리기',
-                onTap: () {
-                  vm.undo();
-                  _interaction.clearSelection();
-                  if (mounted) setState(() {});
-                },
-              ),
-              SizedBox(width: 8.w),
-              _EditorMiniHistoryButton(
-                icon: Icons.redo_rounded,
-                enabled: canRedo,
-                tooltip: '다시하기',
-                onTap: () {
-                  vm.redo();
-                  _interaction.clearSelection();
-                  if (mounted) setState(() {});
-                },
-              ),
-            ],
-          ),
+          title: null,
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 12.w),
@@ -1068,7 +1030,57 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                             key: const Key('pageEditorDockReveal'),
                             delay: const Duration(milliseconds: 140),
                             beginOffset: const Offset(0, 0.055),
-                            child: EditorBottomMenu(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // 헤더 row – 표지 편집과 동일한 위치/디자인
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(
+                                    4.w,
+                                    0,
+                                    4.w,
+                                    6.h,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '편집 도구',
+                                          style: TextStyle(
+                                            fontSize: 12.5.sp,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: -0.2,
+                                            color: SnapFitColors.textPrimaryOf(
+                                              context,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      _EditorMiniHistoryButton(
+                                        icon: Icons.undo_rounded,
+                                        enabled: canUndo,
+                                        tooltip: '되돌리기',
+                                        onTap: () {
+                                          vm.undo();
+                                          _interaction.clearSelection();
+                                          if (mounted) setState(() {});
+                                        },
+                                      ),
+                                      SizedBox(width: 4.w),
+                                      _EditorMiniHistoryButton(
+                                        icon: Icons.redo_rounded,
+                                        enabled: canRedo,
+                                        tooltip: '다시하기',
+                                        onTap: () {
+                                          vm.redo();
+                                          _interaction.clearSelection();
+                                          if (mounted) setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                EditorBottomMenu(
                               currentMode: _currentMode,
                               isCover: currentPageIndex == 0,
                               showCoverMenuItem: false,
@@ -1102,6 +1114,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                               onCover: () =>
                                   _toolbarActionHandler.openCoverTheme(),
                             ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -1109,17 +1123,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                   },
                 ),
               ),
-
-              if (_currentMode != EditorMode.none)
-                Positioned(
-                  key: const Key('editorAtelierPanel'),
-                  left: 12.w,
-                  right: 12.w,
-                  bottom: 136.h,
-                  child: _EditorToolPanelReveal(
-                    child: _buildInlineToolPanel(context, _currentMode, layers),
-                  ),
-                ),
 
               if (_showEditorHint &&
                   !_isSaving &&
@@ -1391,7 +1394,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     if (mode == EditorMode.text) {
       setState(() => _currentMode = EditorMode.none);
       final vm = ref.read(albumEditorViewModelProvider.notifier);
-      // Legacy logic: responsive size based on canvas
       final effectiveSize = _canvasSize == Size.zero
           ? const Size(300, 400)
           : _canvasSize;
@@ -1401,7 +1403,40 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       return;
     }
 
+    // 가로 모드: 사이드바 인라인 패널 사용
+    final isLandscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    if (isLandscape) {
+      setState(() => _currentMode = mode);
+      return;
+    }
+
+    // 세로 모드: 커버 편집과 동일하게 모달 바텀시트 사용
     setState(() => _currentMode = mode);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return switch (mode) {
+          EditorMode.sticker =>
+            const DecoratePanel(mode: DecorateSheetMode.sticker),
+          EditorMode.backgroundColor =>
+            const DecoratePanel(mode: DecorateSheetMode.backgroundColor),
+          EditorMode.layer => LayerManagerPanel(
+            layers: layers,
+            interaction: _interaction,
+          ),
+          EditorMode.layout =>
+            const TemplateSelectionPanel(title: '레이아웃'),
+          EditorMode.template =>
+            const DesignTemplatePanel(closeOnApply: false),
+          _ => const SizedBox.shrink(),
+        };
+      },
+    ).then((_) {
+      if (mounted) setState(() => _currentMode = EditorMode.none);
+    });
   }
 }
 
@@ -1458,7 +1493,7 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 0.36.sh,
+        height: 0.50.sh,
         decoration: BoxDecoration(
           color: sheetColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
@@ -1562,31 +1597,33 @@ class _EditorMiniHistoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SnapFitColors.isDark(context);
     return Tooltip(
       message: tooltip,
-      child: SnapFitPressable(
+      child: GestureDetector(
         onTap: enabled ? onTap : null,
-        pressedScale: 0.94,
-        borderRadius: BorderRadius.circular(999.r),
         child: AnimatedOpacity(
           duration: SnapFitMotion.fast,
-          opacity: enabled ? 1 : 0.34,
+          opacity: enabled ? 1.0 : 0.28,
           child: Container(
-            width: 38,
-            height: 38,
+            width: 34.r,
+            height: 34.r,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.62),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.76)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              color: isDark
+                  ? Colors.white.withOpacity(0.08)
+                  : const Color(0xFFEDE8E0),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : const Color(0xFFD5CDBF),
+              ),
             ),
-            child: Icon(icon, size: 19, color: const Color(0xFF171717)),
+            child: Icon(
+              icon,
+              size: 17,
+              color: SnapFitColors.textPrimaryOf(context),
+            ),
           ),
         ),
       ),

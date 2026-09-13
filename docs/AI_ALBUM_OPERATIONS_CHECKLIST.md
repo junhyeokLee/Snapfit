@@ -32,8 +32,6 @@ Required AI and store values:
 - `ANTHROPIC_MODEL=claude-sonnet-4-5`
 - `AI_ALBUM_DRAFT_PROVIDER=hybrid`
 - `AI_ALBUM_DRAFT_TIMEOUT_MS=20000`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `IAP_POINT_PRODUCT_IDS=snapfit_points_2500,snapfit_points_8000,snapfit_points_18000`
 - `GOOGLE_PLAY_PACKAGE_NAME`
 - `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` or `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
 - `APP_STORE_ISSUER_ID`
@@ -41,6 +39,8 @@ Required AI and store values:
 - `APP_STORE_BUNDLE_ID`
 - `APP_STORE_PRIVATE_KEY`
 - `APP_STORE_ENVIRONMENT=sandbox` during sandbox QA, then production for release
+
+`SUPABASE_SERVICE_ROLE_KEY` is managed by Supabase. `IAP_POINT_PRODUCT_IDS` is a Flutter build define, not a server secret. Current point setup is in [point payment keys](ORDER_PAYMENT_KEYS.md).
 
 metadata rollback without app release:
 
@@ -56,15 +56,13 @@ Register point products as consumable IAP products in Google Play Console and Ap
 - `snapfit_points_8000`
 - `snapfit_points_18000`
 
-Keep subscription product separate:
-
-- `snapfit_pro_monthly`
+Subscription purchases have been removed. Register only consumable point products; preserve historical transaction records.
 
 ## Android sandbox QA
 
 1. Add tester account in Google Play Console license testing.
 2. Confirm package name matches `GOOGLE_PLAY_PACKAGE_NAME` in Supabase secrets.
-3. Register all three consumable products and activate them for the internal/sandbox track.
+3. Activate the three one-time buy options with the intended price and country availability; see [Android preparation](ANDROID_POINT_PURCHASE_CHECKLIST.md).
 4. Install a build signed/configured for the same application id.
 5. Open billing screen and confirm all point products are returned.
 6. Buy `snapfit_points_2500` in sandbox.

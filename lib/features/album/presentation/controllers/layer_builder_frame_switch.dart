@@ -5,6 +5,13 @@ Widget _buildFramedImageImpl(
   LayerModel layer,
   Widget image,
 ) {
+  if (StudioMaterial.photoStyles.contains(layer.imageBackground)) {
+    return StudioMaterial(
+      style: layer.imageBackground!,
+      printImages: builder.printImages,
+      child: image,
+    );
+  }
   Widget framed;
   switch (layer.imageBackground) {
     case "circle":

@@ -1,0 +1,13 @@
+{
+  "name": "snapfit-brand-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "node serve.mjs",
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "lucide": "1.8.0"
+  }
+}

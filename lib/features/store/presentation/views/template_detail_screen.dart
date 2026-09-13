@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/catalog_favorite_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,22 +10,32 @@ import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../core/templates/data_template_engine.dart';
+import '../../../../core/templates/template_document_pages.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
-import '../../../billing/data/billing_provider.dart';
 import '../../domain/entities/premium_template.dart';
+import '../../../point_shop/domain/point_shop_template_key.dart';
+import '../../../point_shop/presentation/point_shop_access.dart';
 import '../../data/api/template_provider.dart';
 import '../../../album/domain/entities/layer.dart';
+import '../../../album/domain/entities/album_creation_template.dart';
+import '../../../album/data/bundled_creation_templates.dart';
 import '../widgets/template_page_renderer.dart';
 import '../widgets/template_preview_frame.dart';
 import 'template_full_screen_view.dart';
 import '../../../album/presentation/views/album_create_flow_screen.dart';
+import '../../../album/presentation/widgets/create_flow/creation_template_preview.dart';
 
 class TemplateDetailScreen extends ConsumerStatefulWidget {
   final PremiumTemplate template;
+  final bool selectForCreation;
 
-  const TemplateDetailScreen({super.key, required this.template});
+  const TemplateDetailScreen({
+    super.key,
+    required this.template,
+    this.selectForCreation = false,
+  });
 
   @override
   ConsumerState<TemplateDetailScreen> createState() =>
@@ -41,15 +52,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   List<List<LayerModel>> _parsedPages = [];
   Map<String, List<List<LayerModel>>> _parsedPagesByAspect = const {};
   Size _designCanvasSize = const Size(500, 500);
+  final Map<String, Size> _variantCanvasSizes = {};
 
   CoverSize _initialCoverSizeForTemplate() {
     final aspect = _resolveTemplateAspect();
-    if (aspect <= 0.95) {
-      return coverSizes.firstWhere(
-        (s) => s.name == '세로형',
-        orElse: () => coverSizes.first,
-      );
-    }
+    if ((aspect - 1.25).abs() < .0001)
+      return coverSizeForProduct('REDP_250X200_SOFT')!;
     if (aspect >= 1.05) {
       return coverSizes.firstWhere(
         (s) => s.name == '가로형',
@@ -281,16 +289,16 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           (metadata['designHeight'] as num?)?.toDouble() ??
           500.0;
       _designCanvasSize = Size(rootDesignWidth, rootDesignHeight);
-      final List<dynamic>? pagesList = data['pages'] as List<dynamic>?;
+      final pagesList = templateDocumentPages(data);
 
-      if (pagesList != null) {
+      if (pagesList.isNotEmpty) {
         final takeCount = maxPages == null
             ? pagesList.length
             : pagesList.take(maxPages).length;
         final canvasSize = _designCanvasSize;
 
         _parsedPages = pagesList.take(takeCount).map((p) {
-          final map = p as Map<String, dynamic>;
+          final map = p;
           final pageSpec = <String, dynamic>{
             'strictLayout': true,
             'designWidth': canvasSize.width,
@@ -311,8 +319,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           final node = entry.value;
           if (node is! Map) continue;
           final variantMap = Map<String, dynamic>.from(node);
-          final variantPages = variantMap['pages'] as List<dynamic>?;
-          if (variantPages == null || variantPages.isEmpty) continue;
+          final variantPages = templateDocumentPages(variantMap);
+          if (variantPages.isEmpty) continue;
 
           final variantCanvas = Size(
             (variantMap['designWidth'] as num?)?.toDouble() ??
@@ -324,7 +332,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           );
           final list = variantPages
               .map((p) {
-                final page = p as Map<String, dynamic>;
+                final page = p;
                 final pageSpec = <String, dynamic>{
                   'strictLayout': true,
                   'designWidth': variantCanvas.width,
@@ -337,7 +345,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 );
               })
               .toList(growable: false);
-          if (list.isNotEmpty) parsed[key] = list;
+          if (list.isNotEmpty) {
+            parsed[key] = list;
+            _variantCanvasSizes[key] = variantCanvas;
+          }
         }
       } else if (variants is List) {
         for (final node in variants) {
@@ -346,8 +357,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           final key = (variantMap['aspect'] ?? variantMap['variantId'] ?? '')
               .toString()
               .toLowerCase();
-          final variantPages = variantMap['pages'] as List<dynamic>?;
-          if (key.isEmpty || variantPages == null || variantPages.isEmpty) {
+          final variantPages = templateDocumentPages(variantMap);
+          if (key.isEmpty || variantPages.isEmpty) {
             continue;
           }
 
@@ -368,7 +379,7 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
           );
           final list = variantPages
               .map((p) {
-                final page = p as Map<String, dynamic>;
+                final page = p;
                 final pageSpec = <String, dynamic>{
                   'strictLayout': true,
                   'designWidth': variantCanvas.width,
@@ -381,7 +392,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                 );
               })
               .toList(growable: false);
-          if (list.isNotEmpty) parsed[normalizedKey] = list;
+          if (list.isNotEmpty) {
+            parsed[normalizedKey] = list;
+            _variantCanvasSizes[normalizedKey] = variantCanvas;
+          }
         }
       }
       _parsedPagesByAspect = parsed;
@@ -423,6 +437,10 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   Future<void> _refreshTemplate() async {
+    if (isBundledCreationTemplate(_template)) {
+      _isTemplateHydrating = false;
+      return;
+    }
     try {
       final localGenerated = await _findLocalGeneratedMatchByTitle();
       PremiumTemplate? updated = await _findRemoteMatchByTitle();
@@ -459,6 +477,29 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _onLike() async {
     if (_isLikeSubmitting) return;
+    if (isPublishedCreationTemplate(_template)) {
+      setState(() {
+        _isLikeSubmitting = true;
+        _template = _template.copyWith(
+          isLiked: !_template.isLiked,
+          likeCount: _template.isLiked ? 0 : 1,
+        );
+      });
+      try {
+        String? userId;
+        try {
+          userId = await ref.read(tokenStorageProvider).getResolvedUserId();
+        } catch (_) {
+          // Bundled favorites also work offline as a guest.
+        }
+        await persistTemplateLikeState(_template, userId: userId);
+        if (!mounted) return;
+        ref.invalidate(templateListProvider);
+      } finally {
+        if (mounted) setState(() => _isLikeSubmitting = false);
+      }
+      return;
+    }
     var target = _template;
     // Always validate the server ID when the template hasn't been hydrated yet
     // (e.g. user taps like before _refreshTemplate() completes) OR when the
@@ -548,16 +589,12 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   Future<void> _onUse() async {
     if (_isUsing) return;
-    if (_template.isPremium) {
-      final granted = await _ensureSubscriptionForPremium();
-      if (!granted) return;
-    }
-
     setState(() => _isUsing = true);
+
     if (_parsedPages.length < _template.pageCount) {
       _parseTemplateJson();
     }
-    final pages = _resolvePagesForCreateFlow();
+    final pages = _parsedPages;
     if (pages.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -569,88 +606,62 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     }
 
     if (!mounted) return;
+    final granted = await ensurePointShopAccess(
+      context,
+      ref,
+      productKey: pointShopTemplateKey(_template),
+      title: _template.title,
+    );
+    if (!mounted) return;
+    if (!granted) {
+      setState(() => _isUsing = false);
+      return;
+    }
+    final cover = _initialCoverSizeForTemplate();
+    final normalized = AlbumCreationTemplate.preparePages(
+      pages,
+      sourceCanvas: _designCanvasSize,
+      cover: cover,
+    );
+    final variants = <String, List<List<LayerModel>>>{};
+    final variantCanvases = <String, Size>{};
+    for (final size in coverSizes) {
+      final key = AlbumCreationTemplate.aspectKey(size);
+      final source = _parsedPagesByAspect[key];
+      final productKey = AlbumCreationTemplate.variantKey(size);
+      variants[productKey] = AlbumCreationTemplate.preparePages(
+        source != null && source.isNotEmpty ? source : pages,
+        sourceCanvas: source != null && source.isNotEmpty
+            ? _variantCanvasSizes[key] ?? _designCanvasSize
+            : _designCanvasSize,
+        cover: size,
+      );
+      variantCanvases[productKey] = coverCanvasBaseSize(size);
+    }
+    final selection = AlbumCreationTemplate(
+      title: _template.title,
+      previewUrl: _coverPreviewUrl(_template),
+      isPremium: _template.isPremium,
+      preserveTypography: isBundledCreationTemplate(_template),
+      cover: cover,
+      pages: variants[AlbumCreationTemplate.variantKey(cover)] ?? normalized,
+      variants: variants,
+      variantCanvasSizes: variantCanvases,
+      pagesCanvasSize: coverCanvasBaseSize(cover),
+    );
+    if (widget.selectForCreation) {
+      Navigator.pop(context, selection);
+      return;
+    }
     await Navigator.push(
       context,
       snapFitRoute(
-        page: AlbumCreateFlowScreen(
-          initialTemplatePages: pages,
-          initialTemplatePagesByAspect: _parsedPagesByAspect.isEmpty
-              ? null
-              : _parsedPagesByAspect,
-          initialAlbumTitle: _template.title,
-          initialTemplatePreviewImages: _template.previewImages,
-          initialCoverSize: _initialCoverSizeForTemplate(),
-        ),
+        page: AlbumCreateFlowScreen(initialCreationTemplate: selection),
       ),
     );
     if (mounted) {
       setState(() => _isUsing = false);
     }
-  }
-
-  Future<bool> _ensureSubscriptionForPremium() async {
-    try {
-      final state = await ref.read(mySubscriptionProvider.future);
-      if (state.isActive) return true;
-    } catch (_) {}
-
-    if (!mounted) return false;
-    final shouldProceed = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: SnapFitColors.surfaceOf(context),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '프리미엄 템플릿 잠금',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '프리미엄 템플릿은 현재 준비중입니다.\n구독/결제 기능이 다시 열리면 사용할 수 있어요.',
-                  style: TextStyle(
-                    color: SnapFitColors.textSecondaryOf(context),
-                    fontSize: 13.5,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('준비중'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('닫기'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (shouldProceed == true && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('구독 및 결제 기능은 현재 준비중입니다.')));
-    }
-    return false;
   }
 
   Future<void> _onShareTemplate() async {
@@ -671,16 +682,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('공유 기능을 실행할 수 없습니다.')));
     }
-  }
-
-  List<List<LayerModel>> _resolvePagesForCreateFlow() {
-    final fallback = _buildFallbackTemplatePages();
-    if (_parsedPages.isEmpty) return fallback;
-    // 피그마 정합 우선:
-    // 일부 페이지 수가 부족하더라도 synthetic fallback 레이아웃을 섞으면
-    // 이상한 제목 띠/가짜 프레임이 끼어들어 원본 디자인이 망가진다.
-    // 실제 파싱된 페이지가 하나라도 있으면 그것만 사용한다.
-    return _parsedPages;
   }
 
   List<({IconData icon, String title, String description})>
@@ -830,6 +831,8 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
   }
 
   String _recommendedPhotoRange() {
+    final count = publishedTemplatePhotoCount(_template);
+    if (count != null) return '$count장';
     final pages = _template.pageCount <= 0 ? 24 : _template.pageCount;
     final minPhotos = (pages * 1.6).round().clamp(18, 120);
     final maxPhotos = (pages * 2.15).round().clamp(minPhotos + 6, 160);
@@ -852,8 +855,9 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     final tags = _template.tags ?? const <String>[];
     final candidates = [
       if (category.isNotEmpty) category,
-      ...tags.map((e) => e.trim()).where((e) => e.isNotEmpty),
-      if (_template.isPremium) 'Premium' else '무료 사용',
+      ...tags
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty && e != '무료' && e != '무료 사용'),
       '${_template.pageCount}페이지',
     ];
 
@@ -1131,120 +1135,6 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
     return _parseHexColor(best?.decorationFillColor) ?? Colors.white;
   }
 
-  List<List<LayerModel>> _buildFallbackTemplatePages() {
-    final preview = _template.previewImages
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList(growable: false);
-    if (preview.isEmpty) return const [];
-    final pageCount = _template.pageCount < 2 ? 2 : _template.pageCount;
-    final pages = <List<LayerModel>>[];
-
-    LayerModel imageLayer({
-      required String id,
-      required String url,
-      required double x,
-      required double y,
-      required double w,
-      required double h,
-      String frame = 'photoCard',
-      int z = 10,
-    }) {
-      return LayerModel(
-        id: id,
-        type: LayerType.image,
-        position: Offset(x, y),
-        width: w,
-        height: h,
-        imageBackground: frame,
-        previewUrl: url,
-        imageUrl: url,
-        originalUrl: url,
-        zIndex: z,
-      );
-    }
-
-    pages.add([
-      imageLayer(
-        id: 'cover_main',
-        url: preview.first,
-        x: 56,
-        y: 82,
-        w: 388,
-        h: 300,
-        frame: 'paperClipCard',
-      ),
-      LayerModel(
-        id: 'cover_title',
-        type: LayerType.text,
-        position: const Offset(84, 24),
-        width: 332,
-        height: 44,
-        text: _template.title,
-        textAlign: TextAlign.center,
-        textStyle: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          color: SnapFitColors.deepCharcoal,
-        ),
-        zIndex: 20,
-      ),
-    ]);
-
-    for (int i = 1; i < pageCount; i++) {
-      final left = preview[i % preview.length];
-      final right = preview[(i + 1) % preview.length];
-      pages.add([
-        LayerModel(
-          id: 'p${i}_title',
-          type: LayerType.text,
-          position: const Offset(74, 28),
-          width: 352,
-          height: 36,
-          text: _template.title,
-          textAlign: TextAlign.center,
-          textStyle: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: SnapFitColors.deepCharcoal,
-          ),
-          zIndex: 24,
-        ),
-        imageLayer(
-          id: 'p${i}_left',
-          url: left,
-          x: 44,
-          y: 86,
-          w: 210,
-          h: 294,
-          frame: 'paperClipCard',
-          z: 14,
-        ),
-        imageLayer(
-          id: 'p${i}_right',
-          url: right,
-          x: 246,
-          y: 100,
-          w: 210,
-          h: 280,
-          frame: 'polaroidClassic',
-          z: 18,
-        ),
-        imageLayer(
-          id: 'p${i}_accent',
-          url: preview[(i + 2) % preview.length],
-          x: 168,
-          y: 316,
-          w: 166,
-          h: 128,
-          frame: 'softGlow',
-          z: 20,
-        ),
-      ]);
-    }
-    return pages;
-  }
-
   void _openFullScreenView(int initialIndex) {
     if (_parsedPages.isEmpty && _template.previewImages.isEmpty) return;
 
@@ -1263,6 +1153,22 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.selectForCreation) {
+      return CreationTemplatePreview(
+        title: _template.title,
+        favoriteKey: CatalogFavoriteKeys.template(_template.id),
+        accessBadge: PointShopProductBadge(
+          productKey: pointShopTemplateKey(_template),
+        ),
+        isPremium: _template.isPremium,
+        preserveTypography: isBundledCreationTemplate(_template),
+        pages: _parsedPages,
+        canvas: _designCanvasSize,
+        isUsing: _isUsing,
+        onUse: _onUse,
+        onRetry: _refreshTemplate,
+      );
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = SnapFitColors.textPrimaryOf(context);
     final secondaryColor = SnapFitColors.textSecondaryOf(context);
@@ -1607,36 +1513,45 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
               ),
               child: Row(
                 children: [
-                  SnapFitPressable(
-                    onTap: _onLike,
-                    pressedScale: 0.90,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _template.isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: _template.isLiked
-                              ? Colors.red
-                              : SnapFitColors.textMutedOf(context),
-                          size: 28.sp,
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          '${_template.likeCount}',
-                          style: TextStyle(
-                            fontSize: 11.sp,
+                  CatalogFavoriteButton(
+                    itemKey: CatalogFavoriteKeys.template(_template.id),
+                    label: _template.title,
+                  ),
+                  if (!isPublishedCreationTemplate(_template))
+                    SnapFitPressable(
+                      onTap: _onLike,
+                      pressedScale: 0.90,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _template.isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border,
                             color: _template.isLiked
                                 ? Colors.red
                                 : SnapFitColors.textMutedOf(context),
-                            fontWeight: FontWeight.w600,
+                            size: 28.sp,
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 4.h),
+                          Text(
+                            '${_template.likeCount}',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: _template.isLiked
+                                  ? Colors.red
+                                  : SnapFitColors.textMutedOf(context),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  SizedBox(width: 10.w),
+                  PointShopProductBadge(
+                    productKey: pointShopTemplateKey(_template),
                   ),
-                  SizedBox(width: 14.w),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isUsing ? null : _onUse,
@@ -1676,11 +1591,15 @@ class _TemplateDetailScreenState extends ConsumerState<TemplateDetailScreen> {
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  '이 템플릿으로 시작하기',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Text(
+                                    '이 템플릿으로 시작하기',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 8.w),

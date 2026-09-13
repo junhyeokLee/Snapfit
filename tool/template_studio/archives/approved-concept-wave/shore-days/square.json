@@ -1,0 +1,3250 @@
+{
+  "id": "snapfit_concept_shore-days_square",
+  "collectionId": "shore-days",
+  "editionId": "shore-days-24",
+  "title": "해변에서 보낸 날",
+  "category": "여행",
+  "concept": "바다 유리와 해안선, 물빛 여행 기록집",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "shore-days_square_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shore-days_square_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "shore-days_square_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#111C23",
+        "cornerRadius": 0,
+        "opacity": 0.2
+      },
+      {
+        "id": "shore-days_square_0_part_3",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.095,
+        "w": 0.85,
+        "h": 0.0016,
+        "z": 3,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shore-days_square_0_part_4",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 4,
+        "text": "COASTAL JOURNAL / 02",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shore-days_square_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.14,
+        "w": 0.82,
+        "h": 0.31,
+        "z": 5,
+        "text": "해변에서\n보낸 날",
+        "align": "left",
+        "style": {
+          "fontFamily": "BookMyungjo",
+          "fontSize": 50.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shore-days_square_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.49,
+        "w": 0.82,
+        "h": 0.055,
+        "z": 6,
+        "text": "WALKS, POSTCARDS & SMALL FINDS",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shore-days_square_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.83,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 7,
+        "text": "우리의 해안 여행",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 13.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shore-days_square_0_part_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.91,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 8,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "해변에서 보낸 날",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EAF2EE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_1_part_1",
+          "type": "decoration",
+          "x": 0.05,
+          "y": 0.26,
+          "w": 0.37800000000000006,
+          "h": 0.28,
+          "z": 1,
+          "style": "materialContourMap",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_1_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.055,
+          "w": 0.79,
+          "h": 0.2,
+          "z": 2,
+          "text": "SEA",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 95.0,
+            "fontWeight": 400,
+            "color": "#326B70",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_1_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.57,
+          "w": 0.8,
+          "h": 0.22,
+          "z": 3,
+          "text": "바다가 보이기\n시작했다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 35.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_1_part_4",
+          "type": "sticker",
+          "x": 0.65,
+          "y": 0.72,
+          "w": 0.18,
+          "h": 0.18,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/wave_sea_glass.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_1_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.83,
+          "w": 0.53,
+          "h": 0.055,
+          "z": 5,
+          "text": "COASTAL JOURNAL / 01",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "바다가 보이기 시작했다",
+      "role": "coastal-opening-chart",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#C8E3E2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_2_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.05,
+          "w": 0.91,
+          "h": 0.71,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "atelierCoastline",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_2_part_2",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.815,
+          "w": 0.17,
+          "h": 0.0016,
+          "z": 2,
+          "fillColor": "#24545D",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_2_part_3",
+          "type": "text",
+          "x": 0.31,
+          "y": 0.79,
+          "w": 0.6,
+          "h": 0.075,
+          "z": 3,
+          "text": "짐을 내려놓고 곧장 바다로 갔다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "바다가 보이기 시작했다",
+      "role": "arrival-sea-window",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F6F8F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_3_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "ON FOOT / 02",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_3_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.17,
+          "w": 0.55,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "studioDeckle",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_3_part_3",
+          "type": "decoration",
+          "x": 0.69,
+          "y": 0.2,
+          "w": 0.1705,
+          "h": 0.31,
+          "z": 3,
+          "style": "materialTransitPunch",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_3_part_4",
+          "type": "text",
+          "x": 0.71,
+          "y": 0.31,
+          "w": 0.19,
+          "h": 0.055,
+          "z": 4,
+          "text": "AM 09:10",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_3_part_5",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.72,
+          "w": 0.8,
+          "h": 0.11,
+          "z": 5,
+          "text": "해안선을 따라",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_3_part_6",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.855,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 6,
+          "text": "왼편에는 바다, 오른편에는 작은 집들.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "해안선을 따라",
+      "role": "coast-path-atlas",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#236773",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_4_part_1",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.08,
+          "w": 0.4,
+          "h": 0.41,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_harbor.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_4_part_2",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.3,
+          "w": 0.41,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_street.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_4_part_3",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.55,
+          "w": 0.34,
+          "h": 0.22,
+          "z": 3,
+          "text": "02",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 95.0,
+            "fontWeight": 400,
+            "color": "#C2E1DE",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_4_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.845,
+          "w": 0.78,
+          "h": 0.055,
+          "z": 4,
+          "text": "같은 길의 다른 풍경",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F3FAF5",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "해안선을 따라",
+      "role": "path-two-vantages",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E1ECE6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_5_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.065,
+          "w": 0.85,
+          "h": 0.12,
+          "z": 1,
+          "text": "항구에서",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 35.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_5_part_2",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.255,
+          "w": 0.91,
+          "h": 0.54,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_harbor.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_5_part_3",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.79,
+          "w": 0.35000000000000003,
+          "h": 0.07,
+          "z": 3,
+          "style": "atelierPostalBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_5_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.867,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 4,
+          "text": "BOATS / ROPES / MORNING LIGHT",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "항구에서",
+      "role": "harbor-large-plate",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_6_part_1",
+          "type": "decoration",
+          "x": 0.11,
+          "y": 0.08,
+          "w": 0.6885000000000001,
+          "h": 0.51,
+          "z": 1,
+          "style": "materialContourMap",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_6_part_2",
+          "type": "image",
+          "x": 0.19,
+          "y": 0.13,
+          "w": 0.66,
+          "h": 0.41,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_harbor.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_6_part_3",
+          "type": "sticker",
+          "x": 0.065,
+          "y": 0.57,
+          "w": 0.23,
+          "h": 0.23,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_sea_glass.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_6_part_4",
+          "type": "text",
+          "x": 0.43,
+          "y": 0.65,
+          "w": 0.48,
+          "h": 0.18,
+          "z": 4,
+          "text": "배가 돌아오는\n시간을 기다리며",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "항구에서",
+      "role": "harbor-chart-notebook",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#CFDDD8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_7_part_1",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.065,
+          "w": 0.88,
+          "h": 0.7,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_cafe.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_7_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.81,
+          "w": 0.68,
+          "h": 0.095,
+          "z": 2,
+          "text": "느린 점심",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "느린 점심",
+      "role": "cafe-long-lunch",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_8_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.07,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "TABLE BY THE WINDOW",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_8_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.19,
+          "w": 0.81,
+          "h": 0.22,
+          "z": 2,
+          "text": "한 잔 더\n마시고 가기로 했다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_8_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.5,
+          "w": 0.5599999999999999,
+          "h": 0.3499999999999999,
+          "z": 3,
+          "style": "atelierBoardingStub",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_8_part_4",
+          "type": "text",
+          "x": 0.1572,
+          "y": 0.577,
+          "w": 0.35279999999999995,
+          "h": 0.045499999999999985,
+          "z": 4,
+          "text": "LUNCH BREAK",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_8_part_5",
+          "type": "text",
+          "x": 0.1572,
+          "y": 0.6749999999999999,
+          "w": 0.3863999999999999,
+          "h": 0.12599999999999995,
+          "z": 5,
+          "text": "커피 두 잔, 창가 자리.\n오늘은 서두르지 않기로.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_8_part_6",
+          "type": "sticker",
+          "x": 0.74,
+          "y": 0.8,
+          "w": 0.09,
+          "h": 0.09,
+          "z": 6,
+          "imageUrl": "asset:assets/sticker/studio/material_shell.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "느린 점심",
+      "role": "lunch-receipt-letter",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#C9E0DB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_9_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "FOUND / NOT BOUGHT",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_9_part_2",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.18,
+          "w": 0.48719999999999997,
+          "h": 0.58,
+          "z": 2,
+          "style": "materialSpecimenPocket",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_9_part_3",
+          "type": "sticker",
+          "x": 0.22,
+          "y": 0.255,
+          "w": 0.39,
+          "h": 0.39,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_sea_glass.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_9_part_4",
+          "type": "text",
+          "x": 0.13,
+          "y": 0.79,
+          "w": 0.76,
+          "h": 0.1,
+          "z": 4,
+          "text": "파도가 다듬은 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "주머니 속 작은 것",
+      "role": "sea-glass-specimen",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_10_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.56,
+          "h": 0.37,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "studioTorn",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_10_part_2",
+          "type": "sticker",
+          "x": 0.69,
+          "y": 0.14,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/material_shell.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_10_part_3",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.535,
+          "w": 0.83,
+          "h": 0.0016,
+          "z": 3,
+          "fillColor": "#24545D",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_10_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.585,
+          "w": 0.21,
+          "h": 0.12,
+          "z": 4,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 45.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_10_part_5",
+          "type": "text",
+          "x": 0.33,
+          "y": 0.6,
+          "w": 0.58,
+          "h": 0.08,
+          "z": 5,
+          "text": "물빛 유리 조각",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_10_part_6",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.715,
+          "w": 0.21,
+          "h": 0.12,
+          "z": 6,
+          "text": "02",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 45.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_10_part_7",
+          "type": "text",
+          "x": 0.33,
+          "y": 0.73,
+          "w": 0.58,
+          "h": 0.08,
+          "z": 7,
+          "text": "바닷가에서 주운 조개",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 15.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "주머니 속 작은 것",
+      "role": "found-object-diary",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EEF2EB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_11_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.05,
+          "w": 0.63,
+          "h": 0.82,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_street.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_11_part_2",
+          "type": "text",
+          "x": 0.72,
+          "y": 0.14,
+          "w": 0.24,
+          "h": 0.23,
+          "z": 2,
+          "text": "동네를\n한 바퀴",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 24.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_11_part_3",
+          "type": "decoration",
+          "x": 0.53,
+          "y": 0.72,
+          "w": 0.275,
+          "h": 0.05500000000000001,
+          "z": 3,
+          "style": "atelierPostalBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_11_part_4",
+          "type": "text",
+          "x": 0.72,
+          "y": 0.82,
+          "w": 0.24,
+          "h": 0.055,
+          "z": 4,
+          "text": "WALK / 06",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "동네를 한 바퀴",
+      "role": "town-photo-vertical",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#CAE1DA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_12_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "NO FIXED ROUTE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_12_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.175,
+          "w": 0.66,
+          "h": 0.42,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_market.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_12_part_3",
+          "type": "image",
+          "x": 0.48,
+          "y": 0.56,
+          "w": 0.4,
+          "h": 0.3,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_street.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_12_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.69,
+          "w": 0.33,
+          "h": 0.16,
+          "z": 4,
+          "text": "지도를 접고\n걷는 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 20.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "동네를 한 바퀴",
+      "role": "market-postcard-stack",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#204E5C",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_13_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.05,
+          "w": 0.86,
+          "h": 0.16,
+          "z": 1,
+          "text": "Window seat",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 50.0,
+            "fontWeight": 400,
+            "color": "#F2F7ED",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_13_part_2",
+          "type": "image",
+          "x": 0.065,
+          "y": 0.27,
+          "w": 0.87,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_train.png",
+          "frame": "atelierNegative",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_13_part_3",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.83,
+          "w": 0.81,
+          "h": 0.055,
+          "z": 3,
+          "text": "다음 역까지 조금 더 바라본다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F2F7ED",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기차 창밖",
+      "role": "train-observation",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EDF3EA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_14_part_1",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.075,
+          "w": 0.4995,
+          "h": 0.37,
+          "z": 1,
+          "style": "materialContourMap",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_14_part_2",
+          "type": "decoration",
+          "x": 0.2,
+          "y": 0.23,
+          "w": 0.46399999999999997,
+          "h": 0.29,
+          "z": 2,
+          "style": "atelierBoardingStub",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_14_part_3",
+          "type": "text",
+          "x": 0.28,
+          "y": 0.335,
+          "w": 0.55,
+          "h": 0.055,
+          "z": 3,
+          "text": "ONE DAY / ONE COAST",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_14_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.61,
+          "w": 0.8,
+          "h": 0.12,
+          "z": 4,
+          "text": "기차 창밖",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 37.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_14_part_5",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.775,
+          "w": 0.77,
+          "h": 0.115,
+          "z": 5,
+          "text": "지나가는 풍경은 빨랐지만\n그날의 기분은 오래 남았다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 15.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기차 창밖",
+      "role": "transit-note",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D8E9E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_15_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.05,
+          "w": 0.92,
+          "h": 0.71,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_15_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.81,
+          "w": 0.85,
+          "h": 0.1,
+          "z": 2,
+          "text": "다시 물가로",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 26.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다시 물가로",
+      "role": "return-to-water",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F4F7F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_16_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.06,
+          "w": 0.68,
+          "h": 0.16,
+          "z": 1,
+          "text": "Tide",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 70.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_16_part_2",
+          "type": "image",
+          "x": 0.25,
+          "y": 0.27,
+          "w": 0.66,
+          "h": 0.5,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "atelierCoastline",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_16_part_3",
+          "type": "sticker",
+          "x": 0.065,
+          "y": 0.55,
+          "w": 0.24,
+          "h": 0.24,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_sea_glass.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_16_part_4",
+          "type": "text",
+          "x": 0.32,
+          "y": 0.825,
+          "w": 0.6,
+          "h": 0.055,
+          "z": 4,
+          "text": "발자국이 지워질 때까지.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다시 물가로",
+      "role": "coastal-border-study",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6EFE8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_17_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.09,
+          "w": 0.84,
+          "h": 0.49,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_harbor.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_17_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.59,
+          "w": 0.4,
+          "h": 0.08,
+          "z": 2,
+          "style": "atelierPostalBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_17_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.73,
+          "w": 0.77,
+          "h": 0.11,
+          "z": 3,
+          "text": "여기서 너에게",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "보내지 않은 엽서",
+      "role": "postcard-address",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F9F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_18_part_1",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.08,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "A POSTCARD, UNSENT",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_18_part_2",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.19,
+          "w": 0.41159999999999997,
+          "h": 0.49,
+          "z": 2,
+          "style": "materialAirLetter",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_18_part_3",
+          "type": "text",
+          "x": 0.142624,
+          "y": 0.3468,
+          "w": 0.30046799999999996,
+          "h": 0.24499999999999997,
+          "z": 3,
+          "text": "바닷가에서는 시간을 자주 잊었다.\n돌아와서도 그 길을 기억하고 싶다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_18_part_4",
+          "type": "decoration",
+          "x": 0.11,
+          "y": 0.74,
+          "w": 0.76,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#24545D",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_18_part_5",
+          "type": "text",
+          "x": 0.11,
+          "y": 0.8,
+          "w": 0.76,
+          "h": 0.075,
+          "z": 5,
+          "text": "우리의 해안 여행",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "보내지 않은 엽서",
+      "role": "unsent-letter",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#BCD9D9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_19_part_1",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.06,
+          "w": 0.43,
+          "h": 0.63,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_street.png",
+          "frame": "studioDeckle",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_19_part_2",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.21,
+          "w": 0.4,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_harbor.png",
+          "frame": "studioDeckle",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_19_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.795,
+          "w": 0.84,
+          "h": 0.105,
+          "z": 3,
+          "text": "마지막 산책",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "마지막 산책",
+      "role": "last-walk-pair",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_20_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE LONG WAY BACK",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_20_part_2",
+          "type": "text",
+          "x": 0.66,
+          "y": 0.135,
+          "w": 0.24,
+          "h": 0.2,
+          "z": 2,
+          "text": "10",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 85.0,
+            "fontWeight": 400,
+            "color": "#95B4AD",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shore-days_square_20_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.18,
+          "w": 0.5,
+          "h": 0.23,
+          "z": 3,
+          "text": "아는 길을\n한 번 더",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 35.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_20_part_4",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.5,
+          "w": 0.79,
+          "h": 0.31,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_20_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.075,
+          "z": 5,
+          "text": "조금 돌아서 숙소로 갔다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "마지막 산책",
+      "role": "footnote-of-a-walk",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F0F4EC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_21_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.81,
+          "h": 0.13,
+          "z": 1,
+          "text": "여행의 목록",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 33.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_21_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.27,
+          "w": 0.4,
+          "h": 0.24,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_21_part_3",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.27,
+          "w": 0.39,
+          "h": 0.24,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_cafe.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_21_part_4",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.56,
+          "w": 0.4,
+          "h": 0.24,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_train.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_21_part_5",
+          "type": "image",
+          "x": 0.53,
+          "y": 0.56,
+          "w": 0.39,
+          "h": 0.24,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_market.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_21_part_6",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.855,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 6,
+          "text": "SEA / COFFEE / TRAIN / MARKET",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "여행의 목록",
+      "role": "travel-contact-inventory",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D5E7DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_22_part_1",
+          "type": "decoration",
+          "x": 0.04,
+          "y": 0.05,
+          "w": 0.6615,
+          "h": 0.48999999999999994,
+          "z": 1,
+          "style": "materialContourMap",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_22_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.55,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 2,
+          "text": "OUR COASTAL NOTES",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_22_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.63,
+          "w": 0.8,
+          "h": 0.0016,
+          "z": 3,
+          "fillColor": "#24545D",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_22_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.68,
+          "w": 0.8,
+          "h": 0.2,
+          "z": 4,
+          "text": "다시 걷고 싶은 길\n다시 앉고 싶은 자리\n다시 보고 싶은 바다",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 19.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "여행의 목록",
+      "role": "route-record",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F9F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.1,
+          "w": 0.82,
+          "h": 0.13,
+          "z": 1,
+          "text": "돌아온 뒤에",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 35.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_23_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.32,
+          "w": 0.78,
+          "h": 0.2,
+          "z": 2,
+          "text": "바닷가에서는 시간을 자주 잊었다.\n돌아와서도 그 길을 기억하고 싶다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 16.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_23_part_3",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.58,
+          "w": 0.252,
+          "h": 0.3,
+          "z": 3,
+          "style": "materialSpecimenPocket",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_23_part_4",
+          "type": "sticker",
+          "x": 0.22,
+          "y": 0.615,
+          "w": 0.2,
+          "h": 0.2,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/wave_sea_glass.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_23_part_5",
+          "type": "text",
+          "x": 0.63,
+          "y": 0.76,
+          "w": 0.28,
+          "h": 0.055,
+          "z": 5,
+          "text": "2026. 06",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_23_part_6",
+          "type": "text",
+          "x": 0.63,
+          "y": 0.83,
+          "w": 0.29,
+          "h": 0.055,
+          "z": 6,
+          "text": "KEPT FROM THE COAST",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아온 뒤에",
+      "role": "home-with-sea-glass",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "shore-days_square_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D3E7E1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shore-days_square_24_part_1",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.085,
+          "w": 0.8,
+          "h": 0.65,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_coast.png",
+          "frame": "studioDeckle",
+          "rotation": 0.0
+        },
+        {
+          "id": "shore-days_square_24_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.8,
+          "w": 0.82,
+          "h": 0.1,
+          "z": 2,
+          "text": "다음 바다에서 만나",
+          "align": "center",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 21.5,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shore-days_square_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "해변에서 보낸 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shore-days_square_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#24545D",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아온 뒤에",
+      "role": "coast-last-view",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "바다가 보이기 시작했다",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "해안선을 따라",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "항구에서",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "느린 점심",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "주머니 속 작은 것",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "동네를 한 바퀴",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "기차 창밖",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "다시 물가로",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "보내지 않은 엽서",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "마지막 산책",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "여행의 목록",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "돌아온 뒤에",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

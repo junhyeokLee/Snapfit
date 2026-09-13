@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Snapfit · 템플릿 검수</title>
+    <style>
+    @font-face {
+      font-family: Review;
+      src: url('./review-font.ttf');
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f5f6f7;
+      color: #24282b;
+      font-family: Review,system-ui,sans-serif;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      color: inherit;
+      letter-spacing: 0;
+    }
+    button,
+    select {
+      min-height: 40px;
+    }
+    button {
+      cursor: pointer;
+      border: 1px solid #d9dfe1;
+      border-radius: 6px;
+      background: white;
+      padding: 8px 12px;
+    }
+    button:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+    button:hover:not(:disabled) {
+      background: #eef3f2;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid #197769;
+      outline-offset: 2px;
+    }
+    .icon {
+      width: 40px;
+      flex: 0 0 40px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+    }
+    .icon svg {
+      width: 18px;
+      height: 18px;
+    }
+    header {
+      height: 64px;
+      padding: 0 24px;
+      border-bottom: 1px solid #dde2e4;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: white;
+    }
+    header strong {
+      font-size: 21px;
+    }
+    header h1 {
+      font-size: 15px;
+      font-weight: 400;
+      margin: 0;
+      flex: 1;
+    }
+    .mode {
+      padding: 10px 24px;
+      background: #fff1ce;
+      border-bottom: 1px solid #ebd8a9;
+      color: #62460a;
+    }
+    .mode.live {
+      background: #dfeee8;
+      color: #194a37;
+      border-color: #b5d3c5;
+    }
+    .summary {
+      display: flex;
+      gap: 24px;
+      padding: 12px 24px;
+      border-bottom: 1px solid #dde2e4;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #656e73;
+    }
+    .summary b {
+      color: #24282b;
+      margin-left: 6px;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: 228px minmax(320px,1fr) 296px;
+      min-height: calc(100vh - 150px);
+    }
+    nav {
+      padding: 16px 12px;
+      border-right: 1px solid #dde2e4;
+      background: #fff;
+    }
+    select,
+    input,
+    textarea {
+      border: 1px solid #cbd3d5;
+      border-radius: 4px;
+      background: white;
+      padding: 8px;
+      max-width: 100%;
+    }
+    nav select {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    .case {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      margin: 2px 0;
+      padding: 12px 10px;
+    }
+    .case[aria-current=true] {
+      background: #e5efeb;
+      box-shadow: inset 3px 0 #267962;
+    }
+    .case strong {
+      font-size: 13px;
+      display: block;
+    }
+    .case small {
+      display: block;
+      color: #747f83;
+      margin-top: 6px;
+    }
+    .case .ok {
+      color: #19735a;
+    }
+    .case .bad {
+      color: #af3535;
+    }
+    main {
+      min-width: 0;
+      padding: 20px 24px;
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .title h2 {
+      font-size: 17px;
+      line-height: 1.5;
+      margin: 0;
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toolbar label {
+      margin-right: auto;
+      font-size: 12px;
+    }
+    .toolbar input {
+      accent-color: #267962;
+    }
+    .stage {
+      height: 480px;
+      max-height: 60vh;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      background: #e9edee;
+      overflow: hidden;
+      padding: 20px;
+      touch-action: pan-y;
+      position: relative;
+    }
+    .book {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      max-width: 100%;
+      max-height: 100%;
+      cursor: zoom-in;
+    }
+    .book img {
+      display: block;
+      object-fit: contain;
+      min-width: 0;
+      box-shadow: 0 5px 8px #14262b14;
+    }
+    .empty {
+      text-align: center;
+      color: #677175;
+      padding: 24px;
+      line-height: 1.8;
+    }
+    .navigation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    .navigation span {
+      min-width: 85px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .rail {
+      display: flex;
+      overflow: auto;
+      gap: 10px;
+      padding: 18px 0 8px;
+      min-height: 90px;
+    }
+    .thumb {
+      padding: 4px;
+      width: 78px;
+      flex: 0 0 78px;
+      min-height: 70px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .thumb[aria-pressed=true] {
+      border: 2px solid #267962;
+      padding: 3px;
+    }
+    .thumb div {
+      display: flex;
+      height: 42px;
+      max-width: 68px;
+      align-items: center;
+    }
+    .thumb img {
+      max-height: 42px;
+      min-width: 0;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .thumb small {
+      font-size: 10px;
+    }
+    .inspection {
+      border-left: 1px solid #dde2e4;
+      background: white;
+      padding: 20px 18px;
+      min-width: 0;
+    }
+    .inspection section {
+      padding: 0 0 18px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #e5e8e9;
+    }
+    .inspection h3 {
+      font-size: 13px;
+      margin: 0 0 12px;
+    }
+    .inspection p {
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+      margin: 0;
+      color: #59656b;
+    }
+    .checks {
+      padding-left: 18px;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #59656b;
+    }
+    .swatches {
+      display: flex;
+      gap: 6px;
+      margin: 14px 0;
+    }
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #0002;
+      border-radius: 4px;
+    }
+    .type {
+      font-size: 11px;
+      color: #647077;
+      display: block;
+      margin: 4px 0;
+    }
+    .status {
+      font-size: 12px;
+      color: #28775f;
+    }
+    .status.bad {
+      color: #af3535;
+    }
+    .issue {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      color: #a83a36;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+    .scores {
+      display: grid;
+      gap: 9px;
+    }
+    .scores label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .scores select {
+      width: 85px;
+    }
+    .inspection textarea {
+      width: 100%;
+      min-height: 78px;
+      resize: vertical;
+      margin: 12px 0;
+    }
+    .inspection .full {
+      width: 100%;
+      margin-top: 8px;
+    }
+    .primary {
+      background: #1d6856;
+      color: white;
+      border-color: #1d6856;
+    }
+    .primary:hover:not(:disabled) {
+      background: #185948;
+    }
+    details {
+      margin-top: 18px;
+      border-top: 1px solid #dde2e4;
+      padding-top: 14px;
+    }
+    summary {
+      cursor: pointer;
+      font-size: 12px;
+      color: #57656b;
+    }
+    .attempt {
+      padding: 10px 0;
+      border-bottom: 1px solid #dde2e4;
+      font-size: 12px;
+    }
+    .attempt pre {
+      font-family: monospace;
+      max-height: 200px;
+      overflow: auto;
+      font-size: 11px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #59666b;
+    }
+    dialog {
+      border: 1px solid #d2dadd;
+      border-radius: 6px;
+      padding: 0;
+      width: calc(100vw - 32px);
+      max-width: 1300px;
+      max-height: 94vh;
+      background: #edf0f1;
+    }
+    dialog::backdrop {
+      background: #152228a8;
+    }
+    .dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .zoom-stage {
+      padding: 20px;
+      overflow: auto;
+      max-height: 80vh;
+    }
+    .zoom-book {
+      display: flex;
+      width: max-content;
+      margin: auto;
+    }
+    .zoom-book img {
+      width: 650px;
+      max-width: none;
+      display: block;
+    }
+    #saved {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #19735a;
+      font-size: 12px;
+    }
+    #reviewer {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    #verdict {
+      width: 100%;
+      margin-top: 12px;
+    }
+    button[hidden],
+    [hidden] {
+      display: none!important;
+    }
+    @media (min-width:1500px) {
+      .stage {
+        height: 570px;
+      }
+    }
+    @media (max-width:1100px) {
+      .workspace {
+        grid-template-columns: 190px minmax(300px,1fr);
+      }
+      .inspection {
+        grid-column: 1/-1;
+        border-top: 1px solid #dde2e4;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        padding: 24px;
+      }
+      .inspection section {
+        margin: 0;
+      }
+      header {
+        padding: 0 16px;
+      }
+      .stage {
+        height: 440px;
+      }
+    }
+    @media (max-width:640px) {
+      header {
+        height: 58px;
+        padding: 0 12px;
+        gap: 12px;
+      }
+      header strong {
+        font-size: 19px;
+      }
+      header h1 {
+        font-size: 12px;
+      }
+      .mode {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      .summary {
+        gap: 8px 20px;
+        padding: 12px;
+      }
+      .workspace {
+        display: block;
+      }
+      nav {
+        border-right: 0;
+        border-bottom: 1px solid #dde2e4;
+        padding: 12px;
+      }
+      nav select {
+        margin-bottom: 8px;
+      }
+      #cases {
+        display: flex;
+        overflow: auto;
+        gap: 6px;
+      }
+      .case {
+        flex: 0 0 180px;
+        margin: 0;
+      }
+      .case strong {
+        font-size: 12px;
+      }
+      main {
+        padding: 16px 12px;
+      }
+      .stage {
+        height: 350px;
+        min-height: 210px;
+        max-height: 55vh;
+        padding: 12px;
+        margin: 14px 0;
+      }
+      .title h2 {
+        font-size: 15px;
+      }
+      .inspection {
+        display: block;
+        padding: 20px 16px;
+      }
+      .inspection section {
+        margin-bottom: 20px;
+      }
+      .toolbar {
+        gap: 6px;
+      }
+      .toolbar select {
+        font-size: 12px;
+      }
+      .toolbar label {
+        font-size: 11px;
+      }
+      .zoom-book img {
+        width: 500px;
+      }
+      .zoom-stage {
+        padding: 12px;
+      }
+      .navigation {
+        gap: 20px;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <header><strong>Snapfit</strong><h1>템플릿 검수</h1><button id="export" class="icon" aria-label="검수 기록 내보내기" title="검수 기록 내보내기"><i data-lucide="download"></i></button></header>
+    <div id="mode" class="mode"></div>
+    <div id="summary" class="summary"></div>
+    <div class="workspace">
+      <nav
+        aria-label="평가 결과"><select id="filter" aria-label="결과 필터"><option value="all">전체 결과</option><option value="passed">자동 검사 통과</option><option value="failed">확인 필요</option></select><div id="cases"></div></nav>
+      <main>
+        <div
+          class="title"><h2 id="title"></h2><button id="zoom" class="icon" aria-label="페이지 확대" title="페이지 확대"><i data-lucide="maximize-2"></i></button></div>
+        <div
+          class="toolbar"><label><input type="checkbox" id="photos" checked> 검수용 샘플 사진</label><select id="view" aria-label="페이지 표시"><option value="spread">펼쳐 보기</option><option value="single">한 쪽씩</option></select><span id="size"></span></div>
+        <div id="stage" class="stage">
+          <div id="book" class="book"></div>
+          <div id="empty" class="empty" hidden></div>
+        </div>
+        <div
+          class="navigation"><button id="prev" class="icon" aria-label="이전 페이지" title="이전 페이지"><i data-lucide="chevron-left"></i></button><span id="page-label"></span><button id="next" class="icon" aria-label="다음 페이지" title="다음 페이지"><i data-lucide="chevron-right"></i></button></div>
+        <div id="rail" class="rail" aria-label="페이지 목록"></div>
+        <details>
+          <summary>생성 기록</summary>
+          <div id="attempts"></div>
+        </details>
+      </main>
+      <aside class="inspection">
+        <section>
+          <h3>요청과 디자인 계획</h3>
+          <p id="prompt"></p>
+          <ul id="checks" class="checks"></ul>
+          <div id="palette" class="swatches"></div>
+          <div id="typography"></div>
+          <h3 style="margin-top:20px">자동 검사</h3>
+          <div id="status" class="status"></div>
+          <div id="issues"></div>
+        </section>
+        <section><h3>디자인 평가</h3><input id="reviewer" aria-label="검수자" placeholder="검수자" maxlength="50"><div class="scores">
+<label>요청 반영도<select data-score="intent" aria-label="요청 반영도"><option value="">미평가</option></select></label>
+<label>글꼴과 조판<select data-score="typography" aria-label="글꼴과 조판"><option value="">미평가</option></select></label>
+<label>펼친 페이지 구성<select data-score="spread" aria-label="펼친 페이지 구성"><option value="">미평가</option></select></label>
+<label>디자인 차별성<select data-score="distinctiveness" aria-label="디자인 차별성"><option value="">미평가</option></select></label></div>
+<textarea id="notes" aria-label="검토 의견" placeholder="유지할 부분과 수정할 부분" maxlength="2000"></textarea><select id="verdict" aria-label="판정"><option value="pending">미평가</option><option value="revise">수정 필요</option><option value="reject">부적합</option><option value="approve">검수 통과</option></select><button id="save" class="full primary">검토 저장</button><div id="saved" role="status" aria-live="polite"></div></section>
+      </aside>
+    </div>
+    <dialog id="zoom-dialog">
+      <div
+        class="dialog-head"><span id="zoom-label"></span><button id="close-zoom" class="icon" title="확대 닫기" aria-label="확대 닫기"><i data-lucide="x"></i></button></div>
+      <div class="zoom-stage">
+        <div id="zoom-book" class="zoom-book"></div>
+      </div>
+    </dialog>
+    <script src="./report.js"></script>
+    <script src="./lucide.js"></script>
+    <script>
+    const data = window.EVALUATION,
+      $ = (id) => document.getElementById(id),
+      state = {
+        id: data.results[0]?.id,
+        page: 0,
+        photos: true,
+        view: window.matchMedia("(max-width: 640px)").matches ? "single" : "spread",
+      };
+    const aspectName = { portrait: "세로", square: "정사각형", landscape: "가로" },
+      sizes = {
+        portrait: "14.5 × 19.4 cm",
+        square: "20 × 20 cm",
+        landscape: "19.4 × 14.5 cm",
+      };
+    const statusName = {
+      passed: "자동 검사 통과 · 디자인 미평가",
+      text_overflow: "글자 잘림 확인 필요",
+      render_failed: "렌더링 실패",
+      not_generated: "생성된 디자인 없음",
+    };
+    const storageKey = `snapfit-evaluation:${data.id}:${data.reviewFingerprint}`;
+    let reviews = {};
+    try {
+      const value = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        reviews = value;
+      }
+    } catch {}
+    const current = () => data.results.find((r) => r.id === state.id),
+      visible = () =>
+        data.results.filter((r) =>
+          $("filter").value === "all" ||
+          ($("filter").value === "passed") === (r.render.status === "passed")
+        );
+    function element(tag, text, cls) {
+      const e = document.createElement(tag);
+      if (text !== undefined) e.textContent = text;
+      if (cls) e.className = cls;
+      return e;
+    }
+    function groups(r) {
+      const count = r.render.pages.length, all = [];
+      for (let i = 0; i < count;) {
+        const pair = state.view === "spread" && i > 0 && i + 1 < count;
+        all.push(pair ? [i, i + 1] : [i]);
+        i += pair ? 2 : 1;
+      }
+      return all;
+    }
+    function indices(r) {
+      return groups(r).find((g) => g.includes(state.page)) || [];
+    }
+    function label(ids) {
+      return ids[0] === 0
+        ? "표지"
+        : ids.length === 2
+        ? `${ids[0]}–${ids[1]}쪽`
+        : `${ids[0]}쪽`;
+    }
+    function move(direction) {
+      const r = current();
+      if (!r) return;
+      const gs = groups(r), i = gs.findIndex((g) => g.includes(state.page));
+      const next = gs[i + direction];
+      if (next) {
+        state.page = next[0];
+        renderBook();
+      }
+    }
+    function image(page, r) {
+      const img = element("img");
+      img.draggable = false;
+      img.src = page[state.photos ? "photo" : "empty"];
+      img.alt = `${r.label} ${page.index === 0 ? "표지" : page.index + "쪽"}`;
+      return img;
+    }
+    function fit() {
+      const r = current();
+      if (!r?.render.canvas) return;
+      const ids = indices(r), canvas = r.render.canvas, stage = $("stage");
+      const scale = Math.max(
+        .01,
+        Math.min(
+          (stage.clientWidth - 40) / (canvas.width * ids.length),
+          (stage.clientHeight - 40) / canvas.height,
+        ),
+      );
+      $("book").style.width = `${canvas.width * ids.length * scale}px`;
+      $("book").style.height = `${canvas.height * scale}px`;
+      for (const img of $("book").children) {
+        img.style.width = `${canvas.width * scale}px`;
+        img.style.height = `${canvas.height * scale}px`;
+      }
+    }
+    function renderBook() {
+      const r = current();
+      $("book").replaceChildren();
+      $("rail").replaceChildren();
+      const ids = r ? indices(r) : [];
+      $("empty").hidden = ids.length > 0;
+      $("empty").textContent = r
+        ? `${statusName[r.render.status] || "검사 대기"}${
+          r.reason ? "\n" + r.reason : ""
+        }`
+        : "해당 결과가 없습니다.";
+      $("zoom").disabled = !ids.length;
+      const gs = r ? groups(r) : [],
+        i = gs.findIndex((g) => g.includes(state.page));
+      $("prev").disabled = i <= 0;
+      $("next").disabled = i < 0 || i >= gs.length - 1;
+      $("page-label").textContent = ids.length ? label(ids) : "—";
+      if (r) {
+        for (const n of ids) $("book").append(image(r.render.pages[n], r));
+        for (const group of gs) {
+          const button = element("button", undefined, "thumb");
+          button.setAttribute("aria-label", label(group));
+          button.setAttribute("aria-pressed", String(group.includes(state.page)));
+          const imgs = element("div");
+          for (const n of group) imgs.append(image(r.render.pages[n], r));
+          button.append(imgs, element("small", label(group)));
+          button.onclick = () => {
+            state.page = group[0];
+            renderBook();
+          };
+          $("rail").append(button);
+        }
+      }
+      fit();
+    }
+    function renderList() {
+      const items = visible();
+      $("cases").replaceChildren();
+      for (const r of items) {
+        const b = element("button", undefined, "case");
+        b.setAttribute("aria-current", String(state.id === r.id));
+        b.dataset.id = r.id;
+        b.append(
+          element("strong", r.label),
+          element(
+            "small",
+            `${aspectName[r.brief.aspect]} · 내지 ${r.brief.pageCount}쪽`,
+          ),
+          element(
+            "small",
+            r.render.status === "passed"
+              ? "자동 검사 통과"
+              : r.render.status === "text_overflow"
+              ? "글자 잘림"
+              : r.status === "rejected"
+              ? "생성 거부"
+              : "확인 필요",
+            r.render.status === "passed" ? "ok" : "bad",
+          ),
+        );
+        b.onclick = () => {
+          state.id = r.id;
+          state.page = 0;
+          render();
+        };
+        $("cases").append(b);
+      }
+    }
+    function render() {
+      renderList();
+      const r = current();
+      $("title").textContent = r?.label || "결과 없음";
+      $("size").textContent = r ? sizes[r.brief.aspect] : "";
+      $("prompt").textContent = r?.brief.prompt || "";
+      $("checks").replaceChildren();
+      for (const check of r?.expectations || []) {
+        $("checks").append(element("li", check));
+      }
+      $("palette").replaceChildren();
+      $("typography").replaceChildren();
+      const plan = r?.document?.artDirection;
+      for (const color of plan?.palette || []) {
+        const s = element("span", undefined, "swatch");
+        s.style.backgroundColor = color;
+        s.title = color;
+        s.setAttribute("aria-label", color);
+        $("palette").append(s);
+      }
+      for (const [role, t] of Object.entries(plan?.typography || {})) {
+        $("typography").append(
+          element(
+            "span",
+            `${role} · ${t.fontFamily} ${t.weight} · ${t.fontSize}/${t.lineHeight}`,
+            "type",
+          ),
+        );
+      }
+      $("status").textContent = r
+        ? (statusName[r.render.status] || "검사 대기")
+        : "";
+      $("status").className = `status ${
+        r?.render.status === "passed" ? "" : "bad"
+      }`;
+      $("issues").replaceChildren();
+      for (const issue of r?.render.textIssues || []) {
+        $("issues").append(
+          element(
+            "div",
+            `${
+              issue.pageIndex === 0 ? "표지" : issue.pageIndex + "쪽"
+            } · ${issue.elementId}\n텍스트 높이 ${
+              issue.requiredHeight.toFixed(1)
+            } / 영역 ${issue.availableHeight.toFixed(1)} · ${issue.lineCount}줄`,
+            "issue",
+          ),
+        );
+      }
+      $("attempts").replaceChildren();
+      for (const t of r?.attempts || []) {
+        const node = element("div", undefined, "attempt");
+        node.append(
+          element(
+            "strong",
+            `${t.stage === "plan" ? "계획" : "배치"} ${t.attempt}차 · ${
+              (t.durationMs / 1000).toFixed(1)
+            }초 · ${t.status ?? "통신 실패"}`,
+          ),
+        );
+        if (t.validationError || t.errorCode) {
+          node.append(element("p", t.validationError || t.errorCode));
+        }
+        const detail = element("details");
+        detail.append(
+          element("summary", "모델 응답"),
+          element("pre", JSON.stringify(t.output ?? null, null, 2)),
+        );
+        node.append(detail);
+        $("attempts").append(node);
+      }
+      const saved = reviews[state.id] || {};
+      $("reviewer").value = saved.reviewer || "";
+      $("notes").value = saved.notes || "";
+      $("verdict").value = saved.verdict || "pending";
+      for (const select of document.querySelectorAll("[data-score]")) {
+        select.value = saved.scores?.[select.dataset.score] || "";
+      }
+      $("saved").textContent = saved.savedAt ? "저장된 검토 기록" : "";
+      $("verdict").querySelector("[value=approve]").disabled =
+        r?.render.status !== "passed";
+      $("save").disabled = !r;
+      renderBook();
+    }
+    $("mode").textContent = data.mode === "fixture"
+      ? "테스트 데이터 · 실제 AI 생성 결과가 아닙니다. 품질 점수와 생성 성능의 근거로 사용하지 않습니다."
+      : "실제 AI 생성 결과 · 자동 검사와 사람의 디자인 평가는 별도입니다.";
+    $("mode").classList.toggle("live", data.mode === "live");
+    for (
+      const [name, value] of [["평가 요청", data.results.length], [
+        "서버 통과",
+        data.summary.accepted,
+      ], [
+        "실제 폰트·렌더 통과",
+        data.results.filter((r) => r.render.status === "passed").length,
+      ], [
+        "확인 필요",
+        data.results.filter((r) => r.render.status !== "passed").length,
+      ]]
+    ) {
+      const e = element("span", name);
+      e.append(element("b", String(value)));
+      $("summary").append(e);
+    }
+    for (const select of document.querySelectorAll("[data-score]")) {
+      for (let n = 1; n <= 5; n++) {
+        const option = element("option", `${n}점`);
+        option.value = n;
+        select.append(option);
+      }
+    }
+    $("filter").onchange = () => {
+      const first = visible()[0];
+      if (!visible().some((r) => r.id === state.id)) {
+        state.id = first?.id;
+        state.page = 0;
+      }
+      render();
+    };
+    $("photos").onchange = () => {
+      state.photos = $("photos").checked;
+      renderBook();
+    };
+    $("view").onchange = () => {
+      state.view = $("view").value;
+      renderBook();
+    };
+    $("prev").onclick = () => move(-1);
+    $("next").onclick = () => move(1);
+    let suppressClick = false;
+    function zoom() {
+      const r = current();
+      if (!r) return;
+      const ids = indices(r);
+      if (!ids.length) return;
+      $("zoom-label").textContent = label(ids);
+      $("zoom-book").replaceChildren(
+        ...ids.map((n) => image(r.render.pages[n], r)),
+      );
+      $("zoom-dialog").showModal();
+    }
+    $("zoom").onclick = zoom;
+    $("book").onclick = () => {
+      if (suppressClick) {
+        suppressClick = false;
+        return;
+      }
+      zoom();
+    };
+    $("close-zoom").onclick = () => $("zoom-dialog").close();
+    new ResizeObserver(fit).observe($("stage"));
+    $("save").onclick = () => {
+      const r = current(),
+        scores = Object.fromEntries(
+          [...document.querySelectorAll("[data-score]")].map(
+            (s) => [s.dataset.score, s.value ? Number(s.value) : null],
+          ),
+        ),
+        verdict = $("verdict").value;
+      if (!$("reviewer").value.trim()) {
+        $("saved").textContent = "검수자를 입력해주세요.";
+        return;
+      }
+      if (
+        verdict === "approve" &&
+        (r.render.status !== "passed" ||
+          Object.values(scores).some((v) => v === null || v < 4))
+      ) {
+        $("saved").textContent =
+          "자동 검사 통과 및 모든 항목 4점 이상이 필요합니다.";
+        return;
+      }
+      if (verdict !== "pending" && !$("notes").value.trim()) {
+        $("saved").textContent = "판정 근거를 남겨주세요.";
+        return;
+      }
+      reviews[state.id] = {
+        reviewer: $("reviewer").value.trim(),
+        scores,
+        verdict,
+        notes: $("notes").value.trim(),
+        savedAt: new Date().toISOString(),
+      };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(reviews));
+        $("saved").textContent = "이 브라우저에 저장했습니다.";
+      } catch {
+        $("saved").textContent =
+          "브라우저 저장 불가 · 내보내기로 기록을 보관해주세요.";
+      }
+    };
+    $("export").onclick = () => {
+      const blob = new Blob([
+          JSON.stringify(
+            {
+              runId: data.id,
+              mode: data.mode,
+              sourceFingerprint: data.sourceFingerprint,
+              reviewFingerprint: data.reviewFingerprint,
+              rubricVersion: 1,
+              reviews,
+            },
+            null,
+            2,
+          ),
+        ], { type: "application/json" }),
+        url = URL.createObjectURL(blob),
+        a = element("a");
+      a.href = url;
+      a.download = `${data.id}-reviews.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    let startX = null;
+    $("stage").onpointerdown = (e) => {
+      startX = e.clientX;
+      suppressClick = false;
+    };
+    $("stage").onpointerup = (e) => {
+      if (startX !== null && Math.abs(e.clientX - startX) > 45) {
+        suppressClick = true;
+        move(e.clientX < startX ? 1 : -1);
+      }
+      startX = null;
+    };
+    $("stage").onpointercancel = () => startX = null;
+    document.addEventListener("keydown", (e) => {
+      if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) || $("zoom-dialog").open) {
+        return;
+      }
+      if (e.key === "ArrowRight") move(1);
+      if (e.key === "ArrowLeft") move(-1);
+    });
+    $("view").value = state.view;
+    render();
+    lucide.createIcons();
+    </script>
+  </body>
+</html>

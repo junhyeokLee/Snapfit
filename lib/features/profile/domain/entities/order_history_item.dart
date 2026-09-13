@@ -1,3 +1,5 @@
+import '../../../album/printing/print_vendor_spec.dart';
+
 class OrderHistoryItem {
   final String orderId;
   final String title;
@@ -28,6 +30,58 @@ class OrderHistoryItem {
   final DateTime? printSubmittedAt;
   final DateTime? shippedAt;
   final DateTime? deliveredAt;
+  final String? printFulfillmentStatus;
+  final String? printCoverPdfPath;
+  final String? printInteriorPdfPath;
+  final Map<String, dynamic> printManifest;
+  final Map<String, dynamic> printCostSnapshot;
+  final Map<String, dynamic> printProductSnapshot;
+  final String? pricingVersion;
+
+  PrintProduct? get printProduct {
+    if (pricingVersion == 'PRINT_REDP_200_SOFT_V1') {
+      return PrintProduct.forId('REDP_200_SOFT');
+    }
+    if (printProductSnapshot.isEmpty) return null;
+    try {
+      final product = PrintProduct.fromJson(printProductSnapshot);
+      if (pricingVersion == 'PRINT_REDP_MULTISIZE_V2' && product.isHardcover)
+        return null;
+      return product;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  String get printProductLabel => printProduct?.label ?? '제작 크기 확인 필요';
+  final int? actualPrintCost;
+  final int? actualShippingCost;
+  final int? actualPackagingCost;
+  final int? contributionMargin;
+  final DateTime? printAcceptedAt;
+  final String? fulfillmentMethod;
+  final Map<String, dynamic> fulfillmentConfirmation;
+
+  bool get hasPrintFiles =>
+      (printCoverPdfPath?.isNotEmpty ?? false) &&
+      (printInteriorPdfPath?.isNotEmpty ?? false);
+
+  String get fulfillmentLabel => switch (printFulfillmentStatus) {
+    'AWAITING_RENDER' => '인쇄 파일 준비 대기',
+    'RENDERING' => '인쇄 파일 생성중',
+    'REVIEW_REQUIRED' => '인쇄 파일 검수 대기',
+    'READY' => '발주 준비 완료',
+    'SUBMITTED' => '제작사 접수 확인 대기',
+    'ACCEPTED' => '제작사 접수 완료',
+    _ => '인쇄 준비 상태 미확인',
+  };
+
+  String get customerStatusLabel {
+    if (status == 'PAYMENT_COMPLETED') {
+      return printFulfillmentStatus == 'SUBMITTED' ? '제작 접수 확인중' : '제작 준비중';
+    }
+    return statusLabel;
+  }
 
   const OrderHistoryItem({
     required this.orderId,
@@ -59,6 +113,20 @@ class OrderHistoryItem {
     this.printSubmittedAt,
     this.shippedAt,
     this.deliveredAt,
+    this.printFulfillmentStatus,
+    this.printCoverPdfPath,
+    this.printInteriorPdfPath,
+    this.printManifest = const {},
+    this.printCostSnapshot = const {},
+    this.printProductSnapshot = const {},
+    this.pricingVersion,
+    this.actualPrintCost,
+    this.actualShippingCost,
+    this.actualPackagingCost,
+    this.contributionMargin,
+    this.printAcceptedAt,
+    this.fulfillmentMethod,
+    this.fulfillmentConfirmation = const {},
   });
 
   factory OrderHistoryItem.fromJson(Map<String, dynamic> json) {
@@ -96,6 +164,27 @@ class OrderHistoryItem {
       printSubmittedAt: parseOptionalDate('printSubmittedAt'),
       shippedAt: parseOptionalDate('shippedAt'),
       deliveredAt: parseOptionalDate('deliveredAt'),
+      printFulfillmentStatus: json['printFulfillmentStatus']?.toString(),
+      printCoverPdfPath: json['printCoverPdfPath']?.toString(),
+      printInteriorPdfPath: json['printInteriorPdfPath']?.toString(),
+      printManifest:
+          (json['printManifest'] as Map?)?.cast<String, dynamic>() ?? const {},
+      printCostSnapshot:
+          (json['printCostSnapshot'] as Map?)?.cast<String, dynamic>() ??
+          const {},
+      printProductSnapshot:
+          (json['printProductSnapshot'] as Map?)?.cast<String, dynamic>() ??
+          const {},
+      pricingVersion: json['pricingVersion']?.toString(),
+      actualPrintCost: (json['actualPrintCost'] as num?)?.toInt(),
+      actualShippingCost: (json['actualShippingCost'] as num?)?.toInt(),
+      actualPackagingCost: (json['actualPackagingCost'] as num?)?.toInt(),
+      contributionMargin: (json['contributionMargin'] as num?)?.toInt(),
+      printAcceptedAt: parseOptionalDate('printAcceptedAt'),
+      fulfillmentMethod: json['fulfillmentMethod']?.toString(),
+      fulfillmentConfirmation:
+          (json['fulfillmentConfirmation'] as Map?)?.cast<String, dynamic>() ??
+          const {},
     );
   }
 

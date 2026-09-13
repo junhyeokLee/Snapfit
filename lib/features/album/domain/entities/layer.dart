@@ -31,7 +31,7 @@ class LayerModel {
   final double width; // 레이어 기본 너비
   final double height; // 레이어 기본 높이
   final String? textBackground; // 텍스트 스타일 키 ("tag", "bubble", "note", ...)
-  /// 텍스트 채움 모드 ("solid" | "imageClip")
+  /// 텍스트 채움 모드 ("solid" | "imageClip" | "outline" | "textCutout")
   final String? textFillMode;
 
   /// textFillMode=imageClip 일 때 채움 이미지 URL
@@ -51,6 +51,17 @@ class LayerModel {
 
   /// 템플릿/프레임 안에서 사진 자체를 이동시킬 때 사용하는 오프셋 (런타임 기준 좌표)
   final Offset? imageOffset;
+
+  /// Shared crop alignment for editor, frame picker and catalog previews.
+  Alignment get imageAlignment {
+    final offset = imageOffset ?? Offset.zero;
+    final w = width > 0 ? width : 1.0;
+    final h = height > 0 ? height : 1.0;
+    return Alignment(
+      (offset.dx / (w * .5)).clamp(-1.0, 1.0),
+      (-offset.dy / (h * .5)).clamp(-1.0, 1.0),
+    );
+  }
 
   /// 하위 호환용 preview URL (기존 스키마)
   final String? imageUrl;
@@ -97,6 +108,7 @@ class LayerModel {
   });
 
   LayerModel copyWith({
+    bool clearImage = false,
     String? id,
     LayerType? type,
     Offset? position,
@@ -135,7 +147,7 @@ class LayerModel {
       id: id ?? this.id,
       type: type ?? this.type,
       position: position ?? this.position,
-      asset: asset ?? this.asset,
+      asset: clearImage ? null : asset ?? this.asset,
       text: text ?? this.text,
       textStyle: textStyle ?? this.textStyle,
       textStyleType: textStyleType ?? this.textStyleType,
@@ -160,10 +172,10 @@ class LayerModel {
       frameBaseWidth: frameBaseWidth ?? this.frameBaseWidth,
       frameBaseHeight: frameBaseHeight ?? this.frameBaseHeight,
       frameBasePosition: frameBasePosition ?? this.frameBasePosition,
-      imageOffset: imageOffset ?? this.imageOffset,
-      imageUrl: imageUrl ?? this.imageUrl,
-      originalUrl: originalUrl ?? this.originalUrl,
-      previewUrl: previewUrl ?? this.previewUrl,
+      imageOffset: clearImage ? null : imageOffset ?? this.imageOffset,
+      imageUrl: clearImage ? null : imageUrl ?? this.imageUrl,
+      originalUrl: clearImage ? null : originalUrl ?? this.originalUrl,
+      previewUrl: clearImage ? null : previewUrl ?? this.previewUrl,
       opacity: opacity ?? this.opacity,
       zIndex: zIndex ?? this.zIndex,
     );

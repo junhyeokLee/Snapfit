@@ -6,6 +6,8 @@ class AppNotificationItem {
   final String? deeplink;
   final DateTime createdAt;
   final bool isRead;
+  final Map<String, dynamic> data;
+  final String? userId;
 
   const AppNotificationItem({
     required this.id,
@@ -15,21 +17,15 @@ class AppNotificationItem {
     required this.createdAt,
     required this.isRead,
     this.deeplink,
+    this.data = const {},
+    this.userId,
   });
 
   factory AppNotificationItem.fromJson(Map<String, dynamic> json) {
     final createdAtRaw = json['createdAt']?.toString();
-    DateTime? parsed;
-    if (createdAtRaw != null && createdAtRaw.isNotEmpty) {
-      // 서버가 timezone 없이 내려줄 때 UTC 기준으로 해석해 KST(UTC+9)로 고정 표시
-      final utcSource = createdAtRaw.endsWith('Z')
-          ? createdAtRaw
-          : '${createdAtRaw}Z';
-      final utc = DateTime.tryParse(utcSource)?.toUtc();
-      if (utc != null) {
-        parsed = utc.add(const Duration(hours: 9));
-      }
-    }
+    final parsed = createdAtRaw == null
+        ? null
+        : DateTime.tryParse(createdAtRaw)?.toLocal();
 
     return AppNotificationItem(
       id: (json['id'] as num?)?.toInt() ?? -1,
@@ -39,6 +35,8 @@ class AppNotificationItem {
       deeplink: json['deeplink']?.toString(),
       createdAt: parsed ?? DateTime.now(),
       isRead: json['isRead'] == true,
+      data: Map<String, dynamic>.from(json['data'] as Map? ?? {}),
+      userId: json['userId']?.toString(),
     );
   }
 
@@ -51,6 +49,8 @@ class AppNotificationItem {
       createdAt: createdAt,
       isRead: isRead ?? this.isRead,
       deeplink: deeplink,
+      data: data,
+      userId: userId,
     );
   }
 }

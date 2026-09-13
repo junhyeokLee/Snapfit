@@ -19,13 +19,13 @@ from dataclasses import dataclass
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROJECT_REF_DEFAULT = "rrbhxdtriummqpztpjrk"
 FUNCTIONS = {
+    "iap-reconcile": {"method": "OPTIONS", "expected": {200, 405}},
+    "push-dispatch": {"method": "OPTIONS", "expected": {405}},
     "iap-verify": {"method": "OPTIONS", "expected": {200}},
     "address-search": {"method": "OPTIONS", "expected": {200}},
-    "order-checkout": {"method": "OPTIONS", "expected": {200}},
     "admin-ops": {"method": "OPTIONS", "expected": {200}},
     "account-delete": {"method": "OPTIONS", "expected": {200}},
     "album-invites": {"method": "OPTIONS", "expected": {200}},
-    "order-confirm-payment": {"method": "OPTIONS", "expected": {200}},
     "billing-prepare": {"method": "OPTIONS", "expected": {200}},
     "billing-approve": {"method": "OPTIONS", "expected": {200}},
     "billing-webhook": {"method": "OPTIONS", "expected": {200}},
@@ -37,7 +37,9 @@ REQUIRED_SECRET_PROFILES = {
             ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL+GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY"],
         ],
         "ios_iap": [["APP_STORE_ISSUER_ID"], ["APP_STORE_KEY_ID"], ["APP_STORE_BUNDLE_ID"], ["APP_STORE_PRIVATE_KEY"], ["APP_STORE_ENVIRONMENT"]],
-        "operations": [["SNAPFIT_ADDRESS_JUSO_KEY"], ["SNAPFIT_ORDER_CHECKOUT_BASE_URL"], ["SNAPFIT_ADMIN_KEY"]],
+        "point_refunds": [["SNAPFIT_IAP_RECONCILE_SECRET"]],
+        "push": [["PUSH_DISPATCH_SECRET"], ["FIREBASE_SERVICE_ACCOUNT_JSON"], ["PUSH_DELIVERY_ENABLED"]],
+        "operations": [["SNAPFIT_ADDRESS_JUSO_KEY"], ["SNAPFIT_ADMIN_KEY"]],
     },
     "supabase-core": {
         "android_iap": [
@@ -108,7 +110,8 @@ def secret_names(project_ref: str) -> tuple[set[str], str]:
         return set(), "supabase CLI returned empty output; run `npx supabase@latest login` or set SUPABASE_ACCESS_TOKEN, then retry"
     try:
         data = json.loads(raw)
-        return {item["name"] for item in data.get("secrets", [])}, ""
+        rows = data if isinstance(data, list) else data.get("secrets", [])
+        return {item["name"] for item in rows}, ""
     except json.JSONDecodeError:
         # Recent Supabase CLI versions may print an ASCII table instead of JSON
         # even when the command exits successfully. Parse only the NAME column.
@@ -148,8 +151,7 @@ def check_secrets(project_ref: str, profile: str) -> list[Check]:
         missing = [" or ".join(group) for group in groups if not group_present(names, group)]
         checks.append(Check(f"secrets:{area}", not missing, "missing: " + ", ".join(missing) if missing else "all required names present"))
     if profile == "supabase-core":
-        checks.append(Check("deferred:ios_iap", True, "excluded from supabase-core; required for App Store subscription verification"))
-        checks.append(Check("deferred:physical_checkout", True, "SNAPFIT_ORDER_CHECKOUT_BASE_URL excluded from supabase-core; required before physical-order checkout launch"))
+        checks.append(Check("deferred:ios_iap", True, "excluded from supabase-core; required for App Store point-purchase verification"))
     return checks
 
 
@@ -193,7 +195,7 @@ def main() -> int:
         "--profile",
         choices=sorted(REQUIRED_SECRET_PROFILES),
         default="production",
-        help="secret readiness profile: production checks every launch gate; supabase-core defers iOS IAP and physical checkout",
+        help="secret readiness profile: production checks point IAP, push and operations; supabase-core checks Android IAP and operations",
     )
     args = parser.parse_args()
 
@@ -209,7 +211,7 @@ def main() -> int:
     if failed:
         print(f"\nNOT READY: {len(failed)} check(s) failed.")
         return 1
-    print("\nREADY: all checks passed.")
+    print("\nLOCAL CHECKS PASSED: deployment was not checked." if args.skip_remote else "\nCONFIGURATION CHECKS PASSED: verify secret values, worker schedules and real-device behavior before release.")
     return 0
 
 

@@ -1,0 +1,63 @@
+{
+  "createdAt": "2026-09-10",
+  "generator": "OpenAI built-in imagegen",
+  "commercialDistributionReview": "pending",
+  "assets": [
+    {
+      "asset": "life_rattle.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_rattle.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-5043875c-e1e4-4d8f-938b-dcfdc8bfce32.png",
+      "prompt": "Use case: product-mockup. Create one independent premium scrapbook decoration: a small heirloom wooden baby rattle, a smooth maple ring with a compact turned wooden handle and three softly rounded bead rings. Top-down macro product photograph, pale honey natural wood grain, satin matte surface, genuine joinery and tiny wear details. Entire rattle centered on a true transparent PNG alpha background, square composition with 12% transparent margins, gentle diagonal, substantial silhouette. No person, text, logo, background, duplicate versions, cartoon, plastic shine or loose unrelated objects. This belongs in a refined baby's first-year photo album, tactile and quiet, not a toy-store icon.",
+      "modified": false
+    },
+    {
+      "asset": "life_bib.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_bib.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-039355c6-7905-41ce-8215-f46deead544d.png",
+      "prompt": "Use case: product-mockup. Independent photo-album decoration: a softly folded baby's muslin bib, pale mint cotton gauze, curved scalloped outer hem with very subtle ivory edge stitching and one little ivory snap at the neck. A real folded textile photographed directly overhead, finely woven double gauze, soft natural creases. Broad centered silhouette on square true transparent PNG alpha background, full object and 12 percent transparent margins. Quiet keepsake quality, no cartoon, printed picture, words, person, backdrop, stickersheet or duplicate objects. Matte tactile cotton, soft local shadow only.",
+      "modified": false
+    },
+    {
+      "asset": "life_basket.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_basket.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-1b5f6133-7b20-4c74-bcbc-8b6198e9afdc.png",
+      "prompt": "Use case: product-mockup. Create one independent premium scrapbook cutout: a small oval wicker picnic basket, tightly handwoven natural willow with a folded double handle and a little ivory linen lining visible at its rim. Three-quarter overhead product photograph, empty basket, refined authentic basket weave, muted natural willow color, gentle soft contact shadow. True transparent PNG alpha background, square canvas, whole basket centered with 12 percent transparent margins. Compact broad silhouette easy to see at thumbnail size. No food, checked cloth, people, wording, logo, background scene, cartoon or glossy plastic. This is a tactile picnic keepsake decoration, not a flat icon.",
+      "modified": false
+    },
+    {
+      "asset": "life_mug.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_mug.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-fcffd67e-4b27-49e6-97f4-8c45dc09a53c.png",
+      "prompt": "Use case: product-mockup. One small vintage enamel camping mug as an independent premium picnic scrapbook cutout. Muted forest-green enamel outside, ivory enamel inside, thin rolled dark rim, small rounded side handle, a few authentic tiny rim wear marks. Empty cup in a three-quarter overhead product photograph so inside and outside are visible. Matte enamel, natural subtle local shadow, no shiny glare. Entire broad object centered in square true transparent PNG alpha canvas with generous 12% margins. No lettering, brand, extra objects, scenery, hands, cartoon, sticker outline or checkerboard background.",
+      "modified": false
+    },
+    {
+      "asset": "life_slippers.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_slippers.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-ca20a2ad-3470-486b-81b4-3f4e8f224274.png",
+      "prompt": "Use case: product-mockup. A standalone refined scrapbook cutout of a pair of soft quilted house slippers, one muted sage green and one warm stone grey, neatly overlapped at a gentle angle. Overhead product photography, detailed cotton herringbone weave, subtle seam piping, matte cushioned fabric, natural realistic folds. Both slippers fully visible as one compact connected composition on a square true transparent PNG alpha background, 12 percent margin. Quiet shared-home keepsake, no person, feet, logos, wording, cartoon, backdrop or extra objects. Natural tiny shadow only, no thick white sticker outline.",
+      "modified": false
+    },
+    {
+      "asset": "life_vase.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_vase.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8755af37-f113-472c-8743-f51443f72fb0.png",
+      "prompt": "Use case: product-mockup. One independent premium photo-journal decoration: a small handmade off-white ceramic bud vase with a single short olive branch, rounded substantial vase body and four or five dusty green leaves. Three-quarter overhead product photo, hand-thrown speckled ceramic, fine stem detail, matte soft daylight. Entire vase and branch centered with 14 percent clear margins in square true transparent PNG alpha canvas. The plant must remain compact, broad and readable at small sizes. No additional loose leaves, table, room, hands, type, logo, cartoon or white sticker border. A refined shared-home keepsake rather than a generic botanical icon.",
+      "modified": false
+    },
+    {
+      "asset": "life_mouse.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_mouse.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-c7681ee6-db7d-4cab-882e-930f852d6da5.png",
+      "prompt": "Use case: product-mockup. One independent premium pet-journal scrapbook decoration: a small handmade felt mouse cat toy, warm soft grey wool body, muted rose felt ears, tiny black hand-stitched eyes, a short looped natural cotton tail. Top-down macro photo of a real handcrafted wool toy, visible needle-felt fibers, simple quiet form, no cartoon face or exaggerated character, no smile. Whole compact toy centered at a soft diagonal in square true transparent PNG alpha canvas with 12 percent clear margins. No cat, extra objects, text, logo, backdrop, thick sticker outline, plastic shine. Tactile authentic used keepsake with soft local shadow.",
+      "modified": false
+    },
+    {
+      "asset": "life_bowl.png",
+      "workspacePath": "/Users/devsheep/SnapFit/SnapFit/assets/sticker/studio/life_bowl.png",
+      "original": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-c907b956-ef6c-48e3-b089-7a5772b8da5e.png",
+      "prompt": "Use case: product-mockup. A single shallow handmade ceramic cat bowl, low rounded dish, warm ivory speckled stoneware with a hand-brushed muted teal rim and a visible unglazed base. Empty bowl in a three-quarter overhead macro product photo. Broad simple silhouette, restrained soft glaze, no strong glossy reflections, realistic ceramic thickness and subtle throwing lines. Whole dish centered on square true transparent PNG alpha canvas, 12 percent transparent margin, small soft local shadow only. No animal, paw icons, food, lettering, logos, printed art, backdrop or sticker outline. Premium home-and-pet journal keepsake.",
+      "modified": false
+    }
+  ]
+}

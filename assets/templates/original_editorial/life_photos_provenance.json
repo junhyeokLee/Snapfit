@@ -1,0 +1,184 @@
+{
+  "assets": [
+    {
+      "file": "growth_play.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: editable photo-book template sample photograph. Create ONE landscape 3:2 editorial photograph, not a collage. A joyful Korean baby about 10 months old wearing a soft sage cotton romper, sitting safely on a white quilt on a low living-room floor, holding a wooden ring toy. Candid small smile, entire head, hands and feet visible, subject within central 55% of composition with plenty of real room around them to allow album crops. Daylight, true skin texture, gentle pale green and white textiles, premium family documentary photography, crisp detail, not blurry or airbrushed. No words, logo, watermark or graphic borders. Ordinary safe nonsexual family scene.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-bebcec0e-5e59-4bf6-8d6e-e95fc64f66a7.png",
+      "path": "images/growth_play.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "growth_walk.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable album template sample photograph. ONE landscape 3:2 photograph, not a collage. A Korean toddler in a blue cotton dungaree holding a parent's hands while practicing small steps on a sunlit green lawn, candid low camera angle, complete bodies and hands, lots of space around subjects. Bright true-to-life daylight, natural skin and material texture, refined contemporary editorial photography, crisp subjects with real environmental detail. Main subjects inside central 60% of frame, no cropped heads or hands. No text, logos, watermarks, borders, artificial blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-42a38ccf-3041-4e4c-a3d8-9a0dcfd4fd42.png",
+      "path": "images/growth_walk.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "growth_sleep.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable album template sample photograph. ONE landscape 3:2 photograph, not a collage. A peacefully sleeping fully clothed Korean newborn in a pale lavender cotton onesie lying on their back on a flat firm white crib mattress, no loose objects near face, overhead family documentary photograph, whole baby visible, generous framing. Bright true-to-life daylight, natural skin and material texture, refined contemporary editorial photography, crisp subjects with real environmental detail. Main subjects inside central 60% of frame, no cropped heads or hands. No text, logos, watermarks, borders, artificial blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-86a3740c-ccfc-414d-b486-4a152899755d.png",
+      "path": "images/growth_sleep.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "growth_keepsakes.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable album template sample photograph. ONE landscape 3:2 photograph, not a collage. An artfully composed real still life of tiny yellow knit baby socks, unbranded cream wooden stacking rings, one pale blue folded muslin blanket and a blank square baby milestone card on a white cotton table, overhead, no printed lettering. Bright true-to-life daylight, natural skin and material texture, refined contemporary editorial photography, crisp subjects with real environmental detail. Main subjects inside central 60% of frame, no cropped heads or hands. No text, logos, watermarks, borders, artificial blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8b0db61b-6314-4b7d-8b38-e6a9ab20355b.png",
+      "path": "images/growth_keepsakes.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "family_picnic.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable album template sample photograph. ONE landscape 3:2 photograph, not a collage. A Korean family of two parents, grandparents and two school age children laughing together at a sunny green park picnic, candid premium documentary photograph, all six fully visible, each distinct real expression, generous margin around group. Bright true-to-life daylight, natural skin and material texture, refined contemporary editorial photography, crisp subjects with real environmental detail. Main subjects inside central 60% of frame, no cropped heads or hands. No text, logos, watermarks, borders, artificial blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-434b9605-4c00-41a8-a01d-551f68a2e4cb.png",
+      "path": "images/family_picnic.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "family_kitchen.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not collage. Two Korean parents and their primary-school child joyfully making rice balls together at a bright white kitchen table, candid laughing expressions, green aprons, full upper bodies and all heads with generous room, freshly prepared colorful vegetables, no visible branding. Premium contemporary documentary photography, natural texture, crisp detail, daylight colors. No words, watermark, logo, graphic border, heavy blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-22874d7e-c122-48fc-ac0b-d81a3e109a5b.png",
+      "path": "images/family_kitchen.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "family_friends.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not collage. Four Korean adult friends, two women and two men in their late twenties, casually sitting side by side on a seaside promenade bench and sharing a genuine laugh, breeze and a clear pale blue sea, fully visible central group with plenty of space around them, no wedding attire. Premium contemporary documentary photography, natural texture, crisp detail, daylight colors. No words, watermark, logo, graphic border, heavy blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-1c6e12c0-9df0-44d4-98a6-1cee29168c90.png",
+      "path": "images/family_friends.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "family_table.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not collage. Top-down editorial still life of a family lunch table prepared for six: simple white plates, Korean rice dishes, green vegetables, strawberries, linen napkins, freshly picked small flowers in clear glass. Real tasteful inviting food photograph, no people, no text. Premium contemporary documentary photography, natural texture, crisp detail, daylight colors. No words, watermark, logo, graphic border, heavy blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-0087d437-9ba5-4069-a1df-73c717d5cd55.png",
+      "path": "images/family_table.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "couple_walk.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not collage. A Korean adult couple in relaxed white and soft blue clothing walking hand in hand by a clear blue sea, smiling at each other, full bodies fully visible in central half, distant shoreline, bright natural sun, candid non-wedding romantic travel photography. Premium contemporary documentary photography, natural texture, crisp detail, daylight colors. No words, watermark, logo, graphic border, heavy blur or illustration.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-591cf4a2-d5ea-4738-9969-c1e62d460c13.png",
+      "path": "images/couple_walk.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "couple_cafe.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A Korean adult couple enjoying a quiet date across a small white cafe table by a window, natural small smiles, two coffees and a strawberry dessert, tasteful casual blue and white clothes, full heads and upper bodies with breathing room, eye-level candid composition. Premium contemporary editorial photography, bright real daylight, crisp detail, natural texture, plenty of room around subject. No words, watermark, logos, borders, cartoon style or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-a03f7689-a486-4434-8e91-08ef34b664f5.png",
+      "path": "images/couple_cafe.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "couple_anniversary.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A Korean adult couple in their late twenties exchanging a small wrapped anniversary gift at home beside a simple white cake and little pink flowers, genuine warm expressions, soft late afternoon daylight, full upper bodies comfortably framed, no weddings, no printed messages or numbers. Premium contemporary editorial photography, bright real daylight, crisp detail, natural texture, plenty of room around subject. No words, watermark, logos, borders, cartoon style or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8016b2d8-f87d-4ccc-a48f-4b621d566682.png",
+      "path": "images/couple_anniversary.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "couple_keepsakes.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. Overhead editorial still life of a blank folded letter, two unbranded pale green admission tickets without writing, pink sweet pea flowers and a satin burgundy ribbon on a crisp white table, carefully arranged with breathing room, tactile realistic paper, no photo prints or words. Premium contemporary editorial photography, bright real daylight, crisp detail, natural texture, plenty of room around subject. No words, watermark, logos, borders, cartoon style or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-0d8ac18f-69ad-4de1-b1b6-adf692cc72b2.png",
+      "path": "images/couple_keepsakes.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_dog.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A small golden retriever sitting happily on fresh green grass in a park, whole dog including paws and tail fully visible in central 55%, alert gentle expression, natural soft fur detail, pale blue sky and real park greenery, not wearing any costume or props. Premium contemporary editorial photography, bright real daylight, crisp detail, natural texture, plenty of room around subject. No words, watermark, logos, borders, cartoon style or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-fe71558b-7819-435d-b39d-9131d4e148ce.png",
+      "path": "images/pet_dog.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_cat.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A silver tabby cat sitting on a wide white window ledge looking calmly toward sunlight, full cat including paws and ears within central half, clean white and pale sage interior, real fur and whisker detail, leaves outside the window. Premium contemporary editorial photography, true-to-life natural daylight and texture, crisp details, generous margin around subject. No text, watermark, logos, borders, illustration or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-87b3fd76-a773-4859-b309-5073dddb4e35.png",
+      "path": "images/pet_cat.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_walk.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A golden retriever walking with a Korean adult woman along a sunlit park path on a loose sage leash, full dog and owner's body fully visible from a distance, ample real greenery and air around the pair, candid relaxed daily walk. Premium contemporary editorial photography, true-to-life natural daylight and texture, crisp details, generous margin around subject. No text, watermark, logos, borders, illustration or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-95440758-39fa-49c0-a07f-093f4c68e0f9.png",
+      "path": "images/pet_walk.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_keepsakes.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. Overhead editorial still life of a plain sage fabric pet harness, cotton rope toy, small white water bowl and a folded pale blue pet blanket on a white surface, clearly real materials, no branding, organized but inviting. Premium contemporary editorial photography, true-to-life natural daylight and texture, crisp details, generous margin around subject. No text, watermark, logos, borders, illustration or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-9625e987-9ac2-4167-b740-d737f82ba9d3.png",
+      "path": "images/pet_keepsakes.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_nap.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A silver tabby cat curled comfortably asleep on a pale blue cotton sofa cushion, full entire curled body and tail in central half, photographed in a bright quiet home with sunlight and realistic fabric detail. Premium contemporary editorial photography, true-to-life natural daylight and texture, crisp details, generous margin around subject. No text, watermark, logos, borders, illustration or artificial blur.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-8e2b6241-f0a4-4c88-96b2-81c8064c79d5.png",
+      "path": "images/pet_nap.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "growth_birthday.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A Korean one-year-old baby safely seated in a high chair with parent beside them at a first birthday celebration at home, simple white cake on a separate table out of reach, pale yellow and blue paper decorations, candid smiling faces, no lit candles, no writing, generous space around both subjects. Premium contemporary editorial photography, bright true-to-life daylight, crisp real texture, no exaggerated blur. No words, logos, watermark, borders or illustrations.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-11cef7c3-2e86-44ef-a9d5-ed85bc9defad.png",
+      "path": "images/growth_birthday.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "growth_hand.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. Tender close-up documentary detail photograph of a fully clothed baby's tiny hand gently holding a parent's finger, pale lavender cotton sleeve visible, naturally correct fingers, white fabric backdrop, subtle real skin texture, no writing, hand composition centered with generous negative space. Premium contemporary editorial photography, bright true-to-life daylight, crisp real texture, no exaggerated blur. No words, logos, watermark, borders or illustrations.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-83480334-c5a0-4e66-a70a-2de796948050.png",
+      "path": "images/growth_hand.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    },
+    {
+      "file": "pet_rest.png",
+      "prompt": "Use case: photorealistic-natural. Asset: editable photo-book template sample. ONE landscape 3:2 photo, not a collage. A golden retriever resting comfortably on a soft pale sage floor mat beside a bright window, all four paws and whole body visible in central 60%, white wall and a folded blue blanket nearby, sleepy gentle expression, natural home documentary photography. Premium contemporary editorial photography, bright true-to-life daylight, crisp real texture, no exaggerated blur. No words, logos, watermark, borders or illustrations.",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-7813a6a5-a944-4d26-85e2-db4aedf8aeb2.png",
+      "path": "images/pet_rest.png",
+      "tool": "built-in imagegen",
+      "generatedAt": "2026-09-08",
+      "purpose": "Replaceable sample photo, not the flattened template design"
+    }
+  ]
+}

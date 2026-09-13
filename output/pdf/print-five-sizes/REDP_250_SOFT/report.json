@@ -1,0 +1,57 @@
+{
+  "renderer": "flutter-layer-builder-raster-v1",
+  "specVersion": "REDP_250_SOFT_REVIEW_V2_7.22",
+  "productId": "REDP_250_SOFT",
+  "coverType": "SOFT",
+  "trimMm": [
+    250.0,
+    250.0
+  ],
+  "pageCount": 20,
+  "sourceInteriorPages": 1,
+  "blankPagesAdded": 19,
+  "missingAssets": [],
+  "warnings": [
+    "vendor_spec_requires_review",
+    "vendor_color_sample_required",
+    "back_cover_uses_front_background",
+    "bleed_uses_edge_extension",
+    "blank_interior_pages_added:19",
+    "page_0_fit_contain_with_margins"
+  ],
+  "imageResolution": [
+    {
+      "page": 0,
+      "layerId": "photo",
+      "widthPx": 3000,
+      "heightPx": 3000,
+      "effectivePpi": 392.0,
+      "decodedWidthPx": 2297,
+      "decodedHeightPx": 2297
+    },
+    {
+      "page": 1,
+      "layerId": "photo",
+      "widthPx": 3000,
+      "heightPx": 3000,
+      "effectivePpi": 381.0,
+      "decodedWidthPx": 2363,
+      "decodedHeightPx": 2363
+    }
+  ],
+  "dpi": 300,
+  "colorSpace": "sRGB",
+  "iccProfileEmbedded": true,
+  "imageEncoding": "JPEG quality 95",
+  "pdfStandard": "PDF-1.4",
+  "fit": "contain",
+  "specVerified": false,
+  "interiorMediaMm": [
+    260.0,
+    260.0
+  ],
+  "coverMediaMm": [
+    517.22,
+    260.0
+  ]
+}

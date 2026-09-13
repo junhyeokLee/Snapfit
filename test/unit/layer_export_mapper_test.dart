@@ -92,6 +92,48 @@ void main() {
   });
 
   group('round-trip', () {
+    test(
+      'line height is dimensionless, preserved on resize and optional for old albums',
+      () {
+        final layer = _textLayer().copyWith(
+          textStyle: const TextStyle(
+            fontFamily: 'Eulyoo',
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            height: 1.45,
+          ),
+        );
+        final json = LayerExportMapper.toJson(layer, canvasSize: canvasSize);
+        final restored = LayerExportMapper.fromJson(
+          json,
+          canvasSize: canvasSize * 2,
+        );
+        expect(restored.textStyle!.height, 1.45);
+        expect(restored.textStyle!.fontSize, closeTo(56, .001));
+        expect(restored.textStyle!.fontFamily, 'Eulyoo');
+        expect(restored.textStyle!.fontWeight, FontWeight.w800);
+        final style = (json['payload'] as Map)['textStyle'] as Map;
+        for (final invalid in [null, 0, -1, double.nan, '1.3']) {
+          style['height'] = invalid;
+          expect(
+            LayerExportMapper.fromJson(
+              json,
+              canvasSize: canvasSize,
+            ).textStyle!.height,
+            isNull,
+          );
+        }
+        style.remove('height');
+        expect(
+          LayerExportMapper.fromJson(
+            json,
+            canvasSize: canvasSize,
+          ).textStyle!.height,
+          isNull,
+        );
+      },
+    );
+
     test('toJson → fromJson 시 position, size, type 유지 (id 제외)', () {
       final layer = _textLayer(
         position: const Offset(50, 100),

@@ -1,0 +1,3105 @@
+{
+  "id": "snapfit_concept_first-wardrobe_square",
+  "collectionId": "first-wardrobe",
+  "editionId": "first-wardrobe-24",
+  "title": "너의 작은 옷장",
+  "category": "성장·육아",
+  "concept": "코튼 보닛과 성장 태그, 첫해의 작은 물건들",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "first-wardrobe_square_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "first-wardrobe_square_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "first-wardrobe_square_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#132124",
+        "cornerRadius": 0,
+        "opacity": 0.25
+      },
+      {
+        "id": "first-wardrobe_square_0_part_3",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 3,
+        "text": "A LITTLE WARDROBE / 04",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "first-wardrobe_square_0_part_4",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.106,
+        "w": 0.85,
+        "h": 0.0016,
+        "z": 4,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "first-wardrobe_square_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.12,
+        "w": 0.85,
+        "h": 0.24,
+        "z": 5,
+        "text": "너의\n작은 옷장",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 41.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "first-wardrobe_square_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.39,
+        "w": 0.8,
+        "h": 0.085,
+        "z": 6,
+        "text": "금세 자라 버린 너의 첫 계절",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 14.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "first-wardrobe_square_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.85,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 7,
+        "text": "서우의 첫해",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "first-wardrobe_square_0_part_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.92,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 8,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "너의 작은 옷장",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F3F4EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_1_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE FIRST DRAWER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_1_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.19,
+          "w": 0.79,
+          "h": 0.23,
+          "z": 2,
+          "text": "너를 기다리는\n서랍",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 38.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_1_part_3",
+          "type": "sticker",
+          "x": 0.08,
+          "y": 0.49,
+          "w": 0.31,
+          "h": 0.31,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_bonnet.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_1_part_4",
+          "type": "decoration",
+          "x": 0.55,
+          "y": 0.56,
+          "w": 0.36,
+          "h": 0.24,
+          "z": 4,
+          "style": "atelierTitlePlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_1_part_5",
+          "type": "text",
+          "x": 0.6004,
+          "y": 0.6272000000000001,
+          "w": 0.2628,
+          "h": 0.132,
+          "z": 5,
+          "text": "작은 옷을 접으며\n너를 기다렸어.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 11.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_1_part_6",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.84,
+          "w": 0.085,
+          "h": 0.025,
+          "z": 6,
+          "fillColor": "#D9BC75",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_1_part_7",
+          "type": "decoration",
+          "x": 0.175,
+          "y": 0.84,
+          "w": 0.04,
+          "h": 0.025,
+          "z": 7,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너를 기다리는 서랍",
+      "role": "wardrobe-opening-inventory",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E1EAF1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_2_part_1",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.08,
+          "w": 0.88,
+          "h": 0.7,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_keepsakes.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_2_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.82,
+          "w": 0.83,
+          "h": 0.09,
+          "z": 2,
+          "text": "아직은 조금 큰 옷",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 19.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "너를 기다리는 서랍",
+      "role": "first-clothes-flatlay",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9FAF5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_3_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.15,
+          "z": 1,
+          "text": "Hello, you",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 50.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_3_part_2",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.255,
+          "w": 0.68,
+          "h": 0.52,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_hand.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_3_part_3",
+          "type": "decoration",
+          "x": 0.56,
+          "y": 0.75,
+          "w": 0.30800000000000005,
+          "h": 0.07,
+          "z": 3,
+          "style": "materialCrossStitchBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_3_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.64,
+          "h": 0.075,
+          "z": 4,
+          "text": "처음 맞잡은 손",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "처음 맞잡은 손",
+      "role": "hand-detail-museum",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE8E9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_4_part_1",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.07,
+          "w": 0.37,
+          "h": 0.32,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_sleep.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_4_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.16,
+          "w": 0.39,
+          "h": 0.24,
+          "z": 2,
+          "text": "손가락\n하나를 꼭",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 31.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_4_part_3",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.49,
+          "w": 0.342,
+          "h": 0.38,
+          "z": 3,
+          "style": "materialScallopNote",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_4_part_4",
+          "type": "text",
+          "x": 0.16788,
+          "y": 0.5964,
+          "w": 0.24966000000000002,
+          "h": 0.20900000000000002,
+          "z": 4,
+          "text": "작은 손이 먼저\n내 손을 잡았다.\n잊지 못할 감촉.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "처음 맞잡은 손",
+      "role": "first-touch-letter",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EEF2EB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_5_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.06,
+          "w": 0.89,
+          "h": 0.72,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_5_part_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.825,
+          "w": 0.13,
+          "h": 0.0016,
+          "z": 2,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_5_part_3",
+          "type": "text",
+          "x": 0.29,
+          "y": 0.81,
+          "w": 0.61,
+          "h": 0.095,
+          "z": 3,
+          "text": "이름을 부르면",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 21.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "이름을 부르면",
+      "role": "first-smile-dominant",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F8F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_6_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.055,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "A FACE WE LEARN BY HEART",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_6_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.2,
+          "w": 0.43,
+          "h": 0.43,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "materialScallopMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_6_part_3",
+          "type": "sticker",
+          "x": 0.62,
+          "y": 0.24,
+          "w": 0.27,
+          "h": 0.27,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_rattle.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_6_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.7,
+          "w": 0.79,
+          "h": 0.18,
+          "z": 4,
+          "text": "고개를 돌리고,\n눈을 맞추고,\n조금씩 웃었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 18.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "이름을 부르면",
+      "role": "smile-observation-card",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6EDF2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_7_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Out & about",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 52.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_7_part_2",
+          "type": "sticker",
+          "x": 0.1,
+          "y": 0.3,
+          "w": 0.29,
+          "h": 0.29,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_bib.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_7_part_3",
+          "type": "sticker",
+          "x": 0.53,
+          "y": 0.47,
+          "w": 0.29,
+          "h": 0.29,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_booties.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_7_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 4,
+          "text": "모자 하나, 작은 신발 한 켤레.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "첫 외출 준비",
+      "role": "outfit-preparation",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F4F6ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_8_part_1",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.08,
+          "w": 0.85,
+          "h": 0.64,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_walk.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_8_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.795,
+          "w": 0.77,
+          "h": 0.105,
+          "z": 2,
+          "text": "세상을 만나러",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_8_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.735,
+          "w": 0.24200000000000002,
+          "h": 0.055,
+          "z": 3,
+          "style": "materialCrossStitchBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "첫 외출 준비",
+      "role": "first-outing",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D3DFE4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_9_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.065,
+          "w": 0.89,
+          "h": 0.77,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_sleep.png",
+          "frame": "studioRounded",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_9_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.855,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 2,
+          "text": "QUIET HOURS / 05",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 잠든 오후",
+      "role": "nap-full-portrait",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAF9F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_10_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.095,
+          "w": 0.74,
+          "h": 0.24,
+          "z": 1,
+          "text": "오래 잠든\n오후",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 36.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_10_part_2",
+          "type": "decoration",
+          "x": 0.66,
+          "y": 0.34,
+          "w": 0.21,
+          "h": 0.21,
+          "z": 2,
+          "style": "materialMonthDial",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_10_part_3",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.46,
+          "w": 0.41,
+          "h": 0.3,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_hand.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_10_part_4",
+          "type": "text",
+          "x": 0.57,
+          "y": 0.66,
+          "w": 0.34,
+          "h": 0.15,
+          "z": 4,
+          "text": "작은 숨소리에\n방도 조용해졌다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_10_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.35,
+          "h": 0.0016,
+          "z": 5,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 잠든 오후",
+      "role": "sleep-routine-note",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7EEE7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_11_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "PLAY, EVERY DAY",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_11_part_2",
+          "type": "image",
+          "x": 0.05,
+          "y": 0.17,
+          "w": 0.68,
+          "h": 0.58,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "atelierCrossRibbon",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_11_part_3",
+          "type": "text",
+          "x": 0.75,
+          "y": 0.25,
+          "w": 0.2,
+          "h": 0.2,
+          "z": 3,
+          "text": "06",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 75.0,
+            "fontWeight": 400,
+            "color": "#809EAC",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_11_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.815,
+          "w": 0.84,
+          "h": 0.1,
+          "z": 4,
+          "text": "좋아하는 놀이",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 25.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "좋아하는 놀이",
+      "role": "playroom-record",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_12_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.09,
+          "w": 0.79,
+          "h": 0.22,
+          "z": 1,
+          "text": "손이 먼저\n향하는 것들",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 32.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_12_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.4,
+          "w": 0.43,
+          "h": 0.36,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_keepsakes.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_12_part_3",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.49,
+          "w": 0.38,
+          "h": 0.32,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_12_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.77,
+          "h": 0.075,
+          "z": 4,
+          "text": "처음 고른 작은 취향.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "좋아하는 놀이",
+      "role": "little-favorites",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE8ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_13_part_1",
+          "type": "decoration",
+          "x": 0.29,
+          "y": 0.66,
+          "w": 0.247,
+          "h": 0.065,
+          "z": 1,
+          "style": "heirloomGrowthRuler",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_13_part_2",
+          "type": "sticker",
+          "x": 0.06,
+          "y": 0.25,
+          "w": 0.17,
+          "h": 0.17,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_rattle.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_13_part_3",
+          "type": "image",
+          "x": 0.29,
+          "y": 0.09,
+          "w": 0.62,
+          "h": 0.55,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_keepsakes.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_13_part_4",
+          "type": "text",
+          "x": 0.28,
+          "y": 0.745,
+          "w": 0.63,
+          "h": 0.1,
+          "z": 4,
+          "text": "작아진 옷들",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 25.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_13_part_5",
+          "type": "text",
+          "x": 0.28,
+          "y": 0.86,
+          "w": 0.65,
+          "h": 0.055,
+          "z": 5,
+          "text": "한 번 더 접어서 간직한다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "작아진 옷들",
+      "role": "outgrown-wardrobe-label",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAF9F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_14_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.06,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "KEPT FROM YOUR FIRST YEAR",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_14_part_2",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.17,
+          "w": 0.47040000000000004,
+          "h": 0.56,
+          "z": 2,
+          "style": "materialSpecimenPocket",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_14_part_3",
+          "type": "sticker",
+          "x": 0.22,
+          "y": 0.28,
+          "w": 0.3,
+          "h": 0.3,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_bib.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_14_part_4",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.755,
+          "w": 0.8,
+          "h": 0.15,
+          "z": 4,
+          "text": "너는 이만큼\n자랐구나",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 21.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "작아진 옷들",
+      "role": "keepsake-pocket",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6EEE7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_15_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.83,
+          "h": 0.14,
+          "z": 1,
+          "text": "Step by step",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 47.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_15_part_2",
+          "type": "image",
+          "x": 0.1175,
+          "y": 0.24,
+          "w": 0.7650000000000001,
+          "h": 0.51,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_walk.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_15_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.8,
+          "h": 0.1,
+          "z": 3,
+          "text": "함께 걷는 연습",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 걷는 연습",
+      "role": "first-steps-landscape",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F9F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_16_part_1",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.085,
+          "w": 0.4,
+          "h": 0.37,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_hand.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_16_part_2",
+          "type": "sticker",
+          "x": 0.63,
+          "y": 0.19,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/material_booties.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_16_part_3",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.54,
+          "w": 0.78,
+          "h": 0.0016,
+          "z": 3,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_16_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.61,
+          "w": 0.44,
+          "h": 0.14,
+          "z": 4,
+          "text": "1, 2, 3",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 55.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_16_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.78,
+          "w": 0.8,
+          "h": 0.115,
+          "z": 5,
+          "text": "잡은 손을 놓지 않고\n너의 속도로 걸었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 15.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 걷는 연습",
+      "role": "steps-diagonal-record",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE8E8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_17_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.11333333333333329,
+          "w": 0.89,
+          "h": 0.5933333333333334,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_walk.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_17_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.81,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 2,
+          "text": "WITH YOU, ALWAYS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_17_part_3",
+          "type": "decoration",
+          "x": 0.75,
+          "y": 0.86,
+          "w": 0.085,
+          "h": 0.025,
+          "z": 3,
+          "fillColor": "#C99A58",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_17_part_4",
+          "type": "decoration",
+          "x": 0.845,
+          "y": 0.86,
+          "w": 0.04,
+          "h": 0.025,
+          "z": 4,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "가족의 품에서",
+      "role": "family-embrace-photo",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F6F7EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_18_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.08,
+          "w": 0.68,
+          "h": 0.24,
+          "z": 1,
+          "text": "가족의\n품에서",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 39.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_18_part_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.44,
+          "w": 0.44999999999999996,
+          "h": 0.3,
+          "z": 2,
+          "style": "lifeWardrobeLabel",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_18_part_3",
+          "type": "text",
+          "x": 0.143,
+          "y": 0.524,
+          "w": 0.3284999999999999,
+          "h": 0.165,
+          "z": 3,
+          "text": "처음인 날마다\n우리도 함께 배웠어.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_18_part_4",
+          "type": "image",
+          "x": 0.61,
+          "y": 0.6,
+          "w": 0.3,
+          "h": 0.27,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_hand.png",
+          "frame": "studioSticker",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "가족의 품에서",
+      "role": "family-handwritten-page",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DFEAF0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_19_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.82,
+          "h": 0.2,
+          "z": 1,
+          "text": "One",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 85.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "first-wardrobe_square_19_part_2",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.31,
+          "w": 0.88,
+          "h": 0.48,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_birthday.png",
+          "frame": "materialScallopMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_19_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.77,
+          "h": 0.075,
+          "z": 3,
+          "text": "첫 생일을 앞두고",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "첫 생일을 앞두고",
+      "role": "birthday-countdown",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAF8ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_20_part_1",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.08,
+          "w": 0.53,
+          "h": 0.42,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_birthday.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_20_part_2",
+          "type": "decoration",
+          "x": 0.68,
+          "y": 0.18,
+          "w": 0.24,
+          "h": 0.24,
+          "z": 2,
+          "style": "materialMonthDial",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_20_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.62,
+          "w": 0.78,
+          "h": 0.23,
+          "z": 3,
+          "text": "한 살의\n너에게",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 38.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_20_part_4",
+          "type": "decoration",
+          "x": 0.69,
+          "y": 0.75,
+          "w": 0.189,
+          "h": 0.045,
+          "z": 4,
+          "style": "materialVellumBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "첫 생일을 앞두고",
+      "role": "birthday-gift-note",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F4F6EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_21_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.84,
+          "h": 0.14,
+          "z": 1,
+          "text": "하루하루 자란 너",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_21_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.28,
+          "w": 0.38,
+          "h": 0.25,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_sleep.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_21_part_3",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.28,
+          "w": 0.4,
+          "h": 0.25,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_21_part_4",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.59,
+          "w": 0.38,
+          "h": 0.24,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_walk.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_21_part_5",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.59,
+          "w": 0.4,
+          "h": 0.24,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_birthday.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "하루하루 자란 너",
+      "role": "growing-contact-board",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2EAE9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_22_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.06,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "YOUR FIRST YEAR / 11",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_22_part_2",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.17,
+          "w": 0.38,
+          "h": 0.43,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "studioArch",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_22_part_3",
+          "type": "decoration",
+          "x": 0.54,
+          "y": 0.24,
+          "w": 0.37,
+          "h": 0.24666666666666667,
+          "z": 3,
+          "style": "lifeWardrobeLabel",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_22_part_4",
+          "type": "text",
+          "x": 0.5918,
+          "y": 0.30906666666666666,
+          "w": 0.2701,
+          "h": 0.13566666666666669,
+          "z": 4,
+          "text": "처음 웃은 날\n처음 앉은 날\n처음 걸은 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_22_part_5",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.725,
+          "w": 0.8,
+          "h": 0.17,
+          "z": 5,
+          "text": "모든 처음을\n가까이에서",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "하루하루 자란 너",
+      "role": "growth-summary",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.13,
+          "w": 0.79,
+          "h": 0.23,
+          "z": 1,
+          "text": "다음 계절의\n옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 35.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_23_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.47,
+          "w": 0.79,
+          "h": 0.18,
+          "z": 2,
+          "text": "금세 작아진 옷을 접어 두었다.\n함께 자란 마음도 여기에 남긴다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_23_part_3",
+          "type": "sticker",
+          "x": 0.08,
+          "y": 0.68,
+          "w": 0.21,
+          "h": 0.21,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_bonnet.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_23_part_4",
+          "type": "decoration",
+          "x": 0.47,
+          "y": 0.78,
+          "w": 0.42,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#486478",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_23_part_5",
+          "type": "text",
+          "x": 0.47,
+          "y": 0.82,
+          "w": 0.42,
+          "h": 0.075,
+          "z": 5,
+          "text": "서우의 첫해",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 계절의 옷장",
+      "role": "next-season-letter",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "first-wardrobe_square_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE7ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "first-wardrobe_square_24_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.085,
+          "w": 0.82,
+          "h": 0.65,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/growth_play.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "first-wardrobe_square_24_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.81,
+          "w": 0.85,
+          "h": 0.09,
+          "z": 2,
+          "text": "조금 천천히 자라도 괜찮아",
+          "align": "center",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 18.5,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "first-wardrobe_square_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "너의 작은 옷장",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "first-wardrobe_square_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#486478",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 계절의 옷장",
+      "role": "wardrobe-last-portrait",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "너를 기다리는 서랍",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "처음 맞잡은 손",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "이름을 부르면",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "첫 외출 준비",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "오래 잠든 오후",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "좋아하는 놀이",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "작아진 옷들",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "함께 걷는 연습",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "가족의 품에서",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "첫 생일을 앞두고",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "하루하루 자란 너",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "다음 계절의 옷장",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

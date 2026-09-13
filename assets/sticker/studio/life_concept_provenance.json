@@ -1,0 +1,37 @@
+{
+  "createdAt": "2026-09-09",
+  "assets": [
+    {
+      "asset": "life_bonnet.png",
+      "original": "exec-211e8528-f95a-42dc-962e-9d7e9f230dab.png",
+      "prompt": "One original premium photo-album decoration, overhead product photography of a tiny powder-blue cotton baby bonnet, gently flattened with a soft gathered crown, two short cream cotton ties arranged inward. Real fine cotton weave and delicate seam stitching, no cartoon illustration, no logo, no letters, no baby or person. True transparent PNG alpha background, entire object visible centered in square canvas with 12% transparent margin. Matte pale blue with warm off-white ties, quiet luxury children's keepsake stationery, soft contact shadow limited to the object. Not a full page or a mockup. Make the bonnet broad and readable as a standalone cutout, not floating disconnected pieces.",
+      "generator": "OpenAI built-in imagegen",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    },
+    {
+      "asset": "life_gingham.png",
+      "original": "exec-8ecd5cc7-1739-4178-8b7d-f05ea8c7ec1c.png",
+      "prompt": "Create one original premium scrapbook material asset: a folded red-and-ivory gingham linen picnic napkin, overhead macro product photograph. Square-ish folded napkin with a relaxed diagonally turned lower corner showing the reverse weave, tactile small checks, delicate hem stitching, a few naturally uneven threads along one edge. Muted poppy red and off-white, not Christmas, no extra objects, no typography. True transparent PNG alpha background, centered with 12 percent transparent margins, entire napkin visible, matte realistic woven texture, only tiny natural contact shadow. Sophisticated editorial picnic stationery cutout, no cartoon, no vector, no background or mockup.",
+      "generator": "OpenAI built-in imagegen",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    },
+    {
+      "asset": "life_house_key.png",
+      "original": "exec-45efe9ba-8606-4e01-92a1-ff441f97fb3f.png",
+      "prompt": "One premium scrapbook material cutout: a single small vintage brushed brass house key attached to a softly folded sage cotton loop key fob with a tiny stitched ivory blank fabric tab. Overhead macro product photography, key and fabric arranged as a compact gentle diagonal composition, whole object visible with 12 percent margin on a square canvas. True transparent PNG alpha background. Authentic slightly worn brass, clear teeth, matte woven cotton, restrained soft contact shadow only. No numbers, no logo, no wording, no heart shape, no extra decorative objects, no background scene, no cartoon. A tactile keepsake for an adult couple's shared-home photo journal.",
+      "generator": "OpenAI built-in imagegen",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    },
+    {
+      "asset": "life_rope_ball.png",
+      "original": "exec-787aba7c-bf46-40c8-8544-dc9de8b88d0e.png",
+      "prompt": "One original premium pet-journal material, overhead macro product photography of a compact braided cotton rope ball toy with one short loop and a small soft frayed end, muted teal, flax white and warm terracotta strands. Not a character, not an icon. True transparent PNG alpha background on a square canvas. Entire broad rope ball centered and visible with 12 percent transparent margin. Very detailed matte cotton fibers and interlaced knots, relaxed tactile real-life keepsake, only slight contact shadow. No pet, no paw print, no wording, no logo, no backdrop, no glossy plastic or sparkle. An independent movable scrapbook decoration for a sophisticated pet photo album.",
+      "generator": "OpenAI built-in imagegen",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    }
+  ]
+}

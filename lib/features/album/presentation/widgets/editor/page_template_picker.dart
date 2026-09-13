@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/page_templates.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 /// 페이지 템플릿 선택 바텀시트 (스크랩북 스타일)
-class PageTemplatePicker extends StatelessWidget {
+class PageTemplatePicker extends StatefulWidget {
   final ValueChanged<PageTemplate> onSelect;
 
   const PageTemplatePicker({super.key, required this.onSelect});
@@ -29,8 +30,21 @@ class PageTemplatePicker extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final templates = pageTemplates;
+  State<PageTemplatePicker> createState() => _PageTemplatePickerState();
+}
+
+class _PageTemplatePickerState extends State<PageTemplatePicker> {
+  bool _favoritesOnly = false;
+  @override
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
+    final templates = favorites.arrange(
+      pageTemplates,
+      (t) => CatalogFavoriteKeys.layout(t.id),
+      onlyFavorites: _favoritesOnly,
+    );
     final media = MediaQuery.of(context);
     final isLandscape = media.size.width > media.size.height;
     final bottomInset = media.viewPadding.bottom;
@@ -80,26 +94,45 @@ class PageTemplatePicker extends StatelessWidget {
                 ),
               ),
             ),
+            CatalogFavoriteFilter(
+              selected: _favoritesOnly,
+              onChanged: (value) => setState(() => _favoritesOnly = value),
+            ),
             Flexible(
-              child: GridView.builder(
-                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h + bottomInset),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12.w,
-                  mainAxisSpacing: 16.h,
-                  childAspectRatio: 100.w / (118.h + 8.h + 14.sp * 1.4 + 10.h),
-                ),
-                itemCount: templates.length,
-                itemBuilder: (context, index) {
-                  final template = templates[index];
-                  return RepaintBoundary(
-                    child: _TemplateCard(
-                      template: template,
-                      onTap: () => onSelect(template),
+              child: templates.isEmpty
+                  ? CatalogFavoritesEmpty(
+                      onShowAll: () => setState(() => _favoritesOnly = false),
+                    )
+                  : GridView.builder(
+                      padding: EdgeInsets.fromLTRB(
+                        16.w,
+                        0,
+                        16.w,
+                        24.h + bottomInset,
+                      ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 16.h,
+                        childAspectRatio:
+                            100.w / (118.h + 8.h + 14.sp * 1.4 + 10.h),
+                      ),
+                      itemCount: templates.length,
+                      itemBuilder: (context, index) {
+                        final template = templates[index];
+                        return CatalogFavoriteTile(
+                          key: ValueKey(template.id),
+                          itemKey: CatalogFavoriteKeys.layout(template.id),
+                          label: template.name,
+                          child: RepaintBoundary(
+                            child: _TemplateCard(
+                              template: template,
+                              onTap: () => widget.onSelect(template),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

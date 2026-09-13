@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -11,8 +10,7 @@ part 'cover_view_model.freezed.dart';
 @freezed
 abstract class CoverState with _$CoverState {
   const factory CoverState({
-    @Default(CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)))
-    CoverSize selectedCover,
+    @Default(defaultCoverSize) CoverSize selectedCover,
 
     @Default(CoverTheme.classic) CoverTheme selectedTheme,
   }) = _CoverState;
@@ -20,7 +18,7 @@ abstract class CoverState with _$CoverState {
 
 @Riverpod(keepAlive: true)
 class CoverViewModel extends _$CoverViewModel {
-  CoverSize _cover = coverSizes.first;
+  CoverSize _cover = defaultCoverSize;
   CoverTheme _selectedTheme = CoverTheme.classic;
 
   // ===== Selected getters =====

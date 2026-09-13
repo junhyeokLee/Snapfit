@@ -356,6 +356,74 @@ void main() {
       );
     },
   );
+
+  test(
+    'maps server AI template slots without requiring AI-selected photos',
+    () {
+      final draft = const ServerAiAlbumDraftMapper().map(
+        theme: AlbumTheme.travel,
+        candidates: [
+          _candidate('photo-1', DateTime(2026, 8, 20), PhotoOrientation.square),
+          _candidate('photo-2', DateTime(2026, 8, 21), PhotoOrientation.square),
+          _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+        ],
+        json: {
+          'draftId': 'template-draft-1',
+          'title': '제주의 느린 오후',
+          'pageCount': 4,
+          'templateTone': 'warm-film',
+          'summary': '사진은 직접 고르고, AI는 앨범 틀만 제안했어요.',
+          'recommendedPhotos': [],
+          'excludedPhotos': [],
+          'storySections': [
+            {
+              'title': '표지',
+              'description': '대표 사진을 넣는 첫 장',
+              'photoAssetIds': [],
+            },
+          ],
+          'templateSlots': [
+            {
+              'slotId': 'cover-main',
+              'pageIndex': 0,
+              'role': 'cover',
+              'hint': '여행을 대표하는 사진을 직접 넣어주세요',
+              'left': 0.08,
+              'top': 0.1,
+              'width': 0.84,
+              'height': 0.52,
+              'rotation': -1.5,
+              'imageTemplate': '4:3',
+              'imageBackground': 'mat',
+              'caption': 'cover',
+              'emphasis': 1.7,
+            },
+            {
+              'slotId': 'p1-landscape',
+              'pageIndex': 1,
+              'role': 'landscape',
+              'hint': '장소감이 보이는 풍경 사진',
+            },
+          ],
+          'curationNotes': ['사진첩에서 사진을 자동으로 고르지 않았어요.'],
+          'reviewCtaLabel': '이 템플릿으로 시작하기',
+        },
+      );
+
+      expect(draft.recommendedPhotos, isEmpty);
+      expect(draft.templateSlots.map((slot) => slot.slotId), [
+        'cover-main',
+        'p1-landscape',
+      ]);
+      expect(draft.templateSlots.first.pageIndex, 0);
+      expect(draft.templateSlots.first.hint, contains('직접'));
+      expect(draft.templateSlots.first.left, 0.08);
+      expect(draft.templateSlots.first.imageTemplate, '4:3');
+      expect(draft.templateSlots.first.caption, 'cover');
+      expect(draft.templateSlots.first.emphasis, 1.7);
+      expect(draft.reviewCtaLabel, '이 템플릿으로 시작하기');
+    },
+  );
 }
 
 PhotoCandidate _candidate(

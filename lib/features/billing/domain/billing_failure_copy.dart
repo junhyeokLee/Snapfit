@@ -1,4 +1,4 @@
-enum BillingPurchaseKind { points, subscription }
+enum BillingPurchaseKind { points }
 
 String billingStoreUnavailableMessage() {
   return '현재 기기에서 스토어 결제를 사용할 수 없습니다. Android는 Google Play, iOS는 App Store 계정 상태를 확인해 주세요.';
@@ -32,8 +32,11 @@ String billingPurchaseStartFailureMessage({
   required BillingPurchaseKind kind,
   required Object error,
 }) {
-  final prefix = kind == BillingPurchaseKind.points ? '포인트 결제' : '구독 결제';
+  const prefix = '포인트 결제';
   final normalized = error.toString().toLowerCase();
+  if (normalized.contains('point_purchase_not_configured')) {
+    return '포인트 충전을 준비하고 있어요. 잠시 후 다시 확인해 주세요. 결제는 시작되지 않았습니다.';
+  }
   if (normalized.contains('network') ||
       normalized.contains('timeout') ||
       normalized.contains('connection')) {
@@ -67,6 +70,16 @@ String billingPurchaseUpdateFailureMessage({String? code, String? message}) {
 
 String billingVerificationFailureMessage(Object error, {String? supportCode}) {
   final normalized = error.toString().toLowerCase();
+  if (normalized.contains('purchase_account_') ||
+      normalized.contains('purchase_owner_')) {
+    return _withSupportCode(
+      '구매한 계정으로 로그인한 뒤 다시 확인해 주세요. 계속 실패하면 문의 코드와 함께 고객 지원에 알려 주세요.',
+      supportCode,
+    );
+  }
+  if (normalized.contains('purchase_revoked')) {
+    return _withSupportCode('취소되거나 환불된 구매여서 포인트를 충전할 수 없어요.', supportCode);
+  }
   if (normalized.contains('already') ||
       normalized.contains('duplicate') ||
       normalized.contains('idempot')) {

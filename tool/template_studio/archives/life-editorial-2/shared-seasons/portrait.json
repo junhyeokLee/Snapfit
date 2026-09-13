@@ -1,0 +1,5471 @@
+{
+  "id": "snapfit_concept_shared-seasons_portrait",
+  "collectionId": "shared-seasons",
+  "editionId": "shared-seasons-24",
+  "title": "같이 사는 계절",
+  "category": "커플·기념일",
+  "concept": "집 열쇠와 생활 메모, 두 사람의 사계절 기록",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 2,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "portrait",
+  "designWidth": 500.0,
+  "designHeight": 668.9655172413793,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 668.9655172413793,
+    "layers": [
+      {
+        "id": "shared-seasons_portrait_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "shared-seasons_portrait_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#132124",
+        "cornerRadius": 0,
+        "opacity": 0.25
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_3",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 3,
+        "text": "OUR SHARED SEASONS / 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_4",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.106,
+        "w": 0.85,
+        "h": 0.0011958762886597938,
+        "z": 4,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.58,
+        "w": 0.85,
+        "h": 0.24,
+        "z": 5,
+        "text": "같이 사는\n계절",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 41.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.85,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 6,
+        "text": "서연과 지우",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "shared-seasons_portrait_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.92,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 7,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "같이 사는 계절",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_1",
+          "type": "decoration",
+          "x": 0.035,
+          "y": 0.04,
+          "w": 0.93,
+          "h": 0.89,
+          "z": 1,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.075,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 2,
+          "text": "우리의 생활을 묶은 책",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_3",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.15,
+          "w": 0.82,
+          "h": 0.22,
+          "z": 3,
+          "text": "Home",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 107.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_4",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.4,
+          "w": 0.43,
+          "h": 0.16,
+          "z": 4,
+          "text": "둘의 집",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 47.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_5",
+          "type": "decoration",
+          "x": 0.095,
+          "y": 0.6,
+          "w": 0.43,
+          "h": 0.0011958762886597938,
+          "z": 5,
+          "fillColor": "#B6A2AD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_6",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.65,
+          "w": 0.42,
+          "h": 0.15,
+          "z": 6,
+          "text": "각자의 하루가\n같은 곳으로 돌아온다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_7",
+          "type": "decoration",
+          "x": 0.61,
+          "y": 0.39,
+          "w": 0.27,
+          "h": 0.44,
+          "z": 7,
+          "fillColor": "#DED8E3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_8",
+          "type": "sticker",
+          "x": 0.635,
+          "y": 0.47,
+          "w": 0.23,
+          "h": 0.17190721649484536,
+          "z": 8,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_9",
+          "type": "text",
+          "x": 0.635,
+          "y": 0.77,
+          "w": 0.24,
+          "h": 0.055,
+          "z": 9,
+          "text": "두 사람의 첫 열쇠",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_part_10",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.855,
+          "w": 0.79,
+          "h": 0.055,
+          "z": 10,
+          "text": "생활 / 식탁 / 편지 / 사계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#DBCED5",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 11,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 12,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리의 문을 열고",
+      "role": "our-door-opening",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_2_part_1",
+          "type": "image",
+          "x": 0.025,
+          "y": 0.04,
+          "w": 0.95,
+          "h": 0.85,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_2_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.77,
+          "w": 0.57,
+          "h": 0.09,
+          "z": 2,
+          "fillColor": "#FAF9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_2_part_3",
+          "type": "text",
+          "x": 0.108,
+          "y": 0.785,
+          "w": 0.5339999999999999,
+          "h": 0.065,
+          "z": 3,
+          "text": "돌아오면 네가 있다",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 15.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_2_part_4",
+          "type": "decoration",
+          "x": 0.58,
+          "y": 0.055,
+          "w": 0.31,
+          "h": 0.05516691212567501,
+          "z": 4,
+          "style": "materialVellumBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "photoOverlayTextIds": [
+        "shared-seasons_portrait_2_part_3"
+      ],
+      "name": "우리의 문을 열고",
+      "role": "homecoming-portrait",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D9E2DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "01 / 우리가 고른 것들",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_2",
+          "type": "text",
+          "x": 0.065,
+          "y": 0.14,
+          "w": 0.48,
+          "h": 0.15,
+          "z": 2,
+          "text": "Yours",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 70.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_3",
+          "type": "text",
+          "x": 0.56,
+          "y": 0.145,
+          "w": 0.36,
+          "h": 0.2,
+          "z": 3,
+          "text": "두 사람이\n고른 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_4",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.36,
+          "w": 0.9,
+          "h": 0.51,
+          "z": 4,
+          "fillColor": "#B3C4B9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_5",
+          "type": "decoration",
+          "x": 0.093,
+          "y": 0.394,
+          "w": 0.62,
+          "h": 0.44,
+          "z": 5,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_6",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.385,
+          "w": 0.62,
+          "h": 0.44,
+          "z": 6,
+          "fillColor": "#3F625A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_7",
+          "type": "decoration",
+          "x": 0.09200000000000001,
+          "y": 0.392,
+          "w": 0.606,
+          "h": 0.426,
+          "z": 7,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_8",
+          "type": "image",
+          "x": 0.11000000000000001,
+          "y": 0.41000000000000003,
+          "w": 0.57,
+          "h": 0.31499999999999995,
+          "z": 8,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_9",
+          "type": "text",
+          "x": 0.12000000000000001,
+          "y": 0.753,
+          "w": 0.55,
+          "h": 0.055,
+          "z": 9,
+          "text": "창가에는 책상을 두었다",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#3F625A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_10",
+          "type": "sticker",
+          "x": 0.735,
+          "y": 0.43,
+          "w": 0.18,
+          "h": 0.1345360824742268,
+          "z": 10,
+          "imageUrl": "asset:assets/sticker/studio/life_vase.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_3_part_11",
+          "type": "text",
+          "x": 0.73,
+          "y": 0.76,
+          "w": 0.23,
+          "h": 0.055,
+          "z": 11,
+          "text": "하나씩, 우리 집답게",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 12,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 13,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "두 사람이 고른 자리",
+      "role": "our-chosen-corner",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_1",
+          "type": "text",
+          "x": 0.065,
+          "y": 0.06,
+          "w": 0.86,
+          "h": 0.17,
+          "z": 1,
+          "text": "& mine",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 70.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_2",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.31,
+          "w": 0.7,
+          "h": 0.40245836637589216,
+          "z": 2,
+          "style": "atelierColorSlips",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_3",
+          "type": "image",
+          "x": 0.15,
+          "y": 0.345,
+          "w": 0.66,
+          "h": 0.43,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "studioDeckle",
+          "rotation": -0.025
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_4",
+          "type": "sticker",
+          "x": 0.78,
+          "y": 0.32,
+          "w": 0.14,
+          "h": 0.10463917525773198,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/material_clip.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_5",
+          "type": "decoration",
+          "x": 0.35,
+          "y": 0.7,
+          "w": 0.52,
+          "h": 0.095,
+          "z": 5,
+          "fillColor": "#FAF9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_6",
+          "type": "text",
+          "x": 0.368,
+          "y": 0.715,
+          "w": 0.48400000000000004,
+          "h": 0.07,
+          "z": 6,
+          "text": "같이 고르고, 오래 쓰기",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 14.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_4_part_7",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.845,
+          "w": 0.83,
+          "h": 0.075,
+          "z": 7,
+          "text": "서로의 자리는 넉넉히 남겨 두었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "photoOverlayTextIds": [
+        "shared-seasons_portrait_4_part_6"
+      ],
+      "name": "두 사람이 고른 자리",
+      "role": "things-we-agreed-on",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E8DCCB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_5_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.055,
+          "w": 0.91,
+          "h": 0.73,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_5_part_2",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.085,
+          "w": 0.47,
+          "h": 0.11,
+          "z": 2,
+          "fillColor": "#FAF9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_5_part_3",
+          "type": "text",
+          "x": 0.098,
+          "y": 0.1,
+          "w": 0.434,
+          "h": 0.08499999999999999,
+          "z": 3,
+          "text": "아침의 순서",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_5_part_4",
+          "type": "decoration",
+          "x": 0.045,
+          "y": 0.8,
+          "w": 0.91,
+          "h": 0.1,
+          "z": 4,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_5_part_5",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.826,
+          "w": 0.85,
+          "h": 0.055,
+          "z": 5,
+          "text": "먼저 일어난 사람이 물을 올려놓는다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "photoOverlayTextIds": [
+        "shared-seasons_portrait_5_part_3"
+      ],
+      "name": "아침의 순서",
+      "role": "morning-table",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DED8E3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "TWO CUPS / 매일의 작은 약속",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.145,
+          "w": 0.63,
+          "h": 0.25,
+          "z": 2,
+          "text": "두 잔을\n꺼내는 일",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 42.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_3",
+          "type": "decoration",
+          "x": 0.055,
+          "y": 0.455,
+          "w": 0.9,
+          "h": 0.425,
+          "z": 3,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.49,
+          "w": 0.1581,
+          "h": 0.055,
+          "z": 4,
+          "text": "아침",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_5",
+          "type": "text",
+          "x": 0.26849999999999996,
+          "y": 0.49,
+          "w": 0.3315,
+          "h": 0.065,
+          "z": 5,
+          "text": "커피는 조금 연하게",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_6",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.571,
+          "w": 0.51,
+          "h": 0.0011958762886597938,
+          "z": 6,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_7",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.605,
+          "w": 0.1581,
+          "h": 0.055,
+          "z": 7,
+          "text": "자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_8",
+          "type": "text",
+          "x": 0.26849999999999996,
+          "y": 0.605,
+          "w": 0.3315,
+          "h": 0.065,
+          "z": 8,
+          "text": "햇볕이 드는 쪽으로",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_9",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.6859999999999999,
+          "w": 0.51,
+          "h": 0.0011958762886597938,
+          "z": 9,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_10",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.505,
+          "w": 0.25,
+          "h": 0.255,
+          "z": 10,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_11",
+          "type": "decoration",
+          "x": 0.61,
+          "y": 0.765,
+          "w": 0.22075862068965518,
+          "h": 0.11,
+          "z": 11,
+          "style": "lifeHomeNote",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_12",
+          "type": "text",
+          "x": 0.6409062068965518,
+          "y": 0.7958000000000001,
+          "w": 0.16115379310344824,
+          "h": 0.0605,
+          "z": 12,
+          "text": "늘 두 잔",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 10.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_part_13",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.785,
+          "w": 0.46,
+          "h": 0.055,
+          "z": 13,
+          "text": "서로의 취향을 외우는 중",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 14,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 15,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아침의 순서",
+      "role": "two-cups-note",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.035,
+          "w": 0.85,
+          "h": 0.16,
+          "z": 1,
+          "text": "Market day",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 54.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_2",
+          "type": "decoration",
+          "x": 0.063,
+          "y": 0.234,
+          "w": 0.89,
+          "h": 0.61,
+          "z": 2,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_3",
+          "type": "decoration",
+          "x": 0.055,
+          "y": 0.225,
+          "w": 0.89,
+          "h": 0.61,
+          "z": 3,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_4",
+          "type": "decoration",
+          "x": 0.062,
+          "y": 0.232,
+          "w": 0.876,
+          "h": 0.596,
+          "z": 4,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_5",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.25,
+          "w": 0.84,
+          "h": 0.485,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/journey_market.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_6",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.763,
+          "w": 0.8200000000000001,
+          "h": 0.055,
+          "z": 6,
+          "text": "토요일 / 동네 시장에서",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_7_part_7",
+          "type": "decoration",
+          "x": 0.55,
+          "y": 0.83,
+          "w": 0.34,
+          "h": 0.05082474226804125,
+          "z": 7,
+          "style": "atelierPostalBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "장 보러 가는 길",
+      "role": "market-weekend",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_1",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.055,
+          "w": 0.86,
+          "h": 0.84,
+          "z": 1,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_2",
+          "type": "text",
+          "x": 0.115,
+          "y": 0.09,
+          "w": 0.77,
+          "h": 0.055,
+          "z": 2,
+          "text": "우리 집 장보기 목록",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_3",
+          "type": "text",
+          "x": 0.11,
+          "y": 0.16,
+          "w": 0.76,
+          "h": 0.15,
+          "z": 3,
+          "text": "For dinner",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 55.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_4",
+          "type": "decoration",
+          "x": 0.115,
+          "y": 0.34,
+          "w": 0.77,
+          "h": 0.0011958762886597938,
+          "z": 4,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_5",
+          "type": "text",
+          "x": 0.115,
+          "y": 0.38,
+          "w": 0.2387,
+          "h": 0.055,
+          "z": 5,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_6",
+          "type": "text",
+          "x": 0.38449999999999995,
+          "y": 0.38,
+          "w": 0.5005000000000001,
+          "h": 0.065,
+          "z": 6,
+          "text": "제철 채소 한 봉지",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_7",
+          "type": "decoration",
+          "x": 0.115,
+          "y": 0.461,
+          "w": 0.77,
+          "h": 0.0011958762886597938,
+          "z": 7,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_8",
+          "type": "text",
+          "x": 0.115,
+          "y": 0.5,
+          "w": 0.2387,
+          "h": 0.055,
+          "z": 8,
+          "text": "02",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_9",
+          "type": "text",
+          "x": 0.38449999999999995,
+          "y": 0.5,
+          "w": 0.5005000000000001,
+          "h": 0.065,
+          "z": 9,
+          "text": "내일 아침에 먹을 과일",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_10",
+          "type": "decoration",
+          "x": 0.115,
+          "y": 0.581,
+          "w": 0.77,
+          "h": 0.0011958762886597938,
+          "z": 10,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_11",
+          "type": "text",
+          "x": 0.115,
+          "y": 0.62,
+          "w": 0.2387,
+          "h": 0.055,
+          "z": 11,
+          "text": "03",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_12",
+          "type": "text",
+          "x": 0.38449999999999995,
+          "y": 0.62,
+          "w": 0.5005000000000001,
+          "h": 0.065,
+          "z": 12,
+          "text": "네가 좋아하는 작은 간식",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_13",
+          "type": "decoration",
+          "x": 0.115,
+          "y": 0.701,
+          "w": 0.77,
+          "h": 0.0011958762886597938,
+          "z": 13,
+          "fillColor": "#5D525F",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_14",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.755,
+          "w": 0.22276551724137933,
+          "h": 0.09,
+          "z": 14,
+          "style": "materialTicketDuo",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_8_part_15",
+          "type": "text",
+          "x": 0.5,
+          "y": 0.78,
+          "w": 0.35,
+          "h": 0.065,
+          "z": 15,
+          "text": "같이 요리하기.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 16,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 17,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "장 보러 가는 길",
+      "role": "grocery-list",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#29483E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_9_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "오늘은 집에서",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_9_part_2",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.14,
+          "w": 0.85,
+          "h": 0.18,
+          "z": 2,
+          "text": "Our table",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 72.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_9_part_3",
+          "type": "sticker",
+          "x": 0.045,
+          "y": 0.365,
+          "w": 0.6555862068965517,
+          "h": 0.49,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_linen.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_9_part_4",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.425,
+          "w": 0.76,
+          "h": 0.39,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_table.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_9_part_5",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.865,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 5,
+          "text": "서툴러도 같이 만든 저녁",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "같이 만든 저녁",
+      "role": "dinner-for-two",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DBE4DC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_1",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.07,
+          "w": 0.88,
+          "h": 0.79,
+          "z": 1,
+          "fillColor": "#EEF0E8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_2",
+          "type": "decoration",
+          "x": 0.092,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 2,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_3",
+          "type": "decoration",
+          "x": 0.092,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 3,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_4",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 4,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_5",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 5,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_6",
+          "type": "decoration",
+          "x": 0.14800000000000002,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 6,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_7",
+          "type": "decoration",
+          "x": 0.14800000000000002,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 7,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_8",
+          "type": "decoration",
+          "x": 0.176,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 8,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_9",
+          "type": "decoration",
+          "x": 0.176,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 9,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_10",
+          "type": "decoration",
+          "x": 0.20400000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 10,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_11",
+          "type": "decoration",
+          "x": 0.20400000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 11,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_12",
+          "type": "decoration",
+          "x": 0.23199999999999998,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 12,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_13",
+          "type": "decoration",
+          "x": 0.23199999999999998,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 13,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_14",
+          "type": "decoration",
+          "x": 0.26,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 14,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_15",
+          "type": "decoration",
+          "x": 0.26,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 15,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_16",
+          "type": "decoration",
+          "x": 0.288,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 16,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_17",
+          "type": "decoration",
+          "x": 0.288,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 17,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_18",
+          "type": "decoration",
+          "x": 0.316,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 18,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_19",
+          "type": "decoration",
+          "x": 0.316,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 19,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_20",
+          "type": "decoration",
+          "x": 0.34400000000000003,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 20,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_21",
+          "type": "decoration",
+          "x": 0.34400000000000003,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 21,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_22",
+          "type": "decoration",
+          "x": 0.37200000000000005,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 22,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_23",
+          "type": "decoration",
+          "x": 0.37200000000000005,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 23,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_24",
+          "type": "decoration",
+          "x": 0.4000000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 24,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_25",
+          "type": "decoration",
+          "x": 0.4000000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 25,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_26",
+          "type": "decoration",
+          "x": 0.4280000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 26,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_27",
+          "type": "decoration",
+          "x": 0.4280000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 27,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_28",
+          "type": "decoration",
+          "x": 0.4560000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 28,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_29",
+          "type": "decoration",
+          "x": 0.4560000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 29,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_30",
+          "type": "decoration",
+          "x": 0.48400000000000015,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 30,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_31",
+          "type": "decoration",
+          "x": 0.48400000000000015,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 31,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_32",
+          "type": "decoration",
+          "x": 0.5120000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 32,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_33",
+          "type": "decoration",
+          "x": 0.5120000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 33,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_34",
+          "type": "decoration",
+          "x": 0.5400000000000001,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 34,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_35",
+          "type": "decoration",
+          "x": 0.5400000000000001,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 35,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_36",
+          "type": "decoration",
+          "x": 0.5680000000000002,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 36,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_37",
+          "type": "decoration",
+          "x": 0.5680000000000002,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 37,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_38",
+          "type": "decoration",
+          "x": 0.5960000000000002,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 38,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_39",
+          "type": "decoration",
+          "x": 0.5960000000000002,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 39,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_40",
+          "type": "decoration",
+          "x": 0.6240000000000002,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 40,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_41",
+          "type": "decoration",
+          "x": 0.6240000000000002,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 41,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_42",
+          "type": "decoration",
+          "x": 0.6520000000000002,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 42,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_43",
+          "type": "decoration",
+          "x": 0.6520000000000002,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 43,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_44",
+          "type": "decoration",
+          "x": 0.6800000000000003,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 44,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_45",
+          "type": "decoration",
+          "x": 0.6800000000000003,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 45,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_46",
+          "type": "decoration",
+          "x": 0.7080000000000003,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 46,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_47",
+          "type": "decoration",
+          "x": 0.7080000000000003,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 47,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_48",
+          "type": "decoration",
+          "x": 0.7360000000000003,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 48,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_49",
+          "type": "decoration",
+          "x": 0.7360000000000003,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 49,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_50",
+          "type": "decoration",
+          "x": 0.7640000000000003,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 50,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_51",
+          "type": "decoration",
+          "x": 0.7640000000000003,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 51,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_52",
+          "type": "decoration",
+          "x": 0.7920000000000004,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 52,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_53",
+          "type": "decoration",
+          "x": 0.7920000000000004,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 53,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_54",
+          "type": "decoration",
+          "x": 0.8200000000000004,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 54,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_55",
+          "type": "decoration",
+          "x": 0.8200000000000004,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 55,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_56",
+          "type": "decoration",
+          "x": 0.8480000000000004,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 56,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_57",
+          "type": "decoration",
+          "x": 0.8480000000000004,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 57,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_58",
+          "type": "decoration",
+          "x": 0.8760000000000004,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 58,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_59",
+          "type": "decoration",
+          "x": 0.8760000000000004,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 59,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_60",
+          "type": "decoration",
+          "x": 0.9040000000000005,
+          "y": 0.09,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 60,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_61",
+          "type": "decoration",
+          "x": 0.9040000000000005,
+          "y": 0.84,
+          "w": 0.012,
+          "h": 0.0010463917525773195,
+          "z": 61,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_62",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.104,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 62,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_63",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.104,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 63,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_64",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.13,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 64,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_65",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.13,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 65,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_66",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.156,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 66,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_67",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.156,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 67,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_68",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.182,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 68,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_69",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.182,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 69,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_70",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.208,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 70,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_71",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.208,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 71,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_72",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.23399999999999999,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 72,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_73",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.23399999999999999,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 73,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_74",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.26,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 74,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_75",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.26,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 75,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_76",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.286,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 76,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_77",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.286,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 77,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_78",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.31199999999999994,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 78,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_79",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.31199999999999994,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 79,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_80",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.33799999999999997,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 80,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_81",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.33799999999999997,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 81,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_82",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.364,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 82,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_83",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.364,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 83,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_84",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.39,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 84,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_85",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.39,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 85,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_86",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.41600000000000004,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 86,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_87",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.41600000000000004,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 87,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_88",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.44200000000000006,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 88,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_89",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.44200000000000006,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 89,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_90",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.4680000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 90,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_91",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.4680000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 91,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_92",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.4940000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 92,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_93",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.4940000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 93,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_94",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.5200000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 94,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_95",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.5200000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 95,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_96",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.5460000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 96,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_97",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.5460000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 97,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_98",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.5720000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 98,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_99",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.5720000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 99,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_100",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.5980000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 100,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_101",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.5980000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 101,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_102",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.6240000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 102,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_103",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.6240000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 103,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_104",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.6500000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 104,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_105",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.6500000000000001,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 105,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_106",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.6760000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 106,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_107",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.6760000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 107,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_108",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.7020000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 108,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_109",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.7020000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 109,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_110",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.7280000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 110,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_111",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.7280000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 111,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_112",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.7540000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 112,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_113",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.7540000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 113,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_114",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.7800000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 114,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_115",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.7800000000000002,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 115,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_116",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.8060000000000003,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 116,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_117",
+          "type": "decoration",
+          "x": 0.9199999999999999,
+          "y": 0.8060000000000003,
+          "w": 0.0014,
+          "h": 0.01,
+          "z": 117,
+          "fillColor": "#A3B5A6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_118",
+          "type": "image",
+          "x": 0.13,
+          "y": 0.135,
+          "w": 0.57,
+          "h": 0.44,
+          "z": 118,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "materialLinenOval",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_119",
+          "type": "sticker",
+          "x": 0.73,
+          "y": 0.235,
+          "w": 0.16,
+          "h": 0.11958762886597939,
+          "z": 119,
+          "imageUrl": "asset:assets/sticker/studio/life_vase.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_10_part_120",
+          "type": "text",
+          "x": 0.13,
+          "y": 0.61,
+          "w": 0.64,
+          "h": 0.17,
+          "z": 120,
+          "text": "잘 먹었습니다,\n오늘도.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 30.5,
+            "fontWeight": 400,
+            "color": "#29483E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 121,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 122,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "같이 만든 저녁",
+      "role": "dinner-conversation",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DED8E3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.055,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "비 오는 주말의 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_2",
+          "type": "decoration",
+          "x": 0.07800000000000001,
+          "y": 0.159,
+          "w": 0.71,
+          "h": 0.66,
+          "z": 2,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_3",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.15,
+          "w": 0.71,
+          "h": 0.66,
+          "z": 3,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_4",
+          "type": "decoration",
+          "x": 0.07700000000000001,
+          "y": 0.157,
+          "w": 0.696,
+          "h": 0.646,
+          "z": 4,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_5",
+          "type": "image",
+          "x": 0.095,
+          "y": 0.175,
+          "w": 0.6599999999999999,
+          "h": 0.535,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_6",
+          "type": "text",
+          "x": 0.10500000000000001,
+          "y": 0.7380000000000001,
+          "w": 0.6399999999999999,
+          "h": 0.055,
+          "z": 6,
+          "text": "읽던 페이지를 잠깐 접어 두고",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_7",
+          "type": "sticker",
+          "x": 0.785,
+          "y": 0.22,
+          "w": 0.13,
+          "h": 0.14574742268041238,
+          "z": 7,
+          "imageUrl": "asset:assets/sticker/studio/material_bookmark.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_8",
+          "type": "decoration",
+          "x": 0.72,
+          "y": 0.755,
+          "w": 0.2,
+          "h": 0.062285223367697595,
+          "z": 8,
+          "style": "materialIndexTabs",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_11_part_9",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.865,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 9,
+          "text": "STAYING IN / 아무 데도 가지 않는 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 10,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 11,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "비 오는 주말",
+      "role": "rainy-window-reading",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F1ECEC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_12_part_1",
+          "type": "text",
+          "x": 0.065,
+          "y": 0.05,
+          "w": 0.86,
+          "h": 0.19,
+          "z": 1,
+          "text": "Stay in.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 90.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_12_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.285,
+          "w": 0.77,
+          "h": 0.205,
+          "z": 2,
+          "text": "아무 데도\n가지 않기로",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 33.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_12_part_3",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.58,
+          "w": 0.54,
+          "h": 0.2690721649484536,
+          "z": 3,
+          "style": "lifeHomeNote",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_12_part_4",
+          "type": "text",
+          "x": 0.1456,
+          "y": 0.655340206185567,
+          "w": 0.3942,
+          "h": 0.14798969072164952,
+          "z": 4,
+          "text": "각자 책을 읽다가\n같은 장면에 웃었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_12_part_5",
+          "type": "image",
+          "x": 0.66,
+          "y": 0.575,
+          "w": 0.27,
+          "h": 0.26,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "studioInstant",
+          "rotation": 0.035
+        },
+        {
+          "id": "shared-seasons_portrait_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "비 오는 주말",
+      "role": "rainy-day-letter",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D8E2DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_13_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.11579037800687285,
+          "w": 0.92,
+          "h": 0.4584192439862542,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_cafe.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_13_part_2",
+          "type": "decoration",
+          "x": 0.04,
+          "y": 0.67,
+          "w": 0.92,
+          "h": 0.22,
+          "z": 2,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_13_part_3",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.685,
+          "w": 0.54,
+          "h": 0.12,
+          "z": 3,
+          "text": "The usual",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 52.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_13_part_4",
+          "type": "text",
+          "x": 0.63,
+          "y": 0.79,
+          "w": 0.28,
+          "h": 0.055,
+          "z": 4,
+          "text": "집 밖의 단골 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_13_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.6,
+          "w": 0.2598931034482759,
+          "h": 0.105,
+          "z": 5,
+          "style": "materialTicketDuo",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "집 밖의 단골 자리",
+      "role": "regular-cafe-table",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.055,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "메뉴를 보지 않아도 아는 사이",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_2",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.16,
+          "w": 0.88,
+          "h": 0.7,
+          "z": 2,
+          "fillColor": "#DAD2DA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_3",
+          "type": "image",
+          "x": 0.095,
+          "y": 0.195,
+          "w": 0.48,
+          "h": 0.53,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/travel_cafe.png",
+          "frame": "atelierKeyhole",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_4",
+          "type": "text",
+          "x": 0.63,
+          "y": 0.245,
+          "w": 0.25,
+          "h": 0.18,
+          "z": 4,
+          "text": "네가\n고르는 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_5",
+          "type": "decoration",
+          "x": 0.63,
+          "y": 0.48,
+          "w": 0.25,
+          "h": 0.0011958762886597938,
+          "z": 5,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_6",
+          "type": "text",
+          "x": 0.63,
+          "y": 0.545,
+          "w": 0.25,
+          "h": 0.17,
+          "z": 6,
+          "text": "내가\n앉는 쪽",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_14_part_7",
+          "type": "text",
+          "x": 0.115,
+          "y": 0.78,
+          "w": 0.75,
+          "h": 0.055,
+          "z": 7,
+          "text": "늘 먹던 걸로, 두 잔 주세요.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "집 밖의 단골 자리",
+      "role": "regular-order-card",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7D8DD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.04,
+          "w": 0.8,
+          "h": 0.19,
+          "z": 1,
+          "text": "For you",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 77.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_2",
+          "type": "decoration",
+          "x": 0.07800000000000001,
+          "y": 0.269,
+          "w": 0.86,
+          "h": 0.59,
+          "z": 2,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_3",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.26,
+          "w": 0.86,
+          "h": 0.59,
+          "z": 3,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_4",
+          "type": "decoration",
+          "x": 0.07700000000000001,
+          "y": 0.267,
+          "w": 0.846,
+          "h": 0.576,
+          "z": 4,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_5",
+          "type": "image",
+          "x": 0.095,
+          "y": 0.28500000000000003,
+          "w": 0.8099999999999999,
+          "h": 0.46499999999999997,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_6",
+          "type": "text",
+          "x": 0.10500000000000001,
+          "y": 0.778,
+          "w": 0.79,
+          "h": 0.055,
+          "z": 6,
+          "text": "기념일의 작은 준비",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_15_part_7",
+          "type": "sticker",
+          "x": 0.78,
+          "y": 0.62,
+          "w": 0.13,
+          "h": 0.14574742268041238,
+          "z": 7,
+          "imageUrl": "asset:assets/sticker/studio/material_rose.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기념일의 작은 준비",
+      "role": "anniversary-preparations",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_16_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.055,
+          "w": 0.85,
+          "h": 0.055,
+          "z": 1,
+          "text": "ANOTHER YEAR WITH YOU",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_16_part_2",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.19573883161512026,
+          "w": 0.8599999999999999,
+          "h": 0.4285223367697595,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "atelierDeco",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_16_part_3",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.7,
+          "w": 0.67,
+          "h": 0.17,
+          "z": 3,
+          "text": "거창하지 않아도\n꼭 챙기고 싶은 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_16_part_4",
+          "type": "decoration",
+          "x": 0.745,
+          "y": 0.74,
+          "w": 0.18,
+          "h": 0.09965635738831614,
+          "z": 4,
+          "style": "atelierArchiveSeal",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_16_part_5",
+          "type": "text",
+          "x": 0.772,
+          "y": 0.7718900343642612,
+          "w": 0.12600000000000003,
+          "h": 0.049828178694158065,
+          "z": 5,
+          "text": "2026",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "기념일의 작은 준비",
+      "role": "anniversary-with-you",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDD5DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "서로에게 남긴 말",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.13,
+          "w": 0.8,
+          "h": 0.16,
+          "z": 2,
+          "text": "Dear you,",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 62.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_3",
+          "type": "decoration",
+          "x": 0.075,
+          "y": 0.32,
+          "w": 0.6068855172413793,
+          "h": 0.54,
+          "z": 3,
+          "style": "materialAirLetter",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_4",
+          "type": "text",
+          "x": 0.15996397241379312,
+          "y": 0.47120000000000006,
+          "w": 0.44302642758620686,
+          "h": 0.29700000000000004,
+          "z": 4,
+          "text": "같이 사는 일에는\n작은 다정함이 필요했다.\n오늘도 먼저 물어봐 줘서 고마워.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_5",
+          "type": "sticker",
+          "x": 0.6368855172413792,
+          "y": 0.295,
+          "w": 0.11,
+          "h": 0.08221649484536082,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/material_clip.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_6",
+          "type": "image",
+          "x": 0.61,
+          "y": 0.43,
+          "w": 0.285,
+          "h": 0.3,
+          "z": 6,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_walk.png",
+          "frame": "studioPostage",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_17_part_7",
+          "type": "text",
+          "x": 0.615,
+          "y": 0.785,
+          "w": 0.28,
+          "h": 0.055,
+          "z": 7,
+          "text": "함께 걸었던 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서로에게 남긴 말",
+      "role": "letter-for-you",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_1",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.055,
+          "w": 0.88,
+          "h": 0.79,
+          "z": 1,
+          "fillColor": "#E6D8D9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_2",
+          "type": "image",
+          "x": 0.095,
+          "y": 0.09,
+          "w": 0.81,
+          "h": 0.72,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_3",
+          "type": "decoration",
+          "x": 0.19,
+          "y": 0.7,
+          "w": 0.65,
+          "h": 0.085,
+          "z": 3,
+          "fillColor": "#FAF9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_4",
+          "type": "text",
+          "x": 0.208,
+          "y": 0.715,
+          "w": 0.614,
+          "h": 0.060000000000000005,
+          "z": 4,
+          "text": "서랍에 넣어 둔 고마운 마음",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_5",
+          "type": "decoration",
+          "x": 0.59,
+          "y": 0.075,
+          "w": 0.3,
+          "h": 0.053387334315169364,
+          "z": 5,
+          "style": "materialVellumBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_18_part_6",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.86,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 6,
+          "text": "편지는 버리지 않고 모아 두기로 했다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "photoOverlayTextIds": [
+        "shared-seasons_portrait_18_part_4"
+      ],
+      "name": "서로에게 남긴 말",
+      "role": "letter-keepsakes",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#2E5148",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_19_part_1",
+          "type": "image",
+          "x": 0.045,
+          "y": 0.11328178694158073,
+          "w": 0.91,
+          "h": 0.45343642611683843,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_walk.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_19_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.695,
+          "w": 0.85,
+          "h": 0.115,
+          "z": 2,
+          "text": "계절이 바뀌는 동안",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_19_part_3",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.835,
+          "w": 0.85,
+          "h": 0.055,
+          "z": 3,
+          "text": "같은 길도 함께 걸으면 다른 장면이 된다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F7F6F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "계절이 바뀌는 동안",
+      "role": "seasonal-walk",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DFE6DA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.05,
+          "w": 0.85,
+          "h": 0.055,
+          "z": 1,
+          "text": "안과 밖, 우리의 두 풍경",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#2E5148",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_2",
+          "type": "decoration",
+          "x": 0.07300000000000001,
+          "y": 0.169,
+          "w": 0.54,
+          "h": 0.56,
+          "z": 2,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_3",
+          "type": "decoration",
+          "x": 0.065,
+          "y": 0.16,
+          "w": 0.54,
+          "h": 0.56,
+          "z": 3,
+          "fillColor": "#2E5148",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_4",
+          "type": "decoration",
+          "x": 0.07200000000000001,
+          "y": 0.167,
+          "w": 0.526,
+          "h": 0.546,
+          "z": 4,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_5",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.185,
+          "w": 0.49000000000000005,
+          "h": 0.43500000000000005,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_desk.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_6",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.6480000000000001,
+          "w": 0.47000000000000003,
+          "h": 0.055,
+          "z": 6,
+          "text": "집 안의 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#2E5148",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_7",
+          "type": "image",
+          "x": 0.64,
+          "y": 0.34,
+          "w": 0.28,
+          "h": 0.35,
+          "z": 7,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_walk.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_20_part_8",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.765,
+          "w": 0.81,
+          "h": 0.14,
+          "z": 8,
+          "text": "커튼을 바꾸고\n같은 길을 걷고",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#2E5148",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 9,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 10,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "계절이 바뀌는 동안",
+      "role": "seasonal-home-pair",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_1",
+          "type": "text",
+          "x": 0.07,
+          "y": 0.06,
+          "w": 0.52,
+          "h": 0.22,
+          "z": 1,
+          "text": "우리 집의\n작은 물건",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 33.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_2",
+          "type": "text",
+          "x": 0.62,
+          "y": 0.12,
+          "w": 0.3,
+          "h": 0.055,
+          "z": 2,
+          "text": "버리지 못한 것들의 목록",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_3",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.34,
+          "w": 0.88,
+          "h": 0.52,
+          "z": 3,
+          "fillColor": "#DED8E3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_4",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.385,
+          "w": 0.83,
+          "h": 0.0011958762886597938,
+          "z": 4,
+          "fillColor": "#BAAFBD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_5",
+          "type": "sticker",
+          "x": 0.12,
+          "y": 0.42,
+          "w": 0.40137931034482754,
+          "h": 0.3,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/life_slippers.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_6",
+          "type": "image",
+          "x": 0.6,
+          "y": 0.43,
+          "w": 0.27,
+          "h": 0.28,
+          "z": 6,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_keepsakes.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_7",
+          "type": "text",
+          "x": 0.095,
+          "y": 0.79,
+          "w": 0.46,
+          "h": 0.055,
+          "z": 7,
+          "text": "01 / 나란히 놓인 실내화",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_21_part_8",
+          "type": "text",
+          "x": 0.61,
+          "y": 0.79,
+          "w": 0.28,
+          "h": 0.055,
+          "z": 8,
+          "text": "02 / 함께 모은 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 9,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 10,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 작은 물건",
+      "role": "home-object-cabinet",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E3DDDF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.035,
+          "w": 0.85,
+          "h": 0.16,
+          "z": 1,
+          "text": "Everyday, kept.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 55.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_2",
+          "type": "decoration",
+          "x": 0.07300000000000001,
+          "y": 0.244,
+          "w": 0.53,
+          "h": 0.6,
+          "z": 2,
+          "fillColor": "#BBC1BB",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_3",
+          "type": "decoration",
+          "x": 0.065,
+          "y": 0.235,
+          "w": 0.53,
+          "h": 0.6,
+          "z": 3,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_4",
+          "type": "decoration",
+          "x": 0.07200000000000001,
+          "y": 0.242,
+          "w": 0.516,
+          "h": 0.586,
+          "z": 4,
+          "fillColor": "#F8F7F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_5",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.26,
+          "w": 0.48000000000000004,
+          "h": 0.475,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/small_days_breakfast.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_6",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.763,
+          "w": 0.46,
+          "h": 0.055,
+          "z": 6,
+          "text": "평범한 날도 남겨 두자",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_7",
+          "type": "image",
+          "x": 0.65,
+          "y": 0.235,
+          "w": 0.28,
+          "h": 0.265,
+          "z": 7,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_book.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_22_part_8",
+          "type": "image",
+          "x": 0.65,
+          "y": 0.56,
+          "w": 0.28,
+          "h": 0.27,
+          "z": 8,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_cafe.png",
+          "frame": "studioPostage",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 9,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 10,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "우리 집의 작은 물건",
+      "role": "ordinary-days-contact",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_1",
+          "type": "decoration",
+          "x": 0.055,
+          "y": 0.045,
+          "w": 0.89,
+          "h": 0.86,
+          "z": 1,
+          "fillColor": "#F7F6F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_2",
+          "type": "text",
+          "x": 0.105,
+          "y": 0.09,
+          "w": 0.79,
+          "h": 0.055,
+          "z": 2,
+          "text": "이 집에 사는 두 사람에게",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_3",
+          "type": "text",
+          "x": 0.105,
+          "y": 0.22,
+          "w": 0.78,
+          "h": 0.23,
+          "z": 3,
+          "text": "돌아올 곳이\n있다는 것",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 36.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_4",
+          "type": "text",
+          "x": 0.105,
+          "y": 0.52,
+          "w": 0.78,
+          "h": 0.19,
+          "z": 4,
+          "text": "사소한 하루를 나누는 사이가 됐다.\n내일도 같은 문을 열고 들어오자.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 16.0,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_5",
+          "type": "sticker",
+          "x": 0.11,
+          "y": 0.715,
+          "w": 0.1873103448275862,
+          "h": 0.14,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/life_house_key.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_6",
+          "type": "decoration",
+          "x": 0.44,
+          "y": 0.78,
+          "w": 0.43,
+          "h": 0.0011958762886597938,
+          "z": 6,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_23_part_7",
+          "type": "text",
+          "x": 0.44,
+          "y": 0.82,
+          "w": 0.43,
+          "h": 0.075,
+          "z": 7,
+          "text": "서연과 지우",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#5D525F",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돌아올 곳이 있다는 것",
+      "role": "returning-home-letter",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "shared-seasons_portrait_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#543D4A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_24_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.045,
+          "w": 0.89,
+          "h": 0.86,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/couple_anniversary.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "shared-seasons_portrait_24_part_2",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.78,
+          "w": 0.74,
+          "h": 0.095,
+          "z": 2,
+          "fillColor": "#FAF9F4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "shared-seasons_portrait_24_part_3",
+          "type": "text",
+          "x": 0.13799999999999998,
+          "y": 0.795,
+          "w": 0.704,
+          "h": 0.07,
+          "z": 3,
+          "text": "내일도 같은 문을 열고",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 16.5,
+            "fontWeight": 400,
+            "color": "#543D4A",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "같이 사는 계절",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "shared-seasons_portrait_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "photoOverlayTextIds": [
+        "shared-seasons_portrait_24_part_3"
+      ],
+      "name": "돌아올 곳이 있다는 것",
+      "role": "last-shared-portrait",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "우리의 문을 열고",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "두 사람이 고른 자리",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "아침의 순서",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "장 보러 가는 길",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "같이 만든 저녁",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "비 오는 주말",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "집 밖의 단골 자리",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "기념일의 작은 준비",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "서로에게 남긴 말",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "계절이 바뀌는 동안",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "우리 집의 작은 물건",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "돌아올 곳이 있다는 것",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

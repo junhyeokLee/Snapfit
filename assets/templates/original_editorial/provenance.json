@@ -1,0 +1,104 @@
+{
+  "created": "2026-09-07",
+  "mode": "built-in image_gen",
+  "purpose": "Replaceable sample photography for three manually authored editable album collections; not live AI template output.",
+  "notes": [
+    "Fictional scenes and people, not photographs of users or verified destinations.",
+    "Original PNG files copied unchanged from generated output; no CLI image editing.",
+    "Template selection removes sample photographs while preserving independently editable photo frames, text and decorations.",
+    "Commercial release still requires product, output-rights and print review."
+  ],
+  "assets": [
+    {
+      "id": "petal_couple",
+      "file": "images/petal_couple.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-ec636a4d-fb04-46ec-8b27-bb330a862c8d.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: replaceable sample photo for an editable premium wedding photo album, NOT a designed album page.\nA refined candid documentary wedding photograph of an adult East Asian couple, late twenties to thirties, bride in simple ivory silk dress and groom in a charcoal suit, walking together in an olive garden beside pale old stone architecture. Quiet genuine connection, not posing at camera. Both full bodies visible at the center, with generous breathing room around heads and sides for square or vertical crops. Soft late-afternoon natural daylight, realistic detailed faces/hands/fabric, ivory, natural olive green and subtle blush flowers. Modern fine-art wedding editorial, crisp and luminous, no dramatic orange color grade, no blur overlay, no heavy grain, no strangers in background, no logos or text. Single real-camera-style photograph, wide 3:2 landscape. No borders, collages or frames."
+    },
+    {
+      "id": "petal_details",
+      "file": "images/petal_details.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-51eba520-55c8-4376-af66-5c504ceb8ed3.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: single editable-album sample photograph, not an album page.\nRefined fine-art wedding still life on a pale ivory linen-covered stone ledge: exactly TWO simple gold wedding bands nestled together in an open pale blush velvet ring box near center, a delicate loose ivory silk ribbon, one pale pink garden rose and a small olive sprig. Rings and box are clearly visible, not a jewelry store display. Broad soft natural window light, beautiful tactile silk/linen/velvet, subtle true shadows, neutral balanced whites, gentle blush/olive/gold accents. All important items centered with crop safety for square and vertical use. Photorealistic quiet editorial photograph, high detail, no text, invitation wording, watermarks, logos, artificial sparkles, heavy bokeh or borders. Wide 3:2 landscape."
+    },
+    {
+      "id": "travel_harbor",
+      "file": "images/travel_harbor.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-39a5c11d-9f54-472c-a327-8740fd503f48.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: single travel photograph for an editable photo-album template, not a layout.\nA fresh photographic travel editorial of a quiet small Mediterranean fishing harbor. Center a little weathered terracotta and butter-yellow waterfront village with green shutters and two wooden boats on brilliant but naturally colored turquoise water. View from a stone quay, a tiny adult couple strolling in the distance, balanced azure sky and sunlit architecture. Fine ripples, authentic details and quiet spring morning light. Rich, clean true colors, no orange vintage LUT or heavy shadows. Important boats and buildings arranged near center for both portrait and square crops. Horizontal 3:2, high-quality realistic photograph with generous scene context, sharp detail, no blurred overlays, no text, watermark, frame, collage or decorative illustration."
+    },
+    {
+      "id": "travel_cafe",
+      "file": "images/travel_cafe.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-171c7195-4630-4b62-bf4a-7456f5d38092.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: a single realistic travel album sample photo, not a template layout.\nA quiet European outdoor cafe in a pale stone lane. Foreground center: a tiny round ivory marble table with two well-made cappuccinos in white ceramic cups, a croissant on a small plate and a folded pale blue linen napkin. Two dark green woven bistro chairs partly visible; textured pale stone wall and a soft pink flowering vine beyond. Modern crisp travel-magazine photography, cool fresh morning daylight, authentic proportions, no people needed, no signs or readable labels. Subject table centered with breathing room, a useful square crop within a wider 3:2 photograph. Natural detail and delicate shadows; not a brown filter, not a dark coffee advertisement. No text, logo, graphic frame, collage, watermarks or fake blur overlay."
+    },
+    {
+      "id": "daily_picnic",
+      "file": "images/daily_picnic.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-b75f0fec-68e5-48d9-907d-ef449ee88141.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: single everyday-life photo sample for an editable photo journal.\nCandid editorial close overhead photograph of a small sunny picnic on fresh grass: softly rumpled pale pink cotton cloth, a cobalt blue enamel plate holding slices of peach and a few strawberries, two clear tumblers with sparkling water, one closed pale green paperback without any text, a small butter-yellow napkin. A person's relaxed forearm can enter subtly at the edge, no faces needed. All key objects grouped centrally with breathing room for square cropping, not an artificial flat-lay grid. Fresh balanced daylight, vivid but natural fruit, delicate grass detail, contemporary independent lifestyle magazine photography, joyful grown-up palette. Sharp well-exposed photograph, no artificial grain or blur effects, no orange filter, no labels, text, logos, watermarks, border or graphic frame. Wide landscape 3:2."
+    },
+    {
+      "id": "daily_desk",
+      "file": "images/daily_desk.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-263f86b4-4a47-4dab-970b-7cccb91ca7ce.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: single photo for an editable everyday-life album template.\nA bright candid still-life photograph of a person's quiet Saturday desk by a window: a small sky-blue ceramic vase with three fresh coral pink tulips, a transparent water glass, an open notebook with completely blank ivory pages, a simple green pencil and a peach on a tiny white plate. Pale whitewashed table, sunlit white curtain at edge, spring light and realistic gentle shadows. Objects centered with generous margins so portrait and square crops still work. Fresh contemporary independent-magazine photography, crisp tactile paper and ceramic detail, lively but restrained color, not a beige minimalist product advert. Horizontal 3:2. No readable text or numbers, no logos, no watermarks, no montage, no graphic frame, no grain filter or heavy blur effects."
+    },
+    {
+      "id": "petal_bouquet",
+      "file": "images/petal_bouquet.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-e1d2c102-4e74-43b3-8f85-ec6d5a843827.png",
+      "prompt": "Use case: photorealistic-natural. Single fine-art wedding documentary sample photograph. Close-up of an adult bride's hands lightly holding a loose bouquet of ivory garden roses, a few blush ranunculus and olive leaves. A long ivory silk ribbon drapes softly against her simple ivory silk dress. No face visible; crop from chest to just below hands with generous central bouquet space for square crops. Pale stone garden architecture softly in background, fresh soft daylight, delicate but real warm-neutral whites, defined flower petals and ribbon weave. Elegant restrained wedding editorial with natural sharp detail. No purple/sepia filter, no harsh golden wash, no synthetic blur overlay, no text, watermark, border, frame or collage. Landscape 3:2 single photograph."
+    },
+    {
+      "id": "petal_table",
+      "file": "images/petal_table.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-c9a0a4c8-86d3-4868-b2f6-b50661867a20.png",
+      "prompt": "Use case: photorealistic-natural. Single high-end wedding photo-album sample photograph.\nAn intimate outdoor wedding reception table in a quiet olive grove beside pale stone walls, a crisp ivory linen tablecloth, clear fine-stem glasses, pale blush and ivory garden flowers in low ceramic bowls, elegant folded white napkins, slender unlit candles. Table runs gently from foreground toward center background, believable small gathering, no people and no readable stationery. Soft late-afternoon light with natural balanced whites, muted green foliage and delicate rose accents, all details photographically sharp near center. Wide 3:2 landscape, keep the table setting centered for square crops. Refined modern documentary editorial, not a luxury gold advertisement. No text, logos, watermark, collage, frame, bokeh blobs or artificial blur overlay."
+    },
+    {
+      "id": "petal_evening",
+      "file": "images/petal_evening.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-6fd2db78-c9af-42b0-b8c2-2aeeef777d88.png",
+      "prompt": "Use case: identity-preserve. Reference is the same adult bride and groom at their wedding, not a composition to copy.\nCreate a new candid photograph from that SAME wedding: preserve the adult East Asian couple's faces, hair, ivory dress and charcoal suit. They sit side by side on a pale stone garden bench, laughing quietly with their heads angled toward one another, hands relaxed, a small ivory/blush bouquet lying beside them. Photographed from a comfortable medium distance, both faces and hands clear near center, olive garden context, enough margin to crop square without cutting heads. Soft neutral late-afternoon daylight, natural greens, crisp realistic textures, gentle romantic feeling without theatrical posing. Wide 3:2 photographic image, no text, logo, collage, borders, sepia/violet color grade or lens flare. Exactly two adult people.",
+      "reference": "petal_couple.png"
+    },
+    {
+      "id": "petal_veil",
+      "file": "images/petal_veil.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-92e1ae53-6e5a-4c9f-8e6d-8de7a0a6230f.png",
+      "prompt": "Use case: photorealistic-natural. A single fine-art wedding detail photograph: an ivory silk ribbon and a translucent bridal veil resting on the back of a pale painted wooden chair beside a tall old window, a small olive sprig caught in the ribbon. No people. Quiet fresh morning daylight reveals fine translucent fabric, pale stone wall, delicate real shadows, neutral ivory highlights, subtle natural green. Photograph centered for square and portrait crops within a wide 3:2 image. Sophisticated clear tactile detail, not yellow, purple or brown toned, not an abstract blur. No text, logo, grain filter, frame or collage."
+    },
+    {
+      "id": "travel_coast",
+      "file": "images/travel_coast.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-ee85d6c6-5634-49ca-ab6e-98e22062ae24.png",
+      "prompt": "Use case: photorealistic-natural. A single clean travel editorial sample photograph: a quiet coastal walking path through low Mediterranean greenery with stone steps leading down to a small clear turquoise cove, distant hills, lightly rippled water and two tiny adult travelers seen from behind on the path. Fresh soft daylight toward late afternoon, not a sunset, natural blue-green water and crisp plant detail. Generous centered scenery for square and vertical crops within a 3:2 landscape photograph. The landscape is the subject, people are small and not posed. Beautiful balanced composition and realistic detail. No heavy color filter, dark haze, lens flare, blur overlay, text, logos, collage, borders or watermark."
+    },
+    {
+      "id": "daily_fruit",
+      "file": "images/daily_fruit.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-299e7dbb-a766-4a44-9ed7-abb02b983dc3.png",
+      "prompt": "Use case: photorealistic-natural. Single contemporary everyday-photo-journal sample photograph, not a designed page.\nA fresh sunlit market still life seen at a gentle overhead angle: a small blue ceramic bowl filled with peaches and a few strawberries on a pale mint linen cloth, a paper bag with two lemons and leafy green stems beside it. Crisp naturally colorful fruit, believable waxless skins and soft real shadows. Subject centered with generous breathing room, fine tactile details, quiet editorial styling, airy white background around the cloth. Wide 3:2 single photograph, usable portrait or square crop. No dark backdrop, no sepia filter, no illustration, no words, brand packaging, watermarks, collage or frame."
+    },
+    {
+      "id": "daily_friends",
+      "file": "images/daily_friends.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-37c957c4-bfee-4eec-a19c-c41bd69a5517.png",
+      "prompt": "Use case: photo-real. Create one premium editorial lifestyle photograph for an editable Korean photo-album template. Three fictional East Asian adult friends in their late twenties sitting together chatting naturally at a picnic in a green city park, candid relaxed laughter, no looking at camera. Pale pink cotton picnic blanket, small blue ceramic fruit plate, straw tote. Fresh white shirts and muted green and blue clothing, natural human anatomy, believable hands. Full group visible centrally with generous safe margins, wide 3:2 composition, eye level, sharp photographic detail and realistic skin, soft clean daylight, fresh true colors. No words, lettering, borders, watermarks, layouts or collage. Avoid golden brown grading, excessive blur, artificial polish, staged advertising poses."
+    },
+    {
+      "id": "daily_book",
+      "file": "images/daily_book.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-70ca7f63-875d-4414-bb40-edd2d3d109d5.png",
+      "prompt": "Use case: photorealistic-natural. A single premium editorial photograph of a quiet reading corner: an open paperback book face down with its clean ivory covers and paper edges visible, resting on a soft pale blue cotton armchair beside a small white side table with a glass of water and one tiny pink flower in a clear vase. Fresh daylight, realistic linen and paper detail, restrained clean colors, no visible text or brand names. Wide 3:2 framing with all key objects centered and safe negative margins for crops. Believable proportions. Not a layout, collage, mockup or template. No text, watermark, grain overlay or artificial blur. Clear modern lifestyle magazine photography, natural luminous white, blue and soft pink palette."
+    },
+    {
+      "id": "travel_street",
+      "file": "images/travel_street.png",
+      "source": "/Users/devsheep/.codex/generated_images/01a03e39-f9d8-7cf2-98a8-b17dc37a277b/exec-b796a738-c826-4ea2-99f2-f188da82d096.png",
+      "prompt": "Use case: photorealistic-natural. Single premium editorial travel photograph of a quiet Mediterranean village pedestrian lane leading toward a glimpse of turquoise sea. White stone stairs, one dusty blue shutter, climbing pink bougainvillea, a wicker bicycle parked beside a wall, two adult travelers in light summer clothes walking away together in middle distance. Luminous neutral morning daylight, sharp believable stone texture, fresh realistic white blue pink green palette, elegant travel magazine composition. Wide 3:2 landscape with bicycle and travelers within central area and generous crop-safe margins. No dramatic effects, dark grading, orange tint, fake depth blur, oversaturation. No text, signs, watermarks, graphic design or collage; only one realistic photograph."
+    }
+  ]
+}

@@ -5,16 +5,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/store/data/api/template_provider.dart';
 import 'package:snap_fit/features/store/domain/entities/premium_template.dart';
 import 'package:snap_fit/features/store/presentation/widgets/premium_template_list.dart';
 
 Widget _wrap(Widget child) {
-  return ScreenUtilInit(
-    designSize: const Size(390, 844),
-    minTextAdapt: true,
-    builder: (_, __) => MaterialApp(
-      home: Scaffold(body: SingleChildScrollView(child: child)),
+  return ProviderScope(
+    overrides: [
+      pointShopCatalogProvider.overrideWith((ref) async => []),
+      ownedPointShopKeysProvider.overrideWith((ref) async => <String>{}),
+    ],
+    child: ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      builder: (_, __) => MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      ),
     ),
   );
 }

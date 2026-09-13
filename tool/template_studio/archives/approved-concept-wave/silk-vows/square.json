@@ -1,0 +1,3292 @@
+{
+  "id": "snapfit_concept_silk-vows_square",
+  "collectionId": "silk-vows",
+  "editionId": "silk-vows-24",
+  "title": "서약의 결",
+  "category": "웨딩",
+  "concept": "실크 매듭과 압인, 은빛 여백의 웨딩 기록",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "square",
+  "designWidth": 500.0,
+  "designHeight": 500.0,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 500.0,
+    "layers": [
+      {
+        "id": "silk-vows_square_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "silk-vows_square_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/petal_veil.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "silk-vows_square_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#111C23",
+        "cornerRadius": 0,
+        "opacity": 0.2
+      },
+      {
+        "id": "silk-vows_square_0_part_3",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.095,
+        "w": 0.85,
+        "h": 0.0016,
+        "z": 3,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "silk-vows_square_0_part_4",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 4,
+        "text": "OUR WEDDING / 01",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "silk-vows_square_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.14,
+        "w": 0.85,
+        "h": 0.15,
+        "z": 5,
+        "text": "서약의 결",
+        "align": "left",
+        "style": {
+          "fontFamily": "Eulyoo",
+          "fontSize": 52.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "silk-vows_square_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.31,
+        "w": 0.6,
+        "h": 0.15,
+        "z": 6,
+        "text": "서로에게 건넨 약속을\n한 권에 묶다",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 14.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "silk-vows_square_0_part_7",
+        "type": "sticker",
+        "x": 0.74,
+        "y": 0.74,
+        "w": 0.19,
+        "h": 0.19,
+        "z": 7,
+        "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+        "rotation": 0.0
+      },
+      {
+        "id": "silk-vows_square_0_part_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.83,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 8,
+        "text": "서연과 지우",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 13.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "silk-vows_square_0_part_9",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.91,
+        "w": 0.8,
+        "h": 0.055,
+        "z": 9,
+        "text": "2026. 10. 17",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "서약의 결",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F5F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_1_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.55,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE DAY WE CHOSE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_1_part_2",
+          "type": "text",
+          "x": 0.74,
+          "y": 0.15,
+          "w": 0.17,
+          "h": 0.2,
+          "z": 2,
+          "text": "01",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 80.0,
+            "fontWeight": 400,
+            "color": "#BCC6C0",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "silk-vows_square_1_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.19,
+          "w": 0.6,
+          "h": 0.23,
+          "z": 3,
+          "text": "예식을 앞둔\n아침",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 38.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_1_part_4",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.45,
+          "w": 0.18,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_1_part_5",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.53,
+          "w": 0.51,
+          "h": 0.34,
+          "z": 5,
+          "style": "atelierTitlePlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_1_part_6",
+          "type": "text",
+          "x": 0.1614,
+          "y": 0.615,
+          "w": 0.3723,
+          "h": 0.20400000000000004,
+          "z": 6,
+          "text": "평소보다 일찍 눈을 떴다.\n오늘의 작은 순간들을\n천천히 기억해 두기로 했다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_1_part_7",
+          "type": "sticker",
+          "x": 0.61,
+          "y": 0.65,
+          "w": 0.23,
+          "h": 0.23,
+          "z": 7,
+          "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "예식을 앞둔 아침",
+      "role": "silk-opening-title",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2E9E4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_2_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.055,
+          "w": 0.89,
+          "h": 0.82,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_veil.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_2_part_2",
+          "type": "decoration",
+          "x": 0.02,
+          "y": 0.76,
+          "w": 0.5880000000000001,
+          "h": 0.14,
+          "z": 2,
+          "style": "materialVellumBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_2_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.805,
+          "w": 0.76,
+          "h": 0.055,
+          "z": 3,
+          "text": "17 OCTOBER / DRESSING ROOM",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "예식을 앞둔 아침",
+      "role": "veil-gatefold",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_3_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "BEFORE THE CEREMONY",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_3_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.16,
+          "w": 0.52,
+          "h": 0.43,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_details.png",
+          "frame": "atelierCrossRibbon",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_3_part_3",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.48,
+          "w": 0.4,
+          "h": 0.35,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_bouquet.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_3_part_4",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.65,
+          "w": 0.36,
+          "h": 0.11249999999999999,
+          "z": 4,
+          "style": "atelierRibbonPlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_3_part_5",
+          "type": "text",
+          "x": 0.11,
+          "y": 0.73,
+          "w": 0.36,
+          "h": 0.13,
+          "z": 5,
+          "text": "하나씩,\n마음을 담아",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 19.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "작은 준비들",
+      "role": "preparation-contact-pair",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EFF1ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_4_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.05,
+          "w": 0.68,
+          "h": 0.15,
+          "z": 1,
+          "text": "A / B",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 50.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "silk-vows_square_4_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.25,
+          "w": 0.34,
+          "h": 0.42,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_details.png",
+          "frame": "materialLaceMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_4_part_3",
+          "type": "text",
+          "x": 0.48,
+          "y": 0.25,
+          "w": 0.44,
+          "h": 0.11,
+          "z": 3,
+          "text": "작은 준비들",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_4_part_4",
+          "type": "decoration",
+          "x": 0.48,
+          "y": 0.4,
+          "w": 0.42,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_4_part_5",
+          "type": "text",
+          "x": 0.49,
+          "y": 0.44,
+          "w": 0.42,
+          "h": 0.22,
+          "z": 5,
+          "text": "손에 쥔 부케\n나란히 놓인 반지\n접어 둔 손수건",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_4_part_6",
+          "type": "sticker",
+          "x": 0.69,
+          "y": 0.71,
+          "w": 0.17,
+          "h": 0.17,
+          "z": 6,
+          "imageUrl": "asset:assets/sticker/studio/material_lace.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_4_part_7",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.82,
+          "w": 0.62,
+          "h": 0.075,
+          "z": 7,
+          "text": "어떤 장면보다 먼저 기억나는 것들.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "작은 준비들",
+      "role": "preparation-inventory",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FFFFFF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_5_part_1",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.07,
+          "w": 0.88,
+          "h": 0.74,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_couple.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_5_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.835,
+          "w": 0.78,
+          "h": 0.075,
+          "z": 2,
+          "text": "나란히 선 두 사람",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 18.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나란히 선 두 사람",
+      "role": "couple-unframed-portrait",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E4EAE6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_6_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.85,
+          "h": 0.055,
+          "z": 1,
+          "text": "PORTRAIT / TOGETHER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_6_part_2",
+          "type": "image",
+          "x": 0.23,
+          "y": 0.15,
+          "w": 0.56,
+          "h": 0.48,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_couple.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_6_part_3",
+          "type": "sticker",
+          "x": 0.08,
+          "y": 0.58,
+          "w": 0.25,
+          "h": 0.25,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_6_part_4",
+          "type": "text",
+          "x": 0.39,
+          "y": 0.69,
+          "w": 0.5,
+          "h": 0.15,
+          "z": 4,
+          "text": "같은 곳을 바라보며\n조금 더 가까이",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 19.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나란히 선 두 사람",
+      "role": "couple-oval-letter",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F9F5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_7_part_1",
+          "type": "decoration",
+          "x": 0.07,
+          "y": 0.08,
+          "w": 0.6162000000000001,
+          "h": 0.79,
+          "z": 1,
+          "style": "materialBlindEmboss",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_7_part_2",
+          "type": "text",
+          "x": 0.16859200000000002,
+          "y": 0.1748,
+          "w": 0.41285400000000005,
+          "h": 0.0632,
+          "z": 2,
+          "text": "OUR VOWS",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_7_part_3",
+          "type": "text",
+          "x": 0.16859200000000002,
+          "y": 0.3012,
+          "w": 0.43134000000000006,
+          "h": 0.1264,
+          "z": 3,
+          "text": "서로에게",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 33.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_7_part_4",
+          "type": "text",
+          "x": 0.16859200000000002,
+          "y": 0.49870000000000003,
+          "w": 0.4190160000000001,
+          "h": 0.1975,
+          "z": 4,
+          "text": "서로의 이야기를 끝까지 듣고,\n평범한 날에도 같이 웃기로 했다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_7_part_5",
+          "type": "text",
+          "x": 0.16859200000000002,
+          "y": 0.7435999999999999,
+          "w": 0.4190160000000001,
+          "h": 0.0632,
+          "z": 5,
+          "text": "서연과 지우",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 10.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_7_part_6",
+          "type": "sticker",
+          "x": 0.72,
+          "y": 0.6,
+          "w": 0.19,
+          "h": 0.19,
+          "z": 6,
+          "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서약을 적는다",
+      "role": "handwritten-vow",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#CDD9D1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_8_part_1",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.1,
+          "w": 0.8,
+          "h": 0.57,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_ceremony.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_8_part_2",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.7,
+          "w": 0.48,
+          "h": 0.15,
+          "z": 2,
+          "style": "atelierRibbonPlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_8_part_3",
+          "type": "text",
+          "x": 0.1824,
+          "y": 0.7434999999999999,
+          "w": 0.3648,
+          "h": 0.08250000000000002,
+          "z": 3,
+          "text": "오늘 적은 마음을 오래",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_8_part_4",
+          "type": "text",
+          "x": 0.32,
+          "y": 0.855,
+          "w": 0.52,
+          "h": 0.055,
+          "z": 4,
+          "text": "2026. 10. 17",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서약을 적는다",
+      "role": "vow-sealed-portrait",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F4F5F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_9_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.07,
+          "w": 0.85,
+          "h": 0.14,
+          "z": 1,
+          "text": "Flowers",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 57.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "silk-vows_square_9_part_2",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.255,
+          "w": 0.68,
+          "h": 0.52,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_bouquet.png",
+          "frame": "atelierKeyhole",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_9_part_3",
+          "type": "sticker",
+          "x": 0.65,
+          "y": 0.65,
+          "w": 0.23,
+          "h": 0.23,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/material_lace.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_9_part_4",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.83,
+          "w": 0.7,
+          "h": 0.075,
+          "z": 4,
+          "text": "꽃을 건네던 순간",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "꽃을 건네던 순간",
+      "role": "bouquet-study",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6EAE6",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_10_part_1",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.49,
+          "h": 0.5,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_table.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_10_part_2",
+          "type": "image",
+          "x": 0.61,
+          "y": 0.29,
+          "w": 0.31,
+          "h": 0.44,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_bouquet.png",
+          "frame": "studioRounded",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_10_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.055,
+          "z": 3,
+          "text": "STILL LIFE / 05",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_10_part_4",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.73,
+          "w": 0.68,
+          "h": 0.14,
+          "z": 4,
+          "text": "작은 꽃까지\n잊지 않도록",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "꽃을 건네던 순간",
+      "role": "flowers-detail-column",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EFF2ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_11_part_1",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.055,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE CEREMONY",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_11_part_2",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.15,
+          "w": 0.92,
+          "h": 0.64,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_ceremony.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_11_part_3",
+          "type": "decoration",
+          "x": 0.075,
+          "y": 0.835,
+          "w": 0.15,
+          "h": 0.0016,
+          "z": 3,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_11_part_4",
+          "type": "text",
+          "x": 0.29,
+          "y": 0.823,
+          "w": 0.63,
+          "h": 0.075,
+          "z": 4,
+          "text": "입장하던 길, 맞잡은 손.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "입장",
+      "role": "ceremony-large-photo",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#3B4D45",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_12_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.72,
+          "h": 0.18,
+          "z": 1,
+          "text": "입장",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 52.5,
+            "fontWeight": 400,
+            "color": "#F6F7F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_12_part_2",
+          "type": "image",
+          "x": 0.42,
+          "y": 0.27,
+          "w": 0.49,
+          "h": 0.51,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_veil.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_12_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.35,
+          "w": 0.29,
+          "h": 0.25,
+          "z": 3,
+          "text": "가장 익숙한 얼굴이\n가장 먼저 보였다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 14.5,
+            "fontWeight": 400,
+            "color": "#F6F7F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_12_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 4,
+          "text": "A MOMENT TO KEEP",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#F6F7F2",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "입장",
+      "role": "ceremony-type-inset",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E9EDE8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_13_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.075,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "THE PROMISE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_13_part_2",
+          "type": "image",
+          "x": 0.145,
+          "y": 0.18,
+          "w": 0.71,
+          "h": 0.58,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_details.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_13_part_3",
+          "type": "sticker",
+          "x": 0.57,
+          "y": 0.64,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_13_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.82,
+          "w": 0.53,
+          "h": 0.085,
+          "z": 4,
+          "text": "서로의 손",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서로의 손",
+      "role": "ring-mat",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAFAF7",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_14_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.085,
+          "w": 0.76,
+          "h": 0.23,
+          "z": 1,
+          "text": "오늘도,\n내일도",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 34.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_14_part_2",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.38,
+          "w": 0.37,
+          "h": 0.39,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_couple.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_14_part_3",
+          "type": "image",
+          "x": 0.51,
+          "y": 0.43,
+          "w": 0.4,
+          "h": 0.38,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_details.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_14_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.8,
+          "h": 0.075,
+          "z": 4,
+          "text": "같은 편이 되어 주기로 한 날.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "서로의 손",
+      "role": "ring-quiet-diptych",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F3F5F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_15_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "Together",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 65.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "silk-vows_square_15_part_2",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.26,
+          "w": 0.89,
+          "h": 0.52,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_guests.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_15_part_3",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.79,
+          "w": 0.378,
+          "h": 0.09,
+          "z": 3,
+          "style": "materialVellumBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_15_part_4",
+          "type": "text",
+          "x": 0.15,
+          "y": 0.83,
+          "w": 0.74,
+          "h": 0.055,
+          "z": 4,
+          "text": "함께 웃은 얼굴을 한 장에",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 웃은 얼굴",
+      "role": "guests-group-record",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E1E8E1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_16_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.08,
+          "w": 0.68,
+          "h": 0.4,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_guests.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_16_part_2",
+          "type": "decoration",
+          "x": 0.39,
+          "y": 0.49,
+          "w": 0.315,
+          "h": 0.35,
+          "z": 2,
+          "style": "materialScallopNote",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_16_part_3",
+          "type": "text",
+          "x": 0.4404,
+          "y": 0.5985,
+          "w": 0.22050000000000003,
+          "h": 0.1925,
+          "z": 3,
+          "text": "먼 길 와 준\n소중한 사람들",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_16_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.74,
+          "w": 0.3,
+          "h": 0.1,
+          "z": 4,
+          "text": "고마워요",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 23.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "함께 웃은 얼굴",
+      "role": "guest-note-and-photo",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#EDF0EA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_17_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.045,
+          "w": 0.92,
+          "h": 0.65,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_table.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_17_part_2",
+          "type": "decoration",
+          "x": 0.06,
+          "y": 0.72,
+          "w": 0.27,
+          "h": 0.18000000000000002,
+          "z": 2,
+          "style": "atelierTitlePlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_17_part_3",
+          "type": "text",
+          "x": 0.0978,
+          "y": 0.7758,
+          "w": 0.20520000000000002,
+          "h": 0.09000000000000002,
+          "z": 3,
+          "text": "오래 앉은 식탁",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 12.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_17_part_4",
+          "type": "text",
+          "x": 0.66,
+          "y": 0.79,
+          "w": 0.28,
+          "h": 0.055,
+          "z": 4,
+          "text": "DINNER / 09",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 앉은 식탁",
+      "role": "table-wide-still-life",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#FAFAF5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_18_part_1",
+          "type": "decoration",
+          "x": 0.13,
+          "y": 0.1,
+          "w": 0.74,
+          "h": 0.0016,
+          "z": 1,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_18_part_2",
+          "type": "text",
+          "x": 0.15,
+          "y": 0.16,
+          "w": 0.72,
+          "h": 0.11,
+          "z": 2,
+          "text": "오늘의 테이블",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_18_part_3",
+          "type": "text",
+          "x": 0.15,
+          "y": 0.3,
+          "w": 0.7,
+          "h": 0.055,
+          "z": 3,
+          "text": "FLOWERS / CAKE / TOAST",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_18_part_4",
+          "type": "image",
+          "x": 0.15,
+          "y": 0.42,
+          "w": 0.44,
+          "h": 0.38,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_cake.png",
+          "frame": "studioArch",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_18_part_5",
+          "type": "sticker",
+          "x": 0.63,
+          "y": 0.53,
+          "w": 0.22,
+          "h": 0.22,
+          "z": 5,
+          "imageUrl": "asset:assets/sticker/studio/material_lace.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_18_part_6",
+          "type": "text",
+          "x": 0.65,
+          "y": 0.76,
+          "w": 0.26,
+          "h": 0.12,
+          "z": 6,
+          "text": "한 번 더\n축하를 나누고",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오래 앉은 식탁",
+      "role": "dinner-menu-layout",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DCE6DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_19_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.045,
+          "w": 0.85,
+          "h": 0.17,
+          "z": 1,
+          "text": "Cheers",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 72.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "silk-vows_square_19_part_2",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.26,
+          "w": 0.62,
+          "h": 0.42,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_guests.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_19_part_3",
+          "type": "decoration",
+          "x": 0.29,
+          "y": 0.7,
+          "w": 0.384,
+          "h": 0.12,
+          "z": 3,
+          "style": "atelierRibbonPlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_19_part_4",
+          "type": "text",
+          "x": 0.34759999999999996,
+          "y": 0.7335999999999999,
+          "w": 0.28031999999999996,
+          "h": 0.066,
+          "z": 4,
+          "text": "축하를 모아",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 15.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "축하를 모아",
+      "role": "toasts-type-and-portrait",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F6F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_20_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.075,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "WORDS WE KEPT",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_20_part_2",
+          "type": "decoration",
+          "x": 0.1,
+          "y": 0.19,
+          "w": 0.5700000000000001,
+          "h": 0.38000000000000006,
+          "z": 2,
+          "style": "atelierTitlePlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_20_part_3",
+          "type": "text",
+          "x": 0.17980000000000002,
+          "y": 0.2926,
+          "w": 0.4161,
+          "h": 0.22800000000000004,
+          "z": 3,
+          "text": "잘 살아.\n서로 많이 웃게 해 줘.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 17.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_20_part_4",
+          "type": "image",
+          "x": 0.6,
+          "y": 0.65,
+          "w": 0.29,
+          "h": 0.23,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_cake.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_20_part_5",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.78,
+          "w": 0.46,
+          "h": 0.075,
+          "z": 5,
+          "text": "마음에 오래 남은 한마디.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "축하를 모아",
+      "role": "kept-words",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#3F514A",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_21_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.04,
+          "w": 0.92,
+          "h": 0.84,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/lightbound_twilight.png",
+          "frame": "none",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 2,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 3,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#F2F5F2",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "저녁의 마지막 장면",
+      "role": "evening-full-photo",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7ECE5",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_22_part_1",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.065,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 1,
+          "text": "AFTER THE CELEBRATION",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_22_part_2",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.17,
+          "w": 0.79,
+          "h": 0.24,
+          "z": 2,
+          "text": "저녁의\n마지막 장면",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 34.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_22_part_3",
+          "type": "image",
+          "x": 0.37,
+          "y": 0.48,
+          "w": 0.54,
+          "h": 0.34,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_evening.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_22_part_4",
+          "type": "decoration",
+          "x": 0.085,
+          "y": 0.53,
+          "w": 0.19,
+          "h": 0.0016,
+          "z": 4,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_22_part_5",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.63,
+          "w": 0.24,
+          "h": 0.17,
+          "z": 5,
+          "text": "사진을 보며\n한 번 더 웃었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 13.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "저녁의 마지막 장면",
+      "role": "evening-editorial",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F3",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.8,
+          "h": 0.055,
+          "z": 1,
+          "text": "AND EVERY DAY AFTER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_23_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.23,
+          "w": 0.83,
+          "h": 0.14,
+          "z": 2,
+          "text": "다음 날에도",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 37.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_23_part_3",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.44,
+          "w": 0.79,
+          "h": 0.19,
+          "z": 3,
+          "text": "서로의 이야기를 끝까지 듣고,\n평범한 날에도 같이 웃기로 했다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 15.5,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_23_part_4",
+          "type": "sticker",
+          "x": 0.08,
+          "y": 0.68,
+          "w": 0.21,
+          "h": 0.21,
+          "z": 4,
+          "imageUrl": "asset:assets/sticker/studio/wave_silk_knot.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_23_part_5",
+          "type": "decoration",
+          "x": 0.45,
+          "y": 0.755,
+          "w": 0.41,
+          "h": 0.0016,
+          "z": 5,
+          "fillColor": "#404A47",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_23_part_6",
+          "type": "text",
+          "x": 0.45,
+          "y": 0.8,
+          "w": 0.42,
+          "h": 0.075,
+          "z": 6,
+          "text": "서연과 지우",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 7,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 8,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 날에도",
+      "role": "next-morning-letter",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 500.0,
+      "layers": [
+        {
+          "id": "silk-vows_square_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#D9E3DA",
+          "cornerRadius": 0
+        },
+        {
+          "id": "silk-vows_square_24_part_1",
+          "type": "image",
+          "x": 0.1,
+          "y": 0.075,
+          "w": 0.8,
+          "h": 0.65,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/petal_couple.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "silk-vows_square_24_part_2",
+          "type": "text",
+          "x": 0.1,
+          "y": 0.785,
+          "w": 0.79,
+          "h": 0.09,
+          "z": 2,
+          "text": "우리의 첫 장",
+          "align": "center",
+          "style": {
+            "fontFamily": "Eulyoo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "silk-vows_square_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "서약의 결",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "silk-vows_square_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#404A47",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 날에도",
+      "role": "last-portrait",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "예식을 앞둔 아침",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "작은 준비들",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "나란히 선 두 사람",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "서약을 적는다",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "꽃을 건네던 순간",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "입장",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "서로의 손",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "함께 웃은 얼굴",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "오래 앉은 식탁",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "축하를 모아",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "저녁의 마지막 장면",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "다음 날에도",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

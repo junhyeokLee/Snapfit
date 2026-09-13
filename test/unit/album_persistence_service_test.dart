@@ -128,11 +128,18 @@ void main() {
       title: 'title',
       coverRatio: 1.0,
       targetPages: 24,
+      printProduct: const {
+        'id': 'REDP_300_SOFT',
+        'trimWidthMm': 300,
+        'trimHeightMm': 300,
+      },
     );
 
     final captured = verify(
       () => mockRepo.updateAlbum(1, captureAny()),
     ).captured.single;
+    expect(captured.coverLayersJson, contains('REDP_300_SOFT'));
+    expect(captured.coverLayersJson, contains('\"trimWidthMm\":300'));
     expect(captured.coverPreviewUrl, 'gs://bucket/preview.jpg');
     expect(captured.coverOriginalUrl, 'gs://bucket/original.jpg');
   });

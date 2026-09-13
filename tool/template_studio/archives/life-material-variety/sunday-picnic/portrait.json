@@ -1,0 +1,3071 @@
+{
+  "id": "snapfit_concept_sunday-picnic_portrait",
+  "collectionId": "sunday-picnic",
+  "editionId": "sunday-picnic-24",
+  "title": "일요일의 피크닉",
+  "category": "가족·친구",
+  "concept": "체크 천과 피크닉 바구니, 함께 보낸 일요일",
+  "source": "snapfit-authored-concept-volume",
+  "aiGenerated": false,
+  "version": 1,
+  "innerPageCount": 24,
+  "qualityBaseline": "luminous-edition:spread-contrast-8",
+  "aspect": "portrait",
+  "designWidth": 500.0,
+  "designHeight": 668.9655172413793,
+  "accessTier": "unassigned",
+  "intendedTier": "premium",
+  "catalogPublishable": false,
+  "approvalStatus": "awaiting-design-review",
+  "publicationStatus": "design-review",
+  "releaseGates": {
+    "design": "pending",
+    "printProof": "pending",
+    "distributionRights": "pending",
+    "price": "pending",
+    "commerceIntegration": "not-published"
+  },
+  "cover": {
+    "strictLayout": true,
+    "designWidth": 500.0,
+    "designHeight": 668.9655172413793,
+    "layers": [
+      {
+        "id": "sunday-picnic_portrait_0_paper",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 0,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_1",
+        "type": "image",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 1,
+        "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+        "frame": "none",
+        "rotation": 0.0
+      },
+      {
+        "id": "sunday-picnic_portrait_0_cover_scrim",
+        "type": "decoration",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 1.0,
+        "h": 1.0,
+        "z": 2,
+        "fillColor": "#132124",
+        "cornerRadius": 0,
+        "opacity": 0.25
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_3",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.045,
+        "w": 0.85,
+        "h": 0.055,
+        "z": 3,
+        "text": "SUNDAY PICNIC / 05",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_4",
+        "type": "decoration",
+        "x": 0.075,
+        "y": 0.106,
+        "w": 0.85,
+        "h": 0.0011958762886597938,
+        "z": 4,
+        "fillColor": "#FFFFFF",
+        "cornerRadius": 0
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_5",
+        "type": "text",
+        "x": 0.075,
+        "y": 0.12,
+        "w": 0.85,
+        "h": 0.24,
+        "z": 5,
+        "text": "일요일의\n피크닉",
+        "align": "left",
+        "style": {
+          "fontFamily": "BookMyungjo",
+          "fontSize": 41.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_6",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.39,
+        "w": 0.8,
+        "h": 0.085,
+        "z": 6,
+        "text": "함께 앉아 오래 웃은 날",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 14.0,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_7",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.85,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 7,
+        "text": "함께 보낸 일요일",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      },
+      {
+        "id": "sunday-picnic_portrait_0_part_8",
+        "type": "text",
+        "x": 0.08,
+        "y": 0.92,
+        "w": 0.83,
+        "h": 0.055,
+        "z": 8,
+        "text": "2026. 06",
+        "align": "left",
+        "style": {
+          "fontFamily": "NotoSans",
+          "fontSize": 9.5,
+          "fontWeight": 400,
+          "color": "#FFFFFF",
+          "letterSpacing": 0,
+          "height": 1.3
+        }
+      }
+    ],
+    "name": "일요일의 피크닉",
+    "role": "full-photo-cover",
+    "spreadIndex": 0,
+    "side": "cover"
+  },
+  "pages": [
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_1_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F5EC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "SUNDAY, TOGETHER",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.18,
+          "w": 0.81,
+          "h": 0.24,
+          "z": 2,
+          "text": "이번 일요일,\n시간 어때?",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 39.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_3",
+          "type": "sticker",
+          "x": 0.46,
+          "y": 0.47,
+          "w": 0.46,
+          "h": 0.3438144329896907,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_basket.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_4",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.55,
+          "w": 0.49,
+          "h": 0.24415807560137456,
+          "z": 4,
+          "style": "lifePicnicSlip",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_5",
+          "type": "text",
+          "x": 0.15860000000000002,
+          "y": 0.6183642611683849,
+          "w": 0.35769999999999996,
+          "h": 0.13428694158075605,
+          "z": 5,
+          "text": "도시락은 나눠서 준비하기.\n약속은 나무 그늘 아래.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_6",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.85,
+          "w": 0.085,
+          "h": 0.018685567010309278,
+          "z": 6,
+          "fillColor": "#8C9D79",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_1_part_7",
+          "type": "decoration",
+          "x": 0.175,
+          "y": 0.85,
+          "w": 0.04,
+          "h": 0.018685567010309278,
+          "z": 7,
+          "fillColor": "#70443E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_1_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 8,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_1_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 9,
+          "text": "01",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "이번 일요일의 약속",
+      "role": "picnic-invitation",
+      "spreadIndex": 1,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_2_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7EBDD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_2_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.07,
+          "w": 0.89,
+          "h": 0.68,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_2_part_2",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.815,
+          "w": 0.84,
+          "h": 0.09,
+          "z": 2,
+          "text": "밖에서 보내는 하루",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 23.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_2_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_2_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "02",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "이번 일요일의 약속",
+      "role": "basket-opening-still-life",
+      "spreadIndex": 1,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_3_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F8F1",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_3_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.09,
+          "w": 0.42,
+          "h": 0.23,
+          "z": 1,
+          "text": "바구니를\n채우며",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 33.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_3_part_2",
+          "type": "image",
+          "x": 0.55,
+          "y": 0.07,
+          "w": 0.37,
+          "h": 0.36,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioOvalMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_3_part_3",
+          "type": "decoration",
+          "x": 0.08,
+          "y": 0.49,
+          "w": 0.82,
+          "h": 0.0011958762886597938,
+          "z": 3,
+          "fillColor": "#70443E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_3_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.59,
+          "w": 0.77,
+          "h": 0.23,
+          "z": 4,
+          "text": "사과 몇 개\n접시와 작은 컵\n앉을 자리를 함께 나눌 천",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 18.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_3_part_5",
+          "type": "decoration",
+          "x": 0.56,
+          "y": 0.85,
+          "w": 0.3237793103448276,
+          "h": 0.055,
+          "z": 5,
+          "style": "materialCrossStitchBand",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_3_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_3_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "03",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "바구니를 채우며",
+      "role": "packing-the-basket",
+      "spreadIndex": 2,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_4_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E9DDD4",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_4_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "BEFORE WE LEAVE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_4_part_2",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.2132646048109966,
+          "w": 0.89,
+          "h": 0.44347079037800685,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_kitchen.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_4_part_3",
+          "type": "decoration",
+          "x": 0.24,
+          "y": 0.735,
+          "w": 0.2843103448275862,
+          "h": 0.16999999999999998,
+          "z": 3,
+          "style": "atelierGridLeaf",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_4_part_4",
+          "type": "text",
+          "x": 0.27980344827586207,
+          "y": 0.7826,
+          "w": 0.20754655172413794,
+          "h": 0.09350000000000003,
+          "z": 4,
+          "text": "같이 준비하는\n일도 즐거웠다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_4_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_4_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "04",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "바구니를 채우며",
+      "role": "kitchen-before-leaving",
+      "spreadIndex": 2,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_5_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F7F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_5_part_1",
+          "type": "sticker",
+          "x": 0.1,
+          "y": 0.12,
+          "w": 0.8,
+          "h": 0.5979381443298969,
+          "z": 1,
+          "imageUrl": "asset:assets/sticker/studio/life_gingham.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_5_part_2",
+          "type": "image",
+          "x": 0.12,
+          "y": 0.26065292096219933,
+          "w": 0.76,
+          "h": 0.3786941580756013,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_5_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.8,
+          "w": 0.84,
+          "h": 0.105,
+          "z": 3,
+          "text": "여기, 우리 자리",
+          "align": "center",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 25.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_5_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_5_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "05",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돗자리를 펼친 자리",
+      "role": "gingham-meeting-place",
+      "spreadIndex": 3,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_6_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE7DF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_6_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.84,
+          "h": 0.14,
+          "z": 1,
+          "text": "Under the trees",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 40.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_6_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.31,
+          "w": 0.46,
+          "h": 0.42,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_6_part_3",
+          "type": "text",
+          "x": 0.6,
+          "y": 0.4,
+          "w": 0.32,
+          "h": 0.29,
+          "z": 3,
+          "text": "가방을 내려놓고\n신발을 벗고\n조금 더 가까이 앉았다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 14.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_6_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.83,
+          "w": 0.8,
+          "h": 0.075,
+          "z": 4,
+          "text": "돗자리를 펼친 자리",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_6_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_6_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "06",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "돗자리를 펼친 자리",
+      "role": "tree-shade-note",
+      "spreadIndex": 3,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_7_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F7F5EE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_7_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.06,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "TODAY ON THE TABLE",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_7_part_2",
+          "type": "image",
+          "x": 0.06,
+          "y": 0.175,
+          "w": 0.88,
+          "h": 0.59,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_table.png",
+          "frame": "atelierDeepMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_7_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.82,
+          "w": 0.8,
+          "h": 0.1,
+          "z": 3,
+          "text": "오늘의 도시락",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 23.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_7_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_7_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "07",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오늘의 도시락",
+      "role": "lunch-menu-photo",
+      "spreadIndex": 4,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_8_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E5E9D8",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_8_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.07,
+          "w": 0.81,
+          "h": 0.23,
+          "z": 1,
+          "text": "누가 만든 게\n제일 맛있어?",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 34.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_8_part_2",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.39,
+          "w": 0.61,
+          "h": 0.29414699035583636,
+          "z": 2,
+          "style": "materialRecipeFoldout",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_8_part_3",
+          "type": "text",
+          "x": 0.1449,
+          "y": 0.48706850681742603,
+          "w": 0.1403,
+          "h": 0.15883937479215166,
+          "z": 3,
+          "text": "도시락\n과일\n따뜻한 차",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_8_part_4",
+          "type": "text",
+          "x": 0.35839999999999994,
+          "y": 0.48706850681742603,
+          "w": 0.2989,
+          "h": 0.15883937479215166,
+          "z": 4,
+          "text": "각자 하나씩\n만들어 오기.\n다음엔 더 넉넉히.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_8_part_5",
+          "type": "image",
+          "x": 0.7,
+          "y": 0.59,
+          "w": 0.23,
+          "h": 0.24,
+          "z": 5,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioSticker",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_8_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_8_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "08",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "오늘의 도시락",
+      "role": "shared-recipe",
+      "spreadIndex": 4,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_9_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E2EAE2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_9_part_1",
+          "type": "image",
+          "x": 0.035,
+          "y": 0.15829896907216495,
+          "w": 0.93,
+          "h": 0.4634020618556702,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_9_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.78,
+          "w": 0.84,
+          "h": 0.11,
+          "z": 2,
+          "text": "모두 모인 얼굴",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 26.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_9_part_3",
+          "type": "decoration",
+          "x": 0.76,
+          "y": 0.89,
+          "w": 0.085,
+          "h": 0.018685567010309278,
+          "z": 3,
+          "fillColor": "#B9956E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_9_part_4",
+          "type": "decoration",
+          "x": 0.855,
+          "y": 0.89,
+          "w": 0.04,
+          "h": 0.018685567010309278,
+          "z": 4,
+          "fillColor": "#70443E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_9_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_9_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "09",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "모두 모인 얼굴",
+      "role": "family-group-large",
+      "spreadIndex": 5,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_10_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F6EE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_10_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.83,
+          "h": 0.15,
+          "z": 1,
+          "text": "All of us",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 50.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_10_part_2",
+          "type": "image",
+          "x": 0.0835862068965517,
+          "y": 0.285,
+          "w": 0.8228275862068966,
+          "h": 0.41,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_friends.png",
+          "frame": "materialNotebookMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_10_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.74,
+          "w": 0.79,
+          "h": 0.145,
+          "z": 3,
+          "text": "한 명도 빠짐없이\n사진 안으로.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 20.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_10_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_10_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "10",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "모두 모인 얼굴",
+      "role": "attendance-and-smiles",
+      "spreadIndex": 5,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_11_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E8EADD",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_11_part_1",
+          "type": "image",
+          "x": 0.075,
+          "y": 0.2106013745704467,
+          "w": 0.7,
+          "h": 0.3487972508591066,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "atelierOxford",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_11_part_2",
+          "type": "decoration",
+          "x": 0.67,
+          "y": 0.53,
+          "w": 0.25,
+          "h": 0.10100306492059069,
+          "z": 2,
+          "style": "materialTicketDuo",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_11_part_3",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.8,
+          "w": 0.83,
+          "h": 0.1,
+          "z": 3,
+          "text": "아이들이 고른 놀이",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 22.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_11_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_11_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "11",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아이들이 고른 놀이",
+      "role": "play-afternoon",
+      "spreadIndex": 6,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_12_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F8F2",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_12_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.06,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "NO PLANS, JUST PLAY",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_12_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.17,
+          "w": 0.81,
+          "h": 0.2,
+          "z": 2,
+          "text": "아무것도 안 해도\n심심하지 않은 날",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_12_part_3",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.47,
+          "w": 0.43,
+          "h": 0.31,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "studioInstant",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_12_part_4",
+          "type": "image",
+          "x": 0.57,
+          "y": 0.52,
+          "w": 0.34,
+          "h": 0.27,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioScallop",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_12_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 5,
+          "text": "집에 가자는 말은 조금 나중에.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_12_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_12_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "12",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "아이들이 고른 놀이",
+      "role": "play-list",
+      "spreadIndex": 6,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_13_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DAE5DE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_13_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.085,
+          "w": 0.82,
+          "h": 0.23,
+          "z": 1,
+          "text": "그늘 아래\n잠깐",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 40.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_13_part_2",
+          "type": "image",
+          "x": 0.07855172413793104,
+          "y": 0.405,
+          "w": 0.842896551724138,
+          "h": 0.41999999999999993,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "atelierFolio",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_13_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_13_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "13",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "그늘 아래 잠깐",
+      "role": "shade-wide-pause",
+      "spreadIndex": 7,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_14_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F6F5EC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_14_part_1",
+          "type": "image",
+          "x": 0.085,
+          "y": 0.08,
+          "w": 0.5,
+          "h": 0.52,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "studioArch",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_14_part_2",
+          "type": "sticker",
+          "x": 0.66,
+          "y": 0.24,
+          "w": 0.27,
+          "h": 0.2018041237113402,
+          "z": 2,
+          "imageUrl": "asset:assets/sticker/studio/life_mug.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_14_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.72,
+          "w": 0.8,
+          "h": 0.15,
+          "z": 3,
+          "text": "누워서 하늘을 보다가\n옆 사람 이야기를 들었다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 19.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_14_part_4",
+          "type": "decoration",
+          "x": 0.09,
+          "y": 0.89,
+          "w": 0.82,
+          "h": 0.0011958762886597938,
+          "z": 4,
+          "fillColor": "#70443E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_14_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_14_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "14",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "그늘 아래 잠깐",
+      "role": "quiet-picnic-objects",
+      "spreadIndex": 7,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_15_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E7DECE",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_15_part_1",
+          "type": "sticker",
+          "x": 0.045,
+          "y": 0.18,
+          "w": 0.8562758620689656,
+          "h": 0.64,
+          "z": 1,
+          "imageUrl": "asset:assets/sticker/studio/life_gingham.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_15_part_2",
+          "type": "image",
+          "x": 0.16,
+          "y": 0.23,
+          "w": 0.68,
+          "h": 0.49,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_15_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.075,
+          "w": 0.83,
+          "h": 0.055,
+          "z": 3,
+          "text": "ONE MORE SLICE?",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_15_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.835,
+          "w": 0.81,
+          "h": 0.075,
+          "z": 4,
+          "text": "나눠 먹는 간식",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_15_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_15_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "15",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나눠 먹는 간식",
+      "role": "fruit-on-cloth",
+      "spreadIndex": 8,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_16_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F9F8F0",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_16_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.16,
+          "z": 1,
+          "text": "A little more",
+          "align": "left",
+          "style": {
+            "fontFamily": "Cormorant Garamond",
+            "fontSize": 47.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.0
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_16_part_2",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.28,
+          "w": 0.39,
+          "h": 0.39,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_table.png",
+          "frame": "materialLinenOval",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_16_part_3",
+          "type": "text",
+          "x": 0.085,
+          "y": 0.38,
+          "w": 0.37,
+          "h": 0.23,
+          "z": 3,
+          "text": "조금만 더\n먹고 가자",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 27.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_16_part_4",
+          "type": "decoration",
+          "x": 0.12,
+          "y": 0.79,
+          "w": 0.4495448275862069,
+          "h": 0.105,
+          "z": 4,
+          "style": "atelierRibbonPlate",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_16_part_5",
+          "type": "text",
+          "x": 0.18293627586206898,
+          "y": 0.8194,
+          "w": 0.32816772413793105,
+          "h": 0.057749999999999996,
+          "z": 5,
+          "text": "조금 더 이야기하자.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_16_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_16_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "16",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "나눠 먹는 간식",
+      "role": "snack-and-conversation",
+      "spreadIndex": 8,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_17_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E0E6DF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_17_part_1",
+          "type": "image",
+          "x": 0.04,
+          "y": 0.19079037800687285,
+          "w": 0.92,
+          "h": 0.45841924398625433,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_friends.png",
+          "frame": "studioPhotoCorners",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_17_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.785,
+          "w": 0.85,
+          "h": 0.115,
+          "z": 2,
+          "text": "빈자리를 채우는 얼굴",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 21.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_17_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_17_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "17",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "친구가 도착했다",
+      "role": "friends-arrive",
+      "spreadIndex": 9,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_18_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_18_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.055,
+          "w": 0.82,
+          "h": 0.055,
+          "z": 1,
+          "text": "SAVED A PLACE FOR YOU",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_18_part_2",
+          "type": "image",
+          "x": 0.08,
+          "y": 0.2229725085910653,
+          "w": 0.55,
+          "h": 0.27405498281786944,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_friends.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_18_part_3",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.56,
+          "w": 0.37,
+          "h": 0.27,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "studioPostcard",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_18_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.64,
+          "w": 0.38,
+          "h": 0.18,
+          "z": 4,
+          "text": "너도\n이쪽에 앉아",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 22.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_18_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_18_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "18",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "친구가 도착했다",
+      "role": "friendship-contact-pair",
+      "spreadIndex": 9,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_19_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E6E8D9",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_19_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.065,
+          "w": 0.84,
+          "h": 0.14,
+          "z": 1,
+          "text": "해가 기울 때까지",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_19_part_2",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.3257044673539519,
+          "w": 0.82,
+          "h": 0.40859106529209616,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "atelierWeave",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_19_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.84,
+          "w": 0.82,
+          "h": 0.075,
+          "z": 3,
+          "text": "조금 더 있다가 돌아가기로 했다.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_19_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_19_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "19",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "해가 기울 때까지",
+      "role": "late-afternoon-landscape",
+      "spreadIndex": 10,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_20_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F5ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_20_part_1",
+          "type": "sticker",
+          "x": 0.07,
+          "y": 0.08,
+          "w": 0.4147586206896552,
+          "h": 0.31,
+          "z": 1,
+          "imageUrl": "asset:assets/sticker/studio/life_basket.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_20_part_2",
+          "type": "image",
+          "x": 0.54,
+          "y": 0.17,
+          "w": 0.37,
+          "h": 0.44,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "atelierCornerFold",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_20_part_3",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.66,
+          "w": 0.82,
+          "h": 0.21,
+          "z": 3,
+          "text": "천을 개고\n이야기를 챙기고",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 28.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_20_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 4,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_20_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 5,
+          "text": "20",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "해가 기울 때까지",
+      "role": "packing-up",
+      "spreadIndex": 10,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_21_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F5F5ED",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_21_part_1",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "h": 0.055,
+          "z": 1,
+          "text": "SCENES TO TAKE HOME",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_21_part_2",
+          "type": "image",
+          "x": 0.17889655172413793,
+          "y": 0.17,
+          "w": 0.6422068965517242,
+          "h": 0.31999999999999995,
+          "z": 2,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_friends.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_21_part_3",
+          "type": "image",
+          "x": 0.07,
+          "y": 0.57,
+          "w": 0.39,
+          "h": 0.27,
+          "z": 3,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_fruit.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_21_part_4",
+          "type": "image",
+          "x": 0.52,
+          "y": 0.57,
+          "w": 0.41,
+          "h": 0.27,
+          "z": 4,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "materialSlideMount",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_21_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 5,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_21_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 6,
+          "text": "21",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "남겨 온 장면들",
+      "role": "sunday-contact-sheet",
+      "spreadIndex": 11,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_22_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#DDE6DF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_22_part_1",
+          "type": "image",
+          "x": 0.09,
+          "y": 0.075,
+          "w": 0.48,
+          "h": 0.42,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/daily_picnic.png",
+          "frame": "atelierEnvelope",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_22_part_2",
+          "type": "decoration",
+          "x": 0.6,
+          "y": 0.19,
+          "w": 0.31,
+          "h": 0.15446735395189004,
+          "z": 2,
+          "style": "lifePicnicSlip",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_22_part_3",
+          "type": "text",
+          "x": 0.6434,
+          "y": 0.2332508591065292,
+          "w": 0.22629999999999995,
+          "h": 0.08495704467353953,
+          "z": 3,
+          "text": "오늘 함께한 사람들\n다음에 만날 장소",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 11.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_22_part_4",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.64,
+          "w": 0.81,
+          "h": 0.125,
+          "z": 4,
+          "text": "남겨 온 장면들",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 29.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_22_part_5",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.815,
+          "w": 0.8,
+          "h": 0.075,
+          "z": 5,
+          "text": "사진을 보면 다시 모인 기분.",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_22_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_22_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "22",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "남겨 온 장면들",
+      "role": "sunday-keepsake-label",
+      "spreadIndex": 11,
+      "side": "right"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_23_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#F8F7EF",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_23_part_1",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.12,
+          "w": 0.81,
+          "h": 0.16,
+          "z": 1,
+          "text": "다음 일요일에도",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 32.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_23_part_2",
+          "type": "text",
+          "x": 0.09,
+          "y": 0.39,
+          "w": 0.81,
+          "h": 0.2,
+          "z": 2,
+          "text": "다 같이 앉으니 자리가 더 좋아졌다.\n다음에도 같은 곳에서 만나자.",
+          "align": "left",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 17.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_23_part_3",
+          "type": "sticker",
+          "x": 0.09,
+          "y": 0.66,
+          "w": 0.2943448275862069,
+          "h": 0.22,
+          "z": 3,
+          "imageUrl": "asset:assets/sticker/studio/life_mug.png",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_23_part_4",
+          "type": "decoration",
+          "x": 0.48,
+          "y": 0.75,
+          "w": 0.42,
+          "h": 0.0011958762886597938,
+          "z": 4,
+          "fillColor": "#70443E",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_23_part_5",
+          "type": "text",
+          "x": 0.48,
+          "y": 0.81,
+          "w": 0.43,
+          "h": 0.075,
+          "z": 5,
+          "text": "함께 보낸 일요일",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 12.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_23_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 6,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_23_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 7,
+          "text": "23",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 일요일에도",
+      "role": "next-sunday-note",
+      "spreadIndex": 12,
+      "side": "left"
+    },
+    {
+      "strictLayout": true,
+      "designWidth": 500.0,
+      "designHeight": 668.9655172413793,
+      "layers": [
+        {
+          "id": "sunday-picnic_portrait_24_paper",
+          "type": "decoration",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 1.0,
+          "h": 1.0,
+          "z": 0,
+          "fillColor": "#E3E9DC",
+          "cornerRadius": 0
+        },
+        {
+          "id": "sunday-picnic_portrait_24_part_1",
+          "type": "image",
+          "x": 0.055,
+          "y": 0.16326460481099658,
+          "w": 0.89,
+          "h": 0.44347079037800685,
+          "z": 1,
+          "imageUrl": "asset:assets/templates/original_editorial/images/family_picnic.png",
+          "frame": "studioDoubleMat",
+          "rotation": 0.0
+        },
+        {
+          "id": "sunday-picnic_portrait_24_part_2",
+          "type": "text",
+          "x": 0.075,
+          "y": 0.785,
+          "w": 0.85,
+          "h": 0.12,
+          "z": 2,
+          "text": "같이 앉으니 더 좋은 자리",
+          "align": "center",
+          "style": {
+            "fontFamily": "BookMyungjo",
+            "fontSize": 21.5,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.3
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_24_folio_label",
+          "type": "text",
+          "x": 0.08,
+          "y": 0.93,
+          "w": 0.73,
+          "h": 0.04,
+          "z": 3,
+          "text": "일요일의 피크닉",
+          "align": "left",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sunday-picnic_portrait_24_folio_number",
+          "type": "text",
+          "x": 0.82,
+          "y": 0.93,
+          "w": 0.1,
+          "h": 0.04,
+          "z": 4,
+          "text": "24",
+          "align": "right",
+          "style": {
+            "fontFamily": "NotoSans",
+            "fontSize": 9.0,
+            "fontWeight": 400,
+            "color": "#70443E",
+            "letterSpacing": 0,
+            "height": 1.2
+          }
+        }
+      ],
+      "name": "다음 일요일에도",
+      "role": "last-group-photograph",
+      "spreadIndex": 12,
+      "side": "right"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "이번 일요일의 약속",
+      "from": 1,
+      "to": 2
+    },
+    {
+      "title": "바구니를 채우며",
+      "from": 3,
+      "to": 4
+    },
+    {
+      "title": "돗자리를 펼친 자리",
+      "from": 5,
+      "to": 6
+    },
+    {
+      "title": "오늘의 도시락",
+      "from": 7,
+      "to": 8
+    },
+    {
+      "title": "모두 모인 얼굴",
+      "from": 9,
+      "to": 10
+    },
+    {
+      "title": "아이들이 고른 놀이",
+      "from": 11,
+      "to": 12
+    },
+    {
+      "title": "그늘 아래 잠깐",
+      "from": 13,
+      "to": 14
+    },
+    {
+      "title": "나눠 먹는 간식",
+      "from": 15,
+      "to": 16
+    },
+    {
+      "title": "친구가 도착했다",
+      "from": 17,
+      "to": 18
+    },
+    {
+      "title": "해가 기울 때까지",
+      "from": 19,
+      "to": 20
+    },
+    {
+      "title": "남겨 온 장면들",
+      "from": 21,
+      "to": 22
+    },
+    {
+      "title": "다음 일요일에도",
+      "from": 23,
+      "to": 24
+    }
+  ]
+}

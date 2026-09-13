@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 /// 텍스트 스타일 선택용 바텀시트 (이미지 레퍼런스: 탭·섹션·카드 구조)
 class TextStylePickerSheet extends StatefulWidget {
@@ -1001,8 +1002,24 @@ const List<_DesignGroup> _tapeDesignGroups = [
 class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 색상 선택 펼침 상태 (id 일치 시 해당 그룹의 색상 목록 표시)
   String? _expandedColorGroupId;
+  bool _favoritesOnly = false;
+  List<_TextStyleItem> get _allItems => [
+    ..._basicStyles,
+    ..._speechBubbles,
+    ..._labels,
+    ..._notes,
+    ..._tapes,
+  ];
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CatalogFavoritesBuilder(builder: _buildCatalog);
+
+  Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
+    final saved = favorites.arrange(
+      _allItems,
+      (s) => CatalogFavoriteKeys.textStyle(s.key),
+      onlyFavorites: true,
+    );
     final isDark = SnapFitColors.isDark(context);
     final surface = SnapFitColors.surfaceOf(context);
     // 텍스트/스티커 바텀시트는 배경이 밝기 때문에
@@ -1026,7 +1043,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 560.h,
+          height: (MediaQuery.sizeOf(context).height * .85).clamp(0.0, 680.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1054,57 +1071,72 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                   ),
                 ),
               ),
-              SizedBox(height: 20.h),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: CatalogFavoriteFilter(
+                  selected: _favoritesOnly,
+                  onChanged: (value) => setState(() => _favoritesOnly = value),
+                ),
+              ),
               // 섹션 리스트 (한 스크롤에 모두)
               Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: 24.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionWithColorPicker(
-                        titleKo: '기본',
-                        titleEn: 'Basic',
-                        groups: _basicDesignGroups,
-                        allItems: _basicStyles,
-                        fullViewTitle: '기본',
-                        showSeeAll: false,
+                child: _favoritesOnly
+                    ? (saved.isEmpty
+                          ? CatalogFavoritesEmpty(
+                              onShowAll: () =>
+                                  setState(() => _favoritesOnly = false),
+                            )
+                          : _savedGrid(saved))
+                    : SingleChildScrollView(
+                        padding: EdgeInsets.only(bottom: 24.h),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (saved.isNotEmpty)
+                              SizedBox(height: 164, child: _savedStrip(saved)),
+                            _buildSectionWithColorPicker(
+                              titleKo: '기본',
+                              titleEn: 'Basic',
+                              groups: _basicDesignGroups,
+                              allItems: _basicStyles,
+                              fullViewTitle: '기본',
+                              showSeeAll: false,
+                            ),
+                            SizedBox(height: 24.h),
+                            _buildSectionWithColorPicker(
+                              titleKo: '말풍선',
+                              titleEn: 'Speech Bubbles',
+                              groups: _speechBubbleDesignGroups,
+                              allItems: _speechBubbles,
+                              fullViewTitle: '말풍선',
+                            ),
+                            SizedBox(height: 24.h),
+                            _buildSectionWithColorPicker(
+                              titleKo: '라벨 & 태그',
+                              titleEn: 'Labels',
+                              groups: _labelDesignGroups,
+                              allItems: _labels,
+                              fullViewTitle: '라벨 & 태그',
+                            ),
+                            SizedBox(height: 24.h),
+                            _buildSectionWithColorPicker(
+                              titleKo: '메모지',
+                              titleEn: 'Sticky Notes',
+                              groups: _noteDesignGroups,
+                              allItems: _notes,
+                              fullViewTitle: '메모지',
+                            ),
+                            SizedBox(height: 24.h),
+                            _buildSectionWithColorPicker(
+                              titleKo: '마스킹 테이프',
+                              titleEn: 'Tapes',
+                              groups: _tapeDesignGroups,
+                              allItems: _tapes,
+                              fullViewTitle: '마스킹 테이프',
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 24.h),
-                      _buildSectionWithColorPicker(
-                        titleKo: '말풍선',
-                        titleEn: 'Speech Bubbles',
-                        groups: _speechBubbleDesignGroups,
-                        allItems: _speechBubbles,
-                        fullViewTitle: '말풍선',
-                      ),
-                      SizedBox(height: 24.h),
-                      _buildSectionWithColorPicker(
-                        titleKo: '라벨 & 태그',
-                        titleEn: 'Labels',
-                        groups: _labelDesignGroups,
-                        allItems: _labels,
-                        fullViewTitle: '라벨 & 태그',
-                      ),
-                      SizedBox(height: 24.h),
-                      _buildSectionWithColorPicker(
-                        titleKo: '메모지',
-                        titleEn: 'Sticky Notes',
-                        groups: _noteDesignGroups,
-                        allItems: _notes,
-                        fullViewTitle: '메모지',
-                      ),
-                      SizedBox(height: 24.h),
-                      _buildSectionWithColorPicker(
-                        titleKo: '마스킹 테이프',
-                        titleEn: 'Tapes',
-                        groups: _tapeDesignGroups,
-                        allItems: _tapes,
-                        fullViewTitle: '마스킹 테이프',
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),
@@ -1112,6 +1144,57 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       ),
     );
   }
+
+  Widget _savedGrid(List<_TextStyleItem> items) => GridView.builder(
+    padding: const EdgeInsets.all(16),
+    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: 180,
+      mainAxisExtent: 150,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+    ),
+    itemCount: items.length,
+    itemBuilder: (_, i) => _savedTile(items[i]),
+  );
+  Widget _savedStrip(List<_TextStyleItem> items) => ListView.separated(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+    scrollDirection: Axis.horizontal,
+    itemCount: items.length,
+    separatorBuilder: (_, __) => const SizedBox(width: 10),
+    itemBuilder: (_, i) => SizedBox(width: 132, child: _savedTile(items[i])),
+  );
+  Widget _savedTile(_TextStyleItem item) => CatalogFavoriteTile(
+    key: ValueKey(item.key),
+    itemKey: CatalogFavoriteKeys.textStyle(item.key),
+    label: _textStyleLabel(item),
+    child: Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: () => widget.onSelect(item.key),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 44, 12, 8),
+          child: Column(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: _buildStylePreview(item.previewType),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _textStyleLabel(item),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 
   void _openFullView(
     BuildContext context,
@@ -1198,7 +1281,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
           ),
           SizedBox(height: 12.h),
           SizedBox(
-            height: 100.h,
+            height: 154,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: groups.length,
@@ -1216,61 +1299,67 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                 final previewItem = group.items.any((e) => e.key == selectedKey)
                     ? group.items.firstWhere((e) => e.key == selectedKey)
                     : group.items.first;
-                return GestureDetector(
-                  onTap: () {
-                    if (group.items.length == 1) {
-                      widget.onSelect(group.items.first.key);
-                      return;
-                    }
-                    setState(() {
-                      _expandedColorGroupId = isExpanded ? null : group.id;
-                    });
-                  },
-                  child: Container(
-                    width: 88.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: hasAccentBorder
-                            ? SnapFitColors.accent
-                            : SnapFitColors.overlayStrongOf(context),
-                        width: hasAccentBorder ? 2 : 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                return CatalogFavoriteTile(
+                  key: ValueKey(group.id),
+                  itemKey: CatalogFavoriteKeys.textStyle(previewItem.key),
+                  label: _textStyleLabel(previewItem),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (group.items.length == 1) {
+                        widget.onSelect(group.items.first.key);
+                        return;
+                      }
+                      setState(() {
+                        _expandedColorGroupId = isExpanded ? null : group.id;
+                      });
+                    },
+                    child: Container(
+                      width: 132,
+                      padding: const EdgeInsets.only(top: 42),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: hasAccentBorder
+                              ? SnapFitColors.accent
+                              : SnapFitColors.overlayStrongOf(context),
+                          width: hasAccentBorder ? 2 : 1,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: _buildStylePreview(
-                              previewItem.previewType,
-                              colorGroupId: group.id,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        if (group.items.length > 1)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 6.h),
-                            child: Text(
-                              group.labelKo,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                // 항상 검정 계열 텍스트 색상 유지
-                                color: Colors.black54,
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Center(
+                              child: _buildStylePreview(
+                                previewItem.previewType,
+                                colorGroupId: group.id,
                               ),
                             ),
-                          )
-                        else
-                          SizedBox(height: 6.h),
-                      ],
+                          ),
+                          if (group.items.length > 1)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 6.h),
+                              child: Text(
+                                group.labelKo,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  // 항상 검정 계열 텍스트 색상 유지
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            )
+                          else
+                            SizedBox(height: 6.h),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -1296,7 +1385,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                 final group = expandedGroup!;
                 final frame = _colorChipFrameForGroup(group.id);
                 return SizedBox(
-                  height: 72.h,
+                  height: 124,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: group.items.length,
@@ -1304,33 +1393,38 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                     itemBuilder: (context, index) {
                       final item = group.items[index];
                       final isSelected = selectedKey == item.key;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() => _expandedColorGroupId = null);
-                          widget.onSelect(item.key);
-                        },
-                        child: Container(
-                          width: frame.width,
-                          height: frame.height,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: frame.borderRadius,
-                            border: Border.all(
-                              color: isSelected
-                                  ? SnapFitColors.accent
-                                  : SnapFitColors.overlayStrongOf(context),
-                              width: isSelected ? 2 : 1,
+                      return CatalogFavoriteTile(
+                        key: ValueKey(item.key),
+                        itemKey: CatalogFavoriteKeys.textStyle(item.key),
+                        label: _textStyleLabel(item),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _expandedColorGroupId = null);
+                            widget.onSelect(item.key);
+                          },
+                          child: Container(
+                            width: 104,
+                            padding: const EdgeInsets.fromLTRB(8, 44, 8, 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: frame.borderRadius,
+                              border: Border.all(
+                                color: isSelected
+                                    ? SnapFitColors.accent
+                                    : SnapFitColors.overlayStrongOf(context),
+                                width: isSelected ? 2 : 1,
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: SizedBox(
-                              width: frame.width * 0.75,
-                              height: frame.height * 0.85,
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: _buildStylePreview(
-                                  item.previewType,
-                                  colorGroupId: group.id,
+                            child: Center(
+                              child: SizedBox(
+                                width: frame.width * 0.75,
+                                height: frame.height * 0.85,
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: _buildStylePreview(
+                                    item.previewType,
+                                    colorGroupId: group.id,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2925,14 +3019,44 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   }
 }
 
-/// 스타일 전체보기 화면 (그리드로 모두 표시)
-class _TextStyleFullViewScreen extends StatelessWidget {
-  final String title;
-  final List<_TextStyleItem> items;
-  final String? selectedKey;
-  final Widget Function(String previewType) buildPreview;
-  final ValueChanged<String> onSelect;
+String _textStyleLabel(_TextStyleItem item) {
+  if (item.key.isEmpty) return '기본 텍스트';
+  final groups = [
+    ..._basicDesignGroups,
+    ..._speechBubbleDesignGroups,
+    ..._labelDesignGroups,
+    ..._noteDesignGroups,
+    ..._tapeDesignGroups,
+  ];
+  final group = groups
+      .where((g) => g.items.any((s) => s.key == item.key))
+      .firstOrNull;
+  const colors = {
+    'Gray': '그레이',
+    'Pink': '핑크',
+    'Blue': '블루',
+    'Mint': '민트',
+    'Lavender': '라벤더',
+    'Orange': '오렌지',
+    'Green': '그린',
+    'Cream': '크림',
+    'Navy': '네이비',
+    'Rose': '로즈',
+    'Coral': '코랄',
+    'Beige': '베이지',
+    'Teal': '청록',
+    'Lemon': '레몬',
+    'White': '화이트',
+    'Yellow': '옐로',
+  };
+  final color = colors.entries
+      .where((c) => item.key.endsWith(c.key))
+      .firstOrNull
+      ?.value;
+  return [group?.labelKo ?? '텍스트 장식', if (color != null) color].join(' · ');
+}
 
+class _TextStyleFullViewScreen extends StatelessWidget {
   const _TextStyleFullViewScreen({
     required this.title,
     required this.items,
@@ -2940,76 +3064,57 @@ class _TextStyleFullViewScreen extends StatelessWidget {
     required this.buildPreview,
     required this.onSelect,
   });
-
+  final String title;
+  final List<_TextStyleItem> items;
+  final String? selectedKey;
+  final Widget Function(String) buildPreview;
+  final ValueChanged<String> onSelect;
   @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final surface = SnapFitColors.surfaceOf(context);
-    const textPrimary = Colors.black87;
-    return Scaffold(
-      backgroundColor: surface,
-      appBar: AppBar(
-        backgroundColor: surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 22.r, color: textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: textPrimary,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 16.h,
-              crossAxisSpacing: 16.w,
-              childAspectRatio: 0.85,
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(title, style: const TextStyle(fontSize: 18))),
+    body: SafeArea(
+      child: CatalogFavoriteGrid<_TextStyleItem>(
+        items: items,
+        keyOf: (s) => CatalogFavoriteKeys.textStyle(s.key),
+        labelOf: _textStyleLabel,
+        mainAxisExtent: 168,
+        itemBuilder: (context, item) => Material(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: item.key == selectedKey
+                  ? SnapFitColors.accent
+                  : Theme.of(context).colorScheme.outlineVariant,
             ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final isSelected = (selectedKey ?? '') == item.key;
-              return GestureDetector(
-                onTap: () => onSelect(item.key),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? SnapFitColors.overlayLightOf(context)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: isSelected
-                          ? SnapFitColors.accent
-                          : SnapFitColors.overlayStrongOf(context),
-                      width: isSelected ? 2 : 1,
+          ),
+          child: InkWell(
+            onTap: () => onSelect(item.key),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 44, 12, 12),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: buildPreview(item.previewType),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
-                  child: Center(child: buildPreview(item.previewType)),
-                ),
-              );
-            },
+                  const SizedBox(height: 8),
+                  Text(
+                    _textStyleLabel(item),
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// 프리뷰용 도트 패턴

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/supabase/supabase_provider.dart';
+import '../../../../core/notifications/fcm_notification_service.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../data/notification_repository.dart';
 import '../../domain/entities/app_notification_item.dart';
@@ -15,10 +16,20 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 final notificationInboxProvider = FutureProvider<List<AppNotificationItem>>((
   ref,
 ) async {
+  ref.watch(authViewModelProvider);
+  final subscription = FcmNotificationService.onNotificationReceived.listen(
+    (_) => ref.invalidateSelf(),
+  );
+  ref.onDispose(subscription.cancel);
   return ref.read(notificationRepositoryProvider).fetchInbox(limit: 60);
 });
 
 final notificationUnreadCountProvider = FutureProvider<int>((ref) async {
+  ref.watch(authViewModelProvider);
+  final subscription = FcmNotificationService.onNotificationReceived.listen(
+    (_) => ref.invalidateSelf(),
+  );
+  ref.onDispose(subscription.cancel);
   return ref.read(notificationRepositoryProvider).fetchUnreadCount();
 });
 

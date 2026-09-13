@@ -139,7 +139,7 @@ void main() {
     expect(result.status, AiAlbumDraftGenerationStatus.permissionDenied);
     expect(result.shouldChargePoints, isFalse);
     expect(result.draft, isNull);
-    expect(result.failureTitle, '사진을 볼 수 없어 초안을 만들지 못했어요');
+    expect(result.failureTitle, '사진을 볼 수 없어 AI 템플릿을 만들지 못했어요');
     expect(result.primaryCtaLabel, '사진 권한 열기');
     expect(
       result.primaryRecoveryAction,
@@ -383,6 +383,51 @@ void main() {
     expect(result.status, AiAlbumDraftGenerationStatus.insufficientPhotos);
     expect(prepared, isFalse);
   });
+
+  test(
+    'treats slot-only AI template drafts as successful without selected photos',
+    () async {
+      final service = AiAlbumDraftGenerationService(
+        collectCandidates: (_) async => [
+          _candidate('photo-1', DateTime(2026, 8, 20), PhotoOrientation.square),
+          _candidate('photo-2', DateTime(2026, 8, 21), PhotoOrientation.square),
+          _candidate('photo-3', DateTime(2026, 8, 22), PhotoOrientation.square),
+        ],
+        draftProvider: _StaticDraftProvider(
+          AlbumRecommendationDraft(
+            theme: AlbumTheme.travel,
+            title: '제주의 느린 오후',
+            pageCount: 2,
+            templateTone: 'warm-film',
+            recommendedPhotos: const [],
+            excludedPhotos: const [],
+            storySections: const [],
+            summary: '사진은 직접 넣는 AI 템플릿이에요.',
+            templateSlots: const [
+              AiTemplateSlot(
+                slotId: 'cover-main',
+                pageIndex: 0,
+                role: 'cover',
+                hint: '대표 사진을 직접 넣어주세요',
+              ),
+            ],
+            reviewCtaLabel: '이 템플릿으로 시작하기',
+          ),
+        ),
+        minimumPhotoCount: 3,
+      );
+
+      final result = await service.generate(
+        theme: AlbumTheme.travel,
+        range: AiPhotoRange.recent30Days,
+      );
+
+      expect(result.status, AiAlbumDraftGenerationStatus.success);
+      expect(result.shouldChargePoints, isTrue);
+      expect(result.draft!.recommendedPhotos, isEmpty);
+      expect(result.draft!.templateSlots, hasLength(1));
+    },
+  );
 }
 
 PhotoCandidate _candidate(
@@ -405,6 +450,21 @@ PhotoCandidate _candidate(
   );
 }
 
+class _StaticDraftProvider extends AiAlbumDraftProvider {
+  const _StaticDraftProvider(this.draft);
+
+  final AlbumRecommendationDraft draft;
+
+  @override
+  Future<AlbumRecommendationDraft> createDraft({
+    required AlbumTheme theme,
+    required AiPhotoRange range,
+    required List<PhotoCandidate> candidates,
+  }) async {
+    return draft;
+  }
+}
+
 class _RecordingDraftProvider extends AiAlbumDraftProvider {
   const _RecordingDraftProvider(this.seenCandidates);
 
@@ -419,7 +479,7 @@ class _RecordingDraftProvider extends AiAlbumDraftProvider {
     seenCandidates.addAll(candidates);
     return AlbumRecommendationDraft(
       theme: theme,
-      title: '고급 AI 초안',
+      title: '고급 AI 템플릿',
       pageCount: 8,
       templateTone: 'advanced-preview',
       recommendedPhotos: candidates
@@ -438,7 +498,7 @@ class _RecordingDraftProvider extends AiAlbumDraftProvider {
           .toList(growable: false),
       excludedPhotos: const [],
       storySections: const [],
-      summary: '미리보기 준비 후 서버 초안을 만들어요.',
+      summary: '미리보기 준비 후 서버 템플릿을 만들어요.',
     );
   }
 }

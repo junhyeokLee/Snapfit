@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -7,6 +8,19 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
+}
+
+// The upload key is supplied locally and is never included in source control.
+val releaseSigningFile = rootProject.file("key.properties")
+val releaseSigningProperties = Properties().apply {
+    if (releaseSigningFile.isFile) {
+        releaseSigningFile.inputStream().use { load(it) }
+    }
+}
+fun signingProperty(name: String): String {
+    val value = releaseSigningProperties.getProperty(name)
+    require(!value.isNullOrEmpty()) { "Missing $name in android/key.properties" }
+    return value
 }
 
 android {
@@ -32,11 +46,21 @@ android {
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = "34ecdf62d2b450c00c1d525d0cffa4df"
     }
 
+    signingConfigs {
+        if (releaseSigningFile.isFile) {
+            create("release") {
+                storeFile = rootProject.file(signingProperty("storeFile"))
+                storePassword = signingProperty("storePassword")
+                keyAlias = signingProperty("keyAlias")
+                keyPassword = signingProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Without an upload key, local release compilation produces an unsigned artifact.
+            signingConfig = if (releaseSigningFile.isFile) signingConfigs.getByName("release") else null
         }
     }
 }

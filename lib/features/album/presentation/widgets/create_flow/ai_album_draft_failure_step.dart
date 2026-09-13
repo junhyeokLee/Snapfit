@@ -6,12 +6,13 @@ import '../../../../../core/constants/snapfit_colors.dart';
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
     super.key,
-    this.title = '초안을 만들지 못했어요',
+    this.title = 'AI 템플릿을 만들지 못했어요',
     required this.message,
     this.primaryActionLabel = '사진 범위 다시 고르기',
     required this.onRetryRange,
     required this.onManualStart,
     this.usesServerDraftProvider = false,
+    this.isTemplateDesign = false,
     this.usesAdvancedServerAnalysis = false,
   });
 
@@ -21,6 +22,7 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
   final VoidCallback onRetryRange;
   final VoidCallback onManualStart;
   final bool usesServerDraftProvider;
+  final bool isTemplateDesign;
   final bool usesAdvancedServerAnalysis;
 
   @override
@@ -78,7 +80,9 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      usesAdvancedServerAnalysis
+                      isTemplateDesign
+                          ? '디자인 요청만 전송했어요. 사진첩에 접근하거나 사진을 전송하지 않았어요.'
+                          : usesAdvancedServerAnalysis
                           ? '선택한 미리보기 이미지를 서버에서 확인했을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
                           : usesServerDraftProvider
                           ? '선택한 사진 정보가 서버로 전송됐을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'

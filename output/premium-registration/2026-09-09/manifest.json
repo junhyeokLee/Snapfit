@@ -1,0 +1,657 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "productKey": "template:vow-keepsake",
+      "title": "약속을 묶은 책",
+      "category": "웨딩",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "vow-keepsake/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "vow-keepsake/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "vow-keepsake/24/landscape.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "vow-keepsake/32/portrait.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "vow-keepsake/32/square.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "vow-keepsake/32/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/olive_press.png",
+        "assets/sticker/studio/rose_silk.png",
+        "assets/sticker/studio/sage_ribbon.png",
+        "assets/templates/original_editorial/images/lightbound_cake.png",
+        "assets/templates/original_editorial/images/lightbound_ceremony.png",
+        "assets/templates/original_editorial/images/lightbound_guests.png",
+        "assets/templates/original_editorial/images/lightbound_twilight.png",
+        "assets/templates/original_editorial/images/petal_bouquet.png",
+        "assets/templates/original_editorial/images/petal_couple.png",
+        "assets/templates/original_editorial/images/petal_details.png",
+        "assets/templates/original_editorial/images/petal_evening.png",
+        "assets/templates/original_editorial/images/petal_table.png",
+        "assets/templates/original_editorial/images/petal_veil.png"
+      ],
+      "fontFamilies": [
+        "Cormorant Garamond",
+        "Eulyoo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOvalMat",
+        "frame:studioTorn",
+        "sticker:heirloomTableLinen",
+        "sticker:heirloomVowEnvelope",
+        "sticker:heirloomVowPaper",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:heirloomVowSeal",
+        "sticker:studioCottonRag",
+        "sticker:studioOlivePress",
+        "sticker:studioRoseSilk",
+        "sticker:studioSageRibbon",
+        "sticker:studioVellum",
+        "sticker:studioWashiRose",
+        "sticker:studioWashiSage"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:luminous-edition",
+      "title": "둘만의 여행",
+      "category": "여행",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "luminous-edition/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "luminous-edition/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "luminous-edition/24/landscape.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "luminous-edition/36/portrait.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "luminous-edition/36/square.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "luminous-edition/36/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/blue_fibre_paper.png",
+        "assets/sticker/studio/coast_stamp.png",
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/glassine_envelope.png",
+        "assets/templates/original_editorial/images/couple_walk.png",
+        "assets/templates/original_editorial/images/daily_fruit.png",
+        "assets/templates/original_editorial/images/journey_market.png",
+        "assets/templates/original_editorial/images/journey_train.png",
+        "assets/templates/original_editorial/images/small_days_breakfast.png",
+        "assets/templates/original_editorial/images/travel_cafe.png",
+        "assets/templates/original_editorial/images/travel_coast.png",
+        "assets/templates/original_editorial/images/travel_harbor.png",
+        "assets/templates/original_editorial/images/travel_street.png"
+      ],
+      "fontFamilies": [
+        "Eulyoo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioOvalMat",
+        "frame:studioTorn",
+        "sticker:heirloomTableLinen",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:studioBlueFibre",
+        "sticker:studioCoastStamp",
+        "sticker:studioCottonRag",
+        "sticker:studioGlassineEnvelope",
+        "sticker:studioLedger",
+        "sticker:studioPostalMark",
+        "sticker:studioTravelMap",
+        "sticker:studioTravelTicket",
+        "sticker:studioVellum",
+        "sticker:studioWashiIndigo",
+        "sticker:studioWashiSage",
+        "sticker:travelCafeCoaster",
+        "sticker:travelCafeReceipt",
+        "sticker:travelContourSlip",
+        "sticker:travelDocumentPocket",
+        "sticker:travelLuggageLabel",
+        "sticker:travelMarketReceipt",
+        "sticker:travelNotebook",
+        "sticker:travelPhotoSleeve",
+        "sticker:travelPostcard",
+        "sticker:travelStayTag"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:daily-cabinet",
+      "title": "하루의 수집함",
+      "category": "일상",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "daily-cabinet/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "daily-cabinet/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "daily-cabinet/24/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/archive_tag.png",
+        "assets/sticker/studio/blue_fibre_paper.png",
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/olive_press.png",
+        "assets/sticker/studio/pressed_cosmos.png",
+        "assets/sticker/studio/sage_ribbon.png",
+        "assets/templates/original_editorial/images/daily_book.png",
+        "assets/templates/original_editorial/images/daily_desk.png",
+        "assets/templates/original_editorial/images/daily_friends.png",
+        "assets/templates/original_editorial/images/daily_fruit.png",
+        "assets/templates/original_editorial/images/daily_picnic.png",
+        "assets/templates/original_editorial/images/family_friends.png",
+        "assets/templates/original_editorial/images/small_days_breakfast.png",
+        "assets/templates/original_editorial/images/small_days_walk.png"
+      ],
+      "fontFamilies": [
+        "BookMyungjo",
+        "Cormorant Garamond",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioTorn",
+        "sticker:heirloomLibraryCard",
+        "sticker:heirloomTableLinen",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:studioArchiveTag",
+        "sticker:studioBlueFibre",
+        "sticker:studioCottonRag",
+        "sticker:studioOlivePress",
+        "sticker:studioPressedCosmos",
+        "sticker:studioSageRibbon",
+        "sticker:studioWashiIndigo",
+        "sticker:studioWashiSage",
+        "sticker:travelCafeCoaster",
+        "sticker:travelCafeReceipt",
+        "sticker:travelDocumentPocket",
+        "sticker:travelMarketReceipt",
+        "sticker:travelNotebook",
+        "sticker:travelPhotoSleeve"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:first-year-keepsake",
+      "title": "너의 첫 계절",
+      "category": "성장·육아",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "first-year-keepsake/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "first-year-keepsake/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "first-year-keepsake/24/landscape.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "first-year-keepsake/36/portrait.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "first-year-keepsake/36/square.json"
+        },
+        {
+          "innerPages": 36,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "first-year-keepsake/36/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/archive_tag.png",
+        "assets/sticker/studio/blue_fibre_paper.png",
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/gouache_cake.png",
+        "assets/sticker/studio/olive_press.png",
+        "assets/sticker/studio/sage_ribbon.png",
+        "assets/templates/original_editorial/images/family_picnic.png",
+        "assets/templates/original_editorial/images/growth_birthday.png",
+        "assets/templates/original_editorial/images/growth_hand.png",
+        "assets/templates/original_editorial/images/growth_keepsakes.png",
+        "assets/templates/original_editorial/images/growth_play.png",
+        "assets/templates/original_editorial/images/growth_sleep.png",
+        "assets/templates/original_editorial/images/growth_walk.png"
+      ],
+      "fontFamilies": [
+        "Eulyoo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOvalMat",
+        "sticker:heirloomGrowthRuler",
+        "sticker:heirloomTableLinen",
+        "sticker:heirloomVowEnvelope",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:studioArchiveTag",
+        "sticker:studioBlueFibre",
+        "sticker:studioCottonRag",
+        "sticker:studioGouacheCake",
+        "sticker:studioOlivePress",
+        "sticker:studioSageRibbon",
+        "sticker:studioWashiIndigo",
+        "sticker:studioWashiSage",
+        "sticker:travelDocumentPocket",
+        "sticker:travelNotebook"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:table-stories",
+      "title": "우리 집 식탁",
+      "category": "가족·친구",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "table-stories/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "table-stories/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "table-stories/24/landscape.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "table-stories/32/portrait.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "table-stories/32/square.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "table-stories/32/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/olive_press.png",
+        "assets/sticker/studio/sage_ribbon.png",
+        "assets/templates/original_editorial/images/daily_desk.png",
+        "assets/templates/original_editorial/images/daily_fruit.png",
+        "assets/templates/original_editorial/images/family_friends.png",
+        "assets/templates/original_editorial/images/family_kitchen.png",
+        "assets/templates/original_editorial/images/family_picnic.png",
+        "assets/templates/original_editorial/images/family_table.png",
+        "assets/templates/original_editorial/images/small_days_breakfast.png"
+      ],
+      "fontFamilies": [
+        "BookMyungjo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOvalMat",
+        "frame:studioTorn",
+        "sticker:heirloomLibraryCard",
+        "sticker:heirloomTableLinen",
+        "sticker:heirloomVowEnvelope",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:studioCottonRag",
+        "sticker:studioOlivePress",
+        "sticker:studioSageRibbon",
+        "sticker:studioWashiSage",
+        "sticker:travelDocumentPocket",
+        "sticker:travelMarketReceipt"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:two-tickets",
+      "title": "둘이 모은 장면",
+      "category": "커플·기념일",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "two-tickets/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "two-tickets/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "two-tickets/24/landscape.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "two-tickets/32/portrait.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "two-tickets/32/square.json"
+        },
+        {
+          "innerPages": 32,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "two-tickets/32/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/coast_stamp.png",
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/glassine_envelope.png",
+        "assets/sticker/studio/rose_silk.png",
+        "assets/templates/original_editorial/images/couple_anniversary.png",
+        "assets/templates/original_editorial/images/couple_cafe.png",
+        "assets/templates/original_editorial/images/couple_keepsakes.png",
+        "assets/templates/original_editorial/images/couple_walk.png",
+        "assets/templates/original_editorial/images/daily_book.png",
+        "assets/templates/original_editorial/images/small_days_breakfast.png",
+        "assets/templates/original_editorial/images/travel_coast.png"
+      ],
+      "fontFamilies": [
+        "Eulyoo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioTorn",
+        "sticker:heirloomCinemaStub",
+        "sticker:heirloomVowEnvelope",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:heirloomVowSeal",
+        "sticker:studioCoastStamp",
+        "sticker:studioCottonRag",
+        "sticker:studioGlassineEnvelope",
+        "sticker:studioRoseSilk",
+        "sticker:studioTravelTicket",
+        "sticker:studioVellum",
+        "sticker:studioWashiRose",
+        "sticker:travelCafeCoaster",
+        "sticker:travelCafeReceipt",
+        "sticker:travelContourSlip",
+        "sticker:travelPhotoSleeve",
+        "sticker:travelPostcard"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    },
+    {
+      "productKey": "template:walk-and-nap",
+      "title": "산책하고 낮잠",
+      "category": "반려동물",
+      "status": "registered-draft",
+      "launchPointPrice": 2500,
+      "pricingRevision": "2026-09-09-launch-1",
+      "pointPrice": null,
+      "isActive": false,
+      "proposedEntitlement": "one-account-all-listed-editions-and-aspects",
+      "includesPrinting": false,
+      "editions": [
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "portrait",
+          "document": "walk-and-nap/24/portrait.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "square",
+          "document": "walk-and-nap/24/square.json"
+        },
+        {
+          "innerPages": 24,
+          "coverPages": 1,
+          "aspect": "landscape",
+          "document": "walk-and-nap/24/landscape.json"
+        }
+      ],
+      "localAssets": [
+        "assets/sticker/studio/blue_fibre_paper.png",
+        "assets/sticker/studio/cotton_rag.png",
+        "assets/sticker/studio/glassine_envelope.png",
+        "assets/sticker/studio/olive_press.png",
+        "assets/sticker/studio/sage_ribbon.png",
+        "assets/templates/original_editorial/images/pet_cat.png",
+        "assets/templates/original_editorial/images/pet_dog.png",
+        "assets/templates/original_editorial/images/pet_keepsakes.png",
+        "assets/templates/original_editorial/images/pet_nap.png",
+        "assets/templates/original_editorial/images/pet_rest.png",
+        "assets/templates/original_editorial/images/pet_walk.png"
+      ],
+      "fontFamilies": [
+        "BookMyungjo",
+        "NotoSans"
+      ],
+      "visualMaterialProductKeys": [
+        "frame:studioDeckle",
+        "frame:studioGallery",
+        "frame:studioOval",
+        "frame:studioOvalMat",
+        "sticker:heirloomPetTag",
+        "sticker:heirloomVowPlaceCard",
+        "sticker:studioBlueFibre",
+        "sticker:studioCottonRag",
+        "sticker:studioGlassineEnvelope",
+        "sticker:studioOlivePress",
+        "sticker:studioSageRibbon",
+        "sticker:studioWashiSage",
+        "sticker:travelContourSlip",
+        "sticker:travelNotebook"
+      ],
+      "materialEntitlementStatus": "proposed-not-granted",
+      "releaseGates": {
+        "design": "approved",
+        "price": "launch-price-set-sale-held",
+        "commerceIntegration": "pending-store-and-editor-delivery",
+        "storePaymentQA": "pending",
+        "distributionRights": "pending-asset-and-font-review",
+        "printProof": "pending"
+      }
+    }
+  ],
+  "note": "Local draft export; not evidence of remote registration or sale."
+}

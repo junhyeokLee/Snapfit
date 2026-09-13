@@ -13,12 +13,12 @@ This document supersedes the old REST inventory. The Flutter runtime no longer c
 | Album/profile image upload | Supabase Storage buckets (`album-assets`, `avatars`) |
 | Notifications | Supabase `notification_inbox`, `notification_reads` |
 | Support inquiries | Supabase `support_inquiries` |
-| Storage quota/subscription status | Supabase `storage_quotas`, `subscriptions` |
-| Native subscriptions | Google Play Billing / App Store + `iap-verify` Edge Function |
-| External subscription billing | Disabled; `billing-prepare`, `billing-approve`, and `billing-webhook` return `410 native_iap_required` |
+| Storage quota | Supabase `storage_quotas`; historical subscription rows retained without new sales |
+| Consumable point purchases | Google Play / App Store + `iap-verify`; `iap-reconcile` refund handling |
+| External subscription billing | Disabled; `billing-prepare`, `billing-approve`, and `billing-webhook` return HTTP 410 |
 | Address lookup | `address-search` Edge Function |
-| Physical order checkout | `order-checkout` Edge Function |
-| Order confirmation/print package | `order-confirm-payment`, `admin-ops.preparePrintPackage`, private `print-packages` bucket |
+| External physical order checkout | Retired with no replacement integration |
+| Existing orders/print package | Order history, authorized admin operations and private `print-packages` bucket |
 | Admin dashboard/orders/templates | `admin-ops` Edge Function |
 
 ## Verification

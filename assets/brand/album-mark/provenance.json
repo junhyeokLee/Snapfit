@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-07",
+  "concept": "Album Mark / Coastal memories",
+  "mode": "built-in image_gen; no fallback API",
+  "status": "Static design concepts. Not installed in Flutter, native splash, or launcher icons. No video produced.",
+  "notes": [
+    "All artwork is AI generated. Splash people and landscape are synthetic, not licensed stock footage or a verified real location.",
+    "Original generated PNG pixels are preserved. OS icon masks are preview-only CSS.",
+    "Selected wordmark-cyan.png uses cyan leaves and charcoal lettering; app-icon-cyan.png uses cyan background and white leaves. White splash logos remain unchanged for photographic contrast.",
+    "Logo is a raster concept, not a trademark-cleared/vector production master. App icon target sizes will be exported after approval."
+  ],
+  "assets": [
+    {
+      "file": "app-icon-master.png",
+      "width": 1254,
+      "height": 1254,
+      "prompt": "Use case: logo-brand. Asset type: SnapFit application icon artwork.\nInput image is a reference for the EXACT identity of the open-album emblem, not a background or a screenshot to include.\nCreate one app-icon image using ONLY the open-album emblem from the LEFT of the provided SnapFit wordmark. Preserve its two facing folded leaves, distinctive central negative space and silhouette closely. Do not include any letters or the wordmark.\nFull square, edge-to-edge opaque light celadon-mint background #D9E8DF. Emblem is solid dark green-black #20362F, perfectly centered optically, about 60% of canvas width and 48% of canvas height, with ample safe area for Android circle masks and iOS rounded-square masks. Bold and instantly legible at very small sizes.\nPerfectly flat vector-like precision, premium contemporary stationery brand. No camera, no lens, no sparkle, no glossy material, no gradient, no 3D emboss, no shadow, no texture, no frame, no extra border. Do not pre-round the outer image or put a smaller rounded square inside it: the entire output canvas is the background. Exactly one final icon, no mockup and no multiple variants. Square 1024 x 1024 artwork if possible.",
+      "source": "exec-3102c795-7bc3-4504-80c0-40be8bbf7cd6.png",
+      "status": "Superseded off-brand green exploration; retained for comparison, not used by preview."
+    },
+    {
+      "file": "wordmark-white.png",
+      "width": 2048,
+      "height": 768,
+      "prompt": "Use case: logo-brand.\nAsset type: final primary wordmark image for SnapFit photo-album app.\nReference: attached image is the EXACT open album icon to match, symbol reference only.\nCreate one clean horizontal logo lockup: the reference's two facing album leaves at left and the exact lowercase text \"snapfit\" to the right. Preserve the icon's two distinct leaf silhouettes and central negative gap. Set snapfit in a very beautifully proportioned bold contemporary humanist sans-serif, clear counters and a gently curved shoulder on the f, matching the reference emblem's weight. Balanced modest gap. No tagline.\nEntire logo, mark and type must be solid flat dark forest ink #20362F. The background MUST be fully opaque, absolutely uniform white #FFFFFF, including corners. This is a white-background brand plate, NOT transparency. No shadow, glow, texture, noise, gradient, outline, emboss, camera, crop marks, sparkle or decorative elements. No gray alpha, no fuzzy halo.\nHorizontal 2048x768 composition, one lockup fills 88% width and 52% height, optically centered, icon height matches tall letters. Only one logo, no mockups or guide labels. Crisp exact artwork.",
+      "source": "exec-316245ad-2d1f-4dcd-8608-c423215c8742.png",
+      "status": "Superseded off-brand green exploration; retained for comparison, not used by preview."
+    },
+    {
+      "file": "splash-portrait.png",
+      "width": 941,
+      "height": 1672,
+      "prompt": "Use case: ads-marketing with photorealistic-natural photography.\nAsset type: a finished portrait splash-screen IMAGE for SnapFit, an elegant app for making personal photo albums. Exactly one full-bleed final screen, not a phone mockup or concept board.\nReference image: brand wordmark reference only. Reproduce the reference's open-album two-leaf emblem and exact lowercase \"snapfit\" wordmark in pure white, as one crisp, modest horizontal logo centered at 22% down the image, about 57% of image width. No other text or UI.\nScene: a stunning but believable candid travel photograph from the Mediterranean coast, a quiet seaside path above clear aquamarine water, soft weathered pale stone walls, small pastel buildings clustered on distant cliffs, a few deep green cypress shapes, airy blue sky. Visible fine stone, sea ripples and distant architecture, not blurred.\nSubjects: one adult couple, seen from behind at a medium-long distance, strolling close together toward the sea down the path, natural relaxed gestures, one in a lightweight ivory shirt and charcoal trousers and the other in a pale blue summer dress, no conspicuous accessories or logos. Couple occupies roughly 20% of canvas height, centered horizontally around lower 70%, both full bodies visible. Correct natural anatomy.\nComposition: upright 9:16, ideally 1152x2048 or highest available. Premium contemporary travel editorial, authentic camera perspective, foreground path from lower edge leads toward the couple and the view. Upper third has deep enough clean blue sky for the white logo to read. The photograph itself supplies contrast, NOT a dark overlay or artificial gradient. Landscape and couple occupy lower two thirds. Screen edges are pure photograph, no frame, no rounded corners.\nLight: fresh soft morning daylight, natural accurate colors, delicate warm highlights and cool sea, restrained contrast, no oversaturated postcard look, no sepia/teal LUT, no sunset orange wash. Sharp high-end photography with real detail. No bokeh blobs, no blur, no grain effect, no lens flare, no orbs.\nNo marketing headline, no tagline, no buttons, no progress indicator, no system status bar. The sole graphic is the flat white reference emblem + snapfit wordmark.",
+      "source": "exec-c659ab61-52ac-4a8c-bc45-76ab503b36b4.png"
+    },
+    {
+      "file": "splash-landscape.png",
+      "width": 1672,
+      "height": 941,
+      "prompt": "Use case: compositing / outpainting.\nAsset type: landscape companion splash image for the SnapFit photo-album app.\nInput 1: the portrait splash screen is the image to adapt.\nInput 2: logo artwork is a supporting brand reference.\nCreate the LANDSCAPE 16:9 version, ideally 2048x1152. Expand and recompose the SAME scene into a wide photograph. Keep the couple's clothing, adult appearance, relaxed back-facing walking pose, the sunny Mediterranean path, clear sea and cliffside village, the natural color grade and crisp editorial photographic quality. Keep both bodies and feet completely in frame, placed at x=40%, lower half of canvas, about 33% of canvas height. Extend the coastal view toward the right; authentic stone walls at the sides. This should feel like the same moment with a wider lens, not a different trip.\nThe ONLY graphic should be the exact same open album emblem + lowercase \"snapfit\" wordmark in flat pure white, horizontal, centered in clear blue sky at x=50%, y=22%, about 27% of canvas width. Readable with abundant natural sky around it. Preserve the relative logo silhouette and typography from reference 2. Do not stretch the logo.\nEntire image full bleed, no phone/device frame, no corners, no additional text or UI. No dark overlay, blur, glow, lens flare, bokeh, artificial gradient, oversized typography or heavy color filters. Bright restrained natural daylight, clear distant buildings, fine ripples in water, real camera photographic detail.",
+      "source": "exec-a66d1a69-7be2-4b0b-87ef-0501caaf7a72.png"
+    },
+    {
+      "file": "wordmark-cyan.png",
+      "width": 2048,
+      "height": 768,
+      "prompt": "Use case: precise-object-edit.\nEdit target: the attached SnapFit logo PNG.\nOnly change the colors; keep exactly the same open-album leaf shapes, letter shapes, typography, letter spacing, symbol-to-word spacing, position and overall composition.\nThe app's actual production brand token is SnapFitColors.accent = sRGB #08B8D0, RGB(8,184,208). Recolor BOTH leaves of the album emblem to this precise solid vibrant cyan.\nThe word \"snapfit\" must be solid neutral charcoal sRGB #121212 RGB(18,18,18), NOT dark green.\nBackground must be perfectly opaque, uniform white #FFFFFF. Preserve 2048x768 wide canvas and same artwork position and scale.\nCompletely flat brand artwork. NO gradients, green tint, glossy highlights, texture, shading, glow, emboss or soft shadow. Only cyan symbol, charcoal letters and white background. All interior pixels of cyan leaves should be the requested color; clean antialiased edges only. Do not change the design, redraw letters, add text or create a mockup.",
+      "source": "exec-365b5132-d260-47c0-9a2d-187b53087f73.png",
+      "editTarget": "wordmark-white.png",
+      "status": "Selected, app-color correction"
+    },
+    {
+      "file": "app-icon-cyan.png",
+      "width": 1254,
+      "height": 1254,
+      "prompt": "Use case: precise-object-edit.\nEdit target: attached square SnapFit app icon PNG. This is a color correction to match the REAL app brand, not a new logo design.\nPreserve the exact central two-leaf open-album emblem silhouette, its proportions, negative space, center alignment, and surrounding safe-area spacing from the reference.\nChange the ENTIRE background edge to edge to precise flat vibrant cyan sRGB #08B8D0 RGB(8,184,208), the production SnapFitColors.accent.\nChange BOTH solid album leaves to opaque pure white #FFFFFF RGB(255,255,255).\nOnly these two colors, clean antialiased edges. Make the background absolutely flat and uniform with every corner cyan. No green, no mint, no gradient, no texture, no shadow, no bevel, no glow, no gloss or black outline.\nPreserve the full square composition, no pre-rounded outer corners and no additional frame. Do not add letters. Exactly one icon, no mockup. Same resolution as reference or higher, opaque RGB image.",
+      "source": "exec-7848c07f-13b4-4eb5-8269-d25719e6d563.png",
+      "editTarget": "app-icon-master.png",
+      "status": "Selected, app-color correction"
+    }
+  ],
+  "brandColorSource": {
+    "file": "lib/core/constants/snapfit_colors.dart",
+    "themeFile": "lib/core/theme/snapfit_theme.dart",
+    "accent": "#08B8D0",
+    "accentLight": "#EAFBFD",
+    "deepCharcoal": "#121212",
+    "pureWhite": "#FFFFFF",
+    "note": "Match actual constant values, not the older #00C2E0 / #E3F9FD values in comments. Generated raster pixels may vary slightly; these are the exact design targets and preview CSS tokens."
+  }
+}

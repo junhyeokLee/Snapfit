@@ -1,0 +1,29 @@
+[
+  {
+    "width": 390,
+    "height": 844,
+    "materials": 4,
+    "favorites": true,
+    "insertions": 4,
+    "errors": [],
+    "failures": []
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "materials": 4,
+    "favorites": true,
+    "insertions": 4,
+    "errors": [],
+    "failures": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "materials": 4,
+    "favorites": true,
+    "insertions": 4,
+    "errors": [],
+    "failures": []
+  }
+]

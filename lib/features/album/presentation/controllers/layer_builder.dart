@@ -4,7 +4,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/utils/text_image_shader.dart';
+import '../../../../core/utils/outline_text_style.dart';
 import '../../../../shared/snapfit_image.dart';
+import '../../../../shared/widgets/studio_material.dart';
+import '../../../../shared/widgets/studio_decoration.dart';
+import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../domain/entities/layer.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'layer_interaction_manager.dart';
@@ -51,7 +56,11 @@ class LayerBuilder {
   final LayerInteractionManager interaction;
   final Size Function() getCoverSize;
 
-  LayerBuilder(this.interaction, this.getCoverSize);
+  /// Print rendering supplies fully decoded originals before the first paint.
+  /// Null preserves the interactive editor's normal image-loading behavior.
+  final Map<String, ui.Image>? printImages;
+
+  LayerBuilder(this.interaction, this.getCoverSize, {this.printImages});
 
   /// sticker 계열 decoration을 실제 적용과 동일하게 렌더링하는 공용 빌더.
   /// (DecorateStickerTab 미리보기에서 사용)
@@ -81,6 +90,29 @@ class LayerBuilder {
   }
 
   Widget _buildDecoration(LayerModel layer) {
+    if (printImages != null) {
+      final spec = studioDecorationById(layer.imageBackground);
+      if (spec != null) {
+        final path =
+            spec.assetPath ??
+            (spec.id == 'studioBotanicalStamp'
+                ? 'assets/sticker/studio/pressed_cosmos.png'
+                : null);
+        final image = path == null ? null : printImages!['asset:$path'];
+        if (path != null && image == null) {
+          throw StateError('print_decoration_not_loaded:${layer.id}');
+        }
+        return StudioDecoration(spec: spec, printImage: image);
+      }
+    }
+    if (StudioMaterial.decorationStyles.contains(layer.imageBackground)) {
+      return StudioMaterial(
+        style: layer.imageBackground!,
+        child: ColoredBox(
+          color: _parseHexColor(layer.decorationFillColor) ?? Colors.white,
+        ),
+      );
+    }
     final sticker = _buildStickerDecoration(layer);
     if (sticker != null) return sticker;
     final explicit = _buildExplicitDecoration(layer);

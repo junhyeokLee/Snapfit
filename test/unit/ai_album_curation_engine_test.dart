@@ -115,6 +115,58 @@ void main() {
       },
     );
 
+    test(
+      'returns premium editable template slots instead of reused layouts',
+      () {
+        final draft = AiAlbumCurationEngine().curate(
+          theme: AlbumTheme.travel,
+          candidates: [
+            PhotoCandidate(
+              assetId: 'wide-1',
+              createdAt: DateTime(2026, 8, 1, 10),
+              width: 4032,
+              height: 3024,
+              orientation: PhotoOrientation.landscape,
+            ),
+            PhotoCandidate(
+              assetId: 'wide-2',
+              createdAt: DateTime(2026, 8, 1, 12),
+              width: 4032,
+              height: 3024,
+              orientation: PhotoOrientation.landscape,
+            ),
+            PhotoCandidate(
+              assetId: 'portrait-1',
+              createdAt: DateTime(2026, 8, 2, 11),
+              width: 3024,
+              height: 4032,
+              orientation: PhotoOrientation.portrait,
+            ),
+          ],
+        );
+
+        expect(draft.templateSlots, isNotEmpty);
+        expect(draft.templateSlots.first.role, 'cover');
+        expect(draft.templateSlots.first.assetId, isNull);
+        expect(
+          draft.templateSlots.every((slot) => slot.hasCustomFrame),
+          isTrue,
+        );
+        expect(
+          draft.templateSlots
+              .map((slot) => slot.imageTemplate)
+              .whereType<String>(),
+          contains('16:9'),
+        );
+        expect(
+          draft.templateSlots
+              .map((slot) => slot.imageBackground)
+              .whereType<String>(),
+          contains('soft-shadow'),
+        );
+      },
+    );
+
     test('explains metadata-first curation choices for user review', () {
       final draft = AiAlbumCurationEngine().curate(
         theme: AlbumTheme.travel,

@@ -1,0 +1,29 @@
+{
+  "createdAt": "2026-09-09",
+  "assets": [
+    {
+      "asset": "wave_silk_knot.png",
+      "generator": "OpenAI built-in imagegen",
+      "prompt": "Create ONE original premium editorial scrapbook material asset: an ivory raw-silk loose knot, not a gift bow, with two relaxed asymmetric fabric ends and a small brushed silver keeper ring, overhead macro product photograph. Genuine transparent PNG alpha background, absolutely no backdrop or white rectangle, no text, no logos, no ornaments besides this one fabric knot. Square canvas, whole object entirely visible with 12 percent transparent margin, matte fine woven silk grain, soft restrained natural shadow confined to the object, warm white fabric and cool subtle silver, tactile understated wedding stationery, no glossy plastic, no glitter, no cartoon. This is an independent movable decoration for a Korean wedding photo album, NOT a completed page or frame.",
+      "original": "exec-1db93472-61aa-466e-9c40-73f2f2e11fb5.png",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    },
+    {
+      "asset": "wave_sea_glass.png",
+      "generator": "OpenAI built-in imagegen",
+      "prompt": "Create ONE original premium scrapbook material cutout: a small found arrangement of THREE naturally tumbled sea-glass pieces, pale frosted aquamarine, soft milky jade and one very small cloudy white piece, overlapping just slightly, top-down macro photograph. True transparent PNG alpha background, square canvas with generous 15 percent transparent border. Absolutely no background rectangle, no sand, no shell, no text, no illustration, no glitter or artificial highlights. Dry matte sea-worn surfaces with delicate pitting and rounded irregular outlines, tiny contact shadows confined to the objects, richly detailed but quiet coastal travel-journal aesthetic. Objects entirely visible. This is an independent movable decoration, not an album page.",
+      "original": "exec-7a7ecf6d-8088-4e97-9bbd-1dfa6efb761a.png",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    },
+    {
+      "asset": "wave_pencil.png",
+      "generator": "OpenAI built-in imagegen",
+      "prompt": "Create ONE original editorial scrapbook material asset: a short worn cobalt-blue hexagonal wooden graphite pencil with a naturally hand-sharpened exposed cedar wood tip and a flat unpainted wood end, overhead macro product photography, placed on a gentle 25 degree diagonal across a square canvas. Entire pencil visible with 15 percent transparent margin, real transparent PNG alpha background, no backdrop, no typography or branding on the pencil, no extra objects. Refined artist's desk aesthetic, richly visible painted wood grain and graphite point, matte finish with only a tiny natural contact shadow. No glossy plastic or clip art. The pencil should occupy about 65 percent of the image width, diagonal from bottom left tip to upper right end. Independent movable decoration for a literary photo-journal.",
+      "original": "exec-c96c4183-67ca-4b6c-a629-137bd29f90f6.png",
+      "modified": false,
+      "commercialDistributionReview": "pending"
+    }
+  ]
+}

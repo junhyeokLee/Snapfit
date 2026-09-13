@@ -220,7 +220,7 @@ return $default(_that.layers,_that.selectedCover,_that.selectedTheme,_that.cover
 
 
 class _AlbumEditorState implements AlbumEditorState {
-  const _AlbumEditorState({final  List<LayerModel> layers = const [], this.selectedCover = const CoverSize(name: '세로형', ratio: 6 / 8, realSize: Size(14.5, 19.4)), this.selectedTheme = CoverTheme.classic, this.coverCanvasSize, this.innerCanvasSize, this.isCreatingInBackground = false, this.backgroundUploadProgress = 0.0, this.canUndo = false, this.canRedo = false}): _layers = layers;
+  const _AlbumEditorState({final  List<LayerModel> layers = const [], this.selectedCover = defaultCoverSize, this.selectedTheme = CoverTheme.classic, this.coverCanvasSize, this.innerCanvasSize, this.isCreatingInBackground = false, this.backgroundUploadProgress = 0.0, this.canUndo = false, this.canRedo = false}): _layers = layers;
   
 
 /// 현재 페이지의 레이어들(UI가 바로 그릴 데이터)

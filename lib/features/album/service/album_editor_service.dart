@@ -4,6 +4,7 @@ import '../../../../core/constants/cover_size.dart';
 
 import '../../../core/constants/image_templates.dart';
 import '../../../core/constants/page_templates.dart';
+import '../../../core/templates/studio_photo_frame_catalog.dart';
 import '../domain/entities/album_page.dart';
 import '../domain/entities/layer.dart';
 
@@ -388,6 +389,11 @@ class AlbumEditorService {
 
     // 2) 프레임 적용 시: 최초 한 번만 "기본 상태"를 저장해 두고,
     //    폴라로이드 계열에 대해서만 고정 비율로 레이어 박스를 재조정한다.
+    // Studio frames clip within the existing slot without reflowing the page.
+    if (studioPhotoFrames.contains(frameKey)) {
+      page.layers[idx] = old.copyWith(imageBackground: frameKey);
+      return page;
+    }
     final baseWidth = old.frameBaseWidth ?? old.width;
     final baseHeight = old.frameBaseHeight ?? old.height;
     final basePosition = old.frameBasePosition ?? old.position;

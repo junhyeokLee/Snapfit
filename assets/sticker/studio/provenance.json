@@ -1,0 +1,29 @@
+{
+  "collection": "snapfit-stationery-2026-09",
+  "date": "2026-09-07",
+  "mode": "Built-in image_gen; no external model API calls",
+  "usage": "App-bundled original artwork in authored templates; not live AI template generation.",
+  "images": [
+    {
+      "file": "cotton_rag.png",
+      "prompt": "Asset type: a single premium scanned handmade paper scrap, transparent PNG material for a photo-album editor. Square canvas. One slightly landscape rectangular sheet of warm off-white cotton rag paper, actual sheet width 84% canvas, actual sheet height 69% canvas, slightly uneven deckle hand-torn edges, particularly organic feathered pulp edge along bottom and left; tiny visible pale fibers, natural irregular subtle uncoated cotton paper grain and a few very fine longer threads in the pulp. Exquisitely tactile stationery, believable flatbed-scan quality, evenly illuminated from overhead, matte, no directional glare. Restrained neutral white paper, not yellow, no stains, no writing, no lines, no holes, no printed design, no folds, no other objects, no mockup, no hands, no pencil or flower. Complete paper silhouette isolated on GENUINELY TRANSPARENT ALPHA background, not white opaque background and not painted checkerboard. No large cast shadow: only microscopic edge thickness. Lots of visible subtle textile fibers at large scale, not flat fill. Natural but carefully refined edges, not cartoon sawtooth or zigzag. Keep generous clean 8% outer margin and entire material uncut.",
+      "source": "exec-cf83f7b1-86f4-41ed-832a-b760a66b033b.png"
+    },
+    {
+      "file": "pressed_cosmos.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single premium botanical die-cut sticker PNG for SnapFit photo album editor. Create one original delicate pressed cosmos flower, pale dusty blush translucent papery petals with irregular fine veins, tiny warm ochre center, one slender gently curved stem and two airy muted sage leaves. Extremely refined herbarium / independent stationery aesthetic, photographed pressed-flat mixed with delicately painted botanical detail. A narrow consistent warm-white matte paper die-cut contour (about 1.5% of subject width) around the whole connected silhouette, no rectangular backing. Authentic subtle paper fibers, no gloss, no plastic, no giant shadow. Isolated on genuinely transparent alpha background, NOT checkerboard painted into image, NOT white opaque background. One asset only, no sheet, no words, no logo, no emoji, no UI. Center the complete upright flower and stem with generous 8% transparent outer margin, occupying roughly 80-84% of canvas height. High resolution portrait asset, clean antialiased alpha silhouette and fine visible detail.",
+      "source": "exec-19be9370-68cb-49e2-ab5a-3740b857d939.png"
+    },
+    {
+      "file": "sage_ribbon.png",
+      "prompt": "Asset type: one premium ribbon bow die-cut sticker for SnapFit photo album stationery. Original softly sage-green cotton grosgrain ribbon tied in an elegant slightly asymmetric bow, two gently curved short tails, tactile fine ribbed weave, softly folded matte cloth and natural recessed fold shadows. Sophisticated independent stationery aesthetic, photographed flat from overhead with fine realistic textile detail. Thin consistent ivory paper die-cut contour around entire connected bow silhouette, not a rectangular backing. No shiny satin, no glossy vinyl, no plastic highlights, no big cast shadow. One object only, no text or logo or emoji. Genuinely transparent alpha background, no opaque white backing, no painted checkerboard. Entire bow contained with 8% transparent margin. Square canvas, bow occupies about 84% canvas width and 70% height.",
+      "source": "exec-4ca7221e-44c0-4340-9506-4f8ae0c0da31.png"
+    },
+    {
+      "file": "citrus_print.png",
+      "prompt": "Asset type: one original high-end illustrated die-cut citrus sticker for a photo album stationery editor. A single rounded tangerine with two sculptural dark forest-green leaves, tiny pale pink five-petal blossom tucked near stem, composition from a boutique contemporary risograph artist. Confident simple organic shapes with nuanced hand printed ink density, visible fine irregular ink speckles on orange peel, overlapping two-color print texture and subtle uncoated paper grain. Modern grown-up illustration, vivid coral orange, deep green, dusty pink accents. Narrow consistent off-white paper die-cut border around connected silhouette, elegant irregular outline, no rectangular backing. One connected sticker only, no text, no face, no logo, no emoji, no geometric icon, no glossy 3D, no plastic, no cast shadow. Genuinely transparent alpha background, NOT opaque white and NOT painted checkerboard. Square canvas, full sticker centered with 10% clear margin, occupies about 80% of image. Crisp detailed print-ready artwork.",
+      "source": "exec-63f653c8-d1fa-48a2-9631-75573166d3d2.png"
+    }
+  ],
+  "processing": "Copied unmodified PNG originals, preserving alpha. No recoloring, background removal, external stock artwork, icon substitutions or upscaling."
+}

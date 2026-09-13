@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/templates/studio_decoration_catalog.dart';
+import '../../../../../shared/widgets/studio_decoration.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
 import '../../viewmodels/album_editor_view_model.dart';
@@ -72,8 +74,11 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
       );
     }
 
+    final sheetHeight = widget.showHandle
+        ? (MediaQuery.sizeOf(context).height * 0.90).clamp(520.0, 900.0)
+        : double.infinity;
     return Container(
-      height: widget.showHandle ? 320.h : double.infinity,
+      height: sheetHeight,
       decoration: BoxDecoration(
         color: SnapFitColors.surfaceOf(context),
         borderRadius: BorderRadius.only(
@@ -259,6 +264,18 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
     LayerModel layer,
     int imageOrder,
   ) {
+    final studioSpec = _studioSpec(layer);
+    if (studioSpec != null) {
+      return Padding(
+        padding: const EdgeInsets.all(2),
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: studioSpec.aspectRatio,
+            child: StudioDecoration(spec: studioSpec),
+          ),
+        ),
+      );
+    }
     final style = layer.imageBackground ?? '';
     final isDecoStickerStyle =
         style.isNotEmpty && style.toLowerCase().startsWith('sticker');
@@ -387,6 +404,8 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
 
   /// 레이어 타입 + 순서에 따른 라벨 (이미지/스티커는 "이미지 1", "스티커 2" 등으로 구분)
   String _layerLabel(LayerModel layer, int index) {
+    final studioSpec = _studioSpec(layer);
+    if (studioSpec != null) return studioSpec.label;
     switch (layer.type) {
       case LayerType.text:
         final text = layer.text ?? '';
@@ -414,5 +433,11 @@ class _LayerManagerPanelState extends ConsumerState<LayerManagerPanel> {
         }).length;
         return isSticker ? '스티커 $sameTypeCount' : '이미지 $sameTypeCount';
     }
+  }
+
+  StudioDecorationSpec? _studioSpec(LayerModel layer) {
+    final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+    return studioDecorationById(layer.imageBackground) ??
+        studioDecorationByAsset(url?.replaceFirst('asset:', ''));
   }
 }

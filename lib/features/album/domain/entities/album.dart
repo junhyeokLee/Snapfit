@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../../core/constants/cover_size.dart';
 
 part 'album.freezed.dart';
 part 'album.g.dart';
@@ -49,4 +51,23 @@ sealed class Album with _$Album {
   }) = _Album;
 
   factory Album.fromJson(Map<String, dynamic> json) => _$AlbumFromJson(json);
+}
+
+extension AlbumPhysicalSize on Album {
+  CoverSize get physicalCoverSize {
+    Map<String, dynamic>? product;
+    try {
+      final document = jsonDecode(coverLayersJson);
+      if (document is Map && document['printProduct'] is Map) {
+        product = Map<String, dynamic>.from(document['printProduct'] as Map);
+      }
+    } catch (_) {
+      // Older albums may contain only a cover URL or an empty document.
+    }
+    final parts = ratio.split(RegExp(r'[:/]'));
+    final parsed = parts.length == 2
+        ? (double.tryParse(parts[0]) ?? 0) / (double.tryParse(parts[1]) ?? 0)
+        : double.tryParse(ratio) ?? 1;
+    return resolveCoverSize(ratio: parsed, printProduct: product);
+  }
 }
