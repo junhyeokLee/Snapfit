@@ -11,6 +11,9 @@ import '../../../../../shared/widgets/studio_decoration.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 
 class DecorateStickerTab extends ConsumerStatefulWidget {
+  /// Debug-only deterministic allocation budget; not a device timing metric.
+  @visibleForTesting
+  static int debugPreviewBuildCount = 0;
   final Color surfaceColor;
   final void Function(String sticker)? onStickerTap;
 
@@ -273,32 +276,57 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
     },
   );
 
-  List<({String value, String label, String? productKey, Widget preview})>
+  List<
+    ({
+      String value,
+      String label,
+      String? productKey,
+      Widget Function() preview,
+    })
+  >
   _studioEntries(Iterable<StudioDecorationSpec> items) => [
     for (final item in items)
       (
         value: item.insertionValue,
         label: item.label,
         productKey: 'sticker:${item.id}',
-        preview: AspectRatio(
-          aspectRatio: item.aspectRatio,
-          child: RepaintBoundary(child: StudioDecoration(spec: item)),
+        preview: () => _preview(
+          () => AspectRatio(
+            aspectRatio: item.aspectRatio,
+            child: RepaintBoundary(
+              child: StudioDecoration(spec: item, preview: true),
+            ),
+          ),
         ),
       ),
   ];
 
-  List<({String value, String label, String? productKey, Widget preview})>
+  List<
+    ({
+      String value,
+      String label,
+      String? productKey,
+      Widget Function() preview,
+    })
+  >
   _wordArtEntries() => [
     for (final art in studioWordArts)
       (
         value: art.insertionValue,
         label: art.label,
         productKey: art.productKey,
-        preview: StudioWordArtPreview(art: art),
+        preview: () => _preview(() => StudioWordArtPreview(art: art)),
       ),
   ];
 
-  List<({String value, String label, String? productKey, Widget preview})>
+  List<
+    ({
+      String value,
+      String label,
+      String? productKey,
+      Widget Function() preview,
+    })
+  >
   _legacyEntries() => [
     for (final item in _stickersAll)
       (
@@ -309,7 +337,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
             : item.isDeco
             ? (_legacyLabels[item.value] ?? '장식')
             : item.value,
-        preview: _buildStickerVisual(item),
+        preview: () => _preview(() => _buildStickerVisual(item)),
       ),
   ];
 
@@ -348,7 +376,14 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
   };
 
   Widget _grid(
-    List<({String value, String label, String? productKey, Widget preview})>
+    List<
+      ({
+        String value,
+        String label,
+        String? productKey,
+        Widget Function() preview,
+      })
+    >
     source,
     CatalogFavorites favorites, {
     bool onlyFavorites = false,
@@ -421,7 +456,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                   padding: const EdgeInsets.fromLTRB(12, 44, 12, 8),
                   child: Column(
                     children: [
-                      Expanded(child: Center(child: item.preview)),
+                      Expanded(child: Center(child: item.preview())),
                       const SizedBox(height: 8),
                       Text(
                         item.label,
@@ -454,6 +489,14 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
         );
       },
     );
+  }
+
+  Widget _preview(Widget Function() create) {
+    assert(() {
+      DecorateStickerTab.debugPreviewBuildCount++;
+      return true;
+    }());
+    return create();
   }
 
   Widget _buildStickerVisual(_StickerItem sticker) {

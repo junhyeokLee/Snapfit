@@ -1,0 +1,193 @@
+{
+  "baseline_sha": "b6c890da33b4f7dee5b6ae035bb6459c9ac52ea9",
+  "note": "Reports were run against the staged implementation before its first commit; git_sha records the unchanged baseline HEAD, not a claim that baseline includes implementation. Full events and RED/GREEN reports remain under build/store_material_harness; CI uploads final harness events.",
+  "device_profile": "Not measured. flutter devices found only Linux desktop; scripted widget scroll is not device FPS.",
+  "artifacts": {
+    "baseline": "/opt/data/worktrees/snapfit-ci/build/store-material-baseline/build/store_material_harness/baseline-recovered/report.json",
+    "phase1": "/opt/data/worktrees/snapfit-ci/build/store_material_harness/phase1/report.json",
+    "focused_final": "/opt/data/worktrees/snapfit-ci/build/store_material_harness/final-child/report.json",
+    "full_final": "/opt/data/worktrees/snapfit-ci/build/store_material_harness/full-final-child/report.json",
+    "quality": "/opt/data/worktrees/snapfit-ci/build/store_material_harness/quality/report.json",
+    "security": "/opt/data/worktrees/snapfit-ci/build/store_material_harness/security-scan.json"
+  },
+  "reports": {
+    "baseline": {
+      "phase": "baseline-recovered",
+      "command": [
+        "/opt/data/flutter-sdk-release/bin/flutter",
+        "test",
+        "--reporter",
+        "json",
+        "test/widget/published_store_catalog_test.dart",
+        "test/widget/catalog_favorites_test.dart",
+        "test/widget/editor_point_shop_gate_test.dart",
+        "test/widget/studio_decorations_test.dart",
+        "test/widget/premium_template_list_test.dart",
+        "test/unit/catalog_favorites_test.dart"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 79.49474293505773,
+      "tests_passed": 240,
+      "errors": [],
+      "device_profile": "not measured; deterministic work budgets are not FPS",
+      "git_sha": "b6c890da33b4f7dee5b6ae035bb6459c9ac52ea9"
+    },
+    "phase1": {
+      "phase": "phase1",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "json",
+        "test/widget/published_store_catalog_test.dart",
+        "test/widget/catalog_favorites_test.dart",
+        "test/widget/editor_point_shop_gate_test.dart",
+        "test/widget/studio_decorations_test.dart",
+        "test/widget/premium_template_list_test.dart",
+        "test/unit/catalog_favorites_test.dart",
+        "test/optimization/cover_budget_test.dart",
+        "test/optimization/lazy_material_test.dart",
+        "test/optimization/material_budget_test.dart",
+        "test/optimization/preview_cache_test.dart"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 69.33957170974463,
+      "tests_passed": 245,
+      "errors": [],
+      "device_profile": "not measured; deterministic work budgets are not FPS",
+      "git_sha": "b6c890da33b4f7dee5b6ae035bb6459c9ac52ea9"
+    },
+    "focused_final": {
+      "phase": "final-child",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "json",
+        "test/widget/published_store_catalog_test.dart",
+        "test/widget/catalog_favorites_test.dart",
+        "test/widget/editor_point_shop_gate_test.dart",
+        "test/widget/studio_decorations_test.dart",
+        "test/widget/premium_template_list_test.dart",
+        "test/widget/point_shop_purchase_flow_test.dart",
+        "test/widget/template_point_shop_access_test.dart",
+        "test/unit/catalog_favorites_test.dart",
+        "test/optimization/category_refresh_test.dart",
+        "test/optimization/cover_budget_test.dart",
+        "test/optimization/lazy_material_test.dart",
+        "test/optimization/material_budget_test.dart",
+        "test/optimization/material_insertion_test.dart",
+        "test/optimization/preview_cache_test.dart",
+        "test/optimization/purchase_notifier_test.dart",
+        "test/optimization/selectors_test.dart",
+        "test/optimization/store_catalog_test.dart"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 95.63463832717389,
+      "tests_passed": 262,
+      "errors": [],
+      "metrics": [
+        "BUDGET material_initial_previews=15 eager_baseline=376",
+        "BUDGET material_after_scroll_previews=35",
+        "BUDGET material_source_width=1254 requested_decode_width=240",
+        "BUDGET cache_requests=101 parses=1 uncached_parses=101"
+      ],
+      "device_profile": "not measured; deterministic work budgets are not FPS",
+      "git_sha": "b6c890da33b4f7dee5b6ae035bb6459c9ac52ea9"
+    },
+    "full_final": {
+      "phase": "full-final-child",
+      "command": [
+        "/opt/data/flutter-sdk-release/bin/flutter",
+        "test",
+        "--reporter",
+        "json",
+        "test",
+        "--concurrency=2"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 316.136371799279,
+      "tests_passed": 1462,
+      "errors": [],
+      "metrics": [
+        "BUDGET material_initial_previews=15 eager_baseline=376",
+        "BUDGET material_after_scroll_previews=35",
+        "BUDGET material_source_width=1254 requested_decode_width=240",
+        "BUDGET cache_requests=101 parses=1 uncached_parses=101"
+      ],
+      "device_profile": "not measured; deterministic work budgets are not FPS",
+      "git_sha": "b6c890da33b4f7dee5b6ae035bb6459c9ac52ea9"
+    },
+    "quality": [
+      {
+        "gate": "generated",
+        "command": [
+          "/opt/data/flutter-sdk-release/bin/dart",
+          "run",
+          "build_runner",
+          "build",
+          "--delete-conflicting-outputs"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "format",
+        "command": [
+          "/opt/data/flutter-sdk-release/bin/dart",
+          "format",
+          "--output=none",
+          "--set-exit-if-changed",
+          "lib",
+          "test"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "analyze",
+        "command": [
+          "/opt/data/flutter-sdk-release/bin/flutter",
+          "analyze"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "supabase-readiness",
+        "command": [
+          "/usr/bin/python3",
+          "tool/supabase_readiness_check.py",
+          "--skip-remote"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "template-quality",
+        "command": [
+          "/usr/bin/python3",
+          "tool/template_quality_check.py"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "generated-parity",
+        "exit_code": 0,
+        "changed": []
+      }
+    ],
+    "security": {
+      "hardcoded_credentials": 0,
+      "shell_injection": 0,
+      "dangerous_eval": 0,
+      "unsafe_deserialization": 0,
+      "sql_interpolation": 0
+    }
+  }
+}

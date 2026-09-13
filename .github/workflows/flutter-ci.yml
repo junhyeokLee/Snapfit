@@ -48,3 +48,14 @@ jobs:
 
       - name: Test
         run: flutter test
+
+      - name: Store and material optimization harness
+        run: python3 tool/store_material_harness.py --phase ci
+
+      - name: Upload store and material evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-material-harness
+          path: build/store_material_harness/
+          if-no-files-found: warn

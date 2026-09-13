@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
-import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/templates/studio_word_art_catalog.dart';
 
 import './decorate_sticker_tab.dart';
 import './decorate_color_tab.dart';
@@ -30,18 +27,6 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
     }
   }
 
-  Size _effectiveLogicalCanvasSize({
-    required AlbumEditorViewModel editorVm,
-    required AlbumEditorState? stateVal,
-  }) {
-    final double physicalAspect = editorVm.selectedCover.ratio > 0
-        ? editorVm.selectedCover.ratio
-        : (3 / 4);
-    final double logicalW = kCoverReferenceWidth;
-    final double logicalH = logicalW / physicalAspect;
-    return Size(logicalW, logicalH);
-  }
-
   @override
   Widget build(BuildContext context) {
     final surfaceColor = SnapFitColors.surfaceOf(context);
@@ -58,36 +43,8 @@ class _DecoratePanelState extends ConsumerState<DecoratePanel> {
             surfaceColor: surfaceColor,
             onStickerTap: (sticker) {
               final editorVm = ref.read(albumEditorViewModelProvider.notifier);
-              final stateVal = ref.read(albumEditorViewModelProvider).value;
-              final canvasSize = _effectiveLogicalCanvasSize(
-                editorVm: editorVm,
-                stateVal: stateVal,
-              );
-              if (sticker.startsWith('wordart:')) {
-                final art = studioWordArtById(
-                  sticker.substring('wordart:'.length),
-                );
-                if (art == null) return;
-                editorVm.addWordArt(art, canvasSize);
-              } else if (sticker.startsWith('deco:')) {
-                final payload = sticker.replaceFirst('deco:', '');
-                final parts = payload.split('@');
-                final style = parts.first;
-                final scale = parts.length > 1
-                    ? (double.tryParse(parts[1]) ?? 1.0)
-                    : 1.0;
-                editorVm.addDecorationSticker(style, canvasSize, scale: scale);
-              } else if (sticker.startsWith('asset:')) {
-                final assetPath = sticker.replaceFirst('asset:', '');
-                editorVm.addAssetSticker(assetPath, canvasSize);
-              } else {
-                editorVm.addTextLayer(
-                  sticker,
-                  style: TextStyle(fontSize: 60.sp),
-                  mode: TextStyleType.none,
-                  canvasSize: canvasSize,
-                );
-              }
+              if (!editorVm.insertMaterial(sticker, emojiFontSize: 60.sp))
+                return;
               _closeSheet();
             },
           )
