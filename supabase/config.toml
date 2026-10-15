@@ -28,3 +28,86 @@ verify_jwt = false
 
 [functions.iap-reconcile]
 verify_jwt = false
+
+[functions.redprinting-admin]
+# Require gateway JWT validation plus Supabase Auth getUser and current admin role.
+# No API/admin key bypass is supported.
+verify_jwt = true
+
+[functions.print-checkout-status]
+# Read-only customer preparation also verifies the user through Auth getUser.
+verify_jwt = true
+
+[functions.print-payment-test]
+# Gateway JWT + Auth getUser administrator lookup. Test sessions only.
+verify_jwt = true
+
+[functions.print-order-checkout]
+# Owner-scoped customer invoices use Auth getUser behind the JWT gateway.
+verify_jwt = true
+
+[functions.print-order-confirm]
+# Server GET verification and an atomic paid receipt commit; no client PAID flag.
+verify_jwt = true
+
+[functions.print-payment-reconcile]
+# Scheduler only: current admin/print_worker role and server-owned references.
+verify_jwt = true
+
+[functions.print-fulfillment-worker]
+# Worker roles are checked through Auth; storage/vendor secrets stay server-side.
+verify_jwt = true
+
+[functions.print-sales-readiness]
+# Read-only operational facts require a signed session and current admin role.
+verify_jwt = true
+
+[functions.print-order-request]
+# Customer requests are scoped to the owner verified through current Auth.
+verify_jwt = true
+
+[functions.print-order-request-resolve]
+# Trusted resolver only; production refund runtime starts disabled.
+verify_jwt = true
+
+[functions.print-sales-draft]
+# Private draft prices only; no operational approval or customer sales opening.
+verify_jwt = true
+
+[functions.print-prepayment-package]
+# Current owner Auth + immutable invoice references, private signed uploads only.
+verify_jwt = true
+
+[functions.print-order-scheduler]
+# Internal Cron capability; every POST requires the server-only scheduler secret.
+# Customer JWTs, public project keys, payment flags and business refs cannot invoke it.
+verify_jwt = false
+
+[functions.print-file-delivery]
+# Supplier byte downloads require an expiring HMAC for an exact paid package.
+# The service-only read RPC rechecks LIVE payment and cancellation/refund holds.
+verify_jwt = false
+
+[functions.print-dev-file-delivery]
+# Development-only HMAC + actual TEST receipt + fixed sealed package RPC.
+# This separate endpoint cannot authorize LIVE payment/manufacturing.
+verify_jwt = false
+
+# Admin-owned TEST checkout; Auth getUser and app_metadata.role are checked.
+[functions.print-dev-checkout]
+verify_jwt = true
+
+[functions.store-curation-admin]
+verify_jwt = true
+
+# New browser point checkout is separate from retired legacy billing and print.
+# Each handler checks its own bearer or webhook signature. No production sales
+# are enabled by declaring these functions.
+[functions.web-point-topup]
+verify_jwt = false
+
+[functions.web-point-topup-webhook]
+verify_jwt = false
+
+[functions.web-point-topup-reconcile]
+verify_jwt = false

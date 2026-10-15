@@ -4,13 +4,20 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import '../../../../core/utils/outline_text_style.dart';
+import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../shared/widgets/studio_material.dart';
+import '../../../../shared/widgets/photo_crop_viewport.dart';
 import '../../../../shared/widgets/studio_decoration.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/utils/image_url_policy.dart';
 import '../../../../core/utils/text_image_shader.dart';
 import '../../../album/domain/entities/layer.dart';
+import '../../../album/presentation/widgets/cover/album_spine_image.dart';
+import '../../../../shared/snapfit_image.dart';
+import '../../../../core/cache/snapfit_cache_manager.dart';
 import 'template_preview_frame.dart';
+import '../../../album/data/gallery/browser_photo_asset.dart';
+import '../../../album/data/gallery/photo_asset_image_provider.dart';
 
 class TemplatePageRenderer extends StatelessWidget {
   final List<LayerModel> layers;
@@ -23,12 +30,16 @@ class TemplatePageRenderer extends StatelessWidget {
   /// false면 템플릿 좌표계를 그대로 스케일링(피그마 정합 우선).
   final bool normalizeToContentBounds;
   final bool preserveTypography;
+  final bool wrapSpineArtwork;
+  final bool cacheNetworkImages;
 
   /// Bounds decoded image memory in document previews without changing sources.
   final int? imageDecodeWidth;
   final Map<String, File>? localFiles;
+  final Widget Function(LayerModel layer, int? decodeWidth)? photoBuilder;
   final VoidCallback? onImageTap;
   final Function(String layerId)? onLayerTap;
+  final String? selectedLayerId;
 
   const TemplatePageRenderer({
     super.key,
@@ -39,10 +50,14 @@ class TemplatePageRenderer extends StatelessWidget {
     this.designCanvasSize,
     this.normalizeToContentBounds = false,
     this.preserveTypography = false,
+    this.wrapSpineArtwork = false,
+    this.cacheNetworkImages = false,
     this.imageDecodeWidth,
     this.localFiles,
+    this.photoBuilder,
     this.onImageTap,
     this.onLayerTap,
+    this.selectedLayerId,
   });
 
   @override
@@ -80,6 +95,16 @@ class TemplatePageRenderer extends StatelessWidget {
       child: stack,
     );
   }
+
+  Widget _selectionOutline(LayerModel layer, Widget child) =>
+      layer.id != selectedLayerId
+      ? child
+      : Container(
+          foregroundDecoration: BoxDecoration(
+            border: Border.all(color: SnapFitColors.accent, width: 2),
+          ),
+          child: child,
+        );
 
   Rect _contentBounds(List<LayerModel> ordered) {
     if (ordered.isEmpty) return const Rect.fromLTWH(0, 0, 500, 500);
@@ -160,9 +185,80 @@ class TemplatePageRenderer extends StatelessWidget {
       final localFile = localFiles?[layer.id];
       final url = imageUrl;
       final frame = layer.imageBackground;
+      final curvePhoto =
+          wrapSpineArtwork &&
+          photoBuilder == null &&
+          layer.type == LayerType.image &&
+          layer.rotation.abs() < .01 &&
+          (layer.scale - 1).abs() < .01 &&
+          (frame == null ||
+              frame.isEmpty ||
+              frame == 'none' ||
+              frame == 'rasterCover') &&
+          (layer.position.dx - bounds.left).abs() < .5 &&
+          (layer.position.dy - bounds.top).abs() < .5 &&
+          (layer.width - bounds.width).abs() < .5 &&
+          (layer.height - bounds.height).abs() < .5;
 
       Widget imageContent;
-      if (localFile != null) {
+      if (layer.type == LayerType.image && photoBuilder != null) {
+        imageContent = photoBuilder!(layer, imageDecodeWidth);
+      } else if (layer.asset is BrowserPhotoAsset) {
+        final provider = photoAssetImageProvider(layer.asset!);
+        imageContent = curvePhoto
+            ? AlbumSpineImage(
+                image: ResizeImage.resizeIfNeeded(
+                  imageDecodeWidth,
+                  null,
+                  provider,
+                ),
+                alignment: layer.imageAlignment,
+                zoom: layer.imageZoom,
+              )
+            : Image(
+                image: ResizeImage.resizeIfNeeded(
+                  imageDecodeWidth,
+                  null,
+                  provider,
+                ),
+                fit: fit,
+                alignment: layer.imageAlignment,
+              );
+      } else if (curvePhoto && (localFile != null || url?.isNotEmpty == true)) {
+        final asset = url == null ? null : bundledTemplateAssetPath(url);
+        final ImageProvider provider = localFile != null
+            ? FileImage(localFile)
+            : asset != null
+            ? AssetImage(asset)
+            : url!.startsWith('asset:')
+            ? AssetImage(url.substring('asset:'.length))
+            : NetworkImage(
+                imageUrlByVariant(url, variant: ImageVariant.detail),
+              );
+        imageContent =
+            localFile == null && asset == null && !url!.startsWith('asset:')
+            ? SnapfitImage(
+                urlOrGs: imageUrlByVariant(url, variant: ImageVariant.detail),
+                cacheManager: snapfitImageCacheManager,
+                memCacheWidth: imageDecodeWidth,
+                placeholder: const TemplatePaperPlaceholder(compact: true),
+                error: const TemplatePaperPlaceholder(compact: true),
+                imageBuilder: (context, image) => AlbumSpineImage(
+                  image: image,
+                  alignment: layer.imageAlignment,
+                  zoom: layer.imageZoom,
+                ),
+              )
+            : AlbumSpineImage(
+                image: ResizeImage.resizeIfNeeded(
+                  imageDecodeWidth,
+                  null,
+                  provider,
+                ),
+                alignment: layer.imageAlignment,
+                zoom: layer.imageZoom,
+              );
+      } else if (localFile != null) {
         imageContent = Image.file(
           localFile,
           fit: fit,
@@ -182,6 +278,16 @@ class TemplatePageRenderer extends StatelessWidget {
           fit: fit,
           alignment: layer.imageAlignment,
           cacheWidth: imageDecodeWidth,
+        );
+      } else if (url != null && cacheNetworkImages) {
+        imageContent = SnapfitImage(
+          urlOrGs: imageUrlByVariant(url, variant: ImageVariant.detail),
+          fit: fit,
+          alignment: layer.imageAlignment,
+          cacheManager: snapfitImageCacheManager,
+          memCacheWidth: imageDecodeWidth,
+          placeholder: const TemplatePaperPlaceholder(compact: true),
+          error: const TemplatePaperPlaceholder(compact: true),
         );
       } else if (url != null) {
         imageContent = Image.network(
@@ -215,6 +321,9 @@ class TemplatePageRenderer extends StatelessWidget {
               );
       }
 
+      if (!curvePhoto) {
+        imageContent = PhotoCropViewport(layer: layer, child: imageContent);
+      }
       Widget layerWidget;
       if (frame == 'polaroid') {
         layerWidget = Container(
@@ -239,7 +348,7 @@ class TemplatePageRenderer extends StatelessWidget {
             onTap: onLayerTap != null
                 ? () => onLayerTap!(layer.id)
                 : onImageTap,
-            child: layerWidget,
+            child: _selectionOutline(layer, layerWidget),
           ),
         );
       } else {
@@ -257,7 +366,7 @@ class TemplatePageRenderer extends StatelessWidget {
               onTap: onLayerTap != null
                   ? () => onLayerTap!(layer.id)
                   : onImageTap,
-              child: layerWidget,
+              child: _selectionOutline(layer, layerWidget),
             ),
             layer.opacity,
           ),
@@ -403,6 +512,8 @@ class TemplatePageRenderer extends StatelessWidget {
     required double canvasHeight,
   }) {
     final bg = layer.imageBackground ?? '';
+    final photoShade = photoCoverShadeForStyle(bg);
+    if (photoShade != null) return photoShade;
     final studioSpec = studioDecorationById(bg);
     if (studioSpec != null) return StudioDecoration(spec: studioSpec);
     if (StudioMaterial.decorationStyles.contains(bg)) {

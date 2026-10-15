@@ -195,7 +195,7 @@ enum ConceptVolume {
       values.where((v) => v.id == id).firstOrNull;
   bool get isApprovedDesign => approvedConceptVolumes.contains(this);
   int get contentRevision => this == sharedSeasons
-      ? 3
+      ? 4
       : lifeConceptVolumes.contains(this)
       ? 2
       : 1;
@@ -223,6 +223,7 @@ enum ConceptVolume {
   Map<String, dynamic> document(
     CollectionAspect aspect, {
     EditorialCopy? copy,
+    bool refineQuality = true,
   }) {
     final book = _ConceptBook(this, aspect, copy ?? defaultCopy);
     if (lifeConceptVolumes.contains(this)) {
@@ -247,7 +248,7 @@ enum ConceptVolume {
         _conceptPet(book);
     }
     if (book.pages.length != 25) throw StateError('$id needs cover + 24 pages');
-    return {
+    final document = <String, dynamic>{
       'id': 'snapfit_concept_${id}_${aspect.name}',
       'collectionId': id,
       'editionId': '$id-24',
@@ -287,6 +288,9 @@ enum ConceptVolume {
           {'title': c.$2, 'from': c.$1 * 2 + 1, 'to': c.$1 * 2 + 2},
       ],
     };
+    return refineQuality
+        ? _refineConceptQuality(this, aspect, copy ?? defaultCopy, document)
+        : document;
   }
 }
 

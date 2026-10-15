@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'experience_icon.dart';
+import 'experience_form_style.dart';
 import '../../core/templates/catalog_favorites.dart';
 export '../../core/templates/catalog_favorites.dart';
 export '../../core/templates/catalog_favorite_keys.dart';
@@ -31,8 +34,12 @@ class CatalogFavoriteButton extends StatelessWidget {
     super.key,
     required this.itemKey,
     required this.label,
+    this.bookmark = false,
+    this.unframed = false,
   });
   final String itemKey, label;
+  final bool bookmark;
+  final bool unframed;
   @override
   Widget build(BuildContext context) => CatalogFavoritesBuilder(
     builder: (context, favorites) {
@@ -62,18 +69,30 @@ class CatalogFavoriteButton extends StatelessWidget {
             minimumSize: const Size(44, 44),
             maximumSize: const Size(44, 44),
             padding: EdgeInsets.zero,
-            backgroundColor: Theme.of(context).colorScheme.surface,
+            backgroundColor: unframed
+                ? Colors.transparent
+                : Theme.of(context).colorScheme.surface,
             foregroundColor: selected
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 160),
-            child: Icon(
-              selected ? Icons.star_rounded : Icons.star_outline_rounded,
-              key: ValueKey(selected),
-              size: 22,
-            ),
+            child: bookmark
+                ? ExperienceIcon(
+                    'Bookmark',
+                    key: ValueKey(selected),
+                    color: selected
+                        ? ExperienceFormStyle.selectionInk(context)
+                        : ExperienceFormStyle.ink(context),
+                  )
+                : Icon(
+                    (selected
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded),
+                    key: ValueKey(selected),
+                    size: 22,
+                  ),
           ),
           onPressed: toggle,
         ),

@@ -2,6 +2,7 @@ import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { adminClient } from "../_shared/supabase.ts";
 import {
   parseTemplateBrief,
+  MAX_AI_DESIGN_PAGES,
   type TemplateBrief,
   type TemplateDesign,
   templateDesignPrompt,
@@ -14,6 +15,7 @@ import {
   validateArtDirection,
   validateDirectedTemplate,
 } from "./template-art-direction.ts";
+import { expandTemplatePages } from "./template-page-expansion.ts";
 
 type AiPhotoRange =
   | "recent30Days"
@@ -252,25 +254,32 @@ export async function createOriginalTemplate(
     throw new Error("template_quality_failed");
   }
   try {
+    // The requested count is the final book, not the model's output budget.
+    // Keep the existing token limits and shared deadline for larger books.
+    const designBrief = {
+      ...brief,
+      pageCount: Math.min(brief.pageCount, MAX_AI_DESIGN_PAGES),
+    };
     let design: TemplateDesign | DirectedTemplateDesign;
     if (brief.designVersion === 2) {
       const direction = await generateValidated(
-        artDirectionPrompt(brief),
-        (value) => validateArtDirection(value, brief),
+        artDirectionPrompt(designBrief),
+        (value) => validateArtDirection(value, designBrief),
         2400,
       );
       design = await generateValidated(
-        directedTemplatePrompt(brief, direction),
-        (value) => validateDirectedTemplate(value, brief, direction),
+        directedTemplatePrompt(designBrief, direction),
+        (value) => validateDirectedTemplate(value, designBrief, direction),
         10000,
       );
     } else {
       design = await generateValidated(
-        templateDesignPrompt(brief),
-        (value) => validateTemplateDesign(value, brief),
+        templateDesignPrompt(designBrief),
+        (value) => validateTemplateDesign(value, designBrief),
         10000,
       );
     }
+    design = expandTemplatePages(design, brief.pageCount);
     return {
       draftId: `original-template-${crypto.randomUUID()}`,
       title: design.concept,
@@ -281,7 +290,9 @@ export async function createOriginalTemplate(
       recommendedPhotos: [],
       excludedPhotos: [],
       storySections: [],
-      curationNotes: [],
+      curationNotes: design.layoutExpansion
+        ? [`AI가 만든 내지 ${designBrief.pageCount}쪽의 디자인을 재사용해 총 ${brief.pageCount}쪽으로 구성했습니다. 추가된 페이지의 사진과 글은 각각 편집할 수 있습니다.`]
+        : [],
       templateSlots: design.pages.flatMap((page, pageIndex) =>
         page.elements
           .filter((e) => e.kind === "photo")

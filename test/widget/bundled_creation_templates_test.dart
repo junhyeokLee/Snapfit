@@ -28,7 +28,7 @@ void main() {
   setUpAll(loadCreationFonts);
 
   test(
-    'creation catalog excludes all other products after remote refresh',
+    'creation catalog retains published free and paid products after remote refresh',
     () async {
       final remote = bundledCreationTemplates.first.copyWith(
         id: 786,
@@ -55,14 +55,16 @@ void main() {
       }
       expect(
         events.first.map((t) => t.id),
-        bundledCreationTemplates.map((t) => t.id),
+        publishedCreationTemplates.map((t) => t.id),
       );
       expect(events.length, greaterThanOrEqualTo(2));
       expect(events.last.any((t) => t.id == 786), false);
+      expect(events.last.any((t) => !t.isPremium), true);
+      expect(events.last.any((t) => t.isPremium), true);
       for (final items in events) {
         expect(
           items.map((t) => t.id),
-          bundledCreationTemplates.map((t) => t.id),
+          publishedCreationTemplates.map((t) => t.id),
         );
       }
     },
@@ -215,6 +217,7 @@ void main() {
         final originals = pages[photoPage];
         final slot = originals.firstWhere((l) => l.type == LayerType.image);
         final photo = _Photo();
+        when(() => photo.id).thenReturn('photo-${collection.id}');
         when(
           () => photo.file,
         ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));

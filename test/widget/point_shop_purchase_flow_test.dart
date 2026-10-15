@@ -132,9 +132,14 @@ void main() {
     (tester) async {
       final shop = _Shop(), results = <bool>[];
       await _mount(tester, shop, results);
-      expect(find.text('구매 가격 100P'), findsOneWidget);
+      expect(find.text('구매 가격'), findsOneWidget);
+      expect(find.text('100P'), findsOneWidget);
       expect(shop.charges, 0);
       await tester.tap(find.text('100P로 구매'));
+      await tester.pumpAndSettle();
+      expect(find.text('남은 포인트'), findsOneWidget);
+      expect(find.text('200P'), findsOneWidget);
+      await tester.tap(find.text('소재 사용하기'));
       await tester.pumpAndSettle();
       expect(results, [true]);
       expect(shop.charges, 1);
@@ -159,6 +164,39 @@ void main() {
   });
 
   testWidgets(
+    'later keeps purchased ownership and never charges a second time',
+    (tester) async {
+      final shop = _Shop(), results = <bool>[];
+      await _mount(tester, shop, results);
+      await tester.tap(find.text('100P로 구매'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('나중에'));
+      await tester.pumpAndSettle();
+      expect(results, [false]);
+      expect(shop.owned, isTrue);
+      await tester.tap(find.text('선택'));
+      await tester.pumpAndSettle();
+      expect(results, [false, true]);
+      expect(shop.charges, 1);
+    },
+  );
+
+  testWidgets(
+    'account change at the receipt does not apply to the new account',
+    (tester) async {
+      final shop = _Shop(), results = <bool>[];
+      await _mount(tester, shop, results);
+      await tester.tap(find.text('100P로 구매'));
+      await tester.pumpAndSettle();
+      shop.user = 'bob';
+      await tester.tap(find.text('소재 사용하기'));
+      await tester.pumpAndSettle();
+      expect(results, [false]);
+      expect(shop.charges, 1);
+    },
+  );
+
+  testWidgets(
     'recharge return reloads both balance and price and asks again before debit',
     (tester) async {
       final shop = _Shop()..balance = 20, results = <bool>[];
@@ -176,8 +214,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(shop.reads, 2);
       expect(shop.charges, 0);
-      expect(find.text('구매 가격 120P'), findsOneWidget);
+      expect(find.text('구매 가격'), findsOneWidget);
+      expect(find.text('120P'), findsOneWidget);
       await tester.tap(find.text('120P로 구매'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('소재 사용하기'));
       await tester.pumpAndSettle();
       expect(results, [true]);
       expect(shop.pricesSent, [120]);
@@ -242,6 +283,8 @@ void main() {
       await tester.tap(find.text('100P로 구매'));
       await tester.pumpAndSettle();
       expect(shop.charges, 1);
+      await tester.tap(find.text('소재 사용하기'));
+      await tester.pumpAndSettle();
       expect(results, [false, true]);
     },
   );

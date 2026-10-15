@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Snapfit | 선택과 구매 화면</title>
+  <style>
+    * { box-sizing: border-box; letter-spacing: 0; }
+    body { margin: 0; font: 14px/1.6 -apple-system, BlinkMacSystemFont, sans-serif; color: #202928; background: #f5f7f6; }
+    header { background: white; border-bottom: 1px solid #dee5e2; padding: 24px max(20px, calc((100% - 1280px)/2)); }
+    h1 { margin: 0 0 6px; font-size: 24px; line-height: 1.35; }
+    p { margin: 0; color: #64726f; }
+    nav { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin-top: 20px; }
+    label { display: grid; gap: 4px; font-size: 12px; color: #54615e; }
+    select { height: 44px; min-width: 155px; border: 1px solid #cbd6d1; border-radius: 6px; background: white; color: #202928; font: inherit; padding: 0 30px 0 12px; }
+    a { color: #007b8c; text-decoration: none; }
+    nav a { padding: 10px 0; }
+    a:hover { text-decoration: underline; }
+    main { max-width: 1320px; margin: 0 auto; padding: 24px 20px 40px; }
+    .comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    figure { margin: 0; min-width: 0; }
+    figcaption { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 600; }
+    figcaption span { color: #64726f; font-size: 12px; font-weight: 400; }
+    .screen { display: flex; justify-content: center; align-items: start; }
+    img { display: block; max-width: 100%; height: auto; border: 1px solid #d1d9d5; border-radius: 6px; background: white; }
+    .portrait img { width: min(100%, 390px); }
+    .landscape .comparison { grid-template-columns: minmax(0, 1fr); }
+    .landscape img { width: min(100%, 844px); }
+    footer { margin-top: 24px; color: #64726f; font-size: 12px; }
+    @media (max-width: 700px) {
+      .comparison { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+      h1 { font-size: 21px; }
+      nav { gap: 12px; }
+      label { flex: 1; min-width: 140px; }
+      select { width: 100%; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>스토어에서 나의 앨범으로</h1>
+    <p>실제 Flutter 앱 화면 · 테스트용 앨범과 포인트 데이터</p>
+    <nav aria-label="화면 비교">
+      <label>화면
+        <select id="screen">
+          <option value="book-cover" selected>템플릿 상세 · 표지 재질</option>
+          <option value="book-spread">템플릿 상세 · 펼친 내지</option>
+          <option value="book-portrait-spread">세로형 앨범 · 펼친 내지</option>
+          <option value="book-usage">템플릿 가격 · 포함 소재 · 이용 범위</option>
+          <option value="book-materials">소재별 재사용 가능 여부</option>
+          <option value="edition">앨범 분량 · 확장판</option>
+          <option value="edition-pages">확장판 · 내지 미리보기</option>
+          <option value="edition-basic">앨범 분량 · 기본판</option>
+          <option value="albums">사용할 앨범 선택</option>
+          <option value="pages">적용할 페이지 선택</option>
+          <option value="included">템플릿의 사용 소재</option>
+          <option value="inventory">전체 소재 목록</option>
+          <option value="purchase">구매 확인</option>
+          <option value="receipt">구매 완료</option>
+          <option value="insufficient">포인트 부족</option>
+        </select>
+      </label>
+      <label>화면 크기
+        <select id="size">
+          <option value="390">세로 · 390 × 844</option>
+          <option value="320">작은 폰 · 320 × 568</option>
+          <option value="844">가로 · 844 × 390</option>
+        </select>
+      </label>
+      <a href="../theme-store-home-qa/index.html">홈·스토어 비교 보기</a>
+    </nav>
+  </header>
+  <main class="portrait">
+    <section class="comparison" aria-live="polite" aria-label="라이트와 다크 화면 비교">
+      <figure>
+        <figcaption>라이트 <span class="dimensions"></span></figcaption>
+        <div class="screen"><img id="light" src="edition-390-light.png" alt="앨범 분량, 라이트 모드" width="390" height="844"></div>
+      </figure>
+      <figure>
+        <figcaption>다크 <span class="dimensions"></span></figcaption>
+        <div class="screen"><img id="dark" src="edition-390-dark.png" alt="앨범 분량, 다크 모드" width="390" height="844"></div>
+      </figure>
+    </section>
+    <footer>앱 코드에서 생성한 Flutter 위젯 캡처입니다. 새 상세의 표지는 승인한 홈과 같은 책등·곡면 사진·재질을 사용하며, 내지는 실제 좌우 페이지를 붙여 보여줍니다. 포함된 디자인과 개별 소재 이용권을 구분하고, 무료 또는 서버 보유 목록에 있는 소재만 재사용 가능으로 표시합니다. 가격·보유 상태는 테스트 데이터이며 운영 결제와 기기 설치는 실행하지 않았습니다. 기존 분량·구매 화면은 그대로 비교할 수 있습니다.</footer>
+  </main>
+  <script>
+    const screen = document.getElementById('screen');
+    const size = document.getElementById('size');
+    function update() {
+      const dimensions = {320: [320, 568], 390: [390, 844], 844: [844, 390]}[size.value];
+      document.querySelector('main').className = size.value === '844' ? 'landscape' : 'portrait';
+      document.querySelectorAll('.dimensions').forEach(label => label.textContent = dimensions.join(' × '));
+      for (const mode of ['light', 'dark']) {
+        const img = document.getElementById(mode);
+        const bookScreen = screen.value.startsWith('book-');
+        img.src = bookScreen
+          ? `../template-book-detail-qa/${screen.value.slice(5)}-${size.value}-${mode}.png?revision=book-material-1`
+          : `${screen.value}-${size.value}-${mode}.png`;
+        img.width = dimensions[0];
+        img.height = dimensions[1];
+        img.alt = `${screen.selectedOptions[0].textContent}, ${mode === 'light' ? '라이트' : '다크'} 모드`;
+      }
+      const params = new URLSearchParams({screen: screen.value, size: size.value});
+      history.replaceState(null, '', `#${params}`);
+    }
+    const initial = new URLSearchParams(location.hash.slice(1));
+    if ([...screen.options].some(option => option.value === initial.get('screen'))) screen.value = initial.get('screen');
+    if ([...size.options].some(option => option.value === initial.get('size'))) size.value = initial.get('size');
+    screen.addEventListener('change', update);
+    size.addEventListener('change', update);
+    update();
+  </script>
+</body>
+</html>

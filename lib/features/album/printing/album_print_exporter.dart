@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_photo_frame_catalog.dart';
 import '../../../../core/utils/image_url_policy.dart';
@@ -17,6 +16,7 @@ import '../presentation/controllers/layer_builder.dart';
 import '../presentation/controllers/layer_interaction_manager.dart';
 import 'print_album_document.dart';
 import 'print_image_header.dart';
+import 'print_run_source_cache.dart';
 import 'print_vendor_spec.dart';
 import 'raster_print_pdf.dart';
 export 'print_vendor_spec.dart';
@@ -67,6 +67,36 @@ class AlbumPrintExporter {
     required PrintVendorSpec spec,
     Map<String, String> sourceUrls = const {},
     void Function(int completed, int total)? onProgress,
+  }) => _withRunSources(
+    sourceUrls,
+    (loadSource) => _verify(
+      snapshot: snapshot,
+      spec: spec,
+      loadSource: loadSource,
+      onProgress: onProgress,
+    ),
+  );
+
+  Future<T> _withRunSources<T>(
+    Map<String, String> sourceUrls,
+    Future<T> Function(PrintRunSourceLoader loadSource) run,
+  ) async {
+    final frozenUrls = Map<String, String>.unmodifiable(sourceUrls);
+    final sources = PrintRunSourceCache(
+      (original) => _load(frozenUrls[original] ?? original),
+    );
+    try {
+      return await run(sources.load);
+    } finally {
+      sources.clear();
+    }
+  }
+
+  Future<Map<String, dynamic>> _verify({
+    required Map<String, dynamic> snapshot,
+    required PrintVendorSpec spec,
+    required PrintRunSourceLoader loadSource,
+    void Function(int completed, int total)? onProgress,
   }) async {
     final document = PrintAlbumDocument.fromSnapshot(snapshot);
     document.validateSpec(spec);
@@ -90,7 +120,7 @@ class AlbumPrintExporter {
           fonts,
           warnings,
           resolution,
-          sourceUrls,
+          loadSource,
         );
       } finally {
         for (final image in images.values.toSet()) {
@@ -115,6 +145,21 @@ class AlbumPrintExporter {
     required PrintVendorSpec spec,
     Map<String, String> sourceUrls = const {},
     void Function(int completed, int total)? onProgress,
+  }) => _withRunSources(
+    sourceUrls,
+    (loadSource) => _generate(
+      snapshot: snapshot,
+      spec: spec,
+      loadSource: loadSource,
+      onProgress: onProgress,
+    ),
+  );
+
+  Future<AlbumPrintExport> _generate({
+    required Map<String, dynamic> snapshot,
+    required PrintVendorSpec spec,
+    required PrintRunSourceLoader loadSource,
+    void Function(int completed, int total)? onProgress,
   }) async {
     final document = PrintAlbumDocument.fromSnapshot(snapshot);
     document.validateSpec(spec);
@@ -129,12 +174,25 @@ class AlbumPrintExporter {
       'bleed_uses_edge_extension',
     ];
     final resolution = <Map<String, dynamic>>[];
-    final coverPdf = RasterPrintPdf(), interiorPdf = RasterPrintPdf();
+    final coverPdf = RasterPrintPdf(
+      maxFileBytes: RasterPrintPdf.maximumCoverBytes,
+    );
+    final interiorPdf = RasterPrintPdf(
+      maxFileBytes: RasterPrintPdf.maximumInteriorBytes,
+    );
     final padding = spec.pageCount - document.interiors.length;
     if (padding > 0) warnings.add('blank_interior_pages_added:$padding');
     final outputPages = [document.cover, ...document.interiors];
     var completed = 0;
     final total = 1 + spec.pageCount;
+    Future<void> completePage() async {
+      onProgress?.call(++completed, total);
+      // Web compute() runs JPEG encoding on the UI thread. A real event-loop
+      // turn between pages lets progress paint and browser input run; awaiting
+      // an already-completed future only drains more microtasks.
+      await Future<void>.delayed(Duration.zero);
+    }
+
     for (final page in outputPages) {
       final target = page.isCover
           ? spec.front.size
@@ -152,31 +210,29 @@ class AlbumPrintExporter {
           fonts,
           warnings,
           resolution,
-          sourceUrls,
+          loadSource,
         );
         final art = await renderPrintWidget(
-          ProviderScope(
-            child: MediaQuery(
-              data: const MediaQueryData(textScaler: TextScaler.noScaling),
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: DefaultTextStyle(
-                  style: const TextStyle(
-                    fontFamily: 'NotoSans',
-                    fontSize: 14,
-                    color: Colors.black,
-                  ),
-                  child: ColoredBox(
-                    color: page.backgroundColor,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox.fromSize(
-                        size: page.canvasSize,
-                        child: PrintAlbumPageCanvas(
-                          page: page,
-                          layers: layers,
-                          images: decoded,
-                        ),
+          MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.noScaling),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: DefaultTextStyle(
+                style: const TextStyle(
+                  fontFamily: 'NotoSans',
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+                child: ColoredBox(
+                  color: page.backgroundColor,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: SizedBox.fromSize(
+                      size: page.canvasSize,
+                      child: PrintAlbumPageCanvas(
+                        page: page,
+                        layers: layers,
+                        images: decoded,
                       ),
                     ),
                   ),
@@ -216,12 +272,12 @@ class AlbumPrintExporter {
           image.dispose();
         }
       }
-      onProgress?.call(++completed, total);
+      await completePage();
     }
     for (int index = 0; index < padding; index++) {
       if (index > 0) {
         interiorPdf.repeatLastPage();
-        onProgress?.call(++completed, total);
+        await completePage();
         continue;
       }
       final recorder = ui.PictureRecorder();
@@ -241,12 +297,15 @@ class AlbumPrintExporter {
       } finally {
         blank.dispose();
       }
-      onProgress?.call(++completed, total);
+      await completePage();
     }
+    final interiorPageCount = interiorPdf.pageCount;
+    final coverBytes = coverPdf.save(releaseEncodedImages: true);
+    final interiorBytes = interiorPdf.save(releaseEncodedImages: true);
     return AlbumPrintExport(
-      coverPdf: coverPdf.save(),
-      interiorPdf: interiorPdf.save(),
-      interiorPageCount: interiorPdf.pageCount,
+      coverPdf: coverBytes,
+      interiorPdf: interiorBytes,
+      interiorPageCount: interiorPageCount,
       report: {
         'renderer': 'flutter-layer-builder-raster-v1',
         'specVersion': spec.specVersion,
@@ -280,12 +339,22 @@ class AlbumPrintExporter {
     Set<String> fonts,
     List<String> warnings,
     List<Map<String, dynamic>> resolution,
-    Map<String, String> sourceUrls,
+    PrintRunSourceLoader loadSource,
   ) async {
     final result = <LayerModel>[];
-    final requests = <String, List<({LayerModel layer, bool contain})>>{};
-    void request(LayerModel layer, String source, {required bool contain}) {
-      (requests[source] ??= []).add((layer: layer, contain: contain));
+    final requests =
+        <String, List<({LayerModel layer, bool contain, double cropZoom})>>{};
+    void request(
+      LayerModel layer,
+      String source, {
+      required bool contain,
+      double? cropZoom,
+    }) {
+      (requests[source] ??= []).add((
+        layer: layer,
+        contain: contain,
+        cropZoom: cropZoom ?? _photoCropZoom(layer),
+      ));
     }
 
     final physicalScale = math.min(
@@ -343,7 +412,7 @@ class AlbumPrintExporter {
       final source = printOriginalSource(layer);
       final frameAsset = keepsakeFrameAssets[layer.imageBackground];
       if (frameAsset != null)
-        request(layer, 'asset:$frameAsset', contain: true);
+        request(layer, 'asset:$frameAsset', contain: true, cropZoom: 1);
       request(
         layer,
         source,
@@ -366,8 +435,8 @@ class AlbumPrintExporter {
       ui.ImmutableBuffer? buffer;
       ui.ImageDescriptor? descriptor;
       try {
-        final bytes = await _load(
-          sourceUrls[source] ?? source,
+        final bytes = await loadSource(
+          source,
         ).timeout(const Duration(seconds: 45));
         if (bytes.length > 60 * 1024 * 1024) {
           throw PrintPreflightException('print_image_memory_limit', [source]);
@@ -389,16 +458,19 @@ class AlbumPrintExporter {
             warnings,
             resolution,
             contain: request.contain,
+            cropZoom: request.cropZoom,
           );
           final widthPx =
               request.layer.width *
               request.layer.scale *
+              request.cropZoom *
               physicalScale *
               spec.dpi /
               25.4;
           final heightPx =
               request.layer.height *
               request.layer.scale *
+              request.cropZoom *
               physicalScale *
               spec.dpi /
               25.4;
@@ -460,9 +532,10 @@ class AlbumPrintExporter {
     List<String> warnings,
     List<Map<String, dynamic>> records, {
     required bool contain,
+    required double cropZoom,
   }) {
-    final w = layer.width * layer.scale * scale;
-    final h = layer.height * layer.scale * scale;
+    final w = layer.width * layer.scale * scale * cropZoom;
+    final h = layer.height * layer.scale * scale * cropZoom;
     final ratios = [image.width / w, image.height / h];
     final ppi =
         (contain
@@ -474,6 +547,7 @@ class AlbumPrintExporter {
       'layerId': layer.id,
       'widthPx': image.width.toInt(),
       'heightPx': image.height.toInt(),
+      'cropZoom': cropZoom,
       'effectivePpi': double.parse(ppi.toStringAsFixed(1)),
     });
     if (ppi + .1 < spec.minimumPhotoPpi) {
@@ -486,6 +560,12 @@ class AlbumPrintExporter {
     if (ppi + .1 < spec.dpi)
       warnings.add('page_${page}_${layer.id}_below_${spec.dpi}ppi');
   }
+
+  // PhotoCropViewport enlarges only photographs inside their unchanged frame.
+  // Check the visible crop and retain enough original pixels for that zoom;
+  // rotation/alignment change placement without changing pixel density.
+  static double _photoCropZoom(LayerModel layer) =>
+      layer.type == LayerType.image ? layer.imageZoom.clamp(1, 4) : 1;
 
   static Future<Uint8List> _loadSource(String source) async {
     final asset = source.startsWith('asset:')
@@ -569,7 +649,7 @@ String printOriginalSource(LayerModel layer) {
 
 /// The preview and PDF share the editor's exact fonts, scale, crop and frames.
 /// Pass decoded originals for export; null uses normal interactive image loading.
-class PrintAlbumPageCanvas extends ConsumerWidget {
+class PrintAlbumPageCanvas extends StatelessWidget {
   const PrintAlbumPageCanvas({
     super.key,
     required this.page,
@@ -580,9 +660,9 @@ class PrintAlbumPageCanvas extends ConsumerWidget {
   final List<LayerModel>? layers;
   final Map<String, ui.Image>? images;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final builder = LayerBuilder(
-      LayerInteractionManager.preview(ref, () => page.canvasSize),
+      LayerInteractionManager.printPreview(() => page.canvasSize),
       () => page.canvasSize,
       printImages: images,
     );

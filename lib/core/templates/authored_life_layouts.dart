@@ -342,7 +342,7 @@ void _lifeCover(_FreeBook b) {
       p.material('ribbon', 'studioSageRibbon', .77, .72, .13, h: .072);
     case FreeCollectionVolume.homeYear:
       heading('우리 집의\n사계절', .09, .095, .82, .225, size: .084);
-      photo(0, .09, .38, .82, .36, frame: 'none');
+      photo(0, .09, .35, .82, .42, frame: 'studioPhotoCorners');
       for (var i = 0; i < 4; i++)
         p.box(
           'season_$i',
@@ -366,8 +366,8 @@ void _lifeCover(_FreeBook b) {
     case FreeCollectionVolume.generations:
       b.rule(p, .08, .10, .84);
       heading('세대를 잇는\n사진', .09, .15, .82, .205, size: .071, align: 'center');
-      photo(0, .07, .445, .86, .285, frame: 'none');
-      b.rule(p, .37, .79, .26);
+      photo(0, .08, .37, .84, .43, frame: 'studioGallery');
+      b.rule(p, .37, .82, .26);
     case FreeCollectionVolume.familyOuting:
       band(0, .045, 1, .10);
       heading('함께 떠난\n소풍', .10, .21, .80, .21, size: .080);
@@ -390,7 +390,7 @@ void _lifeCover(_FreeBook b) {
     case FreeCollectionVolume.anniversary:
       b.rule(p, .20, .09, .60);
       heading('오래도록\n우리', .10, .17, .80, .22, size: .088, align: 'center');
-      photo(2, .16, .475, .68, .26, frame: 'none');
+      photo(2, .15, .43, .70, .35, frame: 'studioDoubleMat');
       p.material('ribbon', 'studioSageRibbon', .78, .755, .08, h: .05);
     case FreeCollectionVolume.twoTickets:
       heading('둘이 모은\n조각', .085, .105, .83, .205, size: .082);

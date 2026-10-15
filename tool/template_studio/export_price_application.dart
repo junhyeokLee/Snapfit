@@ -21,8 +21,24 @@ List<Map<String, dynamic>> pointShopPriceApplicationRows() {
   ];
 }
 
-String pointShopPriceApplicationSql(List<Map<String, dynamic>> rows) {
+String pointShopPriceApplicationSql(
+  List<Map<String, dynamic>> rows, {
+  bool protectPaidPrices = false,
+}) {
   final json = jsonEncode(rows).replaceAll("'", "''");
+  final paidPriceGuard = protectPaidPrices
+      ? '''
+  if exists (
+    select 1 from public.point_shop_products p
+    join jsonb_to_recordset('$json'::jsonb)
+      as s(product_key text, point_price integer)
+      on s.product_key = p.product_key
+    where s.point_price = 0 and p.point_price > 0
+  ) then
+    raise exception 'free_catalog_paid_price_conflict';
+  end if;
+'''
+      : '';
   return '''-- Owner-approved prices: $pointShopPricingRevision.
 -- Only the explicit keys below change. Wallets and ownership are untouched.
 begin;
@@ -40,6 +56,7 @@ begin
   ) then
     raise exception 'catalog_identity_or_active_template_changed';
   end if;
+$paidPriceGuard
 end
 \$check\$;
 insert into public.point_shop_products as p

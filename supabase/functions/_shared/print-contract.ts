@@ -27,6 +27,7 @@ export type PrintRect = { xMm: number; yMm: number; widthMm: number; heightMm: n
 // Exact dimensions and the explicit cover TrimBox must come from that template.
 export function validateHardCoverGeometry(value: unknown) {
   const geometry = parseJsonObject(value)
+  const toleranceMm = 1e-6 // Ignore binary addition roundoff, not a printable dimensional difference.
   if (geometry.construction !== 'casewrap' || !Number.isFinite(geometry.widthMm) || !Number.isFinite(geometry.heightMm) ||
       geometry.widthMm <= 0 || geometry.heightMm <= 0 || geometry.widthMm > 1000 || geometry.heightMm > 1000 ||
       !Number.isFinite(geometry.bleedMm) || geometry.bleedMm < 0 || geometry.bleedMm > 50) throw new OrderPaymentError('hardcover_template_required', 409)
@@ -34,12 +35,12 @@ export function validateHardCoverGeometry(value: unknown) {
     const rect = geometry[name]
     if (!rect || !['xMm','yMm','widthMm','heightMm'].every(key => typeof rect[key] === 'number' && Number.isFinite(rect[key])) ||
         rect.xMm < 0 || rect.yMm < 0 || rect.widthMm <= 0 || rect.heightMm <= 0 ||
-        rect.xMm + rect.widthMm > geometry.widthMm || rect.yMm + rect.heightMm > geometry.heightMm) throw new OrderPaymentError('invalid_hardcover_geometry', 409)
+        rect.xMm + rect.widthMm > geometry.widthMm + toleranceMm || rect.yMm + rect.heightMm > geometry.heightMm + toleranceMm) throw new OrderPaymentError('invalid_hardcover_geometry', 409)
     return { xMm: rect.xMm, yMm: rect.yMm, widthMm: rect.widthMm, heightMm: rect.heightMm }
   }
   const front = readRect('front'), back = readRect('back'), trim = readRect('trim')
-  if (back.xMm + back.widthMm >= front.xMm || [front,back].some(rect => rect.xMm < trim.xMm || rect.yMm < trim.yMm ||
-      rect.xMm + rect.widthMm > trim.xMm + trim.widthMm || rect.yMm + rect.heightMm > trim.yMm + trim.heightMm)) throw new OrderPaymentError('invalid_hardcover_geometry', 409)
+  if (back.xMm + back.widthMm >= front.xMm || [front,back].some(rect => rect.xMm < trim.xMm - toleranceMm || rect.yMm < trim.yMm - toleranceMm ||
+      rect.xMm + rect.widthMm > trim.xMm + trim.widthMm + toleranceMm || rect.yMm + rect.heightMm > trim.yMm + trim.heightMm + toleranceMm)) throw new OrderPaymentError('invalid_hardcover_geometry', 409)
   return { widthMm: geometry.widthMm as number, heightMm: geometry.heightMm as number,
     construction: 'casewrap', bleedMm: geometry.bleedMm as number, front, back, trim }
 }
@@ -141,6 +142,7 @@ export function assertPrintOrder(order: OrderRow) {
 // A review profile is explicit: no guessed spine is ever represented as a vendor
 // approved template. A verified profile can be attached only by server configuration.
 export function getPrintSpec(order: OrderRow) {
+  if (order.checkout_flow === 'PORTONE_V2_V1') return frozenPrintSpec(order)
   const product = orderPrintProduct(order)
   const override = order.print_spec_override as Record<string, any> | null
   const isV3 = order.pricing_version === PRINT_COVER_PRICING_VERSION
@@ -183,8 +185,59 @@ export function getPrintSpec(order: OrderRow) {
   }
 }
 
+// A newly paid automated order uses the exact specification purchased by the
+// customer. Falling back to a current catalogue or inferred spine would change
+// the book after payment. Historical manual orders keep their existing path.
+export function frozenPrintSpec(order: OrderRow): Record<string, any> {
+  const product = orderPrintProduct(order)
+  let spec: Record<string, any>
+  try { spec = parseJsonObject(order.print_spec_snapshot) }
+  catch { throw new OrderPaymentError('frozen_print_spec_required', 409) }
+  const interior = spec.interior, cover = spec.cover
+  const number = (value: unknown) => typeof value === 'number' && Number.isFinite(value)
+  if (spec.id !== product.id || spec.verified !== true ||
+      spec.pageCount !== order.page_count || !Number.isSafeInteger(spec.pageCount) ||
+      spec.pageCount < 20 || spec.pageCount > 80 || spec.pageCount % 2 ||
+      typeof spec.specVersion !== 'string' || !/^[A-Za-z0-9_.-]{1,120}$/.test(spec.specVersion) ||
+      spec.dpi !== 300 || spec.colorSpace !== 'sRGB' || spec.layoutFit !== 'contain' ||
+      spec.minInteriorPages !== 20 || spec.maxInteriorPages !== 80 || spec.pageMultiple !== 2 ||
+      !number(spec.minimumPhotoPpi) || spec.minimumPhotoPpi < 150 || spec.minimumPhotoPpi > 600 ||
+      !interior || interior.trimWidthMm !== product.trimWidthMm || interior.trimHeightMm !== product.trimHeightMm ||
+      interior.bleedMm !== 5 || !cover || !number(cover.widthMm) || !number(cover.heightMm) ||
+      cover.widthMm <= 0 || cover.heightMm <= 0 || cover.widthMm > 1000 || cover.heightMm > 1000 ||
+      spec.coverType !== printCoverType(product.id)) {
+    throw new OrderPaymentError('frozen_print_spec_invalid', 409)
+  }
+  const rect = (value: any) => value && ['xMm', 'yMm', 'widthMm', 'heightMm'].every(key => number(value[key])) &&
+    value.xMm >= 0 && value.yMm >= 0 && value.widthMm > 0 && value.heightMm > 0 &&
+    value.xMm + value.widthMm <= cover.widthMm + 1e-6 && value.yMm + value.heightMm <= cover.heightMm + 1e-6
+  if (!rect(cover.front) || !rect(cover.back) || cover.back.xMm + cover.back.widthMm >= cover.front.xMm ||
+      !number(spec.spineMm) || spec.spineMm <= 0 || spec.spineMm > 40 ||
+      Math.abs(cover.front.xMm - cover.back.xMm - cover.back.widthMm - spec.spineMm) > .001) {
+    throw new OrderPaymentError('frozen_print_spec_invalid', 409)
+  }
+  if (spec.coverType === 'HARD') {
+    validateHardCoverGeometry(cover)
+    if (typeof spec.geometrySource !== 'string' || !spec.geometrySource.trim()) {
+      throw new OrderPaymentError('frozen_print_spec_invalid', 409)
+    }
+  } else if (cover.front.widthMm !== product.trimWidthMm || cover.back.widthMm !== product.trimWidthMm ||
+      cover.front.heightMm !== product.trimHeightMm || cover.back.heightMm !== product.trimHeightMm ||
+      (cover.bleedMm != null && cover.bleedMm !== 5) || Math.abs(cover.widthMm - (2 * product.trimWidthMm + spec.spineMm + 10)) > .001 ||
+      cover.heightMm !== product.trimHeightMm + 10 || cover.back.xMm !== 5 || cover.back.yMm !== 5 || cover.front.yMm !== 5 ||
+      (cover.trim != null && (!rect(cover.trim) || cover.trim.xMm !== 5 || cover.trim.yMm !== 5 ||
+        Math.abs(cover.trim.widthMm - (cover.widthMm - 10)) > .001 || cover.trim.heightMm !== cover.heightMm - 10))) {
+    throw new OrderPaymentError('frozen_print_spec_invalid', 409)
+  }
+  // Return a detached document so asynchronous rendering cannot mutate the
+  // in-memory database row or the approved specification used for comparison.
+  return JSON.parse(JSON.stringify(spec))
+}
+
 export async function sha256(bytes: Uint8Array) {
-  const digest = await crypto.subtle.digest('SHA-256', new Uint8Array(bytes).buffer)
+  // WebCrypto honors the view's byte offset/length. Do not duplicate every
+  // large PDF stream just to hash it in the memory-limited Edge runtime.
+  const digest = await crypto.subtle.digest('SHA-256', bytes as BufferSource)
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
 }
 
@@ -194,6 +247,20 @@ export async function sourceFingerprint(order: OrderRow) {
     orderId: order.order_id, snapshot: printSnapshot(order), pageCount: order.page_count, pricingVersion: order.pricing_version,
     ...(product ? { printProduct: { id: product.id, trimWidthMm: product.trimWidthMm, trimHeightMm: product.trimHeightMm } } : {}),
   })))
+}
+
+/** Match PostgreSQL numeric ceil; binary floating multiplication can add a won. */
+export function ceilMoneyRate(amount: number, rate: number): number {
+  if (!Number.isSafeInteger(amount) || amount < 0 || !Number.isFinite(rate) || rate < 0 || rate >= 1) {
+    throw new OrderPaymentError('invalid_cost_policy', 409)
+  }
+  const match = rate.toString().match(/^(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/)
+  if (!match) throw new OrderPaymentError('invalid_cost_policy', 409)
+  const fraction = match[2] ?? '', scale = fraction.length - Number(match[3] ?? 0)
+  const digits = BigInt(match[1] + fraction)
+  const numerator = BigInt(amount) * digits * (scale < 0 ? 10n ** BigInt(-scale) : 1n)
+  const denominator = scale > 0 ? 10n ** BigInt(scale) : 1n
+  return Number((numerator + denominator - 1n) / denominator)
 }
 
 export function calculateContribution(order: OrderRow, body: Record<string, unknown>, enforceMinimum = true) {
@@ -211,8 +278,8 @@ export function calculateContribution(order: OrderRow, body: Record<string, unkn
   const operationsReserve = Number(snapshot.operationsReserve ?? 3000)
   if (!Number.isSafeInteger(operationsReserve) || operationsReserve < 3000) throw new OrderPaymentError('invalid_cost_policy', 409)
   if (![feeRate, reserveRate].every(rate => Number.isFinite(rate) && rate >= 0 && rate < 1)) throw new OrderPaymentError('invalid_cost_policy', 409)
-  const paymentFeeReserve = Math.ceil(Number(order.amount) * feeRate)
-  const reprintReserve = Math.ceil(Number(order.amount) * reserveRate)
+  const paymentFeeReserve = ceilMoneyRate(Number(order.amount), feeRate)
+  const reprintReserve = ceilMoneyRate(Number(order.amount), reserveRate)
   const contribution = Number(order.amount) - values.reduce((a, b) => a + b, 0) - paymentFeeReserve - reprintReserve - operationsReserve
   if (enforceMinimum && contribution < minimumContribution) throw new OrderPaymentError('print_margin_below_minimum', 409)
   return { actual_print_cost: values[0], actual_shipping_cost: values[1], actual_packaging_cost: values[2],

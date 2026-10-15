@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ValueListenable, kIsWeb;
+import '../../../../shared/widgets/album_stage_style.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
+import '../../../../core/constants/cover_theme.dart';
 import 'dart:math' as math;
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/navigation/web_app_location.dart';
 import '../../../../core/utils/platform_ui.dart';
+import '../../../../shared/web/web_design.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../viewmodels/album_editor_view_model.dart';
@@ -17,18 +22,29 @@ import '../widgets/reader/album_reader_single_page_view.dart';
 import '../widgets/reader/album_reader_thumbnail_strip.dart';
 import '../widgets/reader/album_reader_page_content.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
+import '../widgets/reader/album_completion_confirmation.dart';
 import '../widgets/reader/album_frozen_screen.dart';
+import '../widgets/web/web_album_workspace.dart';
 import '../viewmodels/home_view_model.dart';
 import '../../data/api/album_provider.dart';
 import '../../../billing/data/billing_provider.dart';
 import 'page_editor_screen.dart';
+import 'album_reader_inner_detail_screen.dart';
+import '../../domain/entities/album.dart';
 import 'album_invite_screen.dart';
-import 'print_order_unavailable_screen.dart';
+import 'print_order_preview_screen.dart';
 
 class AlbumReaderScreen extends ConsumerStatefulWidget {
   final int initialSpreadIndex;
+  final GlobalKey? openingCoverKey;
+  final ValueListenable<bool>? openingCoverVisible;
 
-  const AlbumReaderScreen({super.key, this.initialSpreadIndex = 0});
+  const AlbumReaderScreen({
+    super.key,
+    this.initialSpreadIndex = 0,
+    this.openingCoverKey,
+    this.openingCoverVisible,
+  });
 
   @override
   ConsumerState<AlbumReaderScreen> createState() => _AlbumReaderScreenState();
@@ -133,17 +149,29 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   void _showMoreOptions() {
     if (_isDeleting) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (vm.album?.allowsEditing == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.')),
+      );
+      return;
+    }
     Widget buildOptions(BuildContext ctx, {required bool compact}) {
       return AlbumReaderMoreOptionsSheet(
         onEdit: () async {
+          final albumId = vm.album?.id;
           Navigator.pop(ctx);
-          // PageEditorScreen에서 저장 완료(true) 반환 시 AlbumReaderScreen도 true로 pop
-          final saved = await _pushAdaptiveRoute<bool>(
-            MaterialPageRoute(builder: (_) => const PageEditorScreen()),
+          await _pushAdaptiveRoute<bool>(
+            MaterialPageRoute(
+              settings: albumId != null && albumId > 0
+                  ? WebAppRouteSettings(
+                      WebAppLocation(WebAppPage.editor, '$albumId'),
+                    )
+                  : null,
+              builder: (_) =>
+                  const PageEditorScreen(returnToPreviousOnSave: true),
+            ),
           );
-          if (saved == true && context.mounted) {
-            Navigator.pop(context, true); // 홈 화면에 수정사항 있음 알림
-          } else if (context.mounted) {
+          if (context.mounted) {
             // [Fix] 에디터에서 돌아왔을 때, 캔버스 사이즈 재동기화 강제 트리거
             // (에디터의 캔버스 실측 사이즈와 리더의 실측 사이즈가 미세하게 다를 수 있으므로 리더 기준으로 재조정)
             final vm = ref.read(albumEditorViewModelProvider.notifier);
@@ -158,32 +186,53 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         },
         onConfirm: () {
           Navigator.pop(ctx);
-          _showConfirmDialog();
-        },
-        onDelete: () {
-          Navigator.pop(ctx);
-          _showDeleteConfirmDialog();
-        },
-        onInvite: () async {
-          Navigator.pop(ctx);
-          final album = vm.album;
-          if (album == null || album.id <= 0) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')));
-            return;
+          if (kIsWeb) {
+            unawaited(_orderWebAlbum());
+          } else {
+            _showConfirmDialog();
           }
-          await _pushAdaptiveRoute<void>(
-            MaterialPageRoute(
-              builder: (_) => AlbumInviteScreen(
-                albumId: album.id,
-                albumTitle: album.title.isEmpty ? 'SnapFit Album' : album.title,
-              ),
-            ),
-          );
         },
+        onDelete: vm.album?.allowsManagement == false
+            ? null
+            : () {
+                Navigator.pop(ctx);
+                _showDeleteConfirmDialog();
+              },
+        onInvite: vm.album?.allowsManagement == false
+            ? null
+            : () async {
+                Navigator.pop(ctx);
+                final album = vm.album;
+                if (album == null || album.id <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')),
+                  );
+                  return;
+                }
+                await _pushAdaptiveRoute<void>(
+                  MaterialPageRoute(
+                    builder: (_) => AlbumInviteScreen(
+                      album: album,
+                      albumId: album.id,
+                      albumTitle: album.title.isEmpty
+                          ? 'SnapFit Album'
+                          : album.title,
+                    ),
+                  ),
+                );
+              },
         compact: compact,
       );
+    }
+
+    if (kIsWeb) {
+      showWebAwareDialog<void>(
+        context: context,
+        maxWidth: 380,
+        maxHeight: 520,
+        builder: (ctx) => buildOptions(ctx, compact: true),
+      );
+      return;
     }
 
     final isLandscape =
@@ -237,9 +286,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: SnapFitColors.surfaceOf(context),
+        backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 20.r),
         ),
         title: Row(
           children: [
@@ -352,66 +401,220 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
   }
 
   // 제작확정 확인 다이얼로그
-  void _showConfirmDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: SnapFitColors.surfaceOf(context),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+  Future<void> _showConfirmDialog() async {
+    final confirmed = await showAlbumCompletionConfirmation(context);
+    if (mounted && confirmed) setState(() => _isFrozen = true);
+  }
+
+  Future<void> _openWebEditor() async {
+    if (_isDeleting) return;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (vm.album?.allowsEditing == false) return;
+    final albumId = vm.album?.id;
+    await _pushAdaptiveRoute<bool>(
+      MaterialPageRoute(
+        settings: albumId != null && albumId > 0
+            ? WebAppRouteSettings(
+                WebAppLocation(WebAppPage.editor, '$albumId'),
+              )
+            : null,
+        builder: (_) => PageEditorScreen(
+          initialPageIndex: _focusPageIndex,
+          returnToPreviousOnSave: true,
         ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.lock_outline_rounded,
-              color: SnapFitColors.accent,
-              size: 22.sp,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              '앨범 완성',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w800,
-                color: SnapFitColors.textPrimaryOf(context),
+      ),
+    );
+    if (!mounted) return;
+    final current = ref.read(albumEditorViewModelProvider.notifier);
+    if (_coverSize != Size.zero) current.setCoverCanvasSize(_coverSize);
+    setState(() {});
+  }
+
+  Future<void> _orderWebAlbum() async {
+    if (_isDeleting) return;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (vm.album?.allowsEditing == false) return;
+    final confirmed = await showAlbumCompletionConfirmation(context);
+    if (!mounted || !confirmed) return;
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album == null || album.id <= 0 || !album.allowsEditing) return;
+    await _pushAdaptiveRoute<String>(
+      MaterialPageRoute(
+        settings: WebAppRouteSettings(
+          WebAppLocation(WebAppPage.print, '${album.id}'),
+        ),
+        builder: (_) => PrintOrderPreviewScreen(
+          albumId: album.id,
+          albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _inviteFromWeb() async {
+    if (_isDeleting) return;
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album == null || album.id <= 0 || !album.allowsManagement) return;
+    await _pushAdaptiveRoute<void>(
+      MaterialPageRoute(
+        builder: (_) => AlbumInviteScreen(
+          album: album,
+          albumId: album.id,
+          albumTitle: album.title.trim().isEmpty ? '스냅핏 앨범' : album.title,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openWebPageDetail() async {
+    if (_isDeleting || _focusPageIndex <= 0) return;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final pages = vm.pages.skip(1).toList();
+    if (pages.isEmpty) return;
+    await _pushAdaptiveRoute<void>(MaterialPageRoute(
+      builder: (_) => AlbumReaderInnerDetailScreen(
+        innerPages: pages,
+        initialPageIndex: (_focusPageIndex - 1).clamp(0, pages.length - 1),
+        singlePageW: kCoverReferenceWidth,
+        singlePageH: kCoverReferenceWidth / vm.selectedCover.ratio,
+        interaction: _interaction,
+        layerBuilder: _layerBuilder,
+      ),
+    ));
+    if (mounted) setState(() {});
+  }
+
+  Widget _buildWebReader({
+    required List<AlbumPage> pages,
+    required CoverSize cover,
+    required CoverTheme theme,
+  }) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final album = vm.album;
+    final focus = pages.isEmpty
+        ? 0
+        : _focusPageIndex.clamp(0, pages.length - 1).toInt();
+    final base = Size(kCoverReferenceWidth, kCoverReferenceWidth / cover.ratio);
+    final previewInteraction = LayerInteractionManager.preview(ref, () => base);
+    final previewBuilder = LayerBuilder(previewInteraction, () => base);
+
+    void selectPage(int index) {
+      if (_isDeleting || index < 0 || index >= pages.length) return;
+      setState(() => _focusPageIndex = index);
+    }
+
+    Widget rail({bool horizontal = false}) => WebAlbumPageRail(
+      pages: pages,
+      selectedIndex: focus,
+      cover: cover,
+      theme: theme,
+      previewBuilder: previewBuilder,
+      onSelected: selectPage,
+      horizontal: horizontal,
+    );
+
+    Widget document() {
+      if (pages.isEmpty) {
+        return Center(child: Text(
+          '아직 페이지가 없어요.',
+          style: TextStyle(color: WebPalette.of(context).muted),
+        ));
+      }
+      final page = pages[focus];
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.min(
+            constraints.maxWidth,
+            constraints.maxHeight * cover.ratio,
+          );
+          if (width <= 0 || !width.isFinite) return const SizedBox.shrink();
+          final height = width / cover.ratio;
+          return Center(
+            child: RepaintBoundary(
+              child: ClipRect(
+                child: AlbumReaderPageContent(
+                  key: ValueKey('web-reader-document-$focus'),
+                  layers: page.layers,
+                  targetW: width,
+                  targetH: height,
+                  baseCanvasSize: base,
+                  previewBuilder: previewBuilder,
+                  theme: focus == 0 ? theme : null,
+                  backgroundColor: page.backgroundColor == null
+                      ? null
+                      : Color(page.backgroundColor!),
+                  flatPresentation: true,
+                  isCover: focus == 0,
+                ),
               ),
             ),
-          ],
-        ),
-        content: Text(
-          '인화 주문 결제는 준비 중입니다.\n앨범 수정은 이후에도 계속 가능합니다.\n\n완성된 앨범을 확인하시겠습니까?',
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: SnapFitColors.textSecondaryOf(context),
-            height: 1.6,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              '취소',
-              style: TextStyle(
-                color: SnapFitColors.textMutedOf(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 14.sp,
-              ),
+          );
+        },
+      );
+    }
+
+    return WillPopScope(
+      onWillPop: () async => !_isDeleting,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          AbsorbPointer(
+            absorbing: _isDeleting,
+            child: WebAlbumReaderWorkspace(
+              title: album?.title.trim().isNotEmpty == true
+                  ? album!.title
+                  : '스냅핏 앨범',
+              description: '${cover.displayName}'
+                  '${cover.productId == null ? '' : ' · ${cover.coverType.label}'}'
+                  ' · 내지 ${math.max(0, pages.length - 1)}쪽',
+              pageLabel: focus == 0
+                  ? '표지'
+                  : '내지 $focus / ${math.max(0, pages.length - 1)}쪽',
+              canvas: document(),
+              pageRail: rail(),
+              compactPageRail: rail(horizontal: true),
+              busy: _isDeleting,
+              onBack: () => Navigator.maybePop(context),
+              onEdit: album?.allowsEditing == false
+                  ? null
+                  : () => unawaited(_openWebEditor()),
+              onOrder: album == null || album.id <= 0 || !album.allowsEditing
+                  ? null
+                  : () => unawaited(_orderWebAlbum()),
+              onPrevious: focus > 0 ? () => selectPage(focus - 1) : null,
+              onNext: focus + 1 < pages.length
+                  ? () => selectPage(focus + 1)
+                  : null,
+              onDetail: focus > 0 ? () => unawaited(_openWebPageDetail()) : null,
+              managementMenu: album?.allowsManagement == false
+                  ? null
+                  : PopupMenuButton<String>(
+                      tooltip: '앨범 관리',
+                      icon: const Icon(Icons.more_horiz),
+                      onSelected: (action) {
+                        if (action == 'invite') unawaited(_inviteFromWeb());
+                        if (action == 'delete') {
+                          unawaited(_showDeleteConfirmDialog());
+                        }
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(
+                          value: 'invite',
+                          child: Text('함께 편집할 사람 초대'),
+                        ),
+                        PopupMenuItem(value: 'delete', child: Text('앨범 삭제')),
+                      ],
+                    ),
             ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() => _isFrozen = true);
-            },
-            child: Text(
-              '확정하기',
-              style: TextStyle(
-                color: SnapFitColors.accent,
-                fontWeight: FontWeight.w800,
-                fontSize: 14.sp,
+          if (_isDeleting)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0x44FFFFFF),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -422,6 +625,31 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     final asyncState = ref.watch(albumEditorViewModelProvider);
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     final state = asyncState.value;
+
+    if (kIsWeb && (state == null || state.isCreatingInBackground)) {
+      return SnapFitWebShell(
+        title: '앨범 미리보기',
+        showNavigation: false,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 28, height: 28,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                state?.isCreatingInBackground == true
+                    ? '앨범을 준비하고 있습니다'
+                    : '앨범을 불러오고 있습니다',
+                style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (state == null) {
       return Scaffold(
@@ -455,9 +683,13 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
     }
 
     // 제작확정 완료 화면
-    if (_isFrozen) {
+    if (_isFrozen && !kIsWeb) {
       return AlbumFrozenScreen(
-        album: vm.album,
+        album: vm.album?.copyWith(
+          ratio: vm.selectedCover.ratio.toString(),
+          coverTheme: vm.selectedTheme.label,
+          coverLayersJson: vm.exportFullAlbumLayersJson(null),
+        ),
         onClose: () {
           Navigator.pop(context, true); // 홈 갱신 필요
           ref.read(homeViewModelProvider.notifier).refresh();
@@ -471,25 +703,38 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             return;
           }
 
-          unawaited(
-            _pushAdaptiveRoute<void>(
+          unawaited(() async {
+            final result = await _pushAdaptiveRoute<String>(
               MaterialPageRoute(
-                builder: (_) => PrintOrderUnavailableScreen(
+                settings: WebAppRouteSettings(
+                  WebAppLocation(WebAppPage.print, '${album.id}'),
+                ),
+                builder: (_) => PrintOrderPreviewScreen(
                   albumId: album.id,
                   albumTitle: album.title.trim().isEmpty
                       ? '스냅핏 앨범'
                       : album.title,
-                  pageCount: vm.pages.length,
                 ),
               ),
-            ),
-          );
+            );
+            if (mounted && result == 'edit_album') {
+              setState(() => _isFrozen = false);
+            }
+          }());
         },
       );
     }
 
     vm.ensureCoverPage();
     final allPages = vm.pages;
+
+    if (kIsWeb) {
+      return _buildWebReader(
+        pages: allPages,
+        cover: state.selectedCover,
+        theme: state.selectedTheme,
+      );
+    }
 
     final useContinuousOpenSurface = widget.initialSpreadIndex > 0;
     final isLandscape =
@@ -525,9 +770,9 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.48),
+          color: AlbumStageStyle.glass(context),
           borderRadius: BorderRadius.circular(999.r),
-          border: Border.all(color: Colors.white.withOpacity(0.68)),
+          border: Border.all(color: AlbumStageStyle.line(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -550,8 +795,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0x9E151412),
+              style: TextStyle(
+                color: AlbumStageStyle.ink(context),
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0,
@@ -577,6 +822,8 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       }
 
       return AlbumReaderSinglePageView(
+        openingCoverKey: widget.openingCoverKey,
+        openingCoverVisible: widget.openingCoverVisible,
         allPages: allPages,
         selectedCover: state.selectedCover,
         coverTheme: state.selectedTheme,
@@ -620,57 +867,20 @@ class _AlbumReaderScreenState extends ConsumerState<AlbumReaderScreen>
       );
     }
 
-    const paperTop = Color(0xFFEFE2D0);
-    const paperBottom = Color(0xFFF8EFE2);
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
+      value: AlbumStageStyle.overlay(context),
       child: WillPopScope(
         onWillPop: () async => !_isDeleting,
         child: Scaffold(
-          backgroundColor: paperTop,
+          backgroundColor: AlbumStageStyle.top(context),
           body: Stack(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: const [paperTop, paperBottom],
-                  ),
+                  gradient: AlbumStageStyle.gradient(context),
                 ),
                 child: Stack(
                   children: [
-                    if (useContinuousOpenSurface)
-                      Positioned.fill(
-                        child: Opacity(
-                          opacity: 0.34,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: SnapFitColors.readerGradientOf(context),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     SafeArea(
                       left: !isLandscape,
                       right: !isLandscape,
@@ -845,9 +1055,9 @@ class _LandscapePageRail extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.48),
+        color: AlbumStageStyle.glass(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.68)),
+        border: Border.all(color: AlbumStageStyle.line(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.07),
@@ -865,7 +1075,7 @@ class _LandscapePageRail extends StatelessWidget {
               height: 34,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color(0xFF1B1916).withValues(alpha: 0.84),
+                color: AlbumStageStyle.ink(context),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -873,8 +1083,8 @@ class _LandscapePageRail extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AlbumStageStyle.top(context),
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   height: 1.05,
@@ -973,7 +1183,7 @@ class _LandscapeReaderButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.72),
+      color: AlbumStageStyle.glass(context),
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -981,7 +1191,7 @@ class _LandscapeReaderButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(icon, size: 24, color: const Color(0xFF1B1916)),
+          child: Icon(icon, size: 24, color: AlbumStageStyle.ink(context)),
         ),
       ),
     );

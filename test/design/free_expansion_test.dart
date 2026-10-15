@@ -232,6 +232,8 @@ void main() {
         '${volume.id}/${aspect.name}: text, photos, masks, identity and saved roundtrip',
         () {
           final issues = <String>[];
+          final hasPhotoCover =
+              volume.document(aspect)['coverTreatment'] == 'full-bleed-photo';
           for (final copy in [volume.defaultCopy, _longCopy]) {
             final pages = freeCollectionPreviewPages(volume, aspect, copy);
             final ids = <String>{};
@@ -268,8 +270,9 @@ void main() {
                 if (layer.type == LayerType.decoration &&
                     layer.imageBackground != null) {
                   expect(
-                    studioDecorationById(layer.imageBackground),
-                    isNotNull,
+                    studioDecorationById(layer.imageBackground) != null ||
+                        photoCoverShadeStyles.contains(layer.imageBackground),
+                    true,
                   );
                 }
                 if (layer.type == LayerType.sticker) {
@@ -314,6 +317,14 @@ void main() {
                 for (final other in page.where(
                   (l) => l.type == LayerType.image || l.type == LayerType.text,
                 )) {
+                  // Text intentionally sits above the full-bleed cover photo.
+                  final fullPhotoBackdrop =
+                      hasPhotoCover &&
+                      identical(page, pages.first) &&
+                      other.type == LayerType.image &&
+                      other.width == aspect.canvas.width &&
+                      other.height == aspect.canvas.height;
+                  if (fullPhotoBackdrop) continue;
                   if (other.id != layer.id &&
                       rect
                           .deflate(.05)

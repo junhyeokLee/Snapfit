@@ -1,0 +1,9 @@
+{
+  "observedAtUtc": "2026-10-15T06:09:31.900Z",
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "orderId": "ordp_85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "source": "normal customer checkout",
+  "stageObserved": "PREPARING",
+  "isTest": true,
+  "previousAdministratorRunReused": false
+}

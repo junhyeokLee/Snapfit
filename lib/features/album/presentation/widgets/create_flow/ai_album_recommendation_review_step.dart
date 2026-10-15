@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -88,6 +90,7 @@ class _AiAlbumRecommendationReviewStepState
         isAccepting: _isAcceptingDraft,
       );
     }
+    if (kIsWeb) return _webRecommendations();
     final background = SnapFitColors.isDark(context)
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
@@ -161,6 +164,30 @@ class _AiAlbumRecommendationReviewStepState
       ),
     );
   }
+
+  Widget _webRecommendations() => LayoutBuilder(builder: (context, bounds) {
+    final content = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const Text('AI가 준비한 구성을 확인하세요', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+      const SizedBox(height: 20),
+      _StorySectionList(draft: _draft),
+      const SizedBox(height: 20),
+      if (_draft.templateSlots.isNotEmpty) _TemplateSlotList(draft: _draft)
+      else _RecommendationDetails(draft: _draft, onAddExcludedPhoto: _addExcludedPhoto),
+    ]);
+    final summary = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      _DraftSummaryCard(draft: _draft),
+      const SizedBox(height: 20),
+      FilledButton(onPressed: _isAcceptingDraft ? null : _handleAcceptDraft, child: Text(_isAcceptingDraft ? '적용 중' : _draft.reviewCtaLabel)),
+      const SizedBox(height: 12),
+      OutlinedButton(onPressed: _isAcceptingDraft ? null : widget.onBack, child: const Text('이전 단계')),
+    ]);
+    if (bounds.maxWidth < 900) return ListView(padding: const EdgeInsets.all(28), children: [content, const SizedBox(height: 24), summary]);
+    return Padding(padding: const EdgeInsets.all(28), child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Expanded(child: SingleChildScrollView(child: content)),
+      const SizedBox(width: 24),
+      SizedBox(width: 300, child: SingleChildScrollView(child: summary)),
+    ]));
+  });
 }
 
 class _DraftSummaryCard extends StatelessWidget {
@@ -246,12 +273,12 @@ class _TemplateSlotList extends StatelessWidget {
                     height: 38.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: SnapFitColors.isDark(context)
+                      color: kIsWeb ? WebPalette.of(context).canvas : SnapFitColors.isDark(context)
                           ? Colors.white.withOpacity(0.08)
                           : const Color(0xFFF3EEE5),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: SnapFitColors.isDark(context)
+                        color: kIsWeb ? WebPalette.of(context).line : SnapFitColors.isDark(context)
                             ? Colors.white.withOpacity(0.10)
                             : const Color(0xFFE4D8C9),
                       ),
@@ -352,8 +379,8 @@ class _StorySectionList extends StatelessWidget {
                     width: 7.w,
                     height: 7.w,
                     margin: EdgeInsets.only(top: 7.h, right: 10.w),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF5B6F58),
+                    decoration: BoxDecoration(
+                      color: kIsWeb ? WebPalette.of(context).brandInk : Color(0xFF5B6F58),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -587,7 +614,7 @@ class _ReasonChip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: SnapFitColors.isDark(context)
+        color: kIsWeb ? WebPalette.of(context).softBrand : SnapFitColors.isDark(context)
             ? Colors.white.withOpacity(0.08)
             : const Color(0xFFE9F4EC),
         borderRadius: BorderRadius.circular(999.r),
@@ -595,7 +622,7 @@ class _ReasonChip extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          color: SnapFitColors.isDark(context)
+          color: kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.isDark(context)
               ? const Color(0xFFE9F4EC)
               : const Color(0xFF4C6A55),
           fontSize: 11.3.sp,
@@ -648,8 +675,8 @@ class _ReasonBulletList extends StatelessWidget {
                     child: Container(
                       width: 4.5.w,
                       height: 4.5.w,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF5B6F58),
+                      decoration: BoxDecoration(
+                        color: kIsWeb ? WebPalette.of(context).brandInk : Color(0xFF5B6F58),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -782,12 +809,12 @@ class _PaperCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(17.w),
       decoration: BoxDecoration(
-        color: SnapFitColors.isDark(context)
+        color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.isDark(context)
             ? const Color(0xFF1D1C1A)
             : Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22.r),
         border: Border.all(
-          color: SnapFitColors.isDark(context)
+          color: kIsWeb ? WebPalette.of(context).line : SnapFitColors.isDark(context)
               ? Colors.white.withOpacity(0.10)
               : const Color(0xFFE7E1D8),
         ),
@@ -807,13 +834,13 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3EEE5),
+        color: kIsWeb ? WebPalette.of(context).canvas : const Color(0xFFF3EEE5),
         borderRadius: BorderRadius.circular(999.r),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: const Color(0xFF6C5E4B),
+          color: kIsWeb ? WebPalette.of(context).muted : const Color(0xFF6C5E4B),
           fontSize: 11.5.sp,
           fontWeight: FontWeight.w900,
         ),
@@ -832,13 +859,13 @@ class _MemoLabel extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9F4EC),
+        color: kIsWeb ? WebPalette.of(context).softBrand : const Color(0xFFE9F4EC),
         borderRadius: BorderRadius.circular(999.r),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: const Color(0xFF4C6A55),
+          color: kIsWeb ? WebPalette.of(context).brandInk : const Color(0xFF4C6A55),
           fontSize: 11.sp,
           fontWeight: FontWeight.w900,
         ),

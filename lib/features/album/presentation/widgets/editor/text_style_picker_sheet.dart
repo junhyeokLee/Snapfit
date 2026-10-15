@@ -1,7 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../shared/web/web_design.dart';
+import 'dart:math' as math;
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+
+Widget _styleProof(Widget child) => Padding(
+  padding: const EdgeInsets.all(8),
+  child: ColoredBox(
+    color: const Color(0xFFF0F2EF),
+    child: Center(child: child),
+  ),
+);
 
 /// 텍스트 스타일 선택용 바텀시트 (이미지 레퍼런스: 탭·섹션·카드 구조)
 class TextStylePickerSheet extends StatefulWidget {
@@ -18,9 +29,23 @@ class TextStylePickerSheet extends StatefulWidget {
     BuildContext context, {
     required String? currentKey,
   }) {
+    FocusScope.of(context).unfocus();
+    if (kIsWeb) {
+      return showWebAwareDialog<String>(
+        context: context,
+        maxWidth: 1100,
+        maxHeight: 760,
+        builder: (dialogContext) => TextStylePickerSheet(
+          selectedKey: currentKey,
+          onSelect: (key) => Navigator.pop(dialogContext, key),
+        ),
+      );
+    }
     return showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: const BoxConstraints(maxWidth: 960),
       backgroundColor: Colors.transparent,
       builder: (ctx) => TextStylePickerSheet(
         selectedKey: currentKey,
@@ -1003,6 +1028,61 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 색상 선택 펼침 상태 (id 일치 시 해당 그룹의 색상 목록 표시)
   String? _expandedColorGroupId;
   bool _favoritesOnly = false;
+  bool _closing = false, _fullViewOpen = false;
+  int _sectionIndex = 0;
+  final _bodyKey = GlobalKey();
+  final _favoritesKey = GlobalKey();
+  final _bodyScroll = ScrollController();
+  final _sections = const [
+    (title: '기본', groups: _basicDesignGroups, items: _basicStyles),
+    (title: '말풍선', groups: _speechBubbleDesignGroups, items: _speechBubbles),
+    (title: '라벨 & 태그', groups: _labelDesignGroups, items: _labels),
+    (title: '메모지', groups: _noteDesignGroups, items: _notes),
+    (title: '마스킹 테이프', groups: _tapeDesignGroups, items: _tapes),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final index = _sections.indexWhere(
+      (s) => s.items.any((item) => item.key == widget.selectedKey),
+    );
+    if (index >= 0) _sectionIndex = index;
+  }
+
+  @override
+  void dispose() {
+    _bodyScroll.dispose();
+    super.dispose();
+  }
+
+  bool get _canFinish =>
+      mounted &&
+      !_closing &&
+      !_fullViewOpen &&
+      ModalRoute.of(context)?.isCurrent != false;
+  void _close() {
+    if (!_canFinish) return;
+    _closing = true;
+    Navigator.pop(context);
+  }
+
+  void _apply(String key) {
+    if (!_canFinish) return;
+    _closing = true;
+    widget.onSelect(key);
+    if (mounted && ModalRoute.of(context)?.isCurrent != false) _closing = false;
+  }
+
+  Widget _previewItem(_TextStyleItem item) => _buildStylePreview(
+    item.previewType,
+    colorGroupId: _sections
+        .expand((section) => section.groups)
+        .where((group) => group.items.any((entry) => entry.key == item.key))
+        .firstOrNull
+        ?.id,
+  );
+
   List<_TextStyleItem> get _allItems => [
     ..._basicStyles,
     ..._speechBubbles,
@@ -1020,136 +1100,169 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       (s) => CatalogFavoriteKeys.textStyle(s.key),
       onlyFavorites: true,
     );
-    final isDark = SnapFitColors.isDark(context);
-    final surface = SnapFitColors.surfaceOf(context);
-    // 텍스트/스티커 바텀시트는 배경이 밝기 때문에
-    // 다크 모드에서도 항상 진한 글자색을 유지한다.
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? SnapFitColors.accentLight.withOpacity(0.2)
-                : Colors.black.withOpacity(0.12),
-            blurRadius: 20.r,
-            offset: Offset(0, -4.h),
-          ),
-        ],
+    final filter = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: CatalogFavoriteFilter(
+        key: _favoritesKey,
+        selected: _favoritesOnly,
+        onChanged: (value) => setState(() => _favoritesOnly = value),
       ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: (MediaQuery.sizeOf(context).height * .85).clamp(0.0, 680.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 12.h),
-              Center(
-                child: Container(
-                  width: 48.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.overlayMediumOf(context),
-                    borderRadius: BorderRadius.circular(4.r),
+    );
+    final media = MediaQuery.of(context);
+    final resized =
+        Scaffold.maybeOf(context) != null &&
+        Scaffold.maybeOf(context)?.widget.resizeToAvoidBottomInset != false;
+    return Padding(
+      padding: EdgeInsets.only(bottom: resized ? 0 : media.viewInsets.bottom),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final wide = box.maxWidth >= (kIsWeb ? 720 : 540) &&
+              (kIsWeb || media.orientation == Orientation.landscape);
+          final catalog = _favoritesOnly
+              ? (saved.isEmpty
+                    ? CatalogFavoritesEmpty(
+                        onShowAll: () => setState(() => _favoritesOnly = false),
+                      )
+                    : _savedGrid(saved))
+              : SingleChildScrollView(
+                  key: _bodyKey,
+                  controller: _bodyScroll,
+                  padding: const EdgeInsets.only(top: 8, bottom: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (saved.isNotEmpty)
+                        SizedBox(height: 164, child: _savedStrip(saved)),
+                      for (var index = 0; index < _sections.length; index++)
+                        if (!wide || index == _sectionIndex) ...[
+                          _buildSectionWithColorPicker(
+                            titleKo: _sections[index].title,
+                            titleEn: '',
+                            groups: _sections[index].groups,
+                            allItems: _sections[index].items,
+                            fullViewTitle: _sections[index].title,
+                            showSeeAll: index != 0,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                    ],
                   ),
-                ),
+                );
+          return SizedBox(
+            height: math.min(
+              box.maxHeight,
+              math.min(media.size.height * .94, 720),
+            ),
+            child: Material(
+              color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+              borderRadius: kIsWeb ? BorderRadius.circular(12) : const BorderRadius.vertical(
+                top: Radius.circular(8),
               ),
-              SizedBox(height: 16.h),
-              // 헤더: 제목만
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Text(
-                  '텍스트 및 스티커',
-                  style: TextStyle(
-                    color: textPrimary,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: CatalogFavoriteFilter(
-                  selected: _favoritesOnly,
-                  onChanged: (value) => setState(() => _favoritesOnly = value),
-                ),
-              ),
-              // 섹션 리스트 (한 스크롤에 모두)
-              Expanded(
-                child: _favoritesOnly
-                    ? (saved.isEmpty
-                          ? CatalogFavoritesEmpty(
-                              onShowAll: () =>
-                                  setState(() => _favoritesOnly = false),
-                            )
-                          : _savedGrid(saved))
-                    : SingleChildScrollView(
-                        padding: EdgeInsets.only(bottom: 24.h),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (saved.isNotEmpty)
-                              SizedBox(height: 164, child: _savedStrip(saved)),
-                            _buildSectionWithColorPicker(
-                              titleKo: '기본',
-                              titleEn: 'Basic',
-                              groups: _basicDesignGroups,
-                              allItems: _basicStyles,
-                              fullViewTitle: '기본',
-                              showSeeAll: false,
+              clipBehavior: Clip.antiAlias,
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 8, 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '텍스트 및 스티커',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: ExperienceFormStyle.text(
+                                context,
+                                18,
+                                weight: FontWeight.w600,
+                              ),
                             ),
-                            SizedBox(height: 24.h),
-                            _buildSectionWithColorPicker(
-                              titleKo: '말풍선',
-                              titleEn: 'Speech Bubbles',
-                              groups: _speechBubbleDesignGroups,
-                              allItems: _speechBubbles,
-                              fullViewTitle: '말풍선',
-                            ),
-                            SizedBox(height: 24.h),
-                            _buildSectionWithColorPicker(
-                              titleKo: '라벨 & 태그',
-                              titleEn: 'Labels',
-                              groups: _labelDesignGroups,
-                              allItems: _labels,
-                              fullViewTitle: '라벨 & 태그',
-                            ),
-                            SizedBox(height: 24.h),
-                            _buildSectionWithColorPicker(
-                              titleKo: '메모지',
-                              titleEn: 'Sticky Notes',
-                              groups: _noteDesignGroups,
-                              allItems: _notes,
-                              fullViewTitle: '메모지',
-                            ),
-                            SizedBox(height: 24.h),
-                            _buildSectionWithColorPicker(
-                              titleKo: '마스킹 테이프',
-                              titleEn: 'Tapes',
-                              groups: _tapeDesignGroups,
-                              allItems: _tapes,
-                              fullViewTitle: '마스킹 테이프',
-                            ),
-                          ],
-                        ),
+                          ),
+                          IconButton(
+                            key: const ValueKey('text-style-close'),
+                            tooltip: '문구 장식 닫기',
+                            onPressed: _close,
+                            icon: const Icon(Icons.close, size: 22),
+                          ),
+                        ],
                       ),
+                    ),
+                    if (!wide)
+                      Align(alignment: Alignment.centerLeft, child: filter),
+                    Expanded(
+                      child: wide
+                          ? Row(
+                              children: [
+                                SizedBox(
+                                  width: 168,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        filter,
+                                        for (
+                                          var index = 0;
+                                          index < _sections.length;
+                                          index++
+                                        )
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 2,
+                                            ),
+                                            child: ChoiceChip(
+                                              key: ValueKey(
+                                                'text-style-category-$index',
+                                              ),
+                                              selected:
+                                                  !_favoritesOnly &&
+                                                  _sectionIndex == index,
+                                              label: Text(
+                                                _sections[index].title,
+                                                maxLines: 2,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              onSelected: (_) => setState(() {
+                                                _sectionIndex = index;
+                                                _favoritesOnly = false;
+                                              }),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                VerticalDivider(
+                                  width: 1,
+                                  color: ExperienceFormStyle.line(context),
+                                ),
+                                Expanded(child: catalog),
+                              ],
+                            )
+                          : catalog,
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _savedGrid(List<_TextStyleItem> items) => GridView.builder(
     padding: const EdgeInsets.all(16),
-    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: 180,
-      mainAxisExtent: 150,
+      mainAxisExtent:
+          150 +
+          (MediaQuery.textScalerOf(context).scale(11) / 11 - 1).clamp(0, 2) *
+              30,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
     ),
@@ -1171,15 +1284,14 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
-        onTap: () => widget.onSelect(item.key),
+        onTap: () => _apply(item.key),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 44, 12, 8),
           child: Column(
             children: [
               Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: _buildStylePreview(item.previewType),
+                child: _styleProof(
+                  FittedBox(fit: BoxFit.scaleDown, child: _previewItem(item)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -1200,33 +1312,34 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     BuildContext context,
     String title,
     List<_TextStyleItem> items,
-  ) {
-    Navigator.of(context)
-        .push<String>(
-          MaterialPageRoute(
-            builder: (ctx) => _TextStyleFullViewScreen(
-              title: title,
-              items: items,
-              selectedKey: widget.selectedKey,
-              buildPreview: _buildStylePreview,
-              onSelect: (key) {
-                // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (ctx.mounted) Navigator.of(ctx).pop(key);
-                });
-              },
-            ),
-          ),
-        )
-        .then((key) {
-          if (key != null && mounted) {
-            widget.onSelect(key);
-            // 바텀시트 pop은 그다음 프레임으로 미뤄 Navigator _debugLocked 오류 방지
+  ) async {
+    if (!_canFinish) return;
+    _fullViewOpen = true;
+    bool returning = false;
+    Widget fullView(BuildContext ctx) => _TextStyleFullViewScreen(
+          title: title,
+          items: items,
+          selectedKey: widget.selectedKey,
+          buildPreview: _previewItem,
+          onSelect: (key) {
+            if (returning ||
+                !ctx.mounted ||
+                ModalRoute.of(ctx)?.isCurrent == false)
+              return;
+            returning = true;
+            // 제스처 처리 중 pop 시 _debugLocked 오류 방지: 한 프레임 뒤에 전체 보기만 pop
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) Navigator.of(context).pop(key);
+              if (ctx.mounted && ModalRoute.of(ctx)?.isCurrent != false)
+                Navigator.of(ctx).pop(key);
             });
-          }
-        });
+          },
+        );
+    final key = kIsWeb
+        ? await showWebAwareDialog<String>(context: context, maxWidth: 1100, maxHeight: 760, builder: fullView)
+        : await Navigator.of(context).push<String>(MaterialPageRoute(builder: fullView));
+    if (!mounted) return;
+    _fullViewOpen = false;
+    if (key != null) _apply(key);
   }
 
   /// 디자인 그룹별 카드 + 색상 선택 행 (그룹 탭 시 펼침)
@@ -1248,44 +1361,45 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '$titleKo ($titleEn)',
-                style: TextStyle(
-                  // 텍스트/스티커 바텀시트는 배경이 항상 밝으므로
-                  // 라이트/다크 모드와 상관없이 진한 검정 글자색을 사용
-                  color: SnapFitColors.textPrimaryOf(context),
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  titleKo,
+                  style: TextStyle(
+                    color: SnapFitColors.textPrimaryOf(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               if (showSeeAll)
-                GestureDetector(
-                  onTap: () => _openFullView(context, fullViewTitle, allItems),
+                TextButton(
+                  onPressed: () =>
+                      _openFullView(context, fullViewTitle, allItems),
                   child: Text(
                     '모두 보기',
                     style: TextStyle(
-                      color: SnapFitColors.accent,
-                      fontSize: 13.sp,
+                      color: kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           SizedBox(
             height: 154,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: groups.length,
-              separatorBuilder: (_, __) => SizedBox(width: 12.w),
+              separatorBuilder: (_, __) => SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final group = groups[index];
                 final isGroupSelected = group.items.any(
@@ -1305,11 +1419,15 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                   label: _textStyleLabel(previewItem),
                   child: GestureDetector(
                     onTap: () {
+                      if (!_canFinish) return;
                       if (group.items.length == 1) {
-                        widget.onSelect(group.items.first.key);
+                        _apply(group.items.first.key);
                         return;
                       }
                       setState(() {
+                        _sectionIndex = _sections.indexWhere(
+                          (s) => s.groups.contains(group),
+                        );
                         _expandedColorGroupId = isExpanded ? null : group.id;
                       });
                     },
@@ -1317,47 +1435,46 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                       width: 132,
                       padding: const EdgeInsets.only(top: 42),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.r),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: hasAccentBorder
-                              ? SnapFitColors.accent
+                              ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
                               : SnapFitColors.overlayStrongOf(context),
                           width: hasAccentBorder ? 2 : 1,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
-                            child: Center(
-                              child: _buildStylePreview(
-                                previewItem.previewType,
-                                colorGroupId: group.id,
+                            child: _styleProof(
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: _buildStylePreview(
+                                  previewItem.previewType,
+                                  colorGroupId: group.id,
+                                ),
                               ),
                             ),
                           ),
                           if (group.items.length > 1)
                             Padding(
-                              padding: EdgeInsets.only(bottom: 6.h),
+                              padding: EdgeInsets.only(bottom: 6),
                               child: Text(
                                 group.labelKo,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 10.sp,
-                                  // 항상 검정 계열 텍스트 색상 유지
-                                  color: Colors.black54,
+                                  fontSize: 12,
+                                  color: SnapFitColors.textSecondaryOf(context),
                                 ),
                               ),
                             )
                           else
-                            SizedBox(height: 6.h),
+                            SizedBox(height: 6),
                         ],
                       ),
                     ),
@@ -1367,19 +1484,19 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
             ),
           ),
           if (expandedGroup != null && expandedGroup!.items.length > 1) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
             Padding(
-              padding: EdgeInsets.only(left: 4.w),
+              padding: EdgeInsets.only(left: 4),
               child: Text(
                 '색상 선택',
                 style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 12.sp,
+                  color: SnapFitColors.textSecondaryOf(context),
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Builder(
               builder: (context) {
                 final group = expandedGroup!;
@@ -1389,7 +1506,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: group.items.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                    separatorBuilder: (_, __) => SizedBox(width: 10),
                     itemBuilder: (context, index) {
                       final item = group.items[index];
                       final isSelected = selectedKey == item.key;
@@ -1399,24 +1516,27 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
                         label: _textStyleLabel(item),
                         child: GestureDetector(
                           onTap: () {
+                            if (!_canFinish) return;
                             setState(() => _expandedColorGroupId = null);
-                            widget.onSelect(item.key);
+                            _apply(item.key);
                           },
                           child: Container(
                             width: 104,
                             padding: const EdgeInsets.fromLTRB(8, 44, 8, 8),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: frame.borderRadius,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: isSelected
-                                    ? SnapFitColors.accent
+                                    ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
                                     : SnapFitColors.overlayStrongOf(context),
                                 width: isSelected ? 2 : 1,
                               ),
                             ),
-                            child: Center(
-                              child: SizedBox(
+                            child: _styleProof(
+                              SizedBox(
                                 width: frame.width * 0.75,
                                 height: frame.height * 0.85,
                                 child: FittedBox(
@@ -1449,62 +1569,38 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       case 'round':
       case 'roundSoft':
         return (
-          width: 54.w,
-          height: 30.h,
+          width: 54,
+          height: 30,
           borderRadius: BorderRadius.circular(999),
         );
       case 'square':
-        return (
-          width: 48.w,
-          height: 32.h,
-          borderRadius: BorderRadius.circular(4.r),
-        );
+        return (width: 48, height: 32, borderRadius: BorderRadius.circular(4));
       case 'bubble':
       case 'bubbleCenter':
       case 'bubbleRight':
       case 'bubbleSquare':
       case 'bubbleSquareCenter':
       case 'bubbleSquareRight':
-        return (
-          width: 56.w,
-          height: 36.h,
-          borderRadius: BorderRadius.circular(14.r),
-        );
+        return (width: 56, height: 36, borderRadius: BorderRadius.circular(14));
       case 'labelOval':
       case 'labelSolid':
         return (
-          width: 52.w,
-          height: 28.h,
+          width: 52,
+          height: 28,
           borderRadius: BorderRadius.circular(999),
         );
       case 'tag':
-        return (
-          width: 46.w,
-          height: 26.h,
-          borderRadius: BorderRadius.circular(8.r),
-        );
+        return (width: 46, height: 26, borderRadius: BorderRadius.circular(8));
       case 'noteSolid':
       case 'noteGrid':
-        return (
-          width: 50.w,
-          height: 34.h,
-          borderRadius: BorderRadius.circular(6.r),
-        );
+        return (width: 50, height: 34, borderRadius: BorderRadius.circular(6));
       case 'tapeStripe':
       case 'tapeDots':
       case 'tapeSolid':
       case 'tapeDouble':
-        return (
-          width: 56.w,
-          height: 28.h,
-          borderRadius: BorderRadius.circular(6.r),
-        );
+        return (width: 56, height: 28, borderRadius: BorderRadius.circular(6));
       default:
-        return (
-          width: 64.w,
-          height: 48.h,
-          borderRadius: BorderRadius.circular(12.r),
-        );
+        return (width: 64, height: 48, borderRadius: BorderRadius.circular(12));
     }
   }
 
@@ -2137,23 +2233,23 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         return _previewNoteCream();
       default:
         // 바텀시트 프리뷰 아이콘은 라이트/다크 모드 모두 회색 계열로 고정
-        return Icon(Icons.text_fields, size: 28.r, color: Colors.black45);
+        return Icon(Icons.text_fields, size: 28, color: Colors.black45);
     }
   }
 
   /// 기본 없음 – 테두리/색 없음
   Widget _previewNone() {
-    return Icon(Icons.text_fields, size: 28.r, color: Colors.black45);
+    return Icon(Icons.text_fields, size: 28, color: Colors.black45);
   }
 
   /// 라운드 – 흰색 pill (바텀시트 디자인)
   Widget _previewRound() {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFFE0E4EC), width: 1),
       ),
     );
@@ -2162,8 +2258,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 기본 – 사각형
   Widget _previewSquare() {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.zero,
@@ -2175,11 +2271,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 기본 – 소프트 필 (그림자 효과)
   Widget _previewRoundSoft() {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.12),
@@ -2198,11 +2294,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
 
   Widget _previewRoundWithColor(Color bg) {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: bg == Colors.white
               ? const Color(0xFFE8EAED)
@@ -2215,8 +2311,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
 
   Widget _previewSquareWithColor(Color bg) {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.zero,
@@ -2232,11 +2328,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
 
   Widget _previewRoundSoftWithColor(Color bg) {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.12),
@@ -2260,8 +2356,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
 
   Widget _previewSoftPill2WithColor(Color bg) {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.zero,
@@ -2284,11 +2380,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 타원 색상 변형 (통일된 pill)
   Widget _previewLabelOvalWithColor(Color bg, Color text) {
     return Container(
-      width: 56.w,
-      height: 26.h,
+      width: 56,
+      height: 26,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -2301,11 +2397,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 채움 색상 변형 (통일된 pill)
   Widget _previewLabelSolidWithColor(Color bg) {
     return Container(
-      width: 64.w,
-      height: 26.h,
+      width: 64,
+      height: 26,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -2313,13 +2409,13 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 태그 – 점선 색상 변형 (통일된 점선 pill)
   Widget _previewTagWithColor(Color borderColor) {
     return SizedBox(
-      width: 56.w,
-      height: 26.h,
+      width: 56,
+      height: 26,
       child: CustomPaint(
         painter: _DashedRectPainter(
           color: borderColor,
           strokeWidth: 1.5,
-          borderRadius: 8.r,
+          borderRadius: 8,
           dashWidth: 4,
           dashSpace: 3,
         ),
@@ -2330,11 +2426,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 아웃라인만 (TODAY 스타일)
   Widget _previewLabelOutline() {
     return Container(
-      width: 52.w,
-      height: 26.h,
+      width: 52,
+      height: 26,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(color: SnapFitColors.accent, width: 1.5),
       ),
     );
@@ -2343,15 +2439,15 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 골드
   Widget _previewLabelGold() {
     return Container(
-      width: 52.w,
-      height: 28.h,
+      width: 52,
+      height: 28,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [const Color(0xFFF5E6C8), const Color(0xFFE8D4A8)],
         ),
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -2359,11 +2455,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 네온
   Widget _previewLabelNeon() {
     return Container(
-      width: 52.w,
-      height: 26.h,
+      width: 52,
+      height: 26,
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFF00E5FF), width: 2),
       ),
     );
@@ -2372,15 +2468,15 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 라벨 – 로즈
   Widget _previewLabelRose() {
     return Container(
-      width: 52.w,
-      height: 28.h,
+      width: 52,
+      height: 28,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [const Color(0xFFF8BBD9), const Color(0xFFF48FB1)],
         ),
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -2388,8 +2484,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 민트
   Widget _previewNoteMint() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFE0F7F0),
         borderRadius: BorderRadius.zero,
@@ -2407,8 +2503,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 라벤더
   Widget _previewNoteLavender() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFF3E8FF),
         borderRadius: BorderRadius.zero,
@@ -2426,8 +2522,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 오렌지
   Widget _previewNoteOrange() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFF0E0),
         borderRadius: BorderRadius.zero,
@@ -2445,8 +2541,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 그레이
   Widget _previewNoteGray() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.zero,
@@ -2464,8 +2560,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 베이지
   Widget _previewNoteBeige() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFF5F0E8),
         borderRadius: BorderRadius.zero,
@@ -2483,11 +2579,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 테이프 도트
   Widget _previewTapeDots() {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFFFE0B2),
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: CustomPaint(
         painter: _PreviewDotsPainter(dotColor: const Color(0xFFFFCC80)),
@@ -2498,11 +2594,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 테이프 도트 색상 변형
   Widget _previewTapeDotsWithColor(Color base, Color dot) {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
         color: base,
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: CustomPaint(painter: _PreviewDotsPainter(dotColor: dot)),
     );
@@ -2521,11 +2617,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 테이프 단색 색상 변형 (크래프트·골드 통일)
   Widget _previewTapeSolidWithColor(Color bg) {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
       ),
     );
   }
@@ -2533,11 +2629,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 테이프 이중 스트라이프
   Widget _previewTapeDouble() {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: CustomPaint(painter: _PreviewDoubleStripePainter()),
     );
@@ -2546,11 +2642,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 테이프 이중 스트라이프 색상 변형
   Widget _previewTapeDoubleWithColor(Color base, Color stripe) {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
         color: base,
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: CustomPaint(
         painter: _PreviewDoubleStripePainter(
@@ -2564,8 +2660,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 하이라이터 노랑
   Widget _previewHighlightYellow() {
     return Container(
-      width: 56.w,
-      height: 24.h,
+      width: 56,
+      height: 24,
       decoration: BoxDecoration(
         color: const Color(0xFFFFEB3B).withOpacity(0.55),
         borderRadius: BorderRadius.zero,
@@ -2576,8 +2672,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 하이라이터 초록
   Widget _previewHighlightGreen() {
     return Container(
-      width: 56.w,
-      height: 24.h,
+      width: 56,
+      height: 24,
       decoration: BoxDecoration(
         color: const Color(0xFFB8E986).withOpacity(0.65),
         borderRadius: BorderRadius.zero,
@@ -2588,8 +2684,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 하이라이터 핑크
   Widget _previewHighlightPink() {
     return Container(
-      width: 56.w,
-      height: 24.h,
+      width: 56,
+      height: 24,
       decoration: BoxDecoration(
         color: const Color(0xFFFFB6C1).withOpacity(0.7),
         borderRadius: BorderRadius.zero,
@@ -2600,11 +2696,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 스탬프 빨강
   Widget _previewStampRed() {
     return Container(
-      width: 52.w,
-      height: 26.h,
+      width: 52,
+      height: 26,
       decoration: BoxDecoration(
         color: const Color(0xFFC62828),
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
       ),
     );
   }
@@ -2612,11 +2708,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 스탬프 파랑
   Widget _previewStampBlue() {
     return Container(
-      width: 52.w,
-      height: 26.h,
+      width: 52,
+      height: 26,
       decoration: BoxDecoration(
         color: const Color(0xFF1565C0),
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
       ),
     );
   }
@@ -2624,11 +2720,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 인용 데코
   Widget _previewQuote() {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         border: Border(left: BorderSide(color: SnapFitColors.accent, width: 4)),
         boxShadow: [
           BoxShadow(
@@ -2644,11 +2740,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 칠판 포인트
   Widget _previewChalkboard() {
     return Container(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFF263238),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF546E7A), width: 1.5),
       ),
     );
@@ -2657,16 +2753,16 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 점선 프레임 캡션
   Widget _previewCaption() {
     return SizedBox(
-      width: 56.w,
-      height: 28.h,
+      width: 56,
+      height: 28,
       child: Stack(
         children: [
           Container(
-            width: 56.w,
-            height: 28.h,
+            width: 56,
+            height: 28,
             decoration: BoxDecoration(
               color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           Positioned.fill(
@@ -2674,7 +2770,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
               painter: _DashedRectPainter(
                 color: const Color(0xFFB0BEC5),
                 strokeWidth: 1.5,
-                borderRadius: 10.r,
+                borderRadius: 10,
                 dashWidth: 5,
                 dashSpace: 4,
               ),
@@ -2688,8 +2784,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 격자 노트
   Widget _previewNoteGrid() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFDE7),
         borderRadius: BorderRadius.zero,
@@ -2703,8 +2799,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 격자 노트 색상 변형
   Widget _previewNoteGridWithColor(Color bg, Color grid) {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.zero),
       child: CustomPaint(painter: _PreviewGridPainter(color: grid)),
     );
@@ -2713,8 +2809,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 골드
   Widget _previewNoteGold() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8E1),
         borderRadius: BorderRadius.zero,
@@ -2725,8 +2821,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 크림
   Widget _previewNoteCream() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBF0),
         borderRadius: BorderRadius.zero,
@@ -2737,8 +2833,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 찢어진 메모지 미리보기 (아래만 톱니 – 종이 뜯은 느낌)
   Widget _previewNoteTornWithColor(Color color) {
     return SizedBox(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       child: ClipPath(
         clipper: _TornNotePreviewClipper(),
         child: Container(
@@ -2760,8 +2856,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 끝짤림 단색 테이프 미리보기 (오른쪽 비스듬 절단)
   Widget _previewTapeTornSolidWithColor(Color color) {
     return SizedBox(
-      width: 54.w,
-      height: 30.h,
+      width: 54,
+      height: 30,
       child: ClipPath(
         clipper: _TapeTornPreviewClipper(),
         child: Container(
@@ -2783,8 +2879,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 꼬리 왼쪽 하단 (가장자리에서 살짝 안쪽)
   Widget _previewBubbleTailLeft() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SpeechBubblePreviewPainter(tailPosition: 0.28),
       ),
@@ -2794,8 +2890,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 꼬리 하단 중앙
   Widget _previewBubbleTailCenter() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SpeechBubblePreviewPainter(tailPosition: 0.5),
       ),
@@ -2805,8 +2901,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 꼬리 하단 오른쪽 (가장자리에서 살짝 안쪽)
   Widget _previewBubbleTailRight() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SpeechBubblePreviewPainter(tailPosition: 0.72),
       ),
@@ -2816,8 +2912,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 사각형, 꼬리 왼쪽
   Widget _previewBubbleSquareLeft() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SquareBubblePreviewPainter(tailPosition: 0.0),
       ),
@@ -2827,8 +2923,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 사각형, 꼬리 가운데
   Widget _previewBubbleSquareCenter() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SquareBubblePreviewPainter(tailPosition: 0.5),
       ),
@@ -2838,8 +2934,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 – 사각형, 꼬리 오른쪽
   Widget _previewBubbleSquareRight() {
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: CustomPaint(
         painter: _SquareBubblePreviewPainter(tailPosition: 1.0),
       ),
@@ -2849,11 +2945,11 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 말풍선 색상 프리뷰 (단순 pill — 그룹 모를 때)
   Widget _previewBubbleColor(Color color) {
     return Container(
-      width: 48.w,
-      height: 28.h,
+      width: 48,
+      height: 28,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Color.lerp(color, Colors.black, 0.1) ?? color,
           width: 1,
@@ -2881,8 +2977,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         : 1.0; // bubbleSquareRight
     final borderColor = Color.lerp(color, Colors.black, 0.12) ?? color;
     return SizedBox(
-      width: 48.w,
-      height: 32.h,
+      width: 48,
+      height: 32,
       child: isSquare
           ? CustomPaint(
               painter: _SquareBubblePreviewPainterWithColor(
@@ -2917,8 +3013,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 – 연한 노랑 + 접힌 모서리
   Widget _previewNoteYellow() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFCE7),
         borderRadius: BorderRadius.zero,
@@ -2937,7 +3033,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
             top: 0,
             left: 0,
             child: CustomPaint(
-              size: Size(16.w, 16.h),
+              size: Size(16, 16),
               painter: _FoldedCornerPainter(color: const Color(0xFFE8E0C0)),
             ),
           ),
@@ -2949,8 +3045,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 – 연한 파랑
   Widget _previewNoteBlue() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFE8F0FF),
         borderRadius: BorderRadius.zero,
@@ -2968,8 +3064,8 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 메모지 – 연한 분홍 + 핀
   Widget _previewNotePink() {
     return Container(
-      width: 52.w,
-      height: 36.h,
+      width: 52,
+      height: 36,
       decoration: BoxDecoration(
         color: const Color(0xFFFFEFF4),
         borderRadius: BorderRadius.zero,
@@ -2984,7 +3080,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
       child: Center(
         child: Icon(
           Icons.push_pin_outlined,
-          size: 18.r,
+          size: 18,
           color: const Color(0xFFE0A0B0),
         ),
       ),
@@ -2994,10 +3090,10 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
   /// 마스킹 테이프 – 사선 스트라이프 색상 변형 (미리보기에서 스트라이프 패턴 표시)
   Widget _previewTapeStripeWithColor(Color baseColor, Color stripeColor) {
     return Container(
-      width: 60.w,
-      height: 28.h,
+      width: 60,
+      height: 28,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -3007,7 +3103,7 @@ class _TextStylePickerSheetState extends State<TextStylePickerSheet> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(4.r),
+        borderRadius: BorderRadius.circular(4),
         child: CustomPaint(
           painter: _StripeTapePainter(
             baseColor: baseColor,
@@ -3067,17 +3163,24 @@ class _TextStyleFullViewScreen extends StatelessWidget {
   final String title;
   final List<_TextStyleItem> items;
   final String? selectedKey;
-  final Widget Function(String) buildPreview;
+  final Widget Function(_TextStyleItem) buildPreview;
   final ValueChanged<String> onSelect;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title, style: const TextStyle(fontSize: 18))),
+    backgroundColor: kIsWeb ? WebPalette.of(context).surface : null,
+    appBar: AppBar(
+      leading: kIsWeb ? IconButton(onPressed: () => Navigator.pop(context), tooltip: '전체 보기 닫기', icon: const Icon(Icons.close, size: 20)) : null,
+      title: Text(title, style: const TextStyle(fontSize: 18)),
+    ),
     body: SafeArea(
       child: CatalogFavoriteGrid<_TextStyleItem>(
         items: items,
         keyOf: (s) => CatalogFavoriteKeys.textStyle(s.key),
         labelOf: _textStyleLabel,
-        mainAxisExtent: 168,
+        mainAxisExtent:
+            168 +
+            (MediaQuery.textScalerOf(context).scale(11) / 11 - 1).clamp(0, 2) *
+                36,
         itemBuilder: (context, item) => Material(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           shape: RoundedRectangleBorder(
@@ -3095,15 +3198,18 @@ class _TextStyleFullViewScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: buildPreview(item.previewType),
+                    child: _styleProof(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: buildPreview(item),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _textStyleLabel(item),
                     maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 11),
                   ),

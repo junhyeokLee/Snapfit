@@ -15,6 +15,7 @@ import 'prose_study_preview.dart';
 import 'luminous_edition_preview.dart';
 import 'heirloom_preview.dart';
 import 'concept_volume_preview.dart';
+import 'garden_letters_preview.dart';
 import 'luminous_materials.dart';
 import 'package:snap_fit/features/point_shop/presentation/point_shop_access.dart';
 import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
@@ -41,6 +42,7 @@ class TemplatePreviewWorkbench extends StatelessWidget {
           : Uri.base.queryParameters['frames'] == 'true'
           ? '/frames'
           : switch (Uri.base.queryParameters['collection']) {
+              'garden-letters' => '/garden-letters',
               'wind-atlas' => '/wind-atlas',
               'our-prose' => '/our-prose',
               'luminous-edition' => '/luminous-edition',
@@ -54,6 +56,7 @@ class TemplatePreviewWorkbench extends StatelessWidget {
               _ => '/',
             },
       routes: {
+        '/garden-letters': (_) => const GardenLettersPreview(),
         '/premium-studies': (_) => const PremiumStudiesCatalog(),
         for (final volume in ConceptVolume.values)
           '/${volume.id}': (_) => ConceptVolumePreview(volume: volume),

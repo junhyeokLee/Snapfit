@@ -1,11 +1,16 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_style.dart';
+import '../../../../../shared/web/web_design.dart';
+import '../../../domain/entities/album.dart';
+import '../home/home_album_cover_thumbnail.dart';
+import '../web/web_saved_album_artwork.dart';
 
-// ── 제작확정 완료 화면 ────────────────────────────────────────────
-class AlbumFrozenScreen extends StatefulWidget {
-  final dynamic album;
+class AlbumFrozenScreen extends StatelessWidget {
+  final Album? album;
   final VoidCallback onClose;
   final VoidCallback onOrder;
 
@@ -17,380 +22,229 @@ class AlbumFrozenScreen extends StatefulWidget {
   });
 
   @override
-  State<AlbumFrozenScreen> createState() => _AlbumFrozenScreenState();
-}
-
-class _AlbumFrozenScreenState extends State<AlbumFrozenScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _fadeIn;
-  late final Animation<double> _slideUp;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _slideUp = Tween<double>(
-      begin: 40,
-      end: 0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return _buildWeb(context);
     return Scaffold(
-      backgroundColor: SnapFitColors.freezeBackground,
-      body: Stack(
-        children: [
-          // 배경 별빛 파티클
-          ..._buildStars(),
-
-          SafeArea(
-            child: Column(
-              children: [
-                // X 닫기 버튼
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 12.h,
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: widget.onClose,
-                      child: Container(
-                        width: 40.w,
-                        height: 40.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 20.sp,
-                        ),
+      backgroundColor: SnapFitColors.backgroundOf(context),
+      appBar: ExperienceHeader(
+        title: '앨범 완성',
+        themeAware: true,
+        onBack: onClose,
+        showNotifications: false,
+      ),
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, bounds) {
+            final wide =
+                bounds.maxWidth >= 520 && bounds.maxWidth > bounds.maxHeight;
+            final details = _details(context);
+            if (wide) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: LayoutBuilder(
+                        builder: (context, stage) =>
+                            _cover(stage.maxHeight, stage.maxWidth),
                       ),
                     ),
                   ),
-                ),
-
-                const Spacer(),
-
-                // 블러 앨범 카드 + FREEZE 배지
-                FadeTransition(
-                  opacity: _fadeIn,
-                  child: AnimatedBuilder(
-                    animation: _slideUp,
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(0, _slideUp.value),
-                      child: child,
-                    ),
-                    child: _buildAlbumCard(context),
-                  ),
-                ),
-
-                SizedBox(height: 48.h),
-
-                // 텍스트
-                FadeTransition(
-                  opacity: _fadeIn,
-                  child: AnimatedBuilder(
-                    animation: _slideUp,
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(0, _slideUp.value * 1.5),
-                      child: child,
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '앨범이 완성되었습니다!',
-                          style: TextStyle(
-                            fontSize: 26.sp,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        Text(
-                          '인화 주문 결제는 준비 중입니다.\n앨범은 계속 수정할 수 있습니다.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.white.withValues(alpha: 0.6),
-                            height: 1.6,
-                          ),
-                        ),
-                      ],
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 32, 24),
+                      child: details,
                     ),
                   ),
-                ),
-
-                const Spacer(),
-
-                // 버튼들
-                FadeTransition(
-                  opacity: _fadeIn,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      children: [
-                        // 주문하러가기 버튼
-                        GestureDetector(
-                          onTap: widget.onOrder,
-                          child: Container(
-                            width: double.infinity,
-                            height: 56.h,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  SnapFitColors.freezeAccent,
-                                  const Color(0xFF00B8D4), // Cyan-ish sub color
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(28.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: SnapFitColors.freezeGlow.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '인화 주문 안내',
-                                  style: TextStyle(
-                                    fontSize: 17.sp,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                SizedBox(width: 8.w),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  color: Colors.white,
-                                  size: 20.sp,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        // 앨범 보관함으로 버튼
-                        GestureDetector(
-                          onTap: widget.onClose,
-                          child: Container(
-                            width: double.infinity,
-                            height: 52.h,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(26.r),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.12),
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '앨범 보관함으로',
-                                style: TextStyle(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 24.h),
-                      ],
+                ],
+              );
+            }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: math.min(320, bounds.maxHeight * .44),
+                    child: Center(
+                      child: _cover(
+                        math.min(300, bounds.maxHeight * .42),
+                        bounds.maxWidth - 64,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
+                  const SizedBox(height: 28),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 460),
+                    child: details,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildAlbumCard(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.topRight,
-      children: [
-        // 블러 카드
-        Container(
-          width: 220.w,
-          height: 280.w,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
+  Widget _buildWeb(BuildContext context) => SnapFitWebShell(
+    title: '앨범 완성',
+    showNavigation: false,
+    actions: [TextButton.icon(
+      onPressed: onClose,
+      icon: const Icon(Icons.close, size: 17),
+      label: const Text('닫기'),
+    )],
+    child: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const WebPageHeading(
+            eyebrow: 'ALBUM COMPLETE',
+            title: '완성된 앨범을 확인하세요',
+            description: '앨범은 보관하고 계속 수정할 수 있습니다. 책 주문은 다음 단계에서 준비합니다.',
+          ),
+          const SizedBox(height: 30),
+          LayoutBuilder(builder: (context, box) {
+            final preview = WebSurface(
+              child: SizedBox(
+                height: 380,
+                child: album == null
+                    ? Center(child: Icon(Icons.auto_stories_outlined,
+                        size: 42, color: WebPalette.of(context).muted))
+                    : Center(child: WebSavedAlbumArtwork(album: album!)),
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20.r),
-            child: Stack(
-              children: [
-                // 흐림 처리된 내부
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        SnapFitColors.freezeSurface,
-                        SnapFitColors.freezeSurfaceDark,
-                      ],
-                    ),
+            );
+            final details = WebSurface(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(children: [
+                    Icon(Icons.check_circle_outline, size: 20, color: WebPalette.of(context).brandInk),
+                    SizedBox(width: 10), Text('앨범 완성', style: TextStyle(
+                      fontSize: 13, color: WebPalette.of(context).brandInk, fontWeight: FontWeight.w600,
+                    )),
+                  ]),
+                  const SizedBox(height: 22),
+                  Text(album?.title.isNotEmpty == true ? album!.title : '스냅핏 앨범',
+                    style: TextStyle(color: WebPalette.of(context).ink,
+                      fontSize: 25, fontWeight: FontWeight.w700)),
+                  if (album != null) ...[
+                    const SizedBox(height: 12),
+                    Text(album!.physicalCoverSize.displayName,
+                      style: TextStyle(color: WebPalette.of(context).muted, fontSize: 13)),
+                  ],
+                  const SizedBox(height: 24),
+                  Divider(height: 1, color: WebPalette.of(context).line),
+                  const SizedBox(height: 24),
+                  Text('책으로 간직하기', style: TextStyle(
+                    color: WebPalette.of(context).ink, fontSize: 17, fontWeight: FontWeight.w700,
+                  )),
+                  const SizedBox(height: 10),
+                  Text('책의 전체 배치와 제작 금액을 확인한 뒤 배송지를 입력할 수 있습니다.',
+                    style: TextStyle(color: WebPalette.of(context).muted, fontSize: 14, height: 1.7)),
+                  const SizedBox(height: 26),
+                  FilledButton.icon(
+                    onPressed: onOrder,
+                    icon: const Icon(Icons.auto_stories_outlined, size: 18),
+                    label: const Text('책 주문 준비하기'),
                   ),
-                ),
-                // 내부 라인 효과 (책 페이지 느낌)
-                Positioned(
-                  top: 20.h,
-                  left: 20.w,
-                  right: 20.w,
-                  child: Container(
-                    height: 140.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 40.h,
-                  left: 20.w,
-                  right: 60.w,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 8.h,
-                        width: 80.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Container(
-                        height: 6.h,
-                        width: 120.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(3.r),
-                        ),
-                      ),
-                      SizedBox(height: 6.h),
-                      Container(
-                        height: 6.h,
-                        width: 90.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(3.r),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // FREEZE 배지
-        Positioned(
-          top: -12.h,
-          right: -12.w,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  SnapFitColors.freezeAccent,
-                  SnapFitColors.freezeAccentDark,
+                  const SizedBox(height: 12),
+                  TextButton(onPressed: onClose, child: const Text('완료')),
                 ],
               ),
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: SnapFitColors.freezeGlow.withValues(alpha: 0.5),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.ac_unit_rounded, color: Colors.white, size: 14.sp),
-                SizedBox(width: 4.w),
-                Text(
-                  'FREEZE',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+            );
+            if (box.maxWidth < 900) return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [preview, const SizedBox(height: 22), details],
+            );
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Expanded(child: preview), const SizedBox(width: 28),
+                Expanded(child: details)],
+            );
+          }),
+          const SizedBox(height: 32),
+        ],
+      ),
+    ),
+  );
+
+  Widget _cover(double height, double width) {
+    final value = album;
+    if (value == null) {
+      return const Center(child: Icon(Icons.auto_stories_outlined, size: 48));
+    }
+    return Center(
+      child: HomeAlbumCoverThumbnail(
+        key: const ValueKey('completed-album-cover'),
+        album: value,
+        height: math.max(1, height),
+        maxWidth: math.max(1, width),
+        showBookDepth: true,
+        shadowScaleMultiplier: .6,
+      ),
     );
   }
 
-  /// 배경 별빛 파티클 생성
-  List<Widget> _buildStars() {
-    final rng = math.Random(42);
-    return List.generate(18, (i) {
-      final x = rng.nextDouble();
-      final y = rng.nextDouble();
-      final size = rng.nextDouble() * 3 + 1.5;
-      final opacity = rng.nextDouble() * 0.5 + 0.2;
-      return Positioned(
-        left: x * MediaQuery.sizeOf(context).width,
-        top: y * MediaQuery.sizeOf(context).height,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: opacity),
-            shape: BoxShape.circle,
+  Widget _details(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            size: 20,
+            color: ExperienceFormStyle.selectionInk(context),
           ),
+          const SizedBox(width: 8),
+          Text(
+            '완성된 앨범',
+            style: ExperienceFormStyle.text(context, 13, secondary: true),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Text(
+        '앨범이 완성되었습니다!',
+        style: ExperienceFormStyle.text(context, 26, weight: FontWeight.w600),
+      ),
+      if (album?.title.isNotEmpty == true) ...[
+        const SizedBox(height: 8),
+        Text(album!.title, style: ExperienceFormStyle.text(context, 16)),
+      ],
+      const SizedBox(height: 12),
+      Text(
+        '소중한 기록을 앨범에 담았어요.\n앨범은 보관하고 계속 수정할 수 있습니다.',
+        style: ExperienceFormStyle.text(context, 14, secondary: true),
+      ),
+      const SizedBox(height: 28),
+      SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: onOrder,
+          style: ExperienceFormStyle.primary(context),
+          icon: const Icon(Icons.auto_stories_outlined, size: 19),
+          label: const Text('책으로 주문 준비하기'),
         ),
-      );
-    });
-  }
+      ),
+      const SizedBox(height: 10),
+      Text(
+        '책의 배치와 제작 금액을 확인한 뒤 배송지를 입력해요.',
+        style: ExperienceFormStyle.text(context, 12, secondary: true),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: TextButton(
+          onPressed: onClose,
+          style: TextButton.styleFrom(
+            foregroundColor: ExperienceFormStyle.ink(context),
+            minimumSize: const Size(0, 48),
+          ),
+          child: const Text('완료'),
+        ),
+      ),
+    ],
+  );
 }

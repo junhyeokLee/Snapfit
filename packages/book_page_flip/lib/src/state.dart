@@ -23,6 +23,8 @@ class _BookFlipState extends State<BookFlip>
   int _pendingDir = 0;
   int _lastDragDir = 0;
   double _pendingGrabV = 0.5;
+  double _dragStartT = 0;
+  int _dragStartDir = 0;
   int _bootGen =
       0; // bumped per _boot; a stale boot aborts at its post-await check
 
@@ -375,11 +377,12 @@ class _BookFlipState extends State<BookFlip>
     if (_scene.w <= 0 || _scene.h <= 0) return;
     _ctl.stop();
     _dragging = true;
+    _dragStartT = _scene.active ? _scene.t : 0;
+    _dragStartDir = _scene.active ? _scene.dir : 0;
     if (_scene.active) {
       // RE-GRAB mid-flip: continue from the CURRENT position. Preserve dir, the
       // page map, AND grabV (changing grabV mid-flip would jolt the per-row tilt).
       // Resetting t here would teleport the leaf back to flat, which this prevents.
-      _scene.t = _ctl.value.clamp(0.0, 1.0);
       _render();
       return;
     }
@@ -436,6 +439,7 @@ class _BookFlipState extends State<BookFlip>
     if (_phase.value != _BootPhase.ready || _scene.w <= 0) return;
 
     _dragging = true;
+    _ctl.stop();
     _armed = false;
     _lastDragDir = dir;
     if (!_scene.active || _scene.dir != dir) {
@@ -456,7 +460,10 @@ class _BookFlipState extends State<BookFlip>
     }
 
     final pageDragWidth = math.max(1.0, _scene.w * 0.5);
-    var raw = (distance.abs() / pageDragWidth).clamp(0.0, 1.0);
+    final grabV = local.dy / _scene.h;
+    _scene.grabV = grabV.isFinite ? grabV.clamp(0.0, 1.0) : 0.5;
+    final startT = _dragStartDir == dir ? _dragStartT : 0.0;
+    var raw = (startT + distance / pageDragWidth).clamp(0.0, 1.0);
     if (_atBoundary) {
       raw = boundaryResist(raw);
     }
@@ -522,7 +529,7 @@ class _BookFlipState extends State<BookFlip>
   // never freezes mid-turn; an armed-but-unmoved press just disarms.
   void _onDragCancel() {
     if (!_dragging) return;
-    _onDragEnd(0.0);
+    _onDragEnd(0.0, forceCommit: false);
   }
 
   // The spread's natural width÷height, read straight from the input images (known

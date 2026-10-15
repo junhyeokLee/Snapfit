@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../../../config/env.dart';
@@ -20,6 +21,8 @@ import '../repositories/supabase_album_repository.dart';
 import '../repositories/supabase_album_member_repository.dart';
 import '../repositories/gallery_repository_impl.dart';
 import 'storage_service.dart';
+import '../gallery/browser_gallery_repository.dart';
+import '../gallery/browser_photo_picker.dart';
 
 final albumRepositoryProvider = Provider<AlbumRepository>((ref) {
   final tokenStorage = ref.read(tokenStorageProvider);
@@ -35,6 +38,13 @@ final albumMemberRepositoryProvider = Provider<AlbumMemberRepository>((ref) {
 });
 
 final galleryRepositoryProvider = Provider<GalleryRepository>((ref) {
+  if (kIsWeb) {
+    final client = ref.read(supabaseClientProvider);
+    return BrowserGalleryRepository(
+      currentOwner: () => client.auth.currentUser?.id,
+      selectFiles: () => pickBrowserPhotoFiles(),
+    );
+  }
   return GalleryRepositoryImpl();
 });
 

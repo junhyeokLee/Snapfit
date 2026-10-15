@@ -26,7 +26,16 @@ export type TemplateDesign = {
   rationale: string;
   aspect: TemplateBrief["aspect"];
   printProduct?: TemplateBrief["printProduct"];
+  layoutExpansion?: LayoutExpansion;
   pages: { background: string; purpose: string; elements: DesignElement[] }[];
+};
+
+/** New books use 20..80 even interiors; old 4..16 drafts remain readable. */
+export const MAX_AI_DESIGN_PAGES = 16;
+export type LayoutExpansion = {
+  strategy: "repeat_inner_layouts_v1";
+  sourcePageCount: number;
+  finalPageCount: number;
 };
 
 export function object(value: unknown): Record<string, unknown> {
@@ -62,8 +71,9 @@ export function color(value: unknown): string {
 
 export function parseTemplateBrief(value: unknown): TemplateBrief {
   const raw = object(value);
-  const pageCount = finite(raw.pageCount, 4, 16);
-  if (!Number.isInteger(pageCount) || pageCount % 2 !== 0) {
+  const pageCount = raw.pageCount;
+  if (typeof pageCount !== "number" || !Number.isInteger(pageCount) ||
+      pageCount < 4 || pageCount > 80 || pageCount === 18 || pageCount % 2 !== 0) {
     throw new Error("template_brief_invalid_page_count");
   }
   if (!["portrait", "square", "landscape"].includes(String(raw.aspect))) {

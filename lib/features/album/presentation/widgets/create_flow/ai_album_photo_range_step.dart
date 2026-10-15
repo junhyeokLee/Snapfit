@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -22,6 +24,7 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return _webRanges(context);
     final isDark = SnapFitColors.isDark(context);
     final background = isDark
         ? const Color(0xFF111111)
@@ -98,6 +101,43 @@ class AiAlbumPhotoRangeStep extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _webRanges(BuildContext context) {
+    Widget option(String title, String detail, IconData icon, AiPhotoRange range) => Material(
+      color: WebPalette.of(context).surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: WebPalette.of(context).line)),
+      child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => onRangeSelected(range), child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 26, color: WebPalette.of(context).brandInk),
+          const SizedBox(width: 18),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text(detail, style: TextStyle(fontSize: 13, height: 1.7, color: WebPalette.of(context).muted)),
+          ])),
+          Icon(Icons.arrow_forward, size: 20, color: WebPalette.of(context).brandInk),
+        ]),
+      )),
+    );
+    return ListView(padding: const EdgeInsets.all(28), children: [
+      const Text('참고할 사진 범위', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+      const SizedBox(height: 10),
+      Text('가져온 사진에서 참고할 범위를 선택하세요. 제안된 사진은 다음 단계에서 확인하고 바꿀 수 있습니다.', style: TextStyle(fontSize: 14, height: 1.7, color: WebPalette.of(context).muted)),
+      const SizedBox(height: 24),
+      option('최근 30일', '최근 분위기와 촬영 흐름을 참고해 템플릿을 준비합니다.', Icons.calendar_month_outlined, AiPhotoRange.recent30Days),
+      const SizedBox(height: 16),
+      option('허용한 사진 전체', '앱에서 접근을 허용한 사진 흐름을 참고해 슬롯 구성을 준비합니다.', Icons.photo_library_outlined, AiPhotoRange.limitedLibrary),
+      const SizedBox(height: 24),
+      WebSurface(child: Text(usesAdvancedServerAnalysis
+          ? '선택한 사진의 작은 미리보기 이미지를 서버에서 참고합니다.'
+          : usesServerDraftProvider
+          ? '선택한 사진의 날짜·크기 같은 정보를 서버에서 참고합니다. 사진은 자동 확정되지 않습니다.'
+          : '사진 정보로 슬롯 구성을 제안합니다. 선택한 사진과 배치는 다음 단계에서 확인하세요.', style: TextStyle(fontSize: 13, height: 1.7, color: WebPalette.of(context).muted))),
+      const SizedBox(height: 16),
+      Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: onBack, icon: const Icon(Icons.arrow_back, size: 18), label: const Text('이전'))),
+    ]);
   }
 }
 

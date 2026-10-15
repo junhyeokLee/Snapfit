@@ -2,6 +2,41 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/album/service/album_invite_service.dart';
 
 void main() {
+  test('normalizes both web and existing app invite links', () {
+    expect(
+      AlbumInviteService.normalizeInviteLink(
+        ' https://snapfit.example/invite/a ',
+      ),
+      'https://snapfit.example/invite/a',
+    );
+    expect(
+      AlbumInviteService.normalizeInviteLink('snapfit://invite?token=abc'),
+      'snapfit://invite?token=abc',
+    );
+    for (final link in [
+      '',
+      'not a link',
+      '/invite/a',
+      'javascript:alert(1)',
+      'https://',
+      'snapfit://invite',
+      'snapfit://invite?token=',
+      'snapfit://auth?token=abc',
+    ]) {
+      expect(
+        () => AlbumInviteService.normalizeInviteLink(link),
+        throwsFormatException,
+      );
+    }
+  });
+
+  test('owner-only invitation failures do not claim an expired login', () {
+    expect(
+      AlbumInviteService.inviteErrorMessage(Exception('forbidden')),
+      '앨범 소유자만 멤버를 초대할 수 있어요.',
+    );
+  });
+
   test('inviteErrorMessage does not leak raw auth or network errors', () {
     expect(
       AlbumInviteService.inviteErrorMessage(

@@ -331,6 +331,7 @@ class _BookRenderer {
       ..shader = _atlasShaderFor(atlas);
     // drawVertices blendMode = modulate: result = texture(src) * vertexColor(dst).
     canvas.drawVertices(vertsMain, BlendMode.modulate, mainPaint);
+    if (!scene.effects.gloss && !scene.effects.grain) return;
 
     // L5 — additive sheen, composited as ONE unit through a saveLayer. Drawn
     // directly with BlendMode.plus, the depth-sorted soup ADDS the BACK face's glint
@@ -463,10 +464,10 @@ class _BookRenderer {
     // Restricting to the source half keeps the shadow entirely under the leaf.
     if (dir > 0) {
       // Forward flip: leaf moves right→left; source half is the right side.
-      canvas.clipRect(Rect.fromLTRB(spineX, -pad, w + pad, h + pad));
+      canvas.clipRect(Rect.fromLTRB(spineX, 0, w, h));
     } else {
       // Backward flip: leaf moves left→right; source half is the left side.
-      canvas.clipRect(Rect.fromLTRB(-pad, -pad, spineX, h + pad));
+      canvas.clipRect(Rect.fromLTRB(0, 0, spineX, h));
     }
     canvas.saveLayer(Rect.fromLTRB(-pad, -pad, w + pad, h + pad), layer);
     canvas.drawVertices(

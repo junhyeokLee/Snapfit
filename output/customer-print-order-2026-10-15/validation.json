@@ -1,0 +1,67 @@
+{
+  "customerJourney": {
+    "files": 9,
+    "uniqueTests": 149,
+    "initialPass": 146,
+    "initialFail": 3,
+    "recheckedFiles": 3,
+    "recheckPass": 36,
+    "recheckFail": 0,
+    "finalPass": 149,
+    "skipped": 0,
+    "note": "Only failed files rerun after correcting test fixtures; other 113 tests already passed.",
+    "logs": [
+      "customer-journey-tests.txt",
+      "customer-journey-recheck.txt"
+    ]
+  },
+  "checkoutAndFileRecovery": {
+    "tests": 79,
+    "passed": 79,
+    "skipped": 0,
+    "note": "Overlaps the customer journey group; do not add counts.",
+    "evidence": "checkout-tests.json"
+  },
+  "orderLinkAndStoredInvoiceRoutes": {
+    "unitTests": 9,
+    "startupWidgetTests": 2,
+    "passed": 11,
+    "paidOrOrderMutation": false
+  },
+  "staticAnalysis": {
+    "rootAndHistoryItems": 13,
+    "rootAndHistoryIssues": 0,
+    "checkoutItems": 10,
+    "checkoutIssues": 0
+  },
+  "backend": {
+    "tests": 145,
+    "passed": 145,
+    "skipped": 0,
+    "evidence": "backend-tests.json"
+  },
+  "livePaymentExecuted": false,
+  "newRealOrderCreated": false,
+  "liveGatesOpened": false,
+  "newPaidInfrastructureCreated": false,
+  "verificationBoundary": "General customer behavior tested locally with synthetic provider results; deployed UI stays PREPARING. Actual prior payment/order proof is admin TEST and supplier DEV only.",
+  "clientSourceSha256": {
+    "lib/main.dart": "06aa0672c2f1255c29e0af4371f667e7ea2db691f20f6703c13746f43a2838e3",
+    "lib/core/navigation/app_root_route_observer.dart": "d1c6197c4a9ff7b40096247bab49fe805c68247c241ac235be33eaeddac98970",
+    "lib/features/splash/presentation/views/splash_screen.dart": "a1e0de51a34cffd9d74b7c321b446ff60f4dbaff8bebaee69cb24c2bd2ad6950",
+    "lib/features/profile/domain/order_detail_navigation.dart": "d3854ee2bd0eb60421d706b645ac8f887336e740b426b6c8ff95619712c60d5f",
+    "lib/features/profile/domain/order_visibility_owner.dart": "8adecd7f5620302d5e749059f8bbf1f886b274fe1b47eb003a640f0ec3f80aa2",
+    "lib/features/profile/presentation/views/order_history_screen.dart": "33c16a6eade617bd46484372f3a245246fe39ea89aae55f9adb50871ebaca706",
+    "lib/features/profile/presentation/views/print_order_request_screen.dart": "db2b7809a14bfefaaeeea392aee01d5f21c3415f0baa6e6fb23db674626bf6be",
+    "lib/features/profile/data/order_repository.dart": "9613d806a093c03bb0238f81dc3afb70b1ee063847b222f27eb0d04c143120d8",
+    "lib/features/profile/domain/entities/order_history_item.dart": "ba830fa6bd5b915e6f54a97c777a045bd6a21782589245adeac3dbdc8eda019d",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "e83d752c907ba1a6b34bb77520a9f0013f47d8066ca32a3ee34e36bd9fe6dd91",
+    "lib/features/album/presentation/views/print_order_complete_screen.dart": "f94b3c2e589e61602b6558bd22ef4709af161755e5778d2e8e76d3c63ea80a7f",
+    "lib/features/profile/data/print_payment_service.dart": "11dcb4d8da3eea16753e248b3db63473e5911f34d627bb86076159f801f6a78e",
+    "lib/features/profile/data/print_prepayment_package_service.dart": "8d1639c173f61eb49cbbc698cf68538f31e8dbd1160e9909c6430bfb118753f9",
+    "lib/features/profile/domain/print_checkout.dart": "96f7e58c4be314f781c7f20fc8007f7dafb273fdecbbb4936b7814703bec150a"
+  },
+  "releaseBuildPassed": true,
+  "buildEvidence": "web-build.json",
+  "startupRouteMarkerRecheckPassed": true
+}

@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../web/web_design.dart';
 import 'catalog_favorite_widgets.dart';
 import 'no_glow.dart';
 
@@ -31,8 +33,44 @@ class FontPickerListState extends State<FontPickerList> {
         onlyFavorites: _favoritesOnly,
       );
       final colors = Theme.of(context).colorScheme;
+      if (kIsWeb) {
+        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Align(alignment: Alignment.centerLeft, child: FilterChip(
+            selected: _favoritesOnly,
+            label: const Text('즐겨찾는 글꼴'),
+            avatar: const Icon(Icons.star_outline, size: 16),
+            onSelected: (value) => setState(() => _favoritesOnly = value),
+          )),
+          const SizedBox(height: 10),
+          if (families.isEmpty)
+            TextButton(onPressed: () => setState(() => _favoritesOnly = false), child: const Text('즐겨찾는 폰트 없음 · 전체 보기'))
+          else SizedBox(height: 250, child: ListView.separated(
+            controller: widget.controller,
+            itemCount: families.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (itemContext, index) {
+              final family = families[index];
+              final selected = family == widget.current;
+              return Material(
+                key: ValueKey(family),
+                color: selected ? WebPalette.of(context).softBrand : WebPalette.of(context).surface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: selected ? WebPalette.of(context).brandInk : WebPalette.of(context).line)),
+                child: ListTile(
+                  selected: selected,
+                  onTap: () => widget.onPick(family),
+                  title: Text(family, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: family, fontSize: 14, color: WebPalette.of(context).ink)),
+                  trailing: CatalogFavoriteButton(itemKey: CatalogFavoriteKeys.font(family), label: family),
+                ),
+              );
+            },
+          )),
+        ]);
+      }
       return SizedBox(
-        height: 68,
+        height:
+            68 +
+            (MediaQuery.textScalerOf(context).scale(12) / 12 - 1).clamp(0, 2) *
+                40,
         child: Row(
           children: [
             IconButton(

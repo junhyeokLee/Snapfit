@@ -4,6 +4,12 @@ import { assertPrintOrder, calculateContribution, orderPrintProduct, printCoverT
 
 type OrderDatabase = any
 
+export function assertManualPrintOrder(order: OrderRow) {
+  if (order.checkout_flow === 'PORTONE_V2_V1') {
+    throw new OrderPaymentError('automatic_fulfillment_required', 409)
+  }
+}
+
 export async function loadOrder(supabase: OrderDatabase, orderId: string): Promise<OrderRow> {
   const { data, error } = await supabase.from('orders').select('*').eq('order_id', orderId).maybeSingle()
   if (error) throw error
@@ -24,6 +30,7 @@ export async function withPrintOperations(supabase: OrderDatabase, order: OrderR
 export async function prepareVerifiedOrder(
   supabase: OrderDatabase, order: OrderRow, builder = buildPrintPackage,
 ): Promise<OrderRow> {
+  assertManualPrintOrder(order)
   assertExistingVerifiedPayment(order)
   if (['IN_PRODUCTION', 'PRINTING', 'SHIPPING', 'DELIVERED'].includes(String(order.status))) return order
   if (order.status !== 'PAYMENT_COMPLETED') throw new OrderPaymentError('order_not_ready_for_print', 409)
@@ -56,6 +63,7 @@ export async function prepareVerifiedOrder(
 export async function advanceVerifiedOrder(
   supabase: OrderDatabase, order: OrderRow, action: string, body: Record<string, unknown>,
 ): Promise<OrderRow> {
+  assertManualPrintOrder(order)
   if (action === 'preparePrintPackage') return prepareVerifiedOrder(supabase, order)
   assertExistingVerifiedPayment(order)
   const now = new Date().toISOString()

@@ -7,6 +7,7 @@ import {
   shortText,
   templateCanvasHeight,
   type TemplateBrief,
+  type LayoutExpansion,
 } from "./template-design.ts";
 
 export type TypeRole = keyof typeof contract.roles;
@@ -44,6 +45,7 @@ export type DirectedTemplateDesign = {
   rationale: string;
   aspect: TemplateBrief["aspect"];
   printProduct?: TemplateBrief["printProduct"];
+  layoutExpansion?: LayoutExpansion;
   artDirection: ArtDirection;
   pages: {
     role: PageRole;

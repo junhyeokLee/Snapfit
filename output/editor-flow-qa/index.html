@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snapfit 사진 선택 · 편집 흐름 검증</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif; color: #182724; background: #f4f7f6; letter-spacing: 0; }
+    header { background: #fff; border-bottom: 1px solid #dce5e2; padding: 28px 24px 20px; }
+    .inner, main { max-width: 1120px; margin: auto; }
+    h1 { font-size: 24px; font-weight: 650; margin: 0 0 10px; }
+    p { font-size: 13px; color: #526560; line-height: 1.7; margin: 0; }
+    nav { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin-top: 20px; }
+    label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+    select { font: inherit; font-size: 14px; padding: 10px 32px 10px 12px; border: 1px solid #bccdc8; border-radius: 6px; background: #fff; color: #182724; min-height: 44px; max-width: 100%; }
+    select:focus-visible { outline: 2px solid #007e90; outline-offset: 3px; }
+    main { padding: 24px; }
+    .screens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+    figure { margin: 0; text-align: center; min-width: 0; }
+    figcaption { font-size: 13px; font-weight: 600; margin: 0 0 12px; }
+    img { display: block; max-width: 100%; height: auto; margin: auto; border: 1px solid #d7e0dd; border-radius: 6px; background: #fff; }
+    .portrait img { width: min(100%, var(--screen-width, 390px)); }
+    .landscape { grid-template-columns: minmax(0, 1fr); }
+    .landscape img { width: min(100%, var(--screen-width, 844px)); }
+    .note { margin: 24px 0; border-top: 1px solid #dce5e2; padding-top: 16px; }
+    a { color: #007e90; }
+    @media (max-width: 620px) { .screens { grid-template-columns: minmax(0, 1fr); } header, main { padding: 20px 16px; } h1 { font-size: 22px; } }
+  </style>
+</head>
+<body>
+  <header><div class="inner">
+    <h1>Snapfit 제작 · 편집 흐름</h1>
+    <p>앱의 실제 Flutter 위젯을 테스트 데이터로 렌더링한 화면입니다. 실제 기기 캡처는 아닙니다.</p>
+    <p>생성부터 자유 편집까지 이어 만들기를 연결했습니다. 편집 중 임시 저장, 저장 실패·복원과 앨범 초대의 보내기·받기 화면을 확인할 수 있습니다.</p>
+    <nav aria-label="검증 화면 선택">
+      <label>화면<select id="screen">
+        <option value="editor-pages" selected>편집 · 현재 쪽과 페이지 추가·삭제</option>
+        <option value="editor-layers">편집 · 사진·문구·장식 레이어</option>
+        <option value="creation-book-preview">새 제작 미리보기 · 같은 책등과 재질</option>
+        <option value="creation-book-inner">새 제작 미리보기 · 내지</option>
+        <option value="creation-book-setup">앨범 설정 · 사진 추가 전</option>
+        <option value="creation-book-fill">사진 채우기 · 표지</option>
+        <option value="creation-book-fill-inner">사진 채우기 · 펼침면과 한 쪽</option>
+        <option value="creation-book-review">전체 확인 · 같은 앨범 비율</option>
+        <option value="creation-book-missing">빈 사진 있는 쪽 · 바로 보완</option>
+        <option value="gallery">최신순 · 여러 사진 선택</option>
+        <option value="albums">사진첩 · 대표 사진과 장수</option>
+        <option value="selected">선택한 사진 모아보기</option>
+        <option value="photo-tray">선택한 사진 보관함</option>
+        <option value="photo-filled">사진 직접 배치</option>
+        <option value="photo-crop">프레임을 유지하는 사진 구도 조정</option>
+        <option value="photo-next-empty">다음 빈 자리 · 페이지 완성 상태</option>
+        <option value="photo-history">사진 채우기 · 실행 취소 · 사진 보관함</option>
+        <option value="creation-review">전체 앨범 확인 · 빈 자리 · 페이지로 돌아가기</option>
+        <option value="creation-workspace">생성 작업 공간 · 임시 저장</option>
+        <option value="creation-cover">표지 편집 · 전체 확인 연결</option>
+        <option value="creation-draft-exit">임시 저장 후 나가기 · 작업 유지</option>
+        <option value="creation-home-resume">홈 · 이어 만들기</option>
+        <option value="editor-draft-workspace">자유 편집 · 기기 임시 저장</option>
+        <option value="editor-draft-exit">자유 편집 · 임시 저장 후 나가기</option>
+        <option value="invite-ready">앨범 초대 · 권한과 공유</option>
+        <option value="invite-loading">앨범 초대 · 링크 준비 중</option>
+        <option value="invite-error">앨범 초대 · 연결 실패와 재시도</option>
+        <option value="invite-accept">초대받기 · 앨범과 참여 권한 확인</option>
+        <option value="invite-accept-loading">초대받기 · 확인 중</option>
+        <option value="invite-accept-expired">초대받기 · 만료된 링크</option>
+        <option value="invite-accept-joined">초대받기 · 참여 완료와 앨범 열기</option>
+        <option value="save-exit">저장 · 나가기 확인</option>
+        <option value="editor-photo-actions">표지 · 내지의 사진 편집 도구</option>
+        <option value="editor-photo-crop">저장된 사진 구도 조정</option>
+        <option value="editor-frame-preview">내 사진 · 구도를 반영한 프레임 미리보기</option>
+        <option value="editor-photo-replace">사진 교체 · 적용 전 구도 확인</option>
+        <option value="layout-preview">레이아웃 적용 전 미리보기</option>
+        <option value="frames">프레임 · 무료 · 유료 · 보유</option>
+        <option value="frame-search">보유 프레임 검색</option>
+        <option value="tools">사진 편집 도구</option>
+      </select></label>
+      <label>기기<select id="size">
+        <option value="390">세로 · 390 × 844</option>
+        <option value="320">작은 세로 · 320 × 568</option>
+        <option value="844">가로 · 844 × 390</option>
+      </select></label>
+      <label>테마<select id="theme">
+        <option value="both">라이트 · 다크 비교</option>
+        <option value="light">라이트</option>
+        <option value="dark">다크</option>
+      </select></label>
+    </nav>
+  </div></header>
+  <main>
+    <div class="screens portrait" id="screens" aria-live="polite"></div>
+    <p class="note">이번 편집 개선에서는 선택해도 썸네일 크기가 변하지 않고 현재 쪽이 목록 안에 자동으로 나타납니다. 추가·삭제는 사진 위에 겹치지 않는 별도 버튼이며, 80쪽 목록도 화면 주변만 생성합니다. 레이어의 실제 사진·장식과 문구 글꼴을 미리 보여 주고, 가로의 좁은 패널은 이름과 순서 이동 손잡이를 분리합니다. 가로에서 레이어를 선택해도 편집 화면이 닫히지 않으며 기존 겹침 순서·실행 취소를 유지합니다. 같은 레이어의 사진·문구 교체도 새 내용으로 갱신합니다. 캡처의 반복 페이지는 동작 검증용 자료이며 새 판매 템플릿이 아닙니다.</p>
+    <p class="note">새 제작 미리보기, 설정, 사진 채우기와 전체 확인은 승인한 홈과 같은 표지 재질을 사용합니다. 가로 내지는 실제 좌우 페이지를 붙여 보여 주며, 설정의 ‘사진 추가 전’은 샘플 사진을 사용자 앨범에 저장하지 않는 기존 규칙을 나타냅니다. 전체 확인에서는 빈 사진이 있는 쪽만 모아 보고 원래 쪽 번호로 돌아갈 수 있습니다. 긴 앨범의 제작 미리보기 목록은 화면 주변 항목만 생성합니다. 표시된 사진과 앨범은 테스트 자료이며 실제 저장·구매·기기 설치는 실행하지 않았습니다.</p>
+    <p class="note">초대 화면은 실제 앨범 표지·편집 권한·현재 링크를 확인하고, 하단의 버튼으로 같은 링크를 복사·공유합니다. 가로 화면은 두 열, 작은 세로 화면은 스크롤 가능한 본문과 고정 버튼으로 구성하며 시스템 버튼·카메라 여백을 확보했습니다. 준비 중에는 권한 변경과 공유를 잠그고, 실패 후에는 재시도할 수 있습니다.</p>
+    <p class="note">초대는 모의 데이터로 화면과 동작을 검증했으며 실제 메시지를 보내지 않았습니다. 현재 서버의 앱 전용 링크는 카카오톡 공유 대신 복사로 대체됩니다. 초대받은 사용자의 앱 진입·로그인·권한 확인·수락 화면 연결은 아직 후속 작업입니다.</p>
+    <p class="note">사진 채우기와 표지 편집을 오가도 미사용 사진 보관함·선택한 페이지·실행 취소 기록을 유지합니다. 표지에서 나중에 수정한 내용은 사진 채우기의 이전 되돌리기 기록이 덮어쓰지 않도록 분리했습니다. 전체 확인에서 실제 앨범 비율과 빈 사진 자리를 확인하고, 사진이 있는 페이지를 눌러 수정할 수 있습니다. 아직 디자인하지 않은 빈 쪽은 편집 시작 후 꾸밀 수 있습니다.</p>
+    <p class="note">임시 저장은 이 기기의 계정별로 한 개씩 보관하며, 홈의 ‘이어 만들기’로 복원합니다. 새 앨범 생성 후 자유 편집에서도 수동 임시 저장·나가기·앱 비활성화 시 수정한 표지와 내지, 배경색, 사진 구도, 현재 쪽을 함께 보관합니다. 복원할 때 같은 앨범으로 이어지고, 표지와 내지 좌표를 따로 보존해 크기를 다시 맞추지 않습니다. ‘저장 안함’은 이번 편집 진입 전 상태로 돌아가며, 앨범 전체가 서버에 저장된 뒤에만 임시 저장을 정리합니다. 이전 편집 화면의 늦은 저장은 다른 새 초안을 덮어쓰거나 지운 초안을 되살리지 않습니다.</p>
+    <p class="note">기존에 저장된 앨범을 리더에서 수정하는 경로는 기존 저장 방식을 유지합니다. 임시 저장은 기기 간 동기화가 아니며, 실행 중 강제 종료 전에 저장이 완료되었다고 보장하지 않습니다. 사진 원본을 복사하지 않으므로 갤러리 삭제·접근 권한 변경 시 사진을 다시 선택해야 할 수 있습니다. 앱을 다시 열어 복원한 경우 실행 취소 기록은 새로 시작합니다.</p>
+    <p class="note">사진 채우기 단계에서도 배치·교체·구도·삭제를 실행 취소하거나 다시 실행할 수 있습니다. 교체·삭제 후 사용되지 않는 사진은 보관함으로 돌아오며, 최근 30개 작업을 기억합니다. ‘다음 빈 자리’는 같은 쪽 안의 모든 사진 자리를 거쳐 앨범 순서대로 이동합니다. 가로 화면은 보관함과 페이지 목록을 양옆에 배치하고, 작은 세로 화면은 도구 영역을 압축해 앨범 공간을 확보했습니다. 회전해도 사진과 기록을 유지하며, 새 템플릿으로 바뀌면 이전 작업은 적용하지 않습니다.</p>
+    <p class="note">홈·리더의 앨범 연출과 책 넘김은 유지했습니다. 편집 화면의 사진 교체는 기존 프레임 안에서 새 구도를 확인한 뒤 적용하며, 취소하면 원본을 유지합니다. 갤러리 중복 사전 로딩과 사진 크기 선택창 취소 후 추가 문제도 수정했습니다. 실제 사진·프레임 미리보기, 무료·유료·보유 필터, 즐겨찾기와 구매 권한 확인은 유지합니다.</p>
+    <p class="note">초대 링크는 로그인 전후와 앱 재시작에도 보관하며, 로그인만으로 자동 참여하지 않습니다. 앨범과 권한을 확인하고 직접 수락합니다. 사용·만료·삭제된 링크는 재요청을 안내하고, 네트워크 오류는 직접 다시 확인합니다. 가로 화면은 앨범 안내와 참여 권한을 양옆에 배치합니다. 참여 후에는 공유 앨범이 홈에 함께 표시되며, 보기 전용 앨범의 편집을 제한합니다. 새 서버 함수와 데이터베이스 변경은 아직 운영 서버에 배포하지 않았습니다. 실기기 링크·카카오톡 연동은 별도 검증이 필요합니다.</p>
+    <p><a href="../store-selection-qa/index.html">이전 구매 · 앨범 선택 화면 보기</a></p>
+  </main>
+  <script>
+    const screen = document.querySelector('#screen');
+    const size = document.querySelector('#size');
+    const theme = document.querySelector('#theme');
+    const container = document.querySelector('#screens');
+    function render() {
+      const themes = theme.value === 'both' ? ['light', 'dark'] : [theme.value];
+      container.replaceChildren();
+      container.className = 'screens ' + (size.value === '844' ? 'landscape' : 'portrait');
+      container.style.setProperty('--screen-width', `${size.value}px`);
+      for (const value of themes) {
+        const figure = document.createElement('figure');
+        const caption = document.createElement('figcaption');
+        caption.textContent = value === 'light' ? '라이트' : '다크';
+        const image = document.createElement('img');
+        const folder = ['gallery', 'albums', 'selected'].includes(screen.value) ? '../gallery-picker-qa/' : '';
+        image.src = `${folder}${screen.value}-${size.value}-${value}.png`;
+        image.alt = `${screen.selectedOptions[0].textContent} · ${caption.textContent}`;
+        image.width = Number(size.value);
+        image.height = size.value === '844' ? 390 : size.value === '320' ? 568 : 844;
+        figure.append(caption, image);
+        container.append(figure);
+      }
+    }
+    for (const input of [screen, size, theme]) input.addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>

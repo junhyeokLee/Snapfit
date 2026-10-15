@@ -124,7 +124,7 @@ void main() {
     );
 
     test(
-      '${aspect.name}: frame changes, photo replacement, undo and save retain crop and geometry',
+      '${aspect.name}: frame changes retain crop; replacement resets crop and undo restores it',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -151,6 +151,7 @@ void main() {
             width: size.width * .6,
             height: size.height * .6,
             imageOffset: const Offset(8, -12),
+            imageZoom: 1.6,
             rotation: -.04,
             imageUrl: 'asset:assets/snapfit_home_square.jpg',
             imageBackground: 'studioOval',
@@ -171,19 +172,26 @@ void main() {
           );
           expect(saved.imageBackground, key);
           expect(saved.imageOffset, original.imageOffset);
+          expect(saved.imageZoom, original.imageZoom);
           expect(saved.rotation, original.rotation);
           await vm.updateSlotImage(original.id, asset);
           final replaced = vm.pages.first.layers.single;
           expect(replaced.asset, same(asset));
           expect(replaced.imageUrl, isNull);
           expect(replaced.imageBackground, key);
-          expect(replaced.imageOffset, original.imageOffset);
+          expect(replaced.imageOffset, isNull);
+          expect(replaced.imageZoom, 1);
           expect(replaced.width, original.width);
           expect(replaced.height, original.height);
           expect(replaced.position, original.position);
           vm.undo();
           expect(vm.pages.first.layers.single.imageUrl, original.imageUrl);
           expect(vm.pages.first.layers.single.imageBackground, key);
+          expect(
+            vm.pages.first.layers.single.imageOffset,
+            original.imageOffset,
+          );
+          expect(vm.pages.first.layers.single.imageZoom, original.imageZoom);
         }
       },
     );
@@ -275,13 +283,15 @@ void main() {
     testWidgets(
       '$size: picker fits safe areas, selects last frame and cancels without changes',
       (tester) async {
-        await tester.binding.setSurfaceSize(size);
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         tester.view.padding = FakeViewPadding(
-          bottom: 24 * tester.view.devicePixelRatio,
-          right: size.width > size.height
-              ? 32 * tester.view.devicePixelRatio
-              : 0,
+          top: size.width > size.height ? 0 : 24,
+          bottom: 24,
+          left: size.width > size.height ? 44 : 0,
+          right: size.width > size.height ? 32 : 0,
         );
         addTearDown(tester.view.resetPadding);
         String? selected;
@@ -312,6 +322,7 @@ void main() {
         await tester.scrollUntilVisible(
           item,
           140,
+          maxScrolls: 120,
           scrollable: find.descendant(
             of: find.byType(GridView),
             matching: find.byType(Scrollable),

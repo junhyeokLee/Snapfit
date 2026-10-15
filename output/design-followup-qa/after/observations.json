@@ -1,0 +1,82 @@
+[
+  {
+    "capture": "purchase-390-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "insufficient-390-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "points-390-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "splash-390-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "purchase-390-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "insufficient-390-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "points-390-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "splash-390-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "purchase-844-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "insufficient-844-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "points-844-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "splash-844-light",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "purchase-844-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "insufficient-844-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "points-844-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  },
+  {
+    "capture": "splash-844-dark",
+    "errors": [],
+    "scope": "mocked UI; no real purchase, points or authentication"
+  }
+]

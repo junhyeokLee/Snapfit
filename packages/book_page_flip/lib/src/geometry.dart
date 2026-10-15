@@ -1,5 +1,7 @@
 part of 'engine.dart';
 
+final double _verticalPerspectiveScale = 2.0 * math.tan(kFovY * 0.5);
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Interpolation primitives (clamped, C1).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -195,6 +197,7 @@ class BookFlipMesh {
     double amax,
     double tiltMax,
     double sagAmp,
+    double roll,
   ) {
     final u = nu == 1 ? 0.0 : i / (nu - 1);
     final v = nv == 1 ? 0.0 : j / (nv - 1);
@@ -229,8 +232,47 @@ class BookFlipMesh {
 
     // Rotate (bx,bz) about the vertical spine axis by phi.
     final c = math.cos(phi), s = math.sin(phi);
-    final xr = bx * c - bz * s;
-    final zr = bx * s + bz * c;
+    var xr = bx * c - bz * s;
+    var zr = bx * s + bz * c;
+
+    if (roll > 0) {
+      // Flat paper, a rounded travelling fold, then the folded-back portion.
+      // Rows farther from the grip follow later instead of rotating together.
+      final gripDistance = v - sgv;
+      final rowT = (t - tiltMax * 0.58 * bump * gripDistance * gripDistance)
+          .clamp(0.0, 1.0);
+      final bendDial =
+          ((amax - _kAmaxMin) / (_kAmaxHi - _kAmaxMin)).clamp(0.0, 1.0);
+      final band = (0.68 - 0.32 * bendDial) * math.sin(math.pi * rowT);
+      double rx, rz;
+      if (band < kEpsA) {
+        rx = rowT < 0.5 ? u : -u;
+        rz = 0;
+      } else {
+        final start = 1.0 - rowT - band * 0.5;
+        final radius = band / math.pi;
+        final travel = u - start;
+        if (travel <= 0) {
+          rx = u;
+          rz = 0;
+        } else if (travel < band) {
+          final angle = travel / radius;
+          rx = start + radius * math.sin(angle);
+          rz = radius * (1.0 - math.cos(angle));
+        } else {
+          rx = start - (travel - band);
+          rz = 2.0 * radius;
+        }
+        // Keep every row attached to the spine as the fold lands.
+        if (start < 0) {
+          final angle = -start / radius;
+          rx -= start + radius * math.sin(angle);
+          rz -= radius * (1.0 - math.cos(angle));
+        }
+      }
+      xr += (rx * leafW - xr) * roll;
+      zr += (rz * leafW - zr) * roll;
+    }
 
     final idx = j * nu + i;
     wx[idx] = spineX + dir * xr;
@@ -238,7 +280,10 @@ class BookFlipMesh {
     // row (v=grabV), and gated by bump so it is 0 — value AND slope — at the flat
     // rest states. So sag never moves the spine and never causes a landing pop.
     final sag = sagAmp * bump * u * (v - sgv).abs() * h;
-    wy[idx] = v * h + sag;
+    // Compensate vertical camera magnification so the curled leaf does not
+    // balloon into the surrounding controls. Depth and horizontal curl remain.
+    final perspectiveY = (v - 0.5) * zr * _verticalPerspectiveScale;
+    wy[idx] = v * h + sag - perspectiveY * roll;
     wz[idx] = zr; // +z toward the viewer.
   }
 
@@ -263,9 +308,10 @@ class BookFlipMesh {
         curl != null ? bookFlipCurlTilt(curl) : bookFlipTilt(material);
     final sagAmp =
         curl != null ? bookFlipCurlSag(curl) : bookFlipSagAmp(material);
+    final roll = curl?.roll ?? 0.0;
     for (var j = 0; j < nv; j++) {
       for (var i = 0; i < nu; i++) {
-        _world(i, j, w, h, tc, grabV, dir, amax, tiltMax, sagAmp);
+        _world(i, j, w, h, tc, grabV, dir, amax, tiltMax, sagAmp, roll);
       }
     }
   }

@@ -140,7 +140,18 @@ void main() {
         expect(requests, isEmpty);
         expect(applied, isEmpty);
 
-        await tester.tap(find.text(label));
+        Future<void> requestApply() async {
+          await tester.tap(find.text(label));
+          if (kind == 'template') {
+            await tester.pumpAndSettle();
+            await tester.tap(
+              find.byKey(const ValueKey('confirm-template-apply')),
+            );
+            await tester.pumpAndSettle();
+          }
+        }
+
+        await requestApply();
         await tester.tap(find.text(label));
         await tester.pump();
         expect(requests, [productKey]);
@@ -150,14 +161,14 @@ void main() {
         expect(applied, isEmpty);
 
         approval = Completer<bool>();
-        await tester.tap(find.text(label));
+        await requestApply();
         expect(requests, [productKey, productKey]);
         approval.complete(true);
         await tester.pumpAndSettle();
         expect(applied, [value]);
 
         approval = Completer<bool>();
-        await tester.tap(find.text(label));
+        await requestApply();
         await tester.pumpWidget(const SizedBox());
         approval.complete(true);
         await tester.pumpAndSettle();

@@ -85,10 +85,10 @@ class _LuminousEditionPreviewState extends State<LuminousEditionPreview> {
               .map((c) => c['title'] as String)
               .toList(),
     revision: selectedPages,
-    coverRevision: selectedPages,
+    coverRevision: selectedPages + (selectedPages >= 24 ? 1 : 0),
     editionLabel: volumePages == null
         ? '디자인 승인 · 미등록'
-        : '$selectedPages쪽 · ${premiumVolumeLaunchPointPrice}P · 출시 대기',
+        : '$selectedPages쪽 · ${premiumVolumeLaunchPointPrice}P',
     initialCopy: const LuminousCopy(),
     buildPages: (aspect, copy, photos) => luminousPages(
       aspect,

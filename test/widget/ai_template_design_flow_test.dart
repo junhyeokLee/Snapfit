@@ -52,6 +52,18 @@ void main() {
             .onPressed,
         isNull,
       );
+      expect(find.text('20쪽'), findsOneWidget);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (widget) => widget is IconButton && widget.tooltip == '2쪽 줄이기',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(find.textContaining('AI가 최대 16쪽'), findsOneWidget);
       await tester.enterText(
         find.byKey(const Key('ai_template_brief')),
         '여백은 넓게, 글은 짧게',
@@ -80,10 +92,54 @@ void main() {
       expect(submitted!.aspect, AiTemplateAspect.landscape);
       expect(submitted!.printProductId, 'REDP_250X200_HARD');
       expect(submitted!.coverSize.ratio, 1.25);
-      expect(submitted!.pageCount, 10);
+      expect(submitted!.pageCount, 22);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets(
+    'brief preserves legacy input but new selection stays20..80even',
+    (tester) async {
+      AiTemplateBrief? submitted;
+      Future<void> render(int pageCount) => tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AiTemplateBriefStep(
+              key: ValueKey(pageCount),
+              initialBrief: AiTemplateBrief(prompt: '여행', pageCount: pageCount),
+              onContinue: (value) => submitted = value,
+              onBack: () {},
+            ),
+          ),
+        ),
+      );
+      await render(4);
+      expect(find.text('20쪽'), findsOneWidget);
+      await render(78);
+      await tester.ensureVisible(find.byTooltip('2쪽 늘리기'));
+      await tester.tap(find.byTooltip('2쪽 늘리기'));
+      await tester.pump();
+      expect(find.text('80쪽'), findsOneWidget);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (widget) => widget is IconButton && widget.tooltip == '2쪽 늘리기',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(
+        find.byKey(const Key('ai_template_brief_continue')),
+      );
+      await tester.tap(find.byKey(const Key('ai_template_brief_continue')));
+      expect(submitted!.pageCount, 80);
+      await render(81);
+      expect(find.text('80쪽'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final aspect in AiTemplateAspect.values) {
     for (final landscape in [false, true]) {
@@ -121,7 +177,16 @@ void main() {
             of: find.byKey(const ValueKey('creation_document_stage')),
             matching: find.byType(TemplatePageRenderer),
           );
-          expect(stagePages(), findsOneWidget);
+          // The curved spine and front cover render the same source artwork.
+          expect(stagePages(), findsNWidgets(2));
+          final coverCopies = tester
+              .widgetList<TemplatePageRenderer>(stagePages())
+              .toList();
+          expect(
+            coverCopies.where((page) => page.wrapSpineArtwork),
+            hasLength(1),
+          );
+          expect(coverCopies.first.layers, coverCopies.last.layers);
           await tester.tap(find.byKey(const Key('ai_design_page_1')));
           await tester.pumpAndSettle();
           expect(stagePages(), landscape ? findsNWidgets(2) : findsOneWidget);

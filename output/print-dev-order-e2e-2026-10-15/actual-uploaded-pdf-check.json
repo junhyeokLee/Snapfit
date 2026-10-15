@@ -1,0 +1,30 @@
+{
+  "scope": "actual app-generated PDF read back from seven immutable uploaded parts",
+  "runId": "0c3edc06-ce46-4dec-b430-979c82516fe0",
+  "interiorBytes": 100423393,
+  "interiorSha256": "602676bbb7c4b1cac32e902defd4552d9372a217fda50946d60ff62469b29989",
+  "allSevenUploadedPartsMatch": true,
+  "strictRangeParserPassed": true,
+  "pdfVersion": "1.4",
+  "pageCount": 80,
+  "pageSizeMm": [
+    310,
+    310
+  ],
+  "trimSizeMm": [
+    300,
+    300
+  ],
+  "nativeStrictParserElapsedMs": 102,
+  "representativePagesVisuallyReviewed": [
+    1,
+    80
+  ],
+  "wholeServerFinalizationPassed": true,
+  "paymentApproved": true,
+  "vendorOrderSubmitted": false,
+  "sdkIssuedAt": "2026-10-15T04:21:58.393314+00:00",
+  "actualTestPaymentVerified": true,
+  "developmentOrderFileChecked": true,
+  "e2eResult": "actual-e2e-result.json"
+}

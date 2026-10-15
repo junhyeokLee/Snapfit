@@ -1,10 +1,8 @@
 import java.util.Properties
-import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
@@ -77,16 +75,4 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    val variantName = name.removePrefix("compile").removeSuffix("JavaWithJavac")
-    val variantDir = variantName.replaceFirstChar { it.lowercase() }
-
-    val firebaseStorageKotlinClasses = files(
-        rootProject.layout.buildDirectory.dir("firebase_storage/tmp/kotlin-classes/$variantDir"),
-    )
-
-    classpath = (classpath ?: files()) + firebaseStorageKotlinClasses
-    dependsOn(":firebase_storage:compile${variantName}Kotlin")
 }

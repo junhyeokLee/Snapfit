@@ -69,6 +69,55 @@ void main() {
   setUpAll(_loadFonts);
 
   test(
+    'expanded80-page V2 retains the complete plan, closing and editable fonts',
+    () {
+      final document = _document();
+      final originalPages = document['pages'] as List;
+      final direction = document['artDirection'] as Map;
+      final originalPlan = direction['pages'] as List;
+      final indexes = [0, 1, 2, 3, ...List.generate(76, (i) => 2 + i % 2), 4];
+      document['layoutExpansion'] = {
+        'strategy': 'repeat_inner_layouts_v1',
+        'sourcePageCount': 4,
+        'finalPageCount': 80,
+      };
+      document['pages'] = [
+        for (final (pageIndex, sourceIndex) in indexes.indexed)
+          {
+            ...originalPages[sourceIndex] as Map,
+            'elements': [
+              for (final (elementIndex, element)
+                  in ((originalPages[sourceIndex] as Map)['elements'] as List)
+                      .indexed)
+                {
+                  ...element as Map,
+                  'id': 'expanded_p${pageIndex}_e$elementIndex',
+                },
+            ],
+          },
+      ];
+      direction['pages'] = [for (final index in indexes) originalPlan[index]];
+      final design = AiTemplateDesign.fromJson(document, 80);
+      expect(design.pages, hasLength(81));
+      expect(design.artDirection!.pages.last.role, 'closing');
+      expect(() => validateAiTemplateText(design), returnsNormally);
+      final pages = design.buildLayers();
+      final layers = pages.expand((page) => page).toList();
+      expect(layers.map((layer) => layer.id).toSet(), hasLength(layers.length));
+      expect(
+        pages.last.where((layer) => layer.type == LayerType.text),
+        isNotEmpty,
+      );
+      // A shortened plan cannot masquerade as a complete eighty-page response.
+      direction['pages'] = originalPlan;
+      expect(
+        () => AiTemplateDesign.fromJson(document, 80),
+        throwsFormatException,
+      );
+    },
+  );
+
+  test(
     'generated typography contract agrees with server and registered font weights',
     () async {
       final contract = jsonDecode(

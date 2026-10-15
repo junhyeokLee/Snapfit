@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SnapFit · 테마와 스토어</title>
+  <style>
+    * { box-sizing: border-box; letter-spacing: 0; }
+    body { margin: 0; color: #222a2b; background: #f2f5f4; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    header { background: white; border-bottom: 1px solid #dce3e0; padding: 20px 24px; }
+    .toolbar { max-width: 1060px; margin: auto; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    h1 { font-size: 22px; margin: 0; }
+    header p { color: #63706e; font-size: 13px; margin: 6px 0 0; }
+    .filters { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+    label { font-size: 12px; display: flex; align-items: center; gap: 8px; }
+    select { min-height: 40px; font: inherit; font-size: 14px; padding: 8px 28px 8px 12px; background: white; color: #222a2b; border: 1px solid #d1dad5; border-radius: 6px; }
+    main { max-width: 1060px; margin: auto; padding: 28px 24px 50px; }
+    section { margin-bottom: 40px; }
+    h2 { font-size: 17px; font-weight: 600; margin: 0 0 16px; }
+    .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+    figure { margin: 0; overflow: hidden; border: 1px solid #d4ddd8; border-radius: 6px; background: white; }
+    figcaption { padding: 12px 16px; color: #63706e; font-size: 13px; border-bottom: 1px solid #e3e9e6; }
+    .image { display: flex; justify-content: center; background: #e9eeeb; }
+    img { display: block; width: 100%; max-width: 390px; height: auto; }
+    body.landscape img { max-width: none; }
+    @media (max-width: 650px) { .pair { grid-template-columns: 1fr; } .filters { margin-left: 0; } header { padding: 18px; } main { padding: 24px 18px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="toolbar">
+      <div><h1>SnapFit</h1><p>실제 앱 화면 · 라이트 / 다크</p></div>
+      <div class="filters">
+        <label>화면 <select id="screen"><option value="all">전체</option><option value="home">홈</option><option value="store">스토어 · 템플릿</option><option value="materials">스토어 · 꾸밈소재</option><option value="template-detail">템플릿 상세</option><option value="material-detail">소재 상세</option><option value="material-zoom">소재 확대</option><option value="reader">앨범 리더</option></select></label>
+        <label>크기 <select id="size"><option value="390">세로 · 390 × 844</option><option value="320">작은 세로 · 320 × 568</option><option value="844">가로 · 844 × 390</option></select></label>
+      </div>
+    </div>
+  </header>
+  <main id="gallery"></main>
+  <script>
+    const screens = [['home', '홈'], ['store', '스토어 · 템플릿'], ['materials', '스토어 · 꾸밈소재'], ['template-detail', '템플릿 상세'], ['material-detail', '소재 상세'], ['material-zoom', '소재 확대'], ['reader', '앨범 리더']];
+    const screen = document.getElementById('screen');
+    const size = document.getElementById('size');
+    function render() {
+      document.body.classList.toggle('landscape', size.value === '844');
+      document.getElementById('gallery').replaceChildren(...screens.filter(([key]) => screen.value === 'all' || screen.value === key).map(([key, title]) => {
+        const section = document.createElement('section');
+        const heading = document.createElement('h2'); heading.textContent = title;
+        const pair = document.createElement('div'); pair.className = 'pair';
+        for (const [mode, label] of [['light', '라이트'], ['dark', '다크']]) {
+          const figure = document.createElement('figure');
+          const caption = document.createElement('figcaption'); caption.textContent = label;
+          const frame = document.createElement('div'); frame.className = 'image';
+          const img = document.createElement('img'); img.src = `${key}-${size.value}-${mode}.png`; img.alt = `${title} ${label}`; img.loading = 'lazy'; img.width = Number(size.value); img.height = size.value === '844' ? 390 : size.value === '320' ? 568 : 844;
+          frame.append(img); figure.append(caption, frame); pair.append(figure);
+        }
+        section.append(heading, pair); return section;
+      }));
+    }
+    screen.addEventListener('change', render); size.addEventListener('change', render); render();
+  </script>
+</body>
+</html>

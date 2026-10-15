@@ -20,6 +20,7 @@ class CoverLayout extends StatelessWidget {
   final Color? backgroundColor;
   final CoverSizeChanged onCoverSizeChanged;
   final BuildImageLayer buildImage;
+  final BuildImageLayer? buildWrappedImage;
   final BuildTextLayer buildText;
   final SortedByZ sortedByZ;
   final CoverTheme theme;
@@ -27,6 +28,12 @@ class CoverLayout extends StatelessWidget {
   final List<double> activeVerticalGuides;
   final List<double> activeHorizontalGuides;
   final bool showEmptyGuide;
+
+  /// Closed-book preview only; persisted editor and print artwork is unchanged.
+  final bool wrapSpineArtwork;
+
+  /// Flat document presentation; artwork and its coordinate system stay intact.
+  final bool flatPresentation;
 
   const CoverLayout({
     super.key,
@@ -37,6 +44,7 @@ class CoverLayout extends StatelessWidget {
     this.backgroundColor,
     required this.onCoverSizeChanged,
     required this.buildImage,
+    this.buildWrappedImage,
     required this.buildText,
     required this.sortedByZ,
     required this.theme,
@@ -44,7 +52,99 @@ class CoverLayout extends StatelessWidget {
     this.activeVerticalGuides = const <double>[],
     this.activeHorizontalGuides = const <double>[],
     this.showEmptyGuide = false,
+    this.wrapSpineArtwork = false,
+    this.flatPresentation = false,
   });
+
+  LayerModel _displayLayer(LayerModel layer, Size size) {
+    if (!wrapSpineArtwork ||
+        layer.type != LayerType.image ||
+        !layer.hasImageSource ||
+        !(const <String?>{
+          null,
+          '',
+          'none',
+          'rasterCover',
+        }).contains(layer.imageBackground) ||
+        layer.rotation.abs() > .0001 ||
+        (layer.scale - 1).abs() > .0001 ||
+        layer.position.dx <= 0 ||
+        layer.position.dx > leftSpine + .5 ||
+        layer.position.dy > .5 ||
+        layer.position.dx + layer.width < size.width - .5 ||
+        layer.position.dy + layer.height < size.height - .5) {
+      return layer;
+    }
+    // Full-bleed photos wrap the virtual binding; stored/printed layers stay intact.
+    final width = layer.width + layer.position.dx;
+    final offset = layer.imageOffset;
+    return layer.copyWith(
+      position: Offset(0, layer.position.dy),
+      width: width,
+      imageOffset: offset == null
+          ? null
+          : Offset(offset.dx * width / layer.width, offset.dy),
+    );
+  }
+
+  bool _canCurvePhoto(LayerModel layer, Size size) =>
+      wrapSpineArtwork &&
+      buildWrappedImage != null &&
+      layer.type == LayerType.image &&
+      layer.hasImageSource &&
+      (const <String?>{
+        null,
+        '',
+        'none',
+        'rasterCover',
+      }).contains(layer.imageBackground) &&
+      layer.rotation.abs() < .0001 &&
+      (layer.scale - 1).abs() < .0001 &&
+      layer.position.dx.abs() < .5 &&
+      layer.position.dy.abs() < .5 &&
+      (layer.width - size.width).abs() < .5 &&
+      (layer.height - size.height).abs() < .5;
+
+  Widget _buildLayer(LayerModel layer, Size size, {bool curve = true}) {
+    final styleKey = ValueKey(
+      '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
+    );
+    return KeyedSubtree(
+      key: styleKey,
+      child: layer.type == LayerType.text
+          ? buildText(layer)
+          : curve && _canCurvePhoto(layer, size)
+          ? buildWrappedImage!(layer)
+          : buildImage(layer),
+    );
+  }
+
+  /// A second view of the same cached artwork for the narrow outside binding.
+  /// No editor keys, size callbacks, guides or additional photo downloads.
+  Widget bindingPreview(Size size) => RepaintBoundary(
+    child: Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        _CoverBackground(
+          leftSpine: leftSpine,
+          theme: theme,
+          backgroundColor: backgroundColor,
+          showSpine: false,
+        ),
+        ...sortedByZ(layers)
+            .map((source) => _displayLayer(source, size))
+            .where(
+              (layer) =>
+                  layer.rotation.abs() > .0001 ||
+                  (layer.scale - 1).abs() > .0001 ||
+                  (layer.position.dx < size.width * .02 &&
+                      layer.position.dx + layer.width > 0),
+            )
+            .map((layer) => _buildLayer(layer, size, curve: false)),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -65,16 +165,21 @@ class CoverLayout extends StatelessWidget {
                 aspectRatio: aspect,
                 child: _AnimatedCoverContainer(
                   theme: theme,
+                  flatPresentation: flatPresentation,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       Container(),
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(
+                            flatPresentation ? 0 : 12,
+                          ),
                         ),
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
+                          borderRadius: flatPresentation
+                              ? BorderRadius.zero
+                              : const BorderRadius.only(
                             topRight: Radius.circular(12),
                             bottomRight: Radius.circular(12),
                           ),
@@ -96,30 +201,22 @@ class CoverLayout extends StatelessWidget {
                                       leftSpine: leftSpine,
                                       theme: theme,
                                       backgroundColor: backgroundColor,
+                                      showSpine:
+                                          !flatPresentation && !wrapSpineArtwork,
+                                      flatPresentation: flatPresentation,
                                     ),
                                     if (showEmptyGuide && layers.isEmpty)
                                       const _CoverEmptyGuide(),
-                                    ...sortedByZ(layers).map((layer) {
-                                      // 스타일 변경 시 즉시 반영되도록 키에 textBackground/imageBackground 포함
-                                      final styleKey = ValueKey(
-                                        '${layer.id}_${layer.textBackground ?? ''}_${layer.imageBackground ?? ''}',
+                                    ...sortedByZ(layers).map((sourceLayer) {
+                                      final layer = _displayLayer(
+                                        sourceLayer,
+                                        coverSize,
                                       );
-                                      switch (layer.type) {
-                                        case LayerType.image:
-                                        case LayerType.sticker:
-                                        case LayerType.decoration:
-                                          return KeyedSubtree(
-                                            key: styleKey,
-                                            child: buildImage(layer),
-                                          );
-                                        case LayerType.text:
-                                          return KeyedSubtree(
-                                            key: styleKey,
-                                            child: buildText(layer),
-                                          );
-                                      }
+                                      return _buildLayer(layer, coverSize);
                                     }),
-                                    if (!hasCustomBackgroundColor)
+                                    if (!flatPresentation &&
+                                        !hasCustomBackgroundColor &&
+                                        !wrapSpineArtwork)
                                       IgnorePointer(
                                         child: Align(
                                           alignment: Alignment.centerLeft,
@@ -335,11 +432,15 @@ class _CoverBackground extends StatelessWidget {
   final double leftSpine;
   final CoverTheme theme;
   final Color? backgroundColor;
+  final bool showSpine;
+  final bool flatPresentation;
 
   const _CoverBackground({
     required this.leftSpine,
     required this.theme,
     this.backgroundColor,
+    this.showSpine = true,
+    this.flatPresentation = false,
   });
 
   @override
@@ -350,7 +451,9 @@ class _CoverBackground extends StatelessWidget {
         // 기본 커버 배경 (테마)
         Container(
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
+            borderRadius: flatPresentation
+                ? BorderRadius.zero
+                : const BorderRadius.only(
               topRight: Radius.circular(12),
               bottomRight: Radius.circular(12),
             ),
@@ -367,7 +470,7 @@ class _CoverBackground extends StatelessWidget {
           ),
         ),
         // Spine 영역 어두운 그림자 (공통)
-        if (backgroundColor == null)
+        if (backgroundColor == null && showSpine)
           IgnorePointer(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -395,7 +498,12 @@ class _CoverBackground extends StatelessWidget {
 class _AnimatedCoverContainer extends StatefulWidget {
   final Widget child;
   final CoverTheme theme;
-  const _AnimatedCoverContainer({required this.child, required this.theme});
+  final bool flatPresentation;
+  const _AnimatedCoverContainer({
+    required this.child,
+    required this.theme,
+    this.flatPresentation = false,
+  });
 
   @override
   State<_AnimatedCoverContainer> createState() =>
@@ -421,6 +529,7 @@ class _AnimatedCoverContainerState extends State<_AnimatedCoverContainer> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.flatPresentation) return widget.child;
     // Animate scale and shadow when theme changes
     final bool animate = _animating;
     final double scale = animate ? 1.03 : 1.0;

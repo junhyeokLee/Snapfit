@@ -61,6 +61,30 @@ class Env {
     defaultValue: 'snapfit://auth/callback',
   );
 
+  /// Browser OAuth/email links return to the current app origin's root.
+  /// Register each exact /?auth_callback=1 URL in Supabase Auth URL settings.
+  /// Empty uses the current origin; cross-origin overrides are rejected.
+  static const String authWebRedirectUrl = String.fromEnvironment(
+    'AUTH_WEB_REDIRECT_URL',
+    defaultValue: '',
+  );
+
+  /// Public Firebase Web Push certificate key. Permission is requested only
+  /// from the user's notification-settings action, never at app startup.
+  /// This public key belongs to the same Firebase project as firebase_options.
+  static const String webPushVapidKey = String.fromEnvironment(
+    'WEB_PUSH_VAPID_KEY',
+    defaultValue:
+        'BHhzjA6l5X3vUv_6GY2o7QagvNvrLLSXrBFfNME9RGSF4hHkdx4TARjK-SWqMyxiWaFB_Izn1e1ifW_r1ZP6AOA',
+  );
+
+  /// Preparation only: a matching server flag and verified admin role are also
+  /// required for TEST top-ups. This never enables real web point payments.
+  static const bool webPointTopupTestEnabled = bool.fromEnvironment(
+    'WEB_POINT_TOPUP_TEST_ENABLED',
+    defaultValue: false,
+  );
+
   /// Enables server-backed AI album draft generation through Supabase Edge
   /// Function. Keep false until server prompts/model quality and privacy copy
   /// are production-ready.

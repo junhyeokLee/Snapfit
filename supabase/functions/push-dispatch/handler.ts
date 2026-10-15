@@ -41,7 +41,7 @@ export function createPushDispatchHandler(dependencies: {
       const deliver = async (row: any) => {
         try {
           const [deviceResult, notificationResult, prefsResult] = await Promise.all([
-            supabase.from('push_devices').select('user_id,enabled,timezone_offset_minutes')
+            supabase.from('push_devices').select('user_id,enabled,timezone_offset_minutes,platform')
               .eq('token', row.token).eq('user_id', row.user_id).maybeSingle(),
             supabase.from('notifications').select('*').eq('id', row.notification_id).eq('user_id', row.user_id).maybeSingle(),
             supabase.from('push_preferences').select('*').eq('user_id', row.user_id).maybeSingle(),
@@ -58,7 +58,7 @@ export function createPushDispatchHandler(dependencies: {
           }
           const response = await fetch(`https://fcm.googleapis.com/v1/projects/${encodeURIComponent(account.project_id)}/messages:send`, {
             method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(fcmMessage(notification, row.token, now, policy.ttlSeconds)), signal: AbortSignal.timeout(10_000),
+            body: JSON.stringify(fcmMessage(notification, row.token, now, policy.ttlSeconds, device.platform)), signal: AbortSignal.timeout(10_000),
           });
           const result = await response.json().catch(() => ({}));
           if (response.ok) {

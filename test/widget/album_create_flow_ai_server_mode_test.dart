@@ -62,7 +62,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('AI 템플릿으로 시작'));
+      await tester.tap(find.text('AI 템플릿'));
       await tester.pumpAndSettle();
       await _submitBrief(tester);
       expect(find.textContaining('사진첩에 접근하거나 사진을 전송하지 않아요'), findsOneWidget);
@@ -129,7 +129,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('AI 템플릿으로 시작'));
+      await tester.tap(find.text('AI 템플릿'));
       await tester.pumpAndSettle();
       await _submitBrief(tester);
       expect(find.textContaining('사진첩에 접근하거나 사진을 전송하지 않아요'), findsOneWidget);
@@ -199,7 +199,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('AI 템플릿으로 시작'));
+    await tester.tap(find.text('AI 템플릿'));
     await tester.pumpAndSettle();
     await _submitBrief(tester, productId: 'REDP_250X200_SOFT', hardcover: true);
     await tester.ensureVisible(find.text('템플릿 만들기'));
@@ -221,6 +221,7 @@ void main() {
     expect(setup.selectedCover!.productId, 'REDP_250X200_HARD');
     expect(setup.selectedCover!.ratio, 1.25);
     expect(setup.selectedCover!.realSize, const Size(25, 20));
+    expect(setup.selectedPageCount, 20);
     await tester.tap(find.text('사진 채우기'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('fill-page-0')), findsOneWidget);

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-15",
+  "existing_regression_tests": {
+    "passed": 170,
+    "failed": 0,
+    "command": "flutter test --no-pub --concurrency=1 (13 targeted test files)"
+  },
+  "new_web_tests": {
+    "unique_passed": 64,
+    "failed_remaining": 0,
+    "method": "57 of 58 passed in corrected full suite; remaining mouse test corrected and final desktop file 2 of 2 passed",
+    "desktop_log": "editor-desktop-final-test.log",
+    "reference_geometry_test": "editor-reference-canvas-test.log (3 of 3 passed)",
+    "dialog_regression": "web-router-save-dialog-test.log (8 of 8, includes 1 new synchronous-dialog case)",
+    "overlay_regression": "album-overlay-root-context-test.log (2 of 2)"
+  },
+  "browser_e2e": "photo selection, create/save, original-byte verification, login restoration, direct album link, text editing, Cmd+S, refresh restoration, back/cancel and order preview/history verified",
+  "production_payments": "closed",
+  "new_paid_services": false,
+  "total_unique_targeted_tests_passed": 234,
+  "analysis": {
+    "exit_code": 0,
+    "issues": 0,
+    "scope": "entire lib plus changed web tests",
+    "note": "Earlier full-project analysis also passed. A later concurrent edit in an unrelated discovery test briefly introduced a missing import; final analysis scopes that test out."
+  },
+  "final_main_sha256": "173dacf7248d6bc30a999dedd8ad5a1fc17eb46487d4f6f42a5e2b110291c064",
+  "subsequent_web_design_revision": {
+    "status": "source changes only, not executed or built at user request",
+    "earlier_results_apply_to_subsequent_revision": false,
+    "design_notes": "docs/web-development.md"
+  }
+}

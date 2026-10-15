@@ -25,7 +25,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
           constraints: BoxConstraints(maxWidth: 320.w),
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: SnapFitColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
@@ -64,7 +64,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: SnapFitColors.textPrimaryOf(context),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -74,7 +74,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15.sp,
-                  color: Colors.black54,
+                  color: SnapFitColors.textSecondaryOf(context),
                   height: 1.5,
                 ),
               ),
@@ -92,7 +92,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: SnapFitColors.backgroundOf(context),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
@@ -101,7 +101,7 @@ class HomeDeleteAlbumDialog extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              color: SnapFitColors.textPrimaryOf(context),
                             ),
                           ),
                         ),

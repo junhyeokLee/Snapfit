@@ -1,0 +1,129 @@
+{
+  "state": "CUSTOMER_UI_TEST_DEV_E2E_VERIFIED",
+  "observedAtUtc": "2026-10-15T06:49:50.219404Z",
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "orderId": "ordp_85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "paymentId": "SFPGT_00bc9432-4254-492e-a9c6-8f315f368419",
+  "vendorOrderNum": "SFD85e8ce971d3041ee892b4c43ee5546f3",
+  "albumId": 69,
+  "normalCustomerScreenUsed": true,
+  "adminDevelopmentButtonUsed": false,
+  "previousAdministratorRunReused": false,
+  "payment": {
+    "provider": "PORTONE",
+    "version": "V2",
+    "status": "PAID",
+    "environment": "test",
+    "isTest": true,
+    "amount": 159900,
+    "currency": "KRW",
+    "paidAtUtc": "2026-10-15T06:36:32Z",
+    "verifiedAtUtc": "2026-10-15T06:38:01.938147Z"
+  },
+  "pdf": {
+    "packageId": "e5266cf3-6568-4cba-9e9f-528c2f17592d",
+    "state": "READY",
+    "interiorPageCount": 80,
+    "interiorBytes": 100423186,
+    "interiorSha256": "0dcc18e2ad738209d0e57fe7bb4932ae625292623c8665c4af9dd9a356d42e89",
+    "interiorParts": 7,
+    "interiorWidthMm": 310,
+    "interiorHeightMm": 310,
+    "coverBytes": 1800305,
+    "coverSha256": "60a8a6e1f979e575a75221f36e72d78f6879dc56d8d85218388791c93853d8e7"
+  },
+  "vendor": {
+    "environment": "development",
+    "stage": "FILE_CHECKED",
+    "fileProcessYn": "Y",
+    "statusCode": "PGS_06",
+    "statusCodeOrg": "PGS_05",
+    "advisoryPresent": true,
+    "outboxState": "DONE",
+    "queryOnlyAfterAttempt": true
+  },
+  "appOffProof": {
+    "appClosedAtUtc": "2026-10-15T06:39:09.542000Z",
+    "appReopenedAtUtc": "2026-10-15T06:47:15.324000Z",
+    "allMainAppTabsClosed": true,
+    "pgVerificationAlreadyBeforeClose": true,
+    "paymentVerifiedAfterClose": false,
+    "devSubmissionAfterClose": true,
+    "fileCheckedBeforeReopen": true,
+    "successfulScheduledExecutionsWhileClosed": 3,
+    "consumedScheduledAuthenticationsWhileClosed": 3,
+    "proofScope": "Recorded browser lifecycle plus matching run state and scheduled execution timestamps",
+    "directHttpToRunAuditLinkExists": false
+  },
+  "history": {
+    "sameRunRestoredFromServer": true,
+    "verifiedTest": true,
+    "fileChecked": true
+  },
+  "liveSales": {
+    "enabled": false,
+    "businessReady": false,
+    "portoneLiveReady": false,
+    "redprintingLiveReady": false
+  },
+  "realCustomerOrders": 0,
+  "livePaymentIntents": 0,
+  "chronology": [
+    {
+      "event": "pdf_ready",
+      "atUtc": "2026-10-15T06:20:54.027847Z",
+      "atKst": "2026-10-15 15:20:54 KST"
+    },
+    {
+      "event": "test_sdk_issued",
+      "atUtc": "2026-10-15T06:20:55.211867Z",
+      "atKst": "2026-10-15 15:20:55 KST"
+    },
+    {
+      "event": "actual_test_paid",
+      "atUtc": "2026-10-15T06:36:32Z",
+      "atKst": "2026-10-15 15:36:32 KST"
+    },
+    {
+      "event": "scheduled_test_receipt_verified",
+      "atUtc": "2026-10-15T06:38:01.938147Z",
+      "atKst": "2026-10-15 15:38:01 KST"
+    },
+    {
+      "event": "all_main_app_tabs_closed",
+      "atUtc": "2026-10-15T06:39:09.542000Z",
+      "atKst": "2026-10-15 15:39:09 KST"
+    },
+    {
+      "event": "durable_dev_submission_attempt",
+      "atUtc": "2026-10-15T06:40:04.853365Z",
+      "atKst": "2026-10-15 15:40:04 KST"
+    },
+    {
+      "event": "scheduled_vendor_file_analysis_confirmed",
+      "atUtc": "2026-10-15T06:44:02.749858Z",
+      "atKst": "2026-10-15 15:44:02 KST"
+    },
+    {
+      "event": "app_reopened_for_read_only_history",
+      "atUtc": "2026-10-15T06:47:15.324000Z",
+      "atKst": "2026-10-15 15:47:15 KST"
+    }
+  ],
+  "limitations": [
+    "Development TEST evidence does not represent a live charge, manufacturing or shipping.",
+    "submittedAt records the durable submission attempt; final supplier status proves acceptance and analysis.",
+    "PGS_05 original status is preserved as an advisory when present.",
+    "The server had already verified the TEST payment before the app was closed; this run proves later supplier submission and analysis while the app was closed.",
+    "Scheduler and HTTP timestamps are correlated evidence; there is no direct HTTP request-to-run audit link."
+  ],
+  "sourceEvidenceSha256": {
+    "actual-latest.json": "677b3c5d88f41bcfeb6c5b0a64c591ca0511c187685a73bf03541c0f992c5478",
+    "cron-after-app-close-latest.json": "69965b47cd4a133bef414cbb005be14fcb1a43d77848e5eb7ae2f998d69984e2",
+    "browser-lifecycle.json": "f67b12aba5e999a041361d02030a1e2b4a3f7ef015e720e7d5d05b3ab10ebcc6",
+    "browser-history-confirmation.json": "514d037e37eb14148df3ef4eecfa5b96b80e29edd02370d2bd480d584ed6f551",
+    "browser-new-invoice.json": "ae92bda0ab762fa84519312e3a4982fb1f9570219c715b20c77c133626fb4c0c",
+    "browser-path-before-sdk.json": "eea791fd75c614223ccd260d115445311329d384d5b323eaf93940d77b769658",
+    "live-sales-closed-before.json": "563747a4e73fc2d66f15b5d6794ebf9c9279220795759cc7988263ea0103883e"
+  }
+}

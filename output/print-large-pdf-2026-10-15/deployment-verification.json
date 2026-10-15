@@ -1,0 +1,94 @@
+{
+  "verifiedAtUtc": "2026-10-15T02:40:46.779295+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "migrationVersion": "20261015021421",
+  "functions": [
+    {
+      "slug": "print-file-delivery",
+      "name": "print-file-delivery",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-prepayment-package",
+      "name": "print-prepayment-package",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-fulfillment-worker",
+      "name": "print-fulfillment-worker",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-order-scheduler",
+      "name": "print-order-scheduler",
+      "version": 5,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-order-checkout",
+      "name": "print-order-checkout",
+      "version": 5,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-order-confirm",
+      "name": "print-order-confirm",
+      "version": 5,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-payment-reconcile",
+      "name": "print-payment-reconcile",
+      "version": 5,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    },
+    {
+      "slug": "print-sales-readiness",
+      "name": "print-sales-readiness",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792031643722
+    }
+  ],
+  "temporaryProbeDeleted": true,
+  "stagedSourceMatches": true,
+  "sourceSha256": {
+    "supabase/migrations/20261015021421_chunked_original_print_pdfs.sql": "d61ae271961e12bc5df15a9eb96bb5782a4891665e479e39fdefda8f7e90b66c",
+    "supabase/config.toml": "893ef2bbdbf8feed94c257488e7be7eb0132266272fefa0b0daa1ee93bfd1cde",
+    "lib/features/profile/data/print_pdf_upload_plan.dart": "ce86b215012e55bb6585392cc9a48afb2d034b5e76e49d03a21fd801cefd16cd",
+    "lib/features/profile/data/print_prepayment_package_service.dart": "c40228bdc744f63c805d9890c27c50f9c601756e1f3d7ace95c87ee5cb8bccf8",
+    "lib/features/profile/data/order_repository.dart": "7912d740dee6e23d75b28d6e6b43cd0e1dbb8839c3041b6409d61979bc81b7bb",
+    "lib/features/album/printing/raster_print_pdf.dart": "d0d32366c4285abf5adc91e0c111bfc9b720c9fd25db799ec1120c22ac187b98",
+    "lib/features/album/printing/album_print_exporter.dart": "23f44038a7a44200b1f236b55e5a9df7de4816397466394494730940fc21d7cb",
+    "supabase/functions/_shared/print-chunked-pdf.ts": "f46bb6f9a32de9d0222636c408be2173deee614208d61feca6e13041fc5b3485",
+    "supabase/functions/_shared/print-raster-pdf-range-inspector.ts": "8b7d571b659c9b1490a001cd7615cbcb31468f492159de0ccdcdbb9cd0377dac",
+    "supabase/functions/_shared/print-file-delivery.ts": "16aaf59f3d868192284ed3a8a4b6ead02cc855e6e1db1742a11903c21a6b41fe",
+    "supabase/functions/_shared/print-prepayment-package.ts": "330201048fb848e23749e599974a22895f336c99ae750491a9cc20d58951a01c",
+    "supabase/functions/_shared/print-fulfillment-worker.ts": "f615e413baeb5c5cbd5b24400fd991072d400105983b77ce98e5677ec7ab562c",
+    "supabase/functions/_shared/print-order-scheduler.ts": "8b36dcca7cc8804502aee8d37c857bdc94bcd3195c174b3ff32f235667b46732",
+    "supabase/functions/_shared/production-print-checkout.ts": "5ae93698a4dc3e63b43eae32df37ddc7507347cb4d439879f77bbc99ecc4246d",
+    "supabase/functions/_shared/print-sales-readiness.ts": "67237b381d2d5b0967ce07a1be4627cad8b9eabf632a9417e82bc96dca24a986",
+    "supabase/functions/_shared/print-package.ts": "7d1a72c71add8ddb806e44ace605129a46393cfa288189373e11bb3c52b837ce"
+  },
+  "planChangesMade": false,
+  "actualFinancialCalls": 0,
+  "paidInfrastructureCreated": false
+}

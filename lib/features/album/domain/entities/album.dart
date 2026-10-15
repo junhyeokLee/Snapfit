@@ -46,6 +46,9 @@ sealed class Album with _$Album {
 
     /// 앨범 소유자 ID
     @Default('') String userId,
+
+    /// Current user's access, resolved by the repository; never written to album content.
+    @JsonKey(includeToJson: false) String? memberRole,
     @Default('') String createdAt,
     @Default('') String updatedAt,
   }) = _Album;
@@ -54,6 +57,11 @@ sealed class Album with _$Album {
 }
 
 extension AlbumPhysicalSize on Album {
+  // Drafts and legacy local fixtures have no server-resolved role yet.
+  bool get allowsEditing =>
+      memberRole == null || ['OWNER', 'EDITOR'].contains(memberRole);
+  bool get allowsManagement => memberRole == null || memberRole == 'OWNER';
+
   CoverSize get physicalCoverSize {
     Map<String, dynamic>? product;
     try {

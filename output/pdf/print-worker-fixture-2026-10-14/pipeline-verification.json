@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-10-15T02:35:30.558Z",
+  "fixtureOnly": true,
+  "renderer": "actual Flutter AlbumPrintExporter",
+  "fixtureScenario": "SOFT_20",
+  "artworkProfile": "standard",
+  "pageCount": 20,
+  "productId": "REDP_200X150_SOFT",
+  "paymentProvider": "LOCAL STUB",
+  "supplier": "LOCAL STUB",
+  "database": "LOCAL IN-MEMORY STUB",
+  "externalRequestCount": 0,
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false,
+  "actualShipmentMade": false,
+  "physicalSampleValidated": false,
+  "productionApproved": false,
+  "sourceFingerprint": "f0b2cddcac15f379650b5abb53bc23d32302c82f5633f25db0a1a5fe88c26695",
+  "cover": {
+    "pageCount": 1,
+    "widthMm": 417.22,
+    "heightMm": 160,
+    "byteLength": 607566,
+    "sha256": "83aac1209ec1ba7c665bcda69b778c43613a6c8cc013f06093250f550ee37a25"
+  },
+  "interior": {
+    "pageCount": 20,
+    "widthMm": 210,
+    "heightMm": 160,
+    "byteLength": 10153260,
+    "sha256": "c4b97b6ee583b20fdfa7233b5726eb01e816706601e20b55a29e119068ca491c"
+  },
+  "supplierStubSubmissionCount": 1,
+  "supplierStubDepositCount": 1,
+  "finalLocalCustomerStage": "SHIPPING",
+  "deliveredConfirmed": false
+}

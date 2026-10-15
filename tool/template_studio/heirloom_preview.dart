@@ -106,9 +106,9 @@ class _HeirloomPreviewState extends State<HeirloomPreview> {
         ? vowEditionChapters
         : study.chapters,
     revision: selectedPages,
-    coverRevision: selectedPages,
+    coverRevision: selectedPages + (volumePages != null ? 1 : 0),
     editionLabel:
-        '${study.category} · $selectedPages쪽 · ${premiumVolumeLaunchPointPrice}P · 출시 대기',
+        '${study.category} · $selectedPages쪽 · ${premiumVolumeLaunchPointPrice}P',
     initialCopy: study.defaultCopy,
     buildPages: (aspect, copy, photos) => heirloomPages(
       study,
@@ -248,7 +248,7 @@ class _PremiumStudiesCatalogState extends State<PremiumStudiesCatalog> {
                 ),
                 const Spacer(),
                 const Text(
-                  '내지 24~36쪽 · 출시 대기',
+                  '내지 24~36쪽 · 프리미엄 컬렉션',
                   style: TextStyle(fontSize: 12, color: Color(0xFF65716C)),
                 ),
               ],

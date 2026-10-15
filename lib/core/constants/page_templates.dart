@@ -349,7 +349,7 @@ List<PageTemplate> get pageTemplates => [
   // 1. Current – 위 큰 1칸, 아래 2칸
   PageTemplate(
     id: 'basic',
-    name: 'Current',
+    name: '세 장의 흐름',
     backgroundColor: const Color(0xFFFFFBF5),
     slots: [
       PageTemplateSlot(
@@ -381,7 +381,7 @@ List<PageTemplate> get pageTemplates => [
   // 2. Collage – 2x2
   PageTemplate(
     id: 'collage',
-    name: 'Collage',
+    name: '콜라주',
     backgroundColor: const Color(0xFFF8F5EF),
     slots: [
       PageTemplateSlot(
@@ -421,7 +421,7 @@ List<PageTemplate> get pageTemplates => [
   // 3. Focus – 위 큰 1칸, 아래 3칸
   PageTemplate(
     id: 'focus',
-    name: 'Focus',
+    name: '한 장에 집중',
     backgroundColor: const Color(0xFFFFF8F0),
     slots: [
       PageTemplateSlot(
@@ -461,28 +461,28 @@ List<PageTemplate> get pageTemplates => [
   // 4. The Journey – 상단 1칸 가로 넓게, 하단 5칸 동일
   PageTemplate(
     id: 'journey',
-    name: 'The Journey',
+    name: '여행의 장면들',
     backgroundColor: const Color(0xFFF7FBFF),
     slots: _journeySlots,
   ),
   // 5. Grid Mosaic – 3x3 (9칸)
   PageTemplate(
     id: 'grid_mosaic',
-    name: 'Grid Mosaic',
+    name: '아홉 장 모자이크',
     backgroundColor: const Color(0xFFFAF8FF),
     slots: _gridMosaicSlots,
   ),
   // 6. Cinematic Spread – 상단 1칸 넓게, 하단 2칸
   PageTemplate(
     id: 'cinematic',
-    name: 'Cinematic Spread',
+    name: '시네마틱 장면',
     backgroundColor: const Color(0xFFF4F5F7),
     slots: _cinematicSlots,
   ),
   // 7. Full Single – 사진 1장이 화면을 거의 꽉 채우는 레이아웃
   PageTemplate(
     id: 'full_single',
-    name: 'Full · 1장',
+    name: '가득 채우기 · 한 장',
     backgroundColor: const Color(0xFFFFFFFF),
     slots: [
       PageTemplateSlot(
@@ -498,7 +498,7 @@ List<PageTemplate> get pageTemplates => [
   // 8. Full Duo Vertical – 좌/우 2장, 세로로 크게
   PageTemplate(
     id: 'full_duo_vertical',
-    name: 'Full · 2장 세로',
+    name: '가득 채우기 · 위아래',
     backgroundColor: const Color(0xFFF7FBF7),
     slots: [
       PageTemplateSlot(
@@ -522,7 +522,7 @@ List<PageTemplate> get pageTemplates => [
   // 9. Full Duo Horizontal – 상/하 2장, 가로로 크게
   PageTemplate(
     id: 'full_duo_horizontal',
-    name: 'Full · 2장 가로',
+    name: '가득 채우기 · 나란히',
     backgroundColor: const Color(0xFFFFFAF4),
     slots: [
       PageTemplateSlot(
@@ -546,7 +546,7 @@ List<PageTemplate> get pageTemplates => [
   // 10. Full Triple Strip – 세로로 3등분한 스트립 레이아웃 (위/중/아래)
   PageTemplate(
     id: 'full_triple_strip',
-    name: 'Full · 3칸 스트립',
+    name: '가득 채우기 · 세 줄',
     backgroundColor: const Color(0xFFF7FBFF),
     slots: [
       PageTemplateSlot(
@@ -578,7 +578,7 @@ List<PageTemplate> get pageTemplates => [
   // 11. Full Triple Columns – 세로 3분할 컬럼 레이아웃
   PageTemplate(
     id: 'full_triple_columns',
-    name: 'Full · 3칸 컬럼',
+    name: '가득 채우기 · 세 칸',
     backgroundColor: const Color(0xFFFAF7FF),
     slots: [
       PageTemplateSlot(
@@ -610,7 +610,7 @@ List<PageTemplate> get pageTemplates => [
   // 12. Full 4-Grid – 2x2 균등(상/하 2칸씩), Collage보다 여백을 조금만 두는 버전
   PageTemplate(
     id: 'full_four_grid',
-    name: 'Full · 4칸',
+    name: '가득 채우기 · 네 칸',
     backgroundColor: const Color(0xFFF8F8F8),
     slots: [
       PageTemplateSlot(

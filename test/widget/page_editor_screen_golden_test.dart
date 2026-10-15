@@ -21,6 +21,7 @@ import 'package:snap_fit/features/album/presentation/widgets/editor/edit_cover.d
 import 'package:snap_fit/features/album/presentation/widgets/editor/layer_manager_panel.dart';
 import 'package:snap_fit/features/album/service/album_editor_service.dart';
 import 'package:snap_fit/features/album/service/album_persistence_service.dart';
+import 'ai_album_start_step_test.dart' show loadCreationFonts;
 
 class MockAlbumRepository extends Mock implements AlbumRepository {}
 
@@ -76,6 +77,7 @@ class FakeAlbumPersistenceService implements AlbumPersistenceService {
 }
 
 Future<void> _loadGoldenFonts() async {
+  await loadCreationFonts();
   final korean = FontLoader('Noto Sans KR')
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
     ..addFont(rootBundle.load('assets/fonts/NotoSansKR-SemiBold.ttf'))
@@ -185,9 +187,17 @@ Widget _wrapEditor() {
   );
 }
 
-Future<void> _pumpEditorToEntryMotion(WidgetTester tester) async {
-  await tester.binding.setSurfaceSize(const Size(390, 844));
+Future<void> _editorSurface(WidgetTester tester, Size size) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
+}
+
+Future<void> _pumpEditorToEntryMotion(WidgetTester tester) async {
+  await _editorSurface(tester, const Size(390, 844));
   await tester.pumpWidget(_wrapEditor());
   for (var i = 0; i < 12; i += 1) {
     await tester.pump(const Duration(milliseconds: 16));
@@ -207,8 +217,7 @@ double _firstOpacityUnder(WidgetTester tester, Key key) {
 }
 
 Future<void> _pumpEditor(WidgetTester tester) async {
-  await tester.binding.setSurfaceSize(const Size(390, 844));
-  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await _editorSurface(tester, const Size(390, 844));
   await tester.pumpWidget(_wrapEditor());
   await tester.pumpAndSettle();
 }
@@ -291,7 +300,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
 
     expect(find.byKey(const Key('pageEditorPageTurnReveal')), findsOneWidget);
-    expect(find.byKey(const Key('pageSelectorSelectionGlow')), findsOneWidget);
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('editor-page-1')))
+          .properties
+          .selected,
+      isTrue,
+    );
     final opacity = tester
         .widget<Opacity>(find.byKey(const Key('pageEditorPageTurnOpacity')))
         .opacity;
@@ -314,31 +329,30 @@ void main() {
   });
 
   testWidgets(
-    'editor tool opens inline atelier panel without modal route jump',
+    'portrait layer tool opens a dismissible sheet without leaving the editor',
     (tester) async {
       await _pumpEditor(tester);
 
-      await tester.tap(find.text('레이어'));
+      await tester.ensureVisible(find.byTooltip('레이어'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('레이어'));
       await tester.pump(const Duration(milliseconds: 180));
 
-      expect(find.byKey(const Key('editorAtelierPanel')), findsOneWidget);
       expect(find.byType(LayerManagerPanel), findsOneWidget);
       expect(find.byType(EditorBottomMenu), findsOneWidget);
-      expect(find.byType(BottomSheet), findsNothing);
-
-      final panelBottom = tester
-          .getBottomLeft(find.byKey(const Key('editorAtelierPanel')))
-          .dy;
-      final dockTop = tester.getTopLeft(find.byType(EditorBottomMenu)).dy;
-      expect(panelBottom, lessThanOrEqualTo(dockTop + 1));
+      expect(find.byType(BottomSheet), findsOneWidget);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('레이어 닫기'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PageEditorScreen), findsOneWidget);
+      expect(find.byType(LayerManagerPanel), findsNothing);
     },
   );
 
   testWidgets(
     'page editor landscape keeps album canvas reader-sized beside tool rails',
     (tester) async {
-      await tester.binding.setSurfaceSize(const Size(844, 390));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await _editorSurface(tester, const Size(844, 390));
       await tester.pumpWidget(_wrapEditor());
       await tester.pumpAndSettle();
 
@@ -369,11 +383,13 @@ void main() {
         matchesGoldenFile('goldens/page_editor_workspace_390x844.png'),
       );
 
-      await tester.tap(find.text('레이어'));
+      await tester.ensureVisible(find.byTooltip('레이어'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('레이어'));
       await tester.pumpAndSettle();
 
       expect(find.byType(LayerManagerPanel), findsOneWidget);
-      expect(find.textContaining('항목을 탭하면'), findsOneWidget);
+      expect(find.text('2개'), findsOneWidget);
 
       await expectLater(
         find.byType(MaterialApp),

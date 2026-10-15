@@ -86,101 +86,108 @@ void _conceptCouple(_ConceptBook b) {
   });
 
   b.add('our-chosen-corner', milk, (p) {
-    p.txt('너의 자리', .075, .075, .68, .12, size: .077, color: ink);
+    p.label('HOME / 02', .075, .055, .85, color: rose);
+    p.txt('너의 자리', .075, .14, .85, .14, size: .087, color: ink);
     p.txt(
       '햇볕이 먼저 드는 쪽으로.',
-      .34,
-      .215,
-      .57,
-      .065,
+      .30,
+      .295,
+      .61,
+      .06,
       font: 'NanumPen',
       size: .038,
       color: rose,
     );
-    p.mat('studioWashiRose', .54, .325, .23, .055, turn: .09);
+    p.mat('heirloomTableLinen', .035, .405, .91, .41, turn: .015);
     p.pic(
       'daily_desk',
       .08,
-      .355,
-      .78,
-      .425,
+      .405,
+      .81,
+      .36,
       frame: 'studioPhotoCorners',
       turn: -.015,
     );
-    p.label('커튼을 고르던 날 / 06. 08', .11, .855, .78, color: ink);
+    p.mat('studioWashiRose', .60, .385, .22, .05, turn: .09);
+    p.rule(.09, .845, .27, color: '#ADBDB3');
+    p.label('커튼을 고르던 날 / 06. 08', .40, .83, .50, color: ink);
   });
   b.add('things-we-agreed-on', milk, (p) {
-    p.pic(
-      'couple_keepsakes',
-      .055,
-      .065,
-      .60,
-      .47,
-      frame: 'studioDeckle',
-      turn: .018,
-    );
+    p.mat('studioVellum', .035, .05, .93, .62, turn: -.01);
+    p.pic('couple_keepsakes', .095, .11, .57, .40, frame: 'studioOvalMat');
     p.txt(
       '네가\n좋아하는\n색으로',
-      .71,
-      .245,
-      .22,
+      .73,
       .21,
+      .20,
+      .22,
       font: 'NanumPen',
-      size: .039,
+      size: .036,
       color: rose,
     );
-    p.txt('나의 자리', .255, .585, .68, .12, size: .077, color: ink);
-    p.rule(.27, .75, .63, color: '#ADBDB3');
+    p.txt('나의 자리', .23, .665, .70, .14, size: .087, color: ink);
+    p.rule(.26, .82, .64, color: '#ADBDB3');
     p.txt(
-      '한쪽은 비워 두었다.\n네가 가져올 것들을 위해.',
-      .27,
-      .795,
-      .65,
-      .12,
-      size: .031,
+      '한쪽은 비워 두었다. 네가 가져올 것들을 위해.',
+      .26,
+      .855,
+      .64,
+      .075,
+      size: .026,
       color: ink,
     );
   });
 
   b.add('morning-table', '#E6EBE3', (p) {
-    p.label('아침에는', .07, .055, .83, color: ink);
-    p.pic('small_days_breakfast', .04, .145, .92, .64, frame: 'studioLinen');
-    p.txt('늘, 두 잔', .065, .83, .47, .09, size: .060, color: ink);
+    p.label('아침에는 / 03', .07, .055, .83, color: ink);
+    p.mat('studioVellum', .025, .15, .95, .61, turn: -.015);
+    p.pic('small_days_breakfast', .06, .18, .88, .53, frame: 'studioLinen');
+    p.txt('늘, 두 잔', .065, .785, .56, .13, size: .075, color: ink);
     p.txt(
-      '먼저 일어난 사람이 물을 올린다.',
-      .58,
-      .835,
-      .34,
-      .075,
+      '먼저 일어난 사람이\n물을 올린다.',
+      .665,
+      .80,
+      .27,
+      .105,
       font: 'NanumPen',
       size: .030,
       color: rose,
     );
   });
   b.add('two-cups-note', '#E6EBE3', (p) {
+    p.label('OUR MORNING RECIPE', .08, .055, .83, color: rose);
     p.txt(
       '커피는 조금 연하게,',
-      .12,
-      .125,
-      .77,
-      .095,
+      .08,
+      .14,
+      .85,
+      .105,
       font: 'NanumPen',
       size: .052,
       color: ink,
     );
     p.txt(
       '잼은 넉넉하게.',
-      .25,
-      .225,
-      .65,
-      .085,
+      .28,
+      .26,
+      .64,
+      .095,
       font: 'NanumPen',
-      size: .054,
+      size: .055,
       color: ink,
     );
-    p.pic('daily_fruit', .17, .38, .43, .35, frame: 'studioOval', turn: -.025);
-    p.txt('매일\n외워 가는\n너의 취향', .675, .43, .235, .23, size: .042, color: rose);
-    p.label('천천히 먹어도 괜찮은 아침.', .13, .825, .77, color: ink);
+    p.pic(
+      'daily_fruit',
+      .08,
+      .425,
+      .49,
+      .36,
+      frame: 'studioScallop',
+      turn: -.02,
+    );
+    p.txt('매일\n외워 가는\n너의 취향', .66, .49, .27, .245, size: .047, color: rose);
+    p.rule(.10, .84, .25, color: '#ADBDB3');
+    p.label('천천히 먹어도 괜찮은 아침.', .40, .825, .51, color: ink);
   });
 
   b.add('market-weekend', milk, (p) {
@@ -323,27 +330,28 @@ void _conceptCouple(_ConceptBook b) {
     );
   });
   b.add('rainy-day-letter', mist, (p) {
-    p.mat('studioBlueFibre', .025, .255, .95, .61, turn: -.018);
-    p.txt('아무 데도', .08, .075, .82, .12, size: .067, color: ink);
-    p.txt('가지 않기로 했다.', .15, .20, .77, .105, size: .057, color: ink);
-    p.txt(
+    p.label('STAYING IN / 06', .08, .055, .84, color: rose);
+    p.txt('아무 데도', .075, .14, .85, .12, size: .080, color: ink);
+    p.txt('가지 않기로 했다.', .16, .285, .76, .11, size: .061, color: ink);
+    final note = p.mat('studioBlueFibre', .06, .44, .88, .36, turn: -.018);
+    p.paperText(
+      note,
       '각자 책을 읽다가\n같은 장면에 웃었다.\n창문은 조금만 열어 두었다.',
+      .09,
       .13,
-      .445,
-      .69,
-      .225,
+      .80,
+      .73,
       font: 'NanumPen',
-      size: .045,
-      color: ink,
+      size: .043,
     );
     p.txt(
       '이런 주말도 좋네.',
-      .37,
-      .83,
-      .55,
-      .075,
+      .34,
+      .85,
+      .58,
+      .07,
       font: 'NanumPen',
-      size: .048,
+      size: .045,
       color: rose,
     );
   });
@@ -363,16 +371,25 @@ void _conceptCouple(_ConceptBook b) {
     );
   });
   b.add('regular-order-card', milk, (p) {
-    p.pic('travel_cafe', .075, .085, .51, .60, frame: 'studioDoubleMat');
-    p.txt('늘\n앉던\n자리', .665, .24, .26, .31, size: .063, color: ink);
-    p.mat('materialTicketDuo', .57, .61, .32, .13, turn: -.06);
-    p.rule(.10, .78, .78, color: '#ACBCB1');
+    p.label('THE USUAL / 07', .08, .055, .84, color: rose);
+    p.txt('늘\n앉던\n자리', .08, .18, .25, .33, size: .068, color: ink);
+    p.pic(
+      'travel_cafe',
+      .42,
+      .16,
+      .49,
+      .57,
+      frame: 'studioDoubleMat',
+      turn: .015,
+    );
+    p.mat('materialTicketDuo', .10, .575, .27, .105, turn: -.04);
+    p.rule(.10, .795, .79, color: '#ACBCB1');
     p.txt(
-      '같은 주문,\n조금 다른 하루의 이야기.',
-      .11,
-      .815,
-      .77,
-      .105,
+      '같은 주문, 조금 다른 하루의 이야기.',
+      .10,
+      .84,
+      .79,
+      .07,
       size: .035,
       font: 'NanumPen',
       color: ink,

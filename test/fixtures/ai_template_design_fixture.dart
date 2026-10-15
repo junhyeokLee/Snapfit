@@ -8,6 +8,12 @@ Map<String, Object?> templateDesignJson({
   'concept': '제주의 느린 오후',
   'rationale': '풍경과 작은 장면 사이에 넓은 여백을 두고 짙은 초록으로 리듬을 만들었어요.',
   'aspect': aspect.name,
+  if (pageCount >= 20)
+    'layoutExpansion': {
+      'strategy': 'repeat_inner_layouts_v1',
+      'sourcePageCount': 16,
+      'finalPageCount': pageCount,
+    },
   'pages': List.generate(
     pageCount + 1,
     (i) => {

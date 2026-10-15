@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-15",
+  "files": 7,
+  "exitCode": 0,
+  "tests": 77,
+  "pass": 77,
+  "fail": 0,
+  "skipped": 0,
+  "cancelled": 0,
+  "wallSeconds": 14.596,
+  "actualDenseInteriorBytes": 102193868,
+  "environment": "local isolated SQL + provider adapters",
+  "realPayments": 0,
+  "realVendorOrders": 0,
+  "remoteActions": false
+}

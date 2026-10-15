@@ -93,6 +93,46 @@ void main() {
 
   group('round-trip', () {
     test(
+      'photo crop survives resize and defaults safely for legacy payloads',
+      () {
+        final layer = LayerModel(
+          id: 'crop',
+          type: LayerType.image,
+          position: Offset.zero,
+          width: 160,
+          height: 120,
+          imageZoom: 2.4,
+          imageOffset: const Offset(40, -20),
+          imageBackground: 'circle',
+        );
+        final json = LayerExportMapper.toJson(layer, canvasSize: canvasSize);
+        final restored = LayerExportMapper.fromJson(
+          json,
+          canvasSize: canvasSize * 2,
+        );
+        expect(restored.imageZoom, 2.4);
+        expect(restored.imageOffset, const Offset(80, -40));
+        expect(restored.imageAlignment, layer.imageAlignment);
+        expect(restored.imageBackground, 'circle');
+        final payload = json['payload'] as Map;
+        for (final invalid in [null, double.nan, 'bad']) {
+          payload['imageZoom'] = invalid;
+          expect(
+            LayerExportMapper.fromJson(json, canvasSize: canvasSize).imageZoom,
+            1,
+          );
+        }
+        payload['imageZoom'] = 8;
+        expect(
+          LayerExportMapper.fromJson(json, canvasSize: canvasSize).imageZoom,
+          4,
+        );
+        expect(layer.copyWith(clearImage: true).imageZoom, 1);
+        expect(layer.copyWith(clearImage: true).imageOffset, isNull);
+        expect(layer.copyWith(clearImage: true).imageBackground, 'circle');
+      },
+    );
+    test(
       'line height is dimensionless, preserved on resize and optional for old albums',
       () {
         final layer = _textLayer().copyWith(

@@ -26,6 +26,7 @@ class OrderHistoryItem {
   final String? printFileZipUrl;
   final int? printAssetCount;
   final DateTime? paymentConfirmedAt;
+  final DateTime? preparationAbortedAt;
   final DateTime? printPackageGeneratedAt;
   final DateTime? printSubmittedAt;
   final DateTime? shippedAt;
@@ -73,14 +74,70 @@ class OrderHistoryItem {
     'READY' => '발주 준비 완료',
     'SUBMITTED' => '제작사 접수 확인 대기',
     'ACCEPTED' => '제작사 접수 완료',
+    'FILE_CHECKED' => '제작사 파일 확인 완료',
+    'PRODUCTION' || 'IN_PRODUCTION' => '책 제작 중',
+    'SHIPPED' => '택배 출고 완료',
+    'DELIVERED' => '배송 완료',
+    'FILE_ERROR' => '인쇄 파일 확인 필요',
+    'FAILED' || 'RENDER_FAILED' || 'PREFLIGHT_FAILED' => '제작 준비 확인 필요',
     _ => '인쇄 준비 상태 미확인',
   };
 
+  bool get requiresPrintAttention => {
+    'FILE_ERROR',
+    'FAILED',
+    'RENDER_FAILED',
+    'PREFLIGHT_FAILED',
+    'REVIEW_REQUIRED',
+  }.contains(printFulfillmentStatus);
+
+  bool get isFinal => const {
+    'DELIVERED',
+    'CANCELED',
+    'CANCELLED',
+    'PREPARATION_CANCELED',
+  }.contains(status.toUpperCase());
+
   String get customerStatusLabel {
-    if (status == 'PAYMENT_COMPLETED') {
-      return printFulfillmentStatus == 'SUBMITTED' ? '제작 접수 확인중' : '제작 준비중';
+    final current = status.toUpperCase();
+    if (current == 'PAYMENT_PENDING') return '결제 확인 대기';
+    if (current == 'PREPARATION_CANCELED') return '주문 준비 취소';
+    if (current != 'PAYMENT_COMPLETED') return statusLabel;
+    if (paymentConfirmedAt == null) return '결제 상태 확인 중';
+    if (requiresPrintAttention) return '주문 확인 중';
+    return switch (printFulfillmentStatus) {
+      'READY' => '자동 발주 대기',
+      'SUBMITTED' => '제작사 접수 확인 중',
+      'ACCEPTED' => '인쇄 파일 확인 중',
+      'FILE_CHECKED' => '책 제작 대기',
+      _ => '제작 준비 중',
+    };
+  }
+
+  String get customerStatusDescription {
+    switch (status.toUpperCase()) {
+      case 'PAYMENT_PENDING':
+        return '아직 결제 완료가 확인되지 않았어요. 기존 주문의 결제 결과를 확인하거나 준비를 이어갈 수 있어요.';
+      case 'PREPARATION_CANCELED':
+        return '결제 전 주문 준비가 취소됐어요. 앨범을 수정해 다시 주문을 준비할 수 있어요.';
+      case 'CANCELED':
+      case 'CANCELLED':
+        return '취소된 주문이에요. 환불이나 처리 내역이 궁금하면 주문 문의에서 확인해주세요.';
+      case 'SHIPPING':
+        return '택배사에 책을 전달했어요. 송장번호가 등록되면 배송 조회를 이용할 수 있어요.';
+      case 'DELIVERED':
+        return '배송이 완료됐어요. 인쇄나 배송에 문제가 있다면 주문 문의로 알려주세요.';
+      case 'IN_PRODUCTION':
+      case 'PRINTING':
+        return '책을 제작하고 있어요. 제작이 시작된 주문은 취소가 어려울 수 있어요.';
     }
-    return statusLabel;
+    if (paymentConfirmedAt == null) {
+      return '서버에서 결제 결과를 확인하고 있어요. 결제 완료는 확인된 결과로만 표시돼요.';
+    }
+    if (requiresPrintAttention) {
+      return '결제한 주문은 보관되어 있어요. 제작 준비 상태를 확인하고 있으며, 필요한 안내는 이 주문에서 확인할 수 있어요.';
+    }
+    return '결제 확인 후 인쇄 파일 검수와 제작사 주문 접수가 자동으로 이어져요. 앱을 닫아도 진행되며 이 화면에서 확인할 수 있어요.';
   }
 
   const OrderHistoryItem({
@@ -109,6 +166,7 @@ class OrderHistoryItem {
     this.printFileZipUrl,
     this.printAssetCount,
     this.paymentConfirmedAt,
+    this.preparationAbortedAt,
     this.printPackageGeneratedAt,
     this.printSubmittedAt,
     this.shippedAt,
@@ -160,6 +218,7 @@ class OrderHistoryItem {
       printFileZipUrl: json['printFileZipUrl']?.toString(),
       printAssetCount: (json['printAssetCount'] as num?)?.toInt(),
       paymentConfirmedAt: parseOptionalDate('paymentConfirmedAt'),
+      preparationAbortedAt: parseOptionalDate('preparationAbortedAt'),
       printPackageGeneratedAt: parseOptionalDate('printPackageGeneratedAt'),
       printSubmittedAt: parseOptionalDate('printSubmittedAt'),
       shippedAt: parseOptionalDate('shippedAt'),
@@ -205,7 +264,7 @@ class OrderHistoryItem {
         parsed.second,
         parsed.millisecond,
         parsed.microsecond,
-      ).add(const Duration(hours: 9));
+      ).toLocal();
     }
     return parsed.toLocal();
   }

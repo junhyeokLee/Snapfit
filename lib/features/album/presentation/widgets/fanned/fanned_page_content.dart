@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -9,6 +8,7 @@ import '../../../../../shared/snapfit_image.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../../domain/entities/layer.dart';
+import '../../../data/gallery/photo_asset_image_provider.dart';
 
 /// FannedPageStack 내부: 페이지 레이어 또는 커버 이미지 렌더링
 class FannedPageContent extends StatelessWidget {
@@ -122,7 +122,10 @@ class FannedPageContent extends StatelessWidget {
       );
     }
     if (layer.asset != null) {
-      return AssetEntityImage(layer.asset!, fit: BoxFit.cover);
+      return Image(
+        image: photoAssetImageProvider(layer.asset!),
+        fit: BoxFit.cover,
+      );
     }
     return Icon(Icons.image, size: 28.sp, color: Colors.grey[400]);
   }

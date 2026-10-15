@@ -1,0 +1,11 @@
+{
+  "publishedAtUtc": "2026-10-15T06:03:43.729973+00:00",
+  "mainDartJsSha256": "cbbea35d0b734189907a4afb7dc282411dd408bf694f06338c988cce8cb82e74",
+  "localOrigin": "http://127.0.0.1:7357/",
+  "build": {
+    "release": true,
+    "success": true,
+    "wasmDryRun": false
+  },
+  "livePaymentsEnabled": false
+}

@@ -1,0 +1,1 @@
+void syncWebDocumentTheme(bool dark) {}

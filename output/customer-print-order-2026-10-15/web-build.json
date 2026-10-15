@@ -1,0 +1,12 @@
+{
+  "builtAt": "2026-10-15T05:22:30.113665+00:00",
+  "entryPoint": "lib/main.dart",
+  "mainJsSha256": "9f23f6c575d500aae5351d72a16a8cdb9e5ef01e253cd6fa237194f9ed34039e",
+  "releaseBuild": true,
+  "sameOriginAuthStoragePreserved": true,
+  "servedAt": "http://127.0.0.1:7357/",
+  "paymentActivationChanged": false,
+  "newPaidServer": false,
+  "wasmBuildRequested": false,
+  "startupRouteDoesNotNameOrChangeWebUrl": true
+}

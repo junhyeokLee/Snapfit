@@ -19,11 +19,18 @@ export function deliveryPolicy(category: string, preferences: PushPreferences | 
 }
 export function fcmMessage(notification: { id: number; user_id: string; type: string; category: string;
   title: string; body: string; data?: Record<string, unknown>; deeplink?: string }, token: string,
-  now: Date, ttlSeconds: number) {
+  now: Date, ttlSeconds: number, platform?: string) {
   const data: Record<string, string> = {};
   for (const [key, value] of Object.entries(notification.data ?? {})) data[key] = String(value);
   Object.assign(data, { notificationId: String(notification.id), userId: notification.user_id,
     type: notification.type, category: notification.category, deeplink: notification.deeplink ?? '' });
+  if (platform === 'web') {
+    // A notification payload auto-displays before the browser can check its
+    // current account. Web uses data-only messages and an owner-bound worker.
+    Object.assign(data, { title: notification.title, body: notification.body,
+      pushExpiresAt: String(now.getTime() + ttlSeconds * 1000) });
+    return { message: { token, data, webpush: { headers: { TTL: String(ttlSeconds), Urgency: 'high' } } } };
+  }
   return { message: { token, notification: { title: notification.title, body: notification.body }, data,
     android: { priority: 'high', ttl: `${ttlSeconds}s`, notification: {
       channel_id: 'snapfit_push', tag: `notification-${notification.id}` } },

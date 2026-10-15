@@ -253,9 +253,11 @@ class BookFlipCurl {
     this.bend = 0.5,
     this.foldTilt = 0.5,
     this.droop = 0.0,
+    this.roll = 0.0,
   })  : assert(bend >= 0 && bend <= 1, 'bend must be 0..1'),
         assert(foldTilt >= 0 && foldTilt <= 1, 'foldTilt must be 0..1'),
-        assert(droop >= 0 && droop <= 1, 'droop must be 0..1');
+        assert(droop >= 0 && droop <= 1, 'droop must be 0..1'),
+        assert(roll >= 0 && roll <= 1, 'roll must be 0..1');
 
   /// How tightly the page curls at mid-turn. 0 is a gentle, wide arc; 1 is a
   /// tight, deep curl.
@@ -268,6 +270,10 @@ class BookFlipCurl {
   /// How much the free corner sags under its own weight while turning. 0 is
   /// weightless; 1 droops noticeably.
   final double droop;
+
+  /// Blends from a whole-sheet arc (0) to a travelling paper curl (1).
+  /// The latter leaves the unturned portion flat while the fold crosses it.
+  final double roll;
 
   /// A soft, wide, shallow turn — a relaxed arc, the way a well-thumbed
   /// paperback falls open.
@@ -283,11 +289,17 @@ class BookFlipCurl {
       BookFlipCurl(bend: 0.55, foldTilt: 0.45, droop: 0.90);
 
   /// A copy of this curve with the given dials replaced.
-  BookFlipCurl copyWith({double? bend, double? foldTilt, double? droop}) =>
+  BookFlipCurl copyWith({
+    double? bend,
+    double? foldTilt,
+    double? droop,
+    double? roll,
+  }) =>
       BookFlipCurl(
         bend: bend ?? this.bend,
         foldTilt: foldTilt ?? this.foldTilt,
         droop: droop ?? this.droop,
+        roll: roll ?? this.roll,
       );
 
   /// Blends smoothly from [a] at t=0 to [b] at t=1 — animate a page slowly
@@ -299,6 +311,7 @@ class BookFlipCurl {
       bend: a.bend + (b.bend - a.bend) * t,
       foldTilt: a.foldTilt + (b.foldTilt - a.foldTilt) * t,
       droop: a.droop + (b.droop - a.droop) * t,
+      roll: a.roll + (b.roll - a.roll) * t,
     );
   }
 
@@ -307,10 +320,11 @@ class BookFlipCurl {
       other is BookFlipCurl &&
       other.bend == bend &&
       other.foldTilt == foldTilt &&
-      other.droop == droop;
+      other.droop == droop &&
+      other.roll == roll;
 
   @override
-  int get hashCode => Object.hash(bend, foldTilt, droop);
+  int get hashCode => Object.hash(bend, foldTilt, droop, roll);
 }
 
 /// Which visual effects a [BookFlip] draws. Every effect is ON by default —
@@ -521,6 +535,13 @@ class BookFlipController extends ChangeNotifier {
   /// Progress of the current turn, 0 (flat) to 1 (turned). Stays 0 when idle.
   double get flipProgress => _state?._scene.t ?? 0.0;
 
+  /// Direction of a moving leaf, including a released leaf settling to rest.
+  FlipDirection? get flipDirection {
+    final dir = _state?._scene.dir ?? 0;
+    if (dir == 0) return null;
+    return dir > 0 ? FlipDirection.forward : FlipDirection.backward;
+  }
+
   /// Turns to the next spread, if there is one. [velocity] is in turns/second.
   ///
   /// Returns true if a flip was started, or false on a no-op — already at the
@@ -554,6 +575,8 @@ class BookFlipController extends ChangeNotifier {
   /// Unlike [dragUpdate], this does not accumulate deltas inside the engine. It
   /// maps the total movement since grab-start to the current curl progress, which
   /// is useful when a parent gesture recognizer owns the drag stream.
+  /// [localPosition] is the current finger position, not the original grab point.
+  /// [distance] is signed: positive advances the turn, negative pulls it back.
   bool dragToDistance({
     required Offset localPosition,
     required FlipDirection direction,

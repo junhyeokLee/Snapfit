@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
@@ -27,19 +26,14 @@ class EditToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        left: 20.w,
-        right: 20.w,
-        bottom: 20.h,
-        top: 10.h,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Container(
-        height: 72.h,
+        height: 72,
         decoration: BoxDecoration(
           color: SnapFitColors.surfaceOf(
             context,
           ).withOpacity(0.95), // theme support
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(
@@ -66,7 +60,7 @@ class EditToolbar extends StatelessWidget {
             _toolbarButton(
               context,
               Icons.dashboard_outlined,
-              "커버",
+              coverLabel,
               onOpenCoverSelector,
             ),
           ],
@@ -81,28 +75,30 @@ class EditToolbar extends StatelessWidget {
     String label,
     VoidCallback onTap,
   ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 24.sp,
-              color: SnapFitColors.textPrimaryOf(context),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: SnapFitColors.textSecondaryOf(context),
-                fontWeight: FontWeight.w500,
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 24, color: SnapFitColors.textPrimaryOf(context)),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: SnapFitColors.textSecondaryOf(context),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

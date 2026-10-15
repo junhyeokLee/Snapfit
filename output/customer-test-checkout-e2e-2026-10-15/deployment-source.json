@@ -1,0 +1,19 @@
+{
+  "projectVerified": true,
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "appliedVersionsBefore": 45,
+  "pendingMigrations": [
+    "20261015055100_owned_development_order_history.sql"
+  ],
+  "sourceSha256": {
+    "supabase/functions/_shared/print-dev-checkout.ts": "91ebbf8cc5ee7c08bea2b00ab748ea6971b4d67786849ca956e6dd5792943760",
+    "supabase/functions/_shared/print-checkout.ts": "2a4773d3ed683c8742743ac0e80aadccbb2520193139148c44ab4393030937a3",
+    "supabase/functions/_shared/production-print-checkout.ts": "5d9cad3b3c3d12c4af358de8e1d98b557f4d2ba89a8f6916e3d413765aa50c45",
+    "supabase/functions/_shared/print-prepayment-package.ts": "8027f759cb05d6c5a10f2afb8d544b71313aabecff23cef2ee6028f6c4c6b4ee",
+    "supabase/migrations/20261015055100_owned_development_order_history.sql": "6ff03a92a76b6cd101b97e76050a62377cc82e44d8ab516c2f91dc6be17f58bf"
+  },
+  "liveSettingsChanged": false,
+  "functionTargets": [
+    "print-dev-checkout"
+  ]
+}

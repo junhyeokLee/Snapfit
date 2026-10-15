@@ -65,10 +65,10 @@ class ConceptVolumePreview extends StatelessWidget {
     title: volume.title,
     prioritizePageCount: true,
     chapters: volume.chapters,
-    revision: volume.contentRevision,
-    coverRevision: 1,
+    revision: volume.contentRevision + 1,
+    coverRevision: 3,
     editionLabel:
-        '${volume.category} · 24쪽 · ${volume.isApprovedDesign ? '디자인 승인' : '신규 디자인 검토'} · ${conceptVolumeLaunchPointPrice}P · 출시 대기',
+        '${volume.category} · 24쪽 · ${conceptVolumeLaunchPointPrice}P',
     initialCopy: volume.defaultCopy,
     buildPages: (aspect, copy, photos) =>
         conceptVolumePages(volume, aspect, copy: copy, photos: photos),

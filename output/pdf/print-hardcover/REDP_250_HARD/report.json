@@ -25,6 +25,7 @@
       "layerId": "photo",
       "widthPx": 3000,
       "heightPx": 3000,
+      "cropZoom": 1.0,
       "effectivePpi": 382.8,
       "decodedWidthPx": 2352,
       "decodedHeightPx": 2352
@@ -34,6 +35,7 @@
       "layerId": "photo",
       "widthPx": 3000,
       "heightPx": 3000,
+      "cropZoom": 1.0,
       "effectivePpi": 381.0,
       "decodedWidthPx": 2363,
       "decodedHeightPx": 2363

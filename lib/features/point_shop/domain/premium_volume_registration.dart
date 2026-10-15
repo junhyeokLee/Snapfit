@@ -1,4 +1,5 @@
 import '../../../core/templates/authored_collections.dart';
+import '../../../core/templates/published_premium_templates.dart';
 import 'point_shop_product.dart';
 
 /// Owner delegated launch pricing; server activation remains independent.
@@ -43,8 +44,12 @@ final pendingConceptVolumeProducts = List<PointShopProduct>.unmodifiable([
 ]);
 
 bool isPendingTemplateProduct(String key) =>
-    pendingPremiumVolumeForKey(key) != null ||
-    pendingConceptVolumeForKey(key) != null;
+    (pendingPremiumVolumeForKey(key) != null ||
+        pendingConceptVolumeForKey(key) != null) &&
+    ![
+      ...premiumVolumeCatalogIds.values,
+      ...conceptVolumeCatalogIds.values,
+    ].any((id) => publishedPremiumProductKey(id) == key);
 
 String? pendingTemplateContentsLabel(String key) {
   final volume = pendingPremiumVolumeForKey(key);

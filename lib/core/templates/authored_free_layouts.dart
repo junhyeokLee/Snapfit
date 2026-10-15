@@ -134,19 +134,17 @@ const _dailyPhotos = [
 
 class _FreeBook {
   _FreeBook(this.volume, this.aspect, this.copy)
-    : palette = _freePalettes[volume] ?? _lifePalettes[volume]!;
+    : palette = _freePalettes[volume] ?? _lifePalettes[volume]!,
+      photos = _freeDirectedPhotos(volume);
   final FreeCollectionVolume volume;
   final CollectionAspect aspect;
   final EditorialCopy copy;
   final _FreePalette palette;
   final pages = <Map<String, dynamic>>[];
-  List<String> get photos =>
-      _lifePhotos(volume) ??
-      switch (volume.category) {
-        '웨딩' => _weddingPhotos,
-        '여행' => _travelPhotos,
-        _ => _dailyPhotos,
-      };
+  final List<String> photos;
+  final _photoUses = <String, int>{};
+  final _spreadPhotos = <String>{};
+  int _photoSpread = -1;
 
   _Sheet sheet({bool tinted = false}) => _Sheet(
     volume.id,
@@ -168,16 +166,36 @@ class _FreeBook {
     double h, {
     String? frame,
   }) {
-    var index = source % photos.length;
-    final used = p.layers
-        .where((l) => l['type'] == 'image')
-        .map((l) => l['imageUrl'])
-        .toSet();
-    while (used.contains('asset:$_editorial${photos[index]}') &&
-        used.length < photos.length) {
-      index = (index + 1) % photos.length;
+    final spread = (p.index + 1) ~/ 2;
+    if (_photoSpread != spread) {
+      _photoSpread = spread;
+      _spreadPhotos.clear();
     }
-    final file = photos[index];
+    final candidates = [
+      for (var offset = 0; offset < photos.length; offset++)
+        photos[(source + offset) % photos.length],
+    ];
+    final available = candidates
+        .where((f) => !_spreadPhotos.contains(f))
+        .toList();
+    final pool = available.isNotEmpty ? available : candidates;
+    // Prefer the story's slot, then the least-used eligible image. Both sides
+    // share the same usage ledger so a spread never repeats its main photo.
+    final leastUsed = pool.map((f) => _photoUses[f] ?? 0).reduce(math.min);
+    final coverHero = volume == FreeCollectionVolume.city
+        ? id == 'city_wide'
+        : _spreadPhotos.isEmpty;
+    final file = p.index == 0 && coverHero
+        ? _freeCoverPhotos[volume]!
+        : p.index == 0 && _freeCoverCompanionPhotos.containsKey(volume)
+        ? _freeCoverCompanionPhotos[volume]!
+        : pool.firstWhere(
+            (f) =>
+                (_photoUses[f] ?? 0) == leastUsed &&
+                (p.index != 0 || f != _freeCoverPhotos[volume]),
+          );
+    _spreadPhotos.add(file);
+    _photoUses.update(file, (n) => n + 1, ifAbsent: () => 1);
     final group =
         file == 'daily_friends.png' ||
         file == 'lightbound_guests.png' ||
@@ -188,6 +206,8 @@ class _FreeBook {
           'couple_cafe.png',
           'couple_anniversary.png',
           'growth_birthday.png',
+          'cover_friends_evening.png',
+          'cover_generations_home.png',
         }.contains(file);
     final people =
         group ||
@@ -209,9 +229,24 @@ class _FreeBook {
       y += (h - height) / 2;
       w = width;
       h = height;
-      if (group) frame = 'none';
     }
-    p.photo(id, '$_editorial$file', x, y, w, h, shape: frame ?? palette.frame);
+    p.photo(
+      id,
+      _freePhotoPath(file),
+      x,
+      y,
+      w,
+      h,
+      shape:
+          frame ??
+          (p.index == 0
+              ? palette.frame
+              : w >= .60
+              ? 'none'
+              : p.index % 4 < 2
+              ? palette.frame
+              : 'studioPhotoCorners'),
+    );
   }
 
   void title(
@@ -369,7 +404,13 @@ class _FreeBook {
     'accessTier': 'free',
     'publicationStatus': 'bundled',
     'catalogPublishable': false,
-    'version': 1,
+    'version': 4,
+    'qualityRevision': 'editorial-free-2026-10-07',
+    'materialPolicyRevision': freeTemplateMaterialPolicyRevision,
+    'coverTreatment': _freePhotoCoverVolumes.contains(volume)
+        ? 'full-bleed-photo'
+        : 'composed',
+    'samplePhotoRevision': 'catalog-distinct-2026-10-07',
     'innerPageCount': 24,
     'aspect': aspect.name,
     'designWidth': aspect.canvas.width,
@@ -397,10 +438,16 @@ Map<String, dynamic> _buildFreeCollection(
   final b = _FreeBook(volume, aspect, copy);
   _freeCover(b);
   for (final spread in volume._spreads) _freeSpread(b, spread);
-  return b.document;
+  final document = b.document;
+  validateFreeTemplateMaterials(document);
+  return document;
 }
 
 void _freeCover(_FreeBook b) {
+  if (_freePhotoCoverVolumes.contains(b.volume)) {
+    _freePhotoCover(b);
+    return;
+  }
   if (_lifePalettes.containsKey(b.volume)) {
     _lifeCover(b);
     return;
@@ -436,10 +483,10 @@ void _freeCover(_FreeBook b) {
         p,
         'vows_portrait',
         0,
-        .28,
-        .415,
-        .44,
-        .31,
+        .13,
+        .385,
+        .74,
+        .36,
         frame: 'studioGallery',
       );
       b.text(
@@ -593,22 +640,27 @@ void _freeCover(_FreeBook b) {
       b.text(p, 'path_period', c.period, .13, .805, .74, .04, size: .023);
       b.text(p, 'path_names', c.byline, .13, .868, .74, .04, size: .021);
     case FreeCollectionVolume.postcards:
-      p.box('post_label', .075, .07, .85, .20, a.soft);
-      p.title(title, x: .105, y: .11, w: .70, h: .10, size: .075);
-      p.material('post_stamp', 'studioBotanicalStamp', .82, .105, .062, h: .10);
+      p.title(title, x: .075, y: .075, w: .72, h: .105, size: .082);
+      p.material(
+        'post_stamp',
+        'studioBotanicalStamp',
+        .845,
+        .077,
+        .065,
+        h: .105,
+      );
       b.photo(
         p,
         'postcard_cover',
         0,
-        .11,
-        .34,
-        .78,
-        .36,
+        .065,
+        .23,
+        .87,
+        .57,
         frame: 'studioTicket',
       );
-      b.rule(p, .11, .75, .78);
-      b.text(p, 'post_address', c.place, .11, .796, .78, .047, size: .028);
-      b.text(p, 'post_sender', c.byline, .11, .866, .78, .04, size: .023);
+      b.text(p, 'post_address', c.place, .075, .839, .85, .047, size: .027);
+      b.text(p, 'post_sender', c.byline, .075, .905, .85, .04, size: .023);
     case FreeCollectionVolume.table:
       for (var i = 0; i < 12; i++) {
         p.box(
@@ -698,7 +750,7 @@ void _freeCover(_FreeBook b) {
         size: .085,
         align: 'center',
       );
-      b.photo(p, 'together_faces', 5, .08, .395, .84, .35, frame: 'none');
+      b.photo(p, 'together_faces', 5, .08, .37, .84, .42, frame: 'none');
       b.text(
         p,
         'together_date',
@@ -818,268 +870,291 @@ void _freeSpread(_FreeBook b, _FreeSpread s) {
       b.photo(p, 'photo_${p.layers.length}', source, x, y, w, h, frame: frame);
   final title = '${chapter.toString().padLeft(2, '0')} / ${s.title}';
 
-  switch (s.layout) {
-    case _FreeLayout.opening:
-      label(left, title, .08, .09, .84);
-      headline(left, .08, .25, .84, .23, size: .081);
-      caption(left, .08, .635, .39, .18);
-      photo(left, s.detail, .57, .58, .35, .25);
-      photo(right, s.photo, .085, .125, .83, .635);
-      label(right, '이 장면에서 시작합니다.', .10, .815, .80);
-    case _FreeLayout.gallery:
-      photo(left, s.photo, .075, .10, .85, .64, frame: 'none');
-      label(left, title, .085, .795, .83);
-      caption(left, .085, .855, .83, .045);
-      photo(right, s.detail, .08, .12, .40, .29);
-      b.text(right, 'gallery_note', s.line, .55, .17, .37, .18, size: .043);
-      photo(right, s.photo + 2, .26, .56, .66, .295, frame: 'none');
-      b.rule(right, .08, .48, .84);
-    case _FreeLayout.paired:
-      label(left, title, .08, .115, .84);
-      photo(left, s.photo, .08, .26, .84, .405, frame: 'none');
-      b.text(left, 'pair_line', s.line, .08, .755, .84, .15, size: .046);
-      photo(right, s.detail, .17, .14, .66, .59);
-      caption(right, .17, .803, .66, .075);
-    case _FreeLayout.window:
-      label(left, title, .09, .10, .82);
-      photo(
-        left,
-        s.detail,
-        .255,
-        .23,
-        .49,
-        .36,
-        frame: b.palette.frame == 'none' ? 'studioRounded' : b.palette.frame,
-      );
-      headline(left, .12, .715, .76, .17, size: .052);
-      photo(right, s.photo, .08, .17, .84, .50, frame: 'none');
-      caption(right, .10, .755, .80, .10);
-    case _FreeLayout.contact:
-      label(left, title, .07, .105, .86);
-      for (var i = 0; i < 4; i++) {
+  if (!_freeQualitySpread(b, s, left, right, title)) {
+    switch (s.layout) {
+      case _FreeLayout.opening:
+        label(left, title, .08, .09, .84);
+        headline(left, .08, .25, .84, .23, size: .081);
+        caption(left, .08, .635, .39, .18);
+        photo(left, s.detail, .57, .58, .35, .25);
+        photo(right, s.photo, .085, .125, .83, .635);
+        label(right, '이 장면에서 시작합니다.', .10, .815, .80);
+      case _FreeLayout.gallery:
+        photo(left, s.photo, .075, .10, .85, .64, frame: 'none');
+        label(left, title, .085, .795, .83);
+        caption(left, .085, .855, .83, .045);
+        photo(right, s.detail, .08, .12, .40, .29);
+        b.text(right, 'gallery_note', s.line, .55, .17, .37, .18, size: .043);
+        photo(right, s.photo + 2, .26, .56, .66, .295, frame: 'none');
+        b.rule(right, .08, .48, .84);
+      case _FreeLayout.paired:
+        label(left, title, .08, .115, .84);
+        photo(left, s.photo, .08, .26, .84, .405, frame: 'none');
+        b.text(left, 'pair_line', s.line, .08, .755, .84, .15, size: .046);
+        photo(right, s.detail, .17, .14, .66, .59);
+        caption(right, .17, .803, .66, .075);
+      case _FreeLayout.window:
+        label(left, title, .09, .10, .82);
         photo(
           left,
-          s.photo + i,
-          .07 + (i % 2) * .445,
-          .23 + (i ~/ 2) * .295,
-          .405,
-          .25,
-          frame: b.volume == FreeCollectionVolume.cinema
-              ? 'studioFilm'
-              : 'none',
+          s.detail,
+          .255,
+          .23,
+          .49,
+          .36,
+          frame: b.palette.frame == 'none' ? 'studioRounded' : b.palette.frame,
         );
-      }
-      caption(left, .07, .843, .86, .052);
-      headline(right, .10, .155, .80, .22, size: .069);
-      photo(right, s.detail, .17, .51, .66, .33);
-    case _FreeLayout.ledger:
-      label(left, title, .08, .10, .84);
-      headline(left, .08, .215, .84, .19, size: .058);
-      for (final entry in ['기억하고 싶은 것', '함께 나누고 싶은 말', '다시 남겨 둘 순간'].indexed) {
-        final y = .47 + entry.$1 * .135;
-        label(left, '${entry.$1 + 1}', .08, y, .05);
+        headline(left, .12, .715, .76, .17, size: .052);
+        photo(right, s.photo, .08, .17, .84, .50, frame: 'none');
+        caption(right, .10, .755, .80, .10);
+      case _FreeLayout.contact:
+        label(left, title, .07, .105, .86);
+        for (var i = 0; i < 4; i++) {
+          photo(
+            left,
+            s.photo + i,
+            .07 + (i % 2) * .445,
+            .23 + (i ~/ 2) * .295,
+            .405,
+            .25,
+            frame: b.volume == FreeCollectionVolume.cinema
+                ? 'studioFilm'
+                : 'none',
+          );
+        }
+        caption(left, .07, .843, .86, .052);
+        headline(right, .10, .155, .80, .22, size: .069);
+        photo(right, s.detail, .17, .51, .66, .33);
+      case _FreeLayout.ledger:
+        label(left, title, .08, .10, .84);
+        headline(left, .08, .215, .84, .19, size: .058);
+        for (final entry in [
+          '기억하고 싶은 것',
+          '함께 나누고 싶은 말',
+          '다시 남겨 둘 순간',
+        ].indexed) {
+          final y = .47 + entry.$1 * .135;
+          label(left, '${entry.$1 + 1}', .08, y, .05);
+          b.text(
+            left,
+            'register_${entry.$1}',
+            entry.$2,
+            .18,
+            y,
+            .69,
+            .055,
+            size: .027,
+          );
+          b.rule(left, .18, y + .074, .69, color: '#BCC8C1');
+        }
+        photo(right, s.photo, .08, .16, .39, .42);
+        photo(right, s.detail, .535, .33, .385, .42);
+        caption(right, .08, .824, .84, .063);
+      case _FreeLayout.letter:
+        label(left, title, .10, .10, .80);
+        headline(left, .10, .205, .80, .22, size: .061);
         b.text(
           left,
-          'register_${entry.$1}',
-          entry.$2,
-          .18,
-          y,
-          .69,
-          .055,
+          'personal_letter',
+          b.copy.note,
+          .10,
+          .49,
+          .80,
+          .38,
           size: .027,
         );
-        b.rule(left, .18, y + .074, .69, color: '#BCC8C1');
-      }
-      photo(right, s.photo, .08, .16, .39, .42);
-      photo(right, s.detail, .535, .33, .385, .42);
-      caption(right, .08, .824, .84, .063);
-    case _FreeLayout.letter:
-      label(left, title, .10, .10, .80);
-      headline(left, .10, .205, .80, .22, size: .061);
-      b.text(
-        left,
-        'personal_letter',
-        b.copy.note,
-        .10,
-        .49,
-        .80,
-        .38,
-        size: .027,
-      );
-      photo(right, s.photo, .14, .19, .72, .50);
-      caption(right, .14, .771, .72, .10);
-    case _FreeLayout.postcard:
-      label(left, title, .08, .10, .84);
-      photo(left, s.photo, .08, .22, .84, .405, frame: 'studioTicket');
-      b.rule(left, .08, .704, .84);
-      caption(left, .08, .77, .84, .10);
-      photo(right, s.detail, .08, .25, .38, .38, frame: 'none');
-      _freeVerticalRule(right, .51, .20, .46, b.palette.accent);
-      b.text(right, 'postcard_note', s.line, .565, .295, .355, .24, size: .041);
-      label(right, b.copy.byline, .565, .565, .355, h: .08);
-      b.text(
-        right,
-        'postcard_place',
-        b.copy.place,
-        .08,
-        .78,
-        .84,
-        .07,
-        size: .023,
-      );
-      right.material(
-        'postcard_stamp',
-        'studioBotanicalStamp',
-        .805,
-        .08,
-        .085,
-        h: .13,
-      );
-    case _FreeLayout.mosaic:
-      photo(left, s.photo, .075, .13, .85, .365, frame: 'none');
-      photo(left, s.detail, .075, .55, .40, .265);
-      photo(left, s.photo + 2, .525, .55, .40, .265);
-      label(left, title, .075, .855, .85);
-      photo(right, s.photo + 1, .08, .19, .49, .58);
-      b.text(
-        right,
-        'mosaic_line',
-        s.line,
-        .64,
-        .195,
-        .28,
-        .265,
-        size: _lifePalettes.containsKey(b.volume) ? .034 : .046,
-      );
-      caption(right, .64, .58, .28, .23);
-    case _FreeLayout.stillLife:
-      label(left, title, .10, .10, .80);
-      photo(
-        left,
-        s.photo,
-        .20,
-        .26,
-        .60,
-        .365,
-        frame: b.palette.frame == 'none' ? 'studioOval' : b.palette.frame,
-      );
-      caption(left, .10, .757, .80, .10);
-      photo(right, s.detail, .08, .15, .40, .32, frame: 'none');
-      b.text(right, 'still_line', s.line, .55, .16, .37, .23, size: .045);
-      photo(right, s.photo + 2, .555, .525, .365, .285);
-      b.text(
-        right,
-        'still_note',
-        '작은 장면을\n오래 기억하기.',
-        .08,
-        .655,
-        .40,
-        .15,
-        size: .032,
-      );
-    case _FreeLayout.panorama:
-      label(left, title, .07, .10, .86);
-      photo(left, s.photo, .07, .26, .86, .465, frame: 'none');
-      caption(left, .07, .81, .86, .067);
-      headline(right, .10, .14, .80, .235, size: .073);
-      photo(right, s.detail, .10, .56, .46, .28, frame: 'none');
-      photo(right, s.detail + 2, .62, .64, .28, .20);
-    case _FreeLayout.timeline:
-      label(left, title, .08, .10, .84);
-      headline(left, .08, .21, .84, .20, size: .060);
-      final captions = ['처음의 마음', '함께한 장면', '오래 남을 기억'];
-      for (var i = 0; i < captions.length; i++) {
-        final y = .49 + i * .127;
-        label(left, '0${i + 1}', .08, y, .09);
-        b.text(left, 'time_$i', captions[i], .245, y, .675, .06, size: .029);
-        b.rule(left, .245, y + .075, .675, color: '#C1C8C5');
-      }
-      for (var i = 0; i < 3; i++) {
+        photo(right, s.photo, .14, .19, .72, .50);
+        caption(right, .14, .771, .72, .10);
+      case _FreeLayout.postcard:
+        label(left, title, .08, .10, .84);
+        photo(left, s.photo, .08, .22, .84, .405, frame: 'studioTicket');
+        b.rule(left, .08, .704, .84);
+        caption(left, .08, .77, .84, .10);
+        photo(right, s.detail, .08, .25, .38, .38, frame: 'none');
+        _freeVerticalRule(right, .51, .20, .46, b.palette.accent);
+        b.text(
+          right,
+          'postcard_note',
+          s.line,
+          .565,
+          .295,
+          .355,
+          .24,
+          size: .041,
+        );
+        label(right, b.copy.byline, .565, .565, .355, h: .08);
+        b.text(
+          right,
+          'postcard_place',
+          b.copy.place,
+          .08,
+          .78,
+          .84,
+          .07,
+          size: .023,
+        );
+        right.material(
+          'postcard_stamp',
+          'studioBotanicalStamp',
+          .805,
+          .08,
+          .085,
+          h: .13,
+        );
+      case _FreeLayout.mosaic:
+        photo(left, s.photo, .075, .13, .85, .365, frame: 'none');
+        photo(left, s.detail, .075, .55, .40, .265);
+        photo(left, s.photo + 2, .525, .55, .40, .265);
+        label(left, title, .075, .855, .85);
+        photo(right, s.photo + 1, .08, .19, .49, .58);
+        b.text(
+          right,
+          'mosaic_line',
+          s.line,
+          .64,
+          .195,
+          .28,
+          .265,
+          size: _lifePalettes.containsKey(b.volume) ? .034 : .046,
+        );
+        caption(right, .64, .58, .28, .23);
+      case _FreeLayout.stillLife:
+        label(left, title, .10, .10, .80);
+        photo(
+          left,
+          s.photo,
+          .20,
+          .26,
+          .60,
+          .365,
+          frame: b.palette.frame == 'none' ? 'studioOval' : b.palette.frame,
+        );
+        caption(left, .10, .757, .80, .10);
+        photo(right, s.detail, .08, .15, .40, .32, frame: 'none');
+        b.text(right, 'still_line', s.line, .55, .16, .37, .23, size: .045);
+        photo(right, s.photo + 2, .555, .525, .365, .285);
+        b.text(
+          right,
+          'still_note',
+          '작은 장면을\n오래 기억하기.',
+          .08,
+          .655,
+          .40,
+          .15,
+          size: .032,
+        );
+      case _FreeLayout.panorama:
+        label(left, title, .07, .10, .86);
+        photo(left, s.photo, .07, .26, .86, .465, frame: 'none');
+        caption(left, .07, .81, .86, .067);
+        headline(right, .10, .14, .80, .235, size: .073);
+        photo(right, s.detail, .10, .56, .46, .28, frame: 'none');
+        photo(right, s.detail + 2, .62, .64, .28, .20);
+      case _FreeLayout.timeline:
+        label(left, title, .08, .10, .84);
+        headline(left, .08, .21, .84, .20, size: .060);
+        final captions = ['처음의 마음', '함께한 장면', '오래 남을 기억'];
+        for (var i = 0; i < captions.length; i++) {
+          final y = .49 + i * .127;
+          label(left, '0${i + 1}', .08, y, .09);
+          b.text(left, 'time_$i', captions[i], .245, y, .675, .06, size: .029);
+          b.rule(left, .245, y + .075, .675, color: '#C1C8C5');
+        }
+        for (var i = 0; i < 3; i++) {
+          photo(
+            right,
+            s.photo + i,
+            .10,
+            .095 + i * .275,
+            .80,
+            .225,
+            frame: 'none',
+          );
+        }
+      case _FreeLayout.keepsake:
+        label(left, title, .09, .10, .82);
+        left.material(
+          'keepsake_paper',
+          'studioCottonRag',
+          .065,
+          .255,
+          .87,
+          h: .58,
+        );
+        photo(left, s.photo, .17, .32, .66, .34, frame: 'studioDeckle');
+        caption(left, .17, .713, .66, .10);
+        right.material(
+          'keepsake_tape',
+          b.volume.category == '웨딩' ? 'studioWashiRose' : 'studioWashiSage',
+          .12,
+          .098,
+          .29,
+          h: .032,
+        );
+        photo(right, s.detail, .08, .185, .455, .34);
+        b.text(right, 'keepsake_line', s.line, .61, .185, .31, .24, size: .043);
         photo(
           right,
-          s.photo + i,
-          .10,
-          .095 + i * .275,
-          .80,
-          .225,
-          frame: 'none',
+          s.photo + 2,
+          .535,
+          .585,
+          .385,
+          .255,
+          frame: 'studioInstant',
         );
-      }
-    case _FreeLayout.keepsake:
-      label(left, title, .09, .10, .82);
-      left.material(
-        'keepsake_paper',
-        'studioCottonRag',
-        .065,
-        .255,
-        .87,
-        h: .58,
-      );
-      photo(left, s.photo, .17, .32, .66, .34, frame: 'studioDeckle');
-      caption(left, .17, .713, .66, .10);
-      right.material(
-        'keepsake_tape',
-        b.volume.category == '웨딩' ? 'studioWashiRose' : 'studioWashiSage',
-        .12,
-        .098,
-        .29,
-        h: .032,
-      );
-      photo(right, s.detail, .08, .185, .455, .34);
-      b.text(right, 'keepsake_line', s.line, .61, .185, .31, .24, size: .043);
-      photo(right, s.photo + 2, .535, .585, .385, .255, frame: 'studioInstant');
-      b.text(
-        right,
-        'keepsake_note',
-        '책 사이에\n남겨 둡니다.',
-        .08,
-        .66,
-        .365,
-        .145,
-        size: .031,
-      );
-    case _FreeLayout.closing:
-      label(left, title, .10, .10, .80);
-      headline(left, .10, .26, .80, .24, size: .073);
-      b.text(
-        left,
-        'closing_letter',
-        b.copy.note,
-        .10,
-        .585,
-        .80,
-        .285,
-        size: .024,
-      );
-      photo(right, s.photo, .19, .15, .62, .45);
-      b.text(
-        right,
-        'closing_names',
-        b.copy.byline,
-        .10,
-        .725,
-        .80,
-        .063,
-        size: .033,
-        align: 'center',
-      );
-      b.text(
-        right,
-        'closing_period',
-        b.copy.period,
-        .10,
-        .827,
-        .80,
-        .042,
-        size: .022,
-        align: 'center',
-      );
-    case _FreeLayout.milestone:
-    case _FreeLayout.ribbonPair:
-    case _FreeLayout.pinboard:
-    case _FreeLayout.fieldNotes:
-    case _FreeLayout.portraitEssay:
-      _lifeSpread(b, s, left, right, chapter);
+        b.text(
+          right,
+          'keepsake_note',
+          '책 사이에\n남겨 둡니다.',
+          .08,
+          .66,
+          .365,
+          .145,
+          size: .031,
+        );
+      case _FreeLayout.closing:
+        label(left, title, .10, .10, .80);
+        headline(left, .10, .26, .80, .24, size: .073);
+        b.text(
+          left,
+          'closing_letter',
+          b.copy.note,
+          .10,
+          .585,
+          .80,
+          .285,
+          size: .024,
+        );
+        photo(right, s.photo, .19, .15, .62, .45);
+        b.text(
+          right,
+          'closing_names',
+          b.copy.byline,
+          .10,
+          .725,
+          .80,
+          .063,
+          size: .033,
+          align: 'center',
+        );
+        b.text(
+          right,
+          'closing_period',
+          b.copy.period,
+          .10,
+          .827,
+          .80,
+          .042,
+          size: .022,
+          align: 'center',
+        );
+      case _FreeLayout.milestone:
+      case _FreeLayout.ribbonPair:
+      case _FreeLayout.pinboard:
+      case _FreeLayout.fieldNotes:
+      case _FreeLayout.portraitEssay:
+        _lifeSpread(b, s, left, right, chapter);
+    }
   }
   b.add(left, '${s.title} / 왼쪽', '${b.volume.id}-$chapter-left');
   b.add(right, '${s.title} / 오른쪽', '${b.volume.id}-$chapter-right');

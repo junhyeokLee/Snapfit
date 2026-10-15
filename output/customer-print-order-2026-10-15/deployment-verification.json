@@ -1,0 +1,40 @@
+{
+  "migrationApplied": true,
+  "observedAt": "2026-10-15T05:16:22.059342+00:00",
+  "progressAnonDenied": true,
+  "progressAuthenticatedAllowed": true,
+  "progressInvoker": true,
+  "savedInvoiceAnonDenied": true,
+  "savedInvoiceAuthenticatedDenied": true,
+  "savedInvoiceInvoker": true,
+  "savedInvoiceServiceAllowed": true,
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "functions": [
+    {
+      "slug": "print-checkout-status",
+      "status": "ACTIVE",
+      "version": 6,
+      "verify_jwt": true
+    },
+    {
+      "slug": "print-order-checkout",
+      "status": "ACTIVE",
+      "version": 7,
+      "verify_jwt": true
+    },
+    {
+      "slug": "print-order-confirm",
+      "status": "ACTIVE",
+      "version": 7,
+      "verify_jwt": true
+    },
+    {
+      "slug": "print-prepayment-package",
+      "status": "ACTIVE",
+      "version": 6,
+      "verify_jwt": true
+    }
+  ],
+  "productionGatesUnchanged": true,
+  "paidInfrastructureCreated": false
+}

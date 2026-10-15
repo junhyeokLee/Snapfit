@@ -42,6 +42,7 @@ class LayerExportMapper {
         LayerType.image => {
           'imageBackground': layer.imageBackground,
           'imageTemplate': layer.imageTemplate,
+          if (layer.imageZoom != 1) 'imageZoom': layer.imageZoom,
           if (layer.imageOffset != null && layer.width > 0 && layer.height > 0)
             'imageOffsetRatio': {
               'x': layer.imageOffset!.dx / layer.width,
@@ -155,6 +156,7 @@ class LayerExportMapper {
         width,
         height,
       ),
+      imageZoom: _imageZoomFromJson(payload['imageZoom']),
       decorationFillColor: payload['fillColor'] as String?,
       decorationBorderColor: payload['borderColor'] as String?,
       decorationBorderWidth: (payload['borderWidth'] as num?)?.toDouble(),
@@ -163,6 +165,9 @@ class LayerExportMapper {
   }
 
   // --- Helper Methods ---
+
+  static double _imageZoomFromJson(dynamic value) =>
+      value is num && value.isFinite ? value.toDouble().clamp(1, 4) : 1;
 
   static Offset? _imageOffsetFromJson(
     dynamic value,

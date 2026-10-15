@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-10-14T14:42:13.974Z",
+  "fixtureOnly": true,
+  "renderer": "actual Flutter AlbumPrintExporter",
+  "fixtureScenario": "HARD_80",
+  "artworkProfile": "compact",
+  "pageCount": 80,
+  "productId": "REDP_300_HARD",
+  "paymentProvider": "LOCAL STUB",
+  "supplier": "LOCAL STUB",
+  "database": "LOCAL IN-MEMORY STUB",
+  "externalRequestCount": 0,
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false,
+  "actualShipmentMade": false,
+  "physicalSampleValidated": false,
+  "productionApproved": false,
+  "sourceFingerprint": "c96e8ecdd0b5a9a37df15717d384266228e3c7cc67a406e60ec28097863d661b",
+  "cover": {
+    "pageCount": 1,
+    "widthMm": 681.2,
+    "heightMm": 346,
+    "byteLength": 1221664,
+    "sha256": "61d979153fae6f1514760411034495b524547326d048ce2cc1e9e13512027243"
+  },
+  "interior": {
+    "pageCount": 80,
+    "widthMm": 310,
+    "heightMm": 310,
+    "byteLength": 60200362,
+    "sha256": "27479e91ced25d8933de8d60878517cdcce2464b5bbae47fe1b2161b849d6df5"
+  },
+  "supplierStubSubmissionCount": 1,
+  "supplierStubDepositCount": 1,
+  "finalLocalCustomerStage": "SHIPPING",
+  "deliveredConfirmed": false
+}

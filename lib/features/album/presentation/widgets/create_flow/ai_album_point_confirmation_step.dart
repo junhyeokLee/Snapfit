@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
+import 'creation_workspace.dart';
 
 class AiAlbumPointConfirmationStep extends StatelessWidget {
   const AiAlbumPointConfirmationStep({
@@ -33,6 +37,7 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (designBrief != null) return _buildTemplateConfirmation(context);
+    if (kIsWeb) return _webConfirmation(context);
     final background = SnapFitColors.isDark(context)
         ? const Color(0xFF111111)
         : const Color(0xFFFAF8F3);
@@ -164,6 +169,34 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
     );
   }
 
+  Widget _webConfirmation(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(28),
+    children: [
+      const Text('AI 템플릿 생성 전 확인', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+      const SizedBox(height: 12),
+      Text('선택한 구성과 포인트 사용 조건을 확인하세요.', style: TextStyle(fontSize: 14, color: WebPalette.of(context).muted)),
+      const SizedBox(height: 24),
+      WebSurface(child: Column(children: [
+        _InfoRow(label: '템플릿 무드', value: _themeLabel(theme)),
+        _InfoRow(label: '사진 범위', value: _rangeLabel(range)),
+        _InfoRow(label: '사용 포인트', value: isFirstAiDraftFree ? '무료' : '${_format(pointCost)}P'),
+        if (isFirstAiDraftFree) const _InfoRow(label: '무료 혜택', value: '첫 AI 템플릿 1회'),
+        _InfoRow(label: '보유 포인트', value: '${_format(balance)}P'),
+        const _InfoRow(label: '사용 기준', value: '성공 시만 처리'),
+        const _InfoRow(label: '실패 시', value: '실패 시 차감 없음'),
+      ])),
+      if (usesServerDraftProvider) ...[
+        const SizedBox(height: 20),
+        _ServerAnalysisConsentCard(usesAdvancedServerAnalysis: usesAdvancedServerAnalysis),
+      ],
+      const SizedBox(height: 28),
+      Wrap(alignment: WrapAlignment.end, spacing: 12, runSpacing: 8, children: [
+        OutlinedButton(onPressed: onBack, child: const Text('이전')),
+        FilledButton(onPressed: onConfirm, child: Text(isFirstAiDraftFree ? '무료로 템플릿 만들기' : '템플릿 만들기')),
+      ]),
+    ],
+  );
+
   String _format(int value) {
     final text = value.toString();
     final out = StringBuffer();
@@ -177,103 +210,101 @@ class AiAlbumPointConfirmationStep extends StatelessWidget {
 
   Widget _buildTemplateConfirmation(BuildContext context) {
     final brief = designBrief!;
-    final foreground = SnapFitColors.textPrimaryOf(context);
-    return ColoredBox(
-      color: SnapFitColors.isDark(context)
-          ? const Color(0xFF111111)
-          : const Color(0xFFF5F6F4),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 680),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: onBack,
-                    tooltip: '요청 수정',
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '이런 앨범을 만들어요',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: foreground,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    brief.prompt,
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.6,
-                      color: foreground,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 12),
-                  Text(
-                    '${brief.coverSize.displayName} · ${brief.coverSize.coverType.label} · 표지 + 내지 ${brief.pageCount}쪽',
-                    style: TextStyle(fontSize: 14, color: foreground),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '디자인 적용 시 최대 ${_format(pointCost)}P · 보유 ${_format(balance)}P',
-                    style: TextStyle(fontSize: 14, color: foreground),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '사용 가능한 무료 혜택은 적용할 때 반영돼요.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: SnapFitColors.textSecondaryOf(context),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: SnapFitColors.textSecondaryOf(context),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: FilledButton(
-                      onPressed: onConfirm,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF203D35),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        '템플릿 만들기',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    return CreationWorkspace(
+      keyboardOpen: creationKeyboardIsOpen(context),
+      stage: CreationPaperStage(
+        title: '디자인 생성 전',
+        detail: '${brief.coverSize.displayName} · 내지 ${brief.pageCount}쪽',
+        child: CreationBlankBook(cover: brief.coverSize, title: '새로운 이야기'),
+      ),
+      fields: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '요청 확인',
+            style: ExperienceFormStyle.text(
+              context,
+              20,
+              weight: FontWeight.w600,
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            '디자인 적용 시 최대 ${_format(pointCost)}P · 보유 ${_format(balance)}P',
+            style: ExperienceFormStyle.text(
+              context,
+              15,
+              weight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '사용 가능한 무료 혜택은 적용할 때 반영돼요.',
+            style: ExperienceFormStyle.text(context, 12, secondary: true),
+          ),
+          const SizedBox(height: 20),
+          Text(brief.prompt, style: ExperienceFormStyle.text(context, 16)),
+          const SizedBox(height: 24),
+          _confirmationRow(context, '책 크기', brief.coverSize.displayName),
+          _confirmationRow(context, '표지', brief.coverSize.coverType.label),
+          _confirmationRow(context, '내지', '${brief.pageCount}쪽'),
+          const SizedBox(height: 20),
+          Text(
+            '입력한 디자인 요청을 AI에 전달해요. 사진첩에 접근하거나 사진을 전송하지 않아요.',
+            style: ExperienceFormStyle.text(context, 12, secondary: true),
+          ),
+        ],
+      ),
+      actions: Row(
+        children: [
+          IconButton(
+            tooltip: '요청 수정',
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back, size: 21),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton(
+              onPressed: onConfirm,
+              style: ExperienceFormStyle.primary(context),
+              child: const Text('템플릿 만들기'),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _confirmationRow(BuildContext context, String label, String value) =>
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: ExperienceFormStyle.line(context)),
+          ),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 72,
+              child: Text(
+                label,
+                style: ExperienceFormStyle.text(context, 13, secondary: true),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                style: ExperienceFormStyle.text(
+                  context,
+                  13,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 
   String _themeLabel(AlbumTheme theme) => switch (theme) {
     AlbumTheme.couple => '커플',
@@ -307,10 +338,10 @@ class _ServerAnalysisConsentCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(15.w, 14.h, 15.w, 14.h),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1B20) : Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
+        color: kIsWeb ? WebPalette.of(context).surface : isDark ? const Color(0xFF1A1B20) : Colors.white,
+        borderRadius: BorderRadius.circular(kIsWeb ? 12 : 22.r),
         border: Border.all(
-          color: isDark
+          color: kIsWeb ? WebPalette.of(context).line : isDark
               ? Colors.white.withOpacity(0.10)
               : const Color(0xFFE7E1D8),
         ),

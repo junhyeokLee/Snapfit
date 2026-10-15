@@ -1,0 +1,22 @@
+{
+  "projectVerified": true,
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "appliedVersionsBefore": 44,
+  "pendingMigrations": [
+    "20261015050304_customer_print_order_progress.sql"
+  ],
+  "sourceSha256": {
+    "supabase/functions/_shared/print-public-quote.ts": "6ffdfe7b06b0ed810ffdaaf09832fb327f8d2ed78f215194020b7d0092e9a122",
+    "supabase/functions/_shared/print-checkout.ts": "2a4773d3ed683c8742743ac0e80aadccbb2520193139148c44ab4393030937a3",
+    "supabase/functions/_shared/production-print-checkout.ts": "5d9cad3b3c3d12c4af358de8e1d98b557f4d2ba89a8f6916e3d413765aa50c45",
+    "supabase/functions/_shared/print-prepayment-package.ts": "8027f759cb05d6c5a10f2afb8d544b71313aabecff23cef2ee6028f6c4c6b4ee",
+    "supabase/migrations/20261015050304_customer_print_order_progress.sql": "cde3cc302a2907c94a8077cfe9882e1d398ff5622864ffe7ddce7dc987a1e262"
+  },
+  "liveSettingsChanged": false,
+  "functionTargets": [
+    "print-checkout-status",
+    "print-order-checkout",
+    "print-order-confirm",
+    "print-prepayment-package"
+  ]
+}

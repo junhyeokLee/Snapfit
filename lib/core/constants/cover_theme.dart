@@ -61,7 +61,7 @@ extension CoverThemeStyle on CoverTheme {
   String? get imageAsset {
     switch (this) {
       case CoverTheme.nature1:
-        return 'assets/cover/cover9.png';
+        return null;
       case CoverTheme.abstract1:
         return 'assets/cover/cover10.png';
       case CoverTheme.nature2:
@@ -69,7 +69,7 @@ extension CoverThemeStyle on CoverTheme {
       case CoverTheme.nature3:
         return 'assets/cover/cover13.png';
       case CoverTheme.nature4:
-        return 'assets/cover/cover11.png';
+        return null;
       case CoverTheme.texture1:
         return 'assets/cover/cover15.png';
       case CoverTheme.abstract2:

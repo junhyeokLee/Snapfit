@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/snapfit_design_tokens.dart';
 import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../core/constants/album_page_policy.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import '../../../../store/presentation/widgets/template_page_renderer.dart';
+import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import 'creation_template_image.dart';
+import 'creation_document_preview.dart';
+import 'creation_workspace.dart';
 import 'cover_size_picker.dart';
 import 'print_cover_type_picker.dart';
 
 class AlbumCreateStep1 extends StatefulWidget {
-  final String albumTitle;
-  final String? templateTitle;
-  final String? templatePreviewImageUrl;
-  final String sourceLabel;
-  final CoverSize? selectedCover;
-  final int selectedPageCount;
-  final int minPageCount;
-  final List<CoverSize>? availableCovers;
-  final List<LayerModel>? coverLayers;
-  final ValueChanged<String> onTitleChanged;
-  final ValueChanged<CoverSize> onCoverSelected;
-  final ValueChanged<int> onPageCountChanged;
-  final VoidCallback onNext;
-  final VoidCallback? onChangeDesign;
-
   const AlbumCreateStep1({
     super.key,
     required this.albumTitle,
@@ -32,32 +20,54 @@ class AlbumCreateStep1 extends StatefulWidget {
     this.sourceLabel = '직접 만들기',
     this.availableCovers,
     this.coverLayers,
+    this.documentPages,
+    this.preserveTypography = false,
     required this.selectedCover,
     required this.selectedPageCount,
-    this.minPageCount = 10,
+    this.minPageCount = AlbumPagePolicy.minInnerPages,
+    this.templatePageCount,
     required this.onTitleChanged,
     required this.onCoverSelected,
     required this.onPageCountChanged,
     required this.onNext,
     this.onChangeDesign,
   });
-
+  final String albumTitle, sourceLabel;
+  final String? templateTitle, templatePreviewImageUrl;
+  final CoverSize? selectedCover;
+  final int selectedPageCount, minPageCount;
+  final int? templatePageCount;
+  final List<CoverSize>? availableCovers;
+  final List<LayerModel>? coverLayers;
+  final List<List<LayerModel>>? documentPages;
+  final bool preserveTypography;
+  final ValueChanged<String> onTitleChanged;
+  final ValueChanged<CoverSize> onCoverSelected;
+  final ValueChanged<int> onPageCountChanged;
+  final VoidCallback onNext;
+  final VoidCallback? onChangeDesign;
   @override
   State<AlbumCreateStep1> createState() => _AlbumCreateStep1State();
 }
 
 class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
-  late final TextEditingController _title = TextEditingController(
-    text: widget.albumTitle,
-  );
-
+  late final _title = TextEditingController(text: widget.albumTitle);
+  bool get _hasTemplate => widget.templateTitle?.isNotEmpty ?? false;
+  bool get _awaitingPhotos =>
+      _hasTemplate &&
+      !(widget.coverLayers?.any(
+            (layer) => layer.type == LayerType.image && layer.hasImageSource,
+          ) ??
+          false);
+  int get _minimumPages =>
+      AlbumPagePolicy.minimumForContent(widget.minPageCount);
+  bool get _tooManyPages => _minimumPages > AlbumPagePolicy.maxInnerPages;
   @override
   void didUpdateWidget(AlbumCreateStep1 oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.albumTitle != widget.albumTitle &&
-        _title.text != widget.albumTitle) {
+        _title.text != widget.albumTitle)
       _title.text = widget.albumTitle;
-    }
   }
 
   @override
@@ -66,279 +76,233 @@ class _AlbumCreateStep1State extends State<AlbumCreateStep1> {
     super.dispose();
   }
 
-  bool get _hasTemplate => widget.templateTitle?.isNotEmpty ?? false;
+  Widget _label(BuildContext context, String value) => Text(
+    value,
+    style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+  );
+  Widget _coverPreview(CoverSize cover, String name) {
+    final layers = widget.coverLayers;
+    final canvas = coverCanvasBaseSize(cover);
+    if (layers != null && layers.isNotEmpty)
+      return TemplateBookArtwork(
+        canvas: canvas,
+        firstPage: 0,
+        paired: false,
+        pageBuilder: (index, wrap) => FittedBox(
+          child: TemplatePageRenderer(
+            layers: layers,
+            width: canvas.width,
+            height: canvas.height,
+            designCanvasSize: canvas,
+            preserveTypography: widget.preserveTypography,
+            showCanvasChrome: false,
+            wrapSpineArtwork: wrap,
+            cacheNetworkImages: true,
+            imageDecodeWidth: 800,
+          ),
+        ),
+      );
+    if (_hasTemplate && widget.templatePreviewImageUrl?.isNotEmpty == true) {
+      return AspectRatio(
+        aspectRatio: cover.ratio,
+        child: CreationTemplateImage(url: widget.templatePreviewImageUrl!),
+      );
+    }
+    return CreationBlankBook(cover: cover, title: name);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final ink = SnapFitColors.textPrimaryOf(context);
-    final muted = SnapFitColors.textSecondaryOf(context);
-    return SafeArea(
-      top: false,
-      child: Column(
+    final cover = widget.selectedCover ?? defaultCoverSize;
+    final muted = ExperienceFormStyle.muted(context);
+    return CreationWorkspace(
+      keyboardOpen: creationKeyboardIsOpen(context),
+      stage: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _title,
+        builder: (context, title, _) {
+          final name = title.text.trim().isEmpty ? '나만의 새 앨범' : title.text;
+          final pages = widget.documentPages;
+          return CreationPaperStage(
+            inset: pages != null && pages.isNotEmpty ? 0 : 22,
+            title: widget.templateTitle ?? name,
+            detail: '${cover.displayName} · ${cover.coverType.label}',
+            child: pages != null && pages.isNotEmpty
+                ? CreationDocumentPreview(
+                    pages: pages,
+                    canvas: coverCanvasBaseSize(cover),
+                    showBookMaterial: true,
+                    preserveTypography: widget.preserveTypography,
+                    showThumbnails: false,
+                    spreadInLandscape: true,
+                    pageKeyPrefix: 'creation-setup-page-',
+                  )
+                : _coverPreview(cover, name),
+          );
+        },
+      ),
+      fields: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final wide = constraints.maxWidth >= 640;
-                      final summary = Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '앨범 설정',
-                            style: TextStyle(
-                              fontSize: 25,
-                              height: 1.3,
-                              fontWeight: FontWeight.w700,
-                              color: ink,
-                            ),
-                          ),
-                          const SizedBox(height: 22),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              if (_hasTemplate) ...[
-                                SizedBox(
-                                  width: 66,
-                                  height: 84,
-                                  child: _coverPreview(),
-                                ),
-                                const SizedBox(width: 16),
-                              ] else ...[
-                                Icon(
-                                  Icons.auto_stories_outlined,
-                                  size: 30,
-                                  color: muted,
-                                ),
-                                const SizedBox(width: 16),
-                              ],
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.sourceLabel,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: muted,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      widget.templateTitle ?? '나만의 새 앨범',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        height: 1.4,
-                                        fontWeight: FontWeight.w600,
-                                        color: ink,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (widget.onChangeDesign != null)
-                                IconButton(
-                                  tooltip: '시작 방식 변경',
-                                  onPressed: widget.onChangeDesign,
-                                  icon: const Icon(Icons.swap_horiz, size: 23),
-                                ),
-                            ],
-                          ),
-                        ],
-                      );
-                      final fields = Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _label(context, '앨범 제목'),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: _title,
-                            onChanged: widget.onTitleChanged,
-                            maxLength: 50,
-                            style: TextStyle(fontSize: 16, color: ink),
-                            textInputAction: TextInputAction.done,
-                            decoration: InputDecoration(
-                              hintText: '앨범 이름',
-                              counterStyle: TextStyle(
-                                fontSize: 11,
-                                color: muted,
-                              ),
-                              filled: true,
-                              fillColor: SnapFitColors.surfaceOf(context),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: ink.withValues(alpha: .15),
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.all(16),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _label(context, '책 크기'),
-                          const SizedBox(height: 12),
-                          CoverSizePicker(
-                            selectedCover: widget.selectedCover,
-                            availableCovers: widget.availableCovers,
-                            onSelected: widget.onCoverSelected,
-                          ),
-                          if ((widget.availableCovers?.length ??
-                                  coverSizes.length) <
-                              coverSizes.length)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                '이 디자인에 맞는 크기',
-                                style: TextStyle(fontSize: 12, color: muted),
-                              ),
-                            ),
-                          const SizedBox(height: 24),
-                          _label(context, '표지 종류'),
-                          const SizedBox(height: 12),
-                          PrintCoverTypePicker(
-                            selected:
-                                widget.selectedCover?.coverType ??
-                                PrintCoverType.soft,
-                            onSelected: (type) => widget.onCoverSelected(
-                              (widget.selectedCover ?? defaultCoverSize)
-                                  .withCoverType(type),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Expanded(child: _label(context, '분량')),
-                              IconButton(
-                                tooltip: '페이지 줄이기',
-                                onPressed:
-                                    widget.selectedPageCount >
-                                        widget.minPageCount
-                                    ? () => widget.onPageCountChanged(
-                                        widget.selectedPageCount - 1,
-                                      )
-                                    : null,
-                                icon: const Icon(Icons.remove, size: 20),
-                              ),
-                              SizedBox(
-                                width: 60,
-                                child: Text(
-                                  '${widget.selectedPageCount}쪽',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                    color: ink,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: '페이지 늘리기',
-                                onPressed: widget.selectedPageCount < 50
-                                    ? () => widget.onPageCountChanged(
-                                        widget.selectedPageCount + 1,
-                                      )
-                                    : null,
-                                icon: const Icon(Icons.add, size: 20),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _hasTemplate
-                                ? '표지 별도 · 디자인 ${widget.minPageCount}쪽${widget.selectedPageCount > widget.minPageCount ? ' + 빈 페이지 ${widget.selectedPageCount - widget.minPageCount}쪽' : ''}'
-                                : '표지 별도 · 최대 50쪽',
-                            style: TextStyle(fontSize: 12, color: muted),
-                          ),
-                        ],
-                      );
-                      if (wide)
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 4, child: summary),
-                            const SizedBox(width: 40),
-                            Expanded(flex: 6, child: fields),
-                          ],
-                        );
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [summary, const SizedBox(height: 30), fields],
-                      );
-                    },
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '앨범 설정',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    20,
+                    weight: FontWeight.w600,
                   ),
                 ),
               ),
-            ),
+              if (widget.onChangeDesign != null)
+                IconButton(
+                  tooltip: '시작 방식 변경',
+                  onPressed: widget.onChangeDesign,
+                  icon: const Icon(Icons.swap_horiz, size: 21),
+                ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _title,
-                  builder: (context, value, _) => SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed:
-                          value.text.trim().isNotEmpty &&
-                              widget.selectedCover != null
-                          ? widget.onNext
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: ink,
-                        foregroundColor: SnapFitColors.backgroundOf(context),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        textStyle: const TextStyle(
-                          fontFamily: SnapFitFonts.body,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: Text(_hasTemplate ? '사진 채우기' : '표지 만들기'),
-                    ),
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              Text(
+                widget.sourceLabel,
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
+              ),
+              if (_awaitingPhotos)
+                Text(
+                  '사진 추가 전',
+                  key: const ValueKey('creation-cover-awaiting-photos'),
+                  style: ExperienceFormStyle.text(context, 12, secondary: true),
+                ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          _label(context, '앨범 제목'),
+          const SizedBox(height: 10),
+          TextField(
+            key: const ValueKey('creation-album-title'),
+            controller: _title,
+            onChanged: widget.onTitleChanged,
+            maxLength: 50,
+            style: ExperienceFormStyle.text(context, 16),
+            textInputAction: TextInputAction.done,
+            decoration: ExperienceFormStyle.input(
+              context,
+              hint: '앨범 이름',
+            ).copyWith(counterStyle: TextStyle(fontSize: 11, color: muted)),
+          ),
+          const SizedBox(height: 16),
+          _label(context, '책 크기'),
+          const SizedBox(height: 12),
+          CoverSizePicker(
+            selectedCover: widget.selectedCover,
+            availableCovers: widget.availableCovers,
+            onSelected: widget.onCoverSelected,
+          ),
+          if ((widget.availableCovers?.length ?? coverSizes.length) <
+              coverSizes.length)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                '이 디자인에 맞는 크기',
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
+              ),
+            ),
+          const SizedBox(height: 24),
+          _label(context, '표지 종류'),
+          const SizedBox(height: 12),
+          PrintCoverTypePicker(
+            selected: cover.coverType,
+            onSelected: (type) =>
+                widget.onCoverSelected(cover.withCoverType(type)),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(child: _label(context, '내지')),
+              IconButton(
+                tooltip: '페이지 줄이기',
+                onPressed:
+                    !_tooManyPages && widget.selectedPageCount > _minimumPages
+                    ? () => widget.onPageCountChanged(
+                        widget.selectedPageCount - AlbumPagePolicy.pageStep,
+                      )
+                    : null,
+                icon: const Icon(Icons.remove, size: 20),
+              ),
+              SizedBox(
+                width: 64,
+                child: Text(
+                  '${widget.selectedPageCount}쪽',
+                  textAlign: TextAlign.center,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    17,
+                    weight: FontWeight.w600,
                   ),
                 ),
               ),
-            ),
+              IconButton(
+                tooltip: '페이지 늘리기',
+                onPressed:
+                    !_tooManyPages &&
+                        widget.selectedPageCount < AlbumPagePolicy.maxInnerPages
+                    ? () => widget.onPageCountChanged(
+                        widget.selectedPageCount + AlbumPagePolicy.pageStep,
+                      )
+                    : null,
+                icon: const Icon(Icons.add, size: 20),
+              ),
+            ],
           ),
+          const SizedBox(height: 6),
+          Text(
+            _tooManyPages
+                ? '이 디자인은 내지 80쪽을 초과해요. 다른 디자인을 선택해주세요.'
+                : '표지 별도 · 내지 20~80쪽 · 2쪽 단위',
+            style: ExperienceFormStyle.text(context, 12, secondary: true),
+          ),
+          if (_hasTemplate && !_tooManyPages)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '디자인 ${widget.templatePageCount ?? widget.minPageCount}쪽'
+                '${widget.selectedPageCount > (widget.templatePageCount ?? widget.minPageCount) ? ' + 빈 페이지 ${widget.selectedPageCount - (widget.templatePageCount ?? widget.minPageCount)}쪽' : ''}',
+                style: ExperienceFormStyle.text(context, 12, secondary: true),
+              ),
+            ),
+          if (widget.onChangeDesign != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: widget.onChangeDesign,
+                icon: const Icon(Icons.swap_horiz, size: 18),
+                label: const Text('디자인 변경'),
+              ),
+            ),
         ],
       ),
-    );
-  }
-
-  Widget _label(BuildContext context, String text) => Text(
-    text,
-    style: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: SnapFitColors.textPrimaryOf(context),
-    ),
-  );
-
-  Widget _coverPreview() {
-    final layers = widget.coverLayers;
-    final cover = widget.selectedCover;
-    if (layers != null && layers.isNotEmpty && cover != null) {
-      final canvas = coverCanvasBaseSize(cover);
-      return FittedBox(
-        child: TemplatePageRenderer(
-          layers: layers,
-          width: canvas.width,
-          height: canvas.height,
-          designCanvasSize: canvas,
-          showCanvasChrome: true,
+      actions: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _title,
+        builder: (context, value, _) => SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            key: const ValueKey('creation-setup-next'),
+            onPressed:
+                value.text.trim().isNotEmpty &&
+                    widget.selectedCover != null &&
+                    AlbumPagePolicy.isValid(widget.selectedPageCount) &&
+                    !_tooManyPages
+                ? widget.onNext
+                : null,
+            style: ExperienceFormStyle.primary(context),
+            child: Text(_hasTemplate ? '사진 채우기' : '표지 만들기'),
+          ),
         ),
-      );
-    }
-    return CreationTemplateImage(url: widget.templatePreviewImageUrl ?? '');
+      ),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'ai_album_draft_generation_service.dart';
 import 'ai_album_models.dart';
+import '../../../../core/constants/album_page_policy.dart';
 
 typedef ServerAiAlbumDraftRequester =
     Future<Map<String, Object?>> Function(ServerAiAlbumDraftRequest request);
@@ -91,7 +92,9 @@ class ServerAiAlbumDraftMappingException implements Exception {
 }
 
 class ServerAiAlbumDraftMapper {
-  const ServerAiAlbumDraftMapper({this.maxPageCount = 50});
+  const ServerAiAlbumDraftMapper({
+    this.maxPageCount = AlbumPagePolicy.maxInnerPages,
+  });
 
   final int maxPageCount;
 

@@ -1,0 +1,69 @@
+{
+  "scope": "Customer print checkout preparation only; LIVE gates unchanged; local synthetic providers only",
+  "groups": [
+    {
+      "name": "checkout-and-original-80-page-pdf",
+      "exitCode": 0,
+      "durationSeconds": 1.891,
+      "testFiles": [
+        "print_checkout_status",
+        "production_print_checkout",
+        "print_prepayment_package"
+      ],
+      "tests": 43,
+      "pass": 43,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "name": "purchaser-status-database",
+      "exitCode": 0,
+      "durationSeconds": 2.62,
+      "testFiles": [
+        "customer_print_order_progress_sql"
+      ],
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0
+    },
+    {
+      "name": "automatic-payment-and-fulfillment-regression",
+      "exitCode": 0,
+      "durationSeconds": 1.578,
+      "testFiles": [
+        "print_order_scheduler",
+        "print_order_scheduler_pipeline",
+        "print_payment_reconcile",
+        "print_fulfillment_worker",
+        "print_order_requests",
+        "print_file_delivery"
+      ],
+      "tests": 97,
+      "pass": 97,
+      "fail": 0,
+      "skipped": 0
+    }
+  ],
+  "sourceSha256": {
+    "supabase/functions/_shared/print-public-quote.ts": "6ffdfe7b06b0ed810ffdaaf09832fb327f8d2ed78f215194020b7d0092e9a122",
+    "supabase/functions/_shared/print-checkout.ts": "2a4773d3ed683c8742743ac0e80aadccbb2520193139148c44ab4393030937a3",
+    "supabase/functions/_shared/production-print-checkout.ts": "5d9cad3b3c3d12c4af358de8e1d98b557f4d2ba89a8f6916e3d413765aa50c45",
+    "supabase/functions/_shared/print-prepayment-package.ts": "8027f759cb05d6c5a10f2afb8d544b71313aabecff23cef2ee6028f6c4c6b4ee",
+    "supabase/migrations/20261015050304_customer_print_order_progress.sql": "cde3cc302a2907c94a8077cfe9882e1d398ff5622864ffe7ddce7dc987a1e262",
+    "test/server/print_checkout_status.test.mjs": "444e3c14792c3426bf0baa2c9be93086d43d97d4817fb9fbd539e7694b19a7ec",
+    "test/server/production_print_checkout.test.mjs": "cde87b8b94933ce2d34396302cd08e4f4397e97e4293f2e665382515c7191c14",
+    "test/server/print_prepayment_package.test.mjs": "477cac04a1a5b07ca13ef59e78921d354fad32588aa0206285688fc5dc925f4b",
+    "test/server/customer_print_order_progress_sql.test.mjs": "e8c9e4cb95e28d08e909cb65cf5d6d995aef0ea72213d8dc4b058aaa47b8a8ec"
+  },
+  "strictTypeScript": {
+    "passed": true,
+    "scope": "4 changed helpers plus transitive imports; npm:pdf-lib external declaration supplied for Node type checker"
+  },
+  "totals": {
+    "tests": 145,
+    "passed": 145,
+    "failed": 0,
+    "skipped": 0
+  }
+}

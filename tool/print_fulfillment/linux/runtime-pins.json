@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-15",
+  "platform": "linux-x64",
+  "node": {
+    "version": "24.21.0",
+    "url": "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.xz",
+    "sha256": "fd8e59d5a511510f6a298afb548f18c7d2b1be404d8b4a27d94fbe49f56cb2d6",
+    "verificationSource": "https://nodejs.org/dist/v24.21.0/SHASUMS256.txt"
+  },
+  "flutter": {
+    "version": "3.47.1",
+    "dartVersion": "3.13.1",
+    "frameworkRevision": "6655482ec06e547f90abf8ae7590466f4415978d",
+    "url": "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.1-stable.tar.xz",
+    "sha256": "a1d8166c0309267cb7dc99f1424eecf08b86946ad3b50723c6f59945964aea45",
+    "verificationSource": "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json"
+  },
+  "ubuntu": {
+    "version": "24.04",
+    "packages": ["ca-certificates", "curl", "git", "unzip", "xz-utils", "zip", "libglu1-mesa", "libgl1", "libegl1", "libx11-6", "libxext6", "libxi6", "libxrandr2", "libxcursor1", "libxinerama1", "libfontconfig1"]
+  },
+  "notes": {
+    "headless": "The existing renderer uses flutter test/flutter_tester. A desktop app, browser, Xvfb and Android SDK are not installed.",
+    "linuxRuntimeVerified": false,
+    "physicalSampleApproved": false
+  }
+}

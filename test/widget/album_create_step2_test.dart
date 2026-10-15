@@ -144,7 +144,7 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('ON'), findsOneWidget);
+      expect(find.text('사진과 페이지를 함께 편집'), findsOneWidget);
       expect(find.textContaining('editor-token'), findsOneWidget);
 
       final switchFinder = find.byType(Switch);
@@ -153,14 +153,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.widget<Switch>(switchFinder).value, isFalse);
-      expect(find.text('OFF'), findsOneWidget);
+      expect(find.text('앨범 보기만 허용'), findsOneWidget);
       expect(find.textContaining('viewer-token'), findsOneWidget);
       verify(() => mockRepo.invite(1, role: 'EDITOR')).called(1);
       verify(() => mockRepo.invite(1, role: 'VIEWER')).called(1);
     },
   );
 
-  testWidgets('renders renewed invite cockpit without losing invite controls', (
+  testWidgets('renders compact invite layout without losing invite controls', (
     tester,
   ) async {
     final mockRepo = _mockInviteRepository();
@@ -183,14 +183,14 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('INVITE COCKPIT'), findsOneWidget);
+    expect(find.text('INVITE COCKPIT'), findsNothing);
     expect(find.textContaining('함께 만드는'), findsOneWidget);
     expect(find.text('카카오톡으로 초대'), findsOneWidget);
     expect(find.text('링크 복사하기'), findsOneWidget);
     expect(find.text('편집 권한 허용'), findsOneWidget);
     expect(find.byType(Switch), findsOneWidget);
-    expect(find.text('다음'), findsOneWidget);
-    expect(find.text('이전'), findsOneWidget);
+    expect(find.text('편집 시작'), findsOneWidget);
+    expect(find.byTooltip('이전'), findsOneWidget);
   });
 
   testWidgets('matches renewed invite cockpit golden', (tester) async {

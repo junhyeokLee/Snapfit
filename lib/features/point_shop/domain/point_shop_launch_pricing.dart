@@ -1,4 +1,5 @@
 import '../../../core/templates/authored_collections.dart';
+import '../../../core/templates/free_template_material_policy.dart';
 import 'point_shop_template_key.dart';
 import 'premium_volume_registration.dart';
 
@@ -10,9 +11,17 @@ class PointShopLaunchPrice {
   final String reason;
 }
 
-const pointShopPricingRevision = '2026-09-10-catalog-5';
+const pointShopPricingRevision = '2026-10-07-free-material-policy-6';
+
+bool pointShopRequiresFreePrice(String productKey) =>
+    freeTemplateMaterialProductKeys.contains(productKey) ||
+    authoredCollections.any(
+      (collection) => pointShopAuthoredTemplateKey(collection) == productKey,
+    );
 
 final pointShopLaunchPrices = Map<String, PointShopLaunchPrice>.unmodifiable({
+  for (final key in freeTemplateMaterialProductKeys)
+    key: const PointShopLaunchPrice(0, '무료 템플릿 기본 소재 · 별도 구매 없이 사용'),
   for (final collection in authoredCollections)
     pointShopAuthoredTemplateKey(collection): const PointShopLaunchPrice(
       0,

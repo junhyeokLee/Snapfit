@@ -1,16 +1,25 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../../data/album_creation_draft_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/layer.dart';
+import '../../domain/entities/album_save_progress.dart';
+import '../../domain/entities/album_creation_draft.dart';
+import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/constants/cover_size.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../../core/navigation/web_unsaved_work_guard.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/widgets/experience_icon.dart';
+import '../../../../shared/web/web_design.dart';
 import '../controllers/text_editor_manager.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../controllers/layer_builder.dart';
@@ -18,6 +27,7 @@ import '../widgets/editor/layer_action_panel.dart';
 import '../widgets/editor/page_editor_canvas.dart';
 import '../widgets/editor/page_list_selector.dart';
 import '../widgets/editor/editor_bottom_menu.dart';
+import '../widgets/editor/editor_keyboard_shortcuts.dart';
 import '../widgets/editor/decorate_panel.dart';
 import '../widgets/editor/edit_cover.dart';
 import '../widgets/editor/layer_manager_panel.dart';
@@ -25,27 +35,34 @@ import '../widgets/editor/template_selection_panel.dart';
 import '../widgets/editor/design_template_panel.dart';
 import '../widgets/editor/text_style_picker_sheet.dart';
 import '../viewmodels/album_editor_view_model.dart';
-import '../../../../shared/widgets/image_frame_style_picker.dart';
 import '../viewmodels/home_view_model.dart';
 import '../controllers/toolbar_action_handler.dart';
+import '../controllers/store_material_insertion.dart';
+import '../controllers/photo_crop_editor.dart';
+import '../controllers/photo_frame_editor.dart';
 import '../widgets/editor/page_editor_overlays.dart';
-import '../viewmodels/gallery_notifier.dart'; // Add import
+import '../widgets/web/web_album_workspace.dart';
 import '../../data/api/storage_service.dart';
+import '../utils/album_save_error_message.dart';
+import '../../../point_shop/data/point_shop_provider.dart';
 
 class _PageEditorEntranceReveal extends StatelessWidget {
   final Widget child;
   final Duration delay;
   final bool includeScale;
+  final bool disabled;
 
   const _PageEditorEntranceReveal({
     super.key,
     required this.child,
     this.delay = Duration.zero,
     this.includeScale = false,
+    this.disabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (disabled) return child;
     const duration = Duration(milliseconds: 360);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -77,13 +94,16 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
     super.key,
     required this.forward,
     required this.child,
+    this.disabled = false,
   });
 
   final bool forward;
   final Widget child;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
+    if (disabled) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: SnapFitMotion.pageTurn,
@@ -152,17 +172,29 @@ class _PageEditorPageTurnReveal extends StatelessWidget {
 }
 
 class PageEditorScreen extends ConsumerStatefulWidget {
-  /// 편집할 내지 페이지 인덱스 (1 이상). null이면 현재 선택된 페이지 유지.
-  /// 0(커버)은 페이지 편집에서 사용하지 않음.
+  /// Initial document page; 0 selects the cover. Null keeps the current page.
   final int? initialPageIndex;
+  final String? initialMaterialKey;
 
-  const PageEditorScreen({super.key, this.initialPageIndex});
+  const PageEditorScreen({
+    super.key,
+    this.initialPageIndex,
+    this.initialMaterialKey,
+    this.returnToPreviousOnSave = false,
+    this.creationDraftId,
+    this.creationDraftOwner,
+  });
+
+  final bool returnToPreviousOnSave;
+  final String? creationDraftId;
+  final String? creationDraftOwner;
 
   @override
   ConsumerState<PageEditorScreen> createState() => _PageEditorScreenState();
 }
 
-class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
+class _PageEditorScreenState extends ConsumerState<PageEditorScreen>
+    with WidgetsBindingObserver {
   final GlobalKey<EditCoverState> _coverEditorKey = GlobalKey<EditCoverState>();
   final GlobalKey _canvasKey = GlobalKey();
   Size _canvasSize = Size.zero;
@@ -175,46 +207,36 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
   // 저장 진행률 상태
   bool _isSaving = false;
-  double _saveProgress = 0.0;
-  Timer? _progressTimer;
+  AlbumSaveProgress _saveStatus = const AlbumSaveProgress(
+    AlbumSavePhase.preparing,
+  );
+  AlbumEditCheckpoint? _entryCheckpoint;
+  bool _exitPromptOpen = false;
   Timer? _editorHintTimer;
   int? _lastSyncedPageIndex;
   String? _lastLayerSyncSignature;
   bool _showEditorHint = false;
   int _pageTurnNonce = 0;
   bool _pageTurnForward = true;
+  Future<void> _draftWrites = Future.value();
+  int _pendingDraftWrites = 0;
+  bool _draftWriteFailed = false;
 
-  void _simulateProgress() {
-    _saveProgress = 0.0;
-    _progressTimer?.cancel();
-    _progressTimer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        if (_saveProgress < 0.85) {
-          // 0~85%: 빠르게 증가 (저장 시작 느낌)
-          _saveProgress += 0.05;
-        } else if (_saveProgress < 0.97) {
-          // 85~97%: 아주 천천히 증가 → 90%서 멈추는 느낌 제거
-          _saveProgress += 0.003;
-        }
-        // 97% 이상: 타이머 계속 돌지만 값은 고정 (실제 완료 시 100% 점프)
-      });
-    });
-  }
+  bool get _hasCreationDraft =>
+      widget.creationDraftId != null && widget.creationDraftOwner != null;
 
   @override
   void dispose() {
-    _progressTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _editorHintTimer?.cancel();
+    _interaction.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     ScreenLogger.enter(
       'PageEditorScreen',
       widget.initialPageIndex != null
@@ -247,34 +269,157 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     _layerBuilder = LayerBuilder(_interaction, () => _canvasSize);
     _toolbarActionHandler = ToolbarActionHandler(context, ref);
     // 내지 페이지만 편집: initialPageIndex가 있으면 즉시 해당 페이지로 이동
-    final idx = widget.initialPageIndex;
-    if (idx != null && idx >= 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final vm = ref.read(albumEditorViewModelProvider.notifier);
-        final maxIdx = vm.pages.length - 1;
-        final pageIndex = idx.clamp(1, maxIdx > 0 ? maxIdx : 1);
-        vm.goToPage(pageIndex);
-        setState(() {});
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      final idx = widget.initialPageIndex ?? vm.currentPageIndex;
+      vm.loadPendingEditAlbumIfNeeded(
+        Size(
+          kCoverReferenceWidth,
+          kCoverReferenceWidth / vm.selectedCover.ratio,
+        ),
+      );
+      _entryCheckpoint = vm.captureEditCheckpoint();
+      final maxIdx = vm.pages.length - 1;
+      final pageIndex = idx.clamp(0, maxIdx > 0 ? maxIdx : 0);
+      vm.goToPage(pageIndex);
+      setState(() {});
+      if (widget.initialMaterialKey != null) {
+        unawaited(_insertInitialMaterial(widget.initialMaterialKey!));
+      }
+    });
+  }
+
+  Future<void> _insertInitialMaterial(String key) async {
+    try {
+      if (!isStoreMaterialSupported(key)) return;
+      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      final albumId = vm.editingAlbumId;
+      final pageIndex = vm.currentPageIndex;
+      final shop = ref.read(pointShopRepositoryProvider);
+      final userId = shop.currentUserId;
+      final photo = key.startsWith('frame:')
+          ? await showPhotoSelectionSheet(context, ref)
+          : null;
+      if (!mounted ||
+          albumId != vm.editingAlbumId ||
+          pageIndex != vm.currentPageIndex ||
+          userId != shop.currentUserId)
+        return;
+      final inserted = await insertStoreMaterial(vm, key, photo: photo);
+      if (mounted && inserted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('선택한 소재를 넣었어요. 저장하면 앨범에 반영돼요.')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('소재를 넣지 못했어요. 편집 도구에서 다시 선택해 주세요.')),
+        );
+      }
     }
   }
 
   Future<void> _openGalleryForPlaceholder(LayerModel layer) async {
     if (!mounted) return;
     if (_showEditorHint) setState(() => _showEditorHint = false);
+    final changed = await replacePhotoInSlot(
+      context,
+      ref,
+      layer,
+      layerBuilder: _layerBuilder,
+    );
+    if (changed && mounted) setState(() {});
+  }
 
-    final gallery = ref.read(galleryProvider);
-    if (gallery.albums.isEmpty) {
-      await ref.read(galleryProvider.notifier).fetchInitialData();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if ((state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.paused) &&
+        _hasCreationDraft &&
+        _entryCheckpoint != null &&
+        !_isSaving &&
+        !_exitPromptOpen) {
+      unawaited(_saveCreationEditorDraft(notify: false));
     }
-    if (!mounted) return;
-    final asset = await showPhotoSelectionSheet(context, ref);
-    if (asset == null || !mounted) return;
+  }
 
-    final vm = ref.read(albumEditorViewModelProvider.notifier); // vm 정의 추가
-    await vm.updateSlotImage(layer.id, asset);
-    if (mounted) setState(() {});
+  Future<bool> _saveCreationEditorDraft({
+    bool notify = true,
+    AlbumEditCheckpoint? checkpoint,
+  }) {
+    final owner = widget.creationDraftOwner;
+    final draftId = widget.creationDraftId;
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final albumId = checkpoint?.albumId ?? vm.editingAlbumId;
+    final cover = checkpoint?.cover ?? vm.selectedCover;
+    if (owner == null ||
+        draftId == null ||
+        albumId == null ||
+        ref.read(authViewModelProvider).asData?.value?.id != owner) {
+      if (notify && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인한 계정을 확인해 주세요. 편집 내용은 유지돼요.')),
+        );
+      }
+      return Future.value(false);
+    }
+    final draftCheckpoint = checkpoint == null
+        ? vm.captureCreationEditorCheckpoint()
+        : AlbumCreationEditorCheckpoint(
+            pages: checkpoint.pages,
+            pageIndex: checkpoint.pageIndex,
+            coverCanvas: checkpoint.coverCanvas == Size.zero
+                ? Size(kCoverReferenceWidth, kCoverReferenceWidth / cover.ratio)
+                : checkpoint.coverCanvas,
+            innerCanvas: checkpoint.innerCanvas == Size.zero
+                ? Size(300, 300 / cover.ratio)
+                : checkpoint.innerCanvas,
+            theme: checkpoint.theme,
+          );
+    final store = ref.read(albumCreationDraftStoreProvider);
+    setState(() {
+      _pendingDraftWrites++;
+      _draftWriteFailed = false;
+    });
+    final result = _draftWrites.then((_) async {
+      try {
+        final written = await store.updateLinked(owner, draftId, albumId, (
+          draft,
+        ) {
+          if (mounted &&
+              ref.read(authViewModelProvider).asData?.value?.id != owner) {
+            throw StateError('Draft account changed');
+          }
+          return draft.withEditorCheckpoint(draftCheckpoint, cover: cover);
+        });
+        if (!written) throw StateError('Linked draft no longer exists');
+        if (mounted) {
+          ref.invalidate(albumCreationDraftProvider);
+          if (notify)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('이 기기에 임시 저장했어요. 홈에서 이어 만들 수 있어요.')),
+            );
+        }
+        return true;
+      } catch (_) {
+        if (mounted) {
+          _draftWriteFailed = true;
+          if (notify)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('임시 저장하지 못했어요. 편집 내용은 유지돼요. 다시 시도해 주세요.'),
+              ),
+            );
+        }
+        return false;
+      } finally {
+        if (mounted) setState(() => _pendingDraftWrites--);
+      }
+    });
+    _draftWrites = result.then<void>((_) {});
+    return result;
   }
 
   /// 앨범 저장 로직 추출
@@ -287,7 +432,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     try {
       setState(() {
         _isSaving = true;
-        _simulateProgress();
+        _saveStatus = const AlbumSaveProgress(AlbumSavePhase.preparing);
       });
 
       // 1. Z-index 정렬 동기화 (VM 현재 페이지 레이어를 _z 순서로 맞춰 저장 시 순서 유지)
@@ -295,6 +440,11 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       if (currentPage != null && currentPage.layers.isNotEmpty) {
         final sorted = _interaction.sortByZ(List.of(currentPage.layers));
         vm.updatePageLayers(sorted, recordHistory: false);
+      }
+
+      if (_hasCreationDraft) {
+        await _saveCreationEditorDraft(notify: false);
+        if (!mounted) return;
       }
 
       // 2. 서버 저장
@@ -305,34 +455,44 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         debugPrint('Failed to capture cover in Screen: $e');
       }
 
-      final isSuccess = await vm.saveFullAlbum(coverImageBytes: coverCapture);
+      final isSuccess = await vm.saveFullAlbum(
+        coverImageBytes: coverCapture,
+        onProgress: (value) {
+          if (mounted) setState(() => _saveStatus = value);
+        },
+      );
       if (!isSuccess) {
-        final error = ref.read(albumEditorViewModelProvider).error;
-        if (error is StorageQuotaExceededException) {
-          throw error;
-        }
-        throw StateError('앨범 저장에 실패했습니다.');
-      }
-
-      if (isSuccess) {
-        // 성공 시 진행률 100%
-        _progressTimer?.cancel();
-        if (mounted) {
-          setState(() => _saveProgress = 1.0);
-        }
-        await Future.delayed(const Duration(milliseconds: 300));
+        throw vm.lastSaveError ?? StateError('앨범 저장에 실패했습니다.');
       }
 
       if (context.mounted && isSuccess) {
+        var savedMessage = '앨범을 저장했어요.';
+        if (widget.creationDraftOwner != null &&
+            widget.creationDraftId != null) {
+          try {
+            await _draftWrites;
+            await ref
+                .read(albumCreationDraftStoreProvider)
+                .remove(widget.creationDraftOwner!, widget.creationDraftId!);
+            if (mounted) ref.invalidate(albumCreationDraftProvider);
+          } catch (_) {
+            savedMessage = '앨범은 저장했지만 임시 저장은 정리하지 못했어요.';
+          }
+        }
+        if (!mounted) return;
         // 3. 홈 화면 갱신 및 이동
-        await ref.read(homeViewModelProvider.notifier).refresh();
-        if (!context.mounted) return;
+        // Refresh when observed, without holding navigation on a network request.
+        ref.invalidate(homeViewModelProvider);
 
         // popUntil 이전에 캡처해야 한다. popUntil 이후 context는 deactivated 상태가
         // 되어 SnackBar 애니메이션 완료 시점에 ancestor 조회가 실패한다.
         final messenger = ScaffoldMessenger.of(context);
-        Navigator.popUntil(context, (route) => route.isFirst);
-        messenger.showSnackBar(const SnackBar(content: Text('앨범이 저장되었습니다!')));
+        if (widget.returnToPreviousOnSave && Navigator.canPop(context)) {
+          Navigator.pop(context, true);
+        } else {
+          Navigator.popUntil(context, (route) => route.isFirst);
+        }
+        messenger.showSnackBar(SnackBar(content: Text(savedMessage)));
       }
     } catch (e) {
       if (e is StorageQuotaExceededException && context.mounted) {
@@ -344,14 +504,32 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+        ).showSnackBar(SnackBar(content: Text(albumSaveErrorMessage(e))));
       }
     } finally {
-      _progressTimer?.cancel();
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   Future<void> _showQuotaExceededSheet(BuildContext context) async {
+    if (kIsWeb) {
+      await showWebAwareDialog<bool>(
+        context: context,
+        maxWidth: 560,
+        maxHeight: 340,
+        builder: (dialogContext) => Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('저장 공간이 부족합니다', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
+            const SizedBox(height: 14),
+            Text('저장 공간을 초과했습니다. 사용하지 않는 앨범이나 사진을 정리한 뒤 다시 저장해 주세요.', style: TextStyle(fontSize: 14, height: 1.7, color: WebPalette.of(context).muted)),
+            const SizedBox(height: 24),
+            Align(alignment: Alignment.centerRight, child: OutlinedButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('닫기'))),
+          ]),
+        ),
+      );
+      return;
+    }
     await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: SnapFitColors.surfaceOf(context),
@@ -397,7 +575,6 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
   Future<void> _confirmDeleteCurrentPage(AlbumEditorViewModel vm) async {
     if (!vm.canDeleteCurrentPage) return;
-    final pageNumber = vm.currentPageIndex;
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -414,7 +591,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           ),
         ),
         content: Text(
-          '$pageNumber페이지를 삭제할까요?',
+          vm.deleteCurrentPageDescription,
           style: TextStyle(
             fontSize: 14.sp,
             height: 1.5,
@@ -455,6 +632,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     final state = asyncState.value;
     final canUndo = state?.canUndo ?? false;
     final canRedo = state?.canRedo ?? false;
+    final viewport = MediaQuery.sizeOf(context);
+    final desktopWorkspace = viewport.width >= 1100 && viewport.height >= 600;
 
     // aspect: 내지 LayoutBuilder에서 canvasH 계산에 사용
     final double aspect = vm.selectedCover.ratio;
@@ -497,9 +676,13 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     }
 
     void handleAddPage() {
+      final addedPages = vm.pagesToAdd;
+      if (!vm.addPage()) return;
       _pageTurnForward = true;
       _pageTurnNonce++;
-      vm.addPage();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('빈 내지 $addedPages쪽을 추가했어요.')));
       setState(() {});
     }
 
@@ -511,7 +694,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           pages: pages,
           currentPageIndex: currentPageIndex,
           onPageSelected: handlePageSelected,
-          onAddPage: handleAddPage,
+          onAddPage: vm.canAddPage ? handleAddPage : null,
+          addPageDescription: vm.addPageDescription,
           canDeleteCurrentPage: vm.canDeleteCurrentPage,
           onDeleteCurrentPage: () => _confirmDeleteCurrentPage(vm),
         ),
@@ -523,16 +707,19 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         padding: padding,
         child: _PageEditorEntranceReveal(
           key: const Key('pageEditorCanvasReveal'),
+          disabled: kIsWeb,
           delay: Duration.zero,
           includeScale: true,
           child: _PageEditorPageTurnReveal(
             key: ValueKey('page-turn-$currentPageIndex-$_pageTurnNonce'),
+            disabled: kIsWeb,
             forward: _pageTurnForward,
             child: _buildWorkspaceFrame(
               context,
               child: currentPageIndex == 0
                   ? EditCover(
                       key: _coverEditorKey,
+                      flatPresentation: kIsWeb,
                       editAlbum: vm.album,
                       showAppBar: false,
                       initialCoverSize: vm.selectedCover,
@@ -571,6 +758,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                               width: innerW,
                               height: innerH,
                               child: PageEditorCanvas(
+                                flatPresentation: kIsWeb,
                                 canvasKey: _canvasKey,
                                 canvasW: innerW,
                                 canvasH: innerH,
@@ -624,6 +812,12 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
                 onRefresh: () => setState(() {}),
                 onOpenGallery: (LayerModel layer) =>
                     _openGalleryForPlaceholder(layer),
+                onOpenPhotoCrop: (layer) => editPhotoCrop(
+                  context,
+                  ref,
+                  layer,
+                  layerBuilder: _layerBuilder,
+                ),
                 onOpenDecorateSheet: (LayerModel layer) =>
                     _openDecorateSheetForLayer(layer),
               )
@@ -651,22 +845,17 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           canRedo: canRedo,
           onUndo: () {
             vm.undo();
-            _interaction.clearSelection();
+            _interaction.resetForPageChange();
             if (mounted) setState(() {});
           },
           onRedo: () {
             vm.redo();
-            _interaction.clearSelection();
+            _interaction.resetForPageChange();
             if (mounted) setState(() {});
           },
           onModeChanged: (mode) => _handleModeChange(mode, layers),
           onAddPhoto: () {
-            final size =
-                (currentPageIndex == 0 &&
-                    (_canvasSize.width <= 0 || _canvasSize.height <= 0))
-                ? Size(kCoverReferenceWidth, kCoverReferenceWidth / aspect)
-                : _canvasSize;
-            _toolbarActionHandler.addPhoto(size);
+            _toolbarActionHandler.addPhoto();
           },
           onCover: () => _toolbarActionHandler.openCoverTheme(),
         ),
@@ -731,458 +920,957 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       );
     }
 
-    return WillPopScope(
-      onWillPop: () => _handleWillPop(vm, layers),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          toolbarHeight: 64.h,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: Icon(
-              platformBackIcon(),
-              color: SnapFitColors.textPrimaryOf(context),
+    Widget desktopTool(
+      String label,
+      IconData icon,
+      VoidCallback action, {
+      bool selected = false,
+    }) => SizedBox(
+      width: 94,
+      child: TextButton(
+        onPressed: _isSaving ? null : action,
+        style: TextButton.styleFrom(
+          minimumSize: const Size(0, 62),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          backgroundColor: selected
+              ? ExperienceFormStyle.selection(context)
+              : Colors.transparent,
+          foregroundColor: ExperienceFormStyle.ink(context),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 22),
+            const SizedBox(height: 5),
+            Text(label),
+          ],
+        ),
+      ),
+    );
+
+    Widget buildDesktopLayout() {
+      final mode = _currentMode == EditorMode.none
+          ? EditorMode.layer
+          : _currentMode;
+      return Row(
+        key: const ValueKey('page-editor-desktop-workspace'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            key: const ValueKey('page-editor-desktop-pages'),
+            width: 112,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 14, 8, 12),
+              child: Column(
+                children: [
+                  Text(
+                    '페이지',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      14,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(child: buildPageSelector()),
+                ],
+              ),
             ),
-            onPressed: () async {
-              final shouldPop = await _handleWillPop(vm, layers);
-              if (shouldPop && mounted) {
-                Navigator.pop(context);
-              }
-            },
           ),
-          title: null,
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 12.w),
-              child: Builder(
-                builder: (context) {
-                  final isLandscape =
-                      MediaQuery.sizeOf(context).width >
-                      MediaQuery.sizeOf(context).height;
-                  return SnapFitPressable(
-                    onTap: _isSaving ? null : () => _onSaveAlbum(vm, layers),
-                    pressedScale: 0.96,
-                    borderRadius: BorderRadius.circular(999.r),
-                    child: AnimatedOpacity(
-                      duration: SnapFitMotion.fast,
-                      opacity: _isSaving ? 0.45 : 1,
-                      child: Container(
-                        height: isLandscape ? 30 : 34.h,
-                        constraints: BoxConstraints(
-                          minWidth: isLandscape ? 46 : 42.w,
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isLandscape ? 12 : 8.w,
-                        ),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999.r),
-                          gradient: const LinearGradient(
-                            colors: [
-                              SnapFitColors.primaryGradientStart,
-                              SnapFitColors.primaryGradientEnd,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: SnapFitColors.accent.withOpacity(0.18),
-                              blurRadius: 12,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
+          VerticalDivider(width: 1, color: ExperienceFormStyle.line(context)),
+          Expanded(
+            key: const ValueKey('page-editor-desktop-canvas'),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
                         child: Text(
-                          '저장',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: isLandscape ? 11 : 12.sp,
-                            height: 1.0,
+                          currentPageIndex == 0
+                              ? '표지 편집'
+                              : '내지 $currentPageIndex쪽 편집',
+                          style: ExperienceFormStyle.text(
+                            context,
+                            15,
+                            weight: FontWeight.w600,
                           ),
                         ),
                       ),
+                      IconButton(
+                        key: const ValueKey('editor-desktop-undo'),
+                        tooltip: '실행 취소 (Ctrl/⌘ Z)',
+                        onPressed: !_isSaving && canUndo
+                            ? () {
+                                vm.undo();
+                                _interaction.resetForPageChange();
+                              }
+                            : null,
+                        icon: const Icon(Icons.undo, size: 21),
+                      ),
+                      IconButton(
+                        key: const ValueKey('editor-desktop-redo'),
+                        tooltip: '다시 실행 (Ctrl/⌘ Shift Z)',
+                        onPressed: !_isSaving && canRedo
+                            ? () {
+                                vm.redo();
+                                _interaction.resetForPageChange();
+                              }
+                            : null,
+                        icon: const Icon(Icons.redo, size: 21),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: _isSaving ? null : _interaction.clearSelection,
+                    child: buildCanvasArea(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: Theme.of(context).brightness == Brightness.dark
-                  ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
-                  : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    '클릭해서 선택 · 드래그로 이동 · Delete 삭제 · Ctrl/⌘ Z 실행 취소',
+                    style: ExperienceFormStyle.text(
+                      context,
+                      12,
+                      secondary: true,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Stack(
-            children: [
-              _buildEditorStudioBackground(context),
-              SafeArea(
-                bottom: false,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isLandscape =
-                        constraints.maxWidth > constraints.maxHeight;
-                    if (isLandscape) return buildLandscapeLayout();
-
-                    return Column(
-                      children: [
-                        // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
-                        Padding(
-                          padding: EdgeInsets.only(top: 16.h),
-                          child: SnapFitFadeIn(
-                            key: const Key('pageEditorSelectorReveal'),
-                            delay: const Duration(milliseconds: 80),
-                            child: PageListSelector(
-                              pages: pages,
-                              currentPageIndex: currentPageIndex,
-                              onPageSelected: (index) {
-                                if (index == currentPageIndex) return;
-                                _pageTurnForward = index > currentPageIndex;
-                                _pageTurnNonce++;
-                                _interaction.clearSelection();
-                                vm.goToPage(index);
-                                // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
-                                setState(() => _canvasSize = Size.zero);
-                              },
-                              onAddPage: () {
-                                _pageTurnForward = true;
-                                _pageTurnNonce++;
-                                vm.addPage();
-                                setState(() {}); // Refresh UI
-                              },
-                              canDeleteCurrentPage: vm.canDeleteCurrentPage,
-                              onDeleteCurrentPage: () =>
-                                  _confirmDeleteCurrentPage(vm),
-                            ),
-                          ),
-                        ),
-                        // 2. Main Canvas Area
-                        // AnimatedSwitcher를 사용하지 않는다: EditCover와 PageEditorCanvas가
-                        // 동일한 _canvasKey를 공유하므로 전환 애니메이션 중 두 위젯이 동시에
-                        // 트리에 존재하면 GlobalKey 충돌이 발생한다.
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 0),
-                            child: _PageEditorEntranceReveal(
-                              key: const Key('pageEditorCanvasReveal'),
-                              delay: Duration.zero,
-                              includeScale: true,
-                              child: _PageEditorPageTurnReveal(
-                                key: ValueKey(
-                                  'page-turn-$currentPageIndex-$_pageTurnNonce',
-                                ),
-                                forward: _pageTurnForward,
-                                child: _buildWorkspaceFrame(
-                                  context,
-                                  child: currentPageIndex == 0
-                                      ? EditCover(
-                                          key: _coverEditorKey,
-                                          editAlbum: vm.album,
-                                          showAppBar: false,
-                                          initialCoverSize: vm.selectedCover,
-                                          showBottomToolbar: false,
-                                          interaction: _interaction,
-                                          canvasKey: _canvasKey,
-                                          onSizeChanged: (size) {
-                                            _canvasSize = size;
-                                          },
-                                        )
-                                      : LayoutBuilder(
-                                          key: ValueKey(currentPageIndex),
-                                          builder: (context, constraints) {
-                                            const double sidePadding = 16.0;
-                                            final double availW =
-                                                constraints.maxWidth -
-                                                sidePadding * 2;
-                                            final double availH =
-                                                constraints.maxHeight;
-                                            const double logicalW =
-                                                kCoverReferenceWidth;
-                                            final double logicalH =
-                                                logicalW / aspect;
-
-                                            final double scaleByWidth =
-                                                availW / logicalW;
-                                            final double scaleByHeight =
-                                                availH / logicalH;
-                                            final double scale = math.min(
-                                              scaleByWidth,
-                                              scaleByHeight,
-                                            );
-                                            final double innerW =
-                                                logicalW * scale;
-                                            final double innerH =
-                                                logicalH * scale;
-
-                                            return Center(
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: sidePadding,
-                                                    ),
-                                                child: SizedBox(
-                                                  width: innerW,
-                                                  height: innerH,
-                                                  child: PageEditorCanvas(
-                                                    canvasKey: _canvasKey,
-                                                    canvasW: innerW,
-                                                    canvasH: innerH,
-                                                    layers: layers,
-                                                    interaction: _interaction,
-                                                    layerBuilder: _layerBuilder,
-                                                    onCanvasSizeChanged: (size) {
-                                                      if (_canvasSize != size) {
-                                                        WidgetsBinding.instance
-                                                            .addPostFrameCallback((
-                                                              _,
-                                                            ) {
-                                                              if (!mounted)
-                                                                return;
-                                                              setState(
-                                                                () =>
-                                                                    _canvasSize =
-                                                                        size,
-                                                              );
-                                                              vm.loadPendingEditAlbumIfNeeded(
-                                                                size,
-                                                              );
-                                                              vm.setCoverCanvasSize(
-                                                                size,
-                                                                isCover:
-                                                                    vm.currentPageIndex ==
-                                                                    0,
-                                                              );
-                                                            });
-                                                      }
-                                                    },
-                                                    backgroundColor:
-                                                        vm
-                                                                .currentPage
-                                                                ?.backgroundColor !=
-                                                            null
-                                                        ? Color(
-                                                            vm
-                                                                .currentPage!
-                                                                .backgroundColor!,
-                                                          )
-                                                        : null,
-                                                    isCover:
-                                                        vm
-                                                            .currentPage
-                                                            ?.isCover ??
-                                                        false,
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
-                        // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
-                        // RenderFlex overflow가 발생하지 않도록 한다.
-                        SizedBox(
-                          height: 72.h,
-                          child: Center(
-                            child: AnimatedSwitcher(
-                              duration: SnapFitMotion.medium,
-                              switchInCurve: SnapFitMotion.entrance,
-                              switchOutCurve: Curves.easeInCubic,
-                              child: _interaction.selectedLayerId != null
-                                  ? LayerActionPanel(
-                                      layers: layers,
-                                      interaction: _interaction,
-                                      textEditor: TextEditorManager(
-                                        context,
-                                        ref.read(
-                                          albumEditorViewModelProvider.notifier,
-                                        ),
-                                      ),
-                                      onRefresh: () => setState(() {}),
-                                      onOpenGallery: (LayerModel layer) =>
-                                          _openGalleryForPlaceholder(layer),
-                                      onOpenDecorateSheet: (LayerModel layer) =>
-                                          _openDecorateSheetForLayer(layer),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ),
-                        ),
-
-                        // Bottom Menu (고정)
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
-                          child: SnapFitFadeIn(
-                            key: const Key('pageEditorDockReveal'),
-                            delay: const Duration(milliseconds: 140),
-                            beginOffset: const Offset(0, 0.055),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // 헤더 row – 표지 편집과 동일한 위치/디자인
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(
-                                    4.w,
-                                    0,
-                                    4.w,
-                                    6.h,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          '편집 도구',
-                                          style: TextStyle(
-                                            fontSize: 12.5.sp,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: -0.2,
-                                            color: SnapFitColors.textPrimaryOf(
-                                              context,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      _EditorMiniHistoryButton(
-                                        icon: Icons.undo_rounded,
-                                        enabled: canUndo,
-                                        tooltip: '되돌리기',
-                                        onTap: () {
-                                          vm.undo();
-                                          _interaction.clearSelection();
-                                          if (mounted) setState(() {});
-                                        },
-                                      ),
-                                      SizedBox(width: 4.w),
-                                      _EditorMiniHistoryButton(
-                                        icon: Icons.redo_rounded,
-                                        enabled: canRedo,
-                                        tooltip: '다시하기',
-                                        onTap: () {
-                                          vm.redo();
-                                          _interaction.clearSelection();
-                                          if (mounted) setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                EditorBottomMenu(
-                              currentMode: _currentMode,
-                              isCover: currentPageIndex == 0,
-                              showCoverMenuItem: false,
-                              canUndo: canUndo,
-                              canRedo: canRedo,
-                              onUndo: () {
-                                vm.undo();
-                                _interaction.clearSelection();
-                                if (mounted) setState(() {});
-                              },
-                              onRedo: () {
-                                vm.redo();
-                                _interaction.clearSelection();
-                                if (mounted) setState(() {});
-                              },
-                              onModeChanged: (mode) =>
-                                  _handleModeChange(mode, layers),
-                              onAddPhoto: () {
-                                // 커버일 때 캔버스 크기가 아직 0이면 커버 기준 크기 사용
-                                final size =
-                                    (currentPageIndex == 0 &&
-                                        (_canvasSize.width <= 0 ||
-                                            _canvasSize.height <= 0))
-                                    ? Size(
-                                        kCoverReferenceWidth,
-                                        kCoverReferenceWidth / aspect,
-                                      )
-                                    : _canvasSize;
-                                _toolbarActionHandler.addPhoto(size);
-                              },
-                              onCover: () =>
-                                  _toolbarActionHandler.openCoverTheme(),
-                            ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              if (_showEditorHint &&
-                  !_isSaving &&
-                  _interaction.selectedLayerId == null &&
-                  _currentMode == EditorMode.none)
-                _buildEditorHint(context, isCover: currentPageIndex == 0),
-
-              // 저장 중 진행률 오버레이
-              if (_isSaving) PageEditorSaveOverlay(progress: _saveProgress),
-
-              // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
-              if (!_isSaving &&
-                  (state?.backgroundUploadProgress ?? 0) > 0 &&
-                  (state?.backgroundUploadProgress ?? 0) < 1)
-                Positioned(
-                  bottom: 80.h,
-                  left: 16.w,
-                  right: 16.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 8.h,
+          VerticalDivider(width: 1, color: ExperienceFormStyle.line(context)),
+          SizedBox(
+            key: const ValueKey('page-editor-desktop-tools'),
+            width: 324,
+            child: ColoredBox(
+              color: ExperienceFormStyle.surface(context),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
                     ),
-                    decoration: BoxDecoration(
-                      color: SnapFitColors.overlayStrongOf(context),
-                      borderRadius: BorderRadius.circular(999.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
                       children: [
-                        SizedBox(
-                          width: 14.r,
-                          height: 14.r,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            value: state!.backgroundUploadProgress,
-                            color: const Color(0xFF8F6846),
-                            backgroundColor: Colors.white24,
-                          ),
+                        desktopTool(
+                          '사진 추가',
+                          Icons.add_photo_alternate_outlined,
+                          () {
+                            _toolbarActionHandler.addPhoto();
+                          },
                         ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                            decoration: TextDecoration.none,
+                        desktopTool(
+                          '글 추가',
+                          Icons.text_fields,
+                          () => _handleModeChange(EditorMode.text, layers),
+                        ),
+                        desktopTool(
+                          '레이어',
+                          Icons.layers_outlined,
+                          () => _handleModeChange(EditorMode.layer, layers),
+                          selected: mode == EditorMode.layer,
+                        ),
+                        desktopTool(
+                          '레이아웃',
+                          Icons.dashboard_outlined,
+                          () => _handleModeChange(EditorMode.layout, layers),
+                          selected: mode == EditorMode.layout,
+                        ),
+                        desktopTool(
+                          '템플릿',
+                          Icons.auto_awesome_mosaic_outlined,
+                          () => _handleModeChange(EditorMode.template, layers),
+                          selected: mode == EditorMode.template,
+                        ),
+                        desktopTool(
+                          '꾸미기',
+                          Icons.emoji_emotions_outlined,
+                          () => _handleModeChange(EditorMode.sticker, layers),
+                          selected: mode == EditorMode.sticker,
+                        ),
+                        desktopTool(
+                          '배경',
+                          Icons.palette_outlined,
+                          () => _handleModeChange(
+                            EditorMode.backgroundColor,
+                            layers,
                           ),
+                          selected: mode == EditorMode.backgroundColor,
                         ),
                       ],
                     ),
                   ),
-                ),
+                  if (_interaction.selectedLayerId != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+                      child: buildLayerActions(),
+                    ),
+                  Expanded(
+                    child: _buildInlineToolPanel(
+                      context,
+                      mode,
+                      layers,
+                      fillAvailableHeight: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
-              // 전역 로딩 오버레이 (생성 플로우 전환용)
-              if (state?.isCreatingInBackground ?? false)
-                const PageEditorPreparingOverlay(),
+    Widget buildWebWorkspace() {
+      final selectedMode = _currentMode == EditorMode.none
+          ? EditorMode.layer
+          : _currentMode;
+      final referenceSize = Size(
+        kCoverReferenceWidth,
+        kCoverReferenceWidth / aspect,
+      );
+      final previewInteraction = LayerInteractionManager.preview(
+        ref,
+        () => referenceSize,
+      );
+      final previewBuilder = LayerBuilder(
+        previewInteraction,
+        () => referenceSize,
+      );
+
+      Widget pageRail({bool horizontal = false}) => WebAlbumPageRail(
+        pages: pages,
+        selectedIndex: currentPageIndex,
+        cover: vm.selectedCover,
+        theme: vm.selectedTheme,
+        previewBuilder: previewBuilder,
+        onSelected: handlePageSelected,
+        horizontal: horizontal,
+        onAdd: !_isSaving && vm.canAddPage ? handleAddPage : null,
+        addDescription: vm.addPageDescription,
+        onDelete: !_isSaving && vm.canDeleteCurrentPage
+            ? () => _confirmDeleteCurrentPage(vm)
+            : null,
+      );
+
+      WebAlbumEditorTool tool(
+        String label,
+        IconData icon,
+        EditorMode mode,
+      ) => WebAlbumEditorTool(
+        label: label,
+        icon: icon,
+        selected: selectedMode == mode,
+        onPressed: () => _handleModeChange(mode, layers),
+      );
+
+      Widget progressOverlay({required String title, double? progress}) => Stack(
+        fit: StackFit.expand,
+        children: [
+          const ModalBarrier(dismissible: false, color: Color(0x66000000)),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: WebSurface(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(title, style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: WebPalette.of(context).ink,
+                      )),
+                      const SizedBox(height: 20),
+                      LinearProgressIndicator(value: progress),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          WebAlbumEditorWorkspace(
+            title: vm.album?.title.trim().isNotEmpty == true
+                ? vm.album!.title
+                : '새 앨범',
+            pageLabel: currentPageIndex == 0
+                ? '표지'
+                : '내지 $currentPageIndex쪽 / ${math.max(0, pages.length - 1)}쪽',
+            specification: vm.selectedCover.displayName,
+            hasUnsavedChanges: vm.hasUnsavedChanges,
+            isPersisted: (vm.album?.id ?? 0) > 0,
+            isSaving: _isSaving,
+            onBack: () async {
+              final shouldPop = await _handleWillPop(vm, layers);
+              if (shouldPop && mounted) Navigator.pop(context);
+            },
+            onSave: () => unawaited(_onSaveAlbum(vm, layers)),
+            onSaveDraft: _hasCreationDraft
+                ? () => unawaited(_saveCreationEditorDraft())
+                : null,
+            draftPending: _pendingDraftWrites > 0,
+            draftFailed: _draftWriteFailed,
+            onUndo: canUndo ? () {
+              vm.undo();
+              _interaction.resetForPageChange();
+              if (mounted) setState(() {});
+            } : null,
+            onRedo: canRedo ? () {
+              vm.redo();
+              _interaction.resetForPageChange();
+              if (mounted) setState(() {});
+            } : null,
+            onAddPage: !_isSaving && vm.canAddPage ? handleAddPage : null,
+            onDeletePage: !_isSaving && vm.canDeleteCurrentPage
+                ? () => _confirmDeleteCurrentPage(vm)
+                : null,
+            pageRail: pageRail(),
+            compactPageRail: pageRail(horizontal: true),
+            canvas: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _isSaving ? null : _interaction.clearSelection,
+              child: buildCanvasArea(padding: const EdgeInsets.fromLTRB(
+                24, 4, 24, 12,
+              )),
+            ),
+            properties: ColoredBox(
+              color: WebPalette.of(context).surface,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_interaction.selectedLayerId != null)
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: buildLayerActions(),
+                    ),
+                  Expanded(
+                    child: _buildInlineToolPanel(
+                      context,
+                      selectedMode,
+                      layers,
+                      fillAvailableHeight: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            tools: [
+              WebAlbumEditorTool(
+                label: '사진 추가',
+                icon: Icons.add_photo_alternate_outlined,
+                onPressed: () => unawaited(_toolbarActionHandler.addPhoto()),
+                opensProperties: false,
+              ),
+              WebAlbumEditorTool(
+                label: '텍스트',
+                icon: Icons.text_fields,
+                onPressed: () => _handleModeChange(EditorMode.text, layers),
+                opensProperties: false,
+              ),
+              if (currentPageIndex == 0) WebAlbumEditorTool(
+                label: '표지 테마',
+                icon: Icons.style_outlined,
+                onPressed: () => unawaited(_toolbarActionHandler.openCoverTheme()),
+                opensProperties: false,
+              ),
+              tool('레이어', Icons.layers_outlined, EditorMode.layer),
+              tool('레이아웃', Icons.dashboard_outlined, EditorMode.layout),
+              tool('템플릿', Icons.grid_view_outlined, EditorMode.template),
+              tool('꾸미기', Icons.interests_outlined, EditorMode.sticker),
+              tool('배경', Icons.palette_outlined, EditorMode.backgroundColor),
             ],
+          ),
+          if (_isSaving)
+            progressOverlay(
+              progress: _saveStatus.phase == AlbumSavePhase.uploading
+                  ? _saveStatus.fraction
+                  : null,
+              title: _saveStatus.label,
+            ),
+          if (!_isSaving &&
+              (state?.backgroundUploadProgress ?? 0) > 0 &&
+              (state?.backgroundUploadProgress ?? 0) < 1)
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: WebSurface(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Text(
+                  '사진 업로드 중 ${(state!.backgroundUploadProgress * 100).toInt()}%',
+                  style: TextStyle(color: WebPalette.of(context).ink, fontSize: 12),
+                ),
+              ),
+            ),
+          if (state?.isCreatingInBackground ?? false)
+            progressOverlay(title: '앨범을 준비하고 있습니다'),
+        ],
+      );
+    }
+
+    return WebUnsavedWorkGuard(
+      hasUnsavedChanges: () =>
+          ref.read(albumEditorViewModelProvider.notifier).hasUnsavedChanges,
+      child: EditorKeyboardShortcuts(
+        enabled:
+            !_isSaving &&
+            !_exitPromptOpen &&
+            !(state?.isCreatingInBackground ?? false),
+        onDelete: _interaction.selectedLayerId == null
+            ? null
+            : _interaction.deleteSelected,
+        onUndo: canUndo
+            ? () {
+                vm.undo();
+                _interaction.resetForPageChange();
+              }
+            : null,
+        onRedo: canRedo
+            ? () {
+                vm.redo();
+                _interaction.resetForPageChange();
+              }
+            : null,
+        onSave: () => unawaited(_onSaveAlbum(vm, layers)),
+        onEscape: () {
+          _interaction.clearSelection();
+          setState(() => _currentMode = EditorMode.none);
+        },
+        child: WillPopScope(
+          onWillPop: () => _handleWillPop(vm, layers),
+          child: kIsWeb ? buildWebWorkspace() : Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.transparent,
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              toolbarHeight: desktopWorkspace ? 64 : 64.h,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              leading: IconButton(
+                icon: Icon(
+                  platformBackIcon(),
+                  color: SnapFitColors.textPrimaryOf(context),
+                ),
+                onPressed: () async {
+                  final shouldPop = await _handleWillPop(vm, layers);
+                  if (shouldPop && mounted) {
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              title: desktopWorkspace
+                  ? Text(
+                      '앨범 편집',
+                      style: ExperienceFormStyle.text(
+                        context,
+                        18,
+                        weight: FontWeight.w600,
+                      ),
+                    )
+                  : null,
+              actions: [
+                if (_hasCreationDraft)
+                  IconButton(
+                    key: const ValueKey('editor-save-draft'),
+                    tooltip: _draftWriteFailed ? '임시 저장 다시 시도' : '이 기기에 임시 저장',
+                    onPressed: _isSaving || _pendingDraftWrites > 0
+                        ? null
+                        : () => _saveCreationEditorDraft(),
+                    icon: _pendingDraftWrites > 0
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _draftWriteFailed
+                                ? Icons.error_outline
+                                : Icons.save_outlined,
+                          ),
+                  ),
+                Padding(
+                  padding: EdgeInsets.only(right: 12.w),
+                  child: Builder(
+                    builder: (context) {
+                      final isLandscape =
+                          MediaQuery.sizeOf(context).width >
+                          MediaQuery.sizeOf(context).height;
+                      return SnapFitPressable(
+                        onTap: _isSaving
+                            ? null
+                            : () => _onSaveAlbum(vm, layers),
+                        pressedScale: 0.96,
+                        borderRadius: BorderRadius.circular(999.r),
+                        child: AnimatedOpacity(
+                          duration: SnapFitMotion.fast,
+                          opacity: _isSaving ? 0.45 : 1,
+                          child: Container(
+                            height: desktopWorkspace
+                                ? 38
+                                : isLandscape
+                                ? 30
+                                : 34.h,
+                            constraints: BoxConstraints(
+                              minWidth: desktopWorkspace
+                                  ? 86
+                                  : isLandscape
+                                  ? 46
+                                  : 42.w,
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isLandscape ? 12 : 8.w,
+                            ),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999.r),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  SnapFitColors.primaryGradientStart,
+                                  SnapFitColors.primaryGradientEnd,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: SnapFitColors.accent.withOpacity(0.18),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              desktopWorkspace ? '앨범 저장' : '저장',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: desktopWorkspace
+                                    ? 14
+                                    : isLandscape
+                                    ? 11
+                                    : 12.sp,
+                                height: 1.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: Theme.of(context).brightness == Brightness.dark
+                      ? const [Color(0xFF0F1112), Color(0xFF1C1814)]
+                      : const [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  _buildEditorStudioBackground(context),
+                  SafeArea(
+                    bottom: false,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (desktopWorkspace) return buildDesktopLayout();
+                        final isLandscape =
+                            constraints.maxWidth > constraints.maxHeight;
+                        if (isLandscape) return buildLandscapeLayout();
+
+                        return Column(
+                          children: [
+                            // 1. Top Page Selector (리스트–아이콘과 같은 여백으로 정리)
+                            Padding(
+                              padding: EdgeInsets.only(top: 16.h),
+                              child: SnapFitFadeIn(
+                                key: const Key('pageEditorSelectorReveal'),
+                                delay: const Duration(milliseconds: 80),
+                                child: PageListSelector(
+                                  pages: pages,
+                                  currentPageIndex: currentPageIndex,
+                                  onPageSelected: (index) {
+                                    if (index == currentPageIndex) return;
+                                    _pageTurnForward = index > currentPageIndex;
+                                    _pageTurnNonce++;
+                                    _interaction.clearSelection();
+                                    vm.goToPage(index);
+                                    // 페이지 전환 시 _canvasSize 리셋 → 다음 렌더에서 PageEditorCanvas가 실제 크기 재측정
+                                    setState(() => _canvasSize = Size.zero);
+                                  },
+                                  onAddPage: vm.canAddPage
+                                      ? handleAddPage
+                                      : null,
+                                  addPageDescription: vm.addPageDescription,
+                                  canDeleteCurrentPage: vm.canDeleteCurrentPage,
+                                  onDeleteCurrentPage: () =>
+                                      _confirmDeleteCurrentPage(vm),
+                                ),
+                              ),
+                            ),
+                            // 2. Main Canvas Area
+                            // AnimatedSwitcher를 사용하지 않는다: EditCover와 PageEditorCanvas가
+                            // 동일한 _canvasKey를 공유하므로 전환 애니메이션 중 두 위젯이 동시에
+                            // 트리에 존재하면 GlobalKey 충돌이 발생한다.
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  12.w,
+                                  6.h,
+                                  12.w,
+                                  0,
+                                ),
+                                child: _PageEditorEntranceReveal(
+                                  key: const Key('pageEditorCanvasReveal'),
+                                  delay: Duration.zero,
+                                  includeScale: true,
+                                  child: _PageEditorPageTurnReveal(
+                                    key: ValueKey(
+                                      'page-turn-$currentPageIndex-$_pageTurnNonce',
+                                    ),
+                                    forward: _pageTurnForward,
+                                    child: _buildWorkspaceFrame(
+                                      context,
+                                      child: currentPageIndex == 0
+                                          ? EditCover(
+                                              key: _coverEditorKey,
+                                              editAlbum: vm.album,
+                                              showAppBar: false,
+                                              initialCoverSize:
+                                                  vm.selectedCover,
+                                              showBottomToolbar: false,
+                                              interaction: _interaction,
+                                              canvasKey: _canvasKey,
+                                              onSizeChanged: (size) {
+                                                _canvasSize = size;
+                                              },
+                                            )
+                                          : LayoutBuilder(
+                                              key: ValueKey(currentPageIndex),
+                                              builder: (context, constraints) {
+                                                const double sidePadding = 16.0;
+                                                final double availW =
+                                                    constraints.maxWidth -
+                                                    sidePadding * 2;
+                                                final double availH =
+                                                    constraints.maxHeight;
+                                                const double logicalW =
+                                                    kCoverReferenceWidth;
+                                                final double logicalH =
+                                                    logicalW / aspect;
+
+                                                final double scaleByWidth =
+                                                    availW / logicalW;
+                                                final double scaleByHeight =
+                                                    availH / logicalH;
+                                                final double scale = math.min(
+                                                  scaleByWidth,
+                                                  scaleByHeight,
+                                                );
+                                                final double innerW =
+                                                    logicalW * scale;
+                                                final double innerH =
+                                                    logicalH * scale;
+
+                                                return Center(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal:
+                                                              sidePadding,
+                                                        ),
+                                                    child: SizedBox(
+                                                      width: innerW,
+                                                      height: innerH,
+                                                      child: PageEditorCanvas(
+                                                        canvasKey: _canvasKey,
+                                                        canvasW: innerW,
+                                                        canvasH: innerH,
+                                                        layers: layers,
+                                                        interaction:
+                                                            _interaction,
+                                                        layerBuilder:
+                                                            _layerBuilder,
+                                                        onCanvasSizeChanged: (size) {
+                                                          if (_canvasSize !=
+                                                              size) {
+                                                            WidgetsBinding
+                                                                .instance
+                                                                .addPostFrameCallback((
+                                                                  _,
+                                                                ) {
+                                                                  if (!mounted)
+                                                                    return;
+                                                                  setState(
+                                                                    () =>
+                                                                        _canvasSize =
+                                                                            size,
+                                                                  );
+                                                                  vm.loadPendingEditAlbumIfNeeded(
+                                                                    size,
+                                                                  );
+                                                                  vm.setCoverCanvasSize(
+                                                                    size,
+                                                                    isCover:
+                                                                        vm.currentPageIndex ==
+                                                                        0,
+                                                                  );
+                                                                });
+                                                          }
+                                                        },
+                                                        backgroundColor:
+                                                            vm
+                                                                    .currentPage
+                                                                    ?.backgroundColor !=
+                                                                null
+                                                            ? Color(
+                                                                vm
+                                                                    .currentPage!
+                                                                    .backgroundColor!,
+                                                              )
+                                                            : null,
+                                                        isCover:
+                                                            vm
+                                                                .currentPage
+                                                                ?.isCover ??
+                                                            false,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // 툴바 영역은 항상 동일 높이로 확보하여 커버/캔버스의 위아래 위치가 변하지 않도록 한다.
+                            // 툴바 영역은 충분한 고정 높이(옵시티 슬라이더 포함)를 확보해서
+                            // RenderFlex overflow가 발생하지 않도록 한다.
+                            SizedBox(
+                              height: math.max(64, 72.h),
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: SnapFitMotion.medium,
+                                  switchInCurve: SnapFitMotion.entrance,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  child: _interaction.selectedLayerId != null
+                                      ? LayerActionPanel(
+                                          layers: layers,
+                                          interaction: _interaction,
+                                          textEditor: TextEditorManager(
+                                            context,
+                                            ref.read(
+                                              albumEditorViewModelProvider
+                                                  .notifier,
+                                            ),
+                                          ),
+                                          onRefresh: () => setState(() {}),
+                                          onOpenGallery: (LayerModel layer) =>
+                                              _openGalleryForPlaceholder(layer),
+                                          onOpenPhotoCrop: (layer) =>
+                                              editPhotoCrop(
+                                                context,
+                                                ref,
+                                                layer,
+                                                layerBuilder: _layerBuilder,
+                                              ),
+                                          onOpenDecorateSheet:
+                                              (LayerModel layer) =>
+                                                  _openDecorateSheetForLayer(
+                                                    layer,
+                                                  ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ),
+                            ),
+
+                            // Bottom Menu (고정)
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
+                              child: SnapFitFadeIn(
+                                key: const Key('pageEditorDockReveal'),
+                                delay: const Duration(milliseconds: 140),
+                                beginOffset: const Offset(0, 0.055),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // 헤더 row – 표지 편집과 동일한 위치/디자인
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(
+                                        4.w,
+                                        0,
+                                        4.w,
+                                        6.h,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '편집 도구',
+                                              style: TextStyle(
+                                                fontSize: 12.5.sp,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: -0.2,
+                                                color:
+                                                    SnapFitColors.textPrimaryOf(
+                                                      context,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                          _EditorMiniHistoryButton(
+                                            icon: Icons.undo_rounded,
+                                            enabled: canUndo,
+                                            tooltip: '되돌리기',
+                                            onTap: () {
+                                              vm.undo();
+                                              _interaction.resetForPageChange();
+                                              if (mounted) setState(() {});
+                                            },
+                                          ),
+                                          SizedBox(width: 4.w),
+                                          _EditorMiniHistoryButton(
+                                            icon: Icons.redo_rounded,
+                                            enabled: canRedo,
+                                            tooltip: '다시하기',
+                                            onTap: () {
+                                              vm.redo();
+                                              _interaction.resetForPageChange();
+                                              if (mounted) setState(() {});
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    EditorBottomMenu(
+                                      currentMode: _currentMode,
+                                      isCover: currentPageIndex == 0,
+                                      showCoverMenuItem: false,
+                                      canUndo: canUndo,
+                                      canRedo: canRedo,
+                                      onUndo: () {
+                                        vm.undo();
+                                        _interaction.resetForPageChange();
+                                        if (mounted) setState(() {});
+                                      },
+                                      onRedo: () {
+                                        vm.redo();
+                                        _interaction.resetForPageChange();
+                                        if (mounted) setState(() {});
+                                      },
+                                      onModeChanged: (mode) =>
+                                          _handleModeChange(mode, layers),
+                                      onAddPhoto: () {
+                                        _toolbarActionHandler.addPhoto();
+                                      },
+                                      onCover: () => _toolbarActionHandler
+                                          .openCoverTheme(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+
+                  if (_showEditorHint &&
+                      !_isSaving &&
+                      _interaction.selectedLayerId == null &&
+                      _currentMode == EditorMode.none)
+                    _buildEditorHint(context, isCover: currentPageIndex == 0),
+
+                  // 저장 중 진행률 오버레이
+                  if (_isSaving)
+                    PageEditorSaveOverlay(
+                      progress: _saveStatus.phase == AlbumSavePhase.uploading
+                          ? _saveStatus.fraction
+                          : null,
+                      status: _saveStatus.label,
+                    ),
+
+                  // 백그라운드 이미지 업로드 진행률 배지 (저장 이후에도 계속 업로드되는 경우)
+                  if (!_isSaving &&
+                      (state?.backgroundUploadProgress ?? 0) > 0 &&
+                      (state?.backgroundUploadProgress ?? 0) < 1)
+                    Positioned(
+                      bottom: 80.h,
+                      left: 16.w,
+                      right: 16.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 8.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: SnapFitColors.overlayStrongOf(context),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 14.r,
+                              height: 14.r,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                value: state!.backgroundUploadProgress,
+                                color: const Color(0xFF8F6846),
+                                backgroundColor: Colors.white24,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              '사진 업로드 중... ${(state.backgroundUploadProgress * 100).toInt()}%',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // 전역 로딩 오버레이 (생성 플로우 전환용)
+                  if (state?.isCreatingInBackground ?? false)
+                    const PageEditorPreparingOverlay(),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1276,60 +1964,143 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     AlbumEditorViewModel vm,
     List<LayerModel> layers,
   ) async {
-    final asyncState = ref.read(albumEditorViewModelProvider);
-    final hasChanges = asyncState.value?.canUndo ?? false;
-    if (!hasChanges) return true;
+    if (_isSaving || _exitPromptOpen) return false;
+    if (!vm.hasUnsavedChanges) return true;
 
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('변경 내용을 저장할까요?'),
-          content: const Text('나가기 전에 편집한 내용을 저장하시겠어요?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop('discard'),
-              child: const Text('저장 안함'),
+    _exitPromptOpen = true;
+    try {
+      final result = await showDialog<String>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            scrollable: _hasCreationDraft,
+            title: Text(_hasCreationDraft ? '편집을 마칠까요?' : '변경 내용을 저장할까요?'),
+            content: Text(
+              _hasCreationDraft
+                  ? '임시 저장은 이 기기에 남아요.\n앨범에는 저장 후 반영돼요.'
+                  : '나가기 전에 편집한 내용을 저장하시겠어요?',
             ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop('cancel'),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop('save'),
-              child: const Text('저장'),
-            ),
-          ],
-        );
-      },
+            actions: _hasCreationDraft
+                ? [_creationExitActions(ctx)]
+                : [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop('discard'),
+                      child: const Text('저장 안함'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop('cancel'),
+                      child: const Text('취소'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop('save'),
+                      child: const Text('저장'),
+                    ),
+                  ],
+          );
+        },
+      );
+      if (!mounted) return false;
+
+      if (result == 'draft') {
+        return await _saveCreationEditorDraft();
+      }
+      if (result == 'discard') {
+        final checkpoint = _entryCheckpoint;
+        // Replace any background checkpoint with the entry state, so discarded
+        // edits cannot reappear when the user resumes from home.
+        if (_hasCreationDraft &&
+            checkpoint != null &&
+            !await _saveCreationEditorDraft(
+              checkpoint: checkpoint,
+              notify: false,
+            )) {
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('임시 저장을 정리하지 못했어요. 편집 내용은 유지돼요.')),
+            );
+          return false;
+        }
+        if (!mounted) return false;
+        if (checkpoint != null) vm.restoreEditCheckpoint(checkpoint);
+        return true;
+      }
+      if (result == 'save') {
+        // Saving handles its own destination; do not pop a second route.
+        await _onSaveAlbum(vm, layers);
+      }
+      return false;
+    } finally {
+      _exitPromptOpen = false;
+    }
+  }
+
+  Widget _creationExitActions(BuildContext dialogContext) {
+    final wide = MediaQuery.sizeOf(dialogContext).width > 600;
+    final draft = OutlinedButton(
+      onPressed: () => Navigator.pop(dialogContext, 'draft'),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 44),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: const Text('임시 저장 후 나가기', textAlign: TextAlign.center),
     );
-
-    if (result == 'discard' || result == null) {
-      return true; // 그냥 나가기
-    }
-    if (result == 'cancel') {
-      return false;
-    }
-    if (result == 'save') {
-      // 기존 저장 로직은 홈으로 이동(popUntil)까지 처리하므로 여기서는 추가 pop을 막는다.
-      await _onSaveAlbum(vm, layers);
-      return false;
-    }
-    return true;
+    final save = FilledButton(
+      onPressed: () => Navigator.pop(dialogContext, 'save'),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 44),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: const Text('앨범 저장', textAlign: TextAlign.center),
+    );
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (wide)
+            Row(
+              children: [
+                Expanded(child: draft),
+                const SizedBox(width: 10),
+                Expanded(child: save),
+              ],
+            )
+          else ...[
+            draft,
+            const SizedBox(height: 8),
+            save,
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, 'discard'),
+                  child: const Text('저장 안함'),
+                ),
+              ),
+              Flexible(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, 'cancel'),
+                  child: const Text('계속 편집'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      final currentKey =
-          vm.findLayerById(layer.id)?.imageBackground ??
-          layer.imageBackground ??
-          '';
-      ImageFrameStylePicker.show(context, currentKey: currentKey).then((key) {
-        if (key != null && mounted) {
-          vm.updateImageFrame(layer.id, key);
-          setState(() {});
-        }
+      editPhotoFrame(context, ref, layer, layerBuilder: _layerBuilder).then((
+        changed,
+      ) {
+        if (changed && mounted) setState(() {});
       });
     } else {
       final currentKey =
@@ -1348,8 +2119,9 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   Widget _buildInlineToolPanel(
     BuildContext context,
     EditorMode mode,
-    List<LayerModel> layers,
-  ) {
+    List<LayerModel> layers, {
+    bool fillAvailableHeight = false,
+  }) {
     final title = switch (mode) {
       EditorMode.layout => '레이아웃',
       EditorMode.template => '템플릿',
@@ -1359,24 +2131,54 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       _ => '',
     };
     final panel = switch (mode) {
-      EditorMode.sticker => const DecoratePanel(
+      EditorMode.sticker => DecoratePanel(
         mode: DecorateSheetMode.sticker,
+        onClose: () => setState(() => _currentMode = EditorMode.none),
       ),
-      EditorMode.backgroundColor => const DecoratePanel(
+      EditorMode.backgroundColor => DecoratePanel(
         mode: DecorateSheetMode.backgroundColor,
+        onClose: () => setState(() => _currentMode = EditorMode.none),
       ),
       EditorMode.layer => LayerManagerPanel(
         layers: layers,
         interaction: _interaction,
         showHandle: false,
       ),
-      EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
+      EditorMode.layout => const TemplateSelectionPanel(
+        title: '레이아웃',
+        closeOnApply: false,
+      ),
       EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
       _ => const SizedBox.shrink(),
     };
 
+    if (kIsWeb) {
+      return ColoredBox(
+        color: WebPalette.of(context).surface,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+              child: Text(
+                mode == EditorMode.layer ? '레이어 · ${layers.length}' : title,
+                style: TextStyle(
+                  color: WebPalette.of(context).ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Divider(height: 1, color: WebPalette.of(context).line),
+            Expanded(child: panel),
+          ],
+        ),
+      );
+    }
+
     return _InlineEditorAtelierPanel(
       title: title,
+      fillAvailableHeight: fillAvailableHeight,
       onClose: () => setState(() => _currentMode = EditorMode.none),
       child: panel,
     );
@@ -1394,19 +2196,16 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     if (mode == EditorMode.text) {
       setState(() => _currentMode = EditorMode.none);
       final vm = ref.read(albumEditorViewModelProvider.notifier);
-      final effectiveSize = _canvasSize == Size.zero
-          ? const Size(300, 400)
-          : _canvasSize;
-      TextEditorManager(context, vm).openAndCreateNew(
-        Size(effectiveSize.width * 0.92, effectiveSize.height * 0.18),
-      );
+      TextEditorManager(context, vm).openAndCreateNew();
       return;
     }
 
     // 가로 모드: 사이드바 인라인 패널 사용
     final isLandscape =
         MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
-    if (isLandscape) {
+    final viewport = MediaQuery.sizeOf(context);
+    if (kIsWeb || isLandscape ||
+        (viewport.width >= 1100 && viewport.height >= 600)) {
       setState(() => _currentMode = mode);
       return;
     }
@@ -1419,18 +2218,18 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return switch (mode) {
-          EditorMode.sticker =>
-            const DecoratePanel(mode: DecorateSheetMode.sticker),
-          EditorMode.backgroundColor =>
-            const DecoratePanel(mode: DecorateSheetMode.backgroundColor),
+          EditorMode.sticker => const DecoratePanel(
+            mode: DecorateSheetMode.sticker,
+          ),
+          EditorMode.backgroundColor => const DecoratePanel(
+            mode: DecorateSheetMode.backgroundColor,
+          ),
           EditorMode.layer => LayerManagerPanel(
             layers: layers,
             interaction: _interaction,
           ),
-          EditorMode.layout =>
-            const TemplateSelectionPanel(title: '레이아웃'),
-          EditorMode.template =>
-            const DesignTemplatePanel(closeOnApply: false),
+          EditorMode.layout => const TemplateSelectionPanel(title: '레이아웃'),
+          EditorMode.template => const DesignTemplatePanel(closeOnApply: false),
           _ => const SizedBox.shrink(),
         };
       },
@@ -1474,88 +2273,57 @@ class _InlineEditorAtelierPanel extends StatelessWidget {
     required this.title,
     required this.onClose,
     required this.child,
+    this.fillAvailableHeight = false,
   });
 
   final String title;
   final VoidCallback onClose;
   final Widget child;
+  final bool fillAvailableHeight;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final sheetColor = isDark
-        ? const Color(0xF21A1E26)
-        : const Color(0xFFFFFCF7);
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.10)
-        : const Color(0xFFE6D8C8);
-
+    final borderColor = ExperienceFormStyle.line(context);
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 0.50.sh,
+        key: const Key('editorAtelierPanel'),
+        height: fillAvailableHeight
+            ? null
+            : MediaQuery.sizeOf(context).height * .50,
         decoration: BoxDecoration(
-          color: sheetColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          color: ExperienceFormStyle.surface(context),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: borderColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.34 : 0.13),
-              blurRadius: 24,
-              offset: const Offset(0, -8),
-            ),
-          ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          borderRadius: BorderRadius.circular(8),
           child: Column(
             children: [
-              SizedBox(height: 10.h),
-              Container(
-                width: 42.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: SnapFitColors.textPrimaryOf(context).withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(999.r),
-                ),
-              ),
               Padding(
-                padding: EdgeInsets.fromLTRB(18.w, 6.h, 10.w, 4.h),
+                padding: const EdgeInsets.only(left: 12, right: 4),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
-                        title,
+                        child is LayerManagerPanel
+                            ? '$title · ${(child as LayerManagerPanel).layers.length}'
+                            : title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: SnapFitColors.textPrimaryOf(context),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.35,
-                          decoration: TextDecoration.none,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          13,
+                          weight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    SnapFitPressable(
-                      onTap: onClose,
-                      pressedScale: 0.94,
-                      borderRadius: BorderRadius.circular(999.r),
-                      child: Container(
-                        width: 32.r,
-                        height: 32.r,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : const Color(0xFFF6EFE6),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor),
-                        ),
-                        child: Icon(
-                          Icons.close_rounded,
-                          color: SnapFitColors.textSecondaryOf(context),
-                          size: 17.sp,
-                        ),
+                    IconButton(
+                      tooltip: '편집 도구 닫기',
+                      onPressed: onClose,
+                      icon: Transform.rotate(
+                        angle: math.pi / 4,
+                        child: const ExperienceIcon('Plus', size: 18),
                       ),
                     ),
                   ],

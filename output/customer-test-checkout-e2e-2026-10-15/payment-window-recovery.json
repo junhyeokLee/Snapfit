@@ -1,0 +1,15 @@
+{
+  "recordedAtUtc": "2026-10-15T06:29:49.013Z",
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "initialState": "blank grey payment overlay with driver-host iframe",
+  "recoveryAction": "Chrome frame reload of the existing payment iframe",
+  "configurationChanged": false,
+  "storeChanged": false,
+  "channelChanged": false,
+  "newInvoiceCreated": false,
+  "liveOpened": false,
+  "testAmountObserved": 159900,
+  "testNoChargeNoticeObserved": true,
+  "mandatoryTermsAccepted": false,
+  "exactFrameReloadTimestampRecorded": false
+}

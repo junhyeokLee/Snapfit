@@ -4,11 +4,46 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/api/album_provider.dart';
 import 'kakao_share_service.dart';
 
+typedef KakaoInviteShare =
+    Future<bool> Function({
+      required String inviteLink,
+      required String albumTitle,
+      String? description,
+    });
+
+final kakaoInviteShareProvider = Provider<KakaoInviteShare>(
+  (_) => KakaoShareService.shareInviteLink,
+);
+
 /// 앨범 초대 서비스
 /// 앨범 생성 후 초대 링크를 생성하고 공유하는 기능 제공
 class AlbumInviteService {
+  static void _showMessage(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static String normalizeInviteLink(String raw) {
+    final link = raw.trim();
+    final uri = Uri.tryParse(link);
+    final isWeb = KakaoShareService.parseShareableInviteUri(link) != null;
+    final isAppInvite =
+        uri?.scheme.toLowerCase() == 'snapfit' &&
+        uri?.host.toLowerCase() == 'invite' &&
+        (uri?.queryParameters['token']?.trim().isNotEmpty ?? false);
+    if (!isWeb && !isAppInvite) {
+      throw const FormatException('Invalid album invite link');
+    }
+    return link;
+  }
+
   static String inviteErrorMessage(Object error) {
     final text = error.toString().toLowerCase();
+    if (text.contains('forbidden')) {
+      return '앨범 소유자만 멤버를 초대할 수 있어요.';
+    }
     if (text.contains('unauthorized') ||
         text.contains('jwt') ||
         text.contains('auth') ||
@@ -39,6 +74,8 @@ class AlbumInviteService {
     String? inviteLink,
     required BuildContext context,
   }) async {
+    if (!context.mounted) return false;
+    final share = ref.read(kakaoInviteShareProvider);
     try {
       var resolvedInviteLink = inviteLink;
       if (resolvedInviteLink == null || resolvedInviteLink.isEmpty) {
@@ -47,34 +84,45 @@ class AlbumInviteService {
           albumId,
           role: allowEditing ? 'EDITOR' : 'VIEWER',
         );
+        if (inviteResponse.albumId != albumId) {
+          throw const FormatException('Invite album mismatch');
+        }
         resolvedInviteLink = inviteResponse.link;
       }
+      resolvedInviteLink = normalizeInviteLink(resolvedInviteLink);
+      if (!context.mounted) return false;
 
-      // 카카오톡으로 공유 (실서비스 스타일 메시지)
-      final success = await KakaoShareService.shareInviteLink(
-        inviteLink: resolvedInviteLink,
-        albumTitle: albumTitle,
-        description: '함께 소중한 추억을 담은 앨범을 만들어보세요.\n사진을 추가하고 예쁘게 꾸며보아요! ✨',
-      );
+      var success = false;
+      try {
+        success = await share(
+          inviteLink: resolvedInviteLink,
+          albumTitle: albumTitle,
+          description: allowEditing
+              ? '사진과 문구를 함께 편집하며 우리의 앨범을 완성해요.'
+              : '소중한 순간을 담은 앨범을 함께 감상해요.',
+        );
+      } catch (_) {
+        success = false;
+      }
 
       if (!success) {
-        // 카카오톡이 설치되어 있지 않으면 링크 복사 안내
         if (context.mounted) {
-          await Clipboard.setData(ClipboardData(text: resolvedInviteLink));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('카카오톡이 설치되어 있지 않습니다. 초대 링크가 클립보드에 복사되었습니다.'),
-            ),
-          );
+          try {
+            await Clipboard.setData(ClipboardData(text: resolvedInviteLink));
+          } catch (_) {
+            if (!context.mounted) return false;
+            _showMessage(context, '공유와 복사를 완료하지 못했어요. 다시 시도해주세요.');
+            return false;
+          }
+          if (!context.mounted) return false;
+          _showMessage(context, '카카오톡 공유를 열지 못해 초대 링크를 복사했어요.');
         }
       }
 
       return success;
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(inviteErrorMessage(e))));
+        _showMessage(context, inviteErrorMessage(e));
       }
       return false;
     }
@@ -92,6 +140,7 @@ class AlbumInviteService {
     required bool allowEditing,
     required BuildContext context,
   }) async {
+    if (!context.mounted) return null;
     try {
       final memberRepository = ref.read(albumMemberRepositoryProvider);
 
@@ -100,22 +149,22 @@ class AlbumInviteService {
         albumId,
         role: allowEditing ? 'EDITOR' : 'VIEWER',
       );
-
-      // 클립보드에 복사
-      await Clipboard.setData(ClipboardData(text: inviteResponse.link));
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('초대 링크가 클립보드에 복사되었습니다.')));
+      if (inviteResponse.albumId != albumId) {
+        throw const FormatException('Invite album mismatch');
       }
 
-      return inviteResponse.link;
+      final link = normalizeInviteLink(inviteResponse.link);
+      if (!context.mounted) return null;
+      await Clipboard.setData(ClipboardData(text: link));
+
+      if (context.mounted) {
+        _showMessage(context, '초대 링크가 클립보드에 복사되었습니다.');
+      }
+
+      return link;
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(inviteErrorMessage(e))));
+        _showMessage(context, inviteErrorMessage(e));
       }
       return null;
     }

@@ -14,6 +14,8 @@ class AlbumReaderPageContent extends StatelessWidget {
   final CoverTheme? theme; // [New] 테마 배경 지원
   /// 내지 페이지 배경색 (ARGB). null이면 theme이 있을 때만 테마 배경, 없으면 흰색
   final Color? backgroundColor;
+  final bool flatPresentation;
+  final bool isCover;
 
   const AlbumReaderPageContent({
     super.key,
@@ -24,6 +26,8 @@ class AlbumReaderPageContent extends StatelessWidget {
     required this.baseCanvasSize,
     this.theme,
     this.backgroundColor,
+    this.flatPresentation = false,
+    this.isCover = false,
   });
 
   @override
@@ -50,24 +54,26 @@ class AlbumReaderPageContent extends StatelessWidget {
                     color:
                         backgroundColor ??
                         (theme == null ? Colors.white : null),
-                    image: theme?.imageAsset != null
+                    image: theme?.imageAsset != null &&
+                            (!flatPresentation || backgroundColor == null)
                         ? DecorationImage(
                             image: AssetImage(theme!.imageAsset!),
                             fit: BoxFit.cover,
                           )
                         : null,
-                    gradient: theme?.imageAsset == null
+                    gradient: (!flatPresentation || backgroundColor == null) &&
+                            theme?.imageAsset == null
                         ? theme?.gradient
                         : null,
                   ),
                 ),
                 ...layers.map((layer) {
                   return layer.type == LayerType.text
-                      ? previewBuilder.buildText(layer)
-                      : previewBuilder.buildImage(layer);
+                      ? previewBuilder.buildText(layer, isCover: isCover)
+                      : previewBuilder.buildImage(layer, isCover: isCover);
                 }),
                 // [New] 커버의 경우 좌측 책등(Spine) 그림자 효과 추가
-                if (theme != null)
+                if (theme != null && !flatPresentation)
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(

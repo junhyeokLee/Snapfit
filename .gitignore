@@ -38,6 +38,8 @@ migrate_working_dir/
 /output/ai-template-evaluations/
 /output/template-preview/
 /output/brand-studio/
+# Physical-device captures may contain private photos and account details.
+/output/device-journey-qa/
 /tool/brand_studio/node_modules/
 
 # Symbolication related

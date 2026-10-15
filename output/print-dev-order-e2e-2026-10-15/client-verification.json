@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-15",
+  "scope": "administrator-owned album TEST checkout app client",
+  "sourceFrozen": true,
+  "relatedClientTests": 66,
+  "testsPassed": true,
+  "scopedAnalysisFiles": 6,
+  "scopedAnalysisPassed": true,
+  "syntheticSourceExportTestsPassed": 1,
+  "webBuildSeconds": 67.0,
+  "webPath": "/private/tmp/snapfit-dev-order-app-web-20261015",
+  "webSha256": "ba1402cefdd54b77ede5cc0f84b0a2ff07cb13292cd236d6351f6d07939bf2ec",
+  "bundleMarkers": {
+    "testEndpoint": true,
+    "separateRecoveryStore": true,
+    "adminEntry": true,
+    "testOnlyBanner": true,
+    "serverContinuesAfterClose": true,
+    "partVerification": true,
+    "fileRecovery": true,
+    "safeReferenceCode": true
+  },
+  "sdkCallbackVerifiesPayment": false,
+  "statusCallsReadOnly": true,
+  "productionPaymentGuardsChanged": false,
+  "realPaymentOrVendorOrderVerifiedByTheseTests": false,
+  "sourceSha256": {
+    "lib/features/profile/data/print_dev_checkout.dart": "dc63ddda2e145f8be98e69c9cf50ce4eecd13e274d30e007f5d7346024126269",
+    "lib/features/album/presentation/views/print_dev_checkout_screen.dart": "1fdea28a2a6ce849f360efef5aee1542bf8cbbf956e56c1b28d5c0c74b263b0e",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "d4a76d5844256b34d9bab5ad787579d3fb068af7d979890e650ef84385667879",
+    "test/unit/print_dev_checkout_test.dart": "e4c38b0684020fb5c9162bdcb41cb57198bdd703b4b8585506f44cf7331377a4",
+    "test/widgets/print_dev_checkout_screen_test.dart": "34311db67ae7251fc9aa9b44d19b64a616c2efd9fcfb10ec377615aaba5dd3e7",
+    "tool/print_samples/export_dev_order_card_test.dart": "3604fedf3c6e5ebd60ac1729ba8cdc93fb51f7dfaa30ac1bb4a5b969b6f820c1",
+    "lib/features/album/printing/album_print_exporter.dart": "c1d12cd53933f75e9e21a5f5aac1e8ff81121671934f08da2f414b5b88103538",
+    "lib/features/album/printing/print_run_source_cache.dart": "8f9b5be3c1ba6b801cb8b0b143c6c8e50734929f3892542ce8c0fcce30eaecdb",
+    "test/printing/print_run_source_cache_test.dart": "8b7aa6031240f34b114ddefd67504040f56b7efe7b67c4bd2d12c2817674cf1e",
+    "test/printing/print_font_preflight_test.dart": "d70c67c6c7623a676f2d07e05d410b602e0a60068f6086bd5436a8f54a39adef"
+  },
+  "sourceMemoRegressionBatchTests": 20,
+  "sourceMemoRegressionBatchPassed": true,
+  "sourceMemoAnalysisFiles": 3,
+  "sourceMemoAnalysisPassed": true,
+  "sourceMemoPolicy": {
+    "scope": "one verify or generate invocation",
+    "sourceKey": "original frozen source URI",
+    "maxEntryBytes": 16000000,
+    "maxTotalBytes": 32000000,
+    "maxEntries": 64,
+    "inFlightCoalescing": true,
+    "clearInFinally": true,
+    "encodedBytesUnchanged": true,
+    "ppiChecksPerPagePreserved": true,
+    "decodedImagesDisposedPerPage": true,
+    "dpi": 300,
+    "jpegQuality": 95,
+    "colorSpace": "sRGB"
+  },
+  "testCountNote": "Initial related TEST checkout batch: 66 passed; cache regression batch: 20 passed; latest immutable recovery/cache/TEST batch: 18 passed, including 6 new recovery/error-display regressions. Accounting for overlap gives 86 unique client tests across these batches; the separate synthetic source export test also passed.",
+  "immutableFileRecovery": {
+    "scopedRegressionBatchTests": 18,
+    "scopedRegressionBatchPassed": true,
+    "newRegressionTests": 6,
+    "analysisFiles": 4,
+    "analysisPassed": true,
+    "existingPackageNeverRenderedAgain": true,
+    "serverStoredManifestReused": true,
+    "sameIdentityAndOwnerRequired": true,
+    "requiresBothFullPdfInspectionsBeforeSdk": true,
+    "incompleteRecoveryPreservesPackageAndBlocksSdk": true,
+    "unsafeErrorDetailsNeverShown": true,
+    "referenceCodePattern": "^[a-z0-9_]{1,80}$"
+  },
+  "previewUsedFontPreparation": {
+    "scope": "printPreviewExporterProvider only",
+    "loadOnlyUsedFonts": true,
+    "fontValidationTests": 4,
+    "fontTestsPassed": true,
+    "previewRegressionTests": 19,
+    "previewTestsPassed": true,
+    "devRecoveryAndReferenceRegressionTests": 13,
+    "devTestsPassed": true,
+    "analysisFiles": 5,
+    "analysisPassed": true,
+    "storedAliases": [
+      "NotoSans",
+      "FigmaHand",
+      "Figma Hand"
+    ],
+    "resolvedGlyphMatrixFamilies": [
+      "NotoSans",
+      "Figma Hand"
+    ],
+    "glyphWeights": [
+      400,
+      800
+    ],
+    "glyphDecodedPixelsEqualToFullFontLoading": true,
+    "unusedFontAssetNotRead": true,
+    "albumPdfRenderedForTheseChecks": false,
+    "existingPdfPackageChanged": false,
+    "missingErrorSentinelsExcluded": [
+      "null",
+      "undefined",
+      "unknown"
+    ]
+  }
+}

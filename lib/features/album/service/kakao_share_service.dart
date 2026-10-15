@@ -61,8 +61,7 @@ class KakaoShareService {
         ],
       );
 
-      final uri = await ShareClient.instance.shareDefault(template: template);
-      await ShareClient.instance.launchKakaoTalk(uri);
+      await ShareClient.instance.shareDefault(template: template);
       return true;
     } catch (e) {
       // 에러 발생 시 false 반환

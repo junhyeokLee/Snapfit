@@ -1,0 +1,15 @@
+{
+  "fixtureOnly": true,
+  "platform": "darwin-arm64",
+  "scenario": "HARD_80",
+  "artworkProfile": "compact",
+  "wallTimeMs": 291750,
+  "runnerElapsedMs": 271195,
+  "maxResidentSetBytes": 666288128,
+  "dpi": 300,
+  "jpegQuality": 95,
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false,
+  "physicalSampleValidated": false,
+  "productionApproved": false
+}

@@ -37,7 +37,7 @@ void main() {
         pendingConceptVolumeForKey(product.productKey)!.id,
         product.assetId,
       );
-      expect(isPendingTemplateProduct(product.productKey), true);
+      expect(isPendingTemplateProduct(product.productKey), false);
       expect(
         bundledCreationTemplates.any((p) => p.title == product.title),
         false,

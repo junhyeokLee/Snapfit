@@ -1,0 +1,20 @@
+{
+  "analysis": {
+    "exit_code": 0,
+    "seconds": 9.38
+  },
+  "build": {
+    "exit_code": 0,
+    "seconds": 107.95
+  },
+  "cache_entrypoints": {
+    "main_sha256": "173dacf7248d6bc30a999dedd8ad5a1fc17eb46487d4f6f42a5e2b110291c064",
+    "main_file": "main.173dacf7248d6bc30a99.dart.js",
+    "bootstrap_sha256": "0a22f5171c69bd5194480b82adc1e1f6f549fa147e68d5e1e254c7bae9f5b449",
+    "bootstrap_file": "flutter_bootstrap.0a22f5171c69bd519448.js"
+  },
+  "bundle_sha256": "173dacf7248d6bc30a999dedd8ad5a1fc17eb46487d4f6f42a5e2b110291c064",
+  "served_bundle_sha256": "173dacf7248d6bc30a999dedd8ad5a1fc17eb46487d4f6f42a5e2b110291c064",
+  "local_url": "http://127.0.0.1:7357/",
+  "published_to_paid_host": false
+}

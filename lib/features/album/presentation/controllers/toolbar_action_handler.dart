@@ -1,36 +1,56 @@
 import 'package:photo_manager/photo_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../shared/web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../shared/widgets/image_template_picker.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/editor/edit_cover_theme.dart';
-import '../viewmodels/gallery_notifier.dart';
+import 'editor_canvas_coordinates.dart';
 
 /// Toolbar 버튼 액션 전담. 기존 EditCover 내부 onAddPhoto / onOpenCoverSelector 그대로.
 class ToolbarActionHandler {
   final BuildContext context;
   final WidgetRef ref;
+  final Future<AssetEntity?> Function(BuildContext, WidgetRef) _selectPhoto;
+  final Future<String?> Function(BuildContext) _selectTemplate;
 
-  ToolbarActionHandler(this.context, this.ref);
+  ToolbarActionHandler(
+    this.context,
+    this.ref, {
+    Future<AssetEntity?> Function(BuildContext, WidgetRef)? selectPhoto,
+    Future<String?> Function(BuildContext)? selectTemplate,
+  }) : _selectPhoto =
+           selectPhoto ??
+           ((context, ref) => showPhotoSelectionSheet(context, ref)),
+       _selectTemplate =
+           selectTemplate ??
+           ((context) => ImageTemplatePicker.show(context, currentKey: 'free'));
 
-  Future<void> addPhoto(Size canvasSize) async {
-    final gallery = ref.read(galleryProvider);
-    if (gallery.albums.isEmpty) {
-      await ref.read(galleryProvider.notifier).fetchInitialData();
-    }
-    final asset = await showPhotoSelectionSheet(context, ref);
-    if (asset == null || !context.mounted) return;
-    final templateKey = await ImageTemplatePicker.show(
-      context,
-      currentKey: 'free',
-    );
-    if (!context.mounted) return;
+  /// The optional display size is retained for existing toolbar callers; it is
+  /// never used as the document geometry, regardless of viewport or zoom.
+  Future<void> addPhoto([Size? displayCanvasSize]) async {
+    if (ModalRoute.of(context)?.isCurrent == false) return;
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    await vm.addImage(asset, canvasSize, templateKey: templateKey ?? 'free');
+    final pageId = vm.currentPage?.id;
+    if (pageId == null) return;
+    final canvasSize = editorReferenceCanvasSize(vm.selectedCover);
+    final asset = await _selectPhoto(context, ref);
+    if (asset == null || !context.mounted || vm.currentPage?.id != pageId)
+      return;
+    final templateKey = await _selectTemplate(context);
+    if (templateKey == null || !context.mounted || vm.currentPage?.id != pageId)
+      return;
+    await vm.addImage(asset, canvasSize, templateKey: templateKey);
   }
 
   Future<void> openCoverTheme() async {
+    if (kIsWeb) {
+      if (!context.mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      await showWebAwareDialog<void>(context: context, maxWidth: 1000, maxHeight: 740, builder: (_) => const EditCoverTheme());
+      return;
+    }
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SnapFit 스토어 디자인 검토</title>
+  <style>
+    *{box-sizing:border-box;letter-spacing:0}
+    body{margin:0;background:#f5f7f6;color:#222a2b;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
+    header{background:white;border-bottom:1px solid #e6ebea;padding:20px 24px}
+    h1{font-size:20px;margin:0 0 16px;font-weight:650}
+    nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    button,select{font:inherit;color:inherit;min-height:44px;background:white;border:1px solid #dce3e1;border-radius:6px;padding:8px 14px;cursor:pointer}
+    button[aria-pressed="true"]{background:#222a2b;color:white;border-color:#222a2b}
+    button:focus-visible,select:focus-visible{outline:2px solid #08b8d0;outline-offset:3px}
+    select{margin-left:auto}
+    main{padding:24px;max-width:1120px;margin:auto;display:flex;align-items:flex-start;justify-content:center;gap:24px}
+    figure{margin:0;flex:0 1 390px;min-width:0}
+    figcaption{margin-bottom:12px;font-weight:600}
+    img{display:block;width:100%;height:auto;background:white;border:1px solid #e6ebea}
+    main.wide figure{flex-basis:844px}
+    main.single figure{flex-basis:390px}
+    main.single.wide figure{flex-basis:844px}
+    [hidden]{display:none!important}
+    @media(max-width:600px){header{padding:16px}main{padding:16px;gap:12px}nav{gap:6px}button{padding:8px 10px}select{margin-left:0;width:100%}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SnapFit 스토어 디자인 검토</h1>
+    <nav aria-label="검토 화면">
+      <button type="button" data-screen="materials" aria-pressed="true">꾸밈소재 비교</button>
+      <button type="button" data-screen="templates" aria-pressed="false">템플릿</button>
+      <button type="button" data-screen="papers" aria-pressed="false">종이와 라벨</button>
+      <select id="viewport" aria-label="화면 크기">
+        <option value="390">세로 390</option>
+        <option value="320">작은 화면 320</option>
+        <option value="844">가로 844</option>
+      </select>
+    </nav>
+  </header>
+  <main id="preview">
+    <figure id="before"><figcaption>개선 전</figcaption><img id="before-image" src="materials-390-before.png" alt="개선 전 꾸밈소재 화면"></figure>
+    <figure><figcaption id="after-label">개선 후</figcaption><img id="after-image" src="materials-390.png" alt="개선 후 꾸밈소재 화면"></figure>
+  </main>
+  <script>
+    let screen = 'materials';
+    const viewport = document.getElementById('viewport');
+    const buttons = [...document.querySelectorAll('[data-screen]')];
+    function render(){
+      const width = viewport.value;
+      const compare = screen === 'materials';
+      document.getElementById('before').hidden = !compare;
+      document.getElementById('before-image').src = `materials-${width}-before.png`;
+      document.getElementById('after-image').src = `${screen}-${width}.png`;
+      document.getElementById('after-image').alt = `${screen === 'templates' ? '템플릿' : screen === 'papers' ? '종이와 라벨' : '꾸밈소재'} 개선 화면`;
+      document.getElementById('after-label').textContent = compare ? '개선 후' : screen === 'templates' ? '템플릿' : '종이와 라벨';
+      document.getElementById('preview').className = [!compare ? 'single' : '', width === '844' ? 'wide' : ''].join(' ');
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === screen)));
+    }
+    buttons.forEach(button => button.addEventListener('click', () => {screen = button.dataset.screen;render()}));
+    viewport.addEventListener('change', render);
+  </script>
+</body>
+</html>

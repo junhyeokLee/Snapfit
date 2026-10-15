@@ -1,0 +1,36 @@
+{
+  "schedulerAnonymousRejected": true,
+  "schedulerJwtAloneRejected": true,
+  "schedulerLongLivedSecretHeaderRejected": true,
+  "packageAnonymousRejected": true,
+  "schedulerInjectedBodyRejected": true,
+  "schedulerClosedHeartbeat": {
+    "enabled": true,
+    "runtimeReady": false,
+    "payments": {
+      "checked": 0,
+      "verifiedPaid": 0,
+      "verifiedUnpaid": 0,
+      "pending": 0,
+      "errors": 0
+    },
+    "requests": {
+      "processed": 0,
+      "completed": 0,
+      "pending": 0,
+      "errors": 0
+    },
+    "fulfillment": {
+      "checked": 0,
+      "advanced": 0,
+      "errors": 0
+    },
+    "cleanup": {
+      "checked": 0,
+      "removed": 0,
+      "errors": 0
+    },
+    "budgetDeferred": false
+  },
+  "schedulerSignatureReplayRejected": true
+}

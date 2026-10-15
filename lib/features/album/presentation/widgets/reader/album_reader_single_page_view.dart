@@ -3,14 +3,21 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:book_page_flip/book_page_flip.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/navigation/web_app_location.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
+import '../../../../../shared/widgets/album_stage_style.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album_page.dart';
+import '../../../domain/entities/album.dart';
+import '../../../domain/entities/album_page_render_signature.dart';
 import '../../../domain/entities/layer.dart';
 import '../../controllers/layer_builder.dart';
+import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../views/album_reader_inner_detail_screen.dart';
 import '../../views/page_editor_screen.dart';
@@ -43,6 +50,8 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
   final ValueChanged<int>? onFocusPageChanged;
   final double focusBottomInset;
   final int? requestedFocusPageIndex;
+  final GlobalKey? openingCoverKey;
+  final ValueListenable<bool>? openingCoverVisible;
 
   const AlbumReaderSinglePageView({
     super.key,
@@ -62,6 +71,8 @@ class AlbumReaderSinglePageView extends ConsumerStatefulWidget {
     this.onFocusPageChanged,
     this.focusBottomInset = 0,
     this.requestedFocusPageIndex,
+    this.openingCoverKey,
+    this.openingCoverVisible,
   });
 
   @override
@@ -74,20 +85,20 @@ class _AlbumReaderSinglePageViewState
   static const double _bookFlipControlVelocity = 0.02;
   static const double _bookFlipListVelocity = 4.8;
   static const BookFlipPhysics _bookFlipPhysics = BookFlipPhysics(
-    springStiffness: 56,
-    springDampingRatio: 1.08,
+    springStiffness: 90,
+    springDampingRatio: 1.05,
     commitThreshold: 0.44, // 높을수록 페이지를 더 많이 끌어야 넘어감
     commitVelocity: 3.2, // 높을수록 짧게 휙 하는 손동작으로는 덜 넘어감
     velocityLookAhead: 0.012, // 손을 땔 때 속도 예측 영향을 줄여서 조금 움직였는데도 넘어가는 현상 감소
-    settleEpsilon: 0.11,
+    settleEpsilon: 0.012,
   );
   static const BookFlipPhysics _bookFlipControlPhysics = BookFlipPhysics(
-    springStiffness: 64,
-    springDampingRatio: 1.06,
+    springStiffness: 84,
+    springDampingRatio: 1.02,
     commitThreshold: 0.44,
     commitVelocity: 3.2,
     velocityLookAhead: 0.012,
-    settleEpsilon: 0.14,
+    settleEpsilon: 0.012,
   );
   static const BookFlipPhysics _bookFlipListPhysics = BookFlipPhysics(
     springStiffness: 1900,
@@ -97,13 +108,15 @@ class _AlbumReaderSinglePageViewState
     velocityLookAhead: 0.06,
     settleEpsilon: 0.86,
   );
-  static const double _openSpreadCommitDistance = 136.0;
+  static const double _openSpreadFlingMinDistance = 44.0;
   static const double _openSpreadCommitVelocity = 420.0;
   static const double _openSpreadDragProgressScale = 0.64;
 
   bool _isCoverPressed = false;
   bool _isTurningWithControl = false;
   late int _focusPageIndex;
+  int _bookContentSignature = 0;
+  int _bookContentRevision = 0;
   late final BookFlipController _bookFlipController;
   int? _requestedFocusPage;
   bool _syncingSpreadFromFocus = false;
@@ -114,10 +127,9 @@ class _AlbumReaderSinglePageViewState
   int _coverFlipDirection = 0;
   bool _isDraggingOpenSpread = false;
   int? _openSpreadPointer;
-  Offset _openSpreadStartLocal = Offset.zero;
-  Offset _openSpreadLastLocal = Offset.zero;
+  Offset _openSpreadLastPosition = Offset.zero;
+  VelocityTracker? _openSpreadVelocityTracker;
   double _openSpreadTotalDx = 0;
-  int _openSpreadStartMicros = 0;
   int _openSpreadStartSpread = 0;
   int _openSpreadDirection = 0;
   bool _suppressNextTapUp = false;
@@ -145,6 +157,32 @@ class _AlbumReaderSinglePageViewState
       initialSpread: widget.pageController.initialPage,
     );
     widget.pageController.addListener(_syncFocusFromSpread);
+    _bookContentSignature = _currentBookContentSignature;
+  }
+
+  int get _currentBookContentSignature => Object.hash(
+    widget.selectedCover,
+    widget.coverTheme,
+    Object.hashAll(widget.allPages.map(albumPageRenderSignature)),
+  );
+
+  void _syncBookContent() {
+    // Do not rasterise each editor gesture on the reader route underneath it.
+    if (ModalRoute.of(context)?.isCurrent == false) return;
+    final signature = _currentBookContentSignature;
+    if (signature == _bookContentSignature) return;
+    _bookContentSignature = signature;
+    _bookContentRevision++;
+    _focusPageIndex = _focusPageIndex.clamp(
+      0,
+      math.max(0, widget.allPages.length - 1),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBookContent();
   }
 
   @override
@@ -157,6 +195,7 @@ class _AlbumReaderSinglePageViewState
   @override
   void didUpdateWidget(covariant AlbumReaderSinglePageView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _syncBookContent();
     if (!widget.focusMode) return;
     final requested = widget.requestedFocusPageIndex;
     if (requested == null ||
@@ -457,10 +496,20 @@ class _AlbumReaderSinglePageViewState
 
   Future<void> _openFocusEditor() async {
     if (!mounted) return;
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album?.allowsEditing == false) return;
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PageEditorScreen(initialPageIndex: _focusPageIndex),
+        settings: album != null && album.id > 0
+            ? WebAppRouteSettings(
+                WebAppLocation(WebAppPage.editor, '${album.id}'),
+              )
+            : null,
+        builder: (_) => PageEditorScreen(
+          initialPageIndex: _focusPageIndex,
+          returnToPreviousOnSave: true,
+        ),
       ),
     );
   }
@@ -501,6 +550,7 @@ class _AlbumReaderSinglePageViewState
     double pageHeight, {
     Key? cardKey,
     GlobalKey? coverBoundaryKey,
+    bool showBookDepth = false,
   }) {
     final page = widget.allPages[pageIndex];
     if (pageIndex == 0) {
@@ -515,6 +565,7 @@ class _AlbumReaderSinglePageViewState
         layerBuilder: widget.layerBuilder,
         coverKey: coverBoundaryKey ?? widget.canvasKey,
         onCoverSizeChanged: widget.onCanvasSizeChanged,
+        showBookDepth: showBookDepth,
       );
     }
 
@@ -580,14 +631,18 @@ class _AlbumReaderSinglePageViewState
       return Align(
         alignment: Alignment.centerRight,
         child: SizedBox(
+          key: widget.openingCoverKey,
           width: pageWidth,
           height: pageHeight,
-          child: _buildFocusCard(
-            0,
-            pageWidth,
-            pageHeight,
-            cardKey: const ValueKey('book_flip_fallback_cover_card'),
-            coverBoundaryKey: _bookFlipFallbackCoverBoundaryKey,
+          child: _openingCoverVisibility(
+            _buildFocusCard(
+              0,
+              pageWidth,
+              pageHeight,
+              cardKey: const ValueKey('book_flip_fallback_cover_card'),
+              coverBoundaryKey: _bookFlipFallbackCoverBoundaryKey,
+              showBookDepth: true,
+            ),
           ),
         ),
       );
@@ -609,6 +664,17 @@ class _AlbumReaderSinglePageViewState
           child: _buildBookFlipPage(rightBookPage, pageWidth, pageHeight),
         ),
       ],
+    );
+  }
+
+  Widget _openingCoverVisibility(Widget child) {
+    final visibility = widget.openingCoverVisible;
+    if (visibility == null) return child;
+    return ValueListenableBuilder<bool>(
+      valueListenable: visibility,
+      child: child,
+      builder: (_, visible, child) =>
+          Opacity(opacity: visible ? 1 : 0, child: child),
     );
   }
 
@@ -637,7 +703,7 @@ class _AlbumReaderSinglePageViewState
         _coverFlipDirection = 0;
       });
     }
-    if (_isCoverFlipActive || _isTurningWithControl) return;
+    if (_isAnimatingToRequestedSpread) return;
     if (!_bookFlipController.isReady) return;
     if (_openSpreadPointer != null) return;
     final focusedSpread = _spreadForFocusPage(_focusPageIndex);
@@ -650,22 +716,29 @@ class _AlbumReaderSinglePageViewState
     final started = _bookFlipController.dragStart(event.localPosition);
     if (!started || !mounted) return;
     _openSpreadPointer = event.pointer;
-    _openSpreadStartLocal = event.localPosition;
-    _openSpreadLastLocal = event.localPosition;
+    _openSpreadLastPosition = event.position;
+    _openSpreadVelocityTracker = VelocityTracker.withKind(event.kind)
+      ..addPosition(event.timeStamp, event.position);
     _openSpreadTotalDx = 0;
-    _openSpreadStartMicros = event.timeStamp.inMicroseconds;
     _openSpreadStartSpread = currentSpread;
-    _openSpreadDirection = 0;
+    _openSpreadDirection = switch (_bookFlipController.flipDirection) {
+      FlipDirection.forward => 1,
+      FlipDirection.backward => -1,
+      null => 0,
+    };
     setState(() {
       _isDraggingOpenSpread = true;
+      _isTurningWithControl = false;
       _suppressNextTapUp = false;
     });
   }
 
   void _handleOpenSpreadPointerMove(PointerMoveEvent event) {
     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
-    final dx = event.localPosition.dx - _openSpreadLastLocal.dx;
-    _openSpreadLastLocal = event.localPosition;
+    // Screen-space travel excludes the cover stage's own centring movement.
+    final dx = event.position.dx - _openSpreadLastPosition.dx;
+    _openSpreadLastPosition = event.position;
+    _openSpreadVelocityTracker?.addPosition(event.timeStamp, event.position);
     _openSpreadTotalDx += dx;
     if (_openSpreadTotalDx.abs() > 8) {
       _suppressNextTapUp = true;
@@ -690,31 +763,37 @@ class _AlbumReaderSinglePageViewState
     }
     if (_openSpreadDirection != 0) {
       _bookFlipController.dragToDistance(
-        localPosition: _openSpreadStartLocal,
+        localPosition: event.localPosition,
         direction: _openSpreadDirection > 0
             ? FlipDirection.forward
             : FlipDirection.backward,
-        distance: _openSpreadTotalDx.abs() * _openSpreadDragProgressScale,
+        distance:
+            -_openSpreadDirection *
+            _openSpreadTotalDx *
+            _openSpreadDragProgressScale,
       );
     }
   }
 
   void _handleOpenSpreadPointerUp(PointerUpEvent event) {
     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
-    final elapsedSeconds =
-        (event.timeStamp.inMicroseconds - _openSpreadStartMicros) / 1000000.0;
-    final velocity = elapsedSeconds > 0
-        ? _openSpreadTotalDx / elapsedSeconds
-        : 0.0;
+    final velocity =
+        _openSpreadVelocityTracker?.getVelocity().pixelsPerSecond.dx ?? 0.0;
+    final progress = _bookFlipController.flipProgress;
+    final forwardVelocity = -_openSpreadDirection * velocity;
     final shouldCommit =
-        _openSpreadTotalDx.abs() >= _openSpreadCommitDistance ||
-        velocity.abs() >= _openSpreadCommitVelocity;
-    _bookFlipController.dragEndWithDecision(velocity, commit: shouldCommit);
+        progress >= _bookFlipPhysics.commitThreshold ||
+        (progress >= 0.12 &&
+            _openSpreadTotalDx.abs() >= _openSpreadFlingMinDistance &&
+            forwardVelocity >= _openSpreadCommitVelocity);
+    _bookFlipController.dragEndWithDecision(
+      velocity * _openSpreadDragProgressScale,
+      commit: shouldCommit,
+    );
     _openSpreadPointer = null;
-    _openSpreadStartLocal = Offset.zero;
-    _openSpreadLastLocal = Offset.zero;
+    _openSpreadLastPosition = Offset.zero;
+    _openSpreadVelocityTracker = null;
     _openSpreadTotalDx = 0;
-    _openSpreadStartMicros = 0;
     _openSpreadStartSpread = 0;
     _openSpreadDirection = 0;
     if (mounted) setState(() => _isDraggingOpenSpread = false);
@@ -724,10 +803,9 @@ class _AlbumReaderSinglePageViewState
     if (!_isDraggingOpenSpread || event.pointer != _openSpreadPointer) return;
     _bookFlipController.dragCancel();
     _openSpreadPointer = null;
-    _openSpreadStartLocal = Offset.zero;
-    _openSpreadLastLocal = Offset.zero;
+    _openSpreadLastPosition = Offset.zero;
+    _openSpreadVelocityTracker = null;
     _openSpreadTotalDx = 0;
-    _openSpreadStartMicros = 0;
     _openSpreadStartSpread = 0;
     _openSpreadDirection = 0;
     if (mounted) setState(() => _isDraggingOpenSpread = false);
@@ -749,7 +827,7 @@ class _AlbumReaderSinglePageViewState
 
     return BookFlip.builder(
       key: ValueKey(
-        'book_flip_${_bookPageCount}_${pageWidth.toStringAsFixed(1)}_${pageHeight.toStringAsFixed(1)}',
+        'book_flip_${_bookPageCount}_${pageWidth.toStringAsFixed(1)}_${pageHeight.toStringAsFixed(1)}_$_bookContentRevision',
       ),
       pageCount: _bookPageCount,
       pageSize: Size(pageWidth, pageHeight),
@@ -769,7 +847,12 @@ class _AlbumReaderSinglePageViewState
       ),
       curl: _isCoverFlipActive
           ? const BookFlipCurl(bend: 0.98, foldTilt: 0.86, droop: 0.34)
-          : const BookFlipCurl(bend: 0.74, foldTilt: 0.62, droop: 0.28),
+          : const BookFlipCurl(
+              bend: 0.55,
+              foldTilt: 0.82,
+              droop: 0.14,
+              roll: 1.0,
+            ),
       effects: const BookFlipEffects(
         gloss: false,
         grain: false,
@@ -800,6 +883,7 @@ class _AlbumReaderSinglePageViewState
   }
 
   Widget _buildFocusReader(BuildContext context) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
     return LayoutBuilder(
       builder: (context, constraints) {
         final screen = constraints.biggest;
@@ -893,7 +977,10 @@ class _AlbumReaderSinglePageViewState
                     );
                   },
                   child: AnimatedSize(
-                    duration: const Duration(milliseconds: 680),
+                    // Entry already interpolates the book's size in the overlay.
+                    duration: widget.openingCoverVisible?.value == false
+                        ? const Duration(milliseconds: 1)
+                        : const Duration(milliseconds: 680),
                     curve: Curves.easeInOutCubic,
                     alignment: Alignment.center,
                     child: SizedBox(
@@ -949,12 +1036,17 @@ class _AlbumReaderSinglePageViewState
                                 },
                                 child: IgnorePointer(
                                   ignoring: true,
-                                  child: Opacity(
-                                    opacity: showClosedCover ? 0.02 : 1.0,
-                                    child: _buildBookFlipFocusReader(
-                                      pageWidth,
-                                      pageHeight,
-                                      silentFallback: showClosedCover,
+                                  child: ClipRect(
+                                    clipper: showClosedCover
+                                        ? const _ClosedCoverClipper()
+                                        : null,
+                                    child: Opacity(
+                                      opacity: showClosedCover ? 0.02 : 1.0,
+                                      child: _buildBookFlipFocusReader(
+                                        pageWidth,
+                                        pageHeight,
+                                        silentFallback: showClosedCover,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -997,6 +1089,7 @@ class _AlbumReaderSinglePageViewState
                           _bookFlipController.currentSpread <
                               _bookSpreadCount - 1,
                       onPrevious: () => _turnFocusPage(-1),
+                      canEdit: vm.album?.allowsEditing != false,
                       onEdit: _openFocusEditor,
                       onNext: () => _turnFocusPage(1),
                     ),
@@ -1021,6 +1114,7 @@ class _AlbumReaderSinglePageViewState
                           _bookFlipController.currentSpread <
                               _bookSpreadCount - 1,
                       onPrevious: () => _turnFocusPage(-1),
+                      canEdit: vm.album?.allowsEditing != false,
                       onEdit: _openFocusEditor,
                       onNext: () => _turnFocusPage(1),
                     ),
@@ -1386,9 +1480,9 @@ class _ReaderPageTurnControl extends StatelessWidget {
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.72),
+              color: AlbumStageStyle.glass(context),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
+              border: Border.all(color: AlbumStageStyle.line(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.10),
@@ -1397,12 +1491,24 @@ class _ReaderPageTurnControl extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, size: 28.sp, color: const Color(0xFF1B1916)),
+            child: Icon(icon, size: 28.sp, color: AlbumStageStyle.ink(context)),
           ),
         ),
       ),
     );
   }
+}
+
+// Keep the renderer warm without showing its unused left half behind a closed book.
+class _ClosedCoverClipper extends CustomClipper<Rect> {
+  const _ClosedCoverClipper();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTWH(size.width / 2, 0, size.width / 2, size.height);
+
+  @override
+  bool shouldReclip(covariant _ClosedCoverClipper oldClipper) => false;
 }
 
 class _BlankBookPage extends StatelessWidget {
@@ -1472,9 +1578,9 @@ class _PremiumSpreadStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final floorShadowAlpha = isLandscape ? 0.11 : 0.075;
-    final contactShadowAlpha = isLandscape ? 0.13 : 0.09;
-    final cardShadowAlpha = isLandscape ? 0.055 : 0.052;
+    final floorShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.11 : 0.075);
+    final contactShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.13 : 0.09);
+    final cardShadowAlpha = hidePaper ? 0.0 : (isLandscape ? 0.055 : 0.052);
     final spineWidth = isLandscape ? 58.0 : 42.0;
     final spineCreaseWidth = isLandscape ? 18.0 : 13.0;
     final edgeDepth = isLandscape ? 7.0 : 5.0;
@@ -1485,11 +1591,8 @@ class _PremiumSpreadStage extends StatelessWidget {
         final height = constraints.maxHeight;
         final halfWidth = width / 2;
 
-        if (hidePaper) {
-          return ClipRect(child: child);
-        }
-
         Widget pageEdge({required Alignment alignment}) {
+          if (hidePaper) return const SizedBox.shrink();
           final isRight = alignment == Alignment.centerRight;
           return Align(
             alignment: alignment,
@@ -1528,6 +1631,7 @@ class _PremiumSpreadStage extends StatelessWidget {
         }
 
         Widget paperStack() {
+          if (hidePaper) return const SizedBox.shrink();
           return Center(
             child: SizedBox(
               width: math.max(0, halfWidth - 10),
@@ -1586,7 +1690,9 @@ class _PremiumSpreadStage extends StatelessWidget {
             ),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFCF5),
+                // Keep the book mounted when cover chrome disappears; moving
+                // its element would re-rasterise every page at the transition.
+                color: hidePaper ? Colors.transparent : const Color(0xFFFFFCF5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: cardShadowAlpha),
@@ -1632,13 +1738,17 @@ class _PremiumSpreadStage extends StatelessWidget {
                                 colors: [
                                   Colors.transparent,
                                   const Color(0xFF6B5843).withValues(
-                                    alpha: isLandscape ? 0.085 : 0.06,
+                                    alpha: hidePaper
+                                        ? 0
+                                        : (isLandscape ? 0.085 : 0.06),
                                   ),
                                   const Color(
                                     0xFFFFFCF5,
-                                  ).withValues(alpha: 0.22),
+                                  ).withValues(alpha: hidePaper ? 0 : 0.22),
                                   const Color(0xFF6B5843).withValues(
-                                    alpha: isLandscape ? 0.09 : 0.065,
+                                    alpha: hidePaper
+                                        ? 0
+                                        : (isLandscape ? 0.09 : 0.065),
                                   ),
                                   Colors.transparent,
                                 ],
@@ -1660,7 +1770,9 @@ class _PremiumSpreadStage extends StatelessWidget {
                               colors: [
                                 Colors.transparent,
                                 Colors.black.withValues(
-                                  alpha: isLandscape ? 0.075 : 0.052,
+                                  alpha: hidePaper
+                                      ? 0
+                                      : (isLandscape ? 0.075 : 0.052),
                                 ),
                                 Colors.transparent,
                               ],
@@ -1681,7 +1793,9 @@ class _PremiumSpreadStage extends StatelessWidget {
                                   begin: Alignment.centerRight,
                                   end: Alignment.centerLeft,
                                   colors: [
-                                    Colors.black.withValues(alpha: 0.035),
+                                    Colors.black.withValues(
+                                      alpha: hidePaper ? 0 : 0.035,
+                                    ),
                                     Colors.transparent,
                                   ],
                                   stops: const [0, 0.16],
@@ -1696,7 +1810,9 @@ class _PremiumSpreadStage extends StatelessWidget {
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                   colors: [
-                                    Colors.black.withValues(alpha: 0.032),
+                                    Colors.black.withValues(
+                                      alpha: hidePaper ? 0 : 0.032,
+                                    ),
                                     Colors.transparent,
                                   ],
                                   stops: const [0, 0.16],
@@ -1720,6 +1836,7 @@ class _PremiumSpreadStage extends StatelessWidget {
 
 class _FocusReaderControls extends StatelessWidget {
   const _FocusReaderControls({
+    this.canEdit = true,
     required this.canGoBack,
     required this.canGoForward,
     required this.onPrevious,
@@ -1728,6 +1845,7 @@ class _FocusReaderControls extends StatelessWidget {
   });
 
   final bool canGoBack;
+  final bool canEdit;
   final bool canGoForward;
   final VoidCallback onPrevious;
   final VoidCallback onEdit;
@@ -1767,23 +1885,28 @@ class _FocusReaderControls extends StatelessWidget {
                 width: primary ? primaryWidth : sideButtonSize,
                 height: primary ? primaryHeight : sideButtonSize,
                 decoration: BoxDecoration(
-                  color: primary ? const Color(0xFF1B1916) : Colors.transparent,
+                  color: primary
+                      ? AlbumStageStyle.controlFill(context)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(primary ? 99.r : 99.r),
+                  border: primary
+                      ? Border.all(color: AlbumStageStyle.line(context))
+                      : null,
                 ),
                 child: primary
                     ? Center(
                         child: Text(
-                          '편집',
+                          canEdit ? '편집' : '보기',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AlbumStageStyle.ink(context),
                             fontSize: editFontSize,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       )
                     : Icon(
                         icon,
-                        color: const Color(0xFF1B1916),
+                        color: AlbumStageStyle.ink(context),
                         size: iconSize,
                       ),
               ),
@@ -1805,10 +1928,10 @@ class _FocusReaderControls extends StatelessWidget {
       Expanded(
         child: action(
           icon: Icons.edit_outlined,
-          enabled: true,
+          enabled: canEdit,
           onTap: onEdit,
           primary: true,
-          label: '현재 페이지 편집',
+          label: canEdit ? '현재 페이지 편집' : '보기 전용 앨범',
         ),
       ),
       Expanded(
@@ -1825,12 +1948,14 @@ class _FocusReaderControls extends StatelessWidget {
       height: controlHeight,
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.66),
+        color: AlbumStageStyle.glass(context),
         borderRadius: BorderRadius.circular(99.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
+        border: Border.all(color: AlbumStageStyle.line(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.10),
+            color: Colors.black.withValues(
+              alpha: SnapFitColors.isDark(context) ? .10 : .06,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -2125,27 +2250,7 @@ class _GlobalPageFlipRendererState extends State<_GlobalPageFlipRenderer> {
     return Object.hashAll([
       page.backgroundColor,
       page.layers.length,
-      ...page.layers.map(
-        (l) => Object.hash(
-          l.id,
-          l.type,
-          l.asset?.id,
-          l.previewUrl,
-          l.imageUrl,
-          l.originalUrl,
-          l.position.dx,
-          l.position.dy,
-          l.width,
-          l.height,
-          l.scale,
-          l.rotation,
-          l.opacity,
-          l.zIndex,
-          l.imageBackground,
-          l.imageTemplate,
-          l.text,
-        ),
-      ),
+      albumPageRenderSignature(page),
     ]);
   }
 }
@@ -2160,6 +2265,7 @@ class _CoverPageCard extends StatelessWidget {
   final LayerBuilder layerBuilder;
   final GlobalKey coverKey;
   final ValueChanged<Size> onCoverSizeChanged;
+  final bool showBookDepth;
 
   const _CoverPageCard({
     super.key,
@@ -2172,6 +2278,7 @@ class _CoverPageCard extends StatelessWidget {
     required this.layerBuilder,
     required this.coverKey,
     required this.onCoverSizeChanged,
+    this.showBookDepth = false,
   });
 
   @override
@@ -2186,41 +2293,47 @@ class _CoverPageCard extends StatelessWidget {
 
     final shadowScale = (pageH / 280).clamp(0.45, 1.75);
 
+    final artwork = CoverLayout(
+      aspect: aspect,
+      layers: interaction.sortByZ(page.layers),
+      isInteracting: false,
+      leftSpine: 14.0,
+      wrapSpineArtwork: true,
+      backgroundColor: page.backgroundColor != null
+          ? Color(page.backgroundColor!).withAlpha(0xFF)
+          : null,
+      onCoverSizeChanged: onCoverSizeChanged,
+      buildImage: (layer) => layerBuilder.buildImage(layer, isCover: true),
+      buildWrappedImage: (layer) =>
+          layerBuilder.buildImage(layer, isCover: true, wrapSpine: true),
+      buildText: (layer) => layerBuilder.buildText(layer, isCover: true),
+      sortedByZ: interaction.sortByZ,
+      theme: coverTheme,
+    );
+
+    Widget fitArtwork(Widget child) => OverflowBox(
+      minWidth: logicalW,
+      maxWidth: logicalW,
+      minHeight: logicalH,
+      maxHeight: logicalH,
+      alignment: Alignment.center,
+      child: Transform.scale(scale: scale, child: child),
+    );
+
     return HomeCoverFrame(
       width: pageW,
       height: pageH,
       shadowScale: shadowScale,
       showShadow: true,
-      child: RepaintBoundary(
-        key: coverKey,
-        child: OverflowBox(
-          // 논리 사이즈로 강제 렌더링 후 스케일링
-          minWidth: logicalW,
-          maxWidth: logicalW,
-          minHeight: logicalH,
-          maxHeight: logicalH,
-          alignment: Alignment.center,
-          child: Transform.scale(
-            scale: scale,
-            child: CoverLayout(
-              aspect: aspect,
-              layers: interaction.sortByZ(page.layers),
-              isInteracting: false,
-              leftSpine: 14.0,
-              backgroundColor: page.backgroundColor != null
-                  ? Color(page.backgroundColor!).withAlpha(0xFF)
-                  : null,
-              onCoverSizeChanged: onCoverSizeChanged,
-              buildImage: (layer) =>
-                  layerBuilder.buildImage(layer, isCover: true),
-              buildText: (layer) =>
-                  layerBuilder.buildText(layer, isCover: true),
-              sortedByZ: interaction.sortByZ,
-              theme: coverTheme,
-            ),
-          ),
-        ),
-      ),
+      showBookDepth: showBookDepth,
+      showMaterial: true,
+      bindingColor: page.backgroundColor != null
+          ? Color(page.backgroundColor!).withAlpha(0xFF)
+          : coverTheme.gradient.colors.first,
+      bindingArtwork: showBookDepth
+          ? fitArtwork(artwork.bindingPreview(Size(logicalW, logicalH)))
+          : null,
+      child: RepaintBoundary(key: coverKey, child: fitArtwork(artwork)),
     );
   }
 }

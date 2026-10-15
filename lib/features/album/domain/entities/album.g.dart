@@ -22,6 +22,7 @@ _Album _$AlbumFromJson(Map<String, dynamic> json) => _Album(
   lockedBy: json['lockedBy'] as String?,
   lockedById: json['lockedById'] as String?,
   userId: json['userId'] as String? ?? '',
+  memberRole: json['memberRole'] as String?,
   createdAt: json['createdAt'] as String? ?? '',
   updatedAt: json['updatedAt'] as String? ?? '',
 );

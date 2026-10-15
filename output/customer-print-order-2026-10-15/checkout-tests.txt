@@ -1,0 +1,91 @@
+00:00 +0: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart
+00:00 +0: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (setUpAll)
+00:00 +0: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(648.0, 320.0)
+00:01 +1: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(740.0, 360.0)
+00:01 +2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(844.0, 390.0)
+00:01 +3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: oversized PDF can cancel its unissued preparation and return directly to album editing without payment
+00:02 +4: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an interrupted PDF preparation restores the frozen order on the same visit and permits explicit same-order retry
+00:02 +5: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: default checkout launches once and recovers a started invoice after restart without a fresh PDF gate
+00:03 +6: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout becoming READY can prepare files through the durable payment service
+00:03 +7: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: closed checkout reviews delivery and price without payment or a fabricated order
+00:03 +8: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an unstarted recovered invoice restores server delivery and requires fresh consent before same-UUID resume
+00:03 +9: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed frozen unstarted order offers cancellation and explicit checks without endless polling or a new charge
+00:03 +10: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a never-issued placeholder after owned not-found can review the current form for the same UUID without claiming canceled
+00:03 +11: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a server customer-request hold prevents restoring payment consent and offers existing request review
+00:03 +12: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: invalid recipient phone and postal code cannot reach final review
+00:04 +13: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: revised album blocks the old review and leaves delivery details intact
+00:04 +14: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a new price resets consent while preserving delivery
+00:04 +15: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed approved print geometry requires a new visual review even at the same price
+00:04 +16: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a payment callback cannot display completion until the server order is paid
+00:04 +17: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: only a paid order read back from the server opens completion
+00:04 +18: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: keyboard in a small phone keeps manual address entry scrollable
+00:04 +19: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: failed readiness can retry without discarding the delivery form
+00:05 +20: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: address-search failure permits direct entry and never sends entered delivery data
+00:05 +21: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (tearDownAll)
+00:05 +21: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_complete_test.dart
+00:07 +21: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_complete_test.dart: a paid receipt never implies files, vendor acceptance, production or shipment
+00:07 +22: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_complete_test.dart: vendor accepted timestamp cannot imply vendor file check or actual production
+00:08 +23: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_complete_test.dart: shipment needs carrier, tracking and handoff timestamp and never means delivered
+00:08 +24: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_complete_test.dart: file errors show an action notice without marking file check done
+00:08 +25: loading /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart
+00:08 +25: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: (setUpAll)
+00:08 +25: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: SDK returned always verifies original payment ID before paid receipt
+00:09 +26: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: SDK canceled always verifies original payment ID before paid receipt
+00:09 +27: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: SDK failed always verifies original payment ID before paid receipt
+00:09 +28: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: SDK thrown always verifies original payment ID before paid receipt
+00:09 +29: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: PDF upload and server inspection complete before the first SDK starts
+00:09 +30: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: unfinished package never launches SDK even if an SDK envelope was returned
+00:09 +31: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: lost file finalization leaves original refs unstarted and resumes same package on explicit retry
+00:09 +32: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: unknown confirmation survives restart and never starts a second SDK charge
+00:09 +33: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: lost prepare response recovers original UUID without PII stored
+00:09 +34: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: 404 preserves both an unissued placeholder and an issued invoice without claiming unpaid
+00:09 +35: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: explicit same-UUID prepare retries only a never-issued matching placeholder after owned 404
+00:09 +36: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: an unresolved cancellation hold never re-prepares or reopens the existing SDK invoice
+00:09 +37: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: a missing placeholder for another album remains pending without any prepare or new charge
+00:09 +38: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: authoritative canceled state permits retry but time-only expiry does not
+00:09 +39: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: account switch after SDK cannot verify or reveal previous owner order
+00:09 +40: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: overlapping taps keep service locked until server confirmation finishes
+00:09 +41: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: verifiedPaid flag cannot bypass authenticated paid receipt lookup
+00:09 +42: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: resuming an unstarted invoice rechecks frozen delivery fingerprint before SDK
+00:09 +43: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: an invoice with a different approved geometry cannot enter SDK even at the same price
+00:09 +44: /Users/devsheep/SnapFit/SnapFit/test/unit/print_payment_service_test.dart: (tearDownAll)
+00:09 +44: loading /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart
+00:09 +44: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: (setUpAll)
+00:09 +44: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: renders frozen artwork once, uploads both hashes and verifies each before SDK issuance
+00:09 +45: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: partial cover recovery observes its immutable duplicate through actual finalize
+00:09 +46: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: lost inner upload response can complete only through server-verified READY
+00:09 +47: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: uncertain upload plus unconfirmed stored file cannot issue an SDK invoice
+00:09 +48: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: READY package recovery never regenerates or reuploads immutable PDFs
+00:09 +49: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: UPLOADING recovers the original verified upload without rendering new bytes
+00:09 +50: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: FILES_VERIFIED recovers the original verified upload without rendering new bytes
+00:09 +51: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: an incomplete immutable upload never regenerates or overwrites PDFs
+00:09 +52: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a recovery report from another source cannot be finalized or replaced
+00:09 +53: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: negotiated byte limit stops before storage or payment; quality remains unchanged
+00:09 +54: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: server cannot silently raise the vendor file limit
+00:09 +55: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: server cannot silently raise the separate cover limit
+00:09 +56: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a package completed during uploads is reused without expecting new write tokens
+00:09 +57: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: incomplete inner inspection never issues SDK invoice
+00:09 +58: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a large PDF is uploaded as unchanged views and every part precedes full inspection
+00:11 +59: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: unverified part stops before another upload, full PDF or SDK
+00:12 +60: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a lost part upload response recovers only after its exact server proof
+00:13 +61: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: all verified parts still require complete PDF verification before SDK
+00:14 +62: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a separate negotiated cover cap applies before any upload
+00:14 +63: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: changed owner during cover upload stops before finalize or payment
+00:14 +64: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: a package for another order stops before rendering
+00:14 +65: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: normalizing the frozen product never hides changed album artwork
+00:14 +66: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: frozen physical product must still match the approved spec
+00:14 +67: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: SDK-bearing invoice without package proof remains blocked
+00:14 +68: /Users/devsheep/SnapFit/SnapFit/test/unit/print_prepayment_package_service_test.dart: (tearDownAll)
+00:14 +68: loading /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart
+00:16 +68: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: IEEE754 revision matches shared JavaScript fixture and integer doubles
+00:16 +69: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: review revision ignores metadata and JSON key formatting
+00:16 +70: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: review revision detects cover theme and artwork changes
+00:16 +71: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: legacy page image changes cannot reuse review consent
+00:16 +72: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: planned price and even a ready flag cannot open unverified sales
+00:16 +73: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: only an explicit production, exact-cost, verified contract allows payment
+00:16 +74: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: a pending, canceled or timestamp-less order cannot create a receipt
+00:16 +75: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract readiness sends only album identity and shows real server quote
+00:16 +76: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract receipt lookup is owner scoped and refuses a wrong amount or owner
+00:16 +77: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract production receipt requires live matching payment identity, not a test paid row
+00:16 +78: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract customer progress sends only owned order identity and keeps milestones separate
+00:16 +79: All tests passed!

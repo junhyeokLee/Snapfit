@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:snap_fit/features/album/presentation/viewmodels/cover_view_model.dart';
 import 'package:snap_fit/features/album/presentation/widgets/cover/cover.dart';
 import 'package:snap_fit/features/album/presentation/widgets/editor/edit_toolbar.dart';
@@ -20,16 +19,14 @@ import '../../../../../core/constants/cover_size.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/screen_logger.dart';
-import '../../../../../shared/widgets/image_frame_style_picker.dart';
-import '../../../../../shared/snapfit_image.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/album_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
-import '../../viewmodels/gallery_notifier.dart'; // Add import
-import '../../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../views/page_editor_screen.dart';
+import '../../controllers/photo_crop_editor.dart';
+import '../../controllers/photo_frame_editor.dart';
 import './layer_action_panel.dart';
 import './text_style_picker_sheet.dart';
 import './edit_cover_top_bar.dart';
@@ -46,7 +43,7 @@ class EditCover extends ConsumerStatefulWidget {
   final Function(int albumId)? onAlbumCreated;
 
   /// 플로우 AppBar '완료' 버튼용 액션 등록 (등록된 콜백이 _onCreateAlbum 호출)
-  final void Function(VoidCallback)? onRegisterCompleteAction;
+  final void Function(Future<void> Function())? onRegisterCompleteAction;
 
   /// 앨범 생성 플로우에서 넘어온 초기 커버 사이즈
   final CoverSize? initialCoverSize;
@@ -71,6 +68,7 @@ class EditCover extends ConsumerStatefulWidget {
   final LayerInteractionManager? interaction;
   final GlobalKey? canvasKey;
   final Function(Size)? onSizeChanged;
+  final bool flatPresentation;
 
   const EditCover({
     super.key,
@@ -88,6 +86,7 @@ class EditCover extends ConsumerStatefulWidget {
     this.interaction,
     this.canvasKey,
     this.onSizeChanged,
+    this.flatPresentation = false,
   });
 
   @override
@@ -522,9 +521,9 @@ class EditCoverState extends ConsumerState<EditCover> {
                             .transparent, // 상위(스냅핏 만들기/리더) 배경과 자연스럽게 이어지도록 투명 처리
                         child: LayoutBuilder(
                           builder: (context, canvasConstraints) {
-                            final coverSide = _layout.getCoverSidePadding(
-                              selectedCover,
-                            );
+                            final coverSide = widget.flatPresentation
+                                ? 0.0
+                                : _layout.getCoverSidePadding(selectedCover);
 
                             // Refactor: AlbumReader와 동일한 Center 구조
 
@@ -582,6 +581,8 @@ class EditCoverState extends ConsumerState<EditCover> {
                                               width: logicalW,
                                               height: logicalH,
                                               child: CoverLayout(
+                                                flatPresentation:
+                                                    widget.flatPresentation,
                                                 aspect: aspect,
                                                 layers: _interaction.sortByZ(
                                                   layers,
@@ -757,7 +758,7 @@ class EditCoverState extends ConsumerState<EditCover> {
       return const SizedBox.shrink(); // 상위 LayerActionPanel 사용
 
     return Positioned(
-      bottom: widget.showBottomToolbar ? 100.h : 20.h,
+      bottom: 110 + 12.h + MediaQuery.paddingOf(context).bottom,
       left: 20.w,
       right: 20.w,
       child: LayerActionPanel(
@@ -766,77 +767,30 @@ class EditCoverState extends ConsumerState<EditCover> {
         textEditor: _textEditor,
         onRefresh: () => setState(() {}),
         onOpenGallery: (layer) => _openGalleryForSelected(layer),
+        onOpenPhotoCrop: (layer) =>
+            editPhotoCrop(context, ref, layer, layerBuilder: _layerBuilder),
         onOpenDecorateSheet: (layer) => _openDecorateSheetForLayer(layer),
       ),
     );
   }
 
   Future<void> _openGalleryForSelected(LayerModel layer) async {
-    final gallery = ref.read(galleryProvider);
-    if (gallery.albums.isEmpty) {
-      await ref.read(galleryProvider.notifier).fetchInitialData();
-    }
-
-    final asset = await showPhotoSelectionSheet(context, ref);
-    if (asset != null) {
-      ref
-          .read(albumEditorViewModelProvider.notifier)
-          .updateLayer(
-            layer.copyWith(
-              asset: asset,
-              imageUrl: null,
-              originalUrl: null,
-              previewUrl: null,
-            ),
-          );
-    }
+    final changed = await replacePhotoInSlot(
+      context,
+      ref,
+      layer,
+      layerBuilder: _layerBuilder,
+    );
+    if (changed && mounted) setState(() {});
   }
 
   void _openDecorateSheetForLayer(LayerModel layer) {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
     if (layer.type == LayerType.image) {
-      final current = vm.findLayerById(layer.id) ?? layer;
-      final currentKey = current.imageBackground ?? '';
-      final source =
-          current.previewUrl ?? current.imageUrl ?? current.originalUrl;
-      final alignment = current.imageAlignment;
-      ImageFrameStylePicker.show(
-        context,
-        currentKey: currentKey,
-        photoAspectRatio: current.width > 0 && current.height > 0
-            ? current.width / current.height
-            : 1,
-        photoBuilder:
-            current.asset == null && (source == null || source.isEmpty)
-            ? null
-            : (_) {
-                if (current.asset != null) {
-                  return Image(
-                    image: AssetEntityImageProvider(current.asset!),
-                    fit: BoxFit.cover,
-                    alignment: alignment,
-                  );
-                }
-                if (source!.startsWith('asset:')) {
-                  return Image.asset(
-                    source.substring(6),
-                    fit: BoxFit.cover,
-                    alignment: alignment,
-                    cacheWidth: 360,
-                  );
-                }
-                return SnapfitImage(
-                  urlOrGs: source,
-                  fit: BoxFit.cover,
-                  alignment: alignment,
-                  memCacheWidth: 360,
-                );
-              },
-      ).then((key) {
-        if (key != null && mounted) {
-          vm.updateImageFrame(layer.id, key);
-          setState(() {});
-        }
+      editPhotoFrame(context, ref, layer, layerBuilder: _layerBuilder).then((
+        changed,
+      ) {
+        if (changed && mounted) setState(() {});
       });
     } else {
       final currentKey =

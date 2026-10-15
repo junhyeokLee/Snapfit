@@ -1,0 +1,44 @@
+[Unit]
+Description=SnapFit album printing worker
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=exec
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
+WorkingDirectory=@PROJECT_DIR@
+EnvironmentFile=@ENV_FILE@
+Environment=SNAPFIT_FLUTTER_BIN=@FLUTTER_BIN@
+Environment=PUB_CACHE=@PUB_CACHE_DIR@
+Environment=TMPDIR=/var/lib/snapfit-print-worker/tmp
+Environment=HOME=/var/lib/snapfit-print-worker
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=LANG=C.UTF-8
+Environment=FLUTTER_SUPPRESS_ANALYTICS=true
+StateDirectory=snapfit-print-worker
+StateDirectoryMode=0700
+RuntimeDirectory=snapfit-print-worker
+RuntimeDirectoryMode=0700
+UMask=0077
+ExecStartPre=@NODE_BIN@ -- @PROJECT_DIR@/tool/print_fulfillment/linux/check-linux-host.mjs --runtime-check --require-pinned-runtime --project-dir @PROJECT_DIR@ --node-bin @NODE_BIN@ --flutter-bin @FLUTTER_BIN@ --pub-cache-dir @PUB_CACHE_DIR@ --service-user @SERVICE_USER@ --service-group @SERVICE_GROUP@ --worker-env-path @ENV_FILE@
+ExecStart=@NODE_BIN@ -- @PROJECT_DIR@/tool/print_fulfillment/run_worker.mjs
+Restart=always
+RestartSec=30
+TimeoutStopSec=30
+KillMode=control-group
+SendSIGKILL=yes
+OOMPolicy=stop
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=snapfit-print-worker
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=@PROJECT_DIR@/.dart_tool @PROJECT_DIR@/build @FLUTTER_CACHE_DIR@ @PUB_CACHE_DIR@
+InaccessiblePaths=@ENV_FILE@
+
+[Install]
+WantedBy=multi-user.target

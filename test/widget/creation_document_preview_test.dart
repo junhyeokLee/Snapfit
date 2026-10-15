@@ -249,11 +249,17 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final page = tester.widget<TemplatePageRenderer>(_stagePages);
+      final copies = tester
+          .widgetList<TemplatePageRenderer>(_stagePages)
+          .toList();
+      expect(copies, hasLength(2));
+      expect(copies.first.layers, copies.last.layers);
+      final page = copies.singleWhere((page) => page.wrapSpineArtwork);
       expect(page.height, greaterThan(100));
+      final stageHeight = tester.getSize(_stage).height;
       expect(
         page.height,
-        lessThanOrEqualTo(tester.getSize(_stage).height - 32),
+        lessThanOrEqualTo(stageHeight - (stageHeight < 160 ? 16 : 32)),
       );
       expect(
         tester.getRect(find.byTooltip('다음 페이지')).bottom,

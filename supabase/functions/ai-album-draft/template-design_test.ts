@@ -12,22 +12,22 @@ const brief: TemplateBrief = {
   pageCount: 4,
   aspect: "square",
 };
-function designFixture() {
+function designFixture(pageCount = 4) {
   return {
     version: 1,
     aspect: brief.aspect,
     concept: "푸른 여백",
     rationale: "장면의 크기와 여백을 번갈아 배치한 사진집",
-    pages: Array.from({ length: 5 }, (_, i) => ({
+    pages: Array.from({ length: pageCount + 1 }, (_, i) => ({
       background: "#FFFFFF",
       purpose: i === 0 ? "표지" : "여행 장면",
       elements: [
         {
           id: `photo-${i}`,
           kind: "photo",
-          x: .06 + i * .03,
+          x: .06 + (i % 5) * .03,
           y: .06,
-          width: .88 - i * .1,
+          width: .88 - (i % 5) * .1,
           height: .6,
           color: "#C9DCDD",
         },
@@ -93,10 +93,10 @@ Deno.test("design validates every page, preserves free geometry and rejects defe
   assertThrows(() => parseTemplateBrief({ ...brief, prompt: "" }));
 });
 
-function request() {
+function request(designBrief = brief) {
   return new Request("https://example.test/ai-album-draft", {
     method: "POST",
-    body: JSON.stringify({ designBrief: brief, candidates: [] }),
+    body: JSON.stringify({ designBrief, candidates: [] }),
   });
 }
 function modelResponse(design: unknown) {
@@ -132,6 +132,30 @@ Deno.test("brief-only generation never reads photos or falls back to metadata", 
   assertEquals(body.fallbackUsed, false);
   assertEquals(calls, 1);
 });
+
+for (const pageCount of [20, 80]) {
+  Deno.test(`v1 final${pageCount} expands a validated16-page model response without extra calls`, async () => {
+    let calls = 0;
+    const response = await handleAiAlbumDraftRequest(request({ ...brief, pageCount }), {
+      env: (key) => key === "OPENAI_API_KEY" ? "test-key" : undefined,
+      fetch: async (_, init) => {
+        calls++;
+        const body = JSON.parse(String(init?.body));
+        assertEquals(JSON.parse(body.messages[1].content).brief.pageCount, 16);
+        assertEquals(body.max_completion_tokens, 10000);
+        return modelResponse(designFixture(16));
+      },
+    });
+    const body = await response.json();
+    assertEquals(response.status, 200);
+    assertEquals(calls, 1);
+    assertEquals(body.pageCount, pageCount);
+    assertEquals(body.design.pages.length, pageCount + 1);
+    assertEquals(body.design.layoutExpansion.sourcePageCount, 16);
+    assertEquals(body.templateSlots.length, pageCount + 1);
+    validateTemplateDesign(body.design, { ...brief, pageCount });
+  });
+}
 
 Deno.test("quality failure repairs once, then fails without returning a fixed layout", async () => {
   let calls = 0;

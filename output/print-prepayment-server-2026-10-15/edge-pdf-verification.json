@@ -1,0 +1,93 @@
+{
+  "anonymousRejected": true,
+  "injectedUrlRejected": true,
+  "cover": {
+    "ok": true,
+    "fixtureOnly": true,
+    "artifact": "SOFT20_SYNTHETIC_FLUTTER",
+    "kind": "cover",
+    "result": {
+      "pageCount": 1,
+      "widthMm": 417.22,
+      "heightMm": 160,
+      "byteLength": 607566,
+      "sha256": "83aac1209ec1ba7c665bcda69b778c43613a6c8cc013f06093250f550ee37a25"
+    },
+    "maxFileBytes": 50000000,
+    "method": "STREAMED_CLOSED_RASTER_GRAMMAR_SHA256",
+    "totalWallMs": 1550,
+    "downloadWallMs": 1547,
+    "validationWallMs": 2,
+    "memoryBytes": {
+      "baseline": {
+        "rss": 0,
+        "heapTotal": 12251136,
+        "heapUsed": 8929400,
+        "external": 3229996
+      },
+      "downloaded": {
+        "rss": 0,
+        "heapTotal": 12251136,
+        "heapUsed": 9512880,
+        "external": 8949999
+      },
+      "validated": {
+        "rss": 0,
+        "heapTotal": 12251136,
+        "heapUsed": 9601120,
+        "external": 9566425
+      }
+    },
+    "measuredCpuMs": null,
+    "measuredPeakMemoryBytes": null,
+    "actualCustomerOrderCreated": false,
+    "actualPaymentMade": false,
+    "actualSupplierOrderMade": false,
+    "testedAt": "2026-10-14T17:04:18.685Z"
+  },
+  "interior": {
+    "ok": true,
+    "fixtureOnly": true,
+    "artifact": "SOFT20_SYNTHETIC_FLUTTER",
+    "kind": "interior",
+    "result": {
+      "pageCount": 20,
+      "widthMm": 210,
+      "heightMm": 160,
+      "byteLength": 10153260,
+      "sha256": "c4b97b6ee583b20fdfa7233b5726eb01e816706601e20b55a29e119068ca491c"
+    },
+    "maxFileBytes": 50000000,
+    "method": "STREAMED_CLOSED_RASTER_GRAMMAR_SHA256",
+    "totalWallMs": 1730,
+    "downloadWallMs": 1709,
+    "validationWallMs": 21,
+    "memoryBytes": {
+      "baseline": {
+        "rss": 0,
+        "heapTotal": 12251136,
+        "heapUsed": 9192976,
+        "external": 3362659
+      },
+      "downloaded": {
+        "rss": 0,
+        "heapTotal": 12251136,
+        "heapUsed": 9410816,
+        "external": 22884385
+      },
+      "validated": {
+        "rss": 0,
+        "heapTotal": 12775424,
+        "heapUsed": 9534152,
+        "external": 33046505
+      }
+    },
+    "measuredCpuMs": null,
+    "measuredPeakMemoryBytes": null,
+    "actualCustomerOrderCreated": false,
+    "actualPaymentMade": false,
+    "actualSupplierOrderMade": false,
+    "testedAt": "2026-10-14T17:04:20.568Z"
+  },
+  "syntheticFilesRemoved": true
+}

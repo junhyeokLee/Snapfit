@@ -1,0 +1,472 @@
+TAP version 13
+# Subtest: large original PDF metadata creates exact immutable 16MB private chunks, and incomplete proof cannot issue SDK
+ok 1 - large original PDF metadata creates exact immutable 16MB private chunks, and incomplete proof cannot issue SDK
+  ---
+  duration_ms: 1629.216875
+  type: 'test'
+  ...
+# Subtest: all per-part proofs plus whole PDF spec and SHA bind exactly one paid SUBMIT and one supplier PDF descriptor
+ok 2 - all per-part proofs plus whole PDF spec and SHA bind exactly one paid SUBMIT and one supplier PDF descriptor
+  ---
+  duration_ms: 786.887
+  type: 'test'
+  ...
+# Subtest: malformed size/order/hash/path metadata is rejected and neither app role can finalize or read delivery
+ok 3 - malformed size/order/hash/path metadata is rejected and neither app role can finalize or read delivery
+  ---
+  duration_ms: 522.458375
+  type: 'test'
+  ...
+# Subtest: abandoned package cleanup includes only its own immutable chunks and never deletes a paid or SDK-issued packet
+ok 4 - abandoned package cleanup includes only its own immutable chunks and never deletes a paid or SDK-issued packet
+  ---
+  duration_ms: 496.407958
+  type: 'test'
+  ...
+# Subtest: legacy direct files remain compatible under the new transport schema and current sales gates stay unchanged
+ok 5 - legacy direct files remain compatible under the new transport schema and current sales gates stay unchanged
+  ---
+  duration_ms: 1407.068708
+  type: 'test'
+  ...
+# Subtest: actual 80-page original PDF → owner API → chunk proofs in real SQL → full validation/seal → SDK → one SUBMIT
+ok 6 - actual 80-page original PDF → owner API → chunk proofs in real SQL → full validation/seal → SDK → one SUBMIT
+  ---
+  duration_ms: 1953.494667
+  type: 'test'
+  ...
+# Subtest: actual dense80 TEST owner API and SQL keep production closed; only Cron verifies TEST and enqueues one DEV submission
+ok 7 - actual dense80 TEST owner API and SQL keep production closed; only Cron verifies TEST and enqueues one DEV submission
+  ---
+  duration_ms: 2070.900416
+  type: 'test'
+  ...
+# Subtest: TEST endpoint refuses nonadmin/foreign refs/LIVE routes and real SQL rejects LIVE receipts, partial proofs and changed frozen data
+ok 8 - TEST endpoint refuses nonadmin/foreign refs/LIVE routes and real SQL rejects LIVE receipts, partial proofs and changed frozen data
+  ---
+  duration_ms: 1264.031667
+  type: 'test'
+  ...
+# Subtest: disabled TEST flag does no RPC, payment or supplier work; LIVE/mismatched channels and vendor production environment fail closed
+ok 9 - disabled TEST flag does no RPC, payment or supplier work; LIVE/mismatched channels and vendor production environment fail closed
+  ---
+  duration_ms: 2.874375
+  type: 'test'
+  ...
+# Subtest: after app closure, separate leased TEST payment, DEV submission and file poll complete without a production/deposit call
+ok 10 - after app closure, separate leased TEST payment, DEV submission and file poll complete without a production/deposit call
+  ---
+  duration_ms: 11.075334
+  type: 'test'
+  ...
+# Subtest: LIVE, wrong identity/channel/amount and reversed TEST observations can never authorize receipt commit or DEV order
+ok 11 - LIVE, wrong identity/channel/amount and reversed TEST observations can never authorize receipt commit or DEV order
+  ---
+  duration_ms: 1.894167
+  type: 'test'
+  ...
+# Subtest: Cron may observe an unfinished TEST checkout before approval without terminal failure or a vendor call
+ok 12 - Cron may observe an unfinished TEST checkout before approval without terminal failure or a vendor call
+  ---
+  duration_ms: 0.665666
+  type: 'test'
+  ...
+# Subtest: lost submit response and repeated status 404 retain stable identity and perform GET-only recovery
+ok 13 - lost submit response and repeated status 404 retain stable identity and perform GET-only recovery
+  ---
+  duration_ms: 1.5125
+  type: 'test'
+  ...
+# Subtest: HTTP200 summary acknowledgement plus status404 is not acceptance and cannot issue another submit
+ok 14 - HTTP200 summary acknowledgement plus status404 is not acceptance and cannot issue another submit
+  ---
+  duration_ms: 1.054625
+  type: 'test'
+  ...
+# Subtest: malformed leases, borrowed refs, changed PDF/spec and missing SDK issuance never touch providers
+ok 15 - malformed leases, borrowed refs, changed PDF/spec and missing SDK issuance never touch providers
+  ---
+  duration_ms: 0.709208
+  type: 'test'
+  ...
+# Subtest: unapproved or zero-priced code stops before the durable submission marker and external order POST
+ok 16 - unapproved or zero-priced code stops before the durable submission marker and external order POST
+  ---
+  duration_ms: 0.632917
+  type: 'test'
+  ...
+# Subtest: org06/explicit file errors stay visible for review; canceled vendor order is terminal, never a test deposit
+ok 17 - org06/explicit file errors stay visible for review; canceled vendor order is terminal, never a test deposit
+  ---
+  duration_ms: 3.902
+  type: 'test'
+  ...
+# Subtest: signed full GET is byte-identical to the original and never stores a combined Storage object
+ok 18 - signed full GET is byte-identical to the original and never stores a combined Storage object
+  ---
+  duration_ms: 88.013833
+  type: 'test'
+  ...
+# Subtest: modified, expired, overlong-lifetime, extra/duplicate query, wrong file and missing capability never access database
+ok 19 - modified, expired, overlong-lifetime, extra/duplicate query, wrong file and missing capability never access database
+  ---
+  duration_ms: 3.7905
+  type: 'test'
+  ...
+# Subtest: only GET and HEAD are permitted; HEAD checks paid immutable DB facts without reading artwork
+ok 20 - only GET and HEAD are permitted; HEAD checks paid immutable DB facts without reading artwork
+  ---
+  duration_ms: 1.481708
+  type: 'test'
+  ...
+# Subtest: private RPC missing, held/unpaid, changed references, wrong hash or malformed paths fail closed
+ok 21 - private RPC missing, held/unpaid, changed references, wrong hash or malformed paths fail closed
+  ---
+  duration_ms: 1.618875
+  type: 'test'
+  ...
+# Subtest: single byte ranges across part boundaries and suffix/open ranges preserve exact original bytes
+ok 22 - single byte ranges across part boundaries and suffix/open ranges preserve exact original bytes
+  ---
+  duration_ms: 22.096458
+  type: 'test'
+  ...
+# Subtest: a corrupted/missing/truncated part aborts before that part is emitted
+ok 23 - a corrupted/missing/truncated part aborts before that part is emitted
+  ---
+  duration_ms: 36.399792
+  type: 'test'
+  ...
+# Subtest: backpressure does not prefetch the next part; cancel aborts ongoing work and no later objects are read
+ok 24 - backpressure does not prefetch the next part; cancel aborts ongoing work and no later objects are read
+  ---
+  duration_ms: 11.123833
+  type: 'test'
+  ...
+# Subtest: worker uses paid RPC capabilities only for large chunks, preserving direct PDF checks and immutable manifest equality
+ok 25 - worker uses paid RPC capabilities only for large chunks, preserving direct PDF checks and immutable manifest equality
+  ---
+  duration_ms: 43.226708
+  type: 'test'
+  ...
+# Subtest: actual 300dpi 80-page hardcover interior is delivered unchanged beyond the 50MB object cap
+ok 26 - actual 300dpi 80-page hardcover interior is delivered unchanged beyond the 50MB object cap
+  ---
+  duration_ms: 355.230667
+  type: 'test'
+  ...
+# Subtest: anonymous, ordinary signed customer/admin sessions and malformed secrets cannot inspect configuration or queues
+ok 27 - anonymous, ordinary signed customer/admin sessions and malformed secrets cannot inspect configuration or queues
+  ---
+  duration_ms: 20.111959
+  type: 'test'
+  ...
+# Subtest: missing runtime secret closes the private endpoint and never emits credentials
+ok 28 - missing runtime secret closes the private endpoint and never emits credentials
+  ---
+  duration_ms: 1.068917
+  type: 'test'
+  ...
+# Subtest: HMAC rejects stale/future/tampered headers and a raw secret; valid signatures consume private nonce before any business work
+ok 29 - HMAC rejects stale/future/tampered headers and a raw secret; valid signatures consume private nonce before any business work
+  ---
+  duration_ms: 1.631
+  type: 'test'
+  ...
+# Subtest: unsupported methods do no authentication/configuration/queue work
+ok 30 - unsupported methods do no authentication/configuration/queue work
+  ---
+  duration_ms: 0.199375
+  type: 'test'
+  ...
+# Subtest: authenticated callers cannot supply owner, paid status, amount, credential, environment, job or batch size
+ok 31 - authenticated callers cannot supply owner, paid status, amount, credential, environment, job or batch size
+  ---
+  duration_ms: 1.786625
+  type: 'test'
+  ...
+# Subtest: closed development configuration records heartbeat but performs no payment/supplier/queue claim
+ok 32 - closed development configuration records heartbeat but performs no payment/supplier/queue claim
+  ---
+  duration_ms: 0.413792
+  type: 'test'
+  ...
+# Subtest: enabled TEST/disabled financial runtime is a heartbeat-only no-op
+ok 33 - enabled TEST/disabled financial runtime is a heartbeat-only no-op
+  ---
+  duration_ms: 0.312417
+  type: 'test'
+  ...
+# Subtest: separate enabled TEST queue keeps running with LIVE sales closed and performs only one bounded development phase
+ok 34 - separate enabled TEST queue keeps running with LIVE sales closed and performs only one bounded development phase
+  ---
+  duration_ms: 0.556959
+  type: 'test'
+  ...
+# Subtest: development phase failures are counted without exposing private provider errors or attempting LIVE work
+ok 35 - development phase failures are counted without exposing private provider errors or attempting LIVE work
+  ---
+  duration_ms: 0.39125
+  type: 'test'
+  ...
+# Subtest: Cron uses only due database references then an attached-PDF claim, never a renderer or client receipt
+ok 36 - Cron uses only due database references then an attached-PDF claim, never a renderer or client receipt
+  ---
+  duration_ms: 1.418666
+  type: 'test'
+  ...
+# Subtest: pending customer cancellation/refund takes precedence and defers supplier mutation to another invocation
+ok 37 - pending customer cancellation/refund takes precedence and defers supplier mutation to another invocation
+  ---
+  duration_ms: 0.366583
+  type: 'test'
+  ...
+# Subtest: closing new financial runtime still observes issued LIVE invoices without submitting new supplier jobs
+ok 38 - closing new financial runtime still observes issued LIVE invoices without submitting new supplier jobs
+  ---
+  duration_ms: 0.291583
+  type: 'test'
+  ...
+# Subtest: invalid claimed references fail closed before calling a provider or supplier
+ok 39 - invalid claimed references fail closed before calling a provider or supplier
+  ---
+  duration_ms: 0.511709
+  type: 'test'
+  ...
+# Subtest: unexpected RENDER stage, wrong lease, expired or malformed jobs never call advance
+ok 40 - unexpected RENDER stage, wrong lease, expired or malformed jobs never call advance
+  ---
+  duration_ms: 1.002375
+  type: 'test'
+  ...
+# Subtest: slow payment lookup stops before any cancellation or supplier financial phase
+ok 41 - slow payment lookup stops before any cancellation or supplier financial phase
+  ---
+  duration_ms: 0.306875
+  type: 'test'
+  ...
+# Subtest: lookup failures and ambiguous results remain pending and do not invent paid/unpaid proof
+ok 42 - lookup failures and ambiguous results remain pending and do not invent paid/unpaid proof
+  ---
+  duration_ms: 0.552708
+  type: 'test'
+  ...
+# Subtest: financial/provider failures are counted without returning private error details or automatic second POST
+ok 43 - financial/provider failures are counted without returning private error details or automatic second POST
+  ---
+  duration_ms: 0.44675
+  type: 'test'
+  ...
+# Subtest: deployed wrapper defaults all production work off and exposes only the dedicated secret gate
+ok 44 - deployed wrapper defaults all production work off and exposes only the dedicated secret gate
+  ---
+  duration_ms: 2.718833
+  type: 'test'
+  ...
+# Subtest: provider deadline retains the original shorter/aborted signal in RequestInit and Request input
+ok 45 - provider deadline retains the original shorter/aborted signal in RequestInit and Request input
+  ---
+  duration_ms: 0.4605
+  type: 'test'
+  ...
+# Subtest: provider deadline aborts a long call without leaving an unbounded background task
+ok 46 - provider deadline aborts a long call without leaving an unbounded background task
+  ---
+  duration_ms: 5.748
+  type: 'test'
+  ...
+# Subtest: request budget has a fresh deadline for each invocation and blocks all later database/provider/Storage calls
+ok 47 - request budget has a fresh deadline for each invocation and blocks all later database/provider/Storage calls
+  ---
+  duration_ms: 6.263458
+  type: 'test'
+  ...
+# Subtest: request budget forwards shorter caller cancellation and incoming request cancellation without starting new I/O
+ok 48 - request budget forwards shorter caller cancellation and incoming request cancellation without starting new I/O
+  ---
+  duration_ms: 0.229625
+  type: 'test'
+  ...
+# Subtest: idle scheduler removes only one server-claimed abandoned package with exact paths and commits cleanup result
+ok 49 - idle scheduler removes only one server-claimed abandoned package with exact paths and commits cleanup result
+  ---
+  duration_ms: 0.583708
+  type: 'test'
+  ...
+# Subtest: abandoned large PDFs clean up only bounded server-generated chunk paths in the same package
+ok 50 - abandoned large PDFs clean up only bounded server-generated chunk paths in the same package
+  ---
+  duration_ms: 0.669791
+  type: 'test'
+  ...
+# Subtest: disabled/TEST runtime and invocations doing financial work never claim cleanup or remove files
+ok 51 - disabled/TEST runtime and invocations doing financial work never claim cleanup or remove files
+  ---
+  duration_ms: 1.0395
+  type: 'test'
+  ...
+# Subtest: cleanup rejects unsafe paths, borrowed order/package folders, duplicate filenames and oversized batches before remove
+ok 52 - cleanup rejects unsafe paths, borrowed order/package folders, duplicate filenames and oversized batches before remove
+  ---
+  duration_ms: 2.311125
+  type: 'test'
+  ...
+# Subtest: storage failure resets safe abandoned cleanup for later retry without pretending files are removed
+ok 53 - storage failure resets safe abandoned cleanup for later retry without pretending files are removed
+  ---
+  duration_ms: 0.527708
+  type: 'test'
+  ...
+# Subtest: anonymous/stale owner and malformed refs do not gain source/storage URLs or read secrets
+ok 54 - anonymous/stale owner and malformed refs do not gain source/storage URLs or read secrets
+  ---
+  duration_ms: 20.220542
+  type: 'test'
+  ...
+# Subtest: frozen unpaid snapshot is signed without fabricated PAID fields, and disallows paid/held/expired mutation
+ok 55 - frozen unpaid snapshot is signed without fabricated PAID fields, and disallows paid/held/expired mutation
+  ---
+  duration_ms: 4.298875
+  type: 'test'
+  ...
+# Subtest: uploads are exact owner/server paths, no upsert, immutable manifest and Free per-file cap
+ok 56 - uploads are exact owner/server paths, no upsert, immutable manifest and Free per-file cap
+  ---
+  duration_ms: 4.022167
+  type: 'test'
+  ...
+# Subtest: large files use immutable 16MB parts; every true hash receipt is required and a caller cannot skip PDF inspection
+ok 57 - large files use immutable 16MB parts; every true hash receipt is required and a caller cannot skip PDF inspection
+  ---
+  duration_ms: 209.327167
+  type: 'test'
+  ...
+# Subtest: existing direct packages retain their immutable 50MB cap and remain readable
+ok 58 - existing direct packages retain their immutable 50MB cap and remain readable
+  ---
+  duration_ms: 4.732625
+  type: 'test'
+  ...
+# Subtest: one file at a time: hashes, geometry, and canonical manifest seal are all required before READY
+ok 59 - one file at a time: hashes, geometry, and canonical manifest seal are all required before READY
+  ---
+  duration_ms: 8.069
+  type: 'test'
+  ...
+# Subtest: malformed/stale package refs, altered file or manifest cannot finalize
+ok 60 - malformed/stale package refs, altered file or manifest cannot finalize
+  ---
+  duration_ms: 10.407416
+  type: 'test'
+  ...
+# Subtest: bounded download refuses redirect/origin, oversized content length/chunks, and truncation
+ok 61 - bounded download refuses redirect/origin, oversized content length/chunks, and truncation
+  ---
+  duration_ms: 3.094833
+  type: 'test'
+  ...
+# Subtest: storage manifest publication failure is retryable; both parsed immutable files are not re-downloaded
+ok 62 - storage manifest publication failure is retryable; both parsed immutable files are not re-downloaded
+  ---
+  duration_ms: 4.213792
+  type: 'test'
+  ...
+# Subtest: concurrent file finalization in one Edge isolate never holds two full PDF buffers
+ok 63 - concurrent file finalization in one Edge isolate never holds two full PDF buffers
+  ---
+  duration_ms: 3.039708
+  type: 'test'
+  ...
+# Subtest: portable real JPEG/ICC PDF fixture forbids active dictionaries, foreign profile, fake image dimensions and malformed stream/xref
+ok 64 - portable real JPEG/ICC PDF fixture forbids active dictionaries, foreign profile, fake image dimensions and malformed stream/xref
+  ---
+  duration_ms: 5.627916
+  type: 'test'
+  ...
+# Subtest: actual Flutter JPEG/ICC raster PDFs pass the bounded strict grammar; hidden action/xref/stream tampering fails
+ok 65 - actual Flutter JPEG/ICC raster PDFs pass the bounded strict grammar; hidden action/xref/stream tampering fails
+  ---
+  duration_ms: 36.49325
+  type: 'test'
+  ...
+# Subtest: actual 80-page owner package seals only after every part and the full original SHA pass; wrong aggregate SHA never becomes READY
+ok 66 - actual 80-page owner package seals only after every part and the full original SHA pass; wrong aggregate SHA never becomes READY
+  ---
+  duration_ms: 1728.116625
+  type: 'test'
+  ...
+# Subtest: Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision
+ok 67 - Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision
+  ---
+  duration_ms: 11.08425
+  type: 'test'
+  ...
+# Subtest: unauthorized, malformed or forged callbacks cannot read private configuration or advance a payment
+ok 68 - unauthorized, malformed or forged callbacks cannot read private configuration or advance a payment
+  ---
+  duration_ms: 30.900541
+  type: 'test'
+  ...
+# Subtest: ready public quotation requires FINAL exact geometry, profitable costs, supported source and LIVE server config
+ok 69 - ready public quotation requires FINAL exact geometry, profitable costs, supported source and LIVE server config
+  ---
+  duration_ms: 14.016167
+  type: 'test'
+  ...
+# Subtest: public spec keeps exact geometry while removing private nested approval/cost/source notes
+ok 70 - public spec keeps exact geometry while removing private nested approval/cost/source notes
+  ---
+  duration_ms: 5.221583
+  type: 'test'
+  ...
+# Subtest: prepare persists authoritative expectations, recovers the same UUID after response loss, rejects address/amount/revision changes
+ok 71 - prepare persists authoritative expectations, recovers the same UUID after response loss, rejects address/amount/revision changes
+  ---
+  duration_ms: 7.799333
+  type: 'test'
+  ...
+# Subtest: source revision/page count/quote mismatches prevent a charge before an invoice is stored
+ok 72 - source revision/page count/quote mismatches prevent a charge before an invoice is stored
+  ---
+  duration_ms: 2.940834
+  type: 'test'
+  ...
+# Subtest: provider LIVE PAID readback commits once and survives duplicate confirmations without SDK callback proof
+ok 73 - provider LIVE PAID readback commits once and survives duplicate confirmations without SDK callback proof
+  ---
+  duration_ms: 2.080042
+  type: 'test'
+  ...
+# Subtest: stopping new sales preserves GET-only recovery of an already charged frozen LIVE invoice
+ok 74 - stopping new sales preserves GET-only recovery of an already charged frozen LIVE invoice
+  ---
+  duration_ms: 0.940792
+  type: 'test'
+  ...
+# Subtest: TEST receipt, unknown response, timeout and 404 do not create paid/unpaid completion or release the original payment ID
+ok 75 - TEST receipt, unknown response, timeout and 404 do not create paid/unpaid completion or release the original payment ID
+  ---
+  duration_ms: 3.640917
+  type: 'test'
+  ...
+# Subtest: authoritative FAILED/full CANCELLED terminal observations allow a fresh checkout; closure/expiry alone never does
+ok 76 - authoritative FAILED/full CANCELLED terminal observations allow a fresh checkout; closure/expiry alone never does
+  ---
+  duration_ms: 1.984792
+  type: 'test'
+  ...
+# Subtest: PortOne terminal observer requires exact route and proven zero/full-refund amounts
+ok 77 - PortOne terminal observer requires exact route and proven zero/full-refund amounts
+  ---
+  duration_ms: 5.641667
+  type: 'test'
+  ...
+1..77
+# tests 77
+# suites 0
+# pass 77
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14354.730792

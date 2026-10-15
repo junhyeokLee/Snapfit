@@ -10,11 +10,11 @@ part of 'album_view_model.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AlbumViewModel)
-const albumViewModelProvider = AlbumViewModelProvider._();
+final albumViewModelProvider = AlbumViewModelProvider._();
 
 final class AlbumViewModelProvider
     extends $AsyncNotifierProvider<AlbumViewModel, Album?> {
-  const AlbumViewModelProvider._()
+  AlbumViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -40,7 +40,6 @@ abstract class _$AlbumViewModel extends $AsyncNotifier<Album?> {
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
     final ref = this.ref as $Ref<AsyncValue<Album?>, Album?>;
     final element =
         ref.element
@@ -50,6 +49,6 @@ abstract class _$AlbumViewModel extends $AsyncNotifier<Album?> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    element.handleCreate(ref, build);
   }
 }

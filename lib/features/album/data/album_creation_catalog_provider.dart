@@ -6,7 +6,7 @@ import 'bundled_creation_templates.dart';
 /// Creation and the store share the same published collection policy.
 final albumCreationCatalogProvider =
     StreamProvider.autoDispose<List<PremiumTemplate>>((ref) async* {
-      yield bundledCreationTemplates;
+      yield publishedCreationTemplates;
       try {
         yield withBundledCreationTemplates(
           await ref.watch(templateListProvider.future),

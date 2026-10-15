@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/navigation/web_app_location.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../viewmodels/cover_view_model.dart';
 import '../../viewmodels/home_view_model.dart';
@@ -9,12 +13,16 @@ import '../../views/album_reader_screen.dart';
 import '../../../domain/entities/album.dart';
 import 'home_delete_album_dialog.dart';
 import 'home_album_paper_open_overlay.dart';
+import 'album_open_origin.dart';
 import '../../../data/api/album_provider.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 액션 관련 헬퍼 클래스
 class HomeAlbumActions {
   static bool _isOpeningAlbum = false;
+  static Completer<void>? _readerLifecycle;
+  static Future<void> waitForReaderToClose() =>
+      _readerLifecycle?.future ?? Future<void>.value();
 
   /// 앨범 편집 선택 처리
   static Future<void> onEditSelected(
@@ -22,6 +30,12 @@ class HomeAlbumActions {
     WidgetRef ref,
     dynamic album,
   ) async {
+    if (album is Album && !album.allowsEditing) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('보기 전용 앨범이에요. 편집 권한을 요청해 주세요.')),
+      );
+      return;
+    }
     try {
       final vm = ref.read(albumEditorViewModelProvider.notifier);
       await ref.read(albumEditorViewModelProvider.future);
@@ -44,9 +58,17 @@ class HomeAlbumActions {
         await ref.read(coverViewModelProvider.future);
       }
       if (!context.mounted) return;
+      final albumId = vm.album?.id;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => AddCoverScreen(editAlbum: album)),
+        MaterialPageRoute(
+          settings: albumId != null && albumId > 0
+              ? WebAppRouteSettings(
+                  WebAppLocation(WebAppPage.editor, '$albumId'),
+                )
+              : null,
+          builder: (_) => AddCoverScreen(editAlbum: album),
+        ),
       );
     } catch (e) {
       if (context.mounted) {
@@ -63,6 +85,12 @@ class HomeAlbumActions {
     WidgetRef ref,
     dynamic album,
   ) async {
+    if (album is Album && !album.allowsManagement) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('앨범 삭제는 소유자만 할 수 있어요.')));
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => const HomeDeleteAlbumDialog(),
@@ -90,33 +118,40 @@ class HomeAlbumActions {
     WidgetRef ref,
     dynamic album, {
     void Function(int deletedAlbumId)? onAlbumDeleted,
+    AlbumOpenOrigin? Function()? coverOrigin,
+    VoidCallback? onReaderOpened,
+    bool Function()? canContinue,
   }) async {
     // 짧은 시간 내 중복 탭 방지
     if (_isOpeningAlbum) {
       return;
     }
     _isOpeningAlbum = true;
+    final lifecycle = Completer<void>();
+    _readerLifecycle = lifecycle;
 
     final repository = ref.read(albumRepositoryProvider);
     Future<bool>? lockFuture;
     var needsRefresh = false;
 
     try {
+      if (canContinue?.call() == false) return;
       // 읽기 화면 진입은 서버 잠금 응답을 기다리지 않는다.
       // 잠금은 편집 충돌 방지를 위한 백그라운드 상태로만 반영한다.
-      lockFuture = repository.lockAlbum(album.id).then((_) => true).catchError((
-        e,
-      ) {
-        debugPrint('HomeAlbumActions: Lock failed: $e');
-        return false;
-      });
+      lockFuture = album is Album && !album.allowsEditing
+          ? Future.value(false)
+          : repository.lockAlbum(album.id).then((_) => true).catchError((e) {
+              debugPrint('HomeAlbumActions: Lock failed: $e');
+              return false;
+            });
 
       // 1. 편집 준비
       final vm = ref.read(albumEditorViewModelProvider.notifier);
       await ref.read(albumEditorViewModelProvider.future);
+      if (canContinue?.call() == false) return;
       await vm.prepareAlbumForEdit(album);
 
-      if (!context.mounted) {
+      if (!context.mounted || canContinue?.call() == false) {
         return;
       }
 
@@ -132,53 +167,81 @@ class HomeAlbumActions {
           : selectedCover.ratio > 1.12
           ? 'assets/snapfit_home_landscape.jpg'
           : 'assets/snapfit_home_square.jpg';
-      final openOverlay = album is Album
+      final openOverlay = !kIsWeb && album is Album
           ? HomeAlbumPaperOpenOverlay.show(
               context,
               album: album,
               baseCanvasSize: baseCanvasSize,
               fallbackAsset: fallbackAsset,
+              origin: coverOrigin?.call(),
             )
           : null;
 
-      if (!context.mounted) return;
-      if (openOverlay != null) {
-        await openOverlay.opened;
-        if (!context.mounted) return;
-      }
+      if (!context.mounted || canContinue?.call() == false) return;
+      final readerCoverKey = GlobalKey();
+      final coverVisible = ValueNotifier<bool>(openOverlay == null);
+      final albumId = vm.album?.id;
+      final readerSettings = albumId != null && albumId > 0
+          ? WebAppRouteSettings(WebAppLocation(WebAppPage.album, '$albumId'))
+          : null;
+      // Lay out the real reader underneath, then land on its measured cover.
+      // Its cover remains hidden until the moving copy reaches the same pixels.
+      try {
+        final routeResult = Navigator.push<Object?>(
+          context,
+          kIsWeb
+              ? MaterialPageRoute<Object?>(
+                  settings: readerSettings,
+                  builder: (_) => AlbumReaderScreen(
+                    initialSpreadIndex: initialSpreadIndex,
+                  ),
+                )
+              : openOverlay == null
+              ? snapFitAlbumOpenRoute<Object?>(
+                  settings: readerSettings,
+                  page: AlbumReaderScreen(
+                    initialSpreadIndex: initialSpreadIndex,
+                  ),
+                )
+              : PageRouteBuilder<Object?>(
+                  settings: readerSettings,
+                  pageBuilder: (_, __, ___) => AlbumReaderScreen(
+                    initialSpreadIndex: initialSpreadIndex,
+                    openingCoverKey: readerCoverKey,
+                    openingCoverVisible: coverVisible,
+                  ),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: SnapFitMotion.fast,
+                ),
+        );
+        onReaderOpened?.call();
+        unawaited(
+          routeResult.then<void>((_) {
+            openOverlay?.dismiss();
+          }),
+        );
+        if (openOverlay != null) {
+          await openOverlay.moveTo(readerCoverKey);
+          coverVisible.value = true;
+          openOverlay.dismiss();
+        }
+        final result = await routeResult;
 
-      // The paper-open overlay owns the visual transition; the route itself
-      // should not add another fold/fade on top of it.
-      final routeResult = Navigator.push<Object?>(
-        context,
-        openOverlay == null
-            ? snapFitAlbumOpenRoute<Object?>(
-                page: AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
-              )
-            : PageRouteBuilder<Object?>(
-                pageBuilder: (_, __, ___) =>
-                    AlbumReaderScreen(initialSpreadIndex: initialSpreadIndex),
-                transitionDuration: Duration.zero,
-                reverseTransitionDuration: SnapFitMotion.fast,
-              ),
-      );
-      if (openOverlay != null) {
-        await WidgetsBinding.instance.endOfFrame;
-        await openOverlay.dismiss();
-      }
-      final result = await routeResult;
-
-      if (result is Map) {
-        final deletedAlbumId = result['deletedAlbumId'];
-        if (deletedAlbumId is int) {
-          onAlbumDeleted?.call(deletedAlbumId);
+        if (result is Map) {
+          final deletedAlbumId = result['deletedAlbumId'];
+          if (deletedAlbumId is int) {
+            onAlbumDeleted?.call(deletedAlbumId);
+            needsRefresh = true;
+          }
+          if (result['updated'] == true) {
+            needsRefresh = true;
+          }
+        } else if (result == true) {
           needsRefresh = true;
         }
-        if (result['updated'] == true) {
-          needsRefresh = true;
-        }
-      } else if (result == true) {
-        needsRefresh = true;
+      } finally {
+        openOverlay?.dismiss();
+        coverVisible.dispose();
       }
     } finally {
       // prepare/open 과정에서 예외가 나도 다음 앨범 탭이 영구 차단되지 않도록
@@ -192,6 +255,8 @@ class HomeAlbumActions {
         }
       }
       _isOpeningAlbum = false;
+      lifecycle.complete();
+      if (identical(_readerLifecycle, lifecycle)) _readerLifecycle = null;
       if (context.mounted && needsRefresh == true) {
         ref.read(homeViewModelProvider.notifier).refresh();
       }

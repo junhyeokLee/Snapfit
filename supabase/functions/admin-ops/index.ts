@@ -1,6 +1,6 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 import { adminClient } from '../_shared/supabase.ts'
-import { loadOrder, advanceVerifiedOrder, withPrintOperations } from '../_shared/order-fulfillment.ts'
+import { loadOrder, advanceVerifiedOrder, withPrintOperations, assertManualPrintOrder } from '../_shared/order-fulfillment.ts'
 import { getPrintSnapshot, createPrintUploads, finalizePrintPackage, getPrintDownloadLinks } from '../_shared/print-package.ts'
 import { OrderPaymentError } from '../_shared/order-types.ts'
 import { calculateContribution } from '../_shared/print-contract.ts'
@@ -48,6 +48,9 @@ function orderToJson(row: Record<string, unknown>) {
   return {
     orderId: row.order_id, title: row.title ?? '주문', amount: row.amount ?? 0, pageCount: row.page_count,
     pricingVersion: row.pricing_version, printProductSnapshot: row.print_product_snapshot,
+    checkoutFlow: row.checkout_flow, paymentEnvironment: row.payment_environment,
+    printFileCheckedAt: row.print_file_checked_at,
+    printRequiresAction: row.print_requires_action === true,
     status, statusLabel: statusLabel(status), progress: statusProgress(status), orderedAt: row.ordered_at ?? row.created_at,
     albumId: row.album_id, recipientName: row.recipient_name, recipientPhone: row.recipient_phone, zipCode: row.zip_code,
     addressLine1: row.address_line1, addressLine2: row.address_line2, deliveryMemo: row.delivery_memo,
@@ -180,6 +183,7 @@ Deno.serve(async (req) => {
       const orderId = String(body.orderId ?? '').trim()
       if (!orderId) return jsonResponse({ error: 'orderId_required' }, 400)
       const order = await withPrintOperations(supabase, await loadOrder(supabase, orderId))
+      if (['createPrintUploads', 'finalizePrintPackage'].includes(action)) assertManualPrintOrder(order)
       if (action === 'evaluatePrintCosts') {
         const costs = calculateContribution(order, body, false)
         const minimumContribution = Math.max(10000, Number((order.print_cost_snapshot as any)?.minimumContribution ?? 10000))

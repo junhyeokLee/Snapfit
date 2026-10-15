@@ -9,7 +9,11 @@ import 'package:permission_handler/permission_handler.dart' as permissions;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../config/env.dart';
+import '../../firebase_options.dart';
 import '../utils/app_logger.dart';
+import 'browser_push_adapter.dart';
+import 'browser_push_state.dart';
 import 'notification_policy.dart';
 
 class NotificationSettingsState {
@@ -60,6 +64,12 @@ class FcmNotificationService {
   static SupabaseClient get _client => Supabase.instance.client;
   static final _localNotifications = FlutterLocalNotificationsPlugin();
   static final _observer = _PushLifecycleObserver();
+  static final _browser = BrowserPushAdapter();
+  static bool _webMessagingListening = false;
+  static bool _webOwnerReady = false, _webPushPaused = false;
+  static String? _webSessionUser;
+  static Future<bool>? _webPreparation;
+  static Future<void> _webCleanup = Future.value();
   static bool _initialized = false,
       _localInitialized = false,
       _signingOut = false;
@@ -91,24 +101,45 @@ class FcmNotificationService {
     if (!_initialized) {
       _initialized = true;
       WidgetsBinding.instance.addObserver(_observer);
-      FirebaseMessaging.onMessage.listen((message) {
-        unawaited(_receive(message));
-      });
-      FirebaseMessaging.onMessageOpenedApp.listen((message) {
-        unawaited(openNotification(message.data));
-      });
-      _messaging.onTokenRefresh.listen(
-        (_) => unawaited(syncSession()),
-        onError: (_) => _scheduleRetry(),
-      );
+      if (!kIsWeb) {
+        FirebaseMessaging.onMessage.listen((message) {
+          unawaited(_receive(message));
+        });
+        FirebaseMessaging.onMessageOpenedApp.listen((message) {
+          unawaited(openNotification(message.data));
+        });
+        _messaging.onTokenRefresh.listen(
+          (_) => unawaited(syncSession()),
+          onError: (_) => _scheduleRetry(),
+        );
+      } else {
+        _browser.listenForClicks(openNotification);
+        _webSessionUser = _client.auth.currentUser?.id;
+        // A previous browser visit may belong to a different account. Suppress
+        // its worker content before any network preference/profile reads.
+        _queueWebCleanup();
+      }
       _client.auth.onAuthStateChange.listen((state) {
         _generation++;
         _preferencesUser = null;
+        if (kIsWeb && _webSessionUser != state.session?.user.id) {
+          // Clear the worker before any new account can bind this installation.
+          final previousUser = _webSessionUser;
+          _webSessionUser = state.session?.user.id;
+          _webOwnerReady = false;
+          _webPushPaused = false;
+          _registeredToken = null;
+          _lastRegistrationSignature = null;
+          _lastRegisteredAt = null;
+          _queueWebCleanup(deleteToken: previousUser != null);
+        }
         if (state.session == null) {
           _signingOut = true;
           _pendingTap = null;
           _retry?.cancel();
-          unawaited(_localNotifications.cancelAll().catchError((_) {}));
+          if (!kIsWeb) {
+            unawaited(_localNotifications.cancelAll().catchError((_) {}));
+          }
         } else {
           _signingOut = false;
           final pending = _pendingTap;
@@ -116,7 +147,7 @@ class FcmNotificationService {
           unawaited(syncSession());
         }
       });
-      unawaited(_readLaunchNotification());
+      if (!kIsWeb) unawaited(_readLaunchNotification());
     }
     // Errors are handled inside syncSession; callers need not await network work.
     unawaited(syncSession());
@@ -159,7 +190,16 @@ class FcmNotificationService {
 
   static Future<void> _sync(int generation) async {
     final userId = _client.auth.currentUser?.id;
-    if (userId == null || _signingOut || kIsWeb) return;
+    if (userId == null || _signingOut) return;
+    if (kIsWeb) {
+      await _syncPreferences(userId);
+      if (!_current(userId, generation)) return;
+      await _syncWeb(userId, generation);
+      if (!_current(userId, generation)) return;
+      _retryCount = 0;
+      _retry?.cancel();
+      return;
+    }
     await _initializeLocalNotifications();
     if (!_current(userId, generation)) return;
     await _syncPreferences(userId);
@@ -231,6 +271,191 @@ class FcmNotificationService {
     if (pending != null) await openNotification(pending);
   }
 
+  static Future<bool> _prepareWebPush() {
+    return _webPreparation ??= (() async {
+      final environment = _browser.environment(Env.webPushVapidKey);
+      if (!environment.canEnable || !await _messaging.isSupported()) return false;
+      final options = DefaultFirebaseOptions.web;
+      await _browser.prepare({
+        'apiKey': options.apiKey,
+        'appId': options.appId,
+        'messagingSenderId': options.messagingSenderId,
+        'projectId': options.projectId,
+      }, Env.webPushVapidKey.trim());
+      if (!_webMessagingListening) {
+        FirebaseMessaging.onMessage.listen((message) => unawaited(_receive(message)));
+        _webMessagingListening = true;
+      }
+      return true;
+    })().whenComplete(() => _webPreparation = null);
+  }
+
+  static void _queueWebCleanup({bool deleteToken = false}) {
+    // New-account registration waits for cleanup. Never invalidate a token
+    // after another account has already completed its browser registration.
+    _webCleanup = _webCleanup.catchError((_) {}).then((_) async {
+      try { await _browser.clearOwner(); } catch (_) {}
+      if (deleteToken) {
+        try {
+          if (await _messaging.isSupported()) await _messaging.deleteToken().timeout(_timeout);
+        } catch (_) {}
+      }
+    });
+  }
+
+  static Future<void> _syncWeb(String userId, int generation) async {
+    _webOwnerReady = false;
+    await _webCleanup;
+    if (!_current(userId, generation)) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (!_current(userId, generation)) return;
+    final enabled = prefs.getBool('web_push_enabled_$userId') ?? false;
+    final environment = _browser.environment(Env.webPushVapidKey);
+    if (_webPushPaused || !enabled || !environment.supported ||
+        !environment.configured || environment.permission != 'granted') {
+      // Browser permission alone never opts an account into this installation.
+      await _browser.clearOwner();
+      if (!_current(userId, generation)) return;
+      final token = _registeredToken;
+      if (token != null) {
+        await _client.from('push_devices').delete()
+          .eq('token', token).eq('user_id', userId).timeout(_timeout);
+      }
+      if (!_current(userId, generation)) return;
+      try {
+        if (environment.supported && await _messaging.isSupported()) {
+          await _messaging.deleteToken().timeout(_timeout);
+        }
+      } catch (_) {}
+      if (!_current(userId, generation)) return;
+      _registeredToken = null;
+      _lastRegistrationSignature = null;
+      _lastRegisteredAt = null;
+      return;
+    }
+    if (!await _prepareWebPush() || !_current(userId, generation)) return;
+    final token = await _messaging.getToken(vapidKey: Env.webPushVapidKey.trim(),
+      serviceWorkerScriptPath: _browser.serviceWorkerScriptPath).timeout(_timeout);
+    if (!_current(userId, generation) || token == null || token.isEmpty) return;
+    final signature = '$userId:$token:web:${DateTime.now().timeZoneOffset.inMinutes}';
+    final recent = _lastRegisteredAt != null &&
+      DateTime.now().difference(_lastRegisteredAt!) < const Duration(hours: 1);
+    if (_lastRegistrationSignature != signature || !recent) {
+      await _client.rpc('register_push_device', params: {
+        'p_token': token, 'p_platform': 'web',
+        'p_timezone_offset_minutes': DateTime.now().timeZoneOffset.inMinutes,
+        'p_enabled': true,
+      }).timeout(_timeout);
+      if (!_current(userId, generation)) return;
+      if (_registeredToken != null && _registeredToken != token) {
+        await _client.from('push_devices').delete()
+          .eq('token', _registeredToken!).eq('user_id', userId).timeout(_timeout);
+      }
+      if (!_current(userId, generation)) return;
+      _registeredToken = token;
+      _lastRegistrationSignature = signature;
+      _lastRegisteredAt = DateTime.now();
+    }
+    await _bindWebOwner(userId, generation, prefs);
+  }
+
+  static Future<void> _bindWebOwner(String userId, int generation, SharedPreferences prefs) async {
+    if (!_current(userId, generation) || _webPushPaused) return;
+    // Device consent outlives short-lived access JWTs, like native push. The
+    // bound lease matches the backend's existing 90-day device freshness rule.
+    final expiresAt = (_lastRegisteredAt ?? DateTime.now())
+      .add(const Duration(days: 90)).millisecondsSinceEpoch ~/ 1000;
+    await _browser.setOwner(userId: userId, expiresAt: expiresAt, preferences: {
+      'all': prefs.getBool(_prefKey(kAll, userId)) ?? _default(kAll),
+      'order': prefs.getBool(_prefKey(kOrder, userId)) ?? _default(kOrder),
+      'invite': prefs.getBool(_prefKey(kInvite, userId)) ?? _default(kInvite),
+      'comment': prefs.getBool(_prefKey(kComment, userId)) ?? _default(kComment),
+      'marketing': prefs.getBool(_prefKey(kMarketing, userId)) ?? _default(kMarketing),
+      'new_template': prefs.getBool(_prefKey(kNewTemplate, userId)) ?? _default(kNewTemplate),
+      'nightMute': prefs.getBool(_prefKey(kNightMute, userId)) ?? _default(kNightMute),
+    });
+    if (_current(userId, generation) && !_webPushPaused) _webOwnerReady = true;
+  }
+
+  static Future<BrowserPushState> loadBrowserPushState() async {
+    final userId = _client.auth.currentUser?.id;
+    final generation = _generation;
+    var environment = _browser.environment(Env.webPushVapidKey);
+    if (userId == null || !kIsWeb) {
+      return BrowserPushState(environment: environment, enabled: false, registered: false);
+    }
+    if (environment.canEnable) {
+      try {
+        final supported = await _prepareWebPush();
+        if (!supported) {
+          environment = const BrowserPushEnvironment(supported: false, configured: true,
+            permission: 'unavailable', message: '이 브라우저에서는 웹 푸시를 사용할 수 없어요. 알림함을 이용해주세요.');
+        }
+      } catch (_) {
+        environment = BrowserPushEnvironment(supported: environment.supported,
+          configured: false, permission: environment.permission,
+          message: '브라우저 알림 연결이 아직 준비되지 않았어요. 잠시 후 다시 확인하거나 알림함을 이용해주세요.');
+      }
+    }
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    final prefs = await SharedPreferences.getInstance();
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    return BrowserPushState(environment: environment,
+      enabled: prefs.getBool('web_push_enabled_$userId') ?? false,
+      registered: _webOwnerReady && _registeredToken != null &&
+        _lastRegistrationSignature?.startsWith('$userId:') == true);
+  }
+
+  static Future<BrowserPushState> enableBrowserPush() async {
+    final userId = _client.auth.currentUser?.id;
+    final generation = _generation;
+    final environment = _browser.environment(Env.webPushVapidKey);
+    if (!kIsWeb || userId == null || !environment.canEnable) {
+      throw StateError('web_push_unavailable');
+    }
+    // Preserve the browser's user gesture: permission is the first async step.
+    final granted = await _browser.requestPermission();
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    if (!granted) return loadBrowserPushState();
+    final prefs = await SharedPreferences.getInstance();
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    await prefs.setBool('web_push_enabled_$userId', true);
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    _webPushPaused = false;
+    // A prior preference sync may have started before the explicit opt-in.
+    await syncSession();
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    await syncSession();
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    return loadBrowserPushState();
+  }
+
+  static Future<BrowserPushState> disableBrowserPush() async {
+    final userId = _client.auth.currentUser?.id;
+    if (!kIsWeb || userId == null) throw StateError('web_push_unavailable');
+    final generation = ++_generation;
+    _webPushPaused = true;
+    _webOwnerReady = false;
+    final clearing = _browser.clearOwner().catchError((_) {});
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('web_push_enabled_$userId', false);
+    await clearing;
+    try { await _syncFuture?.timeout(const Duration(seconds: 12)); } catch (_) {}
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    final token = _registeredToken;
+    if (token != null) {
+      await _client.from('push_devices').delete()
+        .eq('token', token).eq('user_id', userId).timeout(_timeout);
+    }
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    await _messaging.deleteToken().timeout(_timeout);
+    if (!_current(userId, generation)) throw StateError('notification_settings_owner_changed');
+    _registeredToken = null;
+    _lastRegistrationSignature = null;
+    _lastRegisteredAt = null;
+    return loadBrowserPushState();
+  }
+
   static void _scheduleRetry() {
     if (_signingOut || _client.auth.currentUser == null) return;
     _retry?.cancel();
@@ -240,7 +465,9 @@ class FcmNotificationService {
   }
 
   static Future<void> _syncPreferences(String userId) async {
+    final generation = _generation;
     final prefs = await SharedPreferences.getInstance();
+    if (kIsWeb && !_current(userId, generation)) return;
     final dirty = prefs.getBool('push_prefs_dirty_$userId') ?? false;
     if (_preferencesUser != userId && !dirty) {
       final version = _preferenceVersions[userId] ?? 0;
@@ -250,12 +477,14 @@ class FcmNotificationService {
           .eq('user_id', userId)
           .maybeSingle()
           .timeout(_timeout);
+      if (kIsWeb && !_current(userId, generation)) return;
       if ((_preferenceVersions[userId] ?? 0) != version ||
           (prefs.getBool('push_prefs_dirty_$userId') ?? false)) {
         await _saveRemotePrefs(prefs, userId);
         return;
       }
       for (final entry in _columns.entries) {
+        if (kIsWeb && !_current(userId, generation)) return;
         await prefs.setBool(
           '${entry.key}_$userId',
           row?[entry.value] as bool? ?? _default(entry.key),
@@ -264,6 +493,7 @@ class FcmNotificationService {
       _preferencesUser = userId;
     }
     if (dirty) await _saveRemotePrefs(prefs, userId);
+    if (kIsWeb && _current(userId, generation)) _preferencesUser = userId;
   }
 
   static bool _default(String key) => key != kMarketing && key != kNightMute;
@@ -273,6 +503,15 @@ class FcmNotificationService {
   static Future<NotificationSettingsState> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = _client.auth.currentUser?.id;
+    if (kIsWeb && userId != null) {
+      final generation = _generation;
+      // Wait for the same existing remote preference read/write before the
+      // form displays values. A failed first read must not become defaults.
+      await _syncPreferences(userId);
+      if (!_current(userId, generation)) {
+        throw StateError('notification_settings_owner_changed');
+      }
+    }
     bool read(String key) =>
         prefs.getBool(_prefKey(key, userId)) ?? _default(key);
     return NotificationSettingsState(
@@ -288,13 +527,14 @@ class FcmNotificationService {
   }
 
   static Future<bool> isPermissionGranted() async {
-    if (kIsWeb) return false;
+    if (kIsWeb) return _browser.environment(Env.webPushVapidKey).permission == 'granted';
     final settings = await _messaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
   }
 
   static Future<bool> requestPermission() async {
+    if (kIsWeb) return false;
     final current = await _messaging.getNotificationSettings();
     final prefs = await SharedPreferences.getInstance();
     if (current.authorizationStatus == AuthorizationStatus.denied &&
@@ -324,6 +564,7 @@ class FcmNotificationService {
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
+    final generation = _generation;
     final prefs = await SharedPreferences.getInstance();
     _preferenceVersions[userId] = (_preferenceVersions[userId] ?? 0) + 1;
     final values = {
@@ -339,8 +580,19 @@ class FcmNotificationService {
       await prefs.setBool(_prefKey(entry.key, userId), entry.value);
     }
     await prefs.setBool('push_prefs_dirty_$userId', true);
+    if (kIsWeb && _current(userId, generation) && _registeredToken != null && !_webPushPaused) {
+      // Apply local opt-outs to the background worker even while the server is
+      // offline. A failed policy update must not leave stale content visible.
+      try {
+        await _bindWebOwner(userId, generation, prefs);
+      } catch (_) {
+        _webOwnerReady = false;
+        try { await _browser.clearOwner(); } catch (_) {}
+      }
+    }
     try {
       await _saveRemotePrefs(prefs, userId);
+      if (kIsWeb) unawaited(syncSession());
     } catch (_) {
       _scheduleRetry();
       rethrow;
@@ -348,9 +600,11 @@ class FcmNotificationService {
   }
 
   static Future<void> _saveRemotePrefs(SharedPreferences prefs, String userId) {
+    final generation = _generation;
     return _preferenceWrites = _preferenceWrites.catchError((_) {}).then((
       _,
     ) async {
+      if (kIsWeb && !_current(userId, generation)) return;
       final version = _preferenceVersions[userId] ?? 0;
       await _client
           .from('push_preferences')
@@ -362,6 +616,7 @@ class FcmNotificationService {
                   _default(entry.key),
           })
           .timeout(_timeout);
+      if (kIsWeb && !_current(userId, generation)) return;
       if ((_preferenceVersions[userId] ?? 0) == version) {
         await prefs.setBool('push_prefs_dirty_$userId', false);
       }
@@ -373,10 +628,36 @@ class FcmNotificationService {
     _generation++;
     _retry?.cancel();
     final userId = _client.auth.currentUser?.id;
+    final clearingBrowser = kIsWeb ? _browser.clearOwner().catchError((_) {}) : null;
+    if (kIsWeb) {
+      _webOwnerReady = false;
+      _webPushPaused = true;
+    }
     // Drain in-flight registration before signing out, so it cannot restore a stale binding.
     try {
       await _syncFuture?.timeout(const Duration(seconds: 12));
     } catch (_) {}
+    if (kIsWeb) {
+      try { await clearingBrowser; } catch (_) {}
+      if (userId != null && _client.auth.currentUser?.id == userId) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('web_push_enabled_$userId', false);
+          final token = _registeredToken;
+          if (token != null) {
+            await _client.from('push_devices').delete()
+              .eq('token', token).eq('user_id', userId).timeout(_timeout);
+          }
+        } catch (_) {}
+        try { await _messaging.deleteToken().timeout(_timeout); } catch (_) {}
+      }
+      _registeredToken = null;
+      _lastRegistrationSignature = null;
+      _lastRegisteredAt = null;
+      _pendingTap = null;
+      _preferencesUser = null;
+      return;
+    }
     try {
       final token =
           _registeredToken ?? await _messaging.getToken().timeout(_timeout);
@@ -487,6 +768,11 @@ class FcmNotificationService {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null || message.data['userId'] != userId) return;
+      if (kIsWeb) {
+        if (_signingOut) return;
+        await _browser.showForeground(message.data.map((k, v) => MapEntry(k, v.toString())));
+        return;
+      }
       await showLocalNotification(
         title: message.notification?.title ?? 'SnapFit',
         body: message.notification?.body ?? '',

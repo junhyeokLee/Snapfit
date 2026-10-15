@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -36,15 +38,135 @@ final authViewModelProvider = AsyncNotifierProvider<AuthViewModel, UserInfo?>(
 
 class AuthViewModel extends AsyncNotifier<UserInfo?> {
   Future<void>? _googleInitializeFuture;
+  int _sessionSyncRevision = 0;
 
   @override
   FutureOr<UserInfo?> build() async {
+    ref.onDispose(() => _sessionSyncRevision++);
+    if (kIsWeb) {
+      return (await ref.read(authServiceProvider).synchronizeSupabaseSession())
+          ?.user;
+    }
     return ref.read(tokenStorageProvider).getUserInfo();
   }
 
   Future<void> refresh() async {
+    if (kIsWeb) return synchronizeSupabaseSession();
     state = const AsyncLoading();
     state = AsyncData(await ref.read(tokenStorageProvider).getUserInfo());
+  }
+
+  /// Called after Supabase has exchanged/restored its OAuth session. Never
+  /// derives a signed-in profile from the browser URL or cached token claims.
+  Future<void> synchronizeSupabaseSession() async {
+    final revision = ++_sessionSyncRevision;
+    state = const AsyncLoading();
+    try {
+      final auth = await ref
+          .read(authServiceProvider)
+          .synchronizeSupabaseSession();
+      if (!ref.mounted || revision != _sessionSyncRevision) return;
+      state = AsyncData(auth?.user);
+      ref.invalidate(authUserIdProvider);
+      if (auth != null) await syncConsentIfPresent();
+    } catch (error, stack) {
+      if (!ref.mounted || revision != _sessionSyncRevision) return;
+      state = AsyncError(error, stack);
+    }
+  }
+
+  /// Web photo pickers provide bytes rather than a dart:io File.
+  Future<void> updateProfileImageBytes(
+    Uint8List bytes, {
+    String fileName = 'profile.jpg',
+  }) async {
+    if (bytes.isEmpty || bytes.length > 20 * 1024 * 1024) {
+      throw Exception('프로필 사진은 20MB 이하 이미지로 선택해주세요.');
+    }
+    final storage = ref.read(tokenStorageProvider);
+    final current = await storage.getUserInfo();
+    final client = ref.read(supabaseClientProvider);
+    if (current == null || current.id != client.auth.currentUser?.id) {
+      throw Exception('로그인한 계정을 확인한 뒤 사진을 변경해주세요.');
+    }
+    final owner = current.id;
+    void sameOwner() {
+      if (client.auth.currentUser?.id != owner) {
+        throw Exception('로그인 계정이 변경되었어요. 사진 변경을 다시 시작해주세요.');
+      }
+    }
+
+    var normalized = bytes;
+    try {
+      final compressed = await FlutterImageCompress.compressWithList(
+        bytes,
+        minWidth: 1920,
+        minHeight: 1920,
+        quality: 88,
+        format: CompressFormat.jpeg,
+      );
+      if (compressed.isNotEmpty && compressed.length < bytes.length) {
+        normalized = compressed;
+      }
+    } catch (_) {
+      // Some browser codecs have no plugin encoder. Keep the selected image
+      // bytes and their actual MIME type; never label PNG/WebP as JPEG.
+    }
+    sameOwner();
+    final extension = _imageBytesExtension(normalized);
+    if (extension == null || normalized.length > 10 * 1024 * 1024) {
+      throw Exception('10MB 이하의 JPG, PNG, WebP 사진으로 다시 선택해주세요.');
+    }
+    final path =
+        '$owner/profile_${DateTime.now().microsecondsSinceEpoch}.$extension';
+    await client.storage
+        .from('avatars')
+        .uploadBinary(
+          path,
+          normalized,
+          fileOptions: FileOptions(
+            contentType: _profileImageContentType(extension),
+            upsert: false,
+          ),
+        );
+    sameOwner();
+    final url = client.storage.from('avatars').getPublicUrl(path);
+    await client.from('profiles').upsert({
+      'id': owner,
+      'email': current.email,
+      'name': current.name,
+      'provider': current.provider,
+      'avatar_url': url,
+    });
+    sameOwner();
+    await storage.saveUserInfo(current.copyWith(profileImageUrl: url));
+    sameOwner();
+    final updated = await storage.getUserInfo();
+    sameOwner();
+    if (ref.mounted) state = AsyncData(updated);
+  }
+
+  String? _imageBytesExtension(Uint8List bytes) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xff &&
+        bytes[1] == 0xd8 &&
+        bytes[2] == 0xff)
+      return 'jpg';
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4e &&
+        bytes[3] == 0x47 &&
+        bytes[4] == 0x0d &&
+        bytes[5] == 0x0a &&
+        bytes[6] == 0x1a &&
+        bytes[7] == 0x0a)
+      return 'png';
+    if (bytes.length >= 12 &&
+        String.fromCharCodes(bytes.sublist(0, 4)) == 'RIFF' &&
+        String.fromCharCodes(bytes.sublist(8, 12)) == 'WEBP')
+      return 'webp';
+    return null;
   }
 
   /// 프로필 이미지를 Supabase Storage에 업로드하고 로컬 유저 정보 갱신
@@ -146,6 +268,7 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   }
 
   Future<void> logout() async {
+    _sessionSyncRevision++;
     state = const AsyncData(null);
     unawaited(ref.read(authServiceProvider).logout());
   }
@@ -156,6 +279,12 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   }
 
   Future<void> loginWithKakao() async {
+    if (kIsWeb) {
+      await ref
+          .read(authServiceProvider)
+          .loginWithWebProvider(OAuthProvider.kakao);
+      return;
+    }
     if (Env.kakaoNativeAppKey.isEmpty) {
       throw Exception('KAKAO_NATIVE_APP_KEY가 설정되지 않았습니다.');
     }
@@ -196,6 +325,12 @@ class AuthViewModel extends AsyncNotifier<UserInfo?> {
   }
 
   Future<void> loginWithGoogle() async {
+    if (kIsWeb) {
+      await ref
+          .read(authServiceProvider)
+          .loginWithWebProvider(OAuthProvider.google);
+      return;
+    }
     if (Env.googleWebClientId.isEmpty) {
       throw Exception('GOOGLE_WEB_CLIENT_ID가 설정되지 않았습니다.');
     }

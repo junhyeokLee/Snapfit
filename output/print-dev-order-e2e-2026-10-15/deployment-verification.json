@@ -1,0 +1,68 @@
+{
+  "verifiedAtUtc": "2026-10-15T03:28:44.791643+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "migrationVersion": "20261015030803",
+  "functions": [
+    {
+      "slug": "print-dev-checkout",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "print-dev-file-delivery",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "print-order-scheduler",
+      "version": 7,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "print-file-delivery",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "print-fulfillment-worker",
+      "version": 8,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "onlyTestFeatureEnabled": true,
+  "sourceMatchesStaged": true,
+  "sourceSha256": {
+    "supabase/migrations/20261015030803_admin_owned_test_checkout_pipeline.sql": "a4331449a6a513f5385ea1c88da091e59e0311d141e209db78e19e027c0ad641",
+    "supabase/config.toml": "cc5581006d0ea7a3f8afcb951f5f78fcc071742e66122fcedd49379d3a88f03a",
+    "supabase/functions/print-dev-checkout/index.ts": "028966fae6ff5a5f68379012d877b9f1cc188045447511b89a389f77ab3fb4cd",
+    "supabase/functions/print-dev-file-delivery/index.ts": "b9b34073b43aaa9ab2f7ce4bb2b8cbac069e5b0290f6f5482a996aba73b80b47",
+    "supabase/functions/print-order-scheduler/index.ts": "4b20bb8d11302c1275dc54905d261a57f4c2adda248fdfc941be11dc2338ded3",
+    "supabase/functions/_shared/print-dev-checkout.ts": "53365318f818516d28ddf89a26864e5144cb12083c7825d7fdb5be729ddc6b02",
+    "supabase/functions/_shared/print-dev-fulfillment.ts": "882994f9bd94164c823650e33db418916d0300d724acc031005fc7de386e89d1",
+    "supabase/functions/_shared/print-file-delivery.ts": "188d0c266b94d0fec19588a9e9888e48f01f60c15dd99e00d6a16f6ea980f8ad",
+    "supabase/functions/_shared/print-order-scheduler.ts": "ece8eca17fdedbfd04cacd65e100b243b9748357d392e1e5ae9b29f2c53c26bb"
+  },
+  "realTestPaymentVerified": true,
+  "actualDevelopmentOrderSubmitted": true,
+  "actualAppClosedFulfillmentVerified": true,
+  "state": "VERIFIED_TEST_PAID_DEV_FILE_CHECKED_AFTER_APP_CLOSE",
+  "paidInfrastructureCreated": false,
+  "planChangesMade": false,
+  "liveSalesClosed": true,
+  "actualE2eResult": "actual-e2e-result.json",
+  "finalVerifierSourceSha256": "10a25a3a57c34cbb247ee2d65a81707bdbfa78cdb1f2dc5bf023dc1425a088df",
+  "finalRecoveryApiSourceSha256": "1e2a0dc0dc0efeeffbd6cc19ec9e82b0760093f184184fd61d422e756ef8434b",
+  "boundedVerifierDeployedTo": [
+    "print-dev-checkout",
+    "print-prepayment-package"
+  ],
+  "actualPaymentAndVendorSubmissionVerified": true,
+  "actualStatusObservedAt": "2026-10-15T04:56:43.893691+00:00",
+  "appReopenedResultVerified": true,
+  "actualEvidenceFinalizedAt": "2026-10-15T04:58:55.084Z"
+}

@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-15",
+  "scope": "unchanged-quality client PDF split upload before payment",
+  "sourceFrozen": true,
+  "relatedPrintingAndCheckoutTests": 121,
+  "relatedTestsPassed": true,
+  "actualDense80TransportTests": 3,
+  "actualDense80TransportTestsPassed": true,
+  "scopedAnalysis": {
+    "passed": true,
+    "files": 9
+  },
+  "maximumCoverFileBytes": 150000000,
+  "maximumInteriorFileBytes": 500000000,
+  "directStorageObjectLimit": 50000000,
+  "partBytes": 16000000,
+  "transportReencodesImages": false,
+  "rendererDPI": 300,
+  "rendererImageEncoding": "JPEG quality 95",
+  "rendererColorSpace": "sRGB/ICC",
+  "actualDense80Fixture": "/Users/devsheep/SnapFit/SnapFit/output/pdf/print-worker-hard300-80-dense-fixture-2026-10-15",
+  "actualDense80InteriorBytes": 102193868,
+  "actualDense80InteriorSha256": "442b96d851167d70298d9e3f995bdee6e34f4fcf1cb17c3f4825d7658fb82c9a",
+  "actualDense80PartCount": 7,
+  "actualDense80RenderSeconds": 327.209,
+  "actualDense80VisualChecks": [
+    "cover",
+    "interior1",
+    "interior41",
+    "interior80"
+  ],
+  "financialTestsUseMocks": true,
+  "operatingSalesChangesMade": false,
+  "paidInfrastructureCreated": false,
+  "web": {
+    "status": "passed",
+    "outputPath": "/private/tmp/snapfit-customer-pdf-chunks-web-20261015",
+    "wasmDryRun": false,
+    "firstBuildStoppedForHostMemoryPressure": true,
+    "seconds": 91.0,
+    "sha256": "478d47078d0a6599a15fee8d1ed5f7cf03bd0d6939c28321960e59d21435200b",
+    "markers": {
+      "chunkVerification": true,
+      "chunkIndex": true,
+      "separateCoverLimit": true,
+      "vendorCapacityGuide": true,
+      "old50MBGuideRemoved": true
+    }
+  },
+  "android": {
+    "status": "passed",
+    "seconds": 152.7,
+    "outputPath": "/Users/devsheep/SnapFit/SnapFit/build/app/outputs/flutter-apk/app-debug.apk",
+    "sha256": "515631be34fe73ba6bd3fe8ffe581a57d72457dd828810d15555ae2f3f0c5a91",
+    "markers": {
+      "chunkVerification": true,
+      "chunkIndex": true,
+      "separateCoverLimit": true,
+      "vendorCapacityGuide": true,
+      "old50MBGuideRemoved": true
+    }
+  },
+  "adminWeb": {
+    "status": "passed",
+    "outputPath": "/private/tmp/snapfit-admin-pdf-chunks-web-20261015",
+    "wasmDryRun": false,
+    "capacityAudit": "No50MBhardcodedcustomerlimit;existingmanualadminupload100MiBisaseparatepath",
+    "seconds": 42.6,
+    "sha256": "5fe4fbed4bac1b4a694b21952aa1294a6a98681f6be027fb499a612dc62cb1b5",
+    "currentBrowserReloaded": false,
+    "currentServerRestarted": false
+  },
+  "sourceSha256": {
+    "lib/features/profile/data/print_pdf_upload_plan.dart": "ce86b215012e55bb6585392cc9a48afb2d034b5e76e49d03a21fd801cefd16cd",
+    "lib/features/profile/data/print_prepayment_package_service.dart": "c40228bdc744f63c805d9890c27c50f9c601756e1f3d7ace95c87ee5cb8bccf8",
+    "lib/features/profile/data/print_payment_service.dart": "7ec518f18d32886d9458d7ba707ba3d35a9eb6babfe64d799e00d8d328a26a6b",
+    "lib/features/album/printing/raster_print_pdf.dart": "d0d32366c4285abf5adc91e0c111bfc9b720c9fd25db799ec1120c22ac187b98",
+    "lib/features/album/printing/album_print_exporter.dart": "23f44038a7a44200b1f236b55e5a9df7de4816397466394494730940fc21d7cb",
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "b5a01ac1892e102fe913a6801a69c3ac30f712695c1a30923f70d9489138a5e3",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "e4e133b04d2b3630b083f104921b451bb8e99834790cbece718aa1578ec8f64d",
+    "test/unit/print_prepayment_package_service_test.dart": "5f1278ee7df0d261e81dc57485c8d9da00501495e2523a808ccff3ca057b0096",
+    "test/printing/print_pdf_upload_plan_test.dart": "844a3aa135e1f11891cc277f8ea42964900f043c812359ed7b372e608a74e8e2"
+  },
+  "allRequestedBuildsPassed": true
+}

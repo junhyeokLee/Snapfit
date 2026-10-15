@@ -143,7 +143,8 @@ class PointLedgerEntry {
 
   String get subtitle {
     return switch (reason) {
-      'POINT_PURCHASE' => '스토어 결제 확인 완료',
+      'POINT_PURCHASE' => relatedEntityType == 'web_point_topup'
+          ? '웹 결제 확인 완료' : '스토어 결제 확인 완료',
       'POINT_PURCHASE_REFUND' => '환불된 구매의 지급 포인트 회수',
       'DIGITAL_ITEM_PURCHASE' => '구매한 상품은 계속 사용할 수 있어요',
       'AI_ALBUM_DRAFT_CHARGE' => '초안이 만들어지고 리뷰 가능할 때만 차감',

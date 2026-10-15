@@ -1,0 +1,1588 @@
+TAP version 13
+# Subtest: an authoritative late payment without issued SDK files is recorded for review and never manufactured
+ok 1 - an authoritative late payment without issued SDK files is recorded for review and never manufactured
+  ---
+  duration_ms: 8677.285459
+  type: 'test'
+  ...
+# Subtest: a cancellation racing an already issued SDK retains the payment receipt and holds new manufacturing
+ok 2 - a cancellation racing an already issued SDK retains the payment receipt and holds new manufacturing
+  ---
+  duration_ms: 2330.691292
+  type: 'test'
+  ...
+# Subtest: the app PDF scheduler never claims a RENDER stage and cannot use a stale private artifact
+ok 3 - the app PDF scheduler never claims a RENDER stage and cannot use a stale private artifact
+  ---
+  duration_ms: 1259.255667
+  type: 'test'
+  ...
+# Subtest: TTL cleanup keeps all paid files and any expired invoice for which an SDK was issued
+ok 4 - TTL cleanup keeps all paid files and any expired invoice for which an SDK was issued
+  ---
+  duration_ms: 678.709666
+  type: 'test'
+  ...
+# Subtest: only GET on the fixed official origin is used, with encoded store query and redirect rejection
+ok 5 - only GET on the fixed official origin is used, with encoded store query and redirect rejection
+  ---
+  duration_ms: 258.340625
+  type: 'test'
+  ...
+# Subtest: a verified live observation requires the configured LIVE channel
+ok 6 - a verified live observation requires the configured LIVE channel
+  ---
+  duration_ms: 0.948709
+  type: 'test'
+  ...
+# Subtest: test receipts cannot satisfy live expected payment even if arbitrary callback flags claim success
+ok 7 - test receipts cannot satisfy live expected payment even if arbitrary callback flags claim success
+  ---
+  duration_ms: 1.463333
+  type: 'test'
+  ...
+# Subtest: payment identity and store binding cannot be borrowed from another purchase
+ok 8 - payment identity and store binding cannot be borrowed from another purchase
+  ---
+  duration_ms: 1.85325
+  type: 'test'
+  ...
+# Subtest: unknown, missing, or different channel keys and channel types fail closed
+ok 9 - unknown, missing, or different channel keys and channel types fail closed
+  ---
+  duration_ms: 6.240958
+  type: 'test'
+  ...
+# Subtest: unpaid, issued, pending, failed, canceled and partly canceled payments are never paid proof
+ok 10 - unpaid, issued, pending, failed, canceled and partly canceled payments are never paid proof
+  ---
+  duration_ms: 1.261834
+  type: 'test'
+  ...
+# Subtest: REST V2 version and KRW enum are checked, browser SDK currency aliases are not accepted
+ok 11 - REST V2 version and KRW enum are checked, browser SDK currency aliases are not accepted
+  ---
+  duration_ms: 1.981166
+  type: 'test'
+  ...
+# Subtest: total, actual payment and discount must reconcile with the immutable server amount
+ok 12 - total, actual payment and discount must reconcile with the immutable server amount
+  ---
+  duration_ms: 0.569292
+  type: 'test'
+  ...
+# Subtest: missing, fractional, negative, string and unsafe financial fields fail closed
+ok 13 - missing, fractional, negative, string and unsafe financial fields fail closed
+  ---
+  duration_ms: 7.465958
+  type: 'test'
+  ...
+# Subtest: PAID with reversed totals or any unresolved cancellation attempt is held for review
+ok 14 - PAID with reversed totals or any unresolved cancellation attempt is held for review
+  ---
+  duration_ms: 1.928417
+  type: 'test'
+  ...
+# Subtest: malformed payment timestamp or missing transaction identity is not proof
+ok 15 - malformed payment timestamp or missing transaction identity is not proof
+  ---
+  duration_ms: 1.68775
+  type: 'test'
+  ...
+# Subtest: invalid or missing server configuration performs no API request
+ok 16 - invalid or missing server configuration performs no API request
+  ---
+  duration_ms: 0.931167
+  type: 'test'
+  ...
+# Subtest: provider HTTP errors are sanitized without decoding customer data or credentials
+ok 17 - provider HTTP errors are sanitized without decoding customer data or credentials
+  ---
+  duration_ms: 4.17825
+  type: 'test'
+  ...
+# Subtest: network failures, unexpected JSON, oversized bodies and private responses remain safe errors
+ok 18 - network failures, unexpected JSON, oversized bodies and private responses remain safe errors
+  ---
+  duration_ms: 2.293917
+  type: 'test'
+  ...
+# Subtest: a bounded timeout aborts the lookup and cannot turn it into a payment confirmation
+ok 19 - a bounded timeout aborts the lookup and cannot turn it into a payment confirmation
+  ---
+  duration_ms: 7.50475
+  type: 'test'
+  ...
+# Subtest: caller mutations during network I/O cannot change the expected identity, amount or environment
+ok 20 - caller mutations during network I/O cannot change the expected identity, amount or environment
+  ---
+  duration_ms: 0.307625
+  type: 'test'
+  ...
+# Subtest: observations contain only necessary payment evidence and never retain raw customer, card or response fields
+ok 21 - observations contain only necessary payment evidence and never retain raw customer, card or response fields
+  ---
+  duration_ms: 1.555458
+  type: 'test'
+  ...
+# Subtest: authenticated owner receives the actual public quotation and a closed preparation state
+ok 22 - authenticated owner receives the actual public quotation and a closed preparation state
+  ---
+  duration_ms: 32.539917
+  type: 'test'
+  ...
+# Subtest: collaborator access follows the existing quotation permission, unrelated user is denied
+ok 23 - collaborator access follows the existing quotation permission, unrelated user is denied
+  ---
+  duration_ms: 0.824833
+  type: 'test'
+  ...
+# Subtest: nonexistent and inaccessible albums share a safe denial response
+ok 24 - nonexistent and inaccessible albums share a safe denial response
+  ---
+  duration_ms: 1.279458
+  type: 'test'
+  ...
+# Subtest: anonymous and malformed bearer callers cannot reach Auth or quotation data
+ok 25 - anonymous and malformed bearer callers cannot reach Auth or quotation data
+  ---
+  duration_ms: 1.284667
+  type: 'test'
+  ...
+# Subtest: Auth rejects stale, missing, malformed, or forged sessions before any RPC
+ok 26 - Auth rejects stale, missing, malformed, or forged sessions before any RPC
+  ---
+  duration_ms: 0.5565
+  type: 'test'
+  ...
+# Subtest: authentication precedes parsing so malformed anonymous bodies cannot inspect the contract
+ok 27 - authentication precedes parsing so malformed anonymous bodies cannot inspect the contract
+  ---
+  duration_ms: 0.543292
+  type: 'test'
+  ...
+# Subtest: preflight and wrong methods perform no authentication or database actions
+ok 28 - preflight and wrong methods perform no authentication or database actions
+  ---
+  duration_ms: 0.477792
+  type: 'test'
+  ...
+# Subtest: invalid album identifiers, odd page counts, and client identity or payment flags never reach the RPC
+ok 29 - invalid album identifiers, odd page counts, and client identity or payment flags never reach the RPC
+  ---
+  duration_ms: 2.940167
+  type: 'test'
+  ...
+# Subtest: malformed and excessive bodies are rejected without querying
+ok 30 - malformed and excessive bodies are rejected without querying
+  ---
+  duration_ms: 0.253375
+  type: 'test'
+  ...
+# Subtest: omitted or null page selection asks the server to choose the album-supported count
+ok 31 - omitted or null page selection asks the server to choose the album-supported count
+  ---
+  duration_ms: 0.373208
+  type: 'test'
+  ...
+# Subtest: unverified price combinations can be reviewed but cannot enable payment
+ok 32 - unverified price combinations can be reviewed but cannot enable payment
+  ---
+  duration_ms: 0.212042
+  type: 'test'
+  ...
+# Subtest: a planned price or supplier completion flags never certify commercial readiness
+ok 33 - a planned price or supplier completion flags never certify commercial readiness
+  ---
+  duration_ms: 0.461708
+  type: 'test'
+  ...
+# Subtest: invalid or stale quotation contracts fail closed without returning malformed prices
+ok 34 - invalid or stale quotation contracts fail closed without returning malformed prices
+  ---
+  duration_ms: 1.304417
+  type: 'test'
+  ...
+# Subtest: RPC and configuration failures expose safe errors without leaking database details
+ok 35 - RPC and configuration failures expose safe errors without leaking database details
+  ---
+  duration_ms: 0.297542
+  type: 'test'
+  ...
+# Subtest: deployed wrapper creates only a user-scoped client and uses Auth server verification
+ok 36 - deployed wrapper creates only a user-scoped client and uses Auth server verification
+  ---
+  duration_ms: 4.893917
+  type: 'test'
+  ...
+# Subtest: gateway validation stays enabled and legacy paid checkout entrypoints stay disabled
+ok 37 - gateway validation stays enabled and legacy paid checkout entrypoints stay disabled
+  ---
+  duration_ms: 9.662125
+  type: 'test'
+  ...
+# Subtest: range inspector preserves the original closed grammar and rejects identical structural/profile/image tampering
+ok 38 - range inspector preserves the original closed grammar and rejects identical structural/profile/image tampering
+  ---
+  duration_ms: 43.848792
+  type: 'test'
+  ...
+# Subtest: ordered chunks hash to the exact original PDF and boundary ranges never assemble its full buffer
+ok 39 - ordered chunks hash to the exact original PDF and boundary ranges never assemble its full buffer
+  ---
+  duration_ms: 263.546875
+  type: 'test'
+  ...
+# Subtest: chunk metadata cannot redirect another package or change length/order/hash; storage bytes are independently checked
+ok 40 - chunk metadata cannot redirect another package or change length/order/hash; storage bytes are independently checked
+  ---
+  duration_ms: 107.747541
+  type: 'test'
+  ...
+# Subtest: actual 80-page Flutter PDF above 50MB retains every byte and passes full SHA, ICC, 300dpi and all page boxes
+ok 41 - actual 80-page Flutter PDF above 50MB retains every byte and passes full SHA, ICC, 300dpi and all page boxes
+  ---
+  duration_ms: 1883.374625
+  type: 'test'
+  ...
+# Subtest: large original PDF metadata creates exact immutable 16MB private chunks, and incomplete proof cannot issue SDK
+ok 42 - large original PDF metadata creates exact immutable 16MB private chunks, and incomplete proof cannot issue SDK
+  ---
+  duration_ms: 2718.418167
+  type: 'test'
+  ...
+# Subtest: all per-part proofs plus whole PDF spec and SHA bind exactly one paid SUBMIT and one supplier PDF descriptor
+ok 43 - all per-part proofs plus whole PDF spec and SHA bind exactly one paid SUBMIT and one supplier PDF descriptor
+  ---
+  duration_ms: 1813.28025
+  type: 'test'
+  ...
+# Subtest: malformed size/order/hash/path metadata is rejected and neither app role can finalize or read delivery
+ok 44 - malformed size/order/hash/path metadata is rejected and neither app role can finalize or read delivery
+  ---
+  duration_ms: 1972.291125
+  type: 'test'
+  ...
+# Subtest: abandoned package cleanup includes only its own immutable chunks and never deletes a paid or SDK-issued packet
+ok 45 - abandoned package cleanup includes only its own immutable chunks and never deletes a paid or SDK-issued packet
+  ---
+  duration_ms: 3893.312167
+  type: 'test'
+  ...
+# Subtest: legacy direct files remain compatible under the new transport schema and current sales gates stay unchanged
+ok 46 - legacy direct files remain compatible under the new transport schema and current sales gates stay unchanged
+  ---
+  duration_ms: 2538.212125
+  type: 'test'
+  ...
+# Subtest: actual 80-page original PDF → owner API → chunk proofs in real SQL → full validation/seal → SDK → one SUBMIT
+ok 47 - actual 80-page original PDF → owner API → chunk proofs in real SQL → full validation/seal → SDK → one SUBMIT
+  ---
+  duration_ms: 5367.755084
+  type: 'test'
+  ...
+# Subtest: signed full GET is byte-identical to the original and never stores a combined Storage object
+ok 48 - signed full GET is byte-identical to the original and never stores a combined Storage object
+  ---
+  duration_ms: 990.251417
+  type: 'test'
+  ...
+# Subtest: modified, expired, overlong-lifetime, extra/duplicate query, wrong file and missing capability never access database
+ok 49 - modified, expired, overlong-lifetime, extra/duplicate query, wrong file and missing capability never access database
+  ---
+  duration_ms: 117.424916
+  type: 'test'
+  ...
+# Subtest: only GET and HEAD are permitted; HEAD checks paid immutable DB facts without reading artwork
+ok 50 - only GET and HEAD are permitted; HEAD checks paid immutable DB facts without reading artwork
+  ---
+  duration_ms: 19.60225
+  type: 'test'
+  ...
+# Subtest: private RPC missing, held/unpaid, changed references, wrong hash or malformed paths fail closed
+ok 51 - private RPC missing, held/unpaid, changed references, wrong hash or malformed paths fail closed
+  ---
+  duration_ms: 17.195083
+  type: 'test'
+  ...
+# Subtest: single byte ranges across part boundaries and suffix/open ranges preserve exact original bytes
+ok 52 - single byte ranges across part boundaries and suffix/open ranges preserve exact original bytes
+  ---
+  duration_ms: 177.623208
+  type: 'test'
+  ...
+# Subtest: a corrupted/missing/truncated part aborts before that part is emitted
+ok 53 - a corrupted/missing/truncated part aborts before that part is emitted
+  ---
+  duration_ms: 499.114334
+  type: 'test'
+  ...
+# Subtest: backpressure does not prefetch the next part; cancel aborts ongoing work and no later objects are read
+ok 54 - backpressure does not prefetch the next part; cancel aborts ongoing work and no later objects are read
+  ---
+  duration_ms: 77.211791
+  type: 'test'
+  ...
+# Subtest: worker uses paid RPC capabilities only for large chunks, preserving direct PDF checks and immutable manifest equality
+ok 55 - worker uses paid RPC capabilities only for large chunks, preserving direct PDF checks and immutable manifest equality
+  ---
+  duration_ms: 208.017917
+  type: 'test'
+  ...
+# Subtest: actual 300dpi 80-page hardcover interior is delivered unchanged beyond the 50MB object cap
+ok 56 - actual 300dpi 80-page hardcover interior is delivered unchanged beyond the 50MB object cap
+  ---
+  duration_ms: 1844.771083
+  type: 'test'
+  ...
+# Subtest: canonical full document takes precedence over stale legacy pages; quote geometry matches official guide
+ok 57 - canonical full document takes precedence over stale legacy pages; quote geometry matches official guide
+  ---
+  duration_ms: 1.086083
+  type: 'test'
+  ...
+# Subtest: retail covers conservative repacking costs with a real margin floor, including fee, reprint and operations reserves
+ok 58 - retail covers conservative repacking costs with a real margin floor, including fee, reprint and operations reserves
+  ---
+  duration_ms: 1.940584
+  type: 'test'
+  ...
+# Subtest: queueing never manufactures a fake PDF or printer order, nor changes the payment status
+ok 59 - queueing never manufactures a fake PDF or printer order, nor changes the payment status
+  ---
+  duration_ms: 5.159458
+  type: 'test'
+  ...
+# Subtest: PDF parser checks page count, physical dimensions, sRGB profile, and active content
+ok 60 - PDF parser checks page count, physical dimensions, sRGB profile, and active content
+  ---
+  duration_ms: 79.978125
+  type: 'test'
+  ...
+# Subtest: publishing validates immutable source and paths, preserves paid status, and retries after a manifest-only partial failure
+ok 61 - publishing validates immutable source and paths, preserves paid status, and retries after a manifest-only partial failure
+  ---
+  duration_ms: 19.876917
+  type: 'test'
+  ...
+# Subtest: actual Flutter-produced proof PDFs pass the same server inspector when available
+ok 62 - actual Flutter-produced proof PDFs pass the same server inspector when available
+  ---
+  duration_ms: 26.118708
+  type: 'test'
+  ...
+# Subtest: private asset signing is limited to snapshot album owners/contributors and the album-assets bucket
+ok 63 - private asset signing is limited to snapshot album owners/contributors and the album-assets bucket
+  ---
+  duration_ms: 3.733666
+  type: 'test'
+  ...
+# Subtest: all five V2 products drive true physical PDF dimensions, and every product is fingerprint-bound
+ok 64 - all five V2 products drive true physical PDF dimensions, and every product is fingerprint-bound
+  ---
+  duration_ms: 154.697625
+  type: 'test'
+  ...
+# Subtest: explicit metadata is validated and unsupported legacy portrait books are never silently resized
+ok 65 - explicit metadata is validated and unsupported legacy portrait books are never silently resized
+  ---
+  duration_ms: 3.402542
+  type: 'test'
+  ...
+# Subtest: existing V1 square profile and fingerprint remain byte-for-byte compatible despite new product metadata
+ok 66 - existing V1 square profile and fingerprint remain byte-for-byte compatible despite new product metadata
+  ---
+  duration_ms: 2.326291
+  type: 'test'
+  ...
+# Subtest: ten V3 product identities are frozen separately, while V2 never accepts hardcover
+ok 67 - ten V3 product identities are frozen separately, while V2 never accepts hardcover
+  ---
+  duration_ms: 6.287208
+  type: 'test'
+  ...
+# Subtest: hardcover requires an explicit casewrap template before upload; exact geometry keeps the physical board and TrimBox
+ok 68 - hardcover requires an explicit casewrap template before upload; exact geometry keeps the physical board and TrimBox
+  ---
+  duration_ms: 9.1305
+  type: 'test'
+  ...
+# Subtest: hardcover review profile agrees with the seven measured official guides and distinguishes inferred combinations
+ok 69 - hardcover review profile agrees with the seven measured official guides and distinguishes inferred combinations
+  ---
+  duration_ms: 0.705917
+  type: 'test'
+  ...
+# Subtest: physical SKU quotes full editor pages, keeps costs private, and requires review, profitable real submission and acceptance
+ok 70 - physical SKU quotes full editor pages, keeps costs private, and requires review, profitable real submission and acceptance
+  ---
+  duration_ms: 8693.604625
+  type: 'test'
+  ...
+# Subtest: applying fulfillment after the already-installed payment retirement cannot reopen physical sales
+ok 71 - applying fulfillment after the already-installed payment retirement cannot reopen physical sales
+  ---
+  duration_ms: 5146.321209
+  type: 'test'
+  ...
+# Subtest: fee reserves match exact decimal PostgreSQL ceil, including binary rounding and scientific rates
+ok 72 - fee reserves match exact decimal PostgreSQL ceil, including binary rounding and scientific rates
+  ---
+  duration_ms: 36.10425
+  type: 'test'
+  ...
+# Subtest: frozen approved spec is used exactly; missing approval never falls back to inferred geometry
+ok 73 - frozen approved spec is used exactly; missing approval never falls back to inferred geometry
+  ---
+  duration_ms: 3.101292
+  type: 'test'
+  ...
+# Subtest: source policy allows only frozen owners in current project storage or bundled artwork
+ok 74 - source policy allows only frozen owners in current project storage or bundled artwork
+  ---
+  duration_ms: 16.725792
+  type: 'test'
+  ...
+# Subtest: revoked exact supplier/file/sample approval holds new rendering and manufacture without swapping specifications
+ok 75 - revoked exact supplier/file/sample approval holds new rendering and manufacture without swapping specifications
+  ---
+  duration_ms: 4.274083
+  type: 'test'
+  ...
+# Subtest: disabled runtime cannot publish readiness or claim a paid order
+ok 76 - disabled runtime cannot publish readiness or claim a paid order
+  ---
+  duration_ms: 1.723417
+  type: 'test'
+  ...
+# Subtest: active lease is required for all purchased snapshots and cannot be borrowed by another runner
+ok 77 - active lease is required for all purchased snapshots and cannot be borrowed by another runner
+  ---
+  duration_ms: 0.626667
+  type: 'test'
+  ...
+# Subtest: HTTP 200 with an unmatched per-item response stays unknown and recovery never reposts
+ok 78 - HTTP 200 with an unmatched per-item response stays unknown and recovery never reposts
+  ---
+  duration_ms: 4.644167
+  type: 'test'
+  ...
+# Subtest: official success/message summary acknowledges the request but only matching status proves receipt
+ok 79 - official success/message summary acknowledges the request but only matching status proves receipt
+  ---
+  duration_ms: 0.859792
+  type: 'test'
+  ...
+# Subtest: acknowledged summary followed by status 404 remains query-only without a second POST
+ok 80 - acknowledged summary followed by status 404 remains query-only without a second POST
+  ---
+  duration_ms: 6.109208
+  type: 'test'
+  ...
+# Subtest: submission timeout stores stable identity and repeated 404 polling never creates a second order
+ok 81 - submission timeout stores stable identity and repeated 404 polling never creates a second order
+  ---
+  duration_ms: 1.121791
+  type: 'test'
+  ...
+# Subtest: production-blocking org06 or unknown API06 holds even when error detail is blank
+ok 82 - production-blocking org06 or unknown API06 holds even when error detail is blank
+  ---
+  duration_ms: 0.589833
+  type: 'test'
+  ...
+# Subtest: org05 warning with Y and no explicit detail allows confirmation but never fabricates production or sample approval
+ok 83 - org05 warning with Y and no explicit detail allows confirmation but never fabricates production or sample approval
+  ---
+  duration_ms: 2.577
+  type: 'test'
+  ...
+# Subtest: org05 explicit errors remain blocked and PGS07 N waits without confirmation
+ok 84 - org05 explicit errors remain blocked and PGS07 N waits without confirmation
+  ---
+  duration_ms: 1.912958
+  type: 'test'
+  ...
+# Subtest: an internal warning cannot restore revoked sample/spec approval or confirm an N file
+ok 85 - an internal warning cannot restore revoked sample/spec approval or confirm an N file
+  ---
+  duration_ms: 0.425917
+  type: 'test'
+  ...
+# Subtest: fresh canceled or partially canceled payment prevents any supplier POST or deposit
+ok 86 - fresh canceled or partially canceled payment prevents any supplier POST or deposit
+  ---
+  duration_ms: 0.407667
+  type: 'test'
+  ...
+# Subtest: uncertain deposit is durably recorded BEFORE POST and never charged again across poll cycles
+ok 87 - uncertain deposit is durably recorded BEFORE POST and never charged again across poll cycles
+  ---
+  duration_ms: 0.687041
+  type: 'test'
+  ...
+# Subtest: supplier balance requires explicit success and exact nonnegative KRW; missing or private failures never become zero
+ok 88 - supplier balance requires explicit success and exact nonnegative KRW; missing or private failures never become zero
+  ---
+  duration_ms: 0.284583
+  type: 'test'
+  ...
+# Subtest: low or unknown supplier balance holds BEFORE durable deposit and resumes the same order after funding
+ok 89 - low or unknown supplier balance holds BEFORE durable deposit and resumes the same order after funding
+  ---
+  duration_ms: 1.008333
+  type: 'test'
+  ...
+# Subtest: HTTP 200 success false from supplier confirmation is uncertain, never production or another financial POST
+ok 90 - HTTP 200 success false from supplier confirmation is uncertain, never production or another financial POST
+  ---
+  duration_ms: 2.945333
+  type: 'test'
+  ...
+# Subtest: production balance lookup shares rate slots, uses GET without payload and never exposes deposit history
+ok 91 - production balance lookup shares rate slots, uses GET without payload and never exposes deposit history
+  ---
+  duration_ms: 2015.836667
+  type: 'test'
+  ...
+# Subtest: supplier already processing or confirming deposit cannot trigger an additional financial call
+ok 92 - supplier already processing or confirming deposit cannot trigger an additional financial call
+  ---
+  duration_ms: 5.503833
+  type: 'test'
+  ...
+# Subtest: missing or malformed lock timestamps cannot satisfy an active render lease
+ok 93 - missing or malformed lock timestamps cannot satisfy an active render lease
+  ---
+  duration_ms: 7.115291
+  type: 'test'
+  ...
+# Subtest: positive price, frozen shipping/packaging evidence and margin are checked before submitting
+ok 94 - positive price, frozen shipping/packaging evidence and margin are checked before submitting
+  ---
+  duration_ms: 5.249
+  type: 'test'
+  ...
+# Subtest: supplier dispatch is SHIPPING only; file Y and production are distinct milestones
+ok 95 - supplier dispatch is SHIPPING only; file Y and production are distinct milestones
+  ---
+  duration_ms: 0.260208
+  type: 'test'
+  ...
+# Subtest: a request or later payment review cannot hide supplier tracking after independently recorded manufacture
+ok 96 - a request or later payment review cannot hide supplier tracking after independently recorded manufacture
+  ---
+  duration_ms: 1.465125
+  type: 'test'
+  ...
+# Subtest: verified worker auth occurs before privileged configuration and unknown request fields cannot assert paid data
+ok 97 - verified worker auth occurs before privileged configuration and unknown request fields cannot assert paid data
+  ---
+  duration_ms: 8.54025
+  type: 'test'
+  ...
+# Subtest: admin exact-order overview passes a private filter and is independent of the recent-50 list
+ok 98 - admin exact-order overview passes a private filter and is independent of the recent-50 list
+  ---
+  duration_ms: 28.01175
+  type: 'test'
+  ...
+# Subtest: renderer subprocess environment contains no worker, payment, database or provider secrets
+ok 99 - renderer subprocess environment contains no worker, payment, database or provider secrets
+  ---
+  duration_ms: 1.185084
+  type: 'test'
+  ...
+# Subtest: runner reconciles app-closed paid intents first and never renders while server gate is closed
+ok 100 - runner reconciles app-closed paid intents first and never renders while server gate is closed
+  ---
+  duration_ms: 0.560125
+  type: 'test'
+  ...
+# Subtest: worker upload cannot send credentials to external URL or overwrite a published object
+ok 101 - worker upload cannot send credentials to external URL or overwrite a published object
+  ---
+  duration_ms: 3.103584
+  type: 'test'
+  ...
+# Subtest: disabled production supplier client performs no HTTP request even for read/confirmation attempts
+ok 102 - disabled production supplier client performs no HTTP request even for read/confirmation attempts
+  ---
+  duration_ms: 0.967
+  type: 'test'
+  ...
+# Subtest: runner can restart with server-only account credentials and keeps rotated sessions in memory
+ok 103 - runner can restart with server-only account credentials and keeps rotated sessions in memory
+  ---
+  duration_ms: 25.783292
+  type: 'test'
+  ...
+# Subtest: automated PortOne orders cannot bypass file or supplier verification through legacy manual operations
+ok 104 - automated PortOne orders cannot bypass file or supplier verification through legacy manual operations
+  ---
+  duration_ms: 6.32175
+  type: 'test'
+  ...
+# Subtest: existing verified orders claim print work once and never regresses delivered orders
+ok 105 - existing verified orders claim print work once and never regresses delivered orders
+  ---
+  duration_ms: 24.394375
+  type: 'test'
+  ...
+# Subtest: failed print generation keeps payment confirmed and releases claim for retry
+ok 106 - failed print generation keeps payment confirmed and releases claim for retry
+  ---
+  duration_ms: 0.637666
+  type: 'test'
+  ...
+# Subtest: fulfillment refuses unverified payment and invalid shipping transitions
+ok 107 - fulfillment refuses unverified payment and invalid shipping transitions
+  ---
+  duration_ms: 14.0645
+  type: 'test'
+  ...
+# Subtest: incomplete historical evidence never claims print work or advances shipping
+ok 108 - incomplete historical evidence never claims print work or advances shipping
+  ---
+  duration_ms: 0.476
+  type: 'test'
+  ...
+# Subtest: order-checkout is a non-mutating 410 for old clients and forged callbacks
+ok 109 - order-checkout is a non-mutating 410 for old clients and forged callbacks
+  ---
+  duration_ms: 44.411333
+  type: 'test'
+  ...
+# Subtest: order-confirm-payment is a non-mutating 410 for old clients and forged callbacks
+ok 110 - order-confirm-payment is a non-mutating 410 for old clients and forged callbacks
+  ---
+  duration_ms: 2.537875
+  type: 'test'
+  ...
+# Subtest: external payment lookup and webhook entrypoint are removed
+ok 111 - external payment lookup and webhook entrypoint are removed
+  ---
+  duration_ms: 1.751583
+  type: 'test'
+  ...
+# Subtest: refund already present during print build cannot publish artifacts
+ok 112 - refund already present during print build cannot publish artifacts
+  ---
+  duration_ms: 0.316542
+  type: 'test'
+  ...
+# Subtest: historically verified PRINTING and SHIPPING orders with NULL fulfillment can ship and complete
+ok 113 - historically verified PRINTING and SHIPPING orders with NULL fulfillment can ship and complete
+  ---
+  duration_ms: 0.439583
+  type: 'test'
+  ...
+# Subtest: NULL and non-NULL fulfillment CAS still reject concurrent status, fulfillment and payment changes
+ok 114 - NULL and non-NULL fulfillment CAS still reject concurrent status, fulfillment and payment changes
+  ---
+  duration_ms: 0.499625
+  type: 'test'
+  ...
+# Subtest: request endpoint authenticates before privileged database; customer metadata cannot invoke resolver
+ok 115 - request endpoint authenticates before privileged database; customer metadata cannot invoke resolver
+  ---
+  duration_ms: 138.392292
+  type: 'test'
+  ...
+# Subtest: owned create/status supports lost-prepare selector and projects only public request fields
+ok 116 - owned create/status supports lost-prepare selector and projects only public request fields
+  ---
+  duration_ms: 11.013417
+  type: 'test'
+  ...
+# Subtest: TEST or disabled refund runtime makes no database or provider call
+ok 117 - TEST or disabled refund runtime makes no database or provider call
+  ---
+  duration_ms: 1.070459
+  type: 'test'
+  ...
+# Subtest: pending READY/404 and production start never claim refund or replacement
+ok 118 - pending READY/404 and production start never claim refund or replacement
+  ---
+  duration_ms: 2.034083
+  type: 'test'
+  ...
+# Subtest: unattempted supplier + fresh LIVE PAID commits full refund only after actual GET evidence
+ok 119 - unattempted supplier + fresh LIVE PAID commits full refund only after actual GET evidence
+  ---
+  duration_ms: 1.374875
+  type: 'test'
+  ...
+# Subtest: unknown refund response persists attempt and a retry only observes GET, never re-POST
+ok 120 - unknown refund response persists attempt and a retry only observes GET, never re-POST
+  ---
+  duration_ms: 0.327708
+  type: 'test'
+  ...
+# Subtest: supplier cancellation is confirmed via exact status before refund; uncertain response never re-POSTs
+ok 121 - supplier cancellation is confirmed via exact status before refund; uncertain response never re-POSTs
+  ---
+  duration_ms: 3.189417
+  type: 'test'
+  ...
+# Subtest: full cancellation POST omits amount, uses promotion-aware consistency and stable quoted idempotency key
+ok 122 - full cancellation POST omits amount, uses promotion-aware consistency and stable quoted idempotency key
+  ---
+  duration_ms: 4.227916
+  type: 'test'
+  ...
+# Subtest: refund GET requires same LIVE transaction and full succeeded cancellations, rejecting partial/forged totals
+ok 123 - refund GET requires same LIVE transaction and full succeeded cancellations, rejecting partial/forged totals
+  ---
+  duration_ms: 1.839292
+  type: 'test'
+  ...
+# Subtest: unsettled provider READY without selected channel stays UNKNOWN, preserving late-paid recovery
+ok 124 - unsettled provider READY without selected channel stays UNKNOWN, preserving late-paid recovery
+  ---
+  duration_ms: 1.671875
+  type: 'test'
+  ...
+# Subtest: trusted tick observes pending requests; overview is admin-only and keeps internal receipt/cost fields private
+ok 125 - trusted tick observes pending requests; overview is admin-only and keeps internal receipt/cost fields private
+  ---
+  duration_ms: 3.119209
+  type: 'test'
+  ...
+# Subtest: late LIVE PAID on a held prepared invoice is recorded then fully refunded without ever submitting to supplier
+ok 126 - late LIVE PAID on a held prepared invoice is recorded then fully refunded without ever submitting to supplier
+  ---
+  duration_ms: 0.3155
+  type: 'test'
+  ...
+# Subtest: supplier production observed after held CONFIRM is sent to proof-backed tracking recovery without cancellation or refund POST
+ok 127 - supplier production observed after held CONFIRM is sent to proof-backed tracking recovery without cancellation or refund POST
+  ---
+  duration_ms: 0.1575
+  type: 'test'
+  ...
+# Subtest: owned cancellation request is idempotent, immutable, private and rejects forged unpaid cancellation
+ok 128 - owned cancellation request is idempotent, immutable, private and rejects forged unpaid cancellation
+  ---
+  duration_ms: 2011.146125
+  type: 'test'
+  ...
+# Subtest: general inquiry never holds manufacturing; cancellation hold prevents SDK replay and late-paid manufacturing
+ok 129 - general inquiry never holds manufacturing; cancellation hold prevents SDK replay and late-paid manufacturing
+  ---
+  duration_ms: 1815.528958
+  type: 'test'
+  ...
+# Subtest: hold revokes a previously claimed worker before its supplier attempt and cannot infer an earlier attempt absent
+ok 130 - hold revokes a previously claimed worker before its supplier attempt and cannot infer an earlier attempt absent
+  ---
+  duration_ms: 1997.69025
+  type: 'test'
+  ...
+# Subtest: uncertain supplier submission requires matching cancellation status before any refund attempt
+ok 131 - uncertain supplier submission requires matching cancellation status before any refund attempt
+  ---
+  duration_ms: 3052.583459
+  type: 'test'
+  ...
+# Subtest: exact LIVE full refund adds immutable reversal evidence, preserves original payment receipt, and atomically cancels
+ok 132 - exact LIVE full refund adds immutable reversal evidence, preserves original payment receipt, and atomically cancels
+  ---
+  duration_ms: 2120.568292
+  type: 'test'
+  ...
+# Subtest: unpaid request completes only after authoritative terminal receipt, never before
+ok 133 - unpaid request completes only after authoritative terminal receipt, never before
+  ---
+  duration_ms: 904.816917
+  type: 'test'
+  ...
+# Subtest: deposit shortage is a visible retryable hold before any durable deposit attempt
+ok 134 - deposit shortage is a visible retryable hold before any durable deposit attempt
+  ---
+  duration_ms: 4844.879209
+  type: 'test'
+  ...
+# Subtest: pending request queue is bounded and owned public request readback remains read-only
+ok 135 - pending request queue is bounded and owned public request readback remains read-only
+  ---
+  duration_ms: 4775.836083
+  type: 'test'
+  ...
+# Subtest: already-started production can continue status-only POLL after a review-required cancellation request
+ok 136 - already-started production can continue status-only POLL after a review-required cancellation request
+  ---
+  duration_ms: 4670.147375
+  type: 'test'
+  ...
+# Subtest: CONFIRM started production but customer hold revoked worker lease: exact GET evidence recovers POLL without financial writes
+ok 137 - CONFIRM started production but customer hold revoked worker lease: exact GET evidence recovers POLL without financial writes
+  ---
+  duration_ms: 13789.597
+  type: 'test'
+  ...
+# Subtest: anonymous, ordinary signed customer/admin sessions and malformed secrets cannot inspect configuration or queues
+ok 138 - anonymous, ordinary signed customer/admin sessions and malformed secrets cannot inspect configuration or queues
+  ---
+  duration_ms: 131.041792
+  type: 'test'
+  ...
+# Subtest: missing runtime secret closes the private endpoint and never emits credentials
+ok 139 - missing runtime secret closes the private endpoint and never emits credentials
+  ---
+  duration_ms: 1.247333
+  type: 'test'
+  ...
+# Subtest: HMAC rejects stale/future/tampered headers and a raw secret; valid signatures consume private nonce before any business work
+ok 140 - HMAC rejects stale/future/tampered headers and a raw secret; valid signatures consume private nonce before any business work
+  ---
+  duration_ms: 4.347709
+  type: 'test'
+  ...
+# Subtest: unsupported methods do no authentication/configuration/queue work
+ok 141 - unsupported methods do no authentication/configuration/queue work
+  ---
+  duration_ms: 0.234458
+  type: 'test'
+  ...
+# Subtest: authenticated callers cannot supply owner, paid status, amount, credential, environment, job or batch size
+ok 142 - authenticated callers cannot supply owner, paid status, amount, credential, environment, job or batch size
+  ---
+  duration_ms: 2.815625
+  type: 'test'
+  ...
+# Subtest: closed development configuration records heartbeat but performs no payment/supplier/queue claim
+ok 143 - closed development configuration records heartbeat but performs no payment/supplier/queue claim
+  ---
+  duration_ms: 0.677959
+  type: 'test'
+  ...
+# Subtest: enabled TEST/disabled financial runtime is a heartbeat-only no-op
+ok 144 - enabled TEST/disabled financial runtime is a heartbeat-only no-op
+  ---
+  duration_ms: 0.382
+  type: 'test'
+  ...
+# Subtest: Cron uses only due database references then an attached-PDF claim, never a renderer or client receipt
+ok 145 - Cron uses only due database references then an attached-PDF claim, never a renderer or client receipt
+  ---
+  duration_ms: 38.558667
+  type: 'test'
+  ...
+# Subtest: pending customer cancellation/refund takes precedence and defers supplier mutation to another invocation
+ok 146 - pending customer cancellation/refund takes precedence and defers supplier mutation to another invocation
+  ---
+  duration_ms: 0.697292
+  type: 'test'
+  ...
+# Subtest: closing new financial runtime still observes issued LIVE invoices without submitting new supplier jobs
+ok 147 - closing new financial runtime still observes issued LIVE invoices without submitting new supplier jobs
+  ---
+  duration_ms: 0.79225
+  type: 'test'
+  ...
+# Subtest: invalid claimed references fail closed before calling a provider or supplier
+ok 148 - invalid claimed references fail closed before calling a provider or supplier
+  ---
+  duration_ms: 0.943083
+  type: 'test'
+  ...
+# Subtest: unexpected RENDER stage, wrong lease, expired or malformed jobs never call advance
+ok 149 - unexpected RENDER stage, wrong lease, expired or malformed jobs never call advance
+  ---
+  duration_ms: 1.829709
+  type: 'test'
+  ...
+# Subtest: slow payment lookup stops before any cancellation or supplier financial phase
+ok 150 - slow payment lookup stops before any cancellation or supplier financial phase
+  ---
+  duration_ms: 0.448833
+  type: 'test'
+  ...
+# Subtest: lookup failures and ambiguous results remain pending and do not invent paid/unpaid proof
+ok 151 - lookup failures and ambiguous results remain pending and do not invent paid/unpaid proof
+  ---
+  duration_ms: 0.879042
+  type: 'test'
+  ...
+# Subtest: financial/provider failures are counted without returning private error details or automatic second POST
+ok 152 - financial/provider failures are counted without returning private error details or automatic second POST
+  ---
+  duration_ms: 0.840417
+  type: 'test'
+  ...
+# Subtest: deployed wrapper defaults all production work off and exposes only the dedicated secret gate
+ok 153 - deployed wrapper defaults all production work off and exposes only the dedicated secret gate
+  ---
+  duration_ms: 13.775875
+  type: 'test'
+  ...
+# Subtest: provider deadline retains the original shorter/aborted signal in RequestInit and Request input
+ok 154 - provider deadline retains the original shorter/aborted signal in RequestInit and Request input
+  ---
+  duration_ms: 0.567916
+  type: 'test'
+  ...
+# Subtest: provider deadline aborts a long call without leaving an unbounded background task
+ok 155 - provider deadline aborts a long call without leaving an unbounded background task
+  ---
+  duration_ms: 5.648459
+  type: 'test'
+  ...
+# Subtest: request budget has a fresh deadline for each invocation and blocks all later database/provider/Storage calls
+ok 156 - request budget has a fresh deadline for each invocation and blocks all later database/provider/Storage calls
+  ---
+  duration_ms: 6.698208
+  type: 'test'
+  ...
+# Subtest: request budget forwards shorter caller cancellation and incoming request cancellation without starting new I/O
+ok 157 - request budget forwards shorter caller cancellation and incoming request cancellation without starting new I/O
+  ---
+  duration_ms: 0.304208
+  type: 'test'
+  ...
+# Subtest: idle scheduler removes only one server-claimed abandoned package with exact paths and commits cleanup result
+ok 158 - idle scheduler removes only one server-claimed abandoned package with exact paths and commits cleanup result
+  ---
+  duration_ms: 1.811166
+  type: 'test'
+  ...
+# Subtest: abandoned large PDFs clean up only bounded server-generated chunk paths in the same package
+ok 159 - abandoned large PDFs clean up only bounded server-generated chunk paths in the same package
+  ---
+  duration_ms: 1.399583
+  type: 'test'
+  ...
+# Subtest: disabled/TEST runtime and invocations doing financial work never claim cleanup or remove files
+ok 160 - disabled/TEST runtime and invocations doing financial work never claim cleanup or remove files
+  ---
+  duration_ms: 1.024291
+  type: 'test'
+  ...
+# Subtest: cleanup rejects unsafe paths, borrowed order/package folders, duplicate filenames and oversized batches before remove
+ok 161 - cleanup rejects unsafe paths, borrowed order/package folders, duplicate filenames and oversized batches before remove
+  ---
+  duration_ms: 5.538917
+  type: 'test'
+  ...
+# Subtest: storage failure resets safe abandoned cleanup for later retry without pretending files are removed
+ok 162 - storage failure resets safe abandoned cleanup for later retry without pretending files are removed
+  ---
+  duration_ms: 0.65675
+  type: 'test'
+  ...
+# Subtest: uploaded real Flutter PDF survives app closure: Cron verifies money then submits/confirms/tracks, without a renderer process
+ok 163 - uploaded real Flutter PDF survives app closure: Cron verifies money then submits/confirms/tracks, without a renderer process
+  ---
+  duration_ms: 895.181584
+  type: 'test'
+  ...
+# Subtest: Cron installation is idempotent, preserves extension ACLs/other jobs/queued requests/closed gates and protects private nonces
+ok 164 - Cron installation is idempotent, preserves extension ACLs/other jobs/queued requests/closed gates and protects private nonces
+  ---
+  duration_ms: 3414.042291
+  type: 'test'
+  ...
+# Subtest: scheduled SQL posts only the intended private endpoint/body/header/timeout and prunes only own old run metadata
+ok 165 - scheduled SQL posts only the intended private endpoint/body/header/timeout and prunes only own old run metadata
+  ---
+  duration_ms: 3550.467334
+  type: 'test'
+  ...
+# Subtest: private SQL consumes each signed nonce exactly once and rejects timestamp changes, missing and expired records
+ok 166 - private SQL consumes each signed nonce exactly once and rejects timestamp changes, missing and expired records
+  ---
+  duration_ms: 3250.488708
+  type: 'test'
+  ...
+# Subtest: wrong/missing Vault configuration and owner conflicts never install or overwrite a scheduler
+ok 167 - wrong/missing Vault configuration and owner conflicts never install or overwrite a scheduler
+  ---
+  duration_ms: 7244.07475
+  type: 'test'
+  ...
+# Subtest: removed/rotated invalid Vault entries stop HTTP at runtime without exposing values in Cron SQL
+ok 168 - removed/rotated invalid Vault entries stop HTTP at runtime without exposing values in Cron SQL
+  ---
+  duration_ms: 990.327875
+  type: 'test'
+  ...
+# Subtest: real SQL never polls unissued app PDF preparation, but recovers issued unknown payments after expiry and legacy invoices
+ok 169 - real SQL never polls unissued app PDF preparation, but recovers issued unknown payments after expiry and legacy invoices
+  ---
+  duration_ms: 1425.200167
+  type: 'test'
+  ...
+# Subtest: authenticated worker reconciles only server-claimed references without exposing their owner or secrets
+ok 170 - authenticated worker reconciles only server-claimed references without exposing their owner or secrets
+  ---
+  duration_ms: 287.732375
+  type: 'test'
+  ...
+# Subtest: admin can operate the same reconciliation path
+ok 171 - admin can operate the same reconciliation path
+  ---
+  duration_ms: 0.770542
+  type: 'test'
+  ...
+# Subtest: anonymous and malformed bearer requests never reach authentication or privileged configuration
+ok 172 - anonymous and malformed bearer requests never reach authentication or privileged configuration
+  ---
+  duration_ms: 1.67875
+  type: 'test'
+  ...
+# Subtest: unverified users and user-editable roles cannot inspect payment queues
+ok 173 - unverified users and user-editable roles cannot inspect payment queues
+  ---
+  duration_ms: 0.89725
+  type: 'test'
+  ...
+# Subtest: caller cannot choose a payment, owner, amount, verification result, or oversized batch
+ok 174 - caller cannot choose a payment, owner, amount, verification result, or oversized batch
+  ---
+  duration_ms: 0.957792
+  type: 'test'
+  ...
+# Subtest: malformed and excessive request bodies cannot claim queue rows
+ok 175 - malformed and excessive request bodies cannot claim queue rows
+  ---
+  duration_ms: 0.544542
+  type: 'test'
+  ...
+# Subtest: disabled environment or TEST configuration never queries privileged payment data or invokes the provider
+ok 176 - disabled environment or TEST configuration never queries privileged payment data or invokes the provider
+  ---
+  duration_ms: 0.688375
+  type: 'test'
+  ...
+# Subtest: closing new sales still reconciles an existing LIVE invoice without creating a new payment
+ok 177 - closing new sales still reconciles an existing LIVE invoice without creating a new payment
+  ---
+  duration_ms: 0.179417
+  type: 'test'
+  ...
+# Subtest: empty due queue is a successful no-op and failed claims stay unavailable
+ok 178 - empty due queue is a successful no-op and failed claims stay unavailable
+  ---
+  duration_ms: 6.26525
+  type: 'test'
+  ...
+# Subtest: malformed claimed references fail the entire batch before any provider lookup
+ok 179 - malformed claimed references fail the entire batch before any provider lookup
+  ---
+  duration_ms: 1.531792
+  type: 'test'
+  ...
+# Subtest: one lookup failure does not stop recovery of other paid or definitively unpaid checkouts
+ok 180 - one lookup failure does not stop recovery of other paid or definitively unpaid checkouts
+  ---
+  duration_ms: 1.152958
+  type: 'test'
+  ...
+# Subtest: pending or contradictory observations never declare either a paid or unpaid result
+ok 181 - pending or contradictory observations never declare either a paid or unpaid result
+  ---
+  duration_ms: 0.909125
+  type: 'test'
+  ...
+# Subtest: preflight and unsupported methods perform no authenticated or privileged work
+ok 182 - preflight and unsupported methods perform no authenticated or privileged work
+  ---
+  duration_ms: 0.505334
+  type: 'test'
+  ...
+# Subtest: deployed wrapper turns private intent results into flags and defaults production off
+ok 183 - deployed wrapper turns private intent results into flags and defaults production off
+  ---
+  duration_ms: 12.685709
+  type: 'test'
+  ...
+# Subtest: admin prepare persists a server scenario before returning only SDK-safe TEST routing
+ok 184 - admin prepare persists a server scenario before returning only SDK-safe TEST routing
+  ---
+  duration_ms: 63.6825
+  type: 'test'
+  ...
+# Subtest: anonymous callers and regular customers cannot read configuration or create privileged clients
+ok 185 - anonymous callers and regular customers cannot read configuration or create privileged clients
+  ---
+  duration_ms: 4.778792
+  type: 'test'
+  ...
+# Subtest: malformed body, caller prices, customer data and callback success flags cannot alter stored expectations
+ok 186 - malformed body, caller prices, customer data and callback success flags cannot alter stored expectations
+  ---
+  duration_ms: 2.936042
+  type: 'test'
+  ...
+# Subtest: LIVE, missing configuration and unverified routing are rejected before any session creation
+ok 187 - LIVE, missing configuration and unverified routing are rejected before any session creation
+  ---
+  duration_ms: 1.760458
+  type: 'test'
+  ...
+# Subtest: same request ID is retry-safe and changed scenario cannot reuse an existing test purchase
+ok 188 - same request ID is retry-safe and changed scenario cannot reuse an existing test purchase
+  ---
+  duration_ms: 0.74825
+  type: 'test'
+  ...
+# Subtest: status reads saved state only, and another admin cannot inspect or verify the owner session
+ok 189 - status reads saved state only, and another admin cannot inspect or verify the owner session
+  ---
+  duration_ms: 0.679083
+  type: 'test'
+  ...
+# Subtest: verification uses persisted expectations and only stores a successful TEST receipt after server lookup
+ok 190 - verification uses persisted expectations and only stores a successful TEST receipt after server lookup
+  ---
+  duration_ms: 1.836833
+  type: 'test'
+  ...
+# Subtest: simultaneous verification retries commit one immutable receipt and timestamp
+ok 191 - simultaneous verification retries commit one immutable receipt and timestamp
+  ---
+  duration_ms: 1.329416
+  type: 'test'
+  ...
+# Subtest: provider timeout, unpaid or missing payment leaves the prepared session available for recovery
+ok 192 - provider timeout, unpaid or missing payment leaves the prepared session available for recovery
+  ---
+  duration_ms: 1.501583
+  type: 'test'
+  ...
+# Subtest: actual adapter rejects a LIVE provider channel despite test-labeled SDK callback flags
+ok 193 - actual adapter rejects a LIVE provider channel despite test-labeled SDK callback flags
+  ---
+  duration_ms: 17.409667
+  type: 'test'
+  ...
+# Subtest: expiry prevents a new SDK launch but permits recovery of a late successful test payment
+ok 194 - expiry prevents a new SDK launch but permits recovery of a late successful test payment
+  ---
+  duration_ms: 2.427875
+  type: 'test'
+  ...
+# Subtest: OPTIONS and wrong methods cannot access server configuration, database, or payment lookups
+ok 195 - OPTIONS and wrong methods cannot access server configuration, database, or payment lookups
+  ---
+  duration_ms: 0.9835
+  type: 'test'
+  ...
+# Subtest: isolated PostgreSQL validates permissions, price truth, immutable snapshots, replay identity and late recovery
+ok 196 - isolated PostgreSQL validates permissions, price truth, immutable snapshots, replay identity and late recovery
+  ---
+  duration_ms: 2459.146709
+  type: 'test'
+  ...
+# Subtest: deployed wrapper reads server payment configuration and creates admin DB only after verified admin authorization
+ok 197 - deployed wrapper reads server payment configuration and creates admin DB only after verified admin authorization
+  ---
+  duration_ms: 22.209416
+  type: 'test'
+  ...
+# Subtest: test gateway keeps JWT validation and legacy customer checkout remains HTTP 410
+ok 198 - test gateway keeps JWT validation and legacy customer checkout remains HTTP 410
+  ---
+  duration_ms: 10.34575
+  type: 'test'
+  ...
+# Subtest: owner cancellation + fresh server 404 atomically records PRE_SDK_ABORTED, no PG receipt, and permits a distinct new request
+ok 199 - owner cancellation + fresh server 404 atomically records PRE_SDK_ABORTED, no PG receipt, and permits a distinct new request
+  ---
+  duration_ms: 1751.638417
+  type: 'test'
+  ...
+# Subtest: fresh provider absence is mandatory; timeout, unknown, foreign/stale/missing proof never releases pending refs
+ok 200 - fresh provider absence is mandatory; timeout, unknown, foreign/stale/missing proof never releases pending refs
+  ---
+  duration_ms: 793.989541
+  type: 'test'
+  ...
+# Subtest: SDK-first ordering wins: fresh 404 cannot withdraw an issued invoice
+ok 201 - SDK-first ordering wins: fresh 404 cannot withdraw an issued invoice
+  ---
+  duration_ms: 944.989292
+  type: 'test'
+  ...
+# Subtest: cancellation-first ordering wins atomically: simultaneous SDK authorization sees hold, and aborted ledger/label are immutable
+ok 202 - cancellation-first ordering wins atomically: simultaneous SDK authorization sees hold, and aborted ledger/label are immutable
+  ---
+  duration_ms: 839.971833
+  type: 'test'
+  ...
+# Subtest: unexpected later LIVE money remains original PAID evidence and operator review, revokes replacement proof, and never submits
+ok 203 - unexpected later LIVE money remains original PAID evidence and operator review, revokes replacement proof, and never submits
+  ---
+  duration_ms: 3912.936625
+  type: 'test'
+  ...
+# Subtest: an outbox row or unproven public cancellation label cannot bypass the abort gate
+ok 204 - an outbox row or unproven public cancellation label cannot bypass the abort gate
+  ---
+  duration_ms: 1443.236042
+  type: 'test'
+  ...
+# Subtest: anonymous/stale owner and malformed refs do not gain source/storage URLs or read secrets
+ok 205 - anonymous/stale owner and malformed refs do not gain source/storage URLs or read secrets
+  ---
+  duration_ms: 383.526792
+  type: 'test'
+  ...
+# Subtest: frozen unpaid snapshot is signed without fabricated PAID fields, and disallows paid/held/expired mutation
+ok 206 - frozen unpaid snapshot is signed without fabricated PAID fields, and disallows paid/held/expired mutation
+  ---
+  duration_ms: 15.056458
+  type: 'test'
+  ...
+# Subtest: uploads are exact owner/server paths, no upsert, immutable manifest and Free per-file cap
+ok 207 - uploads are exact owner/server paths, no upsert, immutable manifest and Free per-file cap
+  ---
+  duration_ms: 10.516208
+  type: 'test'
+  ...
+# Subtest: large files use immutable 16MB parts; every true hash receipt is required and a caller cannot skip PDF inspection
+ok 208 - large files use immutable 16MB parts; every true hash receipt is required and a caller cannot skip PDF inspection
+  ---
+  duration_ms: 804.464625
+  type: 'test'
+  ...
+# Subtest: existing direct packages retain their immutable 50MB cap and remain readable
+ok 209 - existing direct packages retain their immutable 50MB cap and remain readable
+  ---
+  duration_ms: 3.038708
+  type: 'test'
+  ...
+# Subtest: one file at a time: hashes, geometry, and canonical manifest seal are all required before READY
+ok 210 - one file at a time: hashes, geometry, and canonical manifest seal are all required before READY
+  ---
+  duration_ms: 7.927625
+  type: 'test'
+  ...
+# Subtest: malformed/stale package refs, altered file or manifest cannot finalize
+ok 211 - malformed/stale package refs, altered file or manifest cannot finalize
+  ---
+  duration_ms: 3.309208
+  type: 'test'
+  ...
+# Subtest: bounded download refuses redirect/origin, oversized content length/chunks, and truncation
+ok 212 - bounded download refuses redirect/origin, oversized content length/chunks, and truncation
+  ---
+  duration_ms: 8.605959
+  type: 'test'
+  ...
+# Subtest: storage manifest publication failure is retryable; both parsed immutable files are not re-downloaded
+ok 213 - storage manifest publication failure is retryable; both parsed immutable files are not re-downloaded
+  ---
+  duration_ms: 3.857083
+  type: 'test'
+  ...
+# Subtest: concurrent file finalization in one Edge isolate never holds two full PDF buffers
+ok 214 - concurrent file finalization in one Edge isolate never holds two full PDF buffers
+  ---
+  duration_ms: 9.245667
+  type: 'test'
+  ...
+# Subtest: portable real JPEG/ICC PDF fixture forbids active dictionaries, foreign profile, fake image dimensions and malformed stream/xref
+ok 215 - portable real JPEG/ICC PDF fixture forbids active dictionaries, foreign profile, fake image dimensions and malformed stream/xref
+  ---
+  duration_ms: 73.268584
+  type: 'test'
+  ...
+# Subtest: actual Flutter JPEG/ICC raster PDFs pass the bounded strict grammar; hidden action/xref/stream tampering fails
+ok 216 - actual Flutter JPEG/ICC raster PDFs pass the bounded strict grammar; hidden action/xref/stream tampering fails
+  ---
+  duration_ms: 66.756042
+  type: 'test'
+  ...
+# Subtest: actual 80-page owner package seals only after every part and the full original SHA pass; wrong aggregate SHA never becomes READY
+ok 217 - actual 80-page owner package seals only after every part and the full original SHA pass; wrong aggregate SHA never becomes READY
+  ---
+  duration_ms: 5633.083209
+  type: 'test'
+  ...
+# Subtest: actual handler and SQL: partial PDF and unpublished manifest cannot issue SDK; sealed files bind paid order and SUBMIT outbox
+ok 218 - actual handler and SQL: partial PDF and unpublished manifest cannot issue SDK; sealed files bind paid order and SUBMIT outbox
+  ---
+  duration_ms: 2362.378375
+  type: 'test'
+  ...
+# Subtest: owner/foreign binding, wrong hash and forged finalization cannot advance real SQL package
+ok 219 - owner/foreign binding, wrong hash and forged finalization cannot advance real SQL package
+  ---
+  duration_ms: 762.878542
+  type: 'test'
+  ...
+# Subtest: RPC/table permissions are service-only; held pending orders remain uncharged and unsubmitted
+ok 220 - RPC/table permissions are service-only; held pending orders remain uncharged and unsubmitted
+  ---
+  duration_ms: 600.782583
+  type: 'test'
+  ...
+# Subtest: actual Flutter 20-page PDFs → owner handler → real SQL FILES_VERIFIED/seal → SDK authorization → exactly one SUBMIT
+ok 221 - actual Flutter 20-page PDFs → owner handler → real SQL FILES_VERIFIED/seal → SDK authorization → exactly one SUBMIT
+  ---
+  duration_ms: 811.652833
+  type: 'test'
+  ...
+# Subtest: only current Auth administrator role can read readiness; anonymous/customer/worker/user_metadata do not touch configuration
+ok 222 - only current Auth administrator role can read readiness; anonymous/customer/worker/user_metadata do not touch configuration
+  ---
+  duration_ms: 77.771417
+  type: 'test'
+  ...
+# Subtest: empty POST is the only operation; method/body and callback flags cannot modify or inspect orders
+ok 223 - empty POST is the only operation; method/body and callback flags cannot modify or inspect orders
+  ---
+  duration_ms: 6.961416
+  type: 'test'
+  ...
+# Subtest: response redacts keys, route IDs, raw specification, commercial evidence, source URLs and personal data
+ok 224 - response redacts keys, route IDs, raw specification, commercial evidence, source URLs and personal data
+  ---
+  duration_ms: 50.614583
+  type: 'test'
+  ...
+# Subtest: empty/closed configuration reports preparation, never vendor rejection or a fabricated ready catalog
+ok 225 - empty/closed configuration reports preparation, never vendor rejection or a fabricated ready catalog
+  ---
+  duration_ms: 0.511458
+  type: 'test'
+  ...
+# Subtest: approval flags alone never create a validated sale: geometry, margin, delivery/brand facts and final price are required
+ok 226 - approval flags alone never create a validated sale: geometry, margin, delivery/brand facts and final price are required
+  ---
+  duration_ms: 3.137417
+  type: 'test'
+  ...
+# Subtest: database and live runtime each gate setup; one stale/false fact keeps sales closed
+ok 227 - database and live runtime each gate setup; one stale/false fact keeps sales closed
+  ---
+  duration_ms: 3.257458
+  type: 'test'
+  ...
+# Subtest: setup readiness and customer activation are separate; enabled false is simply not yet open
+ok 228 - setup readiness and customer activation are separate; enabled false is simply not yet open
+  ---
+  duration_ms: 1.110917
+  type: 'test'
+  ...
+# Subtest: storage failures are safe and do not fall back to a fabricated closed or ready configuration
+ok 229 - storage failures are safe and do not fall back to a fabricated closed or ready configuration
+  ---
+  duration_ms: 1.009584
+  type: 'test'
+  ...
+# Subtest: only approved production configuration reads balance; failure remains unknown and no history or credentials escape
+ok 230 - only approved production configuration reads balance; failure remains unknown and no history or credentials escape
+  ---
+  duration_ms: 7.389416
+  type: 'test'
+  ...
+# Subtest: Edge wrapper derives facts after Auth and performs one read-only RPC without disabled supplier/payment requests
+ok 231 - Edge wrapper derives facts after Auth and performs one read-only RPC without disabled supplier/payment requests
+  ---
+  duration_ms: 13.118958
+  type: 'test'
+  ...
+# Subtest: customer entry requires enabled refund recovery before issuing a new SDK request; existing payment observation remains independent
+ok 232 - customer entry requires enabled refund recovery before issuing a new SDK request; existing payment observation remains independent
+  ---
+  duration_ms: 9.1375
+  type: 'test'
+  ...
+# Subtest: app PDF mode describes Supabase scheduling and requires its private runtime and recent execution
+ok 233 - app PDF mode describes Supabase scheduling and requires its private runtime and recent execution
+  ---
+  duration_ms: 1.4275
+  type: 'test'
+  ...
+# Subtest: readiness RPC is invoker SELECT-only, returns route equality facts without identity/PII and denies all customer roles
+ok 234 - readiness RPC is invoker SELECT-only, returns route equality facts without identity/PII and denies all customer roles
+  ---
+  duration_ms: 2307.956542
+  type: 'test'
+  ...
+# Subtest: actual Flutter album PDFs pass server preflight and worker → stub receipt → file Y → production → tracking is connected
+ok 235 - actual Flutter album PDFs pass server preflight and worker → stub receipt → file Y → production → tracking is connected
+  ---
+  duration_ms: 777.198584
+  type: 'test'
+  ...
+# Subtest: real rendered PDFs with incorrect purchased geometry/page count are rejected before supplier network work
+ok 236 - real rendered PDFs with incorrect purchased geometry/page count are rejected before supplier network work
+  ---
+  duration_ms: 172.236
+  type: 'test'
+  ...
+# Subtest: Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision
+ok 237 - Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision
+  ---
+  duration_ms: 178.370792
+  type: 'test'
+  ...
+# Subtest: unauthorized, malformed or forged callbacks cannot read private configuration or advance a payment
+ok 238 - unauthorized, malformed or forged callbacks cannot read private configuration or advance a payment
+  ---
+  duration_ms: 484.772667
+  type: 'test'
+  ...
+# Subtest: ready public quotation requires FINAL exact geometry, profitable costs, supported source and LIVE server config
+ok 239 - ready public quotation requires FINAL exact geometry, profitable costs, supported source and LIVE server config
+  ---
+  duration_ms: 46.601541
+  type: 'test'
+  ...
+# Subtest: public spec keeps exact geometry while removing private nested approval/cost/source notes
+ok 240 - public spec keeps exact geometry while removing private nested approval/cost/source notes
+  ---
+  duration_ms: 17.511833
+  type: 'test'
+  ...
+# Subtest: prepare persists authoritative expectations, recovers the same UUID after response loss, rejects address/amount/revision changes
+ok 241 - prepare persists authoritative expectations, recovers the same UUID after response loss, rejects address/amount/revision changes
+  ---
+  duration_ms: 10.33975
+  type: 'test'
+  ...
+# Subtest: source revision/page count/quote mismatches prevent a charge before an invoice is stored
+ok 242 - source revision/page count/quote mismatches prevent a charge before an invoice is stored
+  ---
+  duration_ms: 2.203291
+  type: 'test'
+  ...
+# Subtest: provider LIVE PAID readback commits once and survives duplicate confirmations without SDK callback proof
+ok 243 - provider LIVE PAID readback commits once and survives duplicate confirmations without SDK callback proof
+  ---
+  duration_ms: 1.545542
+  type: 'test'
+  ...
+# Subtest: stopping new sales preserves GET-only recovery of an already charged frozen LIVE invoice
+ok 244 - stopping new sales preserves GET-only recovery of an already charged frozen LIVE invoice
+  ---
+  duration_ms: 0.720041
+  type: 'test'
+  ...
+# Subtest: TEST receipt, unknown response, timeout and 404 do not create paid/unpaid completion or release the original payment ID
+ok 245 - TEST receipt, unknown response, timeout and 404 do not create paid/unpaid completion or release the original payment ID
+  ---
+  duration_ms: 16.584375
+  type: 'test'
+  ...
+# Subtest: authoritative FAILED/full CANCELLED terminal observations allow a fresh checkout; closure/expiry alone never does
+ok 246 - authoritative FAILED/full CANCELLED terminal observations allow a fresh checkout; closure/expiry alone never does
+  ---
+  duration_ms: 6.513333
+  type: 'test'
+  ...
+# Subtest: PortOne terminal observer requires exact route and proven zero/full-refund amounts
+ok 247 - PortOne terminal observer requires exact route and proven zero/full-refund amounts
+  ---
+  duration_ms: 50.033709
+  type: 'test'
+  ...
+# Subtest: all software sales gates start closed, even with a planned supplier price
+ok 248 - all software sales gates start closed, even with a planned supplier price
+  ---
+  duration_ms: 1300.8345
+  type: 'test'
+  ...
+# Subtest: secure prepare freezes the authoritative spec/album/recipient and retries the exact same IDs
+ok 249 - secure prepare freezes the authoritative spec/album/recipient and retries the exact same IDs
+  ---
+  duration_ms: 593.387875
+  type: 'test'
+  ...
+# Subtest: page CAS, current quote, shipping region and renderer heartbeat reject before creating invoices
+ok 250 - page CAS, current quote, shipping region and renderer heartbeat reject before creating invoices
+  ---
+  duration_ms: 579.053125
+  type: 'test'
+  ...
+# Subtest: approval/spec changes between review and freeze invalidate CAS and never silently replace a pending book
+ok 251 - approval/spec changes between review and freeze invalidate CAS and never silently replace a pending book
+  ---
+  duration_ms: 518.577083
+  type: 'test'
+  ...
+# Subtest: customers/anonymous cannot create/forge/read private checkout or worker rows
+ok 252 - customers/anonymous cannot create/forge/read private checkout or worker rows
+  ---
+  duration_ms: 504.646875
+  type: 'test'
+  ...
+# Subtest: only exact LIVE PAID observation commits one immutable receipt and one durable job
+ok 253 - only exact LIVE PAID observation commits one immutable receipt and one durable job
+  ---
+  duration_ms: 547.040916
+  type: 'test'
+  ...
+# Subtest: only authoritative zero-charge FAILED or full CANCELLED releases the pending invoice
+ok 254 - only authoritative zero-charge FAILED or full CANCELLED releases the pending invoice
+  ---
+  duration_ms: 471.594834
+  type: 'test'
+  ...
+# Subtest: worker lease owns PDF publication; timeout after attempted submit becomes query-only
+ok 255 - worker lease owns PDF publication; timeout after attempted submit becomes query-only
+  ---
+  duration_ms: 559.663666
+  type: 'test'
+  ...
+# Subtest: owned public progress is sanitized, RLS enforced and does not need private schema access
+ok 256 - owned public progress is sanitized, RLS enforced and does not need private schema access
+  ---
+  duration_ms: 488.021042
+  type: 'test'
+  ...
+# Subtest: server invoker RPCs work as service_role and cannot borrow a provider transaction for another checkout
+ok 257 - server invoker RPCs work as service_role and cannot borrow a provider transaction for another checkout
+  ---
+  duration_ms: 456.770916
+  type: 'test'
+  ...
+# Subtest: failed runtime cannot refresh renderer readiness, and durable deposit attempts cannot be rewound
+ok 258 - failed runtime cannot refresh renderer readiness, and durable deposit attempts cannot be rewound
+  ---
+  duration_ms: 503.754375
+  type: 'test'
+  ...
+# Subtest: pre-submit lookup timeout retries normally; only a recorded supplier attempt requires query-only recovery
+ok 259 - pre-submit lookup timeout retries normally; only a recorded supplier attempt requires query-only recovery
+  ---
+  duration_ms: 679.660875
+  type: 'test'
+  ...
+# Subtest: expired pending invoices are rechecked once per minute and can commit late payment while new sales are stopped
+ok 260 - expired pending invoices are rechecked once per minute and can commit late payment while new sales are stopped
+  ---
+  duration_ms: 651.217583
+  type: 'test'
+  ...
+# Subtest: confirmed supplier submission atomically stores exact frozen costs and direct shipping evidence under the active lease
+ok 261 - confirmed supplier submission atomically stores exact frozen costs and direct shipping evidence under the active lease
+  ---
+  duration_ms: 727.17375
+  type: 'test'
+  ...
+# Subtest: payment and reprint reserves agree with PostgreSQL decimal ceil, including exact integer boundary and exponent rates
+ok 262 - payment and reprint reserves agree with PostgreSQL decimal ceil, including exact integer boundary and exponent rates
+  ---
+  duration_ms: 761.830084
+  type: 'test'
+  ...
+# Subtest: exact-order job lookup finds an old failure outside the recent fifty without exposing private data or granting customer access
+ok 263 - exact-order job lookup finds an old failure outside the recent fifty without exposing private data or granting customer access
+  ---
+  duration_ms: 652.394958
+  type: 'test'
+  ...
+1..263
+# tests 263
+# suites 0
+# pass 263
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 215857.468583

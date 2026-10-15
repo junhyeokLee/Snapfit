@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-15",
+  "scope": "112000000-byte verified-object PDF cache",
+  "sourceSha256": "10a25a3a57c34cbb247ee2d65a81707bdbfa78cdb1f2dc5bf023dc1425a088df",
+  "files": 5,
+  "uniqueTests": 35,
+  "pass": 35,
+  "fail": 0,
+  "skippedInFinalRuns": 0,
+  "fixtureInteriorBytes": 102193868,
+  "fixtureParts": 7,
+  "wholeValidationStorageGets": 7,
+  "cacheBudgetBytes": 112000000,
+  "checks": [
+    "every part native SHA and original whole PDF native SHA unchanged",
+    "80 pages, ICC, 300dpi, geometry and trim grammar unchanged",
+    "byte-budget eviction before the next fetch",
+    "LRU order respected above the budget",
+    "clear resets byte accounting and forces altered parts to be verified again",
+    "production and TEST SQL ready and SDK guards unchanged",
+    "supplier delivery still reads one part at a time without this cache"
+  ],
+  "strictTypeScriptPassed": true,
+  "initialRegressionRunSkippedLegacyFixture": 1,
+  "legacyFixtureRerunPassed": true,
+  "remoteCpuOrPeakMemoryMeasured": false,
+  "remoteActions": false,
+  "realPayments": 0,
+  "realVendorOrders": 0
+}

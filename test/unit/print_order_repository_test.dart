@@ -107,6 +107,99 @@ void main() {
     );
     expect(requests.single.method, 'GET');
   });
+  test(
+    'trusted preparation cancellation is separate from unpaid and actual paid history',
+    () async {
+      Map<String, dynamic> row(
+        String id, {
+        String status = 'PAYMENT_PENDING',
+        Object? abortedAt,
+        String? paidAt,
+      }) => {
+        'order_id': id,
+        'user_id': 'owner',
+        'amount': 49900,
+        'status': status,
+        'ordered_at': '2026-10-15T00:00:00Z',
+        if (abortedAt != null) 'print_preparation_aborted_at': abortedAt,
+        if (paidAt != null) 'payment_confirmed_at': paidAt,
+      };
+      responseBody = [
+        row('aborted', abortedAt: '2026-10-15T00:10:00Z'),
+        row(
+          'paid',
+          status: 'PAYMENT_COMPLETED',
+          abortedAt: '2026-10-15T00:10:00Z',
+          paidAt: '2026-10-15T00:20:00Z',
+        ),
+        row(
+          'payment-evidence',
+          abortedAt: '2026-10-15T00:10:00Z',
+          paidAt: '2026-10-15T00:20:00Z',
+        ),
+        row('invalid-proof', abortedAt: 'not-a-timestamp'),
+        row('pending'),
+      ];
+      final orders = await repository.fetchMyOrders();
+      expect(orders[0].status, 'PREPARATION_CANCELED');
+      expect(orders[0].statusLabel, '준비 취소');
+      expect(orders[0].preparationAbortedAt?.hour, 9);
+      expect(orders[0].preparationAbortedAt?.minute, 10);
+      expect(orders[0].paymentConfirmedAt, isNull);
+      expect(orders[1].status, 'PAYMENT_COMPLETED');
+      expect(orders[1].paymentConfirmedAt, isNotNull);
+      expect(
+        orders.skip(2).map((order) => order.status),
+        everyElement('PAYMENT_PENDING'),
+      );
+      final summary = await repository.fetchMyOrderSummary();
+      expect(summary.paymentPending, 3);
+      expect(summary.paymentCompleted, 1);
+      expect(summary.canceled, 1);
+    },
+  );
+
+  test(
+    'completed history selects aborted preparations by server evidence without inventing a database status',
+    () async {
+      responseBody = [];
+      await repository.fetchMyOrdersPage(
+        statuses: ['DELIVERED', 'CANCELED', 'PREPARATION_CANCELED'],
+      );
+      final query = requests.single.query;
+      expect(query['user_id'], 'eq.owner');
+      expect(query['or'], contains('status.in.("DELIVERED","CANCELED")'));
+      expect(
+        query['or'],
+        contains(
+          'and(status.eq.PAYMENT_PENDING,print_preparation_aborted_at.not.is.null,payment_confirmed_at.is.null)',
+        ),
+      );
+      expect(query['or'], isNot(contains('PREPARATION_CANCELED')));
+      expect(query['status'], isNull);
+      expect(requests.single.method, 'GET');
+    },
+  );
+
+  test(
+    'payment-pending history excludes aborted preparations while preserving rows with payment evidence',
+    () async {
+      responseBody = [];
+      await repository.fetchMyOrdersPage(
+        statuses: ['PAYMENT_PENDING', 'PAYMENT_COMPLETED'],
+      );
+      final query = requests.single.query;
+      expect(query['user_id'], 'eq.owner');
+      expect(
+        query['or'],
+        contains(
+          'and(status.eq.PAYMENT_PENDING,or(print_preparation_aborted_at.is.null,payment_confirmed_at.not.is.null))',
+        ),
+      );
+      expect(query['or'], contains('status.in.("PAYMENT_COMPLETED")'));
+      expect(requests.single.method, 'GET');
+    },
+  );
   test('quote retains server product dimensions and estimate status', () async {
     responseBody = {
       'pageCount': 20,
@@ -129,6 +222,50 @@ void main() {
     expect(quote.printProduct['trimWidthMm'], 300);
     expect(quote.priceIsEstimate, isTrue);
     expect(requests.single.body, {'p_album_id': 1, 'p_page_count': null});
+  });
+
+  test(
+    'planned retail retains confirmed production and uncertain delivery separately',
+    () async {
+      responseBody = {
+        'pageCount': 80,
+        'amount': 159900,
+        'basePages': 80,
+        'basePrice': 159900,
+        'extraPageCount': 0,
+        'supplierCostVerified': true,
+        'shippingCostVerified': false,
+        'packagingCostVerified': false,
+        'shippingIncluded': true,
+        'priceIsEstimate': true,
+        'pricePolicyVersion': 'PRINT_REDP_VERIFIED_COMBO_20261013_V1',
+        'priceNotice': '배송·포장 비용은 최종 확인 후 확정됩니다.',
+      };
+      final quote = await repository.fetchOrderQuote(albumId: 1);
+      expect(quote.amount, 159900);
+      expect(quote.basePages, 80);
+      expect(quote.extraPageCount, 0);
+      expect(quote.hasPlannedRetailPrice, isTrue);
+      expect(quote.shippingIncluded, isTrue);
+      expect(quote.shippingCostVerified, isFalse);
+      expect(quote.packagingCostVerified, isFalse);
+      expect(quote.pricePolicyVersion, 'PRINT_REDP_VERIFIED_COMBO_20261013_V1');
+      expect(quote.priceNotice, '배송·포장 비용은 최종 확인 후 확정됩니다.');
+    },
+  );
+
+  test('unverified and zero quotes never become a customer planned price', () {
+    expect(
+      OrderQuoteResult.fromJson({'amount': 303900}).hasPlannedRetailPrice,
+      isFalse,
+    );
+    expect(
+      OrderQuoteResult.fromJson({
+        'amount': 0,
+        'supplierCostVerified': true,
+      }).hasPlannedRetailPrice,
+      isFalse,
+    );
   });
 
   test('mixed paid orders keep the frozen product for admin handoff', () async {

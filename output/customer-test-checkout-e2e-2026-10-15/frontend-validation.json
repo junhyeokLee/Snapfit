@@ -1,0 +1,33 @@
+{
+  "recordedAtUtc": "2026-10-15T06:01:51.748988+00:00",
+  "timestampMeaning": "result recorded after command completion, not an inferred exact test end time",
+  "tests": {
+    "command": "flutter test --no-pub --concurrency=1 --reporter expanded test/unit/customer_print_test_checkout_test.dart test/widget/customer_print_test_checkout_test.dart test/widget/customer_print_test_order_history_test.dart test/widget/print_order_checkout_test.dart test/unit/print_dev_checkout_test.dart test/widget/print_journey_responsive_test.dart test/widget/customer_order_history_flow_test.dart",
+    "passed": 99,
+    "failed": 0,
+    "exitCode": 0,
+    "reportedElapsedSeconds": 60
+  },
+  "analysis": {
+    "scope": "five application files and four modified/new test files",
+    "issues": 0,
+    "exitCode": 0,
+    "reportedElapsedSeconds": 5.2
+  },
+  "sourceSha256": {
+    "lib/features/album/presentation/views/print_order_preview_screen.dart": "c3ef30047f5ed985efab0f49ae4682c69dcae31bfb84e485cf2bedf3d9303717",
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "f659fe971262c09b768c10032465a52fdb164dbc21201e4d43b3755a4b93fb37",
+    "lib/features/profile/data/customer_print_test_checkout.dart": "ce0d5c9e788681d9972adcdc714e016e43f62348aec610eba8ddb683e21f3ce5",
+    "lib/features/profile/presentation/views/order_history_screen.dart": "225580ea4924be3af48de8ba9f36770179de83baae3f69a7828f5604a59b52f2",
+    "lib/features/profile/presentation/views/customer_print_test_order_history.dart": "ff4b12b5230ba097bdde5c9b14aab8dc7dd11fc5ef81aab3d3ba0532e5464dbe",
+    "test/unit/customer_print_test_checkout_test.dart": "2958015d3d421326524717a7e34a34a3b79b0d081c5c8a5e85d6a739049ce80f",
+    "test/widget/customer_print_test_checkout_test.dart": "9ed64ec95794192443a807a611777c54c74b57bd612c700c24a220d9e0353b0c",
+    "test/widget/customer_print_test_order_history_test.dart": "6fd009bfd9ec92792cb8eff49655913f5fc64dff93d31f4cf6edbd9b6fd41335",
+    "test/widget/print_order_checkout_test.dart": "e8e9e6bae88d66de9dd18157078243eff593d665156b11e7f1c70d7c64b2f2c5",
+    "test/unit/print_dev_checkout_test.dart": "e4c38b0684020fb5c9162bdcb41cb57198bdd703b4b8585506f44cf7331377a4",
+    "test/widget/print_journey_responsive_test.dart": "d2bda88cb66f819c548a8974cba491b0def206b53dcf09594804167ad22aff5a",
+    "test/widget/customer_order_history_flow_test.dart": "4ba7183b42fb91ef946a273d68424a04164a223e9fbf29580745ef5b5dd81afb"
+  },
+  "actualE2EComplete": false,
+  "livePaymentsEnabled": false
+}

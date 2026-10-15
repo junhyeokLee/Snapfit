@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../shared/widgets/grid_overlay_painter.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -18,6 +17,7 @@ class PageEditorCanvas extends StatelessWidget {
   final ValueChanged<Size> onCanvasSizeChanged;
   final Color? backgroundColor;
   final bool isCover;
+  final bool flatPresentation;
 
   const PageEditorCanvas({
     super.key,
@@ -30,6 +30,7 @@ class PageEditorCanvas extends StatelessWidget {
     required this.onCanvasSizeChanged,
     this.backgroundColor,
     this.isCover = false,
+    this.flatPresentation = false,
   });
 
   @override
@@ -81,11 +82,11 @@ class PageEditorCanvas extends StatelessWidget {
       height: canvasH,
       decoration: BoxDecoration(
         color: backgroundColor ?? SnapFitColors.pureWhite,
-        borderRadius: sharedRadius, // 커버·내지 동일한 borderRadius
-        boxShadow: sharedShadow, // 커버·내지 동일한 그림자
+        borderRadius: flatPresentation ? BorderRadius.zero : sharedRadius,
+        boxShadow: flatPresentation ? const [] : sharedShadow,
       ),
       child: ClipRRect(
-        borderRadius: sharedRadius,
+        borderRadius: flatPresentation ? BorderRadius.zero : sharedRadius,
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 0 && constraints.maxHeight > 0) {
@@ -95,62 +96,13 @@ class PageEditorCanvas extends StatelessWidget {
               );
             }
             if (layers.isEmpty) {
-              final compact =
-                  constraints.maxWidth < 160 || constraints.maxHeight < 260;
               return Center(
-                child: Container(
-                  width: compact ? constraints.maxWidth * 0.72 : null,
-                  margin: EdgeInsets.symmetric(
-                    horizontal: compact ? 10.w : 24.w,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 10.w : 18.w,
-                    vertical: compact ? 10.h : 18.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
-                    borderRadius: BorderRadius.circular(compact ? 16.r : 22.r),
-                    border: Border.all(
-                      color: SnapFitColors.overlayLightOf(context),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.photo_library_outlined,
-                        size: compact ? 22.sp : 34.sp,
-                        color: SnapFitColors.deepCharcoal.withOpacity(0.38),
-                      ),
-                      SizedBox(height: compact ? 6.h : 10.h),
-                      Text(
-                        '사진 또는 레이아웃',
-                        textAlign: TextAlign.center,
-                        maxLines: compact ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: SnapFitColors.deepCharcoal.withOpacity(0.72),
-                          fontSize: compact ? 10.5.sp : 15.sp,
-                          fontWeight: FontWeight.w800,
-                          height: 1.2,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                      if (!compact) ...[
-                        SizedBox(height: 6.h),
-                        Text(
-                          '하단 도구로 페이지를 채워보세요.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: SnapFitColors.deepCharcoal.withOpacity(0.48),
-                            fontSize: 12.5.sp,
-                            fontWeight: FontWeight.w600,
-                            height: 1.45,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ],
+                child: Semantics(
+                  label: '빈 페이지',
+                  child: Icon(
+                    Icons.photo_library_outlined,
+                    size: 32,
+                    color: SnapFitColors.deepCharcoal.withValues(alpha: .24),
                   ),
                 ),
               );
@@ -236,7 +188,7 @@ class PageEditorCanvas extends StatelessWidget {
                         ),
                       ),
                     // [Spine fix] 에디터에서도 표지 편집 시 좌측의 책등(Spine) 영역을 시각적으로 표시하여 위치 인지 오류 방지
-                    if (isCover)
+                    if (isCover && !flatPresentation)
                       IgnorePointer(
                         child: Align(
                           alignment: Alignment.centerLeft,

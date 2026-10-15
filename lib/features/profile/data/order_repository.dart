@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,7 @@ import '../../../core/interceptors/token_storage.dart';
 import '../../../core/supabase/supabase_provider.dart';
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../domain/entities/order_history_item.dart';
+import '../domain/print_checkout.dart';
 
 class OrderRepository {
   OrderRepository({required this.tokenStorage, this.supabase});
@@ -32,7 +34,25 @@ class OrderRepository {
   }
 
   Map<String, dynamic> _orderRowToJson(Map<String, dynamic> row) {
-    final status = row['status']?.toString() ?? 'PAYMENT_PENDING';
+    final rawStatus = row['status']?.toString() ?? 'PAYMENT_PENDING';
+    final preparationAbortedAt = DateTime.tryParse(
+      '${row['print_preparation_aborted_at'] ?? ''}',
+    );
+    final status =
+        rawStatus.toUpperCase() == 'PAYMENT_PENDING' &&
+            preparationAbortedAt != null &&
+            row['payment_confirmed_at'] == null
+        ? 'PREPARATION_CANCELED'
+        : rawStatus;
+    final snapshot = row['print_content_snapshot'];
+    final frozenAlbum = snapshot is Map ? snapshot['album'] : null;
+    // An album can be removed after checkout. The immutable purchased artwork
+    // retains its identity so paid recovery is not blocked by a nullable FK.
+    final albumId =
+        (row['album_id'] as num?)?.toInt() ??
+        (row['checkout_flow'] == 'PORTONE_V2_V1' && frozenAlbum is Map
+            ? (frozenAlbum['id'] as num?)?.toInt()
+            : null);
     return {
       'orderId': row['order_id']?.toString() ?? '',
       'title': row['title']?.toString() ?? '주문',
@@ -43,7 +63,7 @@ class OrderRepository {
       'progress': _statusProgress(status),
       'orderedAt':
           row['ordered_at']?.toString() ?? row['created_at']?.toString(),
-      'albumId': (row['album_id'] as num?)?.toInt(),
+      'albumId': albumId,
       'recipientName': row['recipient_name']?.toString(),
       'recipientPhone': row['recipient_phone']?.toString(),
       'zipCode': row['zip_code']?.toString(),
@@ -60,6 +80,7 @@ class OrderRepository {
       'printFileZipUrl': row['print_file_zip_url']?.toString(),
       'printAssetCount': (row['print_asset_count'] as num?)?.toInt(),
       'paymentConfirmedAt': row['payment_confirmed_at']?.toString(),
+      'preparationAbortedAt': preparationAbortedAt?.toIso8601String(),
       'printPackageGeneratedAt': row['print_package_generated_at']?.toString(),
       'printSubmittedAt': row['print_submitted_at']?.toString(),
       'shippedAt': row['shipped_at']?.toString(),
@@ -95,6 +116,8 @@ class OrderRepository {
       case 'CANCELED':
       case 'CANCELLED':
         return '취소';
+      case 'PREPARATION_CANCELED':
+        return '준비 취소';
       default:
         return '결제대기';
     }
@@ -130,7 +153,10 @@ class OrderRepository {
       inProduction: count('IN_PRODUCTION') + count('PRINTING'),
       shipping: count('SHIPPING'),
       delivered: count('DELIVERED'),
-      canceled: count('CANCELED') + count('CANCELLED'),
+      canceled:
+          count('CANCELED') +
+          count('CANCELLED') +
+          count('PREPARATION_CANCELED'),
       latestUpdatedAt: latest,
     );
   }
@@ -142,7 +168,11 @@ class OrderRepository {
           .from('orders')
           .select()
           .eq('user_id', userId)
+          .or('payment_environment.is.null,payment_environment.neq.test')
           .order('ordered_at', ascending: false);
+      if (await _requireUserId() != userId) {
+        throw StateError('print_payment_account_changed');
+      }
       return rows
           .map<OrderHistoryItem>(
             (e) => OrderHistoryItem.fromJson(
@@ -162,13 +192,34 @@ class OrderRepository {
     final userId = await _requireUserId();
     if (supabase != null) {
       var query = supabase!.from('orders').select();
+      final filters = <String>[
+        'or(payment_environment.is.null,payment_environment.neq.test)',
+      ];
       if (statuses != null && statuses.isNotEmpty) {
-        query = query.inFilter('status', statuses);
+        if (statuses.contains('PREPARATION_CANCELED') ||
+            statuses.contains('PAYMENT_PENDING')) {
+          final normal = statuses
+              .where(
+                (value) =>
+                    value != 'PREPARATION_CANCELED' &&
+                    value != 'PAYMENT_PENDING',
+              )
+              .toList();
+          filters.add(
+            'or(${[if (normal.isNotEmpty) 'status.in.(${normal.map(jsonEncode).join(',')})', if (statuses.contains('PAYMENT_PENDING')) 'and(status.eq.PAYMENT_PENDING,or(print_preparation_aborted_at.is.null,payment_confirmed_at.not.is.null))', if (statuses.contains('PREPARATION_CANCELED')) 'and(status.eq.PAYMENT_PENDING,print_preparation_aborted_at.not.is.null,payment_confirmed_at.is.null)'].join(',')})',
+          );
+        } else {
+          query = query.inFilter('status', statuses);
+        }
       }
       final rows = await query
           .eq('user_id', userId)
+          .or('and(${filters.join(',')})')
           .order('ordered_at', ascending: false)
           .range(page * size, page * size + size - 1);
+      if (await _requireUserId() != userId) {
+        throw StateError('print_payment_account_changed');
+      }
       final items = rows
           .map<OrderHistoryItem>(
             (e) => OrderHistoryItem.fromJson(
@@ -195,7 +246,11 @@ class OrderRepository {
           .from('orders')
           .select()
           .eq('user_id', userId)
+          .or('payment_environment.is.null,payment_environment.neq.test')
           .order('ordered_at', ascending: false);
+      if (await _requireUserId() != userId) {
+        throw StateError('print_payment_account_changed');
+      }
       final items = rows
           .map<OrderHistoryItem>(
             (e) => OrderHistoryItem.fromJson(
@@ -242,6 +297,246 @@ class OrderRepository {
               .eq('album_id', albumId)
               .order('page_index');
     return {'album': album, 'pages': pages};
+  }
+
+  Future<PrintCheckoutReadiness> fetchPrintCheckoutReadiness({
+    required int albumId,
+    int? pageCount,
+  }) async {
+    await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    final response = await client.functions.invoke(
+      'print-order-checkout',
+      body: {
+        'action': 'readiness',
+        'albumId': albumId,
+        if (pageCount != null) 'pageCount': pageCount,
+      },
+    );
+    final raw = response.data;
+    if (raw is! Map || response.status != 200 || raw['error'] != null) {
+      throw StateError('주문 준비 상태를 확인하지 못했어요. 다시 시도해 주세요.');
+    }
+    return PrintCheckoutReadiness.fromJson(Map<String, dynamic>.from(raw));
+  }
+
+  Future<String> printPaymentOwnerId() async {
+    final owner = await _requireUserId();
+    if (supabase != null && supabase!.auth.currentUser?.id != owner) {
+      throw StateError('print_payment_session_changed');
+    }
+    return owner;
+  }
+
+  Future<PrintPaymentInvoice> preparePrintPayment({
+    required String requestId,
+    required PrintCheckoutRequest request,
+  }) => _invokePrintInvoice('print-order-checkout', {
+    'action': 'prepare',
+    'requestId': requestId,
+    'albumId': request.albumId,
+    'reviewedRevision': request.reviewedRevision,
+    'reviewedSpecRevision': request.reviewedSpecRevision,
+    'expectedAmount': request.amount,
+    'recipient': {
+      'name': request.recipientName,
+      'phone': request.recipientPhone,
+      'zipCode': request.zipCode,
+      'addressLine1': request.addressLine1,
+      'addressLine2': request.addressLine2,
+      'deliveryMemo': request.deliveryMemo,
+    },
+  });
+
+  Future<PrintPaymentInvoice> fetchPrintPaymentStatus({
+    String? paymentId,
+    String? requestId,
+    String? orderId,
+  }) {
+    if ([
+          paymentId,
+          requestId,
+          orderId,
+        ].where((value) => value != null).length !=
+        1) {
+      throw const FormatException('print_payment_identity_required');
+    }
+    return _invokePrintInvoice('print-order-checkout', {
+      'action': 'status',
+      if (paymentId != null) 'paymentId': paymentId,
+      if (requestId != null) 'requestId': requestId,
+      if (orderId != null) 'orderId': orderId,
+    });
+  }
+
+  Future<PrintPaymentInvoice> confirmPrintPayment(String paymentId) =>
+      _invokePrintInvoice('print-order-confirm', {'paymentId': paymentId});
+
+  Future<Map<String, dynamic>> invokePrintPrepaymentPackage({
+    required PrintPaymentInvoice invoice,
+    required String action,
+    Map<String, dynamic> payload = const {},
+  }) async {
+    final owner = await printPaymentOwnerId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    try {
+      final response = await client.functions.invoke(
+        'print-prepayment-package',
+        body: {
+          ...payload,
+          'action': action,
+          'orderId': invoice.orderId,
+          'paymentId': invoice.paymentId,
+          'requestId': invoice.requestId,
+        },
+      );
+      final raw = response.data;
+      if (raw is! Map || response.status != 200 || raw['error'] != null) {
+        throw PrintCheckoutApiException(
+          '${raw is Map ? raw['error'] : 'invalid_response'}',
+          response.status,
+        );
+      }
+      if (await printPaymentOwnerId() != owner) {
+        throw StateError('print_payment_account_changed');
+      }
+      return Map<String, dynamic>.from(raw);
+    } on FunctionException catch (error) {
+      final details = error.details;
+      throw PrintCheckoutApiException(
+        '${details is Map ? details['error'] : 'print_package_unavailable'}',
+        error.status,
+      );
+    }
+  }
+
+  Future<void> uploadPrintPrepaymentFile({
+    required String bucket,
+    required String path,
+    required String token,
+    required Uint8List bytes,
+  }) async {
+    final owner = await printPaymentOwnerId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    try {
+      await client.storage
+          .from(bucket)
+          .uploadBinaryToSignedUrl(
+            path,
+            token,
+            bytes,
+            const FileOptions(contentType: 'application/pdf', upsert: false),
+          );
+    } on StorageException catch (error) {
+      // A lost upload response may leave this immutable object present. The
+      // following server finalize compares its actual hash and byte length.
+      if (error.statusCode != '409' && error.statusCode != '400') rethrow;
+      if (error.statusCode == '400' && error.error != 'Duplicate') rethrow;
+    }
+    if (await printPaymentOwnerId() != owner) {
+      throw StateError('print_payment_account_changed');
+    }
+  }
+
+  Future<PrintPaymentInvoice> _invokePrintInvoice(
+    String function,
+    Map<String, dynamic> body,
+  ) async {
+    final owner = await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    try {
+      final response = await client.functions.invoke(function, body: body);
+      final raw = response.data;
+      if (raw is! Map || response.status != 200 || raw['error'] != null) {
+        throw PrintCheckoutApiException(
+          '${raw is Map ? raw['error'] : 'invalid_response'}',
+          response.status,
+        );
+      }
+      if (await _requireUserId() != owner)
+        throw StateError('print_payment_account_changed');
+      return PrintPaymentInvoice.fromJson(Map<String, dynamic>.from(raw));
+    } on FunctionException catch (error) {
+      final details = error.details;
+      throw PrintCheckoutApiException(
+        '${details is Map ? details['error'] : 'checkout_unavailable'}',
+        error.status,
+      );
+    }
+  }
+
+  Future<OrderHistoryItem> fetchMyPrintOrder(String orderId) async {
+    final owner = await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    final row = await client
+        .from('orders')
+        .select()
+        .eq('order_id', orderId)
+        .eq('user_id', owner)
+        .single();
+    if (row['user_id'] != owner ||
+        row['payment_environment'] == 'test' ||
+        await _requireUserId() != owner) {
+      throw const FormatException('print_payment_order_mismatch');
+    }
+    return OrderHistoryItem.fromJson(_orderRowToJson(row));
+  }
+
+  Future<PrintOrderProgress> fetchMyPrintOrderProgress(String orderId) async {
+    final owner = await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    final raw = await client.rpc(
+      'fetch_my_print_order_progress',
+      params: {'p_order_id': orderId},
+    );
+    if (raw is! Map || await _requireUserId() != owner)
+      throw StateError('print_order_progress_unavailable');
+    final progress = PrintOrderProgress.fromJson(
+      Map<String, dynamic>.from(raw),
+    );
+    if (progress.orderId != orderId)
+      throw const FormatException('print_order_progress_mismatch');
+    return progress;
+  }
+
+  Future<PrintPaidReceipt> fetchPrintPaidReceipt({
+    required String orderId,
+    required int albumId,
+    required int expectedAmount,
+    String? expectedPaymentId,
+  }) async {
+    final userId = await _requireUserId();
+    final client = supabase;
+    if (client == null) throw StateError('앨범 서버 연결이 준비되지 않았습니다.');
+    final row = await client
+        .from('orders')
+        .select()
+        .eq('order_id', orderId)
+        .eq('user_id', userId)
+        .single();
+    if (row['user_id'] != userId || await _requireUserId() != userId) {
+      throw const FormatException('print_payment_order_mismatch');
+    }
+    if (row['payment_environment'] == 'test' ||
+        expectedPaymentId != null &&
+            (row['checkout_flow'] != 'PORTONE_V2_V1' ||
+                row['payment_environment'] != 'live' ||
+                row['verified_payment_provider'] != 'PORTONE' ||
+                row['payment_currency'] != 'KRW' ||
+                row['verified_payment_id'] != expectedPaymentId)) {
+      throw const FormatException('print_payment_production_receipt_required');
+    }
+    final order = OrderHistoryItem.fromJson(_orderRowToJson(row));
+    if (order.albumId != albumId || order.amount != expectedAmount) {
+      throw const FormatException('print_payment_order_mismatch');
+    }
+    return PrintPaidReceipt.fromOrder(order);
   }
 
   Future<AddressSearchResult> searchAddress({
@@ -453,7 +748,14 @@ class OrderQuoteResult {
   final Map<String, dynamic> printSpec;
   final Map<String, dynamic> printProduct;
   final bool priceIsEstimate;
+  final bool supplierCostVerified;
+  final bool shippingCostVerified;
+  final bool packagingCostVerified;
+  final String pricePolicyVersion;
+  final String priceNotice;
   final bool specMissing;
+
+  bool get hasPlannedRetailPrice => supplierCostVerified && amount > 0;
 
   const OrderQuoteResult({
     required this.pageCount,
@@ -472,6 +774,11 @@ class OrderQuoteResult {
     this.printSpec = const {},
     this.printProduct = const {},
     this.priceIsEstimate = false,
+    this.supplierCostVerified = false,
+    this.shippingCostVerified = false,
+    this.packagingCostVerified = false,
+    this.pricePolicyVersion = '',
+    this.priceNotice = '',
     this.specMissing = false,
   });
 
@@ -500,6 +807,11 @@ class OrderQuoteResult {
       printProduct:
           (json['printProduct'] as Map?)?.cast<String, dynamic>() ?? const {},
       priceIsEstimate: json['priceIsEstimate'] == true,
+      supplierCostVerified: json['supplierCostVerified'] == true,
+      shippingCostVerified: json['shippingCostVerified'] == true,
+      packagingCostVerified: json['packagingCostVerified'] == true,
+      pricePolicyVersion: json['pricePolicyVersion']?.toString() ?? '',
+      priceNotice: json['priceNotice']?.toString() ?? '',
       specMissing: json['specMissing'] == true,
     );
   }

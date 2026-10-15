@@ -1,7 +1,13 @@
 import 'dart:convert';
 import '../../../core/templates/authored_collections.dart';
+import '../../../core/templates/published_premium_templates.dart';
 import '../../../core/templates/template_document_pages.dart';
 import '../../store/domain/entities/premium_template.dart';
+
+String Function() _lazyDocument(Map<String, dynamic> Function() build) {
+  String? cached;
+  return () => cached ??= jsonEncode(build());
+}
 
 /// Negative IDs identify published artwork bundled with the app.
 /// Point-shop configuration determines its price independently.
@@ -20,8 +26,48 @@ final bundledCreationTemplates = List<PremiumTemplate>.unmodifiable([
       isNew: true,
       isPremium: false,
       tags: ['SnapFit Original', '직접 디자인', ...authoredCollections[i].styleTags],
-      templateJson: jsonEncode(authoredCollections[i].catalogDocument()),
+      documentBuilder: _lazyDocument(authoredCollections[i].catalogDocument),
     ),
+]);
+
+final publishedPremiumTemplates = List<PremiumTemplate>.unmodifiable([
+  for (final entry in premiumVolumeCatalogIds.entries)
+    PremiumTemplate(
+      id: entry.value,
+      title: entry.key.title,
+      subTitle: '내지 ${entry.key.pageCounts.join('·')}쪽 · 세 가지 규격',
+      description: '사진과 기록을 한 권으로 엮는 ${entry.key.category} 컬렉션',
+      category: entry.key.category,
+      coverImageUrl: '',
+      previewImages: const [],
+      pageCount: entry.key.extendedPages,
+      userCount: 0,
+      isNew: true,
+      isPremium: true,
+      tags: const ['SnapFit Original', '프리미엄 컬렉션'],
+      documentBuilder: _lazyDocument(() => premiumCatalogDocument(entry.key)),
+    ),
+  for (final entry in conceptVolumeCatalogIds.entries)
+    PremiumTemplate(
+      id: entry.value,
+      title: entry.key.title,
+      subTitle: entry.key.concept,
+      description: '${entry.key.concept} · 내지 24쪽 · 세 가지 규격',
+      category: entry.key.category,
+      coverImageUrl: '',
+      previewImages: const [],
+      pageCount: 24,
+      userCount: 0,
+      isNew: true,
+      isPremium: true,
+      tags: const ['SnapFit Original', '컨셉 에디션'],
+      documentBuilder: _lazyDocument(() => conceptCatalogDocument(entry.key)),
+    ),
+]);
+
+final publishedCreationTemplates = List<PremiumTemplate>.unmodifiable([
+  ...bundledCreationTemplates,
+  ...publishedPremiumTemplates,
 ]);
 
 bool isBundledCreationTemplate(PremiumTemplate template) =>
@@ -29,13 +75,20 @@ bool isBundledCreationTemplate(PremiumTemplate template) =>
     retiredAuthoredCollections.any((local) => local.bundledId == template.id);
 
 bool isPublishedCreationTemplate(PremiumTemplate template) =>
-    bundledCreationTemplates.any((local) => local.id == template.id);
+    publishedCreationTemplates.any((local) => local.id == template.id);
 
-final _publishedPhotoCounts = {
-  for (final template in bundledCreationTemplates)
-    template.id:
+final _publishedPhotoCounts = <int, int>{};
+
+int? publishedTemplatePhotoCount(PremiumTemplate template) {
+  final canonical = publishedCreationTemplates
+      .where((item) => item.id == template.id)
+      .firstOrNull;
+  if (canonical == null) return null;
+  return _publishedPhotoCounts.putIfAbsent(
+    template.id,
+    () =>
         templateDocumentPages(
-          jsonDecode(template.templateJson!) as Map<String, dynamic>,
+          jsonDecode(canonical.templateJson!) as Map<String, dynamic>,
         ).fold<int>(
           0,
           (count, page) =>
@@ -47,10 +100,8 @@ final _publishedPhotoCounts = {
                   )
                   .length,
         ),
-};
-
-int? publishedTemplatePhotoCount(PremiumTemplate template) =>
-    _publishedPhotoCounts[template.id];
+  );
+}
 
 bool isRetiredAuthoredTemplate(PremiumTemplate template) {
   if (retiredAuthoredCollections.any((c) => c.bundledId == template.id))
@@ -74,7 +125,7 @@ bool isRetiredAuthoredTemplate(PremiumTemplate template) {
 List<PremiumTemplate> withBundledCreationTemplates(
   List<PremiumTemplate> catalog,
 ) => List<PremiumTemplate>.unmodifiable(
-  bundledCreationTemplates.map((published) {
+  publishedCreationTemplates.map((published) {
     // Only local favorite state may vary. Catalog refreshes cannot replace
     // artwork, pricing, IDs, or membership in the published collection.
     final match = catalog.where((item) => item.id == published.id).firstOrNull;

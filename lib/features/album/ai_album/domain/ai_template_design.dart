@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/album_page_policy.dart';
 import '../../domain/entities/layer.dart';
 import 'ai_template_art_direction.dart';
 
@@ -31,6 +32,33 @@ class AiTemplateBrief {
   };
 }
 
+/// Records bounded AI generation separately from the final printed page count.
+class AiTemplateLayoutExpansion {
+  const AiTemplateLayoutExpansion({
+    required this.sourcePageCount,
+    required this.finalPageCount,
+  });
+  final int sourcePageCount;
+  final int finalPageCount;
+
+  factory AiTemplateLayoutExpansion.fromJson(Object? raw, int pageCount) {
+    if (raw is! Map ||
+        raw['strategy'] != 'repeat_inner_layouts_v1' ||
+        raw['sourcePageCount'] is! int ||
+        raw['sourcePageCount'] < 4 ||
+        raw['sourcePageCount'] > 16 ||
+        (raw['sourcePageCount'] as int).isOdd ||
+        raw['finalPageCount'] != pageCount ||
+        !AlbumPagePolicy.isValid(pageCount)) {
+      throw const FormatException('Invalid template page expansion');
+    }
+    return AiTemplateLayoutExpansion(
+      sourcePageCount: raw['sourcePageCount'] as int,
+      finalPageCount: pageCount,
+    );
+  }
+}
+
 class AiTemplateDesign {
   const AiTemplateDesign({
     required this.concept,
@@ -39,6 +67,7 @@ class AiTemplateDesign {
     required this.pages,
     this.artDirection,
     this.printProduct,
+    this.layoutExpansion,
   });
 
   final String concept;
@@ -47,6 +76,7 @@ class AiTemplateDesign {
   final List<AiTemplateDesignPage> pages;
   final AiTemplateArtDirection? artDirection;
   final Map<String, dynamic>? printProduct;
+  final AiTemplateLayoutExpansion? layoutExpansion;
 
   CoverSize get coverSize =>
       coverSizeForProduct(printProduct?['id'] as String?) ??
@@ -87,8 +117,15 @@ class AiTemplateDesign {
         aspect == null ||
         rawPages is! List ||
         rawPages.length != pageCount + 1 ||
-        rawPages.length > 17) {
+        rawPages.length > AlbumPagePolicy.maxInnerPages + 1 ||
+        (pageCount > 16 && !AlbumPagePolicy.isValid(pageCount))) {
       throw const FormatException('Invalid template design');
+    }
+    final expansion = json['layoutExpansion'] != null
+        ? AiTemplateLayoutExpansion.fromJson(json['layoutExpansion'], pageCount)
+        : null;
+    if (pageCount > 16 && expansion == null) {
+      throw const FormatException('Missing template page expansion');
     }
     final direction = directed
         ? AiTemplateArtDirection.fromJson(json['artDirection'], pageCount)
@@ -222,6 +259,7 @@ class AiTemplateDesign {
       pages: pages,
       artDirection: direction,
       printProduct: printProduct,
+      layoutExpansion: expansion,
     );
   }
 

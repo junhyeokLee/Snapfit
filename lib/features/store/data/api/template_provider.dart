@@ -109,7 +109,7 @@ final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
   }
   final likeStateMap = await _loadTemplateLikeStateMap();
   final templates = List<PremiumTemplate>.unmodifiable(
-    bundledCreationTemplates.map(
+    publishedCreationTemplates.map(
       (template) =>
           _applyPersistedLikeState(template, likeStateMap, userId: userId),
     ),
@@ -124,7 +124,7 @@ final templateListProvider = FutureProvider<List<PremiumTemplate>>((ref) async {
 });
 
 Future<List<PremiumTemplate>> loadCanonicalStoreTemplatesForRuntime() async =>
-    bundledCreationTemplates;
+    publishedCreationTemplates;
 
 class StoreTemplateFeedState {
   final List<PremiumTemplate> items;

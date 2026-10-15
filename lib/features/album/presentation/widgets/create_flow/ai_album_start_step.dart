@@ -1,13 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
+import '../../../../../core/templates/template_catalog_categories.dart';
 import '../../../../point_shop/domain/point_shop_template_key.dart';
 import '../../../../point_shop/data/point_shop_provider.dart';
 import '../../../../point_shop/presentation/point_shop_access.dart';
-import '../../../../../core/theme/snapfit_design_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../store/domain/entities/premium_template.dart';
 import 'creation_catalog_cover.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../../shared/widgets/catalog_filter_bar.dart';
+import '../../../../../shared/widgets/catalog_search_disclosure.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../../core/constants/cover_size.dart';
+import 'creation_collection_showcase.dart';
+import 'creation_workspace.dart';
 
 class AiAlbumStartStep extends ConsumerStatefulWidget {
   final VoidCallback onAiStart;
@@ -37,9 +45,18 @@ class AiAlbumStartStep extends ConsumerStatefulWidget {
 
 class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
   String _filter = '전체';
+  String? _topic;
   bool _favoritesOnly = false;
   String _query = '';
   final _search = TextEditingController();
+
+  void _clearFilters() => setState(() {
+    _favoritesOnly = false;
+    _filter = '전체';
+    _topic = null;
+    _query = '';
+    _search.clear();
+  });
 
   @override
   void dispose() {
@@ -52,18 +69,28 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
       CatalogFavoritesBuilder(builder: _buildCatalog);
 
   Widget _buildCatalog(BuildContext context, CatalogFavorites favorites) {
-    final ink = SnapFitColors.textPrimaryOf(context);
-    final muted = SnapFitColors.textSecondaryOf(context);
+    final ink = ExperienceFormStyle.ink(context);
+    final muted = ExperienceFormStyle.muted(context);
     final catalog = ref.watch(pointShopCatalogProvider);
     final products = {
       for (final product in catalog.asData?.value ?? const [])
         product.productKey: product,
     };
+    final topics = orderedTemplateTopics(
+      (widget.templates.asData?.value ?? const <PremiumTemplate>[]).map(
+        (template) => template.category?.trim() ?? '',
+      ),
+    );
     return SafeArea(
       top: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 720 ? 4 : 2;
+          final columns = kIsWeb
+              ? constraints.maxWidth >= 1100 ? 5 : constraints.maxWidth >= 760 ? 4 : constraints.maxWidth >= 540 ? 3 : 2
+              : constraints.maxWidth >= 720 ? 4 : 2;
+          final titleHeight = (MediaQuery.textScalerOf(context).scale(14) * 2.5)
+              .clamp(36.0, double.infinity)
+              .toDouble();
           return CustomScrollView(
             key: const PageStorageKey('albumCreationHub'),
             slivers: [
@@ -74,109 +101,174 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '어떤 앨범을 만들까요?',
-                        style: TextStyle(
-                          fontSize: 25,
-                          height: 1.3,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _StartAction(
-                              title: '직접 만들기',
-                              subtitle: '빈 앨범부터 자유롭게',
-                              icon: Icons.add,
-                              onTap: widget.onManualStart,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StartAction(
-                              title: 'AI 템플릿으로 시작',
-                              subtitle: '원하는 느낌으로 새롭게',
-                              icon: Icons.auto_awesome_outlined,
-                              ai: true,
-                              onTap: widget.onAiStart,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      Text(
-                        '템플릿에서 시작',
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
+                        kIsWeb ? '어떻게 시작할까요?' : '디자인 선택',
+                        style: ExperienceFormStyle.text(
+                          context,
+                          22,
+                          weight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      TextField(
-                        controller: _search,
-                        onChanged: (value) =>
-                            setState(() => _query = value.trim().toLowerCase()),
-                        style: TextStyle(fontSize: 14, color: ink),
-                        decoration: InputDecoration(
-                          hintText: '여행, 웨딩, 일상 검색',
-                          prefixIcon: const Icon(Icons.search, size: 21),
-                          suffixIcon: _query.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: '검색 지우기',
-                                  icon: const Icon(Icons.close, size: 19),
-                                  onPressed: () {
-                                    _search.clear();
-                                    setState(() => _query = '');
-                                  },
+                      LayoutBuilder(
+                        builder: (context, area) {
+                          final wide =
+                              area.maxWidth >= 520 &&
+                              MediaQuery.orientationOf(context) ==
+                                  Orientation.landscape;
+                          final featured =
+                              widget.templates.asData?.value.firstOrNull;
+                          final showArtwork =
+                              _query.isEmpty &&
+                              _filter == '전체' &&
+                              _topic == null &&
+                              !_favoritesOnly;
+                          final artwork = featured == null
+                              ? CreationBlankBook(cover: defaultCoverSize)
+                              : CreationCollectionShowcase(
+                                  template: featured,
+                                  onOpen: widget.onTemplateSelected == null
+                                      ? null
+                                      : () => widget.onTemplateSelected!(
+                                          featured,
+                                        ),
+                                );
+                          final manual = _StartAction(
+                            title: '직접 만들기',
+                            icon: Icons.add,
+                            onTap: widget.onManualStart,
+                          );
+                          final ai = _StartAction(
+                            title: 'AI 템플릿',
+                            icon: Icons.auto_awesome_outlined,
+                            ai: true,
+                            onTap: widget.onAiStart,
+                          );
+                          return Column(
+                            children: [
+                              if (kIsWeb || !showArtwork)
+                                Row(
+                                  children: [
+                                    Expanded(child: manual),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: ai),
+                                  ],
+                                )
+                              else if (wide)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      flex: 6,
+                                      child: SizedBox(
+                                        height: 170,
+                                        child: artwork,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    Expanded(
+                                      flex: 4,
+                                      child: Column(
+                                        children: [
+                                          manual,
+                                          const SizedBox(height: 12),
+                                          ai,
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                SizedBox(height: 235, child: artwork),
+                                const SizedBox(height: 22),
+                                Row(
+                                  children: [
+                                    Expanded(child: manual),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: ai),
+                                  ],
                                 ),
-                          filled: true,
-                          fillColor: SnapFitColors.surfaceOf(context),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 13,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: ink.withValues(alpha: .12),
-                            ),
-                          ),
-                        ),
+                              ],
+                            ],
+                          );
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      SegmentedButton<String>(
-                        showSelectedIcon: false,
-                        style: SegmentedButton.styleFrom(
-                          textStyle: const TextStyle(
-                            fontFamily: SnapFitFonts.body,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          selectedBackgroundColor: ink,
-                          selectedForegroundColor: SnapFitColors.backgroundOf(
+                      const SizedBox(height: 22),
+                      CatalogSearchDisclosure(
+                        controller: _search,
+                        onClear: () => setState(() => _query = ''),
+                        leading: Text(
+                          '템플릿',
+                          style: ExperienceFormStyle.text(
                             context,
+                            16,
+                            weight: FontWeight.w600,
                           ),
-                          side: BorderSide(color: ink.withValues(alpha: .15)),
                         ),
-                        segments: const [
-                          ButtonSegment(value: '전체', label: Text('전체')),
-                          ButtonSegment(value: '무료', label: Text('무료')),
-                          ButtonSegment(value: '포인트', label: Text('포인트')),
-                        ],
-                        selected: {_filter},
-                        onSelectionChanged: catalog.hasValue
-                            ? (value) => setState(() => _filter = value.first)
-                            : null,
+                        child: TextField(
+                          controller: _search,
+                          onChanged: (value) => setState(
+                            () => _query = value.trim().toLowerCase(),
+                          ),
+                          style: ExperienceFormStyle.text(context, 14),
+                          decoration: ExperienceFormStyle.input(
+                            context,
+                            hint: '여행, 웨딩, 일상 검색',
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      CatalogFavoriteFilter(
-                        selected: _favoritesOnly,
-                        onChanged: (value) =>
-                            setState(() => _favoritesOnly = value),
+                      if (topics.isNotEmpty) ...[
+                        SingleChildScrollView(
+                          key: const ValueKey('creation-topic-filters'),
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (final topic in [null, ...topics])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    key: ValueKey(
+                                      'creation-topic-${topic ?? 'all'}',
+                                    ),
+                                    label: Text(topic ?? '모든 주제'),
+                                    selected: _topic == topic,
+                                    onSelected: (_) =>
+                                        setState(() => _topic = topic),
+                                    showCheckmark: false,
+                                    selectedColor:
+                                        ExperienceFormStyle.selection(context),
+                                    backgroundColor:
+                                        ExperienceFormStyle.surface(context),
+                                    side: BorderSide.none,
+                                    labelStyle:
+                                        ExperienceFormStyle.text(
+                                          context,
+                                          12,
+                                        ).copyWith(
+                                          color: _topic == topic
+                                              ? ExperienceFormStyle.selectionInk(
+                                                  context,
+                                                )
+                                              : muted,
+                                        ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                      CatalogFilterBar(
+                        price: _filter,
+                        enabled: catalog.hasValue,
+                        onPriceChanged: (value) =>
+                            setState(() => _filter = value),
+                        favoritesOnly: _favoritesOnly,
+                        onFavoritesChanged: () =>
+                            setState(() => _favoritesOnly = !_favoritesOnly),
                       ),
                     ],
                   ),
@@ -207,12 +299,16 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                 data: (templates) {
                   final visible = favorites.arrange(
                     templates.where((template) {
+                      if (_topic != null &&
+                          template.category?.trim() != _topic) {
+                        return false;
+                      }
                       final product = products[pointShopTemplateKey(template)];
                       final isFree =
                           product == null ||
                           (product.isActive && product.pointPrice == 0);
                       if (_filter == '무료' && !isFree) return false;
-                      if (_filter == '포인트' && isFree) return false;
+                      if (_filter == '유료' && isFree) return false;
                       return '${template.title} ${template.category ?? ''} ${(template.tags ?? []).join(' ')}'
                           .toLowerCase()
                           .contains(_query);
@@ -222,14 +318,7 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                   );
                   if (visible.isEmpty && _favoritesOnly)
                     return SliverToBoxAdapter(
-                      child: CatalogFavoritesEmpty(
-                        onShowAll: () => setState(() {
-                          _favoritesOnly = false;
-                          _filter = '전체';
-                          _query = '';
-                          _search.clear();
-                        }),
-                      ),
+                      child: CatalogFavoritesEmpty(onShowAll: _clearFilters),
                     );
                   if (visible.isEmpty)
                     return SliverToBoxAdapter(
@@ -244,9 +333,15 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              _query.isEmpty ? '등록된 템플릿이 없어요' : '검색 결과가 없어요',
+                              templates.isEmpty ? '등록된 템플릿이 없어요' : '검색 결과가 없어요',
                               style: TextStyle(color: muted),
                             ),
+                            if (templates.isNotEmpty)
+                              TextButton.icon(
+                                onPressed: _clearFilters,
+                                icon: const Icon(Icons.refresh, size: 18),
+                                label: const Text('전체 템플릿 보기'),
+                              ),
                           ],
                         ),
                       ),
@@ -262,57 +357,86 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
                             ((constraints.maxWidth - 48 - 16 * (columns - 1)) /
                                     columns) *
                                 1.12 +
-                            90,
+                            titleHeight +
+                            60,
                       ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final template = visible[index];
-                        return CatalogFavoriteTile(
-                          itemKey: CatalogFavoriteKeys.template(template.id),
-                          label: template.title,
-                          child: Semantics(
-                            button: true,
-                            label: template.title,
-                            child: InkWell(
-                              key: ValueKey('creation-template-${template.id}'),
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: widget.onTemplateSelected == null
-                                  ? null
-                                  : () => widget.onTemplateSelected!(template),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AspectRatio(
-                                    aspectRatio: 1 / 1.12,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      color: SnapFitColors.isDark(context)
-                                          ? const Color(0xFF242828)
-                                          : const Color(0xFFEDF0EF),
-                                      child: CreationCatalogCover(
-                                        template: template,
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Semantics(
+                              button: true,
+                              label: template.title,
+                              child: InkWell(
+                                key: ValueKey(
+                                  'creation-template-${template.id}',
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                onTap: widget.onTemplateSelected == null
+                                    ? null
+                                    : () =>
+                                          widget.onTemplateSelected!(template),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AspectRatio(
+                                      aspectRatio: 1 / 1.12,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        color: ExperienceFormStyle.surface(
+                                          context,
+                                        ),
+                                        child: RepaintBoundary(
+                                          child: CreationCatalogCover(
+                                            template: template,
+                                            useThumbnail: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: titleHeight,
+                                      child: Text(
+                                        template.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          height: 1.25,
+                                          fontWeight: FontWeight.w600,
+                                          color: ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: PointShopProductBadge(
+                                      productKey: pointShopTemplateKey(
+                                        template,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    template.title,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      height: 1.25,
-                                      fontWeight: FontWeight.w600,
-                                      color: ink,
-                                    ),
+                                ),
+                                CatalogFavoriteButton(
+                                  itemKey: CatalogFavoriteKeys.template(
+                                    template.id,
                                   ),
-                                  const SizedBox(height: 5),
-                                  PointShopProductBadge(
-                                    productKey: pointShopTemplateKey(template),
-                                  ),
-                                ],
-                              ),
+                                  label: template.title,
+                                  bookmark: true,
+                                  unframed: true,
+                                ),
+                              ],
                             ),
-                          ),
+                          ],
                         );
                       }, childCount: visible.length),
                     ),
@@ -330,71 +454,77 @@ class _AiAlbumStartStepState extends ConsumerState<AiAlbumStartStep> {
 class _StartAction extends StatelessWidget {
   const _StartAction({
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.onTap,
     this.ai = false,
   });
   final String title;
-  final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
   final bool ai;
 
   @override
-  Widget build(BuildContext context) {
-    final dark = SnapFitColors.isDark(context);
-    final ink = SnapFitColors.textPrimaryOf(context);
-    return Material(
-      color: ai
-          ? (dark ? const Color(0xFF153D3D) : const Color(0xFFE5F1EF))
-          : SnapFitColors.surfaceOf(context),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: ink.withValues(alpha: .10)),
+  Widget build(BuildContext context) => kIsWeb ? Material(
+    color: WebPalette.of(context).surface,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: WebPalette.of(context).line)),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 26, color: WebPalette.of(context).brandInk),
+          const SizedBox(height: 20),
+          Row(children: [
+            Expanded(child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink))),
+            Icon(Icons.arrow_forward, size: 19, color: WebPalette.of(context).brandInk),
+          ]),
+          const SizedBox(height: 8),
+          Text(ai ? '사진과 원하는 분위기로 디자인을 준비합니다.' : '빈 앨범에서 사진과 글을 직접 배치합니다.', style: TextStyle(fontSize: 13, height: 1.6, color: WebPalette.of(context).muted)),
+        ]),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 160),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    ),
+  ) : Material(
+    color: ai
+        ? ExperienceFormStyle.selection(context)
+        : ExperienceFormStyle.surface(context),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 72),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          child: Row(
+            children: [
+              if (ai)
                 Icon(
                   icon,
-                  size: 25,
-                  color: ai
-                      ? (dark
-                            ? const Color(0xFF96D9D2)
-                            : const Color(0xFF22625D))
-                      : ink,
+                  size: 22,
+                  color: ExperienceFormStyle.selectionInk(context),
+                )
+              else
+                ExperienceIcon(
+                  'BookOpen',
+                  size: 22,
+                  color: ExperienceFormStyle.ink(context),
                 ),
-                const SizedBox(height: 22),
-                Text(
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: ink,
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    weight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: SnapFitColors.textSecondaryOf(context),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

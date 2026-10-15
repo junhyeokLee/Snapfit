@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/core/templates/authored_collections.dart';
+import 'package:snap_fit/core/templates/free_template_material_policy.dart';
 import 'package:snap_fit/core/templates/studio_decoration_catalog.dart';
 import 'package:snap_fit/core/templates/studio_photo_frame_catalog.dart';
 import 'package:snap_fit/core/templates/studio_word_art_catalog.dart';
@@ -15,9 +16,10 @@ import '../../tool/template_studio/export_price_application.dart';
 
 void main() {
   test(
-    'price book covers 83 materials, 37 free and 14 premium collections',
+    'price book covers 111 materials, 37 free and 14 premium collections',
     () {
       final expected = {
+        ...freeTemplateMaterialProductKeys,
         ...[
           ...conceptWaveDecorations,
           ...keepsakeDecorations,
@@ -32,11 +34,11 @@ void main() {
         ...pendingConceptVolumeProducts.map((p) => p.productKey),
         ...authoredCollections.map(pointShopAuthoredTemplateKey),
       };
-      expect(expected, hasLength(134));
+      expect(expected, hasLength(162));
       expect(pointShopLaunchPrices.keys.toSet(), expected);
       expect(
         pointShopLaunchPrices.values.where((p) => p.points == 0),
-        hasLength(49),
+        hasLength(77),
       );
       for (final e in pointShopLaunchPrices.entries) {
         expect(e.value.reason, isNotEmpty);
@@ -70,7 +72,7 @@ void main() {
       }
       for (final product in pendingConceptVolumeProducts) {
         expect(pointShopLaunchPrices[product.productKey]!.points, 1800);
-        expect(isPendingTemplateProduct(product.productKey), true);
+        expect(isPendingTemplateProduct(product.productKey), false);
         expect(
           pendingTemplateContentsLabel(product.productKey),
           contains('24쪽'),
@@ -89,7 +91,7 @@ void main() {
     expect(result['changesCustomerAccess'], false);
     expect(result['grantsIncludedMaterials'], false);
     expect(result['marketValidated'], false);
-    expect(result['products'], hasLength(134));
+    expect(result['products'], hasLength(162));
     expect(
       jsonDecode(File('${out.path}/prices.json').readAsStringSync()),
       result,
@@ -110,7 +112,7 @@ void main() {
           collection.document(aspect),
         )) {
           expect(
-            pointShopLaunchPrices[key]?.points ?? 0,
+            pointShopLaunchPrices[key]?.points,
             0,
             reason: '${collection.id}/${aspect.name}: $key',
           );
@@ -119,40 +121,35 @@ void main() {
     }
   });
 
-  test(
-    'owner application activates materials and free books, but holds premium delivery',
-    () {
-      final rows = pointShopPriceApplicationRows();
-      expect(rows, hasLength(134));
-      expect(rows.map((r) => r['product_key']).toSet(), hasLength(134));
-      expect(rows.where((r) => r['point_price'] == 0), hasLength(49));
-      expect(rows.where((r) => r['is_active'] == true), hasLength(120));
-      for (final row in rows) {
-        final held =
-            row['kind'] == 'template' && (row['point_price'] as int) > 0;
-        expect(row['is_active'], !held);
-      }
-      final sql = pointShopPriceApplicationSql(rows);
-      expect(sql, contains('on conflict (product_key) do update'));
-      expect(sql, contains('is distinct from'));
-      expect(sql, contains('catalog_identity_or_active_template_changed'));
-      expect(sql, isNot(contains('point_wallets')));
-      expect(sql, isNot(contains('point_shop_ownership')));
-      expect(sql.toLowerCase(), isNot(contains('delete from')));
-      const export = bool.fromEnvironment('EXPORT_PRICE_APPLICATION');
-      final out = export
-          ? Directory('output/pricing/catalog-2026-09-10')
-          : Directory.systemTemp.createTempSync('snapfit-price-application-');
-      if (!export) addTearDown(() => out.deleteSync(recursive: true));
-      final data = exportPriceApplication(out);
-      expect(data['status'], 'prepared-not-executed');
-      expect(data['changesWallets'], false);
-      expect(data['rows'], rows);
-      expect(File('${out.path}/apply-prices.sql').readAsStringSync(), sql);
-      expect(
-        File('${out.path}/verify-prices.sql').readAsStringSync(),
-        pointShopPriceVerificationSql(rows),
-      );
-    },
-  );
+  test('owner application includes delivered premium books', () {
+    final rows = pointShopPriceApplicationRows();
+    expect(rows, hasLength(162));
+    expect(rows.map((r) => r['product_key']).toSet(), hasLength(162));
+    expect(rows.where((r) => r['point_price'] == 0), hasLength(77));
+    expect(rows.where((r) => r['is_active'] == true), hasLength(162));
+    for (final row in rows) {
+      expect(row['is_active'], true);
+    }
+    final sql = pointShopPriceApplicationSql(rows);
+    expect(sql, contains('on conflict (product_key) do update'));
+    expect(sql, contains('is distinct from'));
+    expect(sql, contains('catalog_identity_or_active_template_changed'));
+    expect(sql, isNot(contains('point_wallets')));
+    expect(sql, isNot(contains('point_shop_ownership')));
+    expect(sql.toLowerCase(), isNot(contains('delete from')));
+    const export = bool.fromEnvironment('EXPORT_PRICE_APPLICATION');
+    final out = export
+        ? Directory('output/pricing/catalog-2026-09-10')
+        : Directory.systemTemp.createTempSync('snapfit-price-application-');
+    if (!export) addTearDown(() => out.deleteSync(recursive: true));
+    final data = exportPriceApplication(out);
+    expect(data['status'], 'prepared-not-executed');
+    expect(data['changesWallets'], false);
+    expect(data['rows'], rows);
+    expect(File('${out.path}/apply-prices.sql').readAsStringSync(), sql);
+    expect(
+      File('${out.path}/verify-prices.sql').readAsStringSync(),
+      pointShopPriceVerificationSql(rows),
+    );
+  });
 }

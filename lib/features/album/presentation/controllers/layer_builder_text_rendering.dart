@@ -1,5 +1,11 @@
 part of 'layer_builder.dart';
 
+// The editor's Material canvas inherits the app's bodyMedium typography. Keep
+// that light-canvas baseline in the artwork itself so print/reader surfaces and
+// dark UI chrome cannot substitute another spacing, weight, or line height.
+final _albumTextFallbackStyle = SnapFitTheme.light().textTheme.bodyMedium!
+    .copyWith(inherit: false);
+
 Widget _buildTextImpl(
   LayerBuilder builder,
   LayerModel layer, {
@@ -7,7 +13,13 @@ Widget _buildTextImpl(
 }) {
   if (builder._isEditing(layer)) return const SizedBox.shrink();
 
-  final TextStyle baseStyle = layer.textStyle ?? const TextStyle(fontSize: 18);
+  final TextStyle baseStyle = _albumTextFallbackStyle
+      .merge(
+        (layer.textStyle ?? const TextStyle(fontSize: 18)).copyWith(
+          inherit: true,
+        ),
+      )
+      .copyWith(inherit: false);
   // 커버/페이지 템플릿의 스케일 일관성을 위해 강제 최소 폰트 보정은 적용하지 않는다.
   final TextStyle effectiveStyle = baseStyle;
 
@@ -26,11 +38,6 @@ Widget _buildTextImpl(
     textDirection: TextDirection.ltr,
     textAlign: layer.textAlign ?? TextAlign.center,
   )..layout(minWidth: 0, maxWidth: textMaxWidth);
-  final naturalPainter = TextPainter(
-    text: textSpan,
-    textDirection: TextDirection.ltr,
-    textAlign: layer.textAlign ?? TextAlign.center,
-  )..layout(minWidth: 0, maxWidth: 100000);
 
   // ───────────────────────────────────────────────
   // 텍스트 스타일(textStyleType) 우선 적용
@@ -418,7 +425,11 @@ Widget _buildTextImpl(
       baseWidth: realSize.width,
       baseHeight: realSize.height,
       isCover: isCover,
-      child: Opacity(opacity: layer.opacity, child: styled),
+      // Font size belongs to the saved artwork. Accessibility scaling remains
+      // active for editor controls, but cannot reflow the printed page.
+      child: MediaQuery.withNoTextScaling(
+        child: Opacity(opacity: layer.opacity, child: styled),
+      ),
     );
   }
 
@@ -427,10 +438,13 @@ Widget _buildTextImpl(
 
   const double extraWidth = 36; // 16 + 16 + safety 4
   const double extraHeight = 32; // 18 + 10 + safety 4
-  final minFrameWidth = naturalPainter.width + extraWidth;
-  final minFrameHeight = naturalPainter.height + extraHeight;
+  // A saved text frame is also its wrapping width. Expanding it to the
+  // unwrapped sentence width makes prose run beyond the page's clip boundary.
+  // New single-line titles already save their natural width plus padding in
+  // AlbumEditorService; their font size and alignment remain unchanged.
+  final minFrameHeight = textPainter.height + extraHeight;
   final resolvedFrameWidth = hasLayerFrame
-      ? math.max(layer.width, minFrameWidth)
+      ? layer.width
       : (textPainter.size.width + extraWidth);
   final resolvedFrameHeight = hasLayerFrame
       ? math.max(layer.height, minFrameHeight)
@@ -477,7 +491,9 @@ Widget _buildTextImpl(
     baseWidth: realSize.width,
     baseHeight: realSize.height,
     isCover: isCover,
-    child: Opacity(opacity: layer.opacity, child: content),
+    child: MediaQuery.withNoTextScaling(
+      child: Opacity(opacity: layer.opacity, child: content),
+    ),
   );
 }
 

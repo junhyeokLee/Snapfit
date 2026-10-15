@@ -1,0 +1,17 @@
+{
+  "runId": "0c3edc06-ce46-4dec-b430-979c82516fe0",
+  "tabId": "1603677256",
+  "reason": "Close after authorized TEST SDK return to observe server-only processing",
+  "closeStartedAt": "2026-10-15T04:47:08.304Z",
+  "appClosedAt": "2026-10-15T04:47:08.367Z",
+  "sdkReturnObserved": true,
+  "paymentVerificationSource": "Await actual PortOne GET by Cron",
+  "noMainAppTabsRemaining": true,
+  "checkedNoAppTabsAt": "2026-10-15T04:47:26.614Z",
+  "finalNoAppTabsBeforeReopen": {
+    "checkedAt": "2026-10-15T04:57:05.740Z",
+    "mainAppTabs": 0
+  },
+  "appReopenedAt": "2026-10-15T04:57:20.985Z",
+  "reopenedOnlyAfterFileChecked": true
+}

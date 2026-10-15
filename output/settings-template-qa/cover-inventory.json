@@ -1,0 +1,465 @@
+[
+  {
+    "id": -9301,
+    "title": "빛으로 엮은 우리",
+    "category": "웨딩",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/petal_couple.png"
+    ]
+  },
+  {
+    "id": -9302,
+    "title": "여행의 결",
+    "category": "여행",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/travel_harbor.png"
+    ]
+  },
+  {
+    "id": -9303,
+    "title": "작은 날의 기록",
+    "category": "일상",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/small_days_walk.png"
+    ]
+  },
+  {
+    "id": -9401,
+    "title": "우리의 서약",
+    "category": "웨딩",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/lightbound_twilight.png"
+    ]
+  },
+  {
+    "id": -9402,
+    "title": "정원에서의 약속",
+    "category": "웨딩",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/petal_bouquet.png"
+    ]
+  },
+  {
+    "id": -9403,
+    "title": "영화 같던 하루",
+    "category": "웨딩",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_cinema_dance.png"
+    ]
+  },
+  {
+    "id": -9404,
+    "title": "사랑의 편지",
+    "category": "웨딩",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/petal_veil.png"
+    ]
+  },
+  {
+    "id": -9411,
+    "title": "바다를 건너",
+    "category": "여행",
+    "paid": false,
+    "photos": [
+      "asset:assets/frame_preview/ocean_shore.jpg"
+    ]
+  },
+  {
+    "id": -9412,
+    "title": "도시의 수집가",
+    "category": "여행",
+    "paid": false,
+    "photos": [
+      "asset:assets/frame_preview/city_skyline.jpg"
+    ]
+  },
+  {
+    "id": -9413,
+    "title": "느리게 걷는 길",
+    "category": "여행",
+    "paid": false,
+    "photos": [
+      "asset:assets/frame_preview/misty_hills.jpg"
+    ]
+  },
+  {
+    "id": -9414,
+    "title": "여행의 우편함",
+    "category": "여행",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/travel_street.png"
+    ]
+  },
+  {
+    "id": -9421,
+    "title": "계절의 식탁",
+    "category": "일상",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/small_days_breakfast.png"
+    ]
+  },
+  {
+    "id": -9422,
+    "title": "취향 보관함",
+    "category": "일상",
+    "paid": false,
+    "photos": [
+      "asset:assets/frame_preview/artist_palette.jpg",
+      "asset:assets/frame_preview/studio_laptop.jpg"
+    ]
+  },
+  {
+    "id": -9423,
+    "title": "함께라서 좋은 날",
+    "category": "일상",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_friends_evening.png"
+    ]
+  },
+  {
+    "id": -9424,
+    "title": "주말의 온도",
+    "category": "일상",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/daily_book.png"
+    ]
+  },
+  {
+    "id": -9431,
+    "title": "너의 첫해",
+    "category": "성장·육아",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_sleep.png"
+    ]
+  },
+  {
+    "id": -9432,
+    "title": "작은 걸음의 기록",
+    "category": "성장·육아",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_walk.png",
+      "asset:assets/templates/soft_babybook/images/approved_stock/parent_hand.jpg"
+    ]
+  },
+  {
+    "id": -9433,
+    "title": "너라는 봄",
+    "category": "성장·육아",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_hand.png"
+    ]
+  },
+  {
+    "id": -9434,
+    "title": "알록달록 자라는 날",
+    "category": "성장·육아",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_play.png",
+      "asset:assets/templates/soft_babybook/images/approved_stock/soft_clips.jpg"
+    ]
+  },
+  {
+    "id": -9435,
+    "title": "처음 맞는 생일",
+    "category": "성장·육아",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_birthday.png"
+    ]
+  },
+  {
+    "id": -9441,
+    "title": "우리 집의 사계절",
+    "category": "가족·친구",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/family_kitchen.png"
+    ]
+  },
+  {
+    "id": -9442,
+    "title": "한 식탁의 이야기",
+    "category": "가족·친구",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/family_table.png",
+      "asset:assets/templates/original_editorial/images/journey_market.png"
+    ]
+  },
+  {
+    "id": -9443,
+    "title": "우리의 좋은 사이",
+    "category": "가족·친구",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/family_friends.png",
+      "asset:assets/frame_preview/celebration.jpg"
+    ]
+  },
+  {
+    "id": -9444,
+    "title": "세대를 잇는 사진",
+    "category": "가족·친구",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_generations_home.png"
+    ]
+  },
+  {
+    "id": -9445,
+    "title": "함께 떠난 소풍",
+    "category": "가족·친구",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/daily_picnic.png"
+    ]
+  },
+  {
+    "id": -9451,
+    "title": "너와 나의 날짜들",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/couple_cafe.png",
+      "asset:assets/templates/jeju_travel/images/approved_stock/sunset_people.jpg"
+    ]
+  },
+  {
+    "id": -9452,
+    "title": "둘만의 장면",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/couple_walk.png"
+    ]
+  },
+  {
+    "id": -9453,
+    "title": "사랑이 머문 계절",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": [
+      "asset:assets/frame_preview/spring_flowers.jpg"
+    ]
+  },
+  {
+    "id": -9454,
+    "title": "오래도록 우리",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/couple_anniversary.png"
+    ]
+  },
+  {
+    "id": -9455,
+    "title": "둘이 모은 조각",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/journey_train.png",
+      "asset:assets/templates/original_editorial/images/couple_keepsakes.png"
+    ]
+  },
+  {
+    "id": -9461,
+    "title": "너의 하루를 따라",
+    "category": "반려동물",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/pet_dog.png"
+    ]
+  },
+  {
+    "id": -9462,
+    "title": "낮잠의 모양",
+    "category": "반려동물",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/pet_cat.png"
+    ]
+  },
+  {
+    "id": -9463,
+    "title": "산책이라는 약속",
+    "category": "반려동물",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/pet_walk.png"
+    ]
+  },
+  {
+    "id": -9464,
+    "title": "우리 집 작은 가족",
+    "category": "반려동물",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/pet_nap.png",
+      "asset:assets/templates/original_editorial/images/pet_keepsakes.png"
+    ]
+  },
+  {
+    "id": -9465,
+    "title": "가장 다정한 얼굴",
+    "category": "반려동물",
+    "paid": false,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/pet_rest.png"
+    ]
+  },
+  {
+    "id": -9304,
+    "title": "바람을 수집한 여행",
+    "category": "여행",
+    "paid": false,
+    "photos": []
+  },
+  {
+    "id": -9305,
+    "title": "함께여서 좋은 날",
+    "category": "커플·기념일",
+    "paid": false,
+    "photos": []
+  },
+  {
+    "id": -9501,
+    "title": "약속을 묶은 책",
+    "category": "웨딩",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_wedding_mono.png"
+    ]
+  },
+  {
+    "id": -9502,
+    "title": "둘만의 여행",
+    "category": "여행",
+    "paid": true,
+    "photos": [
+      "asset:assets/frame_preview/alpine_lake.jpg"
+    ]
+  },
+  {
+    "id": -9503,
+    "title": "하루의 수집함",
+    "category": "일상",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/daily_desk.png"
+    ]
+  },
+  {
+    "id": -9504,
+    "title": "너의 첫 계절",
+    "category": "성장·육아",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/growth_keepsakes.png"
+    ]
+  },
+  {
+    "id": -9505,
+    "title": "우리 집 식탁",
+    "category": "가족·친구",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_family_supper.png"
+    ]
+  },
+  {
+    "id": -9506,
+    "title": "둘이 모은 장면",
+    "category": "커플·기념일",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/wedding_editorial/images/sources/hands_bw.png"
+    ]
+  },
+  {
+    "id": -9507,
+    "title": "산책하고 낮잠",
+    "category": "반려동물",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_dog_rose.png"
+    ]
+  },
+  {
+    "id": -9511,
+    "title": "서약의 결",
+    "category": "웨딩",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/lightbound_cake.png"
+    ]
+  },
+  {
+    "id": -9512,
+    "title": "해변에서 보낸 날",
+    "category": "여행",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/travel_coast.png"
+    ]
+  },
+  {
+    "id": -9513,
+    "title": "문장을 모으는 생활",
+    "category": "일상",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/jeju_travel/images/approved_stock/guesthouse_detail.jpg"
+    ]
+  },
+  {
+    "id": -9514,
+    "title": "너의 작은 옷장",
+    "category": "성장·육아",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_little_wardrobe.png"
+    ]
+  },
+  {
+    "id": -9515,
+    "title": "일요일의 피크닉",
+    "category": "가족·친구",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/daily_fruit.png"
+    ]
+  },
+  {
+    "id": -9516,
+    "title": "같이 사는 계절",
+    "category": "커플·기념일",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_shared_rain.png"
+    ]
+  },
+  {
+    "id": -9517,
+    "title": "작은 동거인",
+    "category": "반려동물",
+    "paid": true,
+    "photos": [
+      "asset:assets/templates/original_editorial/images/cover_cat_cobalt.png"
+    ]
+  }
+]

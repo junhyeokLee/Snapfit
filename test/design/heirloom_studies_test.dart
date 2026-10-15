@@ -194,7 +194,17 @@ void main() {
           expect(approvedMap.last, count);
           for (var i = 0; i < baseline.length; i++) {
             expect(
-              artwork(pages[map[i]]),
+              artwork(
+                i == 0
+                    ? templateDocumentPages(
+                        volume.document(
+                          aspect,
+                          innerPages: count,
+                          refineCover: false,
+                        ),
+                      ).first
+                    : pages[map[i]],
+              ),
               artwork(baseline[i]),
               reason: '${volume.id}/$count/$aspect/baseline$i',
             );

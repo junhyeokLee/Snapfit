@@ -1,0 +1,25 @@
+{
+  "status": "CUSTOMER_UI_TEST_DEV_E2E_VERIFIED",
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "orderId": "ordp_85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "paymentId": "SFPGT_00bc9432-4254-492e-a9c6-8f315f368419",
+  "source": "normal customer preview, delivery and review screens",
+  "amount": 159900,
+  "isTest": true,
+  "pdf": {
+    "state": "READY",
+    "interiorPages": 80,
+    "interiorBytes": 100423186,
+    "interiorParts": 7
+  },
+  "paymentApprovedByAgent": false,
+  "appClosedAfterPayment": true,
+  "supplierOrderConfirmed": true,
+  "endToEndComplete": true,
+  "liveOpened": false,
+  "paymentStatus": "PAID",
+  "paymentApprovalAlreadyObservedOnResume": true,
+  "customerHistoryRestored": true,
+  "completedAtUtc": "2026-10-15T06:54:09.808564+00:00",
+  "pgVerificationAlreadyBeforeClose": true
+}

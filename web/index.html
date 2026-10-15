@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html><html lang="ko"><head>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -16,7 +16,14 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="사진과 이야기를 모아 나만의 앨범을 만들고 함께 간직하는 스냅핏.">
+  <meta name="application-name" content="스냅핏">
+  <meta name="theme-color" content="#F7F5F2">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="스냅핏 · 나만의 사진 앨범">
+  <meta property="og:description" content="사진과 이야기를 모아 나만의 앨범을 만들고 함께 간직하세요.">
+  <meta property="og:locale" content="ko_KR">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,11 +34,11 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <title>스냅핏</title>
+  <title>스냅핏 · 나만의 사진 앨범</title>
   <link rel="manifest" href="manifest.json">
   
   
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
   
   
   
@@ -44,7 +51,7 @@
     body {
       margin: 0;
       min-height: 100%;
-      background-color: #101F22;
+      background-color: var(--snapfit-web-background, #F7F5F2);
           background-size: 100% 100%;
     }
 
@@ -94,6 +101,23 @@
       right: 0;
     }
   </style>
+  <script id="snapfit-initial-web-theme">
+    (() => {
+      let mode = 'system';
+      try {
+        const saved = JSON.parse(localStorage.getItem('flutter.snapfit_web_theme_mode_v1'));
+        if (saved === 'light' || saved === 'dark') mode = saved;
+      } catch (_) { /* Storage may be unavailable; use the system preference. */ }
+      const dark = mode === 'dark' || (mode === 'system' &&
+        typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
+      const background = dark ? '#111719' : '#F7F5F2';
+      const root = document.documentElement;
+      root.setAttribute('data-snapfit-theme', dark ? 'dark' : 'light');
+      root.style.setProperty('color-scheme', dark ? 'dark' : 'light');
+      root.style.setProperty('--snapfit-web-background', background);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', background);
+    })();
+  </script>
   <script id="splash-screen-script">
     function removeSplashFromWeb() {
       document.getElementById("splash")?.remove();

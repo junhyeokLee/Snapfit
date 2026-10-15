@@ -10,11 +10,11 @@ part of 'cover_view_model.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(CoverViewModel)
-const coverViewModelProvider = CoverViewModelProvider._();
+final coverViewModelProvider = CoverViewModelProvider._();
 
 final class CoverViewModelProvider
     extends $AsyncNotifierProvider<CoverViewModel, CoverState> {
-  const CoverViewModelProvider._()
+  CoverViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -33,14 +33,13 @@ final class CoverViewModelProvider
   CoverViewModel create() => CoverViewModel();
 }
 
-String _$coverViewModelHash() => r'55f1d091aea4aee906fa3d952f5e1abe51e69b47';
+String _$coverViewModelHash() => r'1e06f64eacb6c39b1db44d2029f0009a5170f337';
 
 abstract class _$CoverViewModel extends $AsyncNotifier<CoverState> {
   FutureOr<CoverState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
     final ref = this.ref as $Ref<AsyncValue<CoverState>, CoverState>;
     final element =
         ref.element
@@ -50,6 +49,6 @@ abstract class _$CoverViewModel extends $AsyncNotifier<CoverState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    element.handleCreate(ref, build);
   }
 }

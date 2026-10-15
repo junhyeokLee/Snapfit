@@ -10,17 +10,36 @@ import 'srgb_profile.dart';
 /// No PDF/X or CMYK claim is made. RGB suits the vendor's photographic paper;
 /// sRGB is our output standard, with colour appearance checked in our sample.
 class RasterPrintPdf {
+  RasterPrintPdf({this.maxFileBytes = maximumInteriorBytes}) {
+    if (maxFileBytes <= 0 || maxFileBytes > maximumInteriorBytes) {
+      throw ArgumentError.value(maxFileBytes, 'maxFileBytes');
+    }
+  }
+
+  static const maximumCoverBytes = 150000000;
+  static const maximumInteriorBytes = 500000000;
+  final int maxFileBytes;
   final List<_RasterPage> _pages = [];
   int _encodedBytes = 0;
+  bool _released = false;
   int get pageCount => _pages.length;
+
+  void _reservePageBytes(int bytes) {
+    if (_released) throw StateError('print_pdf_already_saved');
+    // Budget the complete file, including the shared ICC profile, all page
+    // dictionaries, content streams and xref offsets. No image quality changes.
+    final overhead =
+        printSrgbProfile.length + 8192 + 2048 * (_pages.length + 1);
+    if (_encodedBytes + bytes + overhead > maxFileBytes) {
+      throw StateError('print_pdf_exceeds_vendor_limit');
+    }
+    _encodedBytes += bytes;
+  }
 
   /// Reuses an already-encoded blank page while preserving physical page count.
   void repeatLastPage() {
     if (_pages.isEmpty) throw StateError('print_pdf_empty');
-    _encodedBytes += _pages.last.rgb.length;
-    if (_encodedBytes > 90 * 1024 * 1024) {
-      throw StateError('print_pdf_exceeds_90mb_limit');
-    }
+    _reservePageBytes(_pages.last.rgb.length);
     _pages.add(_pages.last);
   }
 
@@ -37,14 +56,11 @@ class RasterPrintPdf {
       width: image.width,
       height: image.height,
     ));
-    _encodedBytes += jpeg.length;
-    if (_encodedBytes > 90 * 1024 * 1024) {
-      throw StateError('print_pdf_exceeds_90mb_limit');
-    }
+    _reservePageBytes(jpeg.length);
     _pages.add(_RasterPage(image.width, image.height, jpeg, sizeMm, trimMm));
   }
 
-  Uint8List save() {
+  Uint8List save({bool releaseEncodedImages = false}) {
     if (_pages.isEmpty) throw StateError('print_pdf_empty');
     final out = BytesBuilder(copy: false);
     final offsets = <int>[0];
@@ -62,7 +78,11 @@ class RasterPrintPdf {
 
     String number(double value) => value.toStringAsFixed(5);
     double pt(double mm) => mm * 72 / 25.4;
-    write('%PDF-1.4\n%SNAPFIT-RASTER\n');
+    write('%PDF-1.4\n');
+    // The PDF contains binary JPEG/ICC streams. Adobe's PDF reference advises
+    // four high-bit bytes after the header so transports recognize binary data.
+    out.add(const [0x25, 0xe2, 0xe3, 0xcf, 0xd3, 0x0a]);
+    write('%SNAPFIT-RASTER\n');
     object(1, '<< /Type /Catalog /Pages 2 0 R >>');
     object(
       2,
@@ -112,7 +132,18 @@ class RasterPrintPdf {
     write(
       'trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n',
     );
-    return out.takeBytes();
+    if (out.length > maxFileBytes) {
+      throw StateError('print_pdf_exceeds_vendor_limit');
+    }
+    final bytes = out.takeBytes();
+    if (releaseEncodedImages) {
+      // The returned PDF owns its completed bytes; release per-page JPEGs before
+      // hashing and uploading large documents to avoid keeping a second set.
+      _pages.clear();
+      _encodedBytes = 0;
+      _released = true;
+    }
+    return bytes;
   }
 }
 

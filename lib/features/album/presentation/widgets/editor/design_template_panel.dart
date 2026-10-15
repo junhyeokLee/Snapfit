@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import '../../../../point_shop/presentation/point_shop_access.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/constants/design_templates.dart';
 import '../../../../../core/templates/template_catalog_categories.dart';
@@ -16,6 +17,7 @@ import '../cover/cover.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
 import '../../../domain/entities/layer.dart';
+import 'template_apply_preview.dart';
 
 class DesignTemplatePanel extends ConsumerStatefulWidget {
   const DesignTemplatePanel({super.key, this.closeOnApply = true});
@@ -116,12 +118,12 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     _warmUpPreviewThumbs(templates);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
+      height: kIsWeb ? double.infinity : MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+        color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+        borderRadius: kIsWeb ? BorderRadius.circular(12) : BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: SafeArea(
@@ -129,47 +131,49 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h),
+            if (!kIsWeb) ...[
+            SizedBox(height: 12),
             Center(
               child: Container(
-                width: 40.w,
-                height: 4.h,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: SnapFitColors.textPrimaryOf(
                     context,
                   ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text(
+            SizedBox(height: 16),
+            ],
+            if (!kIsWeb || widget.closeOnApply) Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(children: [Expanded(child: Text(
                 '앨범 분위기 고르기',
                 style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  fontWeight: kIsWeb ? FontWeight.w600 : FontWeight.w900,
                   color: SnapFitColors.textPrimaryOf(context),
                 ),
-              ),
+              )), if (kIsWeb) IconButton(onPressed: () => Navigator.pop(context), tooltip: '템플릿 닫기', icon: const Icon(Icons.close, size: 20))]),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 10),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 '사진에 맞는 무드를 골라보세요',
                 style: TextStyle(
-                  fontSize: 12.5.sp,
+                  fontSize: 12.5,
                   height: 1.35,
                   fontWeight: FontWeight.w700,
                   color: SnapFitColors.textSecondaryOf(context),
                 ),
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -186,7 +190,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                     ),
                     for (final c in categories)
                       Padding(
-                        padding: EdgeInsets.only(right: 8.w),
+                        padding: EdgeInsets.only(right: 8),
                         child: _FilterPill(
                           label: c,
                           count: _countByCategory(c),
@@ -202,10 +206,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                 ),
               ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 10),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: isCatalogLoading
                     ? Center(
                         child: SingleChildScrollView(
@@ -213,17 +217,17 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               SizedBox(
-                                width: 24.w,
-                                height: 24.w,
+                                width: 24,
+                                height: 24,
                                 child: const CircularProgressIndicator(
                                   strokeWidth: 2.2,
                                 ),
                               ),
-                              SizedBox(height: 10.h),
+                              SizedBox(height: 10),
                               Text(
                                 '어울리는 템플릿을 고르는 중이에요…',
                                 style: TextStyle(
-                                  fontSize: 12.sp,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: SnapFitColors.textSecondaryOf(context),
                                 ),
@@ -240,11 +244,12 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                         }),
                       )
                     : GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 12.h,
-                          childAspectRatio: 1 / 1.1,
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 220,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          mainAxisExtent:
+                              176 + MediaQuery.textScalerOf(context).scale(32),
                         ),
                         itemCount: templates.length,
                         itemBuilder: (context, index) {
@@ -264,7 +269,26 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                               onTap: () async {
                                 if (_isApplying) return;
                                 _isApplying = true;
+                                final pageId = vm.currentPage?.id;
                                 try {
+                                  final approved =
+                                      await showTemplateApplyPreview(
+                                        context,
+                                        title: template.name,
+                                        replacesContent:
+                                            vm.currentPage?.layers.isNotEmpty ??
+                                            false,
+                                        preview: _DesignTemplatePreview(
+                                          template: template,
+                                          ref: ref,
+                                          logicalCanvasSize: canvasSize,
+                                          sourceCanvasSize: templateSourceSize,
+                                        ),
+                                      );
+                                  if (!mounted ||
+                                      !approved ||
+                                      vm.currentPage?.id != pageId)
+                                    return;
                                   if (!await ensurePointShopAccess(
                                     context,
                                     ref,
@@ -272,7 +296,8 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                                     title: template.name,
                                   ))
                                     return;
-                                  if (!mounted) return;
+                                  if (!mounted || vm.currentPage?.id != pageId)
+                                    return;
                                   setState(() => _selectedId = template.id);
                                   vm.applyDesignTemplateToCurrentPage(
                                     template,
@@ -290,7 +315,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                       ),
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
           ],
         ),
       ),
@@ -325,20 +350,20 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
     return SnapFitPressable(
       onTap: onTap,
       pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(22.r),
+      borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: SnapFitMotion.settle,
         decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(22.r),
+          color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           border: Border.all(
             color: isSelected
-                ? SnapFitColors.accent
-                : SnapFitColors.overlayLightOf(context),
+                ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
+                : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayLightOf(context),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: [
+          boxShadow: kIsWeb ? const [] : [
             BoxShadow(
               color: Colors.black.withOpacity(
                 SnapFitColors.isDark(context) ? 0.24 : 0.07,
@@ -349,7 +374,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 11.h),
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 11),
           child: Column(
             children: [
               Expanded(
@@ -364,10 +389,10 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: SnapFitColors.backgroundOf(context),
-                              borderRadius: BorderRadius.circular(16.r),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16.r),
+                              borderRadius: BorderRadius.circular(16),
                               child: _DesignTemplatePreview(
                                 template: template,
                                 ref: ref,
@@ -380,16 +405,16 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                       ),
                     ),
                     Positioned(
-                      top: 8.h,
-                      left: 8.w,
+                      top: 8,
+                      left: 8,
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 7.w,
-                          vertical: 4.h,
+                          horizontal: 7,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.38),
-                          borderRadius: BorderRadius.circular(999.r),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
                           template.category,
@@ -397,7 +422,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 9.5.sp,
+                            fontSize: 9.5,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -405,31 +430,31 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                     ),
                     if (isSelected)
                       Positioned(
-                        top: 8.h,
-                        right: 8.w,
+                        top: 8,
+                        right: 8,
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
+                            horizontal: 8,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: SnapFitColors.accent,
-                            borderRadius: BorderRadius.circular(999.r),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.check_rounded,
-                                size: 12.sp,
-                                color: Colors.white,
+                                size: 12,
+                                color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
                               ),
-                              SizedBox(width: 3.w),
+                              SizedBox(width: 3),
                               Text(
                                 '선택',
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9.5.sp,
+                                  color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
+                                  fontSize: 9.5,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -440,14 +465,14 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                   ],
                 ),
               ),
-              SizedBox(height: 9.h),
+              SizedBox(height: 9),
               Text(
                 template.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12.5.sp,
+                  fontSize: 12.5,
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
                   color: isSelected
                       ? SnapFitColors.accent
@@ -456,7 +481,7 @@ class _DesignTemplatePanelState extends ConsumerState<DesignTemplatePanel> {
                   letterSpacing: -0.05,
                 ),
               ),
-              SizedBox(height: 3.h),
+              SizedBox(height: 3),
               PointShopProductBadge(productKey: 'template:${template.id}'),
             ],
           ),
@@ -481,22 +506,22 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = selected
+    final bg = kIsWeb ? selected ? WebPalette.of(context).softBrand : WebPalette.of(context).surface : selected
         ? const Color(0xFF132331)
         : SnapFitColors.surfaceOf(context);
-    final fg = selected ? Colors.white : SnapFitColors.textSecondaryOf(context);
+    final fg = kIsWeb ? selected ? WebPalette.of(context).brandInk : WebPalette.of(context).muted : selected ? Colors.white : SnapFitColors.textSecondaryOf(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(999.r),
+        borderRadius: BorderRadius.circular(999),
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(999.r),
-            boxShadow: selected
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: selected && !kIsWeb
                 ? [
                     BoxShadow(
                       color: const Color(0xFF132331).withValues(alpha: 0.18),
@@ -506,7 +531,7 @@ class _FilterPill extends StatelessWidget {
                   ]
                 : null,
             border: Border.all(
-              color: selected
+              color: kIsWeb ? selected ? WebPalette.of(context).brandInk : WebPalette.of(context).line : selected
                   ? const Color(0xFF20384D)
                   : SnapFitColors.overlayMediumOf(context),
             ),
@@ -517,28 +542,28 @@ class _FilterPill extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                   color: fg,
                   height: 1.0,
                 ),
               ),
               if (count != null) ...[
-                SizedBox(width: 6.w),
+                SizedBox(width: 6),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: selected
+                    color: kIsWeb ? WebPalette.of(context).surface : selected
                         ? Colors.white.withValues(alpha: 0.18)
                         : SnapFitColors.overlayLightOf(context),
-                    borderRadius: BorderRadius.circular(999.r),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     '$count',
                     style: TextStyle(
-                      fontSize: 10.5.sp,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      color: selected
+                      color: kIsWeb ? WebPalette.of(context).brandInk : selected
                           ? Colors.white
                           : SnapFitColors.textSecondaryOf(context),
                       height: 1,

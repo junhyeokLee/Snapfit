@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -10,13 +11,19 @@ import '../../viewmodels/album_editor_view_model.dart';
 import '../../../../../core/constants/page_templates.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import 'template_apply_preview.dart';
 
 /// 페이지 템플릿 선택 바텀시트
 /// - 여러 레이아웃 템플릿, 슬롯 간 여백 있음
 class TemplateSelectionPanel extends ConsumerStatefulWidget {
   final String title;
 
-  const TemplateSelectionPanel({super.key, this.title = '레이아웃'});
+  const TemplateSelectionPanel({
+    super.key,
+    this.title = '레이아웃',
+    this.closeOnApply = true,
+  });
+  final bool closeOnApply;
 
   @override
   ConsumerState<TemplateSelectionPanel> createState() =>
@@ -27,6 +34,7 @@ class _TemplateSelectionPanelState
     extends ConsumerState<TemplateSelectionPanel> {
   String? _selectedId;
   bool _favoritesOnly = false;
+  bool _isApplying = false;
 
   @override
   Widget build(BuildContext context) =>
@@ -53,12 +61,12 @@ class _TemplateSelectionPanelState
     );
 
     return Container(
-      height: maxSheetHeight,
+      height: kIsWeb ? double.infinity : maxSheetHeight,
       decoration: BoxDecoration(
-        color: SnapFitColors.surfaceOf(context),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+        color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+        borderRadius: kIsWeb ? BorderRadius.circular(12) : BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: SafeArea(
@@ -66,45 +74,34 @@ class _TemplateSelectionPanelState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h),
+            if (!kIsWeb) ...[
+            SizedBox(height: 12),
             Center(
               child: Container(
-                width: 40.w,
-                height: 4.h,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: SnapFitColors.textPrimaryOf(
                     context,
                   ).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text(
+            SizedBox(height: 16),
+            ],
+            if (!kIsWeb || widget.closeOnApply) Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(children: [Expanded(child: Text(
                 widget.title == '레이아웃' ? '쪽 레이아웃 고르기' : widget.title,
                 style: TextStyle(
-                  fontSize: 19.sp,
-                  fontWeight: FontWeight.w900,
-                  color: SnapFitColors.textPrimaryOf(context),
+                  fontSize: 19,
+                  fontWeight: kIsWeb ? FontWeight.w600 : FontWeight.w900,
+                  color: kIsWeb ? WebPalette.of(context).ink : SnapFitColors.textPrimaryOf(context),
                 ),
-              ),
+              )), if (kIsWeb) IconButton(onPressed: () => Navigator.pop(context), tooltip: '레이아웃 닫기', icon: const Icon(Icons.close, size: 20))]),
             ),
-            SizedBox(height: 6.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text(
-                '사진이 놓일 리듬을 먼저 골라보세요.',
-                style: TextStyle(
-                  fontSize: 12.5.sp,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                  color: SnapFitColors.textSecondaryOf(context),
-                ),
-              ),
-            ),
-            SizedBox(height: 14.h),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: CatalogFavoriteFilter(
@@ -114,17 +111,18 @@ class _TemplateSelectionPanelState
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: templates.isEmpty
                     ? CatalogFavoritesEmpty(
                         onShowAll: () => setState(() => _favoritesOnly = false),
                       )
                     : GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 12.h,
-                          childAspectRatio: 1 / 1.18,
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 220,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          mainAxisExtent:
+                              160 + MediaQuery.textScalerOf(context).scale(24),
                         ),
                         itemCount: templates.length,
                         itemBuilder: (context, index) {
@@ -139,13 +137,44 @@ class _TemplateSelectionPanelState
                                 template: template,
                                 isSelected: isSelected,
                                 pageRatio: aspect,
-                                onTap: () {
-                                  setState(() => _selectedId = template.id);
-                                  vm.applyTemplateToCurrentPage(
-                                    template,
-                                    canvasSize,
-                                  );
-                                  Navigator.of(context).pop();
+                                onTap: () async {
+                                  if (_isApplying) return;
+                                  _isApplying = true;
+                                  final pageId = vm.currentPage?.id;
+                                  try {
+                                    final approved =
+                                        await showTemplateApplyPreview(
+                                          context,
+                                          title: template.name,
+                                          replacesContent:
+                                              vm
+                                                  .currentPage
+                                                  ?.layers
+                                                  .isNotEmpty ??
+                                              false,
+                                          preview: AspectRatio(
+                                            aspectRatio: aspect,
+                                            child: CustomPaint(
+                                              painter: _SlotPreviewPainter(
+                                                template,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                    if (!mounted ||
+                                        !approved ||
+                                        vm.currentPage?.id != pageId)
+                                      return;
+                                    vm.applyTemplateToCurrentPage(
+                                      template,
+                                      canvasSize,
+                                    );
+                                    setState(() => _selectedId = template.id);
+                                    if (widget.closeOnApply)
+                                      Navigator.of(context).pop();
+                                  } finally {
+                                    _isApplying = false;
+                                  }
                                 },
                               ),
                             ),
@@ -154,7 +183,7 @@ class _TemplateSelectionPanelState
                       ),
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 12),
           ],
         ),
       ),
@@ -180,20 +209,20 @@ class _TemplateCard extends StatelessWidget {
     return SnapFitPressable(
       onTap: onTap,
       pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(22.r),
+      borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: SnapFitMotion.settle,
         decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(22.r),
+          color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           border: Border.all(
             color: isSelected
-                ? SnapFitColors.accent
-                : SnapFitColors.overlayLightOf(context),
+                ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
+                : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayLightOf(context),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: [
+          boxShadow: kIsWeb ? const [] : [
             BoxShadow(
               color: Colors.black.withOpacity(
                 SnapFitColors.isDark(context) ? 0.22 : 0.06,
@@ -204,7 +233,7 @@ class _TemplateCard extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
           child: Column(
             children: [
               Expanded(
@@ -215,7 +244,7 @@ class _TemplateCard extends StatelessWidget {
                         child: AspectRatio(
                           aspectRatio: pageRatio,
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14.r),
+                            borderRadius: BorderRadius.circular(14),
                             child: CustomPaint(
                               painter: _SlotPreviewPainter(template),
                             ),
@@ -225,33 +254,33 @@ class _TemplateCard extends StatelessWidget {
                     ),
                     if (isSelected)
                       Positioned(
-                        top: 8.h,
-                        left: 8.w,
+                        top: 8,
+                        left: 8,
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 7.w,
-                            vertical: 4.h,
+                            horizontal: 7,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: SnapFitColors.accent,
-                            borderRadius: BorderRadius.circular(999.r),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                           child: Icon(
                             Icons.check_rounded,
-                            size: 13.sp,
-                            color: Colors.white,
+                            size: 13,
+                            color: kIsWeb ? WebPalette.of(context).onBrand : Colors.white,
                           ),
                         ),
                       ),
                   ],
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 8),
               Text(
                 template.name,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12.5.sp,
+                  fontSize: 12.5,
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
                   color: isSelected
                       ? SnapFitColors.accent
@@ -260,11 +289,11 @@ class _TemplateCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 2.h),
+              SizedBox(height: 2),
               Text(
                 '${template.slots.length}컷 레이아웃',
                 style: TextStyle(
-                  fontSize: 10.5.sp,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.w700,
                   color: SnapFitColors.textMutedOf(context),
                 ),

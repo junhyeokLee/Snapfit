@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../core/utils/platform_ui.dart';
+import '../../../../core/navigation/web_app_location.dart';
+
+import '../../../../core/constants/cover_size.dart';
+import '../../../../shared/web/web_design.dart';
 import '../../domain/entities/album_page.dart';
+import '../../domain/entities/album.dart';
 import '../../domain/entities/layer.dart';
 import '../controllers/layer_builder.dart';
 import '../controllers/layer_interaction_manager.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import '../widgets/reader/album_reader_more_options_sheet.dart';
+import '../widgets/reader/reader_page_gallery.dart';
+import '../widgets/web/web_album_workspace.dart';
 import 'page_editor_screen.dart';
 import 'album_invite_screen.dart';
 
 class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
-  final List<AlbumPage> innerPages;
-  final int initialPageIndex;
-  final double singlePageW;
-  final double singlePageH;
-  final LayerInteractionManager interaction;
-  final LayerBuilder layerBuilder;
-
   const AlbumReaderInnerDetailScreen({
     super.key,
     required this.innerPages,
@@ -30,7 +27,11 @@ class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
     required this.interaction,
     required this.layerBuilder,
   });
-
+  final List<AlbumPage> innerPages;
+  final int initialPageIndex;
+  final double singlePageW, singlePageH;
+  final LayerInteractionManager interaction;
+  final LayerBuilder layerBuilder;
   @override
   ConsumerState<AlbumReaderInnerDetailScreen> createState() =>
       _AlbumReaderInnerDetailScreenState();
@@ -38,567 +39,349 @@ class AlbumReaderInnerDetailScreen extends ConsumerStatefulWidget {
 
 class _AlbumReaderInnerDetailScreenState
     extends ConsumerState<AlbumReaderInnerDetailScreen> {
-  late PageController _pageController;
-  late int _currentPage;
-  bool? _lastIsLandscape;
-  bool _showSwipeHint = true;
-
+  late final PageController _pages;
+  late int _current;
+  List<AlbumPage>? _edited;
+  List<AlbumPage> get _visible => _edited ?? widget.innerPages;
   @override
   void initState() {
     super.initState();
-    _currentPage = widget.initialPageIndex;
-    _pageController = PageController(initialPage: widget.initialPageIndex);
-
-    // 스와이프 힌트는 3초 뒤에 사라지게 설정
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _showSwipeHint = false;
-        });
-      }
-    });
+    _current = widget.initialPageIndex.clamp(
+      0,
+      widget.innerPages.isEmpty ? 0 : widget.innerPages.length - 1,
+    );
+    _pages = PageController(initialPage: _current);
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final isLandscape =
-        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
-    if (_lastIsLandscape == isLandscape) return;
-    _lastIsLandscape = isLandscape;
-    final oldController = _pageController;
-    _pageController = PageController(
-      initialPage: _currentPage,
-      viewportFraction: isLandscape ? 0.64 : 0.88,
-    );
-    oldController.dispose();
+  Future<void> _editCurrentPage() async {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    if (vm.album?.allowsEditing == false || _visible.isEmpty) return;
+    final viewedId = _visible[_current].id;
+    final target = vm.pages.indexWhere((p) => p.id == viewedId);
+    if (target < 1) return;
+    final albumId = vm.album?.id;
+    await Navigator.push<bool>(context, MaterialPageRoute(
+      settings: albumId != null && albumId > 0
+          ? WebAppRouteSettings(WebAppLocation(WebAppPage.editor, '$albumId'))
+          : null,
+      builder: (_) => PageEditorScreen(
+        initialPageIndex: target,
+        returnToPreviousOnSave: true,
+      ),
+    ));
+    if (!mounted) return;
+    final updated = vm.pages.skip(1).toList();
+    final retained = updated.indexWhere((p) => p.id == viewedId);
+    final next = retained >= 0 ? retained
+        : _current.clamp(0, updated.isEmpty ? 0 : updated.length - 1);
+    setState(() {
+      _edited = updated;
+      _current = next;
+    });
+    if (_pages.hasClients && updated.isNotEmpty) _pages.jumpToPage(next);
+  }
+
+  void _inviteMembers() {
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    if (album == null || album.id <= 0 || !album.allowsManagement) return;
+    Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumInviteScreen(
+      album: album,
+      albumId: album.id,
+      albumTitle: album.title.isEmpty ? '스냅핏 앨범' : album.title,
+    )));
   }
 
   void _showMoreOptions() {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    // innerPages는 vm.pages.sublist(1) 기준으로 들어오기 때문에,
-    // 에디터에서 사용할 실제 페이지 인덱스는 +1 해준다.
-    final currentInnerIndex = _currentPage;
-    final targetPageIndex = (currentInnerIndex + 1).clamp(
-      1,
-      vm.pages.length - 1,
-    );
-
-    Widget buildSheet(BuildContext ctx, {required bool compact}) {
-      return AlbumReaderMoreOptionsSheet(
-        onEdit: () async {
-          Navigator.pop(ctx);
-          // 내지 상세에서 편집으로 진입 시, 현재 보고 있는 페이지를 기준으로 에디터로 이동
-          final saved = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  PageEditorScreen(initialPageIndex: targetPageIndex),
-            ),
-          );
-          if (!mounted) return;
-          if (saved == true) {
-            Navigator.pop(context, true);
-          }
-        },
-        onConfirm: () {
-          Navigator.pop(ctx);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
-          );
-        },
-        onInvite: () {
-          Navigator.pop(ctx);
-          final album = vm.album;
-          if (album == null || album.id <= 0) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('앨범 정보를 찾을 수 없습니다.')));
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AlbumInviteScreen(
-                albumId: album.id,
-                albumTitle: album.title.isEmpty ? 'SnapFit Album' : album.title,
-              ),
-            ),
-          );
-        },
-        compact: compact,
-      );
-    }
-
-    final isLandscape =
-        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
-    if (isLandscape) {
-      showGeneralDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierLabel: '메뉴 닫기',
-        barrierColor: Colors.black.withValues(alpha: 0.22),
-        transitionDuration: const Duration(milliseconds: 180),
-        pageBuilder: (ctx, animation, secondaryAnimation) {
-          return Center(
-            child: SizedBox(
-              width: 232,
-              child: Material(
-                color: Colors.transparent,
-                child: buildSheet(ctx, compact: true),
-              ),
-            ),
-          );
-        },
-        transitionBuilder: (ctx, animation, secondaryAnimation, child) {
-          final curved = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          );
-          return FadeTransition(
-            opacity: curved,
-            child: ScaleTransition(
-              alignment: Alignment.center,
-              scale: Tween<double>(begin: 0.96, end: 1).animate(curved),
-              child: child,
-            ),
-          );
-        },
+    if (vm.album?.allowsEditing == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('보기 전용 앨범이에요. 편집은 앨범 소유자에게 요청해 주세요.')),
       );
       return;
     }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => buildSheet(ctx, compact: false),
+    Widget sheet(BuildContext ctx, bool compact) => AlbumReaderMoreOptionsSheet(
+      compact: compact,
+      onEdit: () async {
+        Navigator.pop(ctx);
+        await _editCurrentPage();
+      },
+      onConfirm: () {
+        Navigator.pop(ctx);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('제작 확정은 메인 리더 화면에서 진행해주세요.')),
+        );
+      },
+      onInvite: vm.album?.allowsManagement == false
+          ? null
+          : () {
+              Navigator.pop(ctx);
+              _inviteMembers();
+            },
     );
+    if (kIsWeb) {
+      showWebAwareDialog<void>(
+        context: context,
+        maxWidth: 380,
+        maxHeight: 520,
+        builder: (ctx) => sheet(ctx, true),
+      );
+      return;
+    }
+    if (MediaQuery.orientationOf(context) == Orientation.landscape) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 280),
+            child: SingleChildScrollView(child: sheet(ctx, true)),
+          ),
+        ),
+      );
+    } else {
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (ctx) =>
+            SafeArea(child: SingleChildScrollView(child: sheet(ctx, false))),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 앨범 사이즈 계산 (에디터/만들기 화면과 유사하게 꽉 차게)
-    final media = MediaQuery.of(context);
-    final screenW = media.size.width;
-    final screenH = media.size.height;
-    final isLandscape = screenW > screenH;
-
-    final vmState = ref.watch(albumEditorViewModelProvider).value;
-    final vm = ref.read(albumEditorViewModelProvider.notifier);
-
-    // 앨범 정보 파싱
-    final albumTitle = vm.album?.title ?? 'SnapFit Album';
-    final coverName = vmState?.selectedCover.name.toUpperCase() ?? 'ALBUM';
-    final realW = vmState?.selectedCover.realSize.width.toInt() ?? 0;
-    final realH = vmState?.selectedCover.realSize.height.toInt() ?? 0;
-    String albumSizeInfo = '$coverName ALBUM';
-    if (realW > 0 && realH > 0) {
-      // 비율에 맞춰 W x H 정수 표시 (예: 20x20)
-      albumSizeInfo = '$coverName ALBUM (${realW}X$realH)';
-    }
-
-    // 전달받은 singlePageW, singlePageH는 비율을 구하는 용도
-    final targetRatio = widget.singlePageW / widget.singlePageH;
-
-    final topSafe = media.padding.top;
-    final bottomSafe = media.padding.bottom;
-
-    // 가로에서는 텍스트/버튼을 오버레이로 빼고 페이지가 화면 높이를 최대한 쓰게 한다.
-    final maxW = isLandscape ? screenW * 0.70 : screenW * 0.82;
-    final maxH = isLandscape
-        ? screenH - topSafe - bottomSafe - 44
-        : screenH * 0.60;
-
-    double detailW = maxW;
-    double detailH = detailW / targetRatio;
-
-    // 비율을 유지하되 화면 높이를 초과하면 높이에 맞춤
-    if (detailH > maxH) {
-      detailH = maxH;
-      detailW = detailH * targetRatio;
-    }
-
-    // 목업의 딥 다크 블루/그레이 배경
-    final bgColor = const Color(0xFF161C20);
-
-    Widget pageIndicator({required bool compact}) {
-      final baseSize = compact ? 11.0 : 14.sp;
-      final currentSize = compact ? 16.0 : 20.sp;
-      return RichText(
-        text: TextSpan(
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.58),
-            fontSize: baseSize,
-            fontFamily: 'NotoSans',
-            fontWeight: FontWeight.w600,
-          ),
-          children: [
-            const TextSpan(text: 'Page  '),
-            TextSpan(
-              text: '${_currentPage + 1}',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: currentSize,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            TextSpan(text: '  of ${widget.innerPages.length}'),
-          ],
-        ),
-      );
-    }
-
-    Widget topButton({required IconData icon, required VoidCallback onTap}) {
-      return Material(
-        color: Colors.white.withValues(alpha: isLandscape ? 0.12 : 0.08),
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: isLandscape ? 42 : 46.w,
-            height: isLandscape ? 42 : 46.w,
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: isLandscape ? 22 : 24.sp,
-            ),
-          ),
-        ),
-      );
-    }
-
-    Widget pageCarousel() {
-      return PageView.builder(
-        controller: _pageController,
-        itemCount: widget.innerPages.length,
-        onPageChanged: (idx) {
-          setState(() {
-            _currentPage = idx;
-            _showSwipeHint = false; // 수동으로 넘기면 힌트 즉시 해제
-          });
-        },
-        itemBuilder: (context, index) {
-          return AnimatedBuilder(
-            animation: _pageController,
-            builder: (context, child) {
-              double pageDist = 0.0;
-              if (_pageController.position.haveDimensions) {
-                pageDist = _pageController.page! - index;
-              } else if (index != widget.initialPageIndex) {
-                pageDist = widget.initialPageIndex > index ? 1.0 : -1.0;
-              }
-
-              final offsetX = pageDist * (isLandscape ? 18.0 : 28.w);
-              final darkness = (pageDist.abs()).clamp(0.0, 0.05);
-              final sideScale = 1.0 - (pageDist.abs().clamp(0.0, 1.0) * 0.035);
-
-              return Center(
-                child: Transform.translate(
-                  offset: Offset(offsetX, 0),
-                  child: Transform.scale(
-                    scale: sideScale,
-                    child: Hero(
-                      tag: 'inner_page_${widget.innerPages[index].id}',
-                      child: _DetailInnerCard(
-                        page: widget.innerPages[index],
-                        pageW: detailW,
-                        pageH: detailH,
-                        interaction: widget.interaction,
-                        layerBuilder: widget.layerBuilder,
-                        darkness: darkness,
-                        compactShadow: isLandscape,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      );
-    }
-
-    if (isLandscape) {
-      return Scaffold(
-        backgroundColor: bgColor,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(child: pageCarousel()),
-              Positioned(
-                left: 14,
-                top: 10,
-                child: topButton(
-                  icon: platformBackIcon(),
-                  onTap: () => Navigator.pop(context),
-                ),
-              ),
-              Positioned(
-                right: 14,
-                top: 10,
-                child: topButton(
-                  icon: Icons.more_horiz_rounded,
-                  onTap: _showMoreOptions,
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 10,
-                child: Center(child: pageIndicator(compact: true)),
-              ),
-              if (_showSwipeHint && _currentPage < widget.innerPages.length - 1)
-                Positioned(
-                  right: 76,
-                  top: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    child: AnimatedOpacity(
-                      opacity: _showSwipeHint ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 500),
-                      child: Center(
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white.withValues(alpha: 0.42),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 상단 앱바
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-              child: Row(
-                children: [
-                  // 닫기/뒤로가기
-                  IconButton(
-                    icon: Icon(
-                      platformBackIcon(),
-                      color: Colors.white,
-                      size: 24.sp,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          albumSizeInfo,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 12.sp,
-                            letterSpacing: 1.2,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          albumTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 더보기
-                  IconButton(
-                    icon: Icon(
-                      Icons.more_horiz_rounded,
-                      color: Colors.white,
-                      size: 28.sp,
-                    ),
-                    onPressed: _showMoreOptions,
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20.h),
-
-            Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  pageCarousel(),
-
-                  // 스와이프 안내 힌트 (오른쪽 중앙)
-                  if (_showSwipeHint &&
-                      _currentPage < widget.innerPages.length - 1)
-                    Positioned(
-                      right: 16.w, // 화면 가장자리에 가깝게
-                      child: IgnorePointer(
-                        child: AnimatedOpacity(
-                          opacity: _showSwipeHint ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 500),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 56.w,
-                                height: 56.w,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: RadialGradient(
-                                    colors: [
-                                      SnapFitColors.accent.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                      SnapFitColors.accent.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  size: 24.sp,
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'SWIPE',
-                                style: TextStyle(
-                                  color: SnapFitColors.accent.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12.sp,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // 하단 페이지 인디케이터 text ("Page 12 of 40")
-            Padding(
-              padding: EdgeInsets.only(bottom: 40.h, top: 20.h),
-              child: pageIndicator(compact: false),
-            ),
-          ],
-        ),
+    ref.watch(albumEditorViewModelProvider);
+    final album = ref.read(albumEditorViewModelProvider.notifier).album;
+    final rawRatio = widget.singlePageW / widget.singlePageH;
+    final ratio = rawRatio.isFinite && rawRatio > 0 ? rawRatio : 1.0;
+    if (kIsWeb) return _buildWebDetail(album, ratio);
+    return ReaderPageGallery(
+      title: album?.title ?? '앨범',
+      controller: _pages,
+      currentPage: _current,
+      pageCount: _visible.length,
+      onMore: _showMoreOptions,
+      onPageChanged: (index) => setState(() => _current = index),
+      pageBuilder: (context, index) => ReaderDetailPageArtwork(
+        page: _visible[index],
+        ratio: ratio,
+        interaction: widget.interaction,
+        layerBuilder: widget.layerBuilder,
       ),
+    );
+  }
+
+  Widget _buildWebDetail(Album? album, double ratio) {
+    final vm = ref.read(albumEditorViewModelProvider.notifier);
+    final base = Size(kCoverReferenceWidth, kCoverReferenceWidth / ratio);
+    final previewInteraction = LayerInteractionManager.preview(ref, () => base);
+    final previewBuilder = LayerBuilder(previewInteraction, () => base);
+    final cover = CoverSize(
+      name: vm.selectedCover.name,
+      ratio: ratio,
+      realSize: vm.selectedCover.realSize,
+      productId: vm.selectedCover.productId,
+    );
+    void select(int index) {
+      if (index < 0 || index >= _visible.length) return;
+      setState(() => _current = index);
+    }
+    Widget rail({bool horizontal = false}) => WebAlbumPageRail(
+      pages: _visible,
+      selectedIndex: _current,
+      cover: cover,
+      theme: vm.selectedTheme,
+      previewBuilder: previewBuilder,
+      onSelected: select,
+      horizontal: horizontal,
+      includesCover: false,
+    );
+    final edit = OutlinedButton.icon(
+      onPressed: album?.allowsEditing == false || _visible.isEmpty
+          ? null : _editCurrentPage,
+      icon: const Icon(Icons.edit_outlined, size: 17),
+      label: const Text('현재 페이지 편집'),
+    );
+    final invite = album?.allowsManagement == true
+        ? TextButton.icon(
+            onPressed: _inviteMembers,
+            icon: const Icon(Icons.group_add_outlined, size: 17),
+            label: const Text('멤버 초대'),
+          )
+        : null;
+    return SnapFitWebShell(
+      title: '페이지 상세',
+      workspace: true,
+      showNavigation: false,
+      actions: [TextButton.icon(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back, size: 17),
+        label: const Text('앨범으로'),
+      )],
+      child: LayoutBuilder(builder: (context, box) {
+        final wide = box.maxWidth >= 1100;
+        final compact = box.maxWidth < 760;
+        final details = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('문서 정보', style: TextStyle(
+              color: WebPalette.of(context).ink, fontSize: 13, fontWeight: FontWeight.w700,
+            )),
+            const SizedBox(height: 18),
+            Text(vm.selectedCover.displayName, style: TextStyle(
+              color: WebPalette.of(context).muted, fontSize: 12, height: 1.6,
+            )),
+            const SizedBox(height: 10),
+            Text('내지 ${_visible.length}쪽', style: TextStyle(
+              color: WebPalette.of(context).muted, fontSize: 12,
+            )),
+            const SizedBox(height: 10),
+            Text(album?.allowsEditing == false ? '보기 전용' : '편집 가능',
+              style: TextStyle(color: WebPalette.of(context).brandInk, fontSize: 12)),
+            const SizedBox(height: 26),
+            edit,
+            if (invite != null) ...[const SizedBox(height: 10), invite],
+            const SizedBox(height: 16),
+            Text('책 주문은 앨범 미리보기 화면에서 전체 구성을 확인한 뒤 진행할 수 있습니다.',
+              style: TextStyle(color: WebPalette.of(context).muted, fontSize: 12, height: 1.6)),
+          ],
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+              color: WebPalette.of(context).surface,
+              child: WebPageHeading(
+                title: album?.title.isNotEmpty == true ? album!.title : '앨범 상세',
+                eyebrow: 'PAGE DETAIL',
+                description: '${vm.selectedCover.displayName} · 내지 ${_visible.length}쪽',
+                trailing: wide ? null : Wrap(spacing: 10, runSpacing: 10,
+                  children: [edit, if (invite != null) invite]),
+              ),
+            ),
+            Divider(height: 1, color: WebPalette.of(context).line),
+            if (compact) SizedBox(height: 112, child: rail(horizontal: true)),
+            Expanded(child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!compact) ...[
+                  SizedBox(width: 166, child: rail()),
+                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
+                ],
+                Expanded(child: ColoredBox(
+                  color: WebPalette.of(context).canvas,
+                  child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            tooltip: '이전 페이지',
+                            onPressed: _current > 0 ? () => select(_current - 1) : null,
+                            icon: const Icon(Icons.chevron_left, size: 20),
+                          ),
+                          Text(_visible.isEmpty ? '페이지 없음'
+                              : '${_current + 1} / ${_visible.length}',
+                            style: TextStyle(color: WebPalette.of(context).ink, fontSize: 12)),
+                          IconButton(
+                            tooltip: '다음 페이지',
+                            onPressed: _current + 1 < _visible.length
+                                ? () => select(_current + 1) : null,
+                            icon: const Icon(Icons.chevron_right, size: 20),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(child: Padding(
+                      padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
+                      child: _visible.isEmpty ? const Center(child: Text('페이지가 없습니다.'))
+                          : Center(child: ReaderDetailPageArtwork(
+                              page: _visible[_current],
+                              ratio: ratio,
+                              interaction: previewInteraction,
+                              layerBuilder: previewBuilder,
+                              flatPresentation: true,
+                            )),
+                    )),
+                  ]),
+                )),
+                if (wide) ...[
+                  VerticalDivider(width: 1, color: WebPalette.of(context).line),
+                  SizedBox(width: 264, child: ColoredBox(
+                    color: WebPalette.of(context).surface,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24), child: details,
+                    ),
+                  )),
+                ],
+              ],
+            )),
+          ],
+        );
+      }),
     );
   }
 }
 
-class _DetailInnerCard extends StatelessWidget {
-  final AlbumPage page;
-  final double pageW;
-  final double pageH;
-  final LayerInteractionManager interaction;
-  final LayerBuilder layerBuilder;
-  final double darkness;
-  final bool compactShadow;
-
-  const _DetailInnerCard({
+class ReaderDetailPageArtwork extends StatelessWidget {
+  const ReaderDetailPageArtwork({
+    super.key,
     required this.page,
-    required this.pageW,
-    required this.pageH,
+    required this.ratio,
     required this.interaction,
     required this.layerBuilder,
-    this.darkness = 0.0,
-    this.compactShadow = false,
+    this.flatPresentation = false,
   });
-
+  final AlbumPage page;
+  final double ratio;
+  final LayerInteractionManager interaction;
+  final LayerBuilder layerBuilder;
+  final bool flatPresentation;
   @override
-  Widget build(BuildContext context) {
-    // 논리 좌표계 계산 (에디터 비율 일치)
-    final ratio = pageW / pageH;
-    const logicalW = kCoverReferenceWidth;
-    final logicalH = kCoverReferenceWidth / ratio;
-    final logicalBaseSize = Size(logicalW, logicalH);
-    final scale = pageW / logicalW;
-
-    final pageBackgroundColor = page.backgroundColor != null
-        ? Color(page.backgroundColor!)
-        : SnapFitColors.pureWhite;
-
-    return ClipRect(
-      // 바깥으로 튀어나온 레이어 자르기
-      child: Container(
-        width: pageW,
-        height: pageH,
-        decoration: BoxDecoration(
-          color: pageBackgroundColor,
-          borderRadius: BorderRadius.circular(4.r), // 은근한 둥글기 적용
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: compactShadow ? 0.32 : 0.4),
-              blurRadius: compactShadow ? 16.0 : 20.0,
-              spreadRadius: compactShadow ? 0.0 : 2.0,
-              offset: Offset(0, compactShadow ? 8 : 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          // 안쪽 이미지 컨텐츠용
-          borderRadius: BorderRadius.circular(4.r),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Transform.scale(
-                scale: scale,
-                alignment: Alignment.topLeft,
-                child: SizedBox(
-                  width: logicalBaseSize.width,
-                  height: logicalBaseSize.height,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: interaction.sortByZ(page.layers).map((layer) {
-                      if (layer.type == LayerType.image ||
-                          layer.type == LayerType.sticker ||
-                          layer.type == LayerType.decoration) {
-                        return layerBuilder.buildImage(layer);
-                      }
-                      return layerBuilder.buildText(layer);
-                    }).toList(),
-                  ),
-                ),
+  Widget build(BuildContext context) => AspectRatio(
+    aspectRatio: ratio,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        boxShadow: flatPresentation ? const [] : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .12),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRect(
+        child: ColoredBox(
+          color: Color(page.backgroundColor ?? 0xFFFFFFFF),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+              width: kCoverReferenceWidth,
+              height: kCoverReferenceWidth / ratio,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  for (final layer in interaction.sortByZ(page.layers))
+                    if (layer.type == LayerType.image ||
+                        layer.type == LayerType.sticker ||
+                        layer.type == LayerType.decoration)
+                      layerBuilder.buildImage(layer)
+                    else
+                      layerBuilder.buildText(layer),
+                ],
               ),
-              // 측면 페이지 경계선 및 원근감을 위한 어두운 오버레이
-              if (darkness > 0)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withValues(alpha: darkness),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

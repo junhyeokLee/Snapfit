@@ -1,0 +1,9 @@
+{
+  "onlySourceDrift": "lib/features/profile/presentation/views/order_history_screen.dart",
+  "scope": "wide sidebar heading label shortened; checkout, payment, owner, TEST and state logic unchanged",
+  "reconstructedValidatedSourceSha256": "225580ea4924be3af48de8ba9f36770179de83baae3f69a7828f5604a59b52f2",
+  "actualSourceSha256": "480cd3e651c1c5edce2cbc3e36699b3433849ad02ed2bb76e24acd407eb00303",
+  "allOtherValidatedSourceMatches": true,
+  "actualE2EServedBuildSha256": "cbbea35d0b734189907a4afb7dc282411dd408bf694f06338c988cce8cb82e74",
+  "servedBuildUnchanged": true
+}

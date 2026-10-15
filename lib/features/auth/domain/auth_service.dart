@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
@@ -9,10 +10,129 @@ import '../../../config/env.dart';
 import '../../../core/interceptors/token_storage.dart';
 import '../../../core/notifications/fcm_notification_service.dart';
 import '../data/dto/auth_response.dart';
+import 'web_oauth.dart';
 
 /// 인증 서비스 (로그인/토큰 저장/로그아웃)
 class AuthService {
-  AuthService({required this.tokenStorage, this.supabase});
+  AuthService({
+    required this.tokenStorage,
+    this.supabase,
+    Future<bool> Function(OAuthProvider, String)? webOAuthLauncher,
+    Future<bool> Function(OAuthProvider)? webProviderEnabled,
+    Uri Function()? browserUri,
+  }) : _webOAuthLauncher = webOAuthLauncher,
+       _webProviderEnabled = webProviderEnabled ?? isWebOAuthProviderEnabled,
+       _browserUri = browserUri ?? (() => Uri.base);
+
+  final Future<bool> Function(OAuthProvider, String)? _webOAuthLauncher;
+  final Future<bool> Function(OAuthProvider) _webProviderEnabled;
+  final Uri Function() _browserUri;
+
+  String get _authRedirectUrl => kIsWeb
+      ? webAuthRedirectUri(
+          _browserUri(),
+          configured: Env.authWebRedirectUrl,
+        ).toString()
+      : Env.authRedirectUrl;
+
+  Future<void> loginWithWebProvider(OAuthProvider provider) async {
+    final client = supabase;
+    if (client == null) {
+      throw const WebOAuthException('web_auth_configuration_unavailable');
+    }
+    if (provider != OAuthProvider.google && provider != OAuthProvider.kakao) {
+      throw const WebOAuthException('web_auth_provider_unsupported');
+    }
+    final redirect = webAuthRedirectUri(
+      _browserUri(),
+      configured: Env.authWebRedirectUrl,
+    ).toString();
+    if (!await _webProviderEnabled(provider)) {
+      throw const WebOAuthException('web_auth_provider_disabled');
+    }
+    final launched = _webOAuthLauncher != null
+        ? await _webOAuthLauncher(provider, redirect)
+        : await client.auth.signInWithOAuth(provider, redirectTo: redirect);
+    if (!launched) throw const WebOAuthException('web_auth_launch_failed');
+    // A launched browser is not an authenticated user. The returned Supabase
+    // session must pass synchronizeSupabaseSession after the OAuth redirect.
+  }
+
+  String _sessionProvider(User user) {
+    switch (user.appMetadata['provider']) {
+      case 'google':
+        return 'GOOGLE';
+      case 'kakao':
+        return 'KAKAO';
+      case 'email':
+        return 'EMAIL';
+      default:
+        return 'SUPABASE';
+    }
+  }
+
+  void _sameSessionOwner(String owner) {
+    if (supabase?.auth.currentSession?.user.id != owner) {
+      throw const WebOAuthException('web_auth_owner_changed');
+    }
+  }
+
+  /// Browser persistence and callbacks never trust cached profile/JWT claims.
+  /// Auth getUser validates the real session before profile/token sync.
+  Future<AuthResponse?> synchronizeSupabaseSession() async {
+    final client = supabase;
+    if (client == null) {
+      throw const WebOAuthException('web_auth_configuration_unavailable');
+    }
+    final initial = client.auth.currentSession;
+    if (initial == null) {
+      await tokenStorage.clear();
+      return null;
+    }
+    final verifiedUser = (await client.auth.getUser(initial.accessToken)).user;
+    if (verifiedUser == null || verifiedUser.id != initial.user.id) {
+      throw const WebOAuthException('web_auth_session_invalid');
+    }
+    _sameSessionOwner(verifiedUser.id);
+    final session = client.auth.currentSession!.copyWith(user: verifiedUser);
+    await _requireConfirmedEmailSession(session);
+    var auth = _fromSupabaseSession(
+      session,
+      provider: _sessionProvider(verifiedUser),
+    );
+    // Restoring an OAuth session must preserve the name/photo the customer
+    // edited in SnapFit, rather than overwriting it with provider metadata.
+    final profile = await client
+        .from('profiles')
+        .select('name,avatar_url')
+        .eq('id', verifiedUser.id)
+        .maybeSingle();
+    _sameSessionOwner(verifiedUser.id);
+    if (profile != null) {
+      final name = profile['name'];
+      final avatar = profile['avatar_url'];
+      auth = auth.copyWith(
+        user: auth.user.copyWith(
+          name: name is String && name.trim().isNotEmpty
+              ? name
+              : auth.user.name,
+          profileImageUrl: avatar is String && avatar.isNotEmpty
+              ? avatar
+              : auth.user.profileImageUrl,
+        ),
+      );
+    }
+    await _upsertSupabaseProfile(auth.user);
+    _sameSessionOwner(verifiedUser.id);
+    await tokenStorage.saveAuth(auth);
+    if (client.auth.currentSession?.user.id != verifiedUser.id) {
+      if (await tokenStorage.getUserId() == verifiedUser.id) {
+        await tokenStorage.clear();
+      }
+      throw const WebOAuthException('web_auth_owner_changed');
+    }
+    return auth;
+  }
 
   final TokenStorage tokenStorage;
   final SupabaseClient? supabase;
@@ -117,7 +237,10 @@ class AuthService {
     try {
       await supabase?.auth.signOut();
     } catch (_) {}
-    throw Exception('이메일 인증을 완료한 뒤 다시 로그인해주세요.');
+    throw const AuthException(
+      '이메일 인증을 완료한 뒤 다시 로그인해주세요.',
+      code: 'email_not_confirmed',
+    );
   }
 
   Future<void> _upsertSupabaseProfile(UserInfo user) async {
@@ -216,7 +339,7 @@ class AuthService {
       final response = await supabase!.auth.signUp(
         email: email.trim(),
         password: password,
-        emailRedirectTo: Env.authRedirectUrl,
+        emailRedirectTo: _authRedirectUrl,
         data: {'name': name.trim(), 'full_name': name.trim()},
       );
       final session = response.session;
@@ -238,7 +361,7 @@ class AuthService {
     if (supabase != null) {
       await supabase!.auth.resetPasswordForEmail(
         email.trim(),
-        redirectTo: Env.authRedirectUrl,
+        redirectTo: _authRedirectUrl,
       );
       return;
     }
@@ -250,7 +373,7 @@ class AuthService {
       await supabase!.auth.resend(
         email: email.trim(),
         type: OtpType.signup,
-        emailRedirectTo: Env.authRedirectUrl,
+        emailRedirectTo: _authRedirectUrl,
       );
       return;
     }
@@ -259,11 +382,16 @@ class AuthService {
 
   Future<String?> handleAuthCallback(Uri uri) async {
     if (supabase != null) {
+      if (!isTrustedAuthCallback(
+        uri,
+        current: _browserUri(),
+        configured: Env.authWebRedirectUrl,
+      )) {
+        throw const WebOAuthException('web_auth_redirect_invalid');
+      }
       final response = await supabase!.auth.getSessionFromUrl(uri);
       await _requireConfirmedEmailSession(response.session);
-      final auth = _fromSupabaseSession(response.session, provider: 'EMAIL');
-      await _upsertSupabaseProfile(auth.user);
-      await tokenStorage.saveAuth(auth);
+      await synchronizeSupabaseSession();
       return response.redirectType;
     }
     throw Exception('Supabase 인증 링크 처리 환경이 준비되지 않았습니다.');
@@ -308,6 +436,9 @@ class AuthService {
 
     // 1) 로컬 토큰/유저정보 삭제 (즉시 반영)
     await tokenStorage.clear();
+
+    // Browser OAuth sessions are owned by Supabase, not native plugins.
+    if (kIsWeb) return;
 
     // 2) SDK 로그아웃/연결 해제는 백그라운드 처리
     unawaited(_logoutFromGoogle());

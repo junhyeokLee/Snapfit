@@ -96,7 +96,7 @@ void main() {
                   ).readAsStringSync(),
                 )
                 as Map<String, dynamic>;
-        final current = volume.document(aspect);
+        final current = volume.document(aspect, refineQuality: false);
         for (final key in ['cover', 'pages', 'chapters']) {
           expect(
             current[key],

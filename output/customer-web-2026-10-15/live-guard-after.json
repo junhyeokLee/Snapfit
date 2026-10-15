@@ -1,0 +1,12 @@
+{
+  "business_ready": false,
+  "customer_sales_enabled": false,
+  "portone_live_ready": false,
+  "real_checkout_intents": 0,
+  "real_customer_orders": 0,
+  "redprinting_live_ready": false,
+  "verified_at": "2026-10-15 08:33:15.641836+00",
+  "saved_album_id": 70,
+  "stored_document_pages": 21,
+  "saved_caption_present": true
+}

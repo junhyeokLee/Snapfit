@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/utils/screen_logger.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../../shared/widgets/experience_style.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../core/constants/snapfit_colors.dart';
 
 /// 홈 화면 하단 네비게이션 바
 class HomeBottomNavigationBar extends StatelessWidget {
@@ -17,280 +19,144 @@ class HomeBottomNavigationBar extends StatelessWidget {
     this.rail = false,
   });
 
-  static bool _logged = false;
-
   @override
-  Widget build(BuildContext context) {
-    if (!_logged) {
-      _logged = true;
-      ScreenLogger.widget(
-        'HomeBottomNavigationBar',
-        '홈 하단 네비 · 홈/앨범/스토어/알림/설정',
-      );
-    }
-    final items = [
-      _BottomNavItem(
-        icon: Icons.home_rounded,
-        label: '홈',
-        isSelected: currentIndex == 0,
-        onTap: () => onTap(0),
-        rail: rail,
-      ),
-      _BottomNavItem(
-        icon: Icons.auto_stories_rounded,
-        label: '앨범',
-        isSelected: currentIndex == 1,
-        onTap: () => onTap(1),
-        rail: rail,
-      ),
-      _BottomNavItem(
-        icon: Icons.storefront_rounded,
-        label: '스토어',
-        isSelected: currentIndex == 2,
-        onTap: () => onTap(2),
-        rail: rail,
-      ),
-      _BottomNavItem(
-        icon: Icons.notifications_rounded,
-        label: '알림',
-        isSelected: currentIndex == 3,
-        onTap: () => onTap(3),
-        showBadge: hasUnreadNotification,
-        rail: rail,
-      ),
-      _BottomNavItem(
-        icon: Icons.person_rounded,
-        label: '마이',
-        isSelected: currentIndex == 4,
-        onTap: () => onTap(4),
-        rail: rail,
-      ),
+  Widget build(BuildContext context) => _experienceNavigation(context);
+
+  Widget _experienceNavigation(BuildContext context) {
+    final selectedIndex = currentIndex == 5
+        ? 2
+        : currentIndex == 1
+        ? 0
+        : currentIndex;
+    const destinations = [
+      (0, '홈', 'House'),
+      (2, '스토어', 'Layers2'),
+      (6, '보관함', 'Bookmark'),
+      (4, '마이', 'UserRound'),
     ];
-
-    if (rail) {
-      return MediaQuery.removePadding(
-        context: context,
-        removeLeft: true,
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [Color(0xFFF8EFE2), Color(0xFFEFE2D0)],
-            ),
-          ),
-          child: SizedBox(
-            width: 86,
-            child: SafeArea(
-              right: false,
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: 62,
-                  height: 336,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF111111),
-                    borderRadius: BorderRadius.circular(999.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.20),
-                        blurRadius: 24.r,
-                        offset: const Offset(10, 0),
+    final items = [
+      for (final (index, label, icon) in destinations)
+        Semantics(
+          selected: selectedIndex == index,
+          button: true,
+          label: label,
+          excludeSemantics: true,
+          onTap: () => onTap(index),
+          child: InkWell(
+            onTap: () => onTap(index),
+            child: SizedBox(
+              height: 56,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 48,
+                    height: 29,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: rail && selectedIndex == index
+                            ? ExperienceFormStyle.selection(context)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                      child: Center(
+                        child: ExperienceIcon(
+                          icon,
+                          color: selectedIndex == index
+                              ? ExperienceFormStyle.selectionInk(context)
+                              : ExperienceFormStyle.muted(context),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    children: [for (final item in items) Expanded(child: item)],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return MediaQuery.removePadding(
-      context: context,
-      removeBottom: true,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF8EFE2), Color(0xFFEFE2D0)],
-          ),
-        ),
-        child: SizedBox(
-          height: 88.h,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: 62.h,
-              margin: EdgeInsets.fromLTRB(20.w, 13.h, 20.w, 0),
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111111),
-                borderRadius: BorderRadius.circular(999.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.22),
-                    blurRadius: 24.r,
-                    offset: Offset(0, 10.h),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    style: ExperienceStyle.text(
+                      12,
+                      weight: selectedIndex == index
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      color: selectedIndex == index
+                          ? ExperienceFormStyle.selectionInk(context)
+                          : ExperienceFormStyle.muted(context),
+                    ),
                   ),
                 ],
               ),
-              child: Row(
-                children: [for (final item in items) Expanded(child: item)],
-              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// 바텀 네비게이션 아이템
-class _BottomNavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final bool showBadge;
-  final bool rail;
-
-  const _BottomNavItem({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    this.showBadge = false,
-    this.rail = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const selectedColor = Color(0xFF08B8D0);
-    final unselectedColor = Colors.white.withOpacity(0.46);
-    final color = isSelected ? selectedColor : unselectedColor;
-    if (rail) {
-      return Tooltip(
-        message: label,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            child: Center(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                width: 48,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withOpacity(0.10)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon, size: 22, color: color),
-                        const SizedBox(height: 4),
-                        Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.clip,
-                          softWrap: false,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            height: 1,
-                            letterSpacing: 0,
-                            color: color,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (showBadge)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            color: selectedColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    final labelText = AnimatedDefaultTextStyle(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      style: TextStyle(
-        fontSize: isSelected ? 13.sp : 12.sp,
-        fontWeight: FontWeight.w900,
-        height: 1,
-        letterSpacing: 0,
-        color: color,
-      ),
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.fade,
-        softWrap: false,
-      ),
-    );
-
+    ];
     return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        child: Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              labelText,
-              if (showBadge)
-                Positioned(
-                  right: -7.w,
-                  top: -7.h,
-                  child: Container(
-                    width: 7.w,
-                    height: 7.w,
-                    decoration: const BoxDecoration(
-                      color: selectedColor,
-                      shape: BoxShape.circle,
+      key: const ValueKey('home-navigation-surface'),
+      color: SnapFitColors.backgroundOf(context),
+      child: Container(
+        decoration: BoxDecoration(
+          border: rail
+              ? Border(
+                  right: BorderSide(color: ExperienceFormStyle.line(context)),
+                )
+              : Border(
+                  top: BorderSide(color: ExperienceFormStyle.line(context)),
+                ),
+        ),
+        child: SafeArea(
+          top: rail,
+          child: rail
+              ? SizedBox(
+                  width: 86,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final compact = constraints.maxHeight < 500;
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            SizedBox(height: compact ? 8 : 26),
+                            SizedBox(
+                              height: 42,
+                              child: TextButton(
+                                onPressed: () => onTap(0),
+                                child: Text(
+                                  'sf.',
+                                  style: ExperienceStyle.text(
+                                    23,
+                                    weight: FontWeight.w800,
+                                    color: ExperienceFormStyle.selectionInk(
+                                      context,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: compact ? 8 : 25),
+                            for (final item in items)
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: compact ? 4 : 25,
+                                ),
+                                child: item,
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : SizedBox(
+                  height: 68,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      children: [
+                        for (final item in items) Expanded(child: item),
+                      ],
                     ),
                   ),
                 ),
-            ],
-          ),
         ),
       ),
     );

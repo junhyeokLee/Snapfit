@@ -11,7 +11,7 @@ void main() {
   ) async {
     var title = '';
     var cover = defaultCoverSize;
-    var pages = 10;
+    var pages = 20;
     await tester.pumpWidget(
       wrapCreation(
         StatefulBuilder(
@@ -56,8 +56,36 @@ void main() {
     await tester.ensureVisible(find.byTooltip('페이지 늘리기'));
     await tester.tap(find.byTooltip('페이지 늘리기'));
     await tester.pump();
-    expect(pages, 11);
+    expect(pages, 22);
     expect(title, '우리의 여름');
+    await tester.tap(find.byTooltip('페이지 줄이기'));
+    await tester.pump();
+    expect(pages, 20);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byWidgetPredicate(
+              (w) => w is IconButton && w.tooltip == '페이지 줄이기',
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
+    for (var i = 0; i < 30; i++) {
+      await tester.tap(find.byTooltip('페이지 늘리기'));
+      await tester.pump();
+    }
+    expect(pages, 80);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byWidgetPredicate(
+              (w) => w is IconButton && w.tooltip == '페이지 늘리기',
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets(
@@ -69,8 +97,9 @@ void main() {
           AlbumCreateStep1(
             albumTitle: '새 앨범',
             selectedCover: defaultCoverSize,
-            selectedPageCount: 8,
-            minPageCount: 8,
+            selectedPageCount: 20,
+            minPageCount: 20,
+            templatePageCount: 8,
             availableCovers: [defaultCoverSize],
             templateTitle: '내 AI 디자인',
             onTitleChanged: (_) {},
@@ -119,8 +148,9 @@ void main() {
             coverLayers: design
                 .buildLayers(targetSize: coverCanvasBaseSize(design.coverSize))
                 .first,
-            selectedPageCount: 8,
-            minPageCount: 8,
+            selectedPageCount: 20,
+            minPageCount: 20,
+            templatePageCount: 8,
             availableCovers: coverSizes,
             onTitleChanged: (_) {},
             onCoverSelected: (_) {},

@@ -21,7 +21,7 @@ Map<String, dynamic> exportLaunchPricing(Directory output) {
   }
   final data = <String, dynamic>{
     'revision': pointShopPricingRevision,
-    'scope': '37-free-collections-14-premium-collections-83-recent-materials',
+    'scope': '37-free-collections-14-premium-collections-111-materials',
     'marketValidated': false,
     'changesCustomerAccess': false,
     'grantsIncludedMaterials': false,

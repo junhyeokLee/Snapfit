@@ -1,0 +1,19 @@
+{
+  "name": "snapfit-print-worker-deployment",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pinned local Railway CLI and IaC tooling; not the customer app or worker runtime.",
+  "engines": {
+    "node": "24.21.0"
+  },
+  "scripts": {
+    "plan": "RAILWAY_NO_AUTO_UPDATE=1 railway config plan",
+    "apply": "RAILWAY_NO_AUTO_UPDATE=1 railway config apply",
+    "test:config": "node --test ../../../test/tool/print_fulfillment_railway_config.test.mjs"
+  },
+  "dependencies": {
+    "@railway/cli": "5.68.0",
+    "railway": "3.16.0"
+  }
+}

@@ -20,6 +20,7 @@ void main() {
         targetSize: coverCanvasBaseSize(design.coverSize),
       );
       final photo = _Photo();
+      when(() => photo.id).thenReturn('selected-photo');
       when(
         () => photo.file,
       ).thenAnswer((_) async => File('assets/snapfit_home_square.jpg'));

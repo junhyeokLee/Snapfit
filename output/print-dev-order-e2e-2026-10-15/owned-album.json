@@ -1,0 +1,14 @@
+{
+  "albumId": 69,
+  "title": "개발 검증 · 80페이지 앨범 (2026-10-15)",
+  "adminOwned": true,
+  "createdNewAlbum": true,
+  "interiorPages": 80,
+  "totalDocumentPages": 81,
+  "generatedTestArtworkOnly": true,
+  "artworkBytes": 2273020,
+  "artworkSha256": "a4e622a39f596e91f08c29f155f9feffec81fff97a41815855e99d39738bbaae",
+  "existingCustomerAlbumsChanged": false,
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false
+}

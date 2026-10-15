@@ -2,15 +2,18 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import '../../data/gallery/photo_asset_image_provider.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../core/theme/snapfit_theme.dart';
 import '../../../../core/utils/text_image_shader.dart';
 import '../../../../core/utils/outline_text_style.dart';
 import '../../../../shared/snapfit_image.dart';
 import '../../../../shared/widgets/studio_material.dart';
+import '../../../../shared/widgets/photo_crop_viewport.dart';
 import '../../../../shared/widgets/studio_decoration.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../domain/entities/layer.dart';
+import '../widgets/cover/album_spine_image.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'layer_interaction_manager.dart';
 part 'layer_builder_sticker_decorations.dart';
@@ -83,13 +86,27 @@ class LayerBuilder {
   }
 
   /// 이미지 레이어 빌드
-  Widget buildImage(LayerModel layer, {bool isCover = false}) =>
-      _buildImageImpl(this, layer, isCover: isCover);
+  Widget buildImage(
+    LayerModel layer, {
+    bool isCover = false,
+    bool wrapSpine = false,
+  }) => _buildImageImpl(this, layer, isCover: isCover, wrapSpine: wrapSpine);
+
+  /// Non-interactive preview using the canvas's frame and crop rendering.
+  Widget buildPhotoFrame(LayerModel layer, Widget photo) =>
+      _buildFramedImage(layer, photo);
+
   Widget _buildFramedImage(LayerModel layer, Widget image) {
-    return _buildFramedImageImpl(this, layer, image);
+    return _buildFramedImageImpl(
+      this,
+      layer,
+      PhotoCropViewport(layer: layer, child: image),
+    );
   }
 
   Widget _buildDecoration(LayerModel layer) {
+    final photoShade = photoCoverShadeForStyle(layer.imageBackground);
+    if (photoShade != null) return photoShade;
     if (printImages != null) {
       final spec = studioDecorationById(layer.imageBackground);
       if (spec != null) {

@@ -34,7 +34,10 @@ class _Messaging extends FirebaseMessagingPlatform {
   }
 
   @override
-  Future<String?> getToken({String? vapidKey}) async {
+  Future<String?> getToken({
+    String? vapidKey,
+    String? serviceWorkerScriptPath,
+  }) async {
     tokenRequests++;
     return token;
   }

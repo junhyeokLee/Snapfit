@@ -1,0 +1,38 @@
+{
+  "officialPage": "https://copyright.keris.or.kr/wft/fntDwnldView?fntGrpId=GFT202509240000000000002",
+  "fileName": "Hakgyoansim_GongryongalR.ttf",
+  "bytes": 1508988,
+  "sha256": "59d91c57f4ff58272dde974a21a563d67c77e86b802f8f395eec0eb6e65f6239",
+  "sfntTables": 13,
+  "glyphs": 12639,
+  "fsType": 4,
+  "names": {
+    "0": [
+      "Copyright (c) 2025 by KERIS. All rights reserved."
+    ],
+    "1": [
+      "Hakgyoansim Gongryongal R",
+      "학교안심 공룡알 R"
+    ],
+    "2": [
+      "Regular"
+    ],
+    "3": [
+      "Hakgyoansim Gongryongal R"
+    ],
+    "4": [
+      "Hakgyoansim Gongryongal R",
+      "학교안심 공룡알 R"
+    ],
+    "5": [
+      "Version 1.000"
+    ],
+    "6": [
+      "HakgyoansimGongryongalR"
+    ]
+  },
+  "retrievedDate": "2026-10-08",
+  "fontFileModified": false,
+  "officialLicense": "OFL; KERIS page explicitly permits embedding, redistribution and commercial use",
+  "licenseFile": "assets/fonts/Hakgyoansim_GongryongalR-OFL.txt"
+}

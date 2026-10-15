@@ -1,0 +1,28 @@
+{
+  "fixtureOnly": true,
+  "scenario": "HARD_80",
+  "artworkProfile": "standard",
+  "requestedPageCount": 80,
+  "completedFullPdf": false,
+  "actualRenderer": "Flutter AlbumPrintExporter",
+  "dpi": 300,
+  "jpegQuality": 95,
+  "guardBytes": 94371840,
+  "errorCode": "print_pdf_exceeds_90mb_limit",
+  "observations": [
+    {
+      "elapsedMs": 137360,
+      "maxResidentSetBytes": 1003831296,
+      "errorCodeConfirmed": false
+    },
+    {
+      "elapsedMs": 132210,
+      "maxResidentSetBytes": 868335616,
+      "errorCodeConfirmed": true
+    }
+  ],
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false,
+  "physicalSampleValidated": false,
+  "productionApproved": false
+}

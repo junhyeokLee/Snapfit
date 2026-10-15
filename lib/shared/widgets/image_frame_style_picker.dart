@@ -1,9 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/point_shop/data/point_shop_provider.dart';
+import '../../features/point_shop/domain/point_shop_product.dart';
+import 'editor_material_filter_bar.dart';
 import '../../features/point_shop/presentation/point_shop_access.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/snapfit_colors.dart';
+import '../../core/templates/frame_preview_photos.dart';
 import 'studio_material.dart';
 import 'catalog_favorite_widgets.dart';
 
@@ -576,6 +582,8 @@ class ImageFrameStylePicker extends ConsumerStatefulWidget {
   final ValueChanged<String> onSelect;
   final WidgetBuilder? photoBuilder;
   final double photoAspectRatio;
+  final Widget Function(BuildContext context, String frameKey)?
+  framedPhotoBuilder;
 
   const ImageFrameStylePicker({
     super.key,
@@ -583,6 +591,7 @@ class ImageFrameStylePicker extends ConsumerStatefulWidget {
     required this.onSelect,
     this.photoBuilder,
     this.photoAspectRatio = 1,
+    this.framedPhotoBuilder,
   }) : assert(photoAspectRatio > 0 && photoAspectRatio < double.infinity);
 
   static Future<String?> show(
@@ -590,16 +599,29 @@ class ImageFrameStylePicker extends ConsumerStatefulWidget {
     required String? currentKey,
     WidgetBuilder? photoBuilder,
     double photoAspectRatio = 1,
-  }) => showModalBottomSheet<String>(
+    Widget Function(BuildContext context, String frameKey)? framedPhotoBuilder,
+  }) => kIsWeb ? showWebAwareDialog<String>(
+    context: context,
+    maxWidth: 1080,
+    maxHeight: 760,
+    builder: (dialogContext) => ImageFrameStylePicker(
+      selectedKey: currentKey,
+      photoBuilder: photoBuilder,
+      photoAspectRatio: photoAspectRatio,
+      framedPhotoBuilder: framedPhotoBuilder,
+      onSelect: (key) => Navigator.pop(dialogContext, key),
+    ),
+  ) : showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    constraints: const BoxConstraints(maxWidth: 720),
+    constraints: const BoxConstraints(maxWidth: 960),
     backgroundColor: Colors.transparent,
     builder: (ctx) => ImageFrameStylePicker(
       selectedKey: currentKey,
       photoBuilder: photoBuilder,
       photoAspectRatio: photoAspectRatio,
+      framedPhotoBuilder: framedPhotoBuilder,
       onSelect: (key) => Navigator.pop(ctx, key),
     ),
   );
@@ -612,9 +634,22 @@ class ImageFrameStylePicker extends ConsumerStatefulWidget {
 class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
   String _selectedCategory = 'studio';
   bool _isApplying = false;
+  bool _finishing = false;
+  final _filterKey = GlobalKey();
+
+  void _close() {
+    if (!mounted || _finishing || ModalRoute.of(context)?.isCurrent == false)
+      return;
+    _finishing = true;
+    Navigator.pop(context);
+  }
 
   Future<void> _select(ImageFrameStyle style) async {
-    if (_isApplying) return;
+    if (!mounted ||
+        _isApplying ||
+        _finishing ||
+        ModalRoute.of(context)?.isCurrent == false)
+      return;
     _isApplying = true;
     try {
       if (style.key.isNotEmpty &&
@@ -625,13 +660,21 @@ class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
             title: style.label,
           ))
         return;
-      if (mounted) widget.onSelect(style.key);
+      if (mounted &&
+          !_finishing &&
+          ModalRoute.of(context)?.isCurrent != false) {
+        _finishing = true;
+        widget.onSelect(style.key);
+        if (mounted && ModalRoute.of(context)?.isCurrent != false)
+          _finishing = false;
+      }
     } finally {
       _isApplying = false;
     }
   }
 
   bool _favoritesOnly = false;
+  String _price = '전체', _query = '';
 
   List<ImageFrameStyle> get _visibleStyles {
     if (_selectedCategory == 'all') return imageFrameStyles;
@@ -660,160 +703,240 @@ class _ImageFrameStylePickerState extends ConsumerState<ImageFrameStylePicker> {
 
   @override
   Widget build(BuildContext context) => CatalogFavoritesBuilder(
-    builder: (context, favorites) => LayoutBuilder(
-      builder: (context, constraints) {
-        final media = MediaQuery.of(context);
-        final available = constraints.hasBoundedHeight
-            ? constraints.maxHeight
-            : media.size.height - media.padding.top;
-        final height = available.clamp(0.0, 680.0);
-        final scale = media.textScaler.scale(12) / 12;
-        final styles = favorites.arrange(
-          _visibleStyles,
-          (s) => CatalogFavoriteKeys.frame(s.key),
-          onlyFavorites: _favoritesOnly,
-        );
-        return SizedBox(
-          height: height,
-          child: Material(
-            color: SnapFitColors.surfaceOf(context),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            clipBehavior: Clip.antiAlias,
-            child: SafeArea(
-              top: false,
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: SnapFitColors.overlayMediumOf(context),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 8),
-                    child: Row(
-                      children: [
-                        CatalogFavoriteFilter(
-                          selected: _favoritesOnly,
-                          onChanged: (value) => setState(() {
-                            _favoritesOnly = value;
-                            _selectedCategory = 'all';
-                          }),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '사진 프레임',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: SnapFitColors.textPrimaryOf(context),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: '닫기',
-                          icon: const Icon(Icons.close_rounded, size: 22),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        for (final category in [
-                          const {'key': 'studio', 'label': '스튜디오'},
-                          ..._frameCategories,
-                        ])
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ChoiceChip(
-                              label: Text(
-                                category['label']!,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              selected: _selectedCategory == category['key'],
-                              onSelected: (_) => setState(
-                                () => _selectedCategory = category['key']!,
-                              ),
-                              showCheckmark: false,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: styles.isEmpty
-                        ? CatalogFavoritesEmpty(
-                            onShowAll: () => setState(() {
-                              _favoritesOnly = false;
-                              _selectedCategory = 'all';
-                            }),
-                          )
-                        : LayoutBuilder(
-                            builder: (context, grid) {
-                              final columns =
-                                  (grid.maxWidth / (scale > 1.4 ? 180 : 160))
-                                      .floor()
-                                      .clamp(2, 4);
-                              return GridView.builder(
-                                key: ValueKey(_selectedCategory),
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  0,
-                                  16,
-                                  16,
-                                ),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: columns,
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                      mainAxisExtent: 140 + 68 * scale,
-                                    ),
-                                itemCount: styles.length,
-                                itemBuilder: (context, index) {
-                                  final style = styles[index];
-                                  final tile = _FrameStyleItem(
-                                    key: ValueKey('frame-${style.key}'),
-                                    style: style,
-                                    isSelected:
-                                        (widget.selectedKey ?? '') == style.key,
-                                    photoBuilder: widget.photoBuilder,
-                                    photoAspectRatio: widget.photoAspectRatio,
-                                    onTap: () => _select(style),
-                                  );
-                                  return style.key.isEmpty
-                                      ? tile
-                                      : CatalogFavoriteTile(
-                                          key: ValueKey(
-                                            'favorite-frame-${style.key}',
-                                          ),
-                                          itemKey: CatalogFavoriteKeys.frame(
-                                            style.key,
-                                          ),
-                                          label: style.label,
-                                          child: tile,
-                                        );
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
+    builder: (context, favorites) => Padding(
+      padding: EdgeInsets.only(
+        bottom:
+            Scaffold.maybeOf(context)?.widget.resizeToAvoidBottomInset !=
+                    false &&
+                Scaffold.maybeOf(context) != null
+            ? 0
+            : MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final media = MediaQuery.of(context);
+          final available = constraints.hasBoundedHeight
+              ? constraints.maxHeight
+              : media.size.height - media.padding.top;
+          final height = available.clamp(0.0, 680.0);
+          final scale = media.textScaler.scale(12) / 12;
+          final wide = constraints.maxWidth >= (kIsWeb ? 720 : 540) &&
+              (kIsWeb || media.orientation == Orientation.landscape);
+          final products = {
+            for (final p
+                in ref.watch(pointShopCatalogProvider).asData?.value ??
+                    <PointShopProduct>[])
+              p.productKey: p,
+          };
+          final owned =
+              ref.watch(ownedPointShopKeysProvider).asData?.value ?? <String>{};
+          final styles = favorites.arrange(
+            _visibleStyles.where(
+              (style) => matchesEditorMaterial(
+                query: _query,
+                price: _price,
+                label: style.label,
+                productKey: style.key.isEmpty ? null : 'frame:${style.key}',
+                products: products,
+                owned: owned,
               ),
             ),
-          ),
-        );
-      },
+            (s) => CatalogFavoriteKeys.frame(s.key),
+            onlyFavorites: _favoritesOnly,
+          );
+          final filters = EditorMaterialFilterBar(
+            key: _filterKey,
+            query: _query,
+            price: _price,
+            onPriceChanged: (value) => setState(() => _price = value),
+            onQueryChanged: (value) => setState(() {
+              _query = value;
+              if (value.isNotEmpty) _selectedCategory = 'all';
+            }),
+            favoritesOnly: _favoritesOnly,
+            onFavoritesChanged: () => setState(() {
+              _favoritesOnly = !_favoritesOnly;
+              _selectedCategory = 'all';
+            }),
+          );
+          final categories = [
+            const {'key': 'studio', 'label': '스튜디오'},
+            ..._frameCategories,
+          ];
+          Widget category(Map<String, String> item) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: ChoiceChip(
+              key: ValueKey('frame-category-${item['key']}'),
+              label: Text(
+                item['label']!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+              selected: _selectedCategory == item['key'],
+              onSelected: (_) =>
+                  setState(() => _selectedCategory = item['key']!),
+              showCheckmark: false,
+            ),
+          );
+          final catalog = styles.isEmpty
+              ? Center(
+                  child: SingleChildScrollView(
+                    child: EditorMaterialEmpty(
+                      onReset: () => setState(() {
+                        _favoritesOnly = false;
+                        _selectedCategory = 'all';
+                        _price = '전체';
+                        _query = '';
+                      }),
+                    ),
+                  ),
+                )
+              : LayoutBuilder(
+                  builder: (context, grid) => GridView.builder(
+                    key: ValueKey(_selectedCategory),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          (grid.maxWidth / (scale > 1.4 ? 180 : 160))
+                              .floor()
+                              .clamp(1, 4),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      mainAxisExtent: (wide ? 120 : 140) + 68 * scale,
+                    ),
+                    itemCount: styles.length,
+                    itemBuilder: (context, index) {
+                      final style = styles[index];
+                      final tile = _FrameStyleItem(
+                        key: ValueKey('frame-${style.key}'),
+                        style: style,
+                        isSelected: (widget.selectedKey ?? '') == style.key,
+                        photoBuilder: widget.photoBuilder,
+                        photoAspectRatio: widget.photoAspectRatio,
+                        framedPhotoBuilder: widget.framedPhotoBuilder,
+                        onTap: () => _select(style),
+                      );
+                      return style.key.isEmpty
+                          ? tile
+                          : CatalogFavoriteTile(
+                              key: ValueKey('favorite-frame-${style.key}'),
+                              itemKey: CatalogFavoriteKeys.frame(style.key),
+                              label: style.label,
+                              child: tile,
+                            );
+                    },
+                  ),
+                );
+          return SizedBox(
+            height: height,
+            child: Material(
+              color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.surfaceOf(context),
+              borderRadius: kIsWeb ? BorderRadius.circular(12) : const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 8, 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '사진 프레임',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: SnapFitColors.textPrimaryOf(context),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            key: const ValueKey('frame-picker-close'),
+                            tooltip: '닫기',
+                            icon: const Icon(Icons.close_rounded, size: 22),
+                            onPressed: _close,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!wide) ...[
+                      filters,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(children: categories.map(category).toList()),
+                      ),
+                    ],
+                    Expanded(
+                      child: wide
+                          ? Row(
+                              children: [
+                                SizedBox(
+                                  width: (constraints.maxWidth * .34).clamp(
+                                    208,
+                                    280,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        filters,
+                                        Padding(
+                                          padding: const EdgeInsets.all(12),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: categories
+                                                .map(category)
+                                                .toList(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                VerticalDivider(
+                                  width: 1,
+                                  color: SnapFitColors.overlayMediumOf(context),
+                                ),
+                                Expanded(child: catalog),
+                              ],
+                            )
+                          : catalog,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     ),
   );
+}
+
+/// Shares the editor's complete frame preview, including legacy free styles.
+class ImageFramePreview extends StatelessWidget {
+  const ImageFramePreview({
+    super.key,
+    required this.style,
+    required this.child,
+  });
+  final ImageFrameStyle style;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => _FrameStyleItem(
+    style: style,
+    isSelected: false,
+    onTap: () {},
+    photoBuilder: (_) => child,
+    photoAspectRatio: 1,
+  )._buildFramePreview(style.key);
 }
 
 class _FrameStyleItem extends StatelessWidget {
@@ -822,6 +945,8 @@ class _FrameStyleItem extends StatelessWidget {
   final VoidCallback onTap;
   final WidgetBuilder? photoBuilder;
   final double photoAspectRatio;
+  final Widget Function(BuildContext context, String frameKey)?
+  framedPhotoBuilder;
 
   const _FrameStyleItem({
     super.key,
@@ -830,6 +955,7 @@ class _FrameStyleItem extends StatelessWidget {
     required this.onTap,
     required this.photoBuilder,
     required this.photoAspectRatio,
+    this.framedPhotoBuilder,
   });
 
   @override
@@ -849,8 +975,8 @@ class _FrameStyleItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected
-                  ? SnapFitColors.accent
-                  : SnapFitColors.overlayMediumOf(context),
+                  ? kIsWeb ? WebPalette.of(context).brandInk : SnapFitColors.accent
+                  : kIsWeb ? WebPalette.of(context).line : SnapFitColors.overlayMediumOf(context),
               width: 1.5,
             ),
           ),
@@ -865,10 +991,12 @@ class _FrameStyleItem extends StatelessWidget {
                     12,
                   ),
                   child: Center(
-                    child: AspectRatio(
-                      aspectRatio: photoAspectRatio,
-                      child: _buildFramePreview(style.key),
-                    ),
+                    child: framedPhotoBuilder != null
+                        ? framedPhotoBuilder!(context, style.key)
+                        : AspectRatio(
+                            aspectRatio: photoAspectRatio,
+                            child: _buildFramePreview(style.key),
+                          ),
                   ),
                 ),
               ),
@@ -914,7 +1042,8 @@ class _FrameStyleItem extends StatelessWidget {
   Widget _buildFramePreview(String key) {
     final placeholder = photoBuilder == null
         ? Image.asset(
-            'assets/templates/original_editorial/images/daily_desk.png',
+            framePreviewPhotos[key] ??
+                'assets/templates/original_editorial/images/daily_desk.png',
             fit: BoxFit.cover,
             cacheWidth: 360,
             errorBuilder: (_, __, ___) =>
@@ -986,11 +1115,15 @@ class _FrameStyleItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: const Color(0xFFD0D7F0), width: 1.4),
             ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18.r),
+              child: placeholder,
+            ),
           ),
         );
         break;
       case 'film':
-        content = _previewFilmStrip();
+        content = _previewFilmStrip(placeholder);
         break;
       case 'softGlow':
         content = Container(
@@ -1024,13 +1157,13 @@ class _FrameStyleItem extends StatelessWidget {
         );
         break;
       case 'win95':
-        content = _previewWin95();
+        content = _previewWin95(placeholder);
         break;
       case 'pixel8':
         content = _previewPixel8(placeholder);
         break;
       case 'vhs':
-        content = _previewVhs();
+        content = _previewVhs(placeholder);
         break;
       case 'neon':
         content = _previewNeon(placeholder);
@@ -1117,6 +1250,9 @@ class _FrameStyleItem extends StatelessWidget {
       case 'vaporStreet':
         content = _previewVaporStreet(placeholder);
         break;
+      case 'blob':
+        content = StudioMaterial(style: 'studioSticker', child: placeholder);
+        break;
       default:
         content = placeholder;
     }
@@ -1144,9 +1280,9 @@ class _FrameStyleItem extends StatelessWidget {
 
   Widget _previewHeartFrame(Widget child) {
     return Center(
-      child: SizedBox(
-        width: 76.w,
-        height: 70.w,
+      child: FractionallySizedBox(
+        widthFactor: .9,
+        heightFactor: .9,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -1189,8 +1325,8 @@ class _FrameStyleItem extends StatelessWidget {
             ),
           ],
         ),
-        // 실제 프레임과 동일: 좌우/위 20, 아래 80
-        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        // 작은 미리보기에서도 사진과 하단 여백이 함께 보이도록 축소한다.
+        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6.r),
           child: SizedBox.expand(child: child),
@@ -1216,8 +1352,8 @@ class _FrameStyleItem extends StatelessWidget {
             ),
           ],
         ),
-        // 실제 프레임과 동일: 좌우/위 20, 아래 80
-        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        // 작은 미리보기에서도 사진과 하단 여백이 함께 보이도록 축소한다.
+        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6.r),
           child: SizedBox.expand(child: child),
@@ -1262,7 +1398,7 @@ class _FrameStyleItem extends StatelessWidget {
             ),
           ],
         ),
-        padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 80.h),
+        padding: EdgeInsets.fromLTRB(6.w, 6.w, 6.w, 26.w),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6.r),
           child: child,
@@ -1272,7 +1408,7 @@ class _FrameStyleItem extends StatelessWidget {
   }
 
   /// 레퍼런스: 빈티지 필름 스트립 - 짙은 남색, 양쪽 4개씩 연한 타공, 중앙 화면
-  Widget _previewFilmStrip() {
+  Widget _previewFilmStrip(Widget photo) {
     return AspectRatio(
       aspectRatio: 3 / 4,
       child: Container(
@@ -1311,6 +1447,7 @@ class _FrameStyleItem extends StatelessWidget {
                   color: const Color(0xFF1E2433),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
+                child: photo,
               ),
             ),
             SizedBox(width: 4.w),
@@ -1335,7 +1472,7 @@ class _FrameStyleItem extends StatelessWidget {
   }
 
   /// 90s 윈도우 프레임 – 다크블루 타이틀바 + 흰 콘텐츠
-  Widget _previewWin95() {
+  Widget _previewWin95(Widget photo) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFC0C0C0),
@@ -1350,11 +1487,14 @@ class _FrameStyleItem extends StatelessWidget {
             color: const Color(0xFF000080),
             child: Row(
               children: [
-                Text(
-                  'image.exe',
-                  style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                Expanded(
+                  child: Text(
+                    'image.exe',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                  ),
                 ),
-                const Spacer(),
                 _win95Button(const Color(0xFFC0C0C0)),
                 SizedBox(width: 2.w),
                 _win95Button(const Color(0xFFC0C0C0)),
@@ -1367,11 +1507,7 @@ class _FrameStyleItem extends StatelessWidget {
             child: Container(
               color: Colors.white,
               alignment: Alignment.center,
-              child: Icon(
-                Icons.image_outlined,
-                size: 24.r,
-                color: const Color(0xFFC0C0C0),
-              ),
+              child: photo,
             ),
           ),
         ],
@@ -1449,7 +1585,7 @@ class _FrameStyleItem extends StatelessWidget {
   }
 
   /// VHS 글리치 – 어두운 화면, 스캔라인, PLAY + 타임코드
-  Widget _previewVhs() {
+  Widget _previewVhs(Widget photo) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0D0D0D),
@@ -1457,6 +1593,7 @@ class _FrameStyleItem extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          Positioned.fill(child: photo),
           // 스캔라인 느낌
           Positioned.fill(child: CustomPaint(painter: _ScanLinePainter())),
           Padding(
@@ -1516,11 +1653,10 @@ class _FrameStyleItem extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2.r),
-            child: Container(
-              color: Colors.black,
-              child: FittedBox(fit: BoxFit.cover, child: placeholder),
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2.r),
+              child: placeholder,
             ),
           ),
           Positioned(
@@ -1716,7 +1852,6 @@ class _FrameStyleItem extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(4.r),
         border: Border(
           top: BorderSide(color: Colors.black, width: 4),
           left: BorderSide(color: Colors.black, width: 4),

@@ -25,8 +25,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^3.0.3
-  riverpod_annotation: ^3.0.3
+  flutter_riverpod: 3.2.1
+  crypto: 3.0.7
+  riverpod_annotation: 4.0.2
   image: ^4.2.0
   image_picker: ^1.2.0
   flutter_image_compress: ^2.3.0
@@ -40,7 +41,7 @@ dependencies:
   flutter_neumorphic_plus: ^3.5.0
   sliver_tools: ^0.2.12
   freezed_annotation: ^3.1.0
-  json_annotation: ^4.9.0
+  json_annotation: 4.11.0
   flutter_screenutil: ^5.9.3
   flutter_keyboard_visibility: ^7.0.1
   dio: ^5.9.0
@@ -51,20 +52,22 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   retrofit: ^4.9.1
-  firebase_storage: 13.0.6
-  firebase_core: ^4.4.0
-  firebase_messaging: ^16.0.6
+  firebase_storage: ^13.5.0
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
   flutter_local_notifications: ^17.2.4
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
   flutter_secure_storage: ^9.2.4
   google_sign_in: ^7.2.0
-  kakao_flutter_sdk_user: ^1.10.0
-  kakao_flutter_sdk_share: ^1.10.0
+  kakao_flutter_sdk_user: ^2.0.1
+  kakao_flutter_sdk_share: ^2.0.1
   connectivity_plus: ^6.1.0 # 네트워크 연결 상태를 위한 connectivity_plus
   url_launcher: ^6.3.1
   share_plus: ^11.1.0
-  app_links: ^6.4.0
+  app_links: 7.2.2
+  portone_flutter: 1.1.0
+  web: 1.1.1
   flutter_svg: ^2.2.1
   book_page_flip:
     path: packages/book_page_flip
@@ -72,10 +75,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^2.4.6
-  riverpod_generator: ^3.0.3
+  riverpod_generator: 4.0.3
   retrofit_generator: ^10.2.0
   freezed: ^3.2.3
-  json_serializable: ^6.9.0
+  json_serializable: 6.13.0
   flutter_lints: ^5.0.0
   mocktail: ^1.0.4
   network_image_mock: ^2.1.1
@@ -83,7 +86,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
 
 dependency_overrides:
-  shared_preferences_android: 2.4.21
+  shared_preferences_android: 2.4.28
 
 
 flutter:
@@ -100,15 +103,14 @@ flutter:
     - assets/cover/cover7.png
     - assets/cover/cover8.png
     - assets/cover/cover8.png
-    - assets/cover/cover9.png
     - assets/cover/cover10.png
-    - assets/cover/cover11.png
     - assets/cover/cover12.png
     - assets/cover/cover13.png
     - assets/cover/cover15.png
     - assets/cover/cover16.png
     - assets/snapfit_logo.png
     - assets/splash.png
+    - assets/brand/album-mark/splash-landscape.png
     - assets/snapfit_splash_album_cover.jpg
     - assets/snapfit_home_square.jpg
     - assets/snapfit_home_portrait.jpg
@@ -118,6 +120,8 @@ flutter:
     - assets/sticker/studio/
     - assets/templates/
     - assets/templates/original_editorial/images/
+    - assets/frame_preview/
+    - assets/catalog_thumbnails/
     - assets/templates/premium_wind_atlas/
     - assets/templates/prose_study/
     - assets/templates/save_the_date/images/
@@ -144,6 +148,7 @@ flutter:
     - assets/templates/soft_babybook/images/approved_stock/
     - assets/social/
     - assets/fonts/NanumPenScript-OFL.txt
+    - assets/fonts/Hakgyoansim_GongryongalR-OFL.txt
 
 
   fonts:

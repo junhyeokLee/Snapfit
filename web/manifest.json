@@ -3,10 +3,10 @@
     "short_name": "스냅핏",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#101F22",
+    "theme_color": "#101F22",
+    "description": "사진과 이야기를 모아 나만의 앨범을 만들고 함께 간직하는 스냅핏.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
@@ -31,5 +31,6 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "lang": "ko-KR"
 }

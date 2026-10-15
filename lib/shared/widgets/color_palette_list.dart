@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../web/web_design.dart';
 
 import '../../core/constants/snapfit_colors.dart';
 import 'no_glow.dart';
@@ -20,18 +21,23 @@ class ColorPaletteList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Wrap(spacing: 4, runSpacing: 4, children: [
+        for (final color in colors) _colorDot(context, color, current, onPick),
+      ]);
+    }
     return SizedBox(
-      height: 48.h,
+      height: 56,
       child: ScrollConfiguration(
         behavior: const NoGlow(),
         child: ListView.separated(
           controller: controller,
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           itemBuilder: (context, i) =>
               _colorDot(context, colors[i], current, onPick),
-          separatorBuilder: (_, __) => SizedBox(width: 12.w),
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
           itemCount: colors.length,
         ),
       ),
@@ -44,17 +50,49 @@ class ColorPaletteList extends StatelessWidget {
     Color current,
     ValueChanged<Color> onTap,
   ) {
-    return GestureDetector(
-      onTap: () => onTap(color),
-      child: Container(
-        width: 28.w,
-        height: 28.w,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-          border: Border.all(
-            color: SnapFitColors.textPrimaryOf(context).withOpacity(0.8),
-            width: 1,
+    final selected = color == current;
+    final label =
+        '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    return Semantics(
+      label: label,
+      button: true,
+      selected: selected,
+      child: Tooltip(
+        message: label,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => onTap(color),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Center(
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: kIsWeb ? WebPalette.of(context).ink.withValues(alpha: .6) : SnapFitColors.textPrimaryOf(
+                        context,
+                      ).withValues(alpha: .6),
+                      width: selected ? 2 : 1,
+                    ),
+                  ),
+                  child: selected
+                      ? Icon(
+                          Icons.check,
+                          size: 16,
+                          color: color.computeLuminance() > .5
+                              ? Colors.black
+                              : Colors.white,
+                        )
+                      : null,
+                ),
+              ),
+            ),
           ),
         ),
       ),

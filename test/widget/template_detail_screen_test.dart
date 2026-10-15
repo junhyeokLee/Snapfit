@@ -102,7 +102,7 @@ void main() {
     });
   });
 
-  testWidgets('template detail exposes lookbook hero and practical reasons', (
+  testWidgets('template detail exposes real artwork and purchase terms', (
     tester,
   ) async {
     final mockRepo = MockTemplateRepository();
@@ -127,15 +127,26 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 3));
 
-      expect(find.text('룩북 미리보기'), findsOneWidget);
-      expect(find.text('추천 사진'), findsOneWidget);
-      expect(find.text('38~52장'), findsOneWidget);
-      expect(find.text('이 템플릿이 좋은 이유'), findsOneWidget);
-      expect(find.text('사진만 넣으면 바로 완성'), findsOneWidget);
-      expect(find.text('이 템플릿으로 시작하기'), findsOneWidget);
-      expect(find.text('여행'), findsWidgets);
-      expect(find.text('제주'), findsOneWidget);
-      expect(find.text('감성'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('template-detail-stage')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('template-spread-pager')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('template-spread-list')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('template-purchase-overview')),
+        findsOneWidget,
+      );
+      expect(find.text('내 사진으로 만드는 앨범'), findsOneWidget);
+      expect(find.text('24쪽'), findsOneWidget);
+      expect(find.text('이 디자인으로 시작'), findsOneWidget);
+      expect(find.text('여행 컬렉션'), findsOneWidget);
       expect(find.text('프리미엄'), findsNothing);
     });
   });
@@ -170,11 +181,13 @@ void main() {
         await tester.pump(const Duration(seconds: 3));
 
         final titleRect = tester.getRect(find.text('제주의 기록').first);
-        final heroMetaRect = tester.getRect(find.text('24쪽 · 사진 38~52장 추천'));
-        final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+        final heroMetaRect = tester.getRect(find.text('24쪽'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
 
         expect(titleRect.top, lessThan(560));
-        expect(heroMetaRect.bottom, lessThan(520));
+        expect(heroMetaRect.bottom, lessThan(ctaRect.top));
         expect(ctaRect.bottom, lessThanOrEqualTo(844));
         expect(ctaRect.top, greaterThan(700));
       });
@@ -212,17 +225,19 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿'), findsOneWidget);
-      expect(find.text('가족여행프리미엄에디토리얼'), findsWidgets);
-      expect(find.text('가족여행프리미엄'), findsWidgets);
-      expect(find.text('제주감성스냅'), findsOneWidget);
+      expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
+      expect(find.text('가족여행프리미엄'), findsNothing);
+      expect(find.text('제주감성스냅'), findsNothing);
       expect(find.text('여름방학기록'), findsNothing);
       expect(find.text('긴태그숨김'), findsNothing);
 
       final titleRect = tester.getRect(
         find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
       );
-      final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼').first);
-      final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+      final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+      final ctaRect = tester.getRect(
+        find.byKey(const ValueKey('template-detail-use')),
+      );
 
       expect(titleRect.left, greaterThanOrEqualTo(0));
       expect(titleRect.right, lessThanOrEqualTo(390));
@@ -279,9 +294,11 @@ void main() {
           final titleRect = tester.getRect(
             find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
           );
-          final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼').first);
-          final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
-          final heroMetaRect = tester.getRect(find.text('24쪽 · 사진 38~52장 추천'));
+          final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+          final ctaRect = tester.getRect(
+            find.byKey(const ValueKey('template-detail-use')),
+          );
+          final heroMetaRect = tester.getRect(find.text('24쪽'));
 
           expect(titleRect.left, greaterThanOrEqualTo(0), reason: viewport.$1);
           expect(
@@ -352,15 +369,17 @@ void main() {
         await tester.pump(const Duration(seconds: 3));
 
         expect(tester.takeException(), isNull);
-        expect(find.text('이 템플릿으로 시작하기'), findsOneWidget);
-        expect(find.text('가족여행프리미엄에디토리얼'), findsWidgets);
+        expect(find.text('이 디자인으로 시작'), findsOneWidget);
+        expect(find.text('가족여행프리미엄에디토리얼 컬렉션'), findsOneWidget);
         expect(find.text('여름방학기록'), findsNothing);
 
         final titleRect = tester.getRect(
           find.text('제주 가족 여행의 아주 길고 따뜻한 여름 기록 포토북 템플릿').first,
         );
-        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼').first);
-        final ctaRect = tester.getRect(find.text('이 템플릿으로 시작하기'));
+        final categoryRect = tester.getRect(find.text('가족여행프리미엄에디토리얼 컬렉션'));
+        final ctaRect = tester.getRect(
+          find.byKey(const ValueKey('template-detail-use')),
+        );
 
         expect(titleRect.left, greaterThanOrEqualTo(0));
         expect(titleRect.right, lessThanOrEqualTo(390));

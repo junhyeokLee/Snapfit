@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/foundation.dart';
+import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
-import '../../../../shared/widgets/snapfit_app_bar_back_button.dart';
+import '../../../../shared/web/web_design.dart';
+import '../widgets/customer_web_page.dart';
 
 class TermsPolicyScreen extends StatelessWidget {
   const TermsPolicyScreen({super.key, this.initialDocType});
@@ -147,96 +150,83 @@ class TermsPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetDoc = _docByType(initialDocType);
-    if (targetDoc != null) {
-      return _TermsDetailScreen(doc: targetDoc);
-    }
+    if (targetDoc != null) return _TermsDetailScreen(doc: targetDoc);
+    if (kIsWeb) return _webIndex(context);
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: AppBar(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        elevation: 0,
-        leading: const SnapFitAppBarBackButton(),
-        title: Text(
-          '약관 및 정책',
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w800,
-            color: SnapFitColors.textPrimaryOf(context),
+      appBar: const ExperienceHeader(title: '이용 안내', themeAware: true),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+              children: [
+                Text(
+                  '약관과 정책',
+                  style: ExperienceFormStyle.text(
+                    context,
+                    24,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                for (final doc in _docs)
+                  ExperienceRow(
+                    themeAware: true,
+                    icon: Icons.description_outlined,
+                    title: doc.title,
+                    subtitle: doc.summary,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => _TermsDetailScreen(doc: doc),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-        itemCount: _docs.length,
-        separatorBuilder: (_, __) => SizedBox(height: 10.h),
-        itemBuilder: (context, index) {
-          final doc = _docs[index];
-          return InkWell(
-            borderRadius: BorderRadius.circular(14.r),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => _TermsDetailScreen(doc: doc)),
-              );
-            },
-            child: Ink(
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context),
-                borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: SnapFitColors.overlayLightOf(context),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          doc.title,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w700,
-                            color: SnapFitColors.textPrimaryOf(context),
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 20.sp,
-                        color: SnapFitColors.textSecondaryOf(context),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    doc.summary,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      height: 1.45,
-                      fontWeight: FontWeight.w500,
-                      color: SnapFitColors.textSecondaryOf(context),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    '버전 ${doc.version} · 시행일 ${doc.effectiveDate}',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: SnapFitColors.textMutedOf(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
+
+  Widget _webIndex(BuildContext context) => CustomerWebPage(
+    title: '약관과 정책', eyebrow: 'POLICIES',
+    description: '스냅핏의 서비스 이용 기준과 개인정보 보호 안내를 확인하세요.',
+    scrollBody: true,
+    sidebar: const CustomerWebNote(title: '문서 안내',
+      message: '문서를 선택하면 전체 내용과 버전, 시행일을 확인할 수 있습니다. 문서 열람은 수신 동의나 약관 동의를 변경하지 않습니다.'),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      for (var index = 0; index < _docs.length; index++) ...[
+        if (index > 0) const Divider(height: 1),
+        InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute<void>(
+            builder: (_) => _TermsDetailScreen(doc: _docs[index]))),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 8),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(Icons.description_outlined, size: 26, color: WebPalette.of(context).brandInk),
+              const SizedBox(width: 20),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_docs[index].title, style: TextStyle(fontSize: 20,
+                  fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
+                const SizedBox(height: 12),
+                Text(_docs[index].summary, style: TextStyle(fontSize: 14,
+                  height: 1.8, color: WebPalette.of(context).muted)),
+                const SizedBox(height: 16),
+                Text('${_docs[index].version} · 시행일 ${_docs[index].effectiveDate}',
+                  style: TextStyle(fontSize: 12, color: WebPalette.of(context).muted)),
+              ])),
+              const SizedBox(width: 16),
+              Icon(Icons.arrow_forward, size: 20, color: WebPalette.of(context).muted),
+            ])),
+        ),
+      ],
+    ]),
+  );
 
   _PolicyDoc? _docByType(TermsPolicyDocType? type) {
     if (type == null) return null;
@@ -255,79 +245,82 @@ class TermsPolicyScreen extends StatelessWidget {
 
 class _TermsDetailScreen extends StatelessWidget {
   const _TermsDetailScreen({required this.doc});
-
   final _PolicyDoc doc;
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: SnapFitColors.backgroundOf(context),
-      appBar: AppBar(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        elevation: 0,
-        leading: const SnapFitAppBarBackButton(),
-        title: Text(
-          doc.title,
-          style: TextStyle(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w800,
-            color: SnapFitColors.textPrimaryOf(context),
+  Widget build(BuildContext context) => kIsWeb ? _webDocument(context) : Scaffold(
+    backgroundColor: SnapFitColors.backgroundOf(context),
+    appBar: ExperienceHeader(title: doc.title, themeAware: true),
+    body: SafeArea(
+      top: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+            children: [
+              Text(
+                '버전 ${doc.version} · 시행일 ${doc.effectiveDate}',
+                style: ExperienceFormStyle.text(context, 13, secondary: true),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '최종 개정일 ${doc.effectiveDate}',
+                style: ExperienceFormStyle.text(context, 13, secondary: true),
+              ),
+              const SizedBox(height: 20),
+              Divider(color: ExperienceFormStyle.line(context), height: 1),
+              const SizedBox(height: 28),
+              for (final section in doc.body)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        section.heading,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          17,
+                          weight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SelectableText(
+                        section.content,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          14,
+                        ).copyWith(height: 1.8),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 24.h),
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-            ),
-            child: Text(
-              '버전 ${doc.version}\n시행일 ${doc.effectiveDate}\n최종 개정일 ${doc.effectiveDate}',
-              style: TextStyle(
-                fontSize: 11.sp,
-                height: 1.5,
-                fontWeight: FontWeight.w600,
-                color: SnapFitColors.textSecondaryOf(context),
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          ...doc.body.map(
-            (section) => Padding(
-              padding: EdgeInsets.only(bottom: 14.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    section.heading,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w800,
-                      color: SnapFitColors.textPrimaryOf(context),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    section.content,
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      height: 1.6,
-                      fontWeight: FontWeight.w500,
-                      color: SnapFitColors.textPrimaryOf(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    ),
+  );
+
+  Widget _webDocument(BuildContext context) => CustomerWebPage(
+    title: doc.title, eyebrow: 'POLICIES', description: doc.summary,
+    scrollBody: true,
+    sidebar: CustomerWebNote(title: '문서 정보',
+      message: '버전 ${doc.version}\n\n시행일 ${doc.effectiveDate}\n\n최종 개정일 ${doc.effectiveDate}'),
+    child: SelectionArea(child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var index = 0; index < doc.body.length; index++) ...[
+          if (index > 0) const SizedBox(height: 36),
+          Text(doc.body[index].heading, style: TextStyle(fontSize: 20,
+            fontWeight: FontWeight.w600, height: 1.5, color: WebPalette.of(context).ink)),
+          const SizedBox(height: 16),
+          Text(doc.body[index].content, style: TextStyle(fontSize: 15,
+            height: 1.9, color: WebPalette.of(context).ink)),
         ],
-      ),
-    );
-  }
+      ],
+    )),
+  );
 }
 
 class _PolicyDoc {

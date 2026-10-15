@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 
 class AiAlbumDraftFailureStep extends StatelessWidget {
   const AiAlbumDraftFailureStep({
@@ -15,7 +13,6 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
     this.isTemplateDesign = false,
     this.usesAdvancedServerAnalysis = false,
   });
-
   final String title;
   final String message;
   final String primaryActionLabel;
@@ -26,59 +23,44 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
   final bool usesAdvancedServerAnalysis;
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = SnapFitColors.isDark(context);
-    final background = isDark
-        ? const Color(0xFF111111)
-        : const Color(0xFFFAF8F3);
-
-    return ColoredBox(
-      color: background,
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 28.h, 20.w, 32.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(18.w, 20.h, 18.w, 20.h),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1A17) : Colors.white,
-                  borderRadius: BorderRadius.circular(26.r),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.10)
-                        : const Color(0xFFE7E1D8),
-                  ),
-                ),
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Column(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _NoChargeBadge(isDark: isDark),
-                    SizedBox(height: 16.h),
+                    Icon(
+                      Icons.cloud_off_outlined,
+                      size: 24,
+                      color: ExperienceFormStyle.muted(context),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       title,
-                      style: TextStyle(
-                        color: SnapFitColors.textPrimaryOf(context),
-                        fontSize: 22.sp,
-                        height: 1.18,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.45,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        20,
+                        weight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 9.h),
+                    const SizedBox(height: 12),
                     Text(
                       message,
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 13.5.sp,
-                        height: 1.45,
-                        fontWeight: FontWeight.w600,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        14,
+                        secondary: true,
                       ),
                     ),
-                    SizedBox(height: 14.h),
+                    const SizedBox(height: 12),
                     Text(
                       isTemplateDesign
                           ? '디자인 요청만 전송했어요. 사진첩에 접근하거나 사진을 전송하지 않았어요.'
@@ -87,110 +69,79 @@ class AiAlbumDraftFailureStep extends StatelessWidget {
                           : usesServerDraftProvider
                           ? '선택한 사진 정보가 서버로 전송됐을 수 있어요. 실패해도 앨범은 만들어지지 않아요.'
                           : '기기 안에서만 확인해요. 사진은 업로드하지 않았어요.',
-                      style: TextStyle(
-                        color: SnapFitColors.textSecondaryOf(context),
-                        fontSize: 12.5.sp,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '포인트는 차감되지 않았어요.',
-                      style: TextStyle(
-                        color: const Color(0xFF4C6A55),
-                        fontSize: 13.sp,
-                        height: 1.35,
-                        fontWeight: FontWeight.w900,
+                      style: ExperienceFormStyle.text(
+                        context,
+                        12,
+                        secondary: true,
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 18.h),
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: onRetryRange,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: isDark
-                        ? const Color(0xFFF4F1EA)
-                        : const Color(0xFF1F1F1D),
-                    foregroundColor: isDark
-                        ? const Color(0xFF111111)
-                        : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17.r),
-                    ),
-                  ),
-                  child: Text(
-                    primaryActionLabel,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: double.infinity,
-                height: 48.h,
-                child: OutlinedButton(
-                  onPressed: onManualStart,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: SnapFitColors.textPrimaryOf(context),
-                    side: BorderSide(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.16)
-                          : const Color(0xFFE0D7CA),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
-                  child: Text(
-                    '직접 구성하기',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _NoChargeBadge extends StatelessWidget {
-  const _NoChargeBadge({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE9F4EC),
-        borderRadius: BorderRadius.circular(999.r),
-      ),
-      child: Text(
-        '차감 없음',
-        style: TextStyle(
-          color: const Color(0xFF4C6A55),
-          fontSize: 11.5.sp,
-          height: 1.1,
-          fontWeight: FontWeight.w900,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 672),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 18,
+                        color: ExperienceFormStyle.selectionInk(context),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '포인트는 차감되지 않았어요.',
+                          style: ExperienceFormStyle.text(
+                            context,
+                            13,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: onRetryRange,
+                        style: ExperienceFormStyle.primary(context),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: Text(primaryActionLabel),
+                      ),
+                      TextButton(
+                        onPressed: onManualStart,
+                        style: TextButton.styleFrom(
+                          foregroundColor: ExperienceFormStyle.ink(context),
+                          minimumSize: const Size(0, 48),
+                          textStyle: ExperienceFormStyle.text(
+                            context,
+                            14,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                        child: const Text('직접 구성하기'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }

@@ -5,6 +5,7 @@ import '../domain/entities/layer.dart';
 import '../domain/entities/layer_export_mapper.dart';
 import '../domain/repositories/album_repository.dart';
 import '../data/api/storage_service.dart';
+import '../data/gallery/browser_photo_asset.dart';
 import '../data/dto/request/create_album_request.dart';
 
 class AlbumPersistenceService {
@@ -17,10 +18,15 @@ class AlbumPersistenceService {
   static const int _maxUploadRetries = 2;
 
   Future<LayerModel> _uploadSingleLayerWithRetry(LayerModel layer) async {
+    final browserPhoto = layer.asset is BrowserPhotoAsset;
     if (layer.type != LayerType.image ||
-        (layer.previewUrl != null ||
-            layer.imageUrl != null ||
-            layer.originalUrl != null) ||
+        (!browserPhoto &&
+            (layer.previewUrl != null ||
+                layer.imageUrl != null ||
+                layer.originalUrl != null)) ||
+        (browserPhoto &&
+            (layer.previewUrl?.isNotEmpty ?? false) &&
+            (layer.originalUrl?.isNotEmpty ?? false)) ||
         layer.asset == null) {
       return layer;
     }
@@ -31,6 +37,11 @@ class AlbumPersistenceService {
         final uploaded = await _storage.uploadImageVariants(layer.asset!);
         final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
         final original = uploaded.originalGsPath ?? uploaded.originalUrl;
+        if (layer.asset is BrowserPhotoAsset &&
+            (preview?.trim().isNotEmpty != true ||
+                original?.trim().isNotEmpty != true)) {
+          throw StateError('browser_photo_upload_incomplete');
+        }
         if (preview != null || original != null) {
           return layer.copyWith(
             previewUrl: preview,
@@ -46,6 +57,7 @@ class AlbumPersistenceService {
         }
         attempt++;
         if (attempt > _maxUploadRetries) {
+          if (layer.asset is BrowserPhotoAsset) rethrow;
           debugPrint(
             '[Background] Image upload failed for layer ${layer.id}: $e',
           );
@@ -181,6 +193,8 @@ class AlbumPersistenceService {
       if (e is StorageQuotaExceededException) {
         rethrow;
       }
+      if (currentLayers.any((layer) => layer.asset is BrowserPhotoAsset))
+        rethrow;
       if (!swallowErrors) {
         rethrow;
       }

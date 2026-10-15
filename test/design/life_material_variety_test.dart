@@ -18,7 +18,7 @@ void main() {
                     ).readAsStringSync(),
                   )
                   as Map<String, dynamic>;
-          final current = volume.document(aspect);
+          final current = volume.document(aspect, refineQuality: false);
           expect(current['cover'], baseline['cover']);
           expect(current['chapters'], baseline['chapters']);
           final before = templateDocumentPages(baseline);
@@ -62,32 +62,34 @@ void main() {
   test(
     'decorations are curated, repeat at most twice, and remain available to edit',
     () {
-      for (final volume in lifeConceptVolumes) {
-        final counts = <String, int>{};
-        for (final page in templateDocumentPages(
-          volume.document(CollectionAspect.square),
-        )) {
-          for (final layer in page['layers'] as List) {
-            if (layer['type'] == 'image') continue;
-            final style = layer['style'];
-            final asset = (layer['imageUrl'] as String?)?.replaceFirst(
-              'asset:',
-              '',
-            );
-            final spec =
-                studioDecorationById(style is String ? style : '') ??
-                studioDecorationByAsset(asset);
-            if (spec == null) continue;
-            counts.update(spec.id, (n) => n + 1, ifAbsent: () => 1);
+      for (final refined in [false, true]) {
+        for (final volume in lifeConceptVolumes) {
+          final counts = <String, int>{};
+          for (final page in templateDocumentPages(
+            volume.document(CollectionAspect.square, refineQuality: refined),
+          )) {
+            for (final layer in page['layers'] as List) {
+              if (layer['type'] == 'image') continue;
+              final style = layer['style'];
+              final asset = (layer['imageUrl'] as String?)?.replaceFirst(
+                'asset:',
+                '',
+              );
+              final spec =
+                  studioDecorationById(style is String ? style : '') ??
+                  studioDecorationByAsset(asset);
+              if (spec == null) continue;
+              counts.update(spec.id, (n) => n + 1, ifAbsent: () => 1);
+            }
           }
-        }
-        expect(counts[volume.signatureMaterial], 2, reason: volume.id);
-        for (final entry in counts.entries) {
-          expect(
-            entry.value,
-            lessThanOrEqualTo(2),
-            reason: '${volume.id}: ${entry.key} repeated',
-          );
+          expect(counts[volume.signatureMaterial], 2, reason: volume.id);
+          for (final entry in counts.entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: '${volume.id}: ${entry.key} repeated',
+            );
+          }
         }
       }
       expect(lifeVarietyCutouts.length + lifeVarietyPapers.length, 12);
@@ -109,7 +111,7 @@ void main() {
         );
         baseline['accessTier'] = 'premium';
         baseline['releaseGates']['price'] = 'launch-price-set-sale-held';
-        expect(volume.document(aspect), baseline);
+        expect(volume.document(aspect, refineQuality: false), baseline);
       }
     }
   });
@@ -117,7 +119,7 @@ void main() {
   test('shared-seasons removes floating objects and opaque photo labels', () {
     for (final aspect in CollectionAspect.values) {
       final pages = templateDocumentPages(
-        ConceptVolume.sharedSeasons.document(aspect),
+        ConceptVolume.sharedSeasons.document(aspect, refineQuality: false),
       );
       final baseline =
           jsonDecode(
@@ -127,7 +129,7 @@ void main() {
               )
               as Map<String, dynamic>;
       expect(pages.first, templateDocumentPages(baseline).first);
-      expect(ConceptVolume.sharedSeasons.contentRevision, 3);
+      expect(ConceptVolume.sharedSeasons.contentRevision, 4);
       final opening = pages[1]['layers'] as List;
       final branch = opening.singleWhere(
         (l) => l['imageUrl'] == 'asset:assets/sticker/studio/olive_press.png',

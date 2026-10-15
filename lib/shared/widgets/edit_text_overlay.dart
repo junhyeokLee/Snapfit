@@ -1,14 +1,14 @@
 import 'dart:core';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:snap_fit/shared/widgets/triangle_slider.dart';
+import '../web/web_design.dart';
+import 'dart:math' as math;
 import '../../core/constants/snapfit_colors.dart';
 import '../../features/album/domain/entities/layer.dart';
 import '../../features/album/presentation/widgets/editor/tool_button.dart';
-import '../../features/album/presentation/widgets/editor/top_bar.dart';
 import 'color_palette_list.dart';
 import 'font_picker_list.dart';
+import 'experience_form_style.dart';
 import 'no_glow.dart';
 import 'studio_phrase_picker.dart';
 
@@ -53,14 +53,12 @@ class EditTextOverlay extends StatefulWidget {
   State<EditTextOverlay> createState() => _EditTextOverlayState();
 }
 
-class _EditTextOverlayState extends State<EditTextOverlay>
-    with WidgetsBindingObserver {
+class _EditTextOverlayState extends State<EditTextOverlay> {
   // ScrollControllers for font and color pickers
   final ScrollController _fontScroll = ScrollController();
   final ScrollController _colorScroll = ScrollController();
-  bool _keyboardWasVisible = true;
-  bool _initialOpenHandled = false;
   bool _choosingPhrase = false;
+  bool _finishing = false;
   late final TextEditingController _controller;
   late final FocusNode _focus;
 
@@ -111,11 +109,7 @@ class _EditTextOverlayState extends State<EditTextOverlay>
   // 편집 패널 모드
   EditPanelMode _panelMode = EditPanelMode.font;
 
-  // 폰트 크기 스케일 (0.8 ~ 2.5)
-  final double _fontScale = 1.0;
   final GlobalKey repaintKey = GlobalKey();
-  final GlobalKey<EditableTextState> _editableKey =
-      GlobalKey<EditableTextState>();
 
   @override
   void initState() {
@@ -131,16 +125,15 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     _textStyleType = widget.initialMode ?? TextStyleType.none;
     _bubbleColor = widget.initialBubbleColor;
 
-    _controller.addListener(() {
-      if (!mounted) return;
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focus.requestFocus();
+      if (!mounted) return;
+      _focus.requestFocus();
       // Scroll font list to current font
       final idx = _fontFamilies.indexOf(_currentFont);
       if (idx >= 0 && _fontScroll.hasClients) {
-        _fontScroll.jumpTo(idx * 56.0);
+        _fontScroll.jumpTo(
+          (idx * (kIsWeb ? 64.0 : 200.0)).clamp(0, _fontScroll.position.maxScrollExtent),
+        );
       }
       // Scroll color list to current color
       // ColorPaletteList colors (must match below)
@@ -209,47 +202,24 @@ class _EditTextOverlayState extends State<EditTextOverlay>
         Color(0xFFD291BC),
       ];
       final color = _style.color ?? Colors.white;
-      final cidx = colorList.indexWhere((c) => c.value == color.value);
+      final cidx = colorList.indexWhere(
+        (c) => c.toARGB32() == color.toARGB32(),
+      );
       if (cidx >= 0 && _colorScroll.hasClients) {
-        _colorScroll.jumpTo(cidx * 40.0);
+        _colorScroll.jumpTo(
+          (cidx * 50.0).clamp(0, _colorScroll.position.maxScrollExtent),
+        );
       }
     });
-
-    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _focus.dispose();
-    WidgetsBinding.instance.removeObserver(this);
+    _fontScroll.dispose();
+    _colorScroll.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeMetrics() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _choosingPhrase) return;
-      final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-      final keyboardVisibleNow = bottomInset > 0;
-
-      // 첫 키보드 오픈 감지: 오버레이가 뜨고 처음으로 키보드가 열릴 때만 실행
-      if (!_initialOpenHandled && keyboardVisibleNow) {
-        _keyboardWasVisible = true;
-        _initialOpenHandled = true;
-        return;
-      }
-
-      // 열림 -> 닫힘 감지 (디바운스 적용: 일시적인 insets 변동에 닫히지 않게)
-      if (_keyboardWasVisible && !keyboardVisibleNow && _initialOpenHandled) {
-        _keyboardWasVisible = false;
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-
-      if (keyboardVisibleNow) {
-        _keyboardWasVisible = true;
-      }
-    });
   }
 
   // ---------- 콜백 (툴바 → 상위 상태 갱신) ----------
@@ -265,9 +235,8 @@ class _EditTextOverlayState extends State<EditTextOverlay>
   });
 
   Future<void> _choosePhrase() async {
+    if (!mounted || _choosingPhrase || _finishing) return;
     _choosingPhrase = true;
-    _keyboardWasVisible = false;
-    _initialOpenHandled = false;
     _focus.unfocus();
     final phrase = await StudioPhrasePicker.show(context);
     if (!mounted) return;
@@ -289,9 +258,10 @@ class _EditTextOverlayState extends State<EditTextOverlay>
   }
 
   void _submit() {
+    if (!_canFinish) return;
     final text = _controller.text.trim();
     if (text.isEmpty) {
-      widget.onCancel();
+      _cancel();
       return;
     }
     final newStyle = _style.copyWith(
@@ -316,7 +286,20 @@ class _EditTextOverlayState extends State<EditTextOverlay>
       }(),
     );
 
+    setState(() => _finishing = true);
     widget.onSubmit(text, newStyle, _textStyleType, _bubbleColor, _align);
+  }
+
+  bool get _canFinish =>
+      mounted &&
+      !_finishing &&
+      !_choosingPhrase &&
+      ModalRoute.of(context)?.isCurrent != false;
+
+  void _cancel() {
+    if (!_canFinish) return;
+    setState(() => _finishing = true);
+    widget.onCancel();
   }
 
   void _togglePanel(EditPanelMode mode) {
@@ -341,9 +324,15 @@ class _EditTextOverlayState extends State<EditTextOverlay>
     } else if (mode == EditPanelMode.background) {
       _toggleBackground();
     } else {
+      final opening = _panelMode != mode || _focus.hasFocus;
       setState(() {
-        _panelMode = (_panelMode == mode ? EditPanelMode.none : mode);
+        _panelMode = opening ? mode : EditPanelMode.none;
       });
+      if (opening) {
+        _focus.unfocus();
+      } else {
+        _focus.requestFocus();
+      }
     }
   }
 
@@ -506,57 +495,70 @@ class _EditTextOverlayState extends State<EditTextOverlay>
       }
     }
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        color: SnapFitColors.overlayStrongOf(context),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: SizedBox(
-          height: 48,
-          child: ScrollConfiguration(
-            behavior: const NoGlow(),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Tooltip(
-                    message: '문구',
-                    child: ToolButton(
-                      key: const ValueKey('studio-phrase-tool'),
-                      label: Icons.format_quote_rounded,
-                      selected: false,
-                      onTap: _choosePhrase,
-                    ),
+    return Container(
+      color: const Color(0xFF252A2B),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: SizedBox(
+        height: 48,
+        child: ScrollConfiguration(
+          behavior: const NoGlow(),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Tooltip(
+                  message: '문구',
+                  child: ToolButton(
+                    key: const ValueKey('studio-phrase-tool'),
+                    label: Icons.format_quote_rounded,
+                    selected: false,
+                    onTap: _choosePhrase,
                   ),
-                  const SizedBox(width: 8),
-                  ToolButton(
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '폰트와 글자 크기',
+                  child: ToolButton(
+                    key: const ValueKey('text-edit-font-tool'),
                     label: Icons.text_fields,
                     selected: _panelMode == EditPanelMode.font,
                     onTap: () => _togglePanel(EditPanelMode.font),
                   ),
-                  const SizedBox(width: 8),
-                  ToolButton(
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '글자 색',
+                  child: ToolButton(
+                    key: const ValueKey('text-edit-color-tool'),
                     label: Icons.color_lens,
                     selected: _panelMode == EditPanelMode.color,
                     onTap: () => _togglePanel(EditPanelMode.color),
                   ),
-                  const SizedBox(width: 8),
-                  ToolButton(
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '문구 정렬',
+                  child: ToolButton(
+                    key: const ValueKey('text-edit-align-tool'),
                     label: alignIcon(),
                     selected: false,
                     onTap: () => _togglePanel(EditPanelMode.align),
                   ),
-                  const SizedBox(width: 8),
-                  ToolButton(
-                    label: Icons.auto_awesome, // sparkle icon
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '글자 윤곽선',
+                  child: ToolButton(
+                    key: const ValueKey('text-edit-outline-tool'),
+                    label: Icons.auto_awesome,
                     selected: _textStyleType != TextStyleType.none,
                     onTap: () => _toggleBackground(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -566,201 +568,307 @@ class _EditTextOverlayState extends State<EditTextOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets; // 키보드 높이
-    final keyboardVisible = viewInsets.bottom > 0;
-    return Stack(
-      children: [
-        /// 1) 뒤배경 Blur + Dim + 외부 탭 시 취소
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: false,
-            child: GestureDetector(
-              behavior: HitTestBehavior.deferToChild,
-              onTap: () {
-                // 배경을 눌렀을 때만 동작
-                final isKeyboardOpen =
-                    MediaQuery.of(context).viewInsets.bottom > 0;
-                if (!isKeyboardOpen) _submit();
-              },
-            ),
-          ),
-        ),
-
-        /// 2) 상단 바 (완료)
-        SafeArea(
-          bottom: false,
-          child: TopBar(onCancel: widget.onCancel, onDone: _submit),
-        ),
-
-        /// 3) 중앙 에디터 (TextField)
-        KeyboardVisibilityBuilder(
-          builder: (context, isKeyboardVisible) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                // 1) 원본 EditableText + 모드별 스타일링
-                // final bgColor = baseTextColor;
-
-                // 외곽선(스트로크 모사)
-                List<Shadow>? outlineShadows;
-                if (_textStyleType == TextStyleType.textOuter) {
-                  outlineShadows = _outline(_style.color ?? Colors.black);
-                }
-
-                // 모드별 텍스트 스타일
-                TextStyle effectiveStyle = _style.copyWith(
-                  fontSize: ((_style.fontSize ?? 20) * _fontScale).sp.clamp(
-                    18.sp,
-                    80.sp,
-                  ),
-                  fontFamily: _currentFont,
-                  // shadows only for textOuter or textInner, set below
-                  shadows: outlineShadows,
-                );
-
-                if (_textStyleType == TextStyleType.textInner) {
-                  effectiveStyle = effectiveStyle.copyWith(
-                    color: _style.color,
-                    backgroundColor: null,
-                    shadows: _innerOutline(
-                      (_style.color ?? Colors.black).computeLuminance() > 0.5
-                          ? Colors.black
-                          : Colors.white,
-                    ),
-                  );
-                } else if (_textStyleType == TextStyleType.textOuter) {
-                  effectiveStyle = effectiveStyle.copyWith(
-                    color: _style.color,
-                    backgroundColor: null,
-                    shadows: _outline(
-                      (_style.color ?? Colors.black).computeLuminance() > 0.5
-                          ? Colors.black
-                          : Colors.white,
-                    ),
-                  );
-                } else {
-                  effectiveStyle = effectiveStyle.copyWith(
-                    color: _style.color,
-                    backgroundColor: null,
-                  );
-                }
-                Widget boxedEditable;
-                boxedEditable = Align(
-                  alignment: Alignment.center,
-                  child: IntrinsicWidth(
-                    child: IntrinsicHeight(
-                      child: RepaintBoundary(
-                        child: CustomPaint(
-                          key: repaintKey,
-                          painter: null,
-                          child: EditableText(
-                            key: _editableKey,
-                            controller: _controller,
-                            focusNode: _focus,
-                            autofocus: true,
-                            maxLines: null,
-                            textAlign: _align,
-                            keyboardType: TextInputType.multiline,
-                            style: effectiveStyle,
-                            cursorColor: SnapFitColors.textPrimaryOf(context),
-                            backgroundCursorColor: Colors.transparent,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-
-                return Stack(
+    if (kIsWeb) return _webEditor();
+    final media = MediaQuery.of(context);
+    final scaffold = Scaffold.maybeOf(context);
+    final resized =
+        scaffold != null && scaffold.widget.resizeToAvoidBottomInset != false;
+    return Padding(
+      padding: EdgeInsets.only(bottom: resized ? 0 : media.viewInsets.bottom),
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, box) => SizedBox(
+            height: box.maxHeight * .96,
+            child: Material(
+              color: SnapFitColors.backgroundOf(context),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: AbsorbPointer(
+                absorbing: _finishing,
+                child: Column(
                   children: [
-                    Align(
-                      alignment: const Alignment(0, -0.55), // 화면 중앙보다 위로 고정
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          top:
-                              MediaQuery.of(context).padding.top +
-                              20, // SafeArea + offset
-                          bottom:
-                              MediaQuery.of(context).viewInsets.bottom +
-                              20, // 키보드 대응
-                          left: 24.w,
-                          right: 24.w,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 0.8 * constraints.maxWidth, // 화면 폭 대비 80%
-                            minHeight: 60.h,
-                            maxHeight: 200.h,
-                          ),
-                          child: SingleChildScrollView(child: boxedEditable),
-                        ),
-                      ),
-                    ),
-
-                    /// Bottom Panel (always above keyboard)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: MediaQuery.of(context).viewInsets.bottom,
-                      child: SafeArea(
-                        top: false,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_panelMode != EditPanelMode.none)
-                              Container(
-                                margin: EdgeInsets.only(bottom: 8.h),
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.vertical(),
+                    _header(),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, content) {
+                          final wide =
+                              content.maxWidth >= 540 &&
+                              media.orientation == Orientation.landscape;
+                          final options = _settings();
+                          if (wide) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(child: _editor()),
+                                SizedBox(
+                                  width: (content.maxWidth * .42).clamp(
+                                    224,
+                                    300,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          key: const PageStorageKey(
+                                            'text-edit-settings',
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          child: options,
+                                        ),
+                                      ),
+                                      _buildToolButtons(),
+                                    ],
+                                  ),
                                 ),
-                                child: _buildOptionList(),
-                              ),
-                            _buildToolButtons(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-
-        /// 4) 좌측 폰트 크기 슬라이더 (키보드 표시 시에만)
-        if (keyboardVisible)
-          Positioned(
-            left: 0, // Anchor to left edge for easier access
-            top: 0.h,
-            bottom:
-                viewInsets.bottom + 0.25 * MediaQuery.of(context).size.height,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SafeArea(
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: RotatedBox(
-                      quarterTurns: 0,
-                      child: TriangleSlider(
-                        min: 10.0, // 최소 글자 크기
-                        max: 80.0, // 최대 글자 크기
-                        value: _style.fontSize ?? 20.0,
-                        onChanged: (val) {
-                          setState(() {
-                            _style = _style.copyWith(fontSize: val.sp);
-                          });
+                              ],
+                            );
+                          }
+                          return Column(
+                            children: [
+                              Expanded(child: _editor()),
+                              if (_panelMode != EditPanelMode.none &&
+                                  (media.viewInsets.bottom == 0 ||
+                                      content.maxHeight >= 340))
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: math.min(
+                                      180,
+                                      content.maxHeight * .45,
+                                    ),
+                                  ),
+                                  child: SingleChildScrollView(
+                                    key: const PageStorageKey(
+                                      'text-edit-settings',
+                                    ),
+                                    child: options,
+                                  ),
+                                ),
+                            ],
+                          );
                         },
-                        height: 250.h,
-                        trackColor: Colors.white,
-                        triangleColor: Colors.white,
-                        thumbColor: Colors.white,
                       ),
                     ),
-                  ),
-                );
-              },
+                    if (!(box.maxWidth >= 540 &&
+                        media.orientation == Orientation.landscape))
+                      _buildToolButtons(),
+                  ],
+                ),
+              ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _webEditor() => Material(
+    color: WebPalette.of(context).surface,
+    child: AbsorbPointer(
+      absorbing: _finishing,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+          child: Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('문구 편집', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
+              SizedBox(height: 5),
+              Text('내용과 스타일을 확인한 뒤 적용하세요.', style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
+            ])),
+            OutlinedButton(key: const ValueKey('text-edit-cancel'), onPressed: _finishing ? null : _cancel, child: const Text('취소')),
+            const SizedBox(width: 10),
+            FilledButton(key: const ValueKey('text-edit-done'), onPressed: _finishing ? null : _submit, child: const Text('문구 적용')),
+          ]),
+        ),
+        Divider(height: 1, color: WebPalette.of(context).line),
+        Expanded(child: LayoutBuilder(builder: (context, bounds) {
+          final settings = SingleChildScrollView(
+            key: const PageStorageKey('text-edit-settings'),
+            padding: const EdgeInsets.all(22),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              const Text('글자 스타일', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                ChoiceChip(key: const ValueKey('text-edit-font-tool'), selected: _panelMode == EditPanelMode.font, label: const Text('글꼴'), onSelected: (_) => _togglePanel(EditPanelMode.font)),
+                ChoiceChip(key: const ValueKey('text-edit-color-tool'), selected: _panelMode == EditPanelMode.color, label: const Text('글자 색'), onSelected: (_) => _togglePanel(EditPanelMode.color)),
+              ]),
+              const SizedBox(height: 16),
+              _settings(),
+              const SizedBox(height: 20),
+              Divider(color: WebPalette.of(context).line),
+              const SizedBox(height: 14),
+              TextButton.icon(key: const ValueKey('text-edit-align-tool'), onPressed: () => _togglePanel(EditPanelMode.align), icon: Icon(_align == TextAlign.left ? Icons.format_align_left : _align == TextAlign.right ? Icons.format_align_right : Icons.format_align_center, size: 18), label: Text(_align == TextAlign.left ? '왼쪽 정렬' : _align == TextAlign.right ? '오른쪽 정렬' : '가운데 정렬')),
+              TextButton.icon(key: const ValueKey('text-edit-outline-tool'), onPressed: _toggleBackground, icon: const Icon(Icons.auto_awesome_outlined, size: 18), label: Text(_textStyleType == TextStyleType.none ? '글자 윤곽선 없음' : _textStyleType == TextStyleType.textOuter ? '바깥 윤곽선' : '안쪽 윤곽선')),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(key: const ValueKey('studio-phrase-tool'), onPressed: _choosePhrase, icon: const Icon(Icons.format_quote_outlined, size: 18), label: const Text('문구 찾아보기')),
+            ]),
+          );
+          final editor = Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text('입력 · 미리보기', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: WebPalette.of(context).muted)),
+              const SizedBox(height: 14),
+              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(12), child: _editor())),
+            ]),
+          );
+          if (bounds.maxWidth < 760) return Column(children: [Expanded(child: editor), SizedBox(height: 250, child: settings)]);
+          return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Expanded(child: editor),
+            VerticalDivider(width: 1, color: WebPalette.of(context).line),
+            SizedBox(width: 340, child: settings),
+          ]);
+        })),
+      ]),
+    ),
+  );
+
+  Widget _header() => Padding(
+    padding: const EdgeInsets.fromLTRB(8, 4, 12, 4),
+    child: Row(
+      children: [
+        IconButton(
+          key: const ValueKey('text-edit-cancel'),
+          tooltip: '문구 편집 취소',
+          onPressed: _finishing ? null : _cancel,
+          icon: const Icon(Icons.close, size: 20),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            '문구 편집',
+            style: ExperienceFormStyle.text(
+              context,
+              16,
+              weight: FontWeight.w600,
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: '문구 입력',
+          onPressed: () => _focus.requestFocus(),
+          icon: const Icon(Icons.keyboard_outlined, size: 21),
+        ),
+        TextButton(
+          key: const ValueKey('text-edit-done'),
+          onPressed: _finishing ? null : _submit,
+          style: TextButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            textStyle: ExperienceFormStyle.text(
+              context,
+              14,
+              weight: FontWeight.w600,
+            ),
+          ),
+          child: const Text('완료'),
+        ),
       ],
+    ),
+  );
+
+  Widget _settings() => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (_panelMode != EditPanelMode.none) _buildOptionList(),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: '글자 작게',
+              onPressed: () => setState(
+                () => _style = _style.copyWith(
+                  fontSize: ((_style.fontSize ?? 20) - 1).clamp(10, 80),
+                ),
+              ),
+              icon: const Icon(Icons.text_decrease, size: 20),
+            ),
+            Expanded(
+              child: Slider(
+                key: const ValueKey('text-edit-size'),
+                min: 10,
+                max: 80,
+                value: (_style.fontSize ?? 20).clamp(10, 80),
+                label: '${(_style.fontSize ?? 20).round()}',
+                onChanged: (value) =>
+                    setState(() => _style = _style.copyWith(fontSize: value)),
+              ),
+            ),
+            Text(
+              '${(_style.fontSize ?? 20).round()}',
+              style: ExperienceFormStyle.text(context, 12),
+            ),
+            IconButton(
+              tooltip: '글자 크게',
+              onPressed: () => setState(
+                () => _style = _style.copyWith(
+                  fontSize: ((_style.fontSize ?? 20) + 1).clamp(10, 80),
+                ),
+              ),
+              icon: const Icon(Icons.text_increase, size: 20),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+
+  Widget _editor() {
+    final ink = _style.color ?? ExperienceFormStyle.ink(context);
+    final previewBackground = ink.computeLuminance() > .4
+        ? const Color(0xFF252A2B)
+        : const Color(0xFFF3F6F5);
+    final style = _style.copyWith(
+      fontSize: (_style.fontSize ?? 20).clamp(10, 80),
+      fontFamily: _currentFont,
+      color: ink,
+      backgroundColor: Colors.transparent,
+      shadows: _textStyleType == TextStyleType.textOuter
+          ? _outline(ink.computeLuminance() > .5 ? Colors.black : Colors.white)
+          : _textStyleType == TextStyleType.textInner
+          ? _innerOutline(
+              ink.computeLuminance() > .5 ? Colors.black : Colors.white,
+            )
+          : null,
+    );
+    return LayoutBuilder(
+      builder: (context, box) {
+        final padding = box.maxHeight < 140 ? 4.0 : 12.0;
+        return Padding(
+          padding: EdgeInsets.all(padding),
+          child: ColoredBox(
+            key: const ValueKey('text-edit-preview'),
+            color: previewBackground,
+            child: RepaintBoundary(
+              key: repaintKey,
+              child: TextField(
+                key: const ValueKey('text-edit-input'),
+                controller: _controller,
+                focusNode: _focus,
+                maxLines: null,
+                expands: true,
+                textAlign: _align,
+                textAlignVertical: TextAlignVertical.center,
+                keyboardType: TextInputType.multiline,
+                style: style,
+                cursorColor: ink,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: padding,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

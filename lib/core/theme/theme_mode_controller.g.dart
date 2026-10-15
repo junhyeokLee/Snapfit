@@ -11,13 +11,13 @@ part of 'theme_mode_controller.dart';
 /// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
 
 @ProviderFor(ThemeModeController)
-const themeModeControllerProvider = ThemeModeControllerProvider._();
+final themeModeControllerProvider = ThemeModeControllerProvider._();
 
 /// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
 final class ThemeModeControllerProvider
     extends $NotifierProvider<ThemeModeController, ThemeMode> {
   /// 앱 테마 모드 상태 관리 (기본: 라이트, 로컬 저장으로 유지)
-  const ThemeModeControllerProvider._()
+  ThemeModeControllerProvider._()
     : super(
         from: null,
         argument: null,
@@ -54,7 +54,6 @@ abstract class _$ThemeModeController extends $Notifier<ThemeMode> {
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
     final ref = this.ref as $Ref<ThemeMode, ThemeMode>;
     final element =
         ref.element
@@ -64,6 +63,6 @@ abstract class _$ThemeModeController extends $Notifier<ThemeMode> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    element.handleCreate(ref, build);
   }
 }

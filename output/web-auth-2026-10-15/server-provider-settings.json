@@ -1,0 +1,24 @@
+{
+  "observedAtUtc": "2026-10-15T07:10:26.897372+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "publicProviders": {
+    "google": true,
+    "kakao": true
+  },
+  "authConfig": {
+    "siteUrl": "http://localhost:3000",
+    "redirectUrls": [],
+    "providers": {
+      "google": {
+        "enabled": true,
+        "clientIdPresent": true,
+        "secretPresent": true
+      },
+      "kakao": {
+        "enabled": true,
+        "clientIdPresent": true,
+        "secretPresent": true
+      }
+    }
+  }
+}

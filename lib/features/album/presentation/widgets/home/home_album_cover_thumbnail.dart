@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/cache/snapfit_cache_manager.dart';
 import '../../../domain/entities/album.dart';
@@ -10,6 +11,7 @@ import '../../controllers/layer_builder.dart';
 import '../../controllers/layer_interaction_manager.dart';
 import '../../utils/cover_background_color.dart';
 import '../cover/cover.dart';
+import '../cover/album_spine_image.dart';
 import 'home_cover_frame.dart';
 import 'home_album_helpers.dart';
 
@@ -21,6 +23,8 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
   final bool showShadow;
   final double shadowScaleMultiplier;
   final String? fallbackAsset;
+  final bool showBookDepth;
+  final Listenable? bookMotion;
 
   const HomeAlbumCoverThumbnail({
     super.key,
@@ -30,6 +34,8 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
     this.showShadow = true,
     this.shadowScaleMultiplier = 1.0,
     this.fallbackAsset,
+    this.showBookDepth = false,
+    this.bookMotion,
   });
 
   @override
@@ -87,6 +93,21 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
 
     // 4. 기준 사이즈로 렌더링 후 FittedBox로 전체 스케일링
     Widget buildFrame({required List<LayerModel> layers}) {
+      final artwork = CoverLayout(
+        aspect: ratio,
+        layers: layers,
+        isInteracting: false,
+        leftSpine: kCoverSpineWidth,
+        wrapSpineArtwork: showBookDepth,
+        backgroundColor: coverBackgroundColor,
+        onCoverSizeChanged: (_) {},
+        buildImage: (layer) => coverBuilder.buildImage(layer, isCover: true),
+        buildWrappedImage: (layer) =>
+            coverBuilder.buildImage(layer, isCover: true, wrapSpine: true),
+        buildText: (layer) => coverBuilder.buildText(layer, isCover: true),
+        sortedByZ: coverInteraction.sortByZ,
+        theme: theme,
+      );
       return SizedBox(
         width: targetW,
         height: targetH,
@@ -97,20 +118,14 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
             height: refHeight,
             shadowScale: shadowScale, // 그림자는 대상 크기에 맞게 미리 계산됨
             showShadow: showShadow,
-            child: CoverLayout(
-              aspect: ratio,
-              layers: layers,
-              isInteracting: false,
-              leftSpine: kCoverSpineWidth,
-              backgroundColor: coverBackgroundColor,
-              onCoverSizeChanged: (_) {},
-              buildImage: (layer) =>
-                  coverBuilder.buildImage(layer, isCover: true),
-              buildText: (layer) =>
-                  coverBuilder.buildText(layer, isCover: true),
-              sortedByZ: coverInteraction.sortByZ,
-              theme: theme,
-            ),
+            showBookDepth: showBookDepth,
+            bookDepth: HomeCoverFrame.depthForWidth(targetW),
+            bookMotion: bookMotion,
+            bindingColor: coverBackgroundColor ?? theme.gradient.colors.first,
+            bindingArtwork: showBookDepth
+                ? artwork.bindingPreview(refCanvasSize)
+                : null,
+            child: artwork,
           ),
         ),
       );
@@ -129,27 +144,42 @@ class HomeAlbumCoverThumbnail extends ConsumerWidget {
         album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl;
     final hasUrl = imageUrl?.isNotEmpty == true;
 
+    Widget fallbackArtwork({bool binding = false}) => hasUrl
+        ? SnapfitImage(
+            urlOrGs: imageUrl!,
+            fit: BoxFit.cover,
+            cacheManager: snapfitImageCacheManager,
+            placeholder: binding ? const SizedBox() : null,
+            error: binding ? const SizedBox() : null,
+            imageBuilder: showBookDepth && !binding
+                ? (context, provider) => AlbumSpineImage(image: provider)
+                : null,
+          )
+        : fallbackAsset != null
+        ? showBookDepth && !binding
+              ? AlbumSpineImage(image: AssetImage(fallbackAsset!))
+              : Image.asset(fallbackAsset!, fit: BoxFit.cover)
+        : Container(
+            color: Colors.grey[300],
+            child: binding
+                ? null
+                : Icon(
+                    Icons.photo_album_outlined,
+                    size: 28.w,
+                    color: Colors.grey[600],
+                  ),
+          );
+
     return HomeCoverFrame(
       width: targetW,
       height: targetH,
       shadowScale: shadowScale,
       showShadow: showShadow,
-      child: hasUrl
-          ? SnapfitImage(
-              urlOrGs: imageUrl!,
-              fit: BoxFit.cover,
-              cacheManager: snapfitImageCacheManager,
-            )
-          : fallbackAsset != null
-          ? Image.asset(fallbackAsset!, fit: BoxFit.cover)
-          : Container(
-              color: Colors.grey[300],
-              child: Icon(
-                Icons.photo_album_outlined,
-                size: 28.w,
-                color: Colors.grey[600],
-              ),
-            ),
+      showBookDepth: showBookDepth,
+      bookMotion: bookMotion,
+      bindingColor: coverBackgroundColor ?? theme.gradient.colors.first,
+      bindingArtwork: showBookDepth ? fallbackArtwork(binding: true) : null,
+      child: fallbackArtwork(),
     );
   }
 }

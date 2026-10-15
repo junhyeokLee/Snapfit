@@ -1,77 +1,95 @@
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../shared/widgets/album_stage_style.dart';
 import '../../../domain/entities/album.dart';
+import 'album_open_origin.dart';
 import 'home_album_cover_thumbnail.dart';
 
 class HomeAlbumPaperOpenOverlayController {
-  HomeAlbumPaperOpenOverlayController._({
-    required OverlayEntry entry,
-    required this.opened,
-    required ValueNotifier<bool> visible,
-  }) : _entry = entry,
-       _visible = visible;
+  HomeAlbumPaperOpenOverlayController._(this._overlay, this._entry, this._key);
 
+  final OverlayState _overlay;
   final OverlayEntry _entry;
-  final ValueNotifier<bool> _visible;
-  final Future<void> opened;
+  final GlobalKey<_HomeAlbumPaperOpenOverlayViewState> _key;
+  bool _dismissed = false;
 
-  Future<void> dismiss() async {
-    if (!_entry.mounted) return;
-    _visible.value = false;
-    await Future<void>.delayed(const Duration(milliseconds: 180));
-    if (_entry.mounted) {
-      _entry.remove();
+  Future<void> moveTo(GlobalKey readerCoverKey) async {
+    // Navigator inserts its route after our entry. Keep the same album above it.
+    _overlay.rearrange([_entry], below: _entry);
+    for (var frame = 0; frame < 4; frame++) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (_dismissed || !_entry.mounted) return;
+      final target = AlbumOpenOrigin.capture(readerCoverKey);
+      final view = _key.currentState;
+      if (target != null && view != null) {
+        await view.moveTo(target, readerCoverKey);
+        return;
+      }
     }
-    _visible.dispose();
+  }
+
+  void dismiss() {
+    if (_dismissed) return;
+    _dismissed = true;
+    if (_overlay.mounted) _entry.remove();
+    _entry.dispose();
   }
 }
 
 class HomeAlbumPaperOpenOverlay {
   const HomeAlbumPaperOpenOverlay._();
 
-  static HomeAlbumPaperOpenOverlayController? show(
+  static HomeAlbumPaperOpenOverlayController show(
     BuildContext context, {
     required Album album,
     required Size baseCanvasSize,
     required String fallbackAsset,
+    AlbumOpenOrigin? origin,
   }) {
-    final overlay = Overlay.of(context, rootOverlay: true);
-    final visible = ValueNotifier<bool>(true);
-    late final OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (context) => _HomeAlbumPaperOpenOverlayView(
+    // Direct links pass the root Navigator's own context, which sits above its
+    // Overlay. Normal home cards still resolve their existing ancestor Overlay.
+    final overlay =
+        Overlay.maybeOf(context, rootOverlay: true) ??
+        Navigator.maybeOf(context, rootNavigator: true)?.overlay;
+    if (overlay == null) throw StateError('album_open_overlay_unavailable');
+    final screen = MediaQuery.sizeOf(context);
+    final width = screen.width * .60;
+    final height = width * baseCanvasSize.height / baseCanvasSize.width;
+    final start =
+        origin ??
+        AlbumOpenOrigin(
+          size: Size(width, height),
+          transform: Matrix4.translationValues(
+            (screen.width - width) / 2,
+            (screen.height - height) / 2,
+            0,
+          ),
+        );
+    final key = GlobalKey<_HomeAlbumPaperOpenOverlayViewState>();
+    final entry = OverlayEntry(
+      builder: (_) => _HomeAlbumPaperOpenOverlayView(
+        key: key,
         album: album,
-        baseCanvasSize: baseCanvasSize,
         fallbackAsset: fallbackAsset,
-        visible: visible,
+        origin: start,
       ),
     );
     overlay.insert(entry);
-
-    return HomeAlbumPaperOpenOverlayController._(
-      entry: entry,
-      visible: visible,
-      opened: Future<void>.delayed(const Duration(milliseconds: 620)),
-    );
+    return HomeAlbumPaperOpenOverlayController._(overlay, entry, key);
   }
 }
 
 class _HomeAlbumPaperOpenOverlayView extends StatefulWidget {
   const _HomeAlbumPaperOpenOverlayView({
+    super.key,
     required this.album,
-    required this.baseCanvasSize,
     required this.fallbackAsset,
-    required this.visible,
+    required this.origin,
   });
 
   final Album album;
-  final Size baseCanvasSize;
   final String fallbackAsset;
-  final ValueNotifier<bool> visible;
+  final AlbumOpenOrigin origin;
 
   @override
   State<_HomeAlbumPaperOpenOverlayView> createState() =>
@@ -81,15 +99,21 @@ class _HomeAlbumPaperOpenOverlayView extends StatefulWidget {
 class _HomeAlbumPaperOpenOverlayViewState
     extends State<_HomeAlbumPaperOpenOverlayView>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 620),
+  );
+  AlbumOpenOrigin? _target;
+  GlobalKey? _targetKey;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 620),
-    )..forward();
+  Future<void> moveTo(AlbumOpenOrigin target, GlobalKey targetKey) async {
+    _target = target;
+    _targetKey = targetKey;
+    try {
+      await _controller.forward().orCancel;
+    } on TickerCanceled {
+      // The reader can be popped while its opening is in flight.
+    }
   }
 
   @override
@@ -98,156 +122,71 @@ class _HomeAlbumPaperOpenOverlayViewState
     super.dispose();
   }
 
-  double _segment(
-    double value,
-    double begin,
-    double end, {
-    Curve curve = Curves.easeOutCubic,
-  }) {
-    if (value <= begin) return 0;
-    if (value >= end) return 1;
-    return curve.transform((value - begin) / (end - begin));
-  }
-
-  double _mix(double begin, double end, double t) {
-    return begin + ((end - begin) * t);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: widget.visible,
-      builder: (context, visible, child) {
-        return AnimatedOpacity(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          opacity: visible ? 1 : 0,
-          child: child,
-        );
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: IgnorePointer(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
+    return Material(
+      color: Colors.transparent,
+      child: AbsorbPointer(
+        child: AnimatedBuilder(
+          animation: _controller,
+          child: SizedBox(
+            width: widget.origin.size.width,
+            height: widget.origin.size.height,
+            child: HomeAlbumCoverThumbnail(
+              album: widget.album,
+              height: widget.origin.size.height,
+              maxWidth: widget.origin.size.width,
+              showBookDepth: true,
+              bookMotion: _controller,
+              fallbackAsset: widget.fallbackAsset,
+            ),
+          ),
+          builder: (context, child) {
+            final progress = Curves.easeInOutCubic.transform(_controller.value);
+            final pose = AlbumOpenOrigin.interpolate(
+              widget.origin,
+              (_targetKey == null
+                      ? null
+                      : AlbumOpenOrigin.capture(_targetKey!)) ??
+                  _target ??
+                  widget.origin,
+              progress,
+            );
+            final transform = Matrix4.copy(pose.transform)
+              ..scaleByDouble(
+                pose.size.width / widget.origin.size.width,
+                pose.size.height / widget.origin.size.height,
+                pose.size.width / widget.origin.size.width,
+                1,
+              );
+            final reveal = Curves.easeOut.transform(
+              ((_controller.value - .60) / .40).clamp(0.0, 1.0),
+            );
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(
+                  opacity: 1 - reveal,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: AlbumStageStyle.gradient(context),
+                    ),
                   ),
                 ),
-              ),
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, _) {
-                  final raw = _controller.value;
-                  final objectProgress = _segment(
-                    raw,
-                    0.0,
-                    0.72,
-                    curve: Curves.easeOutQuart,
-                  );
-                  final backgroundFade = 1 - _segment(raw, 0.58, 1.0);
-
-                  final size = MediaQuery.sizeOf(context);
-                  final topInset = MediaQuery.paddingOf(context).top;
-                  final screenTop = topInset + 38.h;
-                  final ratio =
-                      widget.baseCanvasSize.width /
-                      math.max(1, widget.baseCanvasSize.height);
-                  final maxSpreadWidth = size.width - 48.w;
-                  final maxSpreadHeight =
-                      (size.height -
-                              MediaQuery.paddingOf(context).bottom -
-                              158.h)
-                          .clamp(size.height * 0.42, size.height * 0.62);
-                  var readerHeight = maxSpreadHeight;
-                  var readerWidth = readerHeight * ratio;
-                  if (readerWidth * 2 > maxSpreadWidth) {
-                    readerWidth = maxSpreadWidth / 2;
-                    readerHeight = readerWidth / ratio;
-                  }
-                  final startSide = size.width * 0.805;
-                  final endWidth = readerWidth;
-                  final endHeight = endWidth / ratio;
-                  final objectWidth = _mix(startSide, endWidth, objectProgress);
-                  final objectHeight = _mix(
-                    startSide,
-                    endHeight,
-                    objectProgress,
-                  );
-                  final top = _mix(
-                    screenTop + (size.height - screenTop) * 0.415,
-                    screenTop + (size.height - screenTop) * 0.42,
-                    objectProgress,
-                  );
-
-                  return Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Opacity(
-                        opacity: backgroundFade,
-                        child: const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFFEFE2D0), Color(0xFFF8EFE2)],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: (size.width - objectWidth) / 2,
-                        top: top - (objectHeight / 2),
-                        width: objectWidth,
-                        height: objectHeight,
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.0014)
-                            ..rotateY(_mix(-0.16, 0.0, objectProgress))
-                            ..rotateZ(_mix(-0.024, 0.0, objectProgress)),
-                          child: _PaperObject(
-                            album: widget.album,
-                            fallbackAsset: widget.fallbackAsset,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: Transform(
+                    alignment: Alignment.topLeft,
+                    transform: transform,
+                    child: child,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-    );
-  }
-}
-
-class _PaperObject extends StatelessWidget {
-  const _PaperObject({required this.album, required this.fallbackAsset});
-
-  final Album album;
-  final String fallbackAsset;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return HomeAlbumCoverThumbnail(
-          album: album,
-          height: constraints.maxHeight,
-          maxWidth: constraints.maxWidth,
-          showShadow: true,
-          shadowScaleMultiplier: 1.08,
-          fallbackAsset: fallbackAsset,
-        );
-      },
     );
   }
 }

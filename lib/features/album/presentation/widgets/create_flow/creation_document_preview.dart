@@ -1,9 +1,14 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
+import '../../../../store/presentation/widgets/template_book_artwork.dart';
 import '../../../../store/presentation/widgets/template_page_renderer.dart';
 import '../../../domain/entities/layer.dart';
 
@@ -18,6 +23,9 @@ class CreationDocumentPreview extends StatefulWidget {
     this.initialPage = 0,
     this.onPageChanged,
     this.inspection = false,
+    this.showThumbnails = true,
+    this.showBookMaterial = false,
+    this.spreadInLandscape = false,
   });
 
   final List<List<LayerModel>> pages;
@@ -27,6 +35,9 @@ class CreationDocumentPreview extends StatefulWidget {
   final int initialPage;
   final ValueChanged<int>? onPageChanged;
   final bool inspection;
+  final bool showThumbnails;
+  final bool showBookMaterial;
+  final bool spreadInLandscape;
 
   @override
   State<CreationDocumentPreview> createState() =>
@@ -38,6 +49,8 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   late List<GlobalKey> _thumbnailKeys = _keys();
   final _transform = TransformationController();
   final _viewportKey = GlobalKey();
+  final _railController = ScrollController();
+  double _railExtent = 88;
   double _drag = 0;
   int _direction = 1;
   Size? _viewportSize;
@@ -62,12 +75,31 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   @override
   void dispose() {
     _transform.dispose();
+    _railController.dispose();
     super.dispose();
   }
 
   void _revealSelection() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || widget.inspection || _thumbnailKeys.isEmpty) return;
+      if (widget.showBookMaterial && _railController.hasClients) {
+        final position = _railController.position;
+        final offset =
+            (_page * _railExtent -
+                    position.viewportDimension / 2 +
+                    _railExtent / 2)
+                .clamp(0.0, position.maxScrollExtent);
+        if (MediaQuery.disableAnimationsOf(context)) {
+          _railController.jumpTo(offset);
+        } else {
+          _railController.animateTo(
+            offset,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+          );
+        }
+        return;
+      }
       final target = _thumbnailKeys[_page].currentContext;
       if (target == null) return;
       Scrollable.ensureVisible(
@@ -105,13 +137,10 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
 
   Future<void> _inspect(int page) async {
     var selected = page;
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (context) => Scaffold(
-          backgroundColor: SnapFitColors.backgroundOf(context),
+    Widget inspector(BuildContext context) => Scaffold(
+          backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
           appBar: AppBar(
-            backgroundColor: SnapFitColors.backgroundOf(context),
+            backgroundColor: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
             surfaceTintColor: Colors.transparent,
             leading: IconButton(
               tooltip: '확대 보기 닫기',
@@ -131,9 +160,12 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
               onPageChanged: (value) => selected = value,
             ),
           ),
-        ),
-      ),
-    );
+        );
+    if (kIsWeb) {
+      await showWebAwareDialog<void>(context: context, maxWidth: 1240, maxHeight: 900, builder: inspector);
+    } else {
+      await Navigator.of(context).push<void>(MaterialPageRoute(fullscreenDialog: true, builder: inspector));
+    }
     if (mounted) _go(selected);
   }
 
@@ -164,8 +196,11 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
       builder: (context, constraints) {
         final wide =
             !widget.inspection &&
-            constraints.maxWidth >= 600 &&
-            constraints.maxWidth > constraints.maxHeight;
+            ((widget.spreadInLandscape &&
+                    MediaQuery.orientationOf(context) ==
+                        Orientation.landscape) ||
+                (constraints.maxWidth >= 520 &&
+                    constraints.maxWidth > constraints.maxHeight));
         if (_wide != wide) {
           _wide = wide;
           _revealSelection();
@@ -190,13 +225,14 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
                 ? Row(
                     children: [
                       Expanded(child: content),
-                      SizedBox(width: 108, child: _rail(indices, wide: true)),
+                      if (widget.showThumbnails)
+                        SizedBox(width: 108, child: _rail(indices, wide: true)),
                     ],
                   )
                 : Column(
                     children: [
                       Expanded(child: content),
-                      if (!widget.inspection)
+                      if (!widget.inspection && widget.showThumbnails)
                         SizedBox(
                           height:
                               88 + MediaQuery.textScalerOf(context).scale(16),
@@ -211,11 +247,16 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
   }
 
   Widget _stage(List<int> indices) {
-    final stageColor = SnapFitColors.isDark(context)
+    final stageColor = kIsWeb ? WebPalette.of(context).canvas : SnapFitColors.isDark(context)
         ? const Color(0xFF222626)
         : const Color(0xFFEEF1F0);
-    return ColoredBox(
-      color: stageColor,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: stageColor,
+        gradient: widget.showBookMaterial && !widget.inspection
+            ? AlbumStageStyle.gradient(context)
+            : null,
+      ),
       child: LayoutBuilder(
         builder: (context, area) {
           final viewport = Size(area.maxWidth, area.maxHeight);
@@ -231,7 +272,8 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
             math.min(
               math.max(1, area.maxWidth - 40) /
                   (widget.canvas.width * indices.length),
-              math.max(1, area.maxHeight - 32) / widget.canvas.height,
+              math.max(1, area.maxHeight - (area.maxHeight < 160 ? 16 : 32)) /
+                  widget.canvas.height,
             ),
           );
           Widget page(int index) => Semantics(
@@ -245,7 +287,7 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
               child: _render(index, widget.canvas.width * scale),
             ),
           );
-          final book = Center(
+          final plainBook = Center(
             child: DecoratedBox(
               decoration: const BoxDecoration(
                 boxShadow: [
@@ -263,6 +305,26 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
               ),
             ),
           );
+          final book = widget.showBookMaterial && !widget.inspection
+              ? Center(
+                  child: SizedBox(
+                    key: const ValueKey('creation_document_canvas'),
+                    width: widget.canvas.width * scale * indices.length,
+                    height: widget.canvas.height * scale,
+                    child: TemplateBookArtwork(
+                      canvas: widget.canvas,
+                      firstPage: indices.first,
+                      paired: indices.length == 2,
+                      onPageTap: _inspect,
+                      pageBuilder: (index, wrap) => _render(
+                        index,
+                        widget.canvas.width * scale,
+                        wrapSpine: wrap,
+                      ),
+                    ),
+                  ),
+                )
+              : plainBook;
           Widget viewportChild;
           if (widget.inspection) {
             Offset? doubleTapPosition;
@@ -333,7 +395,11 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
     );
   }
 
-  Widget _render(int index, double width) => RepaintBoundary(
+  Widget _render(
+    int index,
+    double width, {
+    bool wrapSpine = false,
+  }) => RepaintBoundary(
     child: ColoredBox(
       color: Colors.white,
       child: TemplatePageRenderer(
@@ -342,6 +408,8 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
         height: width / widget.canvas.aspectRatio,
         designCanvasSize: widget.canvas,
         preserveTypography: widget.preserveTypography,
+        wrapSpineArtwork: wrapSpine,
+        cacheNetworkImages: widget.showBookMaterial,
         // A portrait crop needs more source pixels than its displayed width.
         imageDecodeWidth:
             (math.max(width, width / widget.canvas.aspectRatio) *
@@ -361,7 +429,10 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
         IconButton(
           tooltip: '이전 페이지',
           onPressed: indices.first > 0 ? () => _move(-1, indices) : null,
-          icon: const Icon(Icons.chevron_left_rounded),
+          icon: Transform.flip(
+            flipX: true,
+            child: const ExperienceIcon('ChevronRight'),
+          ),
         ),
         Expanded(
           child: Semantics(
@@ -371,6 +442,8 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
                   ? '표지'
                   : '${indices.join('–')} / ${widget.pages.length - 1}쪽',
               key: const ValueKey('creation_document_position'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -384,13 +457,13 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
           onPressed: indices.last < widget.pages.length - 1
               ? () => _move(1, indices)
               : null,
-          icon: const Icon(Icons.chevron_right_rounded),
+          icon: const ExperienceIcon('ChevronRight'),
         ),
         if (!widget.inspection)
           IconButton(
             tooltip: '페이지 확대',
             onPressed: () => _inspect(_page),
-            icon: const Icon(Icons.open_in_full_rounded, size: 20),
+            icon: const ExperienceIcon('Expand', size: 20),
           )
         else
           ValueListenableBuilder<Matrix4>(
@@ -422,6 +495,67 @@ class _CreationDocumentPreviewState extends State<CreationDocumentPreview> {
 
   Widget _rail(List<int> indices, {required bool wide}) {
     final ink = SnapFitColors.textPrimaryOf(context);
+    if (widget.showBookMaterial) {
+      _railExtent = wide ? 80 + MediaQuery.textScalerOf(context).scale(16) : 88;
+      return ListView.builder(
+        key: const ValueKey('creation_document_rail'),
+        controller: _railController,
+        scrollDirection: wide ? Axis.vertical : Axis.horizontal,
+        padding: const EdgeInsets.all(4),
+        itemExtent: _railExtent,
+        itemCount: widget.pages.length,
+        cacheExtent: _railExtent,
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.all(4),
+          child: Semantics(
+            button: true,
+            selected: indices.contains(index),
+            label: index == 0 ? '표지 선택' : '$index쪽 선택',
+            child: InkWell(
+              key: ValueKey('${widget.pageKeyPrefix}$index'),
+              onTap: () => _go(index),
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(5, 5, 5, 3),
+                decoration: BoxDecoration(
+                  color: indices.contains(index)
+                      ? ink.withValues(alpha: .06)
+                      : null,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    width: 2,
+                    color: indices.contains(index) ? ink : Colors.transparent,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ExcludeSemantics(
+                        child: Center(
+                          child: _render(
+                            index,
+                            math.min(66, 46 * widget.canvas.aspectRatio),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      index == 0 ? '표지' : '$index',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: ink,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final children = <Widget>[
       for (var index = 0; index < widget.pages.length; index++)
         Padding(

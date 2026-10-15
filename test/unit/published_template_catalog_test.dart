@@ -50,6 +50,20 @@ const _publishedIds = [
   -9465,
   -9304,
   -9305,
+  -9501,
+  -9502,
+  -9503,
+  -9504,
+  -9505,
+  -9506,
+  -9507,
+  -9511,
+  -9512,
+  -9513,
+  -9514,
+  -9515,
+  -9516,
+  -9517,
 ];
 
 void main() {
@@ -92,14 +106,15 @@ void main() {
       expect(result.map((t) => t.id), _publishedIds);
       expect(result.first.title, source.title);
       expect(result.first.templateJson, source.templateJson);
-      expect(result.every((t) => !t.isPremium), true);
+      expect(result.where((t) => !t.isPremium), hasLength(37));
+      expect(result.where((t) => t.isPremium), hasLength(14));
       expect(stale.templateJson, '{bad');
     },
   );
 
   for (final offline in [false, true]) {
     test(
-      'store, feed, runtime and editor publish the approved thirty-seven, offline=$offline',
+      'store, feed, runtime and editor publish all 51, offline=$offline',
       () async {
         final scope = container(offline: offline);
         final subscription = scope.listen(
@@ -107,7 +122,7 @@ void main() {
           (_, __) {},
         );
         addTearDown(subscription.close);
-        expect(scope.read(storeTemplateFeedProvider).items.length, 37);
+        expect(scope.read(storeTemplateFeedProvider).items.length, 51);
         for (var refresh = 0; refresh < 3; refresh++) {
           final catalog = await scope.read(templateListProvider.future);
           expect(catalog.map((t) => t.id), _publishedIds);
@@ -124,9 +139,9 @@ void main() {
         final editor = await scope.read(designTemplateCatalogProvider.future);
         expect(
           editor.map((t) => t.name),
-          bundledCreationTemplates.map((t) => t.title),
+          publishedCreationTemplates.map((t) => t.title),
         );
-        for (var i = 0; i < editor.length; i++) {
+        for (var i = 0; i < authoredCollections.length; i++) {
           for (final aspect in CollectionAspect.values) {
             final layers = editor[i].buildLayers(aspect.canvas);
             final doc = authoredCollections[i].document(aspect);

@@ -1,74 +1,73 @@
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
-import '../../../../../core/utils/screen_logger.dart';
-import 'home_empty_state.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 
-/// 에러 상태 빌드
 class HomeErrorState extends StatelessWidget {
+  const HomeErrorState({super.key, required this.error, required this.onRetry});
   final Object error;
-
-  const HomeErrorState({super.key, required this.error});
-
-  static bool _logged = false;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    if (!_logged) {
-      _logged = true;
-      ScreenLogger.widget('HomeErrorState', '홈 에러 상태 · 연결 실패 등');
-    }
-    final isTimeout =
-        error is DioException &&
-        ((error as DioException).type == DioExceptionType.connectionTimeout ||
-            (error as DioException).type == DioExceptionType.receiveTimeout);
-    if (isTimeout) {
-      return HomeEmptyState(onCreate: () {}); // Error state return
-    }
-
-    final isConnectionRefused =
-        error is DioException &&
-        (error as DioException).type == DioExceptionType.connectionError;
-    final textColor = SnapFitColors.textPrimary.withOpacity(0.9);
-    final subColor = SnapFitColors.textSecondary.withOpacity(0.7);
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.wifi_off, size: 48.sp, color: subColor),
-            SizedBox(height: 16.h),
-            Text(
-              isConnectionRefused
-                  ? '서버에 연결할 수 없습니다\n(Connection refused)'
-                  : '에러 발생',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: textColor,
+    final type = error is DioException ? (error as DioException).type : null;
+    final timeout =
+        type == DioExceptionType.connectionTimeout ||
+        type == DioExceptionType.receiveTimeout ||
+        type == DioExceptionType.sendTimeout;
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: math.max(0, constraints.maxHeight - 48),
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cloud_off_outlined,
+                    size: 32,
+                    color: ExperienceFormStyle.muted(context),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '앨범을 불러오지 못했어요',
+                    textAlign: TextAlign.center,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      20,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    timeout
+                        ? '연결이 지연되고 있어요. 잠시 후 다시 시도해주세요.'
+                        : type == DioExceptionType.connectionError
+                        ? '네트워크 연결을 확인해주세요.'
+                        : '잠시 후 다시 시도해주세요.',
+                    textAlign: TextAlign.center,
+                    style: ExperienceFormStyle.text(
+                      context,
+                      14,
+                      secondary: true,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: onRetry,
+                    style: ExperienceFormStyle.primary(context),
+                    icon: const Icon(Icons.refresh, size: 20),
+                    label: const Text('다시 불러오기'),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            if (isConnectionRefused) ...[
-              SizedBox(height: 12.h),
-              Text(
-                '• 네트워크 연결 상태를 확인\n'
-                '• Supabase 프로젝트 URL/anon key 설정 확인\n'
-                '• 잠시 후 다시 시도',
-                style: TextStyle(fontSize: 13.sp, color: subColor),
-                textAlign: TextAlign.center,
-              ),
-            ] else
-              Padding(
-                padding: EdgeInsets.only(top: 12.h),
-                child: Text(
-                  '$error',
-                  style: TextStyle(fontSize: 13.sp, color: subColor),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

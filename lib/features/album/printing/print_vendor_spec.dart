@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/album_page_policy.dart';
 
 /// The saved physical product is independent of the editor's logical canvas.
 class PrintProduct {
@@ -74,6 +75,13 @@ class PrintVendorSpec {
         colorSpace != 'sRGB') {
       throw const FormatException('print_spec_invalid');
     }
+    if (PrintProduct.forId(id) != null &&
+        (!AlbumPagePolicy.isValid(pageCount) ||
+            minInteriorPages != AlbumPagePolicy.minInnerPages ||
+            maxInteriorPages != AlbumPagePolicy.maxInnerPages ||
+            pageMultiple != AlbumPagePolicy.pageStep)) {
+      throw const FormatException('print_spec_page_policy_mismatch');
+    }
     for (final value in [
       trimWidthMm,
       trimHeightMm,
@@ -102,12 +110,12 @@ class PrintVendorSpec {
           coverSize.width,
           coverSize.height,
         ).contains(front.topLeft) ||
-        front.right > coverSize.width ||
-        front.bottom > coverSize.height ||
+        front.right > coverSize.width + _geometryEpsilonMm ||
+        front.bottom > coverSize.height + _geometryEpsilonMm ||
         back.left < 0 ||
         back.top < 0 ||
-        back.right > coverSize.width ||
-        back.bottom > coverSize.height ||
+        back.right > coverSize.width + _geometryEpsilonMm ||
+        back.bottom > coverSize.height + _geometryEpsilonMm ||
         front.overlaps(back) ||
         (isHardcover && back.right >= front.left) ||
         !_within(coverTrim, Offset.zero & coverSize) ||
@@ -169,9 +177,14 @@ class PrintVendorSpec {
   bool get verified => data['verified'] == true;
   int get dpi => (data['dpi'] as num?)?.toInt() ?? 300;
   int get pageCount => (data['pageCount'] as num).toInt();
-  int get minInteriorPages => (data['minInteriorPages'] as num?)?.toInt() ?? 20;
-  int get maxInteriorPages => (data['maxInteriorPages'] as num?)?.toInt() ?? 80;
-  int get pageMultiple => (data['pageMultiple'] as num?)?.toInt() ?? 2;
+  int get minInteriorPages =>
+      (data['minInteriorPages'] as num?)?.toInt() ??
+      AlbumPagePolicy.minInnerPages;
+  int get maxInteriorPages =>
+      (data['maxInteriorPages'] as num?)?.toInt() ??
+      AlbumPagePolicy.maxInnerPages;
+  int get pageMultiple =>
+      (data['pageMultiple'] as num?)?.toInt() ?? AlbumPagePolicy.pageStep;
   double get minimumPhotoPpi =>
       (data['minimumPhotoPpi'] as num?)?.toDouble() ?? 150;
   String get colorSpace => data['colorSpace'] as String? ?? 'sRGB';
@@ -200,6 +213,9 @@ class PrintVendorSpec {
   Rect get coverTrim => _cover['trim'] is Map
       ? _rect(_cover['trim'] as Map)
       : front.expandToInclude(back);
+  // Decimal millimetres can differ by a binary rounding residue when the same
+  // edge is calculated as x+width. Allow only that residue, never a visible cut.
+  static const _geometryEpsilonMm = 1e-6;
   static bool _within(Rect inner, Rect outer) =>
       [
         inner.left,
@@ -207,9 +223,9 @@ class PrintVendorSpec {
         inner.right,
         inner.bottom,
       ].every((v) => v.isFinite) &&
-      inner.left >= outer.left &&
-      inner.top >= outer.top &&
-      inner.right <= outer.right &&
-      inner.bottom <= outer.bottom;
+      inner.left >= outer.left - _geometryEpsilonMm &&
+      inner.top >= outer.top - _geometryEpsilonMm &&
+      inner.right <= outer.right + _geometryEpsilonMm &&
+      inner.bottom <= outer.bottom + _geometryEpsilonMm;
   Map<String, dynamic> toJson() => Map.from(data);
 }

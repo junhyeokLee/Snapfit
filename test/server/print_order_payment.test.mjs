@@ -42,6 +42,18 @@ function database(initial) {
 }
 const paidOrder = () => ({...order,status:'PAYMENT_COMPLETED',verified_payment_id:order.order_id,verified_payment_provider:'HISTORICAL_VERIFIED',payment_confirmed_at:'2026-09-01T00:00:00Z'})
 
+test('automated PortOne orders cannot bypass file or supplier verification through legacy manual operations', async () => {
+  const row = { ...paidOrder(), checkout_flow: 'PORTONE_V2_V1' }
+  const db = database(row)
+  await assert.rejects(prepareVerifiedOrder(db, row), error => error.message === 'automatic_fulfillment_required' && error.status === 409)
+  for (const action of ['preparePrintPackage', 'configurePrintSpec', 'markPrintReviewed',
+    'submitPrintVendor', 'acceptPrintVendor', 'shipping', 'delivered']) {
+    await assert.rejects(advanceVerifiedOrder(db, row, action, {}), /automatic_fulfillment_required/)
+  }
+  assert.equal(db.claims, 0)
+  assert.equal(db.updates, 0)
+})
+
 test('existing verified orders claim print work once and never regresses delivered orders', async () => {
   const db = database(paidOrder()); let builds=0
   let completeBuild

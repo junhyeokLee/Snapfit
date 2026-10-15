@@ -18,6 +18,7 @@ Widget wrapCreation(
   double textScale = 1,
   PointShopAccessGate? pointShopGate,
   List<PointShopProduct> shopProducts = const [],
+  bool showShell = true,
 }) => ProviderScope(
   overrides: [
     pointShopCatalogProvider.overrideWith((ref) async => shopProducts),
@@ -38,15 +39,21 @@ Widget wrapCreation(
         ).copyWith(textScaler: TextScaler.linear(textScale)),
         child: child!,
       ),
-      home: Scaffold(
-        appBar: AppBar(title: const Text('앨범 만들기')),
-        body: child,
-      ),
+      home: showShell
+          ? Scaffold(
+              appBar: AppBar(title: const Text('앨범 만들기')),
+              body: child,
+            )
+          : child,
     ),
   ),
 );
 
 Future<void> loadCreationFonts() async {
+  await (FontLoader('Poppins')
+        ..addFont(rootBundle.load('assets/fonts/Poppins-Regular.otf'))
+        ..addFont(rootBundle.load('assets/fonts/Poppins-SemiBold.otf')))
+      .load();
   await (FontLoader('Pretendard')
         ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'))
         ..addFont(rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf')))
@@ -144,11 +151,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('직접 만들기'));
-      await tester.tap(find.text('AI 템플릿으로 시작'));
+      await tester.tap(find.text('AI 템플릿'));
       expect(manual, 1);
       expect(ai, 1);
       expect(find.text('첫 템플릿 무료'), findsNothing);
-      await tester.tap(find.text('포인트').first);
+      await tester.tap(find.text('유료').first);
       await tester.pumpAndSettle();
       expect(find.text('여행 일기'), findsNothing);
       await tester.ensureVisible(
@@ -163,6 +170,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('creation-template-1')), findsOneWidget);
       expect(find.byKey(const ValueKey('creation-template-2')), findsNothing);
+      await tester.tap(find.text('검색'));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '없는검색');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();

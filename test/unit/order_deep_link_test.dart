@@ -2,6 +2,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/features/profile/domain/order_deep_link.dart';
 
 void main() {
+  test(
+    'new SDK returns only trigger stored-invoice recovery without order identity',
+    () {
+      for (final link in [
+        'snapfit://payment/return?paymentId=forged&success=true',
+        'snapfit://',
+        'https://snapfit.app/payment-return?orderId=forged&code=PAID',
+      ]) {
+        expect(isPrintPaymentReturn(Uri.parse(link)), isTrue);
+        expect(orderDetailIdFromUri(Uri.parse(link)), isNull);
+      }
+      expect(
+        isPrintPaymentReturn(
+          Uri.parse('snapfit://order/success?orderId=forged'),
+        ),
+        isFalse,
+      );
+      expect(
+        isPrintPaymentReturn(Uri.parse('snapfit://auth/callback')),
+        isFalse,
+      );
+    },
+  );
   test('order details remain accessible from notification links', () {
     expect(
       orderDetailIdFromUri(Uri.parse('snapfit://order/detail?orderId=order-a')),

@@ -1,0 +1,82 @@
+{
+  "observed_at_utc": "2026-10-15T13:07:00.175961+00:00",
+  "supabase_project": "rrbhxdtriummqpztpjrk",
+  "firebase_project": "snapfit-c719d",
+  "web_push_public_key_configured": true,
+  "fcm_registration_api_already_enabled": true,
+  "bundler": "esbuild@0.25.12",
+  "deployed_functions": {
+    "web-point-topup": {
+      "bundle_sha256": "c089a4aef527d5554097e5c09ff1b3666ed0222a36d38ce36d18a48cc6f7c8a7",
+      "custom_authentication": true,
+      "verify_legacy_jwt": false
+    },
+    "web-point-topup-webhook": {
+      "bundle_sha256": "3fbca8b9db2e21d208596b8f337f2be6bd64a0af4a33df6decf3b96f1edad55f",
+      "custom_authentication": true,
+      "verify_legacy_jwt": false
+    },
+    "web-point-topup-reconcile": {
+      "bundle_sha256": "224664e34c63a95e43211def499fa816898ba62bafdb043cd518dbce7f49d8b5",
+      "custom_authentication": true,
+      "verify_legacy_jwt": false
+    },
+    "push-dispatch": {
+      "bundle_sha256": "6e48214aa6186c1254b60b0525a8b4577f7a80d8ae98bd11edb26b37d59023ee",
+      "custom_authentication": true,
+      "verify_legacy_jwt": false
+    }
+  },
+  "applied_migrations": {
+    "20261015101945_web_push_device_platform.sql": "9d4f7b274463f610c1817bf1803cc10114ec8d7fe6beb38bdb9361b681acc93e",
+    "20261015101953_web_point_topup_preparation.sql": "2203ec5e94c990ba5417a158cecb2571a157f697b6ded5533be083fde9c66274"
+  },
+  "db_verification": {
+    "live_release_ready": false,
+    "migrations_applied": 2,
+    "rls_enabled": true,
+    "rpc_service_role_only_and_security_invoker": true,
+    "direct_client_table_access_blocked": true
+  },
+  "remote_flags": {
+    "WEB_POINT_TOPUP_TEST_ENABLED": false,
+    "WEB_POINT_TOPUP_LIVE_ENABLED": false,
+    "PRINT_PORTONE_ENVIRONMENT": "test",
+    "PUSH_DELIVERY_ENABLED": true
+  },
+  "preserved_existing_push_schedule": "snapfit-push-dispatch: every minute, active",
+  "web_point_webhook_secret_configured": true,
+  "web_point_reconcile_secret_configured": true,
+  "new_point_reconcile_schedule_registered": true,
+  "web_app_built_or_launched": false,
+  "web_hosting_deployed": false,
+  "payment_or_push_test_executed": false,
+  "security_advisor": {
+    "errors": 0,
+    "warnings": 28,
+    "info": 22
+  },
+  "point_reconcile_schedule": {
+    "name": "snapfit-web-point-topup-reconcile",
+    "schedule": "*/5 * * * *",
+    "active": false,
+    "run_count": 0,
+    "owner": "postgres",
+    "database": "postgres",
+    "vault_url_matches": true,
+    "vault_secret_matches_edge_secret": true,
+    "setup_file": "supabase/setup/web_point_topup_reconcile_prepare.sql",
+    "setup_sha256": "9410c025c271226c30692f0d0dfa39b6bd286412843efa298eb1141f5995105e"
+  },
+  "portone_point_webhook": {
+    "module": "V2",
+    "mode": "TEST",
+    "content_type": "application/json",
+    "schema_version": "2024-04-25",
+    "url": "https://rrbhxdtriummqpztpjrk.supabase.co/functions/v1/web-point-topup-webhook",
+    "server_signing_secret_digest_matched": true,
+    "live_mode_configured": false,
+    "call_test_or_retry_executed": false
+  },
+  "server_configuration_verified_without_runtime_tests": true
+}

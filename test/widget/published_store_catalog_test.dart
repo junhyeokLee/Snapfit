@@ -39,17 +39,24 @@ void main() {
                 ),
               ),
             ],
-            child: wrapCreation(const StoreScreen()),
+            child: wrapCreation(
+              const MediaQuery(
+                data: MediaQueryData(disableAnimations: true),
+                child: StoreScreen(),
+              ),
+            ),
           ),
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
+        expect(find.text('앨범 템플릿'), findsOneWidget);
+        expect(find.text('완성 템플릿'), findsNothing);
         final scope = ProviderScope.containerOf(
           tester.element(find.byType(StoreScreen)),
         );
         expect(
           scope.read(templateListProvider).requireValue.map((t) => t.id),
-          bundledCreationTemplates.map((t) => t.id),
+          publishedCreationTemplates.map((t) => t.id),
         );
         final search = find.byType(TextField);
         final scroll = find
@@ -58,7 +65,13 @@ void main() {
               matching: find.byType(Scrollable),
             )
             .first;
-        await tester.scrollUntilVisible(search, 280, scrollable: scroll);
+        final searchToggle = find.text('검색');
+        await tester.scrollUntilVisible(searchToggle, 280, scrollable: scroll);
+        await tester.ensureVisible(searchToggle);
+        await tester.pumpAndSettle();
+        await tester.tap(searchToggle);
+        await tester.pumpAndSettle();
+        expect(search, findsOneWidget);
         await tester.pumpAndSettle();
         for (final category in [
           '웨딩',
@@ -78,7 +91,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(
             find.text(
-              '$category 분위기에 어울리는 ${category == '여행' || category == '커플·기념일' ? 6 : 5}개',
+              '$category · ${category == '여행' || category == '커플·기념일' ? 8 : 7}종',
             ),
             findsOneWidget,
           );
@@ -92,7 +105,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(allTopics);
         await tester.pumpAndSettle();
-        for (final template in bundledCreationTemplates) {
+        for (final template in publishedCreationTemplates) {
           await tester.scrollUntilVisible(search, -280, scrollable: scroll);
           await tester.enterText(search, template.title);
           FocusManager.instance.primaryFocus?.unfocus();

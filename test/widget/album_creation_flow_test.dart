@@ -95,7 +95,9 @@ void main() {
           find.byType(AlbumCreateStep1),
         );
         expect(setup.sourceLabel, '선택한 템플릿');
-        expect(setup.minPageCount, 2);
+        expect(setup.minPageCount, 20);
+        expect(setup.selectedPageCount, 20);
+        expect(setup.templatePageCount, 2);
         expect(
           setup.coverLayers!
               .where((l) => l.type == LayerType.image)
@@ -133,6 +135,28 @@ void main() {
               .pages
               .length,
           3,
+        );
+        final fill = tester.widget<TemplatePhotoFillStep>(
+          find.byType(TemplatePhotoFillStep),
+        );
+        fill.onChanged([
+          for (final page in fill.pages)
+            [
+              for (final layer in page)
+                layer.type == LayerType.image
+                    ? layer.copyWith(clearImage: true)
+                    : layer,
+            ],
+        ]);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('뒤로가기'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('시작 방식 변경'));
+        await tester.pumpAndSettle();
+        expect(find.text('디자인을 변경할까요?'), findsNothing);
+        expect(
+          find.byKey(const ValueKey('creation-template-99001')),
+          findsOneWidget,
         );
         expect(tester.takeException(), isNull);
       },

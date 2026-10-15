@@ -1,0 +1,11 @@
+{
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "checkoutPaidObservedAtUtc": "2026-10-15T06:39:09.069Z",
+  "appClosedAtUtc": "2026-10-15T06:39:09.542Z",
+  "appReopenedAtUtc": "2026-10-15T06:47:15.324Z",
+  "allMainAppTabsClosed": true,
+  "paymentApprovalAlreadyObservedOnResume": true,
+  "closedInventoryConfirmedAtUtc": "2026-10-15T06:39:52.633Z",
+  "noAppTabsBeforeReopen": true,
+  "chromeReconnectedBeforeReopen": true
+}

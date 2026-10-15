@@ -1,0 +1,94 @@
+{
+  "recordedAtUtc": "2026-10-15T05:58:43.807614+00:00",
+  "timestampMeaning": "Time the completed tool results were recorded; test execution timestamps were not separately captured.",
+  "workingDirectory": "/Users/devsheep/SnapFit/SnapFit",
+  "environment": "Local isolated PGlite SQL and provider adapters; no remote payment, supplier, schema or deployment mutations by this verification.",
+  "typescript": {
+    "exitCode": 0,
+    "strict": true,
+    "configFile": "/private/tmp/snapfit-customer-test-backend-tsconfig-20261015.json",
+    "compilerOptions": {
+      "strict": true,
+      "noEmit": true,
+      "target": "ES2023",
+      "module": "ESNext",
+      "moduleResolution": "Bundler",
+      "allowImportingTsExtensions": true,
+      "lib": [
+        "ES2023",
+        "DOM",
+        "DOM.Iterable"
+      ],
+      "skipLibCheck": true,
+      "typeRoots": [
+        "/Users/devsheep/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/@types"
+      ],
+      "types": [
+        "node"
+      ]
+    },
+    "command": [
+      "/Users/devsheep/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/opt/homebrew/lib/node_modules/vercel/node_modules/typescript/bin/tsc",
+      "--project",
+      "/private/tmp/snapfit-customer-test-backend-tsconfig-20261015.json"
+    ],
+    "result": "No TypeScript diagnostics after declaring the existing Deno npm:pdf-lib external."
+  },
+  "tests": {
+    "exitCode": 0,
+    "total": 26,
+    "pass": 26,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "durationMs": 13506.795333,
+    "files": [
+      "test/server/print_dev_checkout_sql.test.mjs",
+      "test/server/print_dev_fulfillment.test.mjs",
+      "test/server/redprinting_admin_auth.test.mjs",
+      "test/server/print_dev_file_delivery.test.mjs",
+      "test/server/print_order_scheduler_pipeline.test.mjs"
+    ],
+    "environmentVariables": {
+      "PDF_LIB_MODULE": "/Users/devsheep/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pdf-lib/cjs/index.js",
+      "PGLITE_MODULE": "/private/tmp/snapfit-chunk-sql-tooling-20261015/node_modules/@electric-sql/pglite/dist/index.js",
+      "SNAPFIT_CHUNKED_FIXTURE_OUTPUT": "/Users/devsheep/SnapFit/SnapFit/output/pdf/print-worker-hard300-80-dense-fixture-2026-10-15"
+    },
+    "command": [
+      "/Users/devsheep/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--experimental-transform-types",
+      "--test",
+      "--test-concurrency=1",
+      "test/server/print_dev_checkout_sql.test.mjs",
+      "test/server/print_dev_fulfillment.test.mjs",
+      "test/server/redprinting_admin_auth.test.mjs",
+      "test/server/print_dev_file_delivery.test.mjs",
+      "test/server/print_order_scheduler_pipeline.test.mjs"
+    ],
+    "toolResultChunkId": "f41d74"
+  },
+  "coverage": [
+    "Fresh verified administrator and owned exact album/revision required for TEST capability; ordinary user_metadata cannot authorize.",
+    "LIVE/mismatched payment routes and production/expired vendor settings close the capability.",
+    "Owner-only TEST history/detail; no recipient or artwork URLs in lists; no direct anon/authenticated RPC access.",
+    "Existing 102 MB Flutter PDF inspection, TEST receipt and supplier identity contracts remain strict.",
+    "SDK/status/history/detail do not verify or commit payments and never advance a queue or POST a supplier order.",
+    "After app closure isolated worker tests keep one supplier submission and use GET-only recovery after an uncertain response.",
+    "No public customer orders or production checkout intents are inserted by the DEV pipeline; production sales remain disabled."
+  ],
+  "sourceSha256": {
+    "supabase/functions/_shared/print-dev-checkout.ts": "91ebbf8cc5ee7c08bea2b00ab748ea6971b4d67786849ca956e6dd5792943760",
+    "supabase/migrations/20261015055100_owned_development_order_history.sql": "6ff03a92a76b6cd101b97e76050a62377cc82e44d8ab516c2f91dc6be17f58bf",
+    "test/server/print_dev_checkout_sql.test.mjs": "5d3972ffa33f92e9929ff57dafd83f2ca6b9a4572ca0286cbdc6016a8b0efdf6"
+  },
+  "initialHarnessFailuresResolved": [
+    "Initial Node strip-only mode rejected an existing TypeScript parameter property; reran with --experimental-transform-types.",
+    "First combined harness run lacked existing pdf-lib import/type paths; supplied bundled PDF_LIB_MODULE and existing ambient npm:pdf-lib declaration."
+  ],
+  "remoteMutations": false,
+  "deployedByThisAgent": false,
+  "liveSalesChanged": false,
+  "realPayments": 0,
+  "realSupplierOrders": 0
+}

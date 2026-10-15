@@ -20,7 +20,10 @@ class PremiumTemplate {
   final bool isBest;
   final bool isPremium;
   final bool isLiked;
-  final String? templateJson;
+  final String? _templateJson;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final String Function()? documentBuilder;
+  String? get templateJson => _templateJson ?? documentBuilder?.call();
   final String? createdAt;
 
   const PremiumTemplate({
@@ -40,9 +43,10 @@ class PremiumTemplate {
     this.isBest = false,
     this.isPremium = false,
     this.isLiked = false,
-    this.templateJson,
+    String? templateJson,
+    this.documentBuilder,
     this.createdAt,
-  });
+  }) : _templateJson = templateJson;
 
   factory PremiumTemplate.fromJson(Map<String, dynamic> json) =>
       _$PremiumTemplateFromJson(json);
@@ -85,7 +89,8 @@ class PremiumTemplate {
       isBest: isBest ?? this.isBest,
       isPremium: isPremium ?? this.isPremium,
       isLiked: isLiked ?? this.isLiked,
-      templateJson: templateJson ?? this.templateJson,
+      templateJson: templateJson ?? _templateJson,
+      documentBuilder: templateJson == null ? documentBuilder : null,
       createdAt: createdAt ?? this.createdAt,
     );
   }

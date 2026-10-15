@@ -9,6 +9,13 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
   final Future<PermissionState> Function() _requestPermissionExtend;
 
+  static const _latestFirst = [
+    OrderOption(type: OrderOptionType.createDate, asc: false),
+    OrderOption(type: OrderOptionType.updateDate, asc: false),
+  ];
+
+  FilterOptionGroup _photoFilter() => FilterOptionGroup(orders: _latestFirst);
+
   @override
   Future<bool> requestPermission() async {
     final perm = await _requestPermissionExtend();
@@ -16,11 +23,17 @@ class GalleryRepositoryImpl implements GalleryRepository {
   }
 
   @override
-  Future<List<AssetPathEntity>> loadAlbums() {
-    return PhotoManager.getAssetPathList(
+  Future<List<AssetPathEntity>> loadAlbums() async {
+    final albums = await PhotoManager.getAssetPathList(
       type: RequestType.image,
+      hasAll: true,
       onlyAll: false,
+      filterOption: _photoFilter(),
     );
+    return [
+      ...albums.where((album) => album.isAll),
+      ...albums.where((album) => !album.isAll),
+    ];
   }
 
   @override
@@ -28,6 +41,7 @@ class GalleryRepositoryImpl implements GalleryRepository {
     final albums = await PhotoManager.getAssetPathList(
       type: RequestType.image,
       onlyAll: true,
+      filterOption: _photoFilter(),
     );
     return albums.isEmpty ? null : albums.first;
   }
@@ -38,6 +52,14 @@ class GalleryRepositoryImpl implements GalleryRepository {
     int page,
     int size,
   ) {
-    return album.getAssetListPaged(page: page, size: size);
+    final filter = album.filterOption;
+    // Sort in the native query, before pagination, including cached album paths.
+    final ordered = album.copyWith(
+      albumType: album.albumType,
+      filterOption: filter is FilterOptionGroup
+          ? filter.copyWith(orders: _latestFirst)
+          : _photoFilter(),
+    );
+    return ordered.getAssetListPaged(page: page, size: size);
   }
 }

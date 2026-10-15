@@ -1,0 +1,17 @@
+{
+  "observedAtUtc": "2026-10-15T07:12:15.587737+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "addedExactRedirectUrls": [
+    "http://127.0.0.1:7357/?auth_callback=1",
+    "http://localhost:7357/?auth_callback=1"
+  ],
+  "registeredRequiredUrls": [
+    "http://127.0.0.1:7357/?auth_callback=1",
+    "http://localhost:7357/?auth_callback=1"
+  ],
+  "previousRedirectUrlsPreserved": true,
+  "siteUrlUnchanged": true,
+  "providerKeysAndEnabledStateUnchanged": true,
+  "wildcardsAdded": false,
+  "readBackVerified": true
+}

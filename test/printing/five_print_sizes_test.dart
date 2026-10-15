@@ -53,6 +53,26 @@ void main() {
         final doc = PrintAlbumDocument.fromSnapshot(productSnapshot(product));
         expect(doc.productForNewPreview.id, id);
         doc.validateSpec(PrintVendorSpec.fromJson(productSpec(product)));
+        for (final count in [20, 22, 80]) {
+          expect(
+            PrintVendorSpec.fromJson({
+              ...productSpec(product),
+              'pageCount': count,
+            }).pageCount,
+            count,
+          );
+        }
+        for (final invalid in [
+          {'pageCount': 19, 'minInteriorPages': 1, 'pageMultiple': 1},
+          {'pageCount': 21, 'pageMultiple': 1},
+          {'pageCount': 82, 'maxInteriorPages': 100},
+        ]) {
+          expect(
+            () =>
+                PrintVendorSpec.fromJson({...productSpec(product), ...invalid}),
+            throwsFormatException,
+          );
+        }
         expect(
           () =>
               PrintProduct.fromJson({...product.toJson(), 'trimWidthMm': 199}),

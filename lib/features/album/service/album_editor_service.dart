@@ -337,6 +337,7 @@ class AlbumEditorService {
       imageBackground: updated.imageBackground ?? oldLayer.imageBackground,
       textBackground: updated.textBackground ?? oldLayer.textBackground,
       imageOffset: updated.imageOffset ?? oldLayer.imageOffset,
+      imageZoom: updated.imageZoom,
     );
     return page;
   }

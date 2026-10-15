@@ -10,6 +10,44 @@ import 'package:snap_fit/features/album/presentation/widgets/create_flow/templat
 import 'ai_album_start_step_test.dart' show wrapCreation;
 
 void main() {
+  for (final innerPages in [19, 21, 79, 81]) {
+    testWidgets(
+      'template $innerPages pages preserves content and print bounds',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          wrapCreation(
+            AlbumCreateFlowScreen(
+              initialCreationTemplate: AlbumCreationTemplate(
+                title: '쪽수 확인',
+                previewUrl: '',
+                isPremium: false,
+                cover: defaultCoverSize,
+                pages: List.generate(innerPages + 1, (_) => <LayerModel>[]),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final setup = tester.widget<AlbumCreateStep1>(
+          find.byType(AlbumCreateStep1),
+        );
+        expect(setup.templatePageCount, innerPages);
+        expect(setup.selectedPageCount, innerPages + 1);
+        final button = tester.widget<ElevatedButton>(
+          find.byType(ElevatedButton),
+        );
+        if (innerPages > 80) {
+          expect(button.onPressed, isNull);
+          expect(find.textContaining('80쪽을 초과'), findsOneWidget);
+        } else {
+          expect(button.onPressed, isNotNull);
+        }
+      },
+    );
+  }
+
   testWidgets(
     'all five physical sizes survive template selection and photo handoff',
     (tester) async {
@@ -52,6 +90,8 @@ void main() {
         );
         expect(setup.selectedCover!.productId, cover.productId);
         expect(setup.selectedCover!.realSize, cover.realSize);
+        expect(setup.selectedPageCount, 20);
+        expect(setup.minPageCount, 20);
         expect(
           setup.coverLayers!.single.width / setup.coverLayers!.single.height,
           2,

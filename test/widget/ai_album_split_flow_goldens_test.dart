@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snap_fit/features/point_shop/data/point_shop_provider.dart';
 import 'package:snap_fit/features/album/ai_album/domain/ai_album_models.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_photo_range_step.dart';
 import 'package:snap_fit/features/album/presentation/widgets/create_flow/ai_album_point_confirmation_step.dart';
@@ -27,15 +30,22 @@ Future<void> _loadGoldenFonts() async {
 }
 
 Widget _wrap(Widget child) {
-  return ScreenUtilInit(
-    designSize: const Size(390, 844),
-    minTextAdapt: true,
-    builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+  return ProviderScope(
+    overrides: [
+      pointShopCatalogProvider.overrideWith((ref) async => []),
+      ownedPointShopKeysProvider.overrideWith((ref) async => <String>{}),
+    ],
+    child: ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+    ),
   );
 }
 
 void main() {
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     await _loadGoldenFonts();
   });
 

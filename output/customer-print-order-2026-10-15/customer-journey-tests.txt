@@ -1,0 +1,235 @@
+00:00 +0: loading /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart
+00:00 +0: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: legacy UTC dates and explicit UTC dates represent the same instant
+00:00 +1: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: unpaid order never displays automatic acceptance or file success
+00:00 +2: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: paid stages distinguish automatic submission from file acceptance
+00:00 +3: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation list and summary exclude TEST while retaining legacy null environment
+00:00 +4: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation pending/canceled filters cannot overwrite the TEST exclusion
+00:00 +5: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation another device can query only the saved invoice by order identity
+00:00 +5 -1: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation another device can query only the saved invoice by order identity [E]
+  FormatException: print_payment_identity_required
+  package:snap_fit/features/profile/data/order_repository.dart 363:7  OrderRepository.fetchPrintPaymentStatus
+  test/unit/customer_order_history_test.dart 160:22                   main.<fn>.<fn>
+  
+00:00 +5 -1: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation direct saved order lookup also refuses a TEST row
+00:00 +6 -1: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation account switch cannot publish the previous account order list
+00:00 +7 -1: loading /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart
+00:05 +7 -1: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: saved paid order follows automatic submission while detail stays open
+00:05 +8 -1: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: failed refresh keeps last confirmed state without inventing completion
+00:06 +9 -1: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: background pauses polling and resume reads same saved order
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following assertion was thrown while dispatching notifications for
+WidgetsBindingObserver.didChangeAppLifecycleState:
+Invalid state transition from AppLifecycleState.paused to AppLifecycleState.resumed
+'package:flutter/src/widgets/app_lifecycle_listener.dart':
+Failed assertion: line 225 pos 11: 'previousState == null ||
+              previousState == AppLifecycleState.inactive ||
+              previousState == AppLifecycleState.detached'
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+
+When the exception was thrown, this was the stack:
+#2      AppLifecycleListener.didChangeAppLifecycleState (package:flutter/src/widgets/app_lifecycle_listener.dart:225:11)
+#3      WidgetsBinding.handleAppLifecycleStateChanged (package:flutter/src/widgets/binding.dart:1334:18)
+#4      main.<anonymous closure> (file:///Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart:220:20)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +9 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: background pauses polling and resume reads same saved order [E]
+  Test failed. See exception logs above.
+  The test description was: background pauses polling and resume reads same saved order
+  
+00:06 +9 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: refresh button does not create concurrent detail requests
+00:06 +10 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: automatic list refresh preserves scroll position
+00:06 +11 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: account change hides the previous customer order immediately
+00:06 +12 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: SDK session switch hides shipping data before cached profile refreshes
+00:06 +13 -2: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart
+00:08 +13 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: order-linked cancellation submits once and displays a request rather than a refund receipt
+00:09 +14 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: a lost submission queries the same request and retries identical UUID and body only after not-found
+00:09 +15 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: existing unresolved refund shows server review and never offers new payment or replacement
+00:09 +16 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: legacy order inquiries keep the order number and use existing support without a payment request
+00:09 +17 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: server checkout not-found cannot enable a cancellation for an unknown order
+00:09 +18 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: completed preparation cancellation clears unstarted recovery only after fresh confirmation
+00:09 +19 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_request_test.dart: a locally started payment cannot leave through pre-SDK cancellation
+00:09 +20 -2: loading /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart
+00:11 +20 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: (setUpAll)
+00:12 +20 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(320.0, 568.0) dark=false
+
+─────────────────────────────────────────────────────────
+[SnapFit:Screen] 진입: MyPageScreen
+[SnapFit:Screen]   └ 마이 · 테마 설정(라이트/다크) · 로그아웃
+─────────────────────────────────────────────────────────
+
+00:15 +21 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(320.0, 568.0) dark=true
+00:16 +22 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(390.0, 844.0) dark=false
+00:17 +23 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(390.0, 844.0) dark=true
+00:18 +24 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(648.0, 320.0) dark=false
+00:18 +25 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(648.0, 320.0) dark=true
+00:19 +26 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(740.0, 360.0) dark=false
+00:20 +27 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(740.0, 360.0) dark=true
+00:20 +28 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(844.0, 390.0) dark=false
+00:21 +29 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: personal collection, reuse and order journey Size(844.0, 390.0) dark=true
+00:22 +30 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: collection focus, filters and large type survive rotation Size(320.0, 568.0)
+00:22 +31 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: collection focus, filters and large type survive rotation Size(648.0, 320.0)
+00:22 +32 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: collection focus, filters and large type survive rotation Size(844.0, 390.0)
+00:22 +33 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: profile only previews confirmed purchases and opens their type
+00:23 +34 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: unconfirmed ownership never looks like an empty collection
+00:23 +35 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: missing album is not presented as a print snapshot
+00:23 +36 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: order filter and loaded page survive rotation without refetching
+00:23 +37 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: large type order retry and album favorites remain usable
+00:23 +38 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/personal_workshop_journey_test.dart: (tearDownAll)
+00:23 +38 -2: loading /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart
+00:23 +38 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: IEEE754 revision matches shared JavaScript fixture and integer doubles
+00:23 +39 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: review revision ignores metadata and JSON key formatting
+00:23 +40 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: review revision detects cover theme and artwork changes
+00:23 +41 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: legacy page image changes cannot reuse review consent
+00:23 +42 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: planned price and even a ready flag cannot open unverified sales
+00:23 +43 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: only an explicit production, exact-cost, verified contract allows payment
+00:23 +44 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: a pending, canceled or timestamp-less order cannot create a receipt
+00:23 +45 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract readiness sends only album identity and shows real server quote
+00:23 +46 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract receipt lookup is owner scoped and refuses a wrong amount or owner
+00:23 +47 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract production receipt requires live matching payment identity, not a test paid row
+00:23 +48 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_checkout_contract_test.dart: authenticated repository contract customer progress sends only owned order identity and keeps milestones separate
+00:23 +49 -2: loading /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart
+00:24 +49 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: uses server quote and actual page count instead of local pricing
+00:24 +50 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: order history keeps an unpaid order pending and only reads the current user
+00:24 +51 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: a failed history request never returns a manufactured order
+00:24 +52 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: trusted preparation cancellation is separate from unpaid and actual paid history
+00:24 +53 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: completed history selects aborted preparations by server evidence without inventing a database status
+00:24 +54 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: payment-pending history excludes aborted preparations while preserving rows with payment evidence
+00:24 +55 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: quote retains server product dimensions and estimate status
+00:24 +56 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: planned retail retains confirmed production and uncertain delivery separately
+00:24 +57 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: unverified and zero quotes never become a customer planned price
+00:24 +58 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: mixed paid orders keep the frozen product for admin handoff
+00:24 +59 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: hardcover quote without template retains preparation state
+00:24 +60 -2: /Users/devsheep/SnapFit/SnapFit/test/unit/print_order_repository_test.dart: frozen hard and soft choices remain distinct for admin handoff
+00:24 +61 -2: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart
+00:25 +61 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: reviewed album moves directly to delivery without exporting PDFs or creating an order
+00:26 +62 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: unverified server estimate stays hidden while square preview remains available
+00:26 +63 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview uses the FINAL checkout price and approved geometry rather than legacy planned quote
+00:26 +64 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: a changed server review revision blocks a mixed snapshot before exporter verification
+00:26 +65 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: low resolution originals block PDF generation with useful explanation
+00:26 +66 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: too many interior pages never enables export
+00:26 +67 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: production preview does not render and discard a PDF before frozen checkout
+00:26 +68 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: missing originals during export never offers invalid PDFs
+00:26 +69 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview and export retain saved physical product REDP_200X150_SOFT
+00:27 +70 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview and export retain saved physical product REDP_200_SOFT
+00:27 +71 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview and export retain saved physical product REDP_250X200_SOFT
+00:27 +72 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview and export retain saved physical product REDP_250_SOFT
+00:27 +73 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: preview and export retain saved physical product REDP_300_SOFT
+00:27 +74 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: legacy portrait never silently converts to a square book
+00:27 +75 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: exact planned retail REDP_200X150_SOFT 20 pages uses the server notice without guessed extra-page prices
+00:27 +76 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: exact planned retail REDP_300_HARD 80 pages uses the server notice without guessed extra-page prices
+00:27 +77 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: stale square quote blocks a saved large square export
+00:27 +78 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: hardcover without an official template shows choice and pending quote but blocks PDF
+00:27 +79 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_preview_test.dart: ready hardcover preview uses board ratio then interior ratio and retains hard export
+00:27 +80 -2: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart
+00:28 +80 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: (setUpAll)
+00:28 +80 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(320.0, 568.0) dark=false
+00:29 +81 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:30 +82 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:30 +83 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:30 +84 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(320.0, 568.0) dark=true
+00:31 +85 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:31 +86 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:31 +87 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:31 +88 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(390.0, 844.0) dark=false
+00:31 +89 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:32 +90 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:32 +91 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:32 +92 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(390.0, 844.0) dark=true
+00:32 +93 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:32 +94 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:33 +95 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:33 +96 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(648.0, 320.0) dark=false
+00:33 +97 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:33 +98 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:33 +99 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:33 +100 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(648.0, 320.0) dark=true
+00:34 +101 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:34 +102 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:34 +103 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:34 +104 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(740.0, 360.0) dark=false
+00:34 +105 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:35 +106 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:35 +107 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:35 +108 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(740.0, 360.0) dark=true
+00:35 +109 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:35 +110 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:36 +111 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:36 +112 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(844.0, 390.0) dark=false
+00:36 +113 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:36 +114 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:36 +115 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:36 +116 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: print journey renders safe at Size(844.0, 390.0) dark=true
+00:37 +117 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(320.0, 568.0)
+00:37 +118 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(648.0, 320.0)
+00:37 +119 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: large accessible text keeps checkout and progress usable at Size(844.0, 390.0)
+00:37 +120 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: delivery draft, active field and final agreement survive rotations
+00:37 +121 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: address search failure scrolls safely with keyboard at Size(648.0, 320.0)
+00:37 +122 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: address search failure scrolls safely with keyboard at Size(740.0, 360.0)
+00:38 +123 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: address search failure scrolls safely with keyboard at Size(844.0, 390.0)
+00:38 +124 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: address search selection survives rotation and preserves recipient
+00:38 +125 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: paid progress does not restart or invent stages when rotating
+00:38 +126 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_journey_responsive_test.dart: (tearDownAll)
+00:38 +126 -2: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart
+00:39 +126 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (setUpAll)
+00:39 +126 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(648.0, 320.0)
+00:40 +127 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(740.0, 360.0)
+00:41 +128 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(844.0, 390.0)
+00:41 +129 -2: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: oversized PDF can cancel its unissued preparation and return directly to album editing without payment
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following StateError was thrown running a test:
+Bad state: No element
+
+When the exception was thrown, this was the stack:
+#0      Iterable.single (dart:core/iterable.dart:694:25)
+#1      WidgetController.widget (package:flutter_test/src/controller.dart:828:30)
+#2      main.<anonymous closure> (file:///Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart:400:21)
+<asynchronous suspension>
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  oversized PDF can cancel its unissued preparation and return directly to album editing without
+  payment
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:41 +129 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: oversized PDF can cancel its unissued preparation and return directly to album editing without payment [E]
+  Test failed. See exception logs above.
+  The test description was: oversized PDF can cancel its unissued preparation and return directly to album editing without payment
+  
+00:41 +129 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an interrupted PDF preparation restores the frozen order on the same visit and permits explicit same-order retry
+00:41 +130 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: default checkout launches once and recovers a started invoice after restart without a fresh PDF gate
+00:42 +131 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout becoming READY can prepare files through the durable payment service
+00:42 +132 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: closed checkout reviews delivery and price without payment or a fabricated order
+00:42 +133 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an unstarted recovered invoice restores server delivery and requires fresh consent before same-UUID resume
+00:42 +134 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed frozen unstarted order offers cancellation and explicit checks without endless polling or a new charge
+00:42 +135 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a never-issued placeholder after owned not-found can review the current form for the same UUID without claiming canceled
+00:42 +136 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a server customer-request hold prevents restoring payment consent and offers existing request review
+00:42 +137 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: invalid recipient phone and postal code cannot reach final review
+00:42 +138 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: revised album blocks the old review and leaves delivery details intact
+00:43 +139 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a new price resets consent while preserving delivery
+00:43 +140 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed approved print geometry requires a new visual review even at the same price
+00:43 +141 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a payment callback cannot display completion until the server order is paid
+00:43 +142 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: only a paid order read back from the server opens completion
+00:43 +143 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: keyboard in a small phone keeps manual address entry scrollable
+00:43 +144 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: failed readiness can retry without discarding the delivery form
+00:44 +145 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: address-search failure permits direct entry and never sends entered delivery data
+00:44 +146 -3: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (tearDownAll)
+00:44 +146 -3: Some tests failed.
+
+Failing tests:
+  /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation another device can query only the saved invoice by order identity
+  /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: background pauses polling and resume reads same saved order
+  /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: oversized PDF can cancel its unissued preparation and return directly to album editing without payment

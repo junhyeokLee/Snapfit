@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-15",
+  "runner": "Node test runner, sequential files",
+  "files": 25,
+  "exitCode": 0,
+  "tests": 263,
+  "suites": 0,
+  "pass": 263,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "wallSeconds": 223.231,
+  "actualLargeFixture": "HARD300_80_DENSE_300DPI_JPEG95_SRGB",
+  "actualLargeInteriorBytes": 102193868,
+  "actualLargeInteriorSha256": "442b96d851167d70298d9e3f995bdee6e34f4fcf1cb17c3f4825d7658fb82c9a",
+  "database": "PGlite 0.3.14, isolated actual SQL",
+  "remoteActions": false,
+  "actualPaymentMade": false,
+  "actualSupplierOrderMade": false,
+  "output": "output/print-large-pdf-2026-10-15/server-tests.txt"
+}

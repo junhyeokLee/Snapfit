@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SnapFit 계정 · 보관함 화면 검증</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #222a2b; background: #f3f6f5; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; letter-spacing: 0; }
+    header { padding: 28px 24px 20px; background: #fff; border-bottom: 1px solid #dce4e2; }
+    .inner, main { max-width: 1280px; margin: auto; }
+    h1 { font-size: 26px; margin: 0 0 10px; }
+    p { margin: 0; color: #63706e; font-size: 14px; line-height: 1.7; }
+    fieldset { border: 0; margin: 20px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 16px; }
+    label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; cursor: pointer; }
+    input { accent-color: #007e90; }
+    select { min-height: 40px; padding: 6px 12px; border: 1px solid #dce4e2; border-radius: 4px; background: #fff; color: #222a2b; font: inherit; }
+    main { padding: 28px 24px 48px; }
+    h2 { font-size: 18px; margin: 0 0 16px; }
+    section { margin-bottom: 36px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    figure { margin: 0; min-width: 0; background: #fff; border: 1px solid #dce4e2; border-radius: 6px; overflow: hidden; }
+    a { display: block; background: #e8edec; }
+    img { display: block; width: 100%; height: auto; }
+    figcaption { padding: 12px 14px; font-size: 13px; color: #63706e; }
+    .landscape .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .states .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    [hidden] { display: none !important; }
+    @media (max-width: 800px) { .grid, .states .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .landscape .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 500px) { .grid, .states .grid { grid-template-columns: 1fr; } header, main { padding-left: 16px; padding-right: 16px; } h1 { font-size: 22px; } }
+  </style>
+</head>
+<body>
+  <header><div class="inner">
+    <h1>내 보관함 · 책과 소재</h1>
+    <p>실제 Flutter 위젯 캡처입니다. 표지는 홈과 같은 책등·사진 곡면·그림자를 사용하며, 가로 화면은 분류와 항목 목록을 나누었습니다. 즐겨찾기 우선·이름순 정렬, 검색·분류의 회전 유지, 12개씩 지연 표시를 검증했습니다. 홈·리더는 변경하지 않았습니다.</p>
+    <p>320·390·844 너비와 라이트·다크 모드를 비교할 수 있습니다. 예시 구매 내역이며 운영 구매·소재 지급·기기 설치는 하지 않았습니다. 가격을 확인할 수 없는 유료 템플릿은 무료로 안내하지 않습니다.</p>
+    <fieldset aria-label="화면 선택">
+      <label>화면 <select id="screen"><option value="library" selected>내 보관함</option><option value="account">계정 설정</option><option value="delete">탈퇴 확인</option><option value="all">전체 비교</option></select></label>
+      <label><input type="radio" name="theme" value="light" checked>라이트</label>
+      <label><input type="radio" name="theme" value="dark">다크</label>
+      <label><input type="checkbox" id="compact">작은 화면 320</label>
+    </fieldset>
+  </div></header>
+  <main>
+    <section><h2>세로 화면</h2><div class="grid" id="portrait"></div></section>
+    <section class="landscape"><h2>가로 화면</h2><div class="grid" id="landscape"></div></section>
+    <section class="landscape"><h2>이름순 정렬</h2><div class="grid" id="sorting"></div></section>
+    <section class="states"><h2>보관함 상태</h2><div class="grid" id="states"></div></section>
+  </main>
+  <script>
+    const names = { account: '계정 설정', library: '구매한 항목', delete: '탈퇴 확인' };
+    function frame(file, caption) {
+      const figure = document.createElement('figure');
+      const link = document.createElement('a');
+      link.href = file;
+      const img = document.createElement('img');
+      img.src = file; img.alt = caption; img.loading = 'lazy';
+      link.append(img);
+      const label = document.createElement('figcaption'); label.textContent = caption;
+      figure.append(link, label);
+      return figure;
+    }
+    function render() {
+      const theme = document.querySelector('input[name="theme"]:checked').value;
+      const width = document.getElementById('compact').checked ? 320 : 390;
+      const screen = document.getElementById('screen').value;
+      const portrait = document.getElementById('portrait');
+      const landscape = document.getElementById('landscape');
+      portrait.replaceChildren(); landscape.replaceChildren();
+      for (const [key, label] of Object.entries(names)) {
+        if (screen !== 'all' && screen !== key) continue;
+        portrait.append(frame(`${key}-${width}-${theme}.png`, `${label} · ${width} · ${theme}`));
+        landscape.append(frame(`${key}-844-${theme}.png`, `${label} · 844 · ${theme}`));
+      }
+    }
+    document.getElementById('sorting').append(frame('library-name-order.png', '이름순 · 실제 구매 상태와 즐겨찾기 유지'));
+    for (const [file, name] of [['library-loading', '불러오는 중'], ['library-error', '연결 오류 및 재시도'], ['library-empty', '구매한 항목 없음'], ['favorites-empty', '즐겨찾기 없음']]) {
+      document.getElementById('states').append(frame(`${file}.png`, name));
+    }
+    document.querySelectorAll('input, select').forEach(input => input.addEventListener('change', render));
+    render();
+  </script>
+</body>
+</html>

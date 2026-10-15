@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
 import '../../../../../shared/widgets/snapfit_motion.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
+import '../../../../../shared/widgets/experience_icon.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../../domain/entities/album_page.dart';
 import '../../controllers/layer_builder.dart';
@@ -13,11 +15,12 @@ import '../cover/cover.dart';
 import '../home/home_album_helpers.dart';
 import '../reader/album_reader_page_content.dart';
 
-class PageListSelector extends ConsumerWidget {
+class PageListSelector extends ConsumerStatefulWidget {
   final List<AlbumPage> pages;
   final int currentPageIndex;
   final Function(int) onPageSelected;
   final VoidCallback? onAddPage;
+  final String addPageDescription;
   final VoidCallback? onDeleteCurrentPage;
   final bool canDeleteCurrentPage;
 
@@ -27,12 +30,61 @@ class PageListSelector extends ConsumerWidget {
     required this.currentPageIndex,
     required this.onPageSelected,
     this.onAddPage,
+    this.addPageDescription = '내지 2쪽 추가 · 표지 별도, 최대 80쪽',
     this.onDeleteCurrentPage,
     this.canDeleteCurrentPage = false,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PageListSelector> createState() => _PageListSelectorState();
+}
+
+class _PageListSelectorState extends ConsumerState<PageListSelector> {
+  final _scroll = ScrollController();
+  bool? _vertical;
+  double _extent = 80;
+  bool _revealPending = false;
+
+  @override
+  void didUpdateWidget(covariant PageListSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentPageIndex != widget.currentPageIndex ||
+        oldWidget.pages.length != widget.pages.length) {
+      _revealSelection();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _revealSelection() {
+    if (_revealPending) return;
+    _revealPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _revealPending = false;
+      if (!mounted || !_scroll.hasClients || widget.pages.isEmpty) return;
+      final position = _scroll.position;
+      final index = widget.currentPageIndex.clamp(0, widget.pages.length - 1);
+      final target =
+          (index * _extent - position.viewportDimension / 2 + _extent / 2)
+              .clamp(0.0, position.maxScrollExtent);
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _scroll.jumpTo(target);
+      } else {
+        _scroll.animateTo(
+          target,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final editorState = ref.watch(albumEditorViewModelProvider).asData?.value;
     final selectedTheme = editorState?.selectedTheme;
     final selectedCover = editorState?.selectedCover;
@@ -41,218 +93,137 @@ class PageListSelector extends ConsumerWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isVerticalRail = constraints.maxWidth < 120;
-        return SizedBox(
-          height: isVerticalRail ? double.infinity : 92.h,
-          width: isVerticalRail ? 78 : null,
-          child: ListView.separated(
-            padding: isVerticalRail
-                ? const EdgeInsets.symmetric(horizontal: 8, vertical: 8)
-                : EdgeInsets.fromLTRB(10.w, 0, 10.w, 4.h),
-            scrollDirection: isVerticalRail ? Axis.vertical : Axis.horizontal,
-            itemCount: pages.length + 1, // 마지막에 + 버튼 추가
-            separatorBuilder: (context, index) => SizedBox(
-              width: isVerticalRail ? 0 : 5.w,
-              height: isVerticalRail ? 8 : 0,
-            ),
-            itemBuilder: (context, index) {
-              // 마지막 아이템 = 페이지 추가 버튼
-              if (index == pages.length) {
-                return _buildAddButton(
-                  context,
-                  isVerticalRail: isVerticalRail,
-                  coverRatio: coverRatio,
-                );
-              }
-
-              final page = pages[index];
-              final isSelected = index == currentPageIndex;
-              final isCover = index == 0;
-
-              // 0번은 커버, 1번부터 내지
-              final label = isCover ? '표지' : '${index}쪽';
-
-              // 커버 비율에 맞춰 썸네일 크기 계산 (비율 보존)
-              final thumbHeight = isVerticalRail
-                  ? 54.0
-                  : (isSelected ? 56.h : 52.h);
-              final thumbWidth = isVerticalRail
-                  ? 42.0
-                  : (thumbHeight * coverRatio).clamp(32.0, 80.0);
-              final itemWidth = isVerticalRail ? 58.0 : thumbWidth + 8.0;
-              final deleteSize = isVerticalRail ? 16.0 : 20.w;
-              final deleteIconSize = isVerticalRail ? 10.0 : 13.sp;
-
-              return SizedBox(
-                width: itemWidth,
+        final vertical = constraints.maxWidth < 120;
+        final thumbHeight = vertical ? 54.0 : 56.h.clamp(44.0, 56.0);
+        final captionHeight = MediaQuery.textScalerOf(context).scale(11) * 1.5;
+        final height = thumbHeight + captionHeight + 16;
+        final extent = vertical
+            ? height
+            : (thumbHeight * coverRatio + 18).clamp(62.0, 86.0);
+        if (_vertical != vertical || _extent != extent) {
+          _vertical = vertical;
+          _extent = extent;
+          _revealSelection();
+        }
+        final rail = ListView.builder(
+          key: const ValueKey('editor-page-rail'),
+          controller: _scroll,
+          scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+          padding: const EdgeInsets.all(4),
+          itemExtent: extent,
+          cacheExtent: extent,
+          itemCount: widget.pages.length,
+          itemBuilder: (context, index) {
+            final selected = index == widget.currentPageIndex;
+            final label = index == 0 ? '표지' : '$index쪽';
+            final maxThumbWidth = vertical ? 52.0 : extent - 14;
+            final width = math.min(maxThumbWidth, thumbHeight * coverRatio);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+              child: Semantics(
+                key: ValueKey('editor-page-$index'),
+                button: true,
+                selected: selected,
+                label: '$label 선택',
                 child: SnapFitPressable(
-                  onTap: () => onPageSelected(index),
-                  pressedScale: 0.96,
-                  borderRadius: BorderRadius.circular(12.r),
+                  onTap: () => widget.onPageSelected(index),
+                  pressedScale: .98,
+                  borderRadius: BorderRadius.circular(6),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: SnapFitMotion.settle,
-                        width: thumbWidth,
+                      SizedBox(
                         height: thumbHeight,
-                        padding: EdgeInsets.all(isVerticalRail ? 3 : 2.w),
-                        decoration: BoxDecoration(
-                          color: SnapFitColors.surfaceOf(context),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: isSelected
-                                ? SnapFitColors.accent.withOpacity(0.58)
-                                : SnapFitColors.overlayLightOf(context),
-                            width: isSelected ? 1.4 : 0.8,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: SnapFitColors.accent.withOpacity(
-                                      0.12,
-                                    ),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned.fill(
+                        child: Center(
+                          child: AnimatedContainer(
+                            key: ValueKey('editor-page-frame-$index'),
+                            duration: MediaQuery.disableAnimationsOf(context)
+                                ? Duration.zero
+                                : const Duration(milliseconds: 120),
+                            width: width,
+                            height: width / coverRatio,
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: SnapFitColors.surfaceOf(context),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: selected
+                                    ? ExperienceFormStyle.selectionInk(context)
+                                    : ExperienceFormStyle.line(context),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: RepaintBoundary(
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10.r),
-                                child: _buildPageThumbnail(
-                                  context,
-                                  ref: ref,
-                                  page: page,
-                                  isCover: isCover,
-                                  selectedTheme: selectedTheme,
-                                  selectedCover: selectedCover,
+                                borderRadius: BorderRadius.circular(1),
+                                child: ExcludeSemantics(
+                                  child: IgnorePointer(
+                                    child: _buildPageThumbnail(
+                                      context,
+                                      ref: ref,
+                                      page: widget.pages[index],
+                                      isCover: index == 0,
+                                      selectedTheme: selectedTheme,
+                                      selectedCover: selectedCover,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                            if (isSelected)
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: TweenAnimationBuilder<double>(
-                                    key: ValueKey(
-                                      'pageSelectorSelectionGlow-$currentPageIndex',
-                                    ),
-                                    tween: Tween(begin: 0, end: 1),
-                                    duration: const Duration(milliseconds: 96),
-                                    curve: Curves.easeOutCubic,
-                                    builder: (context, value, child) {
-                                      final glow = math.sin(value * math.pi);
-                                      return DecoratedBox(
-                                        key: const Key(
-                                          'pageSelectorSelectionGlow',
-                                        ),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            10.r,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: SnapFitColors.accent
-                                                  .withOpacity(0.22 * glow),
-                                              blurRadius: 10 + 6 * glow,
-                                              spreadRadius: 0.5 * glow,
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            if (isSelected && !isVerticalRail)
-                              Positioned(
-                                left: 5.w,
-                                right: 5.w,
-                                bottom: -3.h,
-                                child: AnimatedContainer(
-                                  duration: SnapFitMotion.pageTurnFast,
-                                  curve: SnapFitMotion.pageTurnCurve,
-                                  height: 2.5.h,
-                                  decoration: BoxDecoration(
-                                    color: SnapFitColors.accent,
-                                    borderRadius: BorderRadius.circular(999.r),
-                                  ),
-                                ),
-                              ),
-                            if (isSelected && canDeleteCurrentPage && !isCover)
-                              Positioned(
-                                top: isVerticalRail ? -4 : -5.h,
-                                right: isVerticalRail ? -4 : -5.w,
-                                child: GestureDetector(
-                                  onTap: onDeleteCurrentPage,
-                                  child: Container(
-                                    width: deleteSize,
-                                    height: deleteSize,
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFFB96363,
-                                      ).withOpacity(0.92),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.16),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(
-                                      Icons.remove_circle_outline_rounded,
-                                      size: deleteIconSize,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
-                      if (!isVerticalRail) ...[
-                        SizedBox(height: 2.h),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 9.0,
-                            color: isSelected
-                                ? SnapFitColors.accent
-                                : SnapFitColors.textSecondaryOf(context),
-                            fontWeight: isSelected
-                                ? FontWeight.w900
-                                : FontWeight.w700,
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          11,
+                          weight: selected ? FontWeight.w700 : FontWeight.w500,
+                          color: selected
+                              ? ExperienceFormStyle.selectionInk(context)
+                              : ExperienceFormStyle.muted(context),
                         ),
-                      ] else ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isSelected
-                                ? SnapFitColors.accent
-                                : SnapFitColors.textSecondaryOf(context),
-                            fontWeight: isSelected
-                                ? FontWeight.w900
-                                : FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
+        );
+        final actions = Padding(
+          padding: const EdgeInsets.all(4),
+          child: Flex(
+            direction: vertical ? Axis.vertical : Axis.horizontal,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildAddButton(context),
+              if (widget.canDeleteCurrentPage && widget.currentPageIndex > 0)
+                IconButton(
+                  key: const ValueKey('deleteCurrentInnerPageButton'),
+                  tooltip: '${widget.currentPageIndex}쪽 삭제',
+                  onPressed: widget.onDeleteCurrentPage,
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: ExperienceFormStyle.muted(context),
+                  ),
+                ),
+            ],
+          ),
+        );
+        return SizedBox(
+          height: vertical ? double.infinity : height + 8,
+          width: vertical ? 78 : null,
+          child: Flex(
+            direction: vertical ? Axis.vertical : Axis.horizontal,
+            children: [
+              Expanded(child: rail),
+              actions,
+            ],
           ),
         );
       },
@@ -335,42 +306,30 @@ class PageListSelector extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddButton(
-    BuildContext context, {
-    required bool isVerticalRail,
-    double coverRatio = 1.0,
-  }) {
-    final btnH = isVerticalRail ? 58.0 : 52.h;
-    final btnW = isVerticalRail ? 58.0 : (btnH * coverRatio).clamp(32.0, 80.0);
-    return SizedBox(
-      width: isVerticalRail ? 62 : btnW + 8.0,
-      child: SnapFitPressable(
-        onTap: onAddPage,
-        pressedScale: 0.96,
-        borderRadius: BorderRadius.circular(12.r),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: isVerticalRail ? 58 : btnW,
-              height: isVerticalRail ? 58 : btnH,
-              decoration: BoxDecoration(
-                color: SnapFitColors.surfaceOf(context).withOpacity(0.62),
-                borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: SnapFitColors.textSecondaryOf(
-                    context,
-                  ).withOpacity(0.28),
-                  width: 1,
-                ),
-              ),
-              child: Icon(
-                Icons.add_rounded,
-                size: isVerticalRail ? 20 : 16,
-                color: SnapFitColors.textSecondaryOf(context),
+  Widget _buildAddButton(BuildContext context) {
+    return Tooltip(
+      message: widget.addPageDescription,
+      child: Semantics(
+        label: widget.addPageDescription,
+        button: true,
+        enabled: widget.onAddPage != null,
+        child: SnapFitPressable(
+          key: const Key('addInnerPagesButton'),
+          onTap: widget.onAddPage,
+          pressedScale: .96,
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox.square(
+            dimension: 44,
+            child: Center(
+              child: ExperienceIcon(
+                'Plus',
+                size: 20,
+                color: widget.onAddPage == null
+                    ? ExperienceFormStyle.line(context)
+                    : ExperienceFormStyle.ink(context),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

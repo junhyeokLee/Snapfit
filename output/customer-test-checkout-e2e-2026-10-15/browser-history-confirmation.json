@@ -1,0 +1,16 @@
+{
+  "observedAtUtc": "2026-10-15T06:49:43.498Z",
+  "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "orderId": "ordp_85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+  "paymentId": "SFPGT_00bc9432-4254-492e-a9c6-8f315f368419",
+  "vendorOrderNum": "SFD85e8ce971d3041ee892b4c43ee5546f3",
+  "verifiedTest": true,
+  "fileChecked": true,
+  "restoredFromServer": true,
+  "normalHistoryRouteUsed": true,
+  "allFourStagesComplete": true,
+  "orderReferencesVisuallyMatched": true,
+  "actualPaymentOpened": false,
+  "historyListScreenshot": "customer-test-order-history.png",
+  "detailScreenshot": "customer-test-order-stages.png"
+}

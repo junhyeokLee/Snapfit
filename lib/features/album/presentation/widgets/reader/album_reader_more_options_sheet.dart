@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/album_stage_style.dart';
+import '../../../../../shared/web/web_design.dart';
 
 // ── ... 더보기 바텀시트 ───────────────────────────────────────────
 class AlbumReaderMoreOptionsSheet extends StatelessWidget {
@@ -23,6 +26,54 @@ class AlbumReaderMoreOptionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      Widget action(String label, IconData icon, VoidCallback onTap,
+          {bool destructive = false}) => ListTile(
+        leading: Icon(icon, size: 19,
+          color: destructive ? Theme.of(context).colorScheme.error : WebPalette.of(context).muted),
+        title: Text(label, style: TextStyle(
+          fontSize: 14,
+          color: destructive ? Theme.of(context).colorScheme.error : WebPalette.of(context).ink,
+        )),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      );
+      return Material(
+        color: WebPalette.of(context).surface,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 18, 12, 12),
+                child: Row(children: [
+                  Expanded(child: Text('앨범 관리', style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w700, color: WebPalette.of(context).ink,
+                  ))),
+                  IconButton(
+                    tooltip: '메뉴 닫기',
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, size: 18),
+                  ),
+                ]),
+              ),
+              Divider(height: 1, color: WebPalette.of(context).line),
+              if (onDetail != null) action('페이지 상세', Icons.zoom_in, onDetail!),
+              action('앨범 편집', Icons.edit_outlined, onEdit),
+              if (onInvite != null)
+                action('멤버 초대', Icons.group_add_outlined, onInvite!),
+              action('책 주문 준비', Icons.auto_stories_outlined, onConfirm),
+              if (onDelete != null) ...[
+                Divider(height: 1, color: WebPalette.of(context).line),
+                action('앨범 삭제', Icons.delete_outline, onDelete!, destructive: true),
+              ],
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      );
+    }
     final media = MediaQuery.of(context);
     final maxSheetHeight = media.size.height * (compact ? 0.72 : 0.82);
     final radius = compact ? 16.0 : 24.r;
@@ -230,10 +281,11 @@ class AlbumReaderCircleBtn extends StatelessWidget {
         width: 44.w,
         height: 44.w,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.12),
+          color: AlbumStageStyle.glass(context),
           shape: BoxShape.circle,
+          border: Border.all(color: AlbumStageStyle.line(context)),
         ),
-        child: Icon(icon, color: Colors.white, size: 20.sp),
+        child: Icon(icon, color: AlbumStageStyle.ink(context), size: 20.sp),
       ),
     );
   }

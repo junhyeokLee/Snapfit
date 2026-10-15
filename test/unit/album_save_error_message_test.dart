@@ -3,6 +3,13 @@ import 'package:snap_fit/features/album/data/api/storage_service.dart';
 import 'package:snap_fit/features/album/presentation/utils/album_save_error_message.dart';
 
 void main() {
+  test('does not expose server exceptions or layer identifiers', () {
+    final message = albumSaveErrorMessage(
+      StateError('internal layerId=secret'),
+    );
+    expect(message, contains('편집 내용은 유지'));
+    expect(message, isNot(contains('secret')));
+  });
   test('maps storage quota exceeded to user friendly copy', () {
     final message = albumSaveErrorMessage(
       const StorageQuotaExceededException(

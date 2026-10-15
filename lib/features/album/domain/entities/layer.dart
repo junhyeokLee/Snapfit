@@ -51,6 +51,7 @@ class LayerModel {
 
   /// 템플릿/프레임 안에서 사진 자체를 이동시킬 때 사용하는 오프셋 (런타임 기준 좌표)
   final Offset? imageOffset;
+  final double imageZoom;
 
   /// Shared crop alignment for editor, frame picker and catalog previews.
   Alignment get imageAlignment {
@@ -72,6 +73,14 @@ class LayerModel {
   final double opacity; // 레이어 불투명도 (0.0 ~ 1.0)
   /// 겹침 순서. 클수록 앞에 그림. 통합 템플릿(결혼/스크랩북/포토북 등)용.
   final int zIndex;
+
+  bool get hasImageSource =>
+      asset != null ||
+      [
+        originalUrl,
+        previewUrl,
+        imageUrl,
+      ].any((url) => url != null && url.trim().isNotEmpty);
 
   LayerModel({
     required this.id,
@@ -100,6 +109,7 @@ class LayerModel {
     this.frameBaseHeight,
     this.frameBasePosition,
     this.imageOffset,
+    this.imageZoom = 1,
     this.imageUrl,
     this.originalUrl,
     this.previewUrl,
@@ -135,6 +145,7 @@ class LayerModel {
     double? frameBaseHeight,
     Offset? frameBasePosition,
     Offset? imageOffset,
+    double? imageZoom,
     bool? locked,
     bool? editable,
     String? imageUrl,
@@ -173,6 +184,7 @@ class LayerModel {
       frameBaseHeight: frameBaseHeight ?? this.frameBaseHeight,
       frameBasePosition: frameBasePosition ?? this.frameBasePosition,
       imageOffset: clearImage ? null : imageOffset ?? this.imageOffset,
+      imageZoom: clearImage ? 1 : imageZoom ?? this.imageZoom,
       imageUrl: clearImage ? null : imageUrl ?? this.imageUrl,
       originalUrl: clearImage ? null : originalUrl ?? this.originalUrl,
       previewUrl: clearImage ? null : previewUrl ?? this.previewUrl,

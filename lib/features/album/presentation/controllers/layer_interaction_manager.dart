@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_logger.dart';
 import 'package:flutter/scheduler.dart';
@@ -11,7 +12,9 @@ import '../widgets/editor/selection_frame.dart';
 /// 스타일 레이어 인터랙션 관리자
 /// 이미지/텍스트 레이어의 드래그, 회전, 확대/축소를 처리.
 class LayerInteractionManager {
-  final WidgetRef ref;
+  final WidgetRef? _ref;
+  WidgetRef get ref =>
+      _ref ?? (throw StateError('print_preview_has_no_editor_state'));
   final GlobalKey coverKey; // 커버 영역의 위치/크기를 얻기 위한 키
   final void Function(void Function()) setState; // UI 업데이트 함수
   final Size Function() getCoverSize; // 커버 크기 getter
@@ -47,6 +50,13 @@ class LayerInteractionManager {
 
   /// 현재 제스처(이동/확대/회전) 중인지 여부
   bool get isInteractingNow => _gestureStates.isNotEmpty;
+  bool get isPreviewMode => _isPreviewMode;
+
+  /// Stop pending frame callbacks when the owning editor leaves the screen.
+  void dispose() {
+    _stopAnimation();
+    _gestureStates.clear();
+  }
 
   // ==================== 제스처 추적 ====================
   final Map<String, _GestureState> _gestureStates = {}; // 제스처 시작 시점의 상태 저장
@@ -109,7 +119,7 @@ class LayerInteractionManager {
   ];
 
   LayerInteractionManager({
-    required this.ref,
+    required WidgetRef ref,
     required this.coverKey,
     required this.setState,
     required this.getCoverSize,
@@ -119,7 +129,24 @@ class LayerInteractionManager {
     bool isPreviewMode = false,
     this.showSelectionControls = true,
     this.showHandles = true,
-  }) : _isPreviewMode = isPreviewMode;
+  }) : _ref = ref,
+       _isPreviewMode = isPreviewMode;
+
+  /// A frozen print document uses the same rendering/preview interaction path,
+  /// without mounting an editor provider or scheduling scoped UI frames.
+  LayerInteractionManager.printPreview(this.getCoverSize)
+    : _ref = null,
+      coverKey = GlobalKey(),
+      setState = _noPrintState,
+      onEditText = _noPrintEdit,
+      onLayerTap = null,
+      onTapPlaceholder = null,
+      _isPreviewMode = true,
+      showSelectionControls = false,
+      showHandles = false;
+
+  static void _noPrintState(void Function() callback) {}
+  static void _noPrintEdit(LayerModel layer) {}
 
   /// 읽기 전용 미리보기용 (앨범 보기, 커버 카드 등) – 제스처 없이 레이어만 표시
   static LayerInteractionManager preview(
@@ -429,6 +456,7 @@ class LayerInteractionManager {
   /// 페이지 전환 시 이전 페이지의 제스처/레이어 캐시를 정리한다.
   /// 같은 layer id가 다른 페이지에 재사용될 때 선택/드래그 충돌을 방지한다.
   void resetForPageChange() {
+    _stopAnimation();
     setState(() {
       _selectedLayerId = null;
       _editingLayerId = null;
@@ -577,72 +605,84 @@ class LayerInteractionManager {
                     key: _getLayerKey(layer.id),
                     width: baseWidth,
                     height: baseHeight,
-                    child: GestureDetector(
-                      // 페이지/커버 모두에서 레이어 hit-test를 안정적으로 고정:
-                      // translucent는 겹친 레이어가 동시에 제스처 경쟁을 만들어
-                      // 위치에 따라 선택/드래그 실패를 유발할 수 있어 opaque로 통일한다.
-                      behavior: HitTestBehavior.opaque,
-                      onTapDown: (details) {
-                        AppLogger.debug(
-                          '[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})',
-                        );
-                        _handleTap(
-                          _resolveTopTouchTarget(
-                            fallback: layer,
-                            globalPoint: details.globalPosition,
-                          ),
-                        );
-                      },
-                      onDoubleTap: () {
-                        final target = _resolveActiveGestureLayer(layer);
-                        if (target.type != LayerType.text) return;
-                        if (_selectedLayerId != target.id) return;
-                        setState(() => _editingLayerId = target.id);
-                        onEditText(target);
-                      },
-                      onScaleStart: (d) {
-                        _handleScaleStart(
-                          _resolveTopTouchTarget(
-                            fallback: layer,
-                            globalPoint: d.focalPoint,
-                          ),
-                          d,
-                        );
-                      },
-                      onScaleUpdate: (d) => _handleScaleUpdate(
-                        _resolveActiveGestureLayer(layer),
-                        d,
-                        baseWidth,
-                        baseHeight,
-                        isCover: isCover,
-                      ),
-                      onScaleEnd: (d) =>
-                          _handleScaleEnd(_resolveActiveGestureLayer(layer), d),
-                      child: SelectionFrame(
-                        isSelected:
-                            isSelected && !isEditing && showSelectionControls,
-                        showHandles: showHandles,
-                        onDelete: deleteSelected,
-                        onResizeStart: (pos, d) =>
-                            _handleResizeStart(layer, pos, d),
-                        onResizeUpdate: (pos, d) => _handleResizeUpdate(
-                          layer,
-                          pos,
+                    child: MouseRegion(
+                      key: ValueKey('editor-layer-${layer.id}'),
+                      cursor: isInteracting
+                          ? SystemMouseCursors.grabbing
+                          : isSelected
+                          ? SystemMouseCursors.grab
+                          : SystemMouseCursors.click,
+                      child: GestureDetector(
+                        // 페이지/커버 모두에서 레이어 hit-test를 안정적으로 고정:
+                        // translucent는 겹친 레이어가 동시에 제스처 경쟁을 만들어
+                        // 위치에 따라 선택/드래그 실패를 유발할 수 있어 opaque로 통일한다.
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (details) {
+                          AppLogger.debug(
+                            '[LayerInteraction] Tap on ${layer.id} (type=${layer.type.name})',
+                          );
+                          _handleTap(
+                            _resolveTopTouchTarget(
+                              fallback: layer,
+                              globalPoint: details.globalPosition,
+                            ),
+                            keepSelected:
+                                details.kind == PointerDeviceKind.mouse,
+                          );
+                        },
+                        onDoubleTap: () {
+                          final target = _resolveActiveGestureLayer(layer);
+                          if (target.type != LayerType.text) return;
+                          if (_selectedLayerId != target.id) return;
+                          setState(() => _editingLayerId = target.id);
+                          onEditText(target);
+                        },
+                        onScaleStart: (d) {
+                          _handleScaleStart(
+                            _resolveTopTouchTarget(
+                              fallback: layer,
+                              globalPoint: d.focalPoint,
+                            ),
+                            d,
+                          );
+                        },
+                        onScaleUpdate: (d) => _handleScaleUpdate(
+                          _resolveActiveGestureLayer(layer),
                           d,
                           baseWidth,
                           baseHeight,
                           isCover: isCover,
                         ),
-                        onResizeEnd: (pos, d) =>
-                            _handleResizeEnd(layer, pos, d),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 100),
-                          curve: Curves.easeOut,
-                          width: baseWidth,
-                          height: baseHeight,
-                          child: layer.type == LayerType.text
-                              ? child
-                              : ClipRRect(child: child),
+                        onScaleEnd: (d) => _handleScaleEnd(
+                          _resolveActiveGestureLayer(layer),
+                          d,
+                        ),
+                        child: SelectionFrame(
+                          isSelected:
+                              isSelected && !isEditing && showSelectionControls,
+                          showHandles: showHandles,
+                          onDelete: deleteSelected,
+                          onResizeStart: (pos, d) =>
+                              _handleResizeStart(layer, pos, d),
+                          onResizeUpdate: (pos, d) => _handleResizeUpdate(
+                            layer,
+                            pos,
+                            d,
+                            baseWidth,
+                            baseHeight,
+                            isCover: isCover,
+                          ),
+                          onResizeEnd: (pos, d) =>
+                              _handleResizeEnd(layer, pos, d),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 100),
+                            curve: Curves.easeOut,
+                            width: baseWidth,
+                            height: baseHeight,
+                            child: layer.type == LayerType.text
+                                ? child
+                                : ClipRRect(child: child),
+                          ),
                         ),
                       ),
                     ),
@@ -659,7 +699,7 @@ class LayerInteractionManager {
   // ==================== 제스처 핸들러 ====================
 
   /// 탭 이벤트 처리
-  void _handleTap(LayerModel layer) {
+  void _handleTap(LayerModel layer, {bool keepSelected = false}) {
     // 이미지 플레이스홀더(사진 없음) 탭 시 바로 갤러리 진입 (페이지 편집용)
     final isImagePlaceholder =
         layer.type == LayerType.image &&
@@ -675,14 +715,14 @@ class LayerInteractionManager {
       setState(() {
         _selectedLayerId = layer.id;
         _editingLayerId = null;
-        if (!isBackground) {
+        if (!isBackground && !keepSelected) {
           _z[layer.id] = ++_zCounter;
         }
       });
-      if (!isBackground) _bringLayerToFrontInPage(layer.id);
+      if (!isBackground && !keepSelected) _bringLayerToFrontInPage(layer.id);
       onLayerTap?.call(layer);
     } else {
-      if (layer.type != LayerType.text) {
+      if (!keepSelected && layer.type != LayerType.text) {
         clearSelection();
       }
     }
@@ -699,17 +739,21 @@ class LayerInteractionManager {
       initialPosition: _pos[layer.id]!,
       baseSize: _refBaseSize[layer.id]!,
       hasSnapped: false, // 스냅 햅틱 피드백 플래그 초기화
+      precisePointer: details.kind == PointerDeviceKind.mouse,
+      lastGlobalFocalPoint: details.focalPoint,
     );
 
     final isBackground = _isBackgroundLayer(layer);
     setState(() {
       _selectedLayerId = layer.id;
       _editingLayerId = null;
-      if (!isBackground) {
+      if (!isBackground && details.kind != PointerDeviceKind.mouse) {
         _z[layer.id] = ++_zCounter; // 맨 앞으로 가져오기
       }
     });
-    if (!isBackground) _bringLayerToFrontInPage(layer.id);
+    if (!isBackground && details.kind != PointerDeviceKind.mouse) {
+      _bringLayerToFrontInPage(layer.id);
+    }
   }
 
   /// 선택된 레이어를 페이지 레이어 리스트에서 맨 위(맨 앞)로 올림 — 레이어 바텀시트 순서와 동기화
@@ -785,14 +829,27 @@ class LayerInteractionManager {
   }) {
     if (_editingLayerId == layer.id) return; // 편집 중이면 제스처 무시
 
+    final gestureState = _gestureStates[layer.id];
+    if (gestureState == null) return;
+    // focalPointDelta is local to the rotated/scaled layer in Flutter. Mouse
+    // movement must follow global screen axes, normalized only by the canvas.
+    final globalPointerDelta =
+        details.focalPoint - gestureState.lastGlobalFocalPoint;
+    gestureState.lastGlobalFocalPoint = details.focalPoint;
+
     // 사진 위치 조정 모드: 프레임은 고정, 안의 이미지(offset)만 이동
     if (_imagePanMode && layer.type == LayerType.image) {
-      _handleImagePanUpdate(layer, details, baseWidth, baseHeight);
+      _handleImagePanUpdate(
+        layer,
+        details,
+        baseWidth,
+        baseHeight,
+        globalPointerDelta: gestureState.precisePointer
+            ? globalPointerDelta
+            : null,
+      );
       return;
     }
-
-    final gestureState = _gestureStates[layer.id];
-    if (gestureState == null) return; // 상태가 없으면 무시
 
     final coverSize = getCoverSize();
     final baseSize = Size(baseWidth, baseHeight);
@@ -825,7 +882,9 @@ class LayerInteractionManager {
 
     // ==================== 드래그 처리 ====================
     // focalPointDelta: 이전 프레임부터의 손가락 이동 거리 (Global/Screen logical pixels)
-    Offset rawDelta = details.focalPointDelta;
+    Offset rawDelta = gestureState.precisePointer
+        ? globalPointerDelta
+        : details.focalPointDelta;
 
     // [Inner Page Fix] 부모 위젯(Canvas)이 Transform.scale 등으로 변형된 경우,
     // 이동 거리(Delta)를 해당 스케일로 나누어 로지컬 공간(300x400)에 맞게 정규화함.
@@ -836,7 +895,7 @@ class LayerInteractionManager {
 
     // 개선된 드래그 감도 보정
     final currentScale = gestureState.initialScale * details.scale;
-    if (currentScale > 0) {
+    if (!gestureState.precisePointer && currentScale > 0) {
       // 축소 시 더 둔감하게, 확대 시 적당히 민감하게 — 반비례가 아니라 정비례로 변경
       // 스케일이 작아질수록 이동량을 줄여야 자연스러움 → rawDelta * scale
       final normalized = math.pow(currentScale, 0.55);
@@ -846,7 +905,7 @@ class LayerInteractionManager {
     // 속도 제한: 프레임당 이동 거리가 너무 크면 제한₩₩
     // (빠르게 드래그해도 레이어가 날아가지 않도록)
     final deltaDistance = rawDelta.distance;
-    if (deltaDistance > _dragMaxSpeed) {
+    if (!gestureState.precisePointer && deltaDistance > _dragMaxSpeed) {
       // 방향은 유지하고 크기만 제한
       rawDelta = rawDelta * (_dragMaxSpeed / deltaDistance);
     }
@@ -858,10 +917,12 @@ class LayerInteractionManager {
     // (레이어가 회전되어 있어도 드래그 방향이 자연스럽게 느껴지도록)
     final cos = math.cos(targetRotation);
     final sin = math.sin(targetRotation);
-    final localDelta = Offset(
-      rawDelta.dx * cos - rawDelta.dy * sin,
-      rawDelta.dx * sin + rawDelta.dy * cos,
-    );
+    final localDelta = gestureState.precisePointer
+        ? rawDelta
+        : Offset(
+            rawDelta.dx * cos - rawDelta.dy * sin,
+            rawDelta.dx * sin + rawDelta.dy * cos,
+          );
 
     // 현재 레이어 중심점 계산
     Offset center = Offset(
@@ -1081,10 +1142,11 @@ class LayerInteractionManager {
     LayerModel layer,
     ScaleUpdateDetails details,
     double baseWidth,
-    double baseHeight,
-  ) {
+    double baseHeight, {
+    Offset? globalPointerDelta,
+  }) {
     // 부모 Transform.scale 보정
-    Offset delta = details.focalPointDelta;
+    Offset delta = globalPointerDelta ?? details.focalPointDelta;
     final parentScale = _getParentScale();
     if (parentScale > 0) {
       delta = delta / parentScale;
@@ -1399,6 +1461,8 @@ class _GestureState {
   final Offset initialPosition; // 제스처 시작 시점의 위치
   final Size baseSize; // 레이어 원본 크기
   bool hasSnapped;
+  final bool precisePointer;
+  Offset lastGlobalFocalPoint;
 
   _GestureState({
     required this.initialScale,
@@ -1406,6 +1470,8 @@ class _GestureState {
     required this.initialPosition,
     required this.baseSize,
     required this.hasSnapped,
+    required this.precisePointer,
+    required this.lastGlobalFocalPoint,
   });
 }
 

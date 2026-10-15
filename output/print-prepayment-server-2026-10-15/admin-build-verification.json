@@ -1,0 +1,19 @@
+{
+  "artifactPath": "/private/tmp/snapfit-admin-app-pdf-web-20261015",
+  "build": "Flutter web release JS",
+  "buildSeconds": 39.3,
+  "mainDartJsSha256": "5be15afbc6add43504c2460681fa0b0ec14bc659fe06d6f8a3cc8bdb873cd29c",
+  "mainDartJsBytes": 3907656,
+  "dtoSourceSha256": "60c24757c1917fbdc090e68669e2df8ab4605403cc2cb85d7dd4f0aaaeabc37e",
+  "containsPreSdkAbortedResolution": true,
+  "containsVerifiedFlag": true,
+  "scopedAnalyzeFiles": 4,
+  "scopedAnalyzeIssues": 0,
+  "regressionTestsPassed": 18,
+  "sourceEdited": false,
+  "serving7358Changed": false,
+  "browserReloaded": false,
+  "administratorSessionChanged": false,
+  "productKeysOrGatesChanged": false,
+  "actualOrdersOrPaymentsCreated": 0
+}

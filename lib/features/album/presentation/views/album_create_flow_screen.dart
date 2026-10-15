@@ -1,13 +1,21 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../config/env.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/album_page_policy.dart';
 import '../../../../core/constants/snapfit_colors.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/web/web_design.dart';
+import '../../../../shared/widgets/album_bottom_sheet.dart';
 import '../../../../core/utils/platform_ui.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../../core/navigation/web_unsaved_work_guard.dart';
+import '../../../../core/navigation/web_app_location.dart';
 import '../../../billing/data/billing_provider.dart';
 import '../../../billing/data/billing_repository.dart';
 import '../../../profile/presentation/views/billing_management_screen.dart';
@@ -21,7 +29,13 @@ import '../../ai_album/domain/ai_album_draft_generation_service.dart';
 import '../../ai_album/domain/ai_album_draft_template_builder.dart';
 import '../../ai_album/domain/ai_album_models.dart';
 import '../../data/api/album_provider.dart';
+import '../../data/gallery/browser_photo_asset.dart';
 import '../../data/album_creation_catalog_provider.dart';
+import '../../data/album_creation_draft_store.dart';
+import '../../domain/entities/album_creation_draft.dart';
+import '../../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../widgets/create_flow/album_creation_review_sheet.dart';
+import '../widgets/create_flow/creation_workspace.dart';
 import '../widgets/create_flow/album_create_step1.dart';
 import '../widgets/create_flow/album_create_step2.dart';
 import '../widgets/create_flow/ai_album_draft_failure_step.dart';
@@ -30,6 +44,7 @@ import '../widgets/create_flow/ai_album_point_confirmation_step.dart';
 import '../widgets/create_flow/ai_album_recommendation_review_step.dart';
 import '../widgets/create_flow/ai_album_start_step.dart';
 import '../widgets/create_flow/ai_template_brief_step.dart';
+import '../widgets/create_flow/ai_template_generating_step.dart';
 import '../widgets/create_flow/template_photo_fill_step.dart';
 import '../viewmodels/album_editor_view_model.dart';
 import 'add_cover_screen.dart';
@@ -45,6 +60,8 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
   final CoverSize? initialCoverSize;
   final bool usesServerDraftProvider;
   final bool usesAdvancedServerAnalysis;
+  final AlbumCreationDraft? initialDraft;
+  final bool initialAiMode;
 
   const AlbumCreateFlowScreen({
     super.key,
@@ -54,6 +71,8 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
     this.initialAlbumTitle,
     this.initialTemplatePreviewImages,
     this.initialCoverSize,
+    this.initialDraft,
+    this.initialAiMode = false,
     bool? usesServerDraftProvider,
     bool? usesAdvancedServerAnalysis,
   }) : usesServerDraftProvider =
@@ -66,8 +85,20 @@ class AlbumCreateFlowScreen extends ConsumerStatefulWidget {
       _AlbumCreateFlowScreenState();
 }
 
-class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
-  static const int _maxPageCount = 50;
+class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen>
+    with WidgetsBindingObserver {
+  final _photoSession = TemplatePhotoFillSession();
+  late String _draftId;
+  String? _draftOwner;
+  bool _savingDraft = false;
+  Future<bool>? _draftSaveFuture;
+  Future<void>? _draftWriteSession;
+  Object? _draftWriteSessionError;
+  bool _leaving = false;
+  bool _reviewing = false;
+  bool _startingAlbum = false;
+  List<LayerModel>? _draftCoverLayers;
+  Size? _draftCoverCanvasSize;
   int _currentStep = 0;
   String _albumTitle = '';
   static const int _aiDraftPointCost = Env.aiAlbumDraftPointCost;
@@ -89,8 +120,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
 
   CoverSize? _selectedCover;
   PrintCoverType? _preferredCoverType;
-  int _selectedPageCount = 10;
-  int _templateMinPageCount = 10;
+  int _selectedPageCount = AlbumPagePolicy.minInnerPages;
+  int _templateMinPageCount = AlbumPagePolicy.minInnerPages;
   bool _allowEditing = true;
   List<String> _invitedEmails = [];
   int? _createdAlbumId;
@@ -109,9 +140,23 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   bool _preserveTemplateTypography = false;
 
   /// 커버 편집 단계(step 1)에서 AppBar 완료 버튼이 호출할 콜백
-  VoidCallback? _onCompletePressed;
+  Future<void> Function()? _onCompletePressed;
+
+  int _normalizePageCount(int count) {
+    // Oversized templates stay intact and are blocked in setup.
+    if (_templateMinPageCount > AlbumPagePolicy.maxInnerPages) {
+      return _templateMinPageCount;
+    }
+    final normalized = AlbumPagePolicy.normalize(count);
+    return normalized < _templateMinPageCount
+        ? _templateMinPageCount
+        : normalized;
+  }
 
   void _resetDesign() {
+    _photoSession.reset();
+    _draftCoverLayers = null;
+    _draftCoverCanvasSize = null;
     _usesPhysicalTemplateCanvas = false;
     _preserveTemplateTypography = false;
     _returnToSetupFromHub = false;
@@ -122,8 +167,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     _baseTemplateCanvasSize = null;
     _templateTitle = null;
     _templatePreviewUrl = null;
-    _templateMinPageCount = 10;
-    _selectedPageCount = _selectedPageCount.clamp(10, _maxPageCount);
+    _templateMinPageCount = AlbumPagePolicy.minInnerPages;
+    _selectedPageCount = AlbumPagePolicy.normalize(_selectedPageCount);
     _sourceLabel = '직접 만들기';
     _hasFilledPhotos = false;
     _showPhotoFill = false;
@@ -158,9 +203,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     _templateTitle = selection.title;
     _templatePreviewUrl = selection.previewUrl;
     _sourceLabel = '선택한 템플릿';
-    _templateMinPageCount = (selection.pages.length - 1).clamp(
-      1,
-      _maxPageCount,
+    _templateMinPageCount = AlbumPagePolicy.minimumForContent(
+      (_resolvedTemplatePages ?? selection.pages).length - 1,
     );
     _selectedPageCount = _templateMinPageCount;
     if (_albumTitle.trim().isEmpty) _albumTitle = selection.title;
@@ -223,51 +267,113 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _selectedCover = cover;
       _preferredCoverType = cover.coverType;
       if (!sameSize) {
+        _photoSession.reset();
         _applyTemplateByCoverIfNeeded(cover);
         _hasFilledPhotos =
             _resolvedTemplatePages
                 ?.expand((p) => p)
-                .any((l) => l.asset != null) ??
+                .any((l) => l.type == LayerType.image && l.hasImageSource) ??
             false;
       }
     });
   }
 
   Widget _buildCreationProgress() {
-    final labels = _resolvedTemplatePages == null
-        ? ['설정', '표지', '편집']
-        : ['설정', '사진', '표지', '편집'];
-    final selected = _currentStep == 0
+    final hasPhotos = _resolvedTemplatePages != null || _isAiCreationMode;
+    final labels = hasPhotos
+        ? ['디자인', '설정', '사진', '표지', '편집']
+        : ['디자인', '설정', '표지', '편집'];
+    final selected = _isAiCreationMode
         ? 0
-        : _showPhotoFill
+        : _currentStep == 0
         ? 1
+        : _currentStep == 2
+        ? labels.length - 1
+        : _showPhotoFill
+        ? 2
         : labels.length - 2;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++) ...[
-            if (i > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Icon(
-                  Icons.chevron_right,
-                  size: 14,
-                  color: SnapFitColors.textMutedOf(context),
-                ),
-              ),
-            Text(
-              labels[i],
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: i == selected ? FontWeight.w700 : FontWeight.w400,
-                color: i == selected
-                    ? SnapFitColors.textPrimaryOf(context)
-                    : SnapFitColors.textMutedOf(context),
-              ),
-            ),
-          ],
-        ],
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        child: LayoutBuilder(
+          builder: (context, box) {
+            final compact =
+                box.maxWidth < 520 ||
+                MediaQuery.viewInsetsOf(context).bottom > 0;
+            return Semantics(
+              label:
+                  '${selected + 1} / ${labels.length}단계, ${labels[selected]}',
+              child: compact
+                  ? Row(
+                      children: [
+                        Text(
+                          '${selected + 1} / ${labels.length}',
+                          style: ExperienceFormStyle.text(
+                            context,
+                            12,
+                            secondary: true,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          labels[selected],
+                          style: ExperienceFormStyle.text(
+                            context,
+                            13,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: LinearProgressIndicator(
+                            value: (selected + 1) / labels.length,
+                            minHeight: 2,
+                            color: SnapFitColors.accent,
+                            backgroundColor: ExperienceFormStyle.line(context),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        for (var i = 0; i < labels.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 12),
+                          Expanded(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    width: 2,
+                                    color: i <= selected
+                                        ? SnapFitColors.accent
+                                        : ExperienceFormStyle.line(context),
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Text(
+                                  '${i + 1}  ${labels[i]}',
+                                  style: ExperienceFormStyle.text(
+                                    context,
+                                    12,
+                                    weight: i == selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    secondary: i != selected,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -359,14 +465,10 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       clearSamplePhotos: false,
     );
     _usesPhysicalTemplateCanvas = true;
-    _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
-      1,
-      _maxPageCount,
+    _templateMinPageCount = AlbumPagePolicy.minimumForContent(
+      _resolvedTemplatePages!.length - 1,
     );
-    _selectedPageCount = _selectedPageCount.clamp(
-      _templateMinPageCount,
-      _maxPageCount,
-    );
+    _selectedPageCount = _normalizePageCount(_selectedPageCount);
   }
 
   Size _legacyVariantCanvas(String key) {
@@ -383,6 +485,21 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _draftId = widget.initialDraft?.id ?? const Uuid().v4();
+    _draftOwner = ref.read(authViewModelProvider).asData?.value?.id;
+    if (kIsWeb && _draftOwner?.isNotEmpty == true) {
+      final store = ref.read(albumCreationDraftStoreProvider);
+      if (store is AlbumCreationDraftWriteSession) {
+        _draftWriteSession = (store as AlbumCreationDraftWriteSession).beginDraftWriteSession(
+          _draftOwner!, _draftId, restoring: widget.initialDraft,
+        ).then<void>((_) {}, onError: (Object error, StackTrace _) {
+          // Keep asynchronous preparation failures handled until Save can show
+          // the message without discarding the document being edited.
+          _draftWriteSessionError = error;
+        });
+      }
+    }
     _hasSelectedCreationMode =
         (widget.initialTemplatePages != null &&
             widget.initialTemplatePages!.isNotEmpty) ||
@@ -426,9 +543,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _preferredCoverType = _selectedCover!.coverType;
     if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
       // cover 제외 내지 페이지 수
-      _templateMinPageCount = (_resolvedTemplatePages!.length - 1).clamp(
-        1,
-        _maxPageCount,
+      _templateMinPageCount = AlbumPagePolicy.minimumForContent(
+        _resolvedTemplatePages!.length - 1,
       );
       _selectedPageCount = _templateMinPageCount;
     }
@@ -440,6 +556,64 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     if (widget.initialCreationTemplate != null) {
       _useTemplate(widget.initialCreationTemplate!);
     }
+    final draft = widget.initialDraft;
+    if (draft != null) {
+      _createdAlbumId = draft.createdAlbumId;
+      _albumTitle = draft.title;
+      _selectedCover = draft.cover;
+      _preferredCoverType = draft.cover.coverType;
+      _selectedPageCount = draft.pageCount;
+      _currentStep = draft.step;
+      _showPhotoFill = draft.showPhotoFill;
+      _hasSelectedCreationMode = draft.hasSelectedMode;
+      _resolvedTemplatePages = draft.pages;
+      _baseTemplatePages = draft.basePages;
+      _templatePagesByAspect = draft.variants;
+      _templateCanvasSizes = draft.canvasSizes;
+      _baseTemplateCanvasSize = draft.baseCanvasSize;
+      _templateTitle = draft.templateTitle;
+      _templatePreviewUrl = draft.previewUrl;
+      _sourceLabel = draft.sourceLabel;
+      _usesPhysicalTemplateCanvas = draft.usesPhysicalCanvas;
+      _preserveTemplateTypography = draft.preserveTypography;
+      _draftCoverLayers = draft.editedCover;
+      _draftCoverCanvasSize = draft.editedCoverCanvasSize;
+      _templateMinPageCount = AlbumPagePolicy.minimumForContent(
+        (draft.pages?.length ?? 1) - 1,
+      );
+      _hasFilledPhotos =
+          draft.pages
+              ?.expand((page) => page)
+              .any(
+                (layer) =>
+                    layer.type == LayerType.image && layer.hasImageSource,
+              ) ??
+          false;
+      _photoSession.page = draft.currentPage;
+      _photoSession.pendingPhotos.addAll(draft.pendingPhotos);
+      _photoSession.selectedPhoto = draft.pendingPhotos
+          .where((photo) => photo.id == draft.selectedPhotoId)
+          .firstOrNull;
+      _photoSession.selectedSlot = draft.selectedSlot;
+      if (draft.createdAlbumId != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted)
+            _handleAlbumCreated(draft.createdAlbumId!, restoring: true);
+        });
+      }
+    }
+    if (kIsWeb &&
+        widget.initialAiMode &&
+        widget.initialDraft == null &&
+        widget.initialCreationTemplate == null &&
+        widget.initialTemplatePages == null &&
+        widget.initialTemplatePagesByAspect == null &&
+        !_hasSelectedCreationMode) {
+      // Direct web entry only opens the existing request form. Generation and
+      // point usage still require the same explicit confirmation callbacks.
+      _isAiCreationMode = true;
+      _hasSelectedCreationMode = true;
+    }
     ScreenLogger.enter(
       'AlbumCreateFlowScreen',
       '앨범 생성 플로우 Step 1~4 (정보 입력 → 커버 편집 → 친구 초대 → 페이지 편집)',
@@ -447,115 +621,499 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if ((state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive) &&
+        _hasSelectedCreationMode &&
+        !_isGeneratingAiDraft &&
+        !_isAiCreationMode &&
+        !_savingDraft &&
+        !_leaving &&
+        _createdAlbumId == null) {
+      unawaited(_saveDraft(notify: false));
+    }
+  }
+
+  void _keepEditedCover() {
+    if (_currentStep != 1 || _showPhotoFill) return;
+    final cover = _editedCoverLayers();
+    _draftCoverLayers = cover;
+    _draftCoverCanvasSize = _usesPhysicalTemplateCanvas
+        ? coverCanvasBaseSize(_selectedCover!)
+        : ref.read(albumEditorViewModelProvider).asData?.value.coverCanvasSize;
+    if (_resolvedTemplatePages?.isNotEmpty == true) {
+      _resolvedTemplatePages = [cover, ..._resolvedTemplatePages!.skip(1)];
+      _photoSession.updateCover(cover);
+      final key = AlbumCreationTemplate.variantKey(_selectedCover!);
+      _templatePagesByAspect?[key] = _resolvedTemplatePages!;
+    }
+  }
+
+  Future<bool> _saveDraft({bool notify = true, bool afterCreation = false}) {
+    if (_savingDraft) {
+      if (afterCreation && _draftSaveFuture != null) {
+        return _draftSaveFuture!.then(
+          (_) =>
+              mounted ? _saveDraft(notify: notify, afterCreation: true) : false,
+        );
+      }
+      return Future.value(false);
+    }
+    return _draftSaveFuture = _writeDraft(
+      notify: notify,
+      afterCreation: afterCreation,
+    );
+  }
+
+  List<List<LayerModel>>? _copyDraftPages(List<List<LayerModel>>? pages) =>
+      pages?.map((page) => [...page]).toList();
+
+  Future<bool> _writeDraft({
+    required bool notify,
+    required bool afterCreation,
+  }) async {
+    if (_savingDraft ||
+        (!afterCreation && (_createdAlbumId != null || _startingAlbum)))
+      return false;
+    final owner = ref.read(authViewModelProvider).asData?.value?.id;
+    if (owner == null ||
+        owner.isEmpty ||
+        (_draftOwner != null && owner != _draftOwner)) {
+      if (notify)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 상태를 확인한 뒤 다시 저장해주세요.')),
+        );
+      return false;
+    }
+    _draftOwner ??= owner;
+    _keepEditedCover();
+    final draft = AlbumCreationDraft(
+      id: _draftId,
+      createdAlbumId: _createdAlbumId,
+      updatedAt: DateTime.now(),
+      title: _albumTitle,
+      cover: _selectedCover ?? defaultCoverSize,
+      pageCount: _selectedPageCount,
+      step: _currentStep.clamp(0, 1),
+      showPhotoFill: _showPhotoFill,
+      hasSelectedMode: _hasSelectedCreationMode,
+      sourceLabel: _sourceLabel,
+      usesPhysicalCanvas: _usesPhysicalTemplateCanvas,
+      preserveTypography: _preserveTemplateTypography,
+      pages: _copyDraftPages(_resolvedTemplatePages),
+      basePages: _copyDraftPages(_baseTemplatePages),
+      variants: _templatePagesByAspect?.map(
+        (key, value) => MapEntry(key, _copyDraftPages(value)!),
+      ),
+      canvasSizes: Map.of(_templateCanvasSizes),
+      baseCanvasSize: _baseTemplateCanvasSize,
+      templateTitle: _templateTitle,
+      previewUrl: _templatePreviewUrl,
+      currentPage: _photoSession.page,
+      pendingPhotos: [..._photoSession.pendingPhotos],
+      selectedPhotoId: _photoSession.selectedPhoto?.id,
+      selectedSlot: _photoSession.selectedSlot,
+      editedCover: _draftCoverLayers == null ? null : [..._draftCoverLayers!],
+      editedCoverCanvasSize: _draftCoverCanvasSize,
+    );
+    setState(() => _savingDraft = true);
+    try {
+      if (kIsWeb) {
+        await _draftWriteSession;
+        if (_draftWriteSessionError case final error?) throw error;
+      }
+      await ref.read(albumCreationDraftStoreProvider).save(owner, draft);
+      if (!mounted) return true;
+      ref.invalidate(albumCreationDraftProvider);
+      if (notify)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(kIsWeb
+            ? '이 브라우저에 사진 원본과 함께 임시 저장했어요.'
+            : '이 기기에 임시 저장했어요.')));
+      return true;
+    } catch (error) {
+      if (mounted && notify)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(kIsWeb && error is BrowserPhotoException
+              ? error.message
+              : kIsWeb
+              ? '임시 저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해주세요. 작업은 유지됩니다.'
+              : '임시 저장하지 못했어요. 작업을 유지한 채 다시 시도해주세요.')),
+        );
+      return false;
+    } finally {
+      if (mounted) setState(() => _savingDraft = false);
+    }
+  }
+
+  Future<void> _leaveCreation() async {
+    if (_leaving || _savingDraft || _startingAlbum) return;
+    _leaving = true;
+    try {
+      final hasWork =
+          _hasSelectedCreationMode ||
+          _albumTitle.trim().isNotEmpty ||
+          _photoSession.pendingPhotos.isNotEmpty;
+      final choice = !hasWork
+          ? 'leave'
+          : await showDialog<String>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('앨범 만들기를 나갈까요?'),
+                content: const Text('임시 저장하면 이 기기에서 이어서 만들 수 있어요.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('계속 만들기'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'discard'),
+                    child: const Text('저장 안 함'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, 'save'),
+                    child: const Text('임시 저장 후 나가기'),
+                  ),
+                ],
+              ),
+            );
+      if (!mounted || choice == null) return;
+      if (choice == 'save' && !await _saveDraft()) return;
+      if (choice == 'discard' && _draftOwner != null) {
+        try {
+          await ref
+              .read(albumCreationDraftStoreProvider)
+              .remove(_draftOwner!, _draftId);
+          if (mounted) ref.invalidate(albumCreationDraftProvider);
+        } catch (_) {
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('임시 저장을 지우지 못했어요. 다시 시도해주세요.')),
+            );
+          return;
+        }
+      }
+      if (mounted) Navigator.pop(context);
+    } finally {
+      _leaving = false;
+    }
+  }
+
+  Future<void> _reviewBeforeCreate() async {
+    final complete = _onCompletePressed;
+    if (_reviewing || _savingDraft || _startingAlbum || complete == null)
+      return;
+    _reviewing = true;
+    _keepEditedCover();
+    try {
+      final pages =
+          _resolvedTemplatePages ?? [_draftCoverLayers ?? <LayerModel>[]];
+      final result = await showAlbumCreationReview(
+        context,
+        pages: pages,
+        innerPageCount: _selectedPageCount,
+        canvasSize:
+            _draftCoverCanvasSize ?? coverCanvasBaseSize(_selectedCover!),
+      );
+      if (!mounted || result == null) return;
+      if (result == -1) {
+        setState(() => _startingAlbum = true);
+        await complete();
+      } else if (result > 0 && _resolvedTemplatePages != null) {
+        setState(() {
+          _photoSession.page = result;
+          _photoSession.selectedSlot = null;
+          _showPhotoFill = true;
+          _onCompletePressed = null;
+        });
+      }
+    } finally {
+      _reviewing = false;
+      if (mounted && _startingAlbum) setState(() => _startingAlbum = false);
+    }
+  }
+
+  bool _hasUnsavedBrowserPhotoWork() {
+    if (!kIsWeb) return false;
+    bool containsPhoto(Iterable<LayerModel>? layers) =>
+        layers?.any((layer) => layer.asset is BrowserPhotoAsset) ?? false;
+    if (_photoSession.selectedPhoto is BrowserPhotoAsset ||
+        _photoSession.pendingPhotos.any(
+          (photo) => photo is BrowserPhotoAsset,
+        ) ||
+        containsPhoto(_draftCoverLayers))
+      return true;
+    for (final pages in <List<List<LayerModel>>?>[
+      _resolvedTemplatePages,
+      _baseTemplatePages,
+      ...?_templatePagesByAspect?.values,
+    ]) {
+      if (pages != null && containsPhoto(pages.expand((page) => page)))
+        return true;
+    }
+    if (_pendingAiDraft?.recommendedPhotos.any(
+          (photo) => photo.candidate.asset is BrowserPhotoAsset,
+        ) ??
+        false)
+      return true;
+    return _currentStep == 1 &&
+        !_showPhotoFill &&
+        containsPhoto(
+          ref.read(albumEditorViewModelProvider).asData?.value.layers,
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        final handled = _handleBack();
-        return !handled; // handled == true 이면 pop 막기
-      },
-      child: Scaffold(
-        backgroundColor: SnapFitColors.backgroundOf(context),
-        appBar: AppBar(
-          toolbarHeight: 52,
+    return WebUnsavedWorkGuard(
+      hasUnsavedChanges: _hasUnsavedBrowserPhotoWork,
+      child: WillPopScope(
+        onWillPop: () async {
+          final handled = await _handleBack();
+          return !handled; // handled == true 이면 pop 막기
+        },
+        child: kIsWeb ? _buildWebCreation() : Scaffold(
           backgroundColor: SnapFitColors.backgroundOf(context),
-          surfaceTintColor: Colors.transparent,
-          scrolledUnderElevation: 0,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              platformBackIcon(),
-              color: SnapFitColors.textPrimaryOf(context),
-              size: 22,
+          appBar: AppBar(
+            toolbarHeight:
+                MediaQuery.orientationOf(context) == Orientation.landscape
+                ? 48
+                : 60,
+            backgroundColor: SnapFitColors.backgroundOf(context),
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            elevation: 0,
+            leading: IconButton(
+              tooltip: '뒤로가기',
+              icon: Icon(
+                platformBackIcon(),
+                color: SnapFitColors.textPrimaryOf(context),
+                size: 22,
+              ),
+              onPressed: _handleBack,
             ),
-            onPressed: _handleBack,
-          ),
-          title: Text(
-            _currentStep == 0
-                ? '앨범 만들기'
-                : _currentStep == 1
-                ? (_showPhotoFill ? '앨범 만들기' : '표지')
-                : '초대',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: SnapFitColors.textPrimaryOf(context),
-              letterSpacing: 0,
+            title: Text(
+              _currentStep == 0
+                  ? '앨범 만들기'
+                  : _currentStep == 1
+                  ? (_showPhotoFill ? '앨범 만들기' : '표지')
+                  : '초대',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: ExperienceFormStyle.ink(context),
+                letterSpacing: 0,
+              ),
             ),
-          ),
-          actions: [
-            if (_currentStep == 1 && !_showPhotoFill)
-              Padding(
-                padding: EdgeInsets.only(right: 8.w),
-                child: Center(
-                  child: TextButton(
-                    onPressed: _onCompletePressed,
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      minimumSize: Size(64.w, 36.h),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      '다음',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: SnapFitColors.textPrimaryOf(context),
+            actions: [
+              if (!_isAiCreationMode && !_isGeneratingAiDraft) ...[
+                IconButton(
+                  key: const ValueKey('creation-save-draft'),
+                  tooltip: '임시 저장',
+                  onPressed: _savingDraft || _startingAlbum ? null : _saveDraft,
+                  icon: const Icon(Icons.save_outlined, size: 21),
+                ),
+                IconButton(
+                  key: const ValueKey('creation-exit'),
+                  tooltip: '앨범 만들기 나가기',
+                  onPressed: _savingDraft || _startingAlbum
+                      ? null
+                      : _leaveCreation,
+                  icon: const Icon(Icons.close_rounded, size: 21),
+                ),
+              ],
+              if (_currentStep == 1 && !_showPhotoFill)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Center(
+                    child: TextButton(
+                      onPressed:
+                          _onCompletePressed == null ||
+                              _savingDraft ||
+                              _startingAlbum
+                          ? null
+                          : _reviewBeforeCreate,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        minimumSize: const Size(64, 44),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        '전체 확인',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: SnapFitColors.textPrimaryOf(context),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_hasSelectedCreationMode && !_isAiCreationMode)
-              _buildCreationProgress(),
-            Expanded(child: _buildStepContent()),
-          ],
+            ],
+          ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_hasSelectedCreationMode &&
+                  !(MediaQuery.orientationOf(context) ==
+                          Orientation.landscape &&
+                      creationKeyboardIsOpen(context)))
+                _buildCreationProgress(),
+              Expanded(child: _buildStepContent()),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildAiDraftGenerating() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(28.w),
+  Widget _buildWebCreation() {
+    final compactHeader = MediaQuery.sizeOf(context).width < 700;
+    final hasPhotos = _resolvedTemplatePages != null || _isAiCreationMode;
+    final labels = hasPhotos
+        ? ['디자인 선택', '앨범 설정', '사진 채우기', '표지 편집', _currentStep == 2 ? '공유 설정' : '편집 시작']
+        : ['디자인 선택', '앨범 설정', '표지 편집', _currentStep == 2 ? '공유 설정' : '편집 시작'];
+    final selected = !_hasSelectedCreationMode || _isAiCreationMode
+        ? 0
+        : _currentStep == 0
+        ? 1
+        : _currentStep == 2
+        ? labels.length - 1
+        : _showPhotoFill
+        ? 2
+        : labels.length - 2;
+    final title = labels[selected];
+    final description = !_hasSelectedCreationMode
+        ? '템플릿으로 시작하거나, 빈 앨범에서 원하는 디자인을 만들어보세요.'
+        : _isAiCreationMode
+        ? '원하는 분위기와 사진을 고르고, 생성 전에 이용 조건을 확인하세요.'
+        : _currentStep == 0
+        ? '제목과 실물 책 규격을 정하세요. 앨범 내용은 편집 화면에서 계속 바꿀 수 있습니다.'
+        : _currentStep == 2
+        ? '함께 편집할 사람과 공유 설정을 확인하세요. 혼자 편집을 시작할 수도 있습니다.'
+        : _showPhotoFill
+        ? '컴퓨터의 사진을 골라 페이지에 채우고, 사진마다 배치를 확인하세요.'
+        : '표지를 편집하고 전체 구성을 확인한 뒤 내지 편집으로 이어가세요.';
+    return SnapFitWebShell(
+      title: '앨범 만들기',
+      section: WebSection.create,
+      workspace: true,
+      showNavigation: false,
+      sidebar: SingleChildScrollView(child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              width: 34.w,
-              height: 34.w,
-              child: const CircularProgressIndicator(strokeWidth: 2.8),
-            ),
-            SizedBox(height: 18.h),
-            Text(
-              'AI 템플릿을 잡고 있어요',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18.sp,
-                height: 1.25,
-                fontWeight: FontWeight.w900,
-                color: SnapFitColors.textPrimaryOf(context),
+            Text('제작 순서', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: WebPalette.of(context).muted)),
+            const SizedBox(height: 20),
+            for (var i = 0; i < labels.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Semantics(
+                  selected: i == selected,
+                  label: '${i + 1}단계 ${labels[i]}${i < selected ? ', 이전 단계' : ''}',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: i == selected ? WebPalette.of(context).softBrand : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(children: [
+                      Icon(i < selected ? Icons.check_circle_outline : Icons.radio_button_unchecked, size: 18, color: i <= selected ? WebPalette.of(context).brandInk : WebPalette.of(context).muted),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(labels[i], style: TextStyle(fontSize: 14, fontWeight: i == selected ? FontWeight.w700 : FontWeight.w400, color: i == selected ? WebPalette.of(context).ink : WebPalette.of(context).muted))),
+                    ]),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              '성공 시만 처리. 실패 시 차감 없음.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13.sp,
-                height: 1.45,
-                fontWeight: FontWeight.w600,
-                color: SnapFitColors.textSecondaryOf(context),
-              ),
-            ),
+            const SizedBox(height: 28),
+            Divider(color: WebPalette.of(context).line),
+            const SizedBox(height: 16),
+            Text('사진을 추가한 뒤에는 앨범 저장을 마치고 창을 닫아주세요.', style: TextStyle(fontSize: 12, height: 1.7, color: WebPalette.of(context).muted)),
           ],
         ),
-      ),
+      )),
+      actions: [
+        if (compactHeader)
+          IconButton(onPressed: _savingDraft || _startingAlbum || _reviewing ? null : _handleBack, tooltip: '이전 단계', icon: const Icon(Icons.arrow_back, size: 20))
+        else TextButton.icon(
+          onPressed: _savingDraft || _startingAlbum || _reviewing ? null : _handleBack,
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('이전'),
+        ),
+        if (!_isAiCreationMode && !_isGeneratingAiDraft) ...[
+          if (compactHeader)
+            IconButton(
+              key: const ValueKey('creation-save-draft'),
+              onPressed: _savingDraft || _startingAlbum ? null : _saveDraft,
+              tooltip: _savingDraft ? '저장 중' : '임시 저장',
+              icon: const Icon(Icons.save_outlined, size: 20),
+            )
+          else TextButton.icon(
+            key: const ValueKey('creation-save-draft'),
+            onPressed: _savingDraft || _startingAlbum ? null : _saveDraft,
+            icon: const Icon(Icons.save_outlined, size: 18),
+            label: Text(_savingDraft ? '저장 중' : '임시 저장'),
+          ),
+          IconButton(
+            key: const ValueKey('creation-exit'),
+            tooltip: '앨범 만들기 나가기',
+            onPressed: _savingDraft || _startingAlbum ? null : _leaveCreation,
+            icon: const Icon(Icons.close, size: 20),
+          ),
+        ],
+      ],
+      child: LayoutBuilder(builder: (context, bounds) {
+        final compact = bounds.maxWidth < 760;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(compact ? 20 : 32, 24, compact ? 20 : 32, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (MediaQuery.sizeOf(context).width < 1000) ...[
+                Text('앨범 만들기  /  ${selected + 1}단계 · $title', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: WebPalette.of(context).brandInk)),
+                const SizedBox(height: 14),
+              ],
+              WebPageHeading(
+                eyebrow: 'ALBUM MAKER · ${selected + 1} / ${labels.length}',
+                title: title,
+                description: description,
+                trailing: _currentStep == 1 && !_showPhotoFill
+                    ? FilledButton.icon(
+                        onPressed: _onCompletePressed == null || _savingDraft || _startingAlbum ? null : _reviewBeforeCreate,
+                        icon: const Icon(Icons.fact_check_outlined, size: 18),
+                        label: const Text('전체 확인'),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 18),
+              if (_selectedCover != null && _hasSelectedCreationMode && !_isAiCreationMode) ...[
+                Wrap(spacing: 20, runSpacing: 6, children: [
+                  Text(_albumTitle.trim().isEmpty ? '제목 입력 전' : _albumTitle, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: WebPalette.of(context).ink)),
+                  Text('${_selectedCover!.displayName} · ${_selectedCover!.coverType.label} · 내지 $_selectedPageCount쪽', style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
+                  Text(_sourceLabel, style: TextStyle(fontSize: 13, color: WebPalette.of(context).muted)),
+                ]),
+                const SizedBox(height: 18),
+              ],
+              Expanded(child: WebSurface(padding: EdgeInsets.zero, child: ClipRRect(borderRadius: BorderRadius.circular(12), child: _buildStepContent()))),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildAiDraftGenerating() {
+    return AiTemplateGeneratingStep(
+      cover: _designBrief?.coverSize ?? _selectedCover,
+      innerPageCount: _designBrief?.pageCount,
     );
   }
 
@@ -593,10 +1151,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         if (_albumTitle.trim().isEmpty) {
           _albumTitle = draft.title;
         }
-        _selectedPageCount = draft.pageCount.clamp(
-          _templateMinPageCount,
-          _maxPageCount,
-        );
+        _selectedPageCount = _normalizePageCount(draft.pageCount);
       });
       return;
     }
@@ -681,7 +1236,9 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       _preserveTemplateTypography = acceptedDraft.design?.artDirection != null;
       _isAiCreationMode = false;
       _hasFilledPhotos = false;
-      _templateMinPageCount = (aiPages.length - 1).clamp(1, _maxPageCount);
+      _templateMinPageCount = AlbumPagePolicy.minimumForContent(
+        aiPages.length - 1,
+      );
       _pendingAiDraft = null;
       _aiDraftFailureTitle = null;
       _aiDraftFailureMessage = null;
@@ -690,10 +1247,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       if (_albumTitle.trim().isEmpty) {
         _albumTitle = acceptedDraft.title;
       }
-      _selectedPageCount = acceptedDraft.pageCount.clamp(
-        _templateMinPageCount,
-        _maxPageCount,
-      );
+      _selectedPageCount = _normalizePageCount(acceptedDraft.pageCount);
     });
   }
 
@@ -747,6 +1301,24 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   Future<void> _handleAiDraftPrimaryRecovery(
     AiAlbumDraftRecoveryAction? action,
   ) async {
+    if (kIsWeb &&
+        (action == AiAlbumDraftRecoveryAction.openPhotoSettings ||
+            action == AiAlbumDraftRecoveryAction.openLimitedPhotoPicker)) {
+      // A browser can only revisit explicitly selected files; it has no
+      // native system photo-permission or limited-library settings screen.
+      await showPhotosSelectionSheet(context, ref);
+      if (!mounted) return;
+      setState(() {
+        _hasConfirmedAiPointCost = false;
+        _isGeneratingAiDraft = false;
+        _pendingAiDraft = null;
+        _aiDraftFailureTitle = null;
+        _aiDraftFailureMessage = null;
+        _aiDraftPrimaryCtaLabel = null;
+        _aiDraftPrimaryRecoveryAction = null;
+      });
+      return;
+    }
     switch (action ?? AiAlbumDraftRecoveryAction.retryPhotoRange) {
       case AiAlbumDraftRecoveryAction.openPhotoSettings:
         openAppSettings();
@@ -796,6 +1368,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   }
 
   Widget _buildStepContent() {
+    if (_createdAlbumId != null)
+      return const Center(child: CircularProgressIndicator());
     switch (_currentStep) {
       case 0:
         if (!_hasSelectedCreationMode) {
@@ -1002,24 +1576,25 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           templatePreviewImageUrl: _templatePreviewUrl,
           sourceLabel: _sourceLabel,
           coverLayers: _resolvedTemplatePages?.firstOrNull,
+          documentPages: _resolvedTemplatePages,
+          preserveTypography: _preserveTemplateTypography,
           availableCovers: coverSizes,
           onChangeDesign: _changeDesign,
           selectedCover: _selectedCover,
           selectedPageCount: _selectedPageCount,
           minPageCount: _templateMinPageCount,
+          templatePageCount: (_resolvedTemplatePages?.length ?? 1) - 1,
           // 제목 변경은 부모의 setState를 매 키 입력마다 호출하지 않고,
           // 값만 보관해서 한글 IME 조합이 끊기지 않도록 한다.
           onTitleChanged: (title) => _albumTitle = title,
           onCoverSelected: _selectCover,
-          onPageCountChanged: (count) => setState(
-            () => _selectedPageCount = count.clamp(
-              _templateMinPageCount,
-              _maxPageCount,
-            ),
-          ),
+          onPageCountChanged: (count) =>
+              setState(() => _selectedPageCount = _normalizePageCount(count)),
           onNext: () {
             final title = _albumTitle.trim();
-            if (title.isNotEmpty && _selectedCover != null) {
+            if (title.isNotEmpty &&
+                _selectedCover != null &&
+                AlbumPagePolicy.isValid(_selectedPageCount)) {
               _albumTitle = title;
               setState(() {
                 _showPhotoFill = _resolvedTemplatePages != null;
@@ -1037,6 +1612,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
             _resolvedTemplatePages != null &&
             _selectedCover != null) {
           return TemplatePhotoFillStep(
+            session: _photoSession,
             pages: _resolvedTemplatePages!,
             preserveTypography: _preserveTemplateTypography,
             cover: _selectedCover!,
@@ -1049,7 +1625,12 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               _templateCanvasSizes[productKey] = coverCanvasBaseSize(
                 _selectedCover!,
               );
-              _hasFilledPhotos = true;
+              _hasFilledPhotos = pages
+                  .expand((page) => page)
+                  .any(
+                    (layer) =>
+                        layer.type == LayerType.image && layer.hasImageSource,
+                  );
             }),
             onContinue: () => setState(() => _showPhotoFill = false),
           );
@@ -1059,18 +1640,19 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         return AddCoverScreen(
+          onReviewBeforeCreate: _reviewBeforeCreate,
           isFromCreateFlow: true,
           initialCoverSize: _selectedCover,
           initialTemplateCanvasSize: _usesPhysicalTemplateCanvas
               ? coverCanvasBaseSize(_selectedCover!)
-              : null,
+              : _draftCoverCanvasSize,
           albumTitle: _albumTitle, // 앨범 제목 전달
           targetPages: _selectedPageCount, // 목표 페이지 수 전달
           initialTemplateCoverLayers:
               (_resolvedTemplatePages != null &&
                   _resolvedTemplatePages!.isNotEmpty)
               ? _resolvedTemplatePages!.first
-              : null,
+              : _draftCoverLayers,
           onRegisterCompleteAction: (callback) {
             setState(() {
               _onCompletePressed = callback;
@@ -1127,6 +1709,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
+                  settings: const WebAppRouteSettings(WebAppLocation.create),
                   builder: (_) => const PageEditorScreen(initialPageIndex: 1),
                 ),
               );
@@ -1139,8 +1722,17 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     }
   }
 
-  Future<void> _handleAlbumCreated(int albumId) async {
+  Future<void> _handleAlbumCreated(
+    int albumId, {
+    bool restoring = false,
+  }) async {
     _createdAlbumId = albumId;
+    // Inner pages have not reached the backend yet. Keep a linked draft until
+    // the page editor saves the entire album, and never create it twice on resume.
+    if (!restoring) await _saveDraft(notify: false, afterCreation: true);
+    if (!mounted) return;
+    await ref.read(albumEditorViewModelProvider.future);
+    if (!mounted) return;
     final dummyAlbum = Album(
       id: albumId,
       ratio: _selectedCover!.ratio.toString(),
@@ -1148,12 +1740,26 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     );
 
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    if (_resolvedTemplatePages != null && _resolvedTemplatePages!.isNotEmpty) {
+    final editorCheckpoint = restoring
+        ? widget.initialDraft?.editorCheckpoint
+        : null;
+    if (editorCheckpoint != null) {
+      vm.restoreCreatedEditorDraft(
+        albumId: albumId,
+        albumTitle: _albumTitle,
+        cover: _selectedCover!,
+        checkpoint: editorCheckpoint,
+      );
+    } else if ((_resolvedTemplatePages != null &&
+            _resolvedTemplatePages!.isNotEmpty) ||
+        (restoring && _draftCoverLayers != null)) {
       // Keep the cover just edited; only the inner pages come from the template.
-      final cover = _editedCoverLayers();
+      final cover = restoring
+          ? _draftCoverLayers ?? _resolvedTemplatePages!.first
+          : _editedCoverLayers();
       final pages = <List<LayerModel>>[
         cover,
-        ..._resolvedTemplatePages!.skip(1),
+        ...?_resolvedTemplatePages?.skip(1),
       ];
       while (pages.length <= _selectedPageCount) {
         pages.add(<LayerModel>[]);
@@ -1165,7 +1771,7 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
         initialCover: _selectedCover,
         templateCanvasSize: _usesPhysicalTemplateCanvas
             ? coverCanvasBaseSize(_selectedCover!)
-            : null,
+            : _draftCoverCanvasSize,
       );
     } else {
       vm.beginCreatedAlbumForEdit(
@@ -1178,16 +1784,21 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => const PageEditorScreen(initialPageIndex: 1),
+        settings: const WebAppRouteSettings(WebAppLocation.create),
+        builder: (_) => PageEditorScreen(
+          initialPageIndex: editorCheckpoint?.pageIndex ?? 1,
+          creationDraftId: _draftId,
+          creationDraftOwner: _draftOwner,
+        ),
       ),
     );
   }
 
   List<LayerModel> _editedCoverLayers() {
     final vm = ref.read(albumEditorViewModelProvider.notifier);
-    if (vm.pages.isEmpty) return _resolvedTemplatePages!.first;
+    if (vm.pages.isEmpty)
+      return _resolvedTemplatePages?.firstOrNull ?? _draftCoverLayers ?? [];
     final page = vm.pages.first;
-    if (!_usesPhysicalTemplateCanvas) return [...page.layers];
     final source =
         ref.read(albumEditorViewModelProvider).value?.coverCanvasSize ??
         Size(
@@ -1207,8 +1818,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
               '#${page.backgroundColor!.toRadixString(16).padLeft(8, '0')}',
           zIndex: -100,
         ),
-      ...page.layers,
+      ...page.layers.where(
+        (layer) =>
+            page.backgroundColor == null ||
+            layer.id != 'creation-edited-background',
+      ),
     ];
+    if (!_usesPhysicalTemplateCanvas) return layers;
     return AlbumCreationTemplate.preparePages(
       [layers],
       sourceCanvas: source,
@@ -1221,7 +1837,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
   /// - Step 0: 플로우 종료 (Navigator.pop)
   /// - Step 1,2,3: 이전 스텝으로 이동
   /// return true 이면 이벤트를 소모했음을 의미 (WillPopScope에서 pop 방지)
-  bool _handleBack() {
+  Future<bool> _handleBack() async {
+    if (_savingDraft || _leaving || _reviewing) return true;
     if (_currentStep == 0 &&
         !_hasSelectedCreationMode &&
         _returnToSetupFromHub) {
@@ -1241,14 +1858,8 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
     if (_currentStep == 1 &&
         !_showPhotoFill &&
         _resolvedTemplatePages != null) {
-      final vm = ref.read(albumEditorViewModelProvider.notifier);
+      _keepEditedCover();
       setState(() {
-        if (vm.pages.isNotEmpty) {
-          _resolvedTemplatePages = [
-            _editedCoverLayers(),
-            ..._resolvedTemplatePages!.skip(1),
-          ];
-        }
         _showPhotoFill = true;
         _onCompletePressed = null;
       });
@@ -1272,12 +1883,13 @@ class _AlbumCreateFlowScreenState extends ConsumerState<AlbumCreateFlowScreen> {
       return true;
     }
     if (_currentStep > 0) {
+      _keepEditedCover();
       setState(() {
         _currentStep -= 1;
       });
       return true;
     } else {
-      Navigator.pop(context);
+      await _leaveCreation();
       return true;
     }
   }

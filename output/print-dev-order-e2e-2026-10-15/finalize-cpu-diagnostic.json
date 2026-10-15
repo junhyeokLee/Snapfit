@@ -1,0 +1,196 @@
+{
+  "recordedAtUtc": "2026-10-15T04:02:06.630299+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "source": "official_management_api_read_only_function_logs_and_function_edge_logs",
+  "authentication": "existing_cli_keychain_same_service_ram_only",
+  "queryWindowUtc": {
+    "start": "2026-10-15T03:53:40Z",
+    "end": "2026-10-15T03:55:15Z"
+  },
+  "functionName": "print-dev-checkout",
+  "functionId": "f51927b9-c820-4d43-96cc-d902eb97241d",
+  "executionId": "da49a1a5-8dd5-4202-8381-e7c704feb67f",
+  "observedPhase": "whole_pdf_finalize",
+  "applicationObservation": {
+    "interiorBytes": 100423393,
+    "parts": 7,
+    "allPartsVerifiedBeforeFinalize": true,
+    "paymentSdkIssued": false
+  },
+  "shutdown": {
+    "timestampUtc": "2026-10-15T03:54:45.913000Z",
+    "eventType": "Shutdown",
+    "reason": "CPUTime",
+    "cpuTimeUsedMs": 2040,
+    "memoryBytes": {
+      "total": 51111936,
+      "heap": 11433608,
+      "external": 39678328
+    }
+  },
+  "invocation": {
+    "timestampUtc": "2026-10-15T03:54:45.918000Z",
+    "httpStatus": 546,
+    "executionTimeMs": 13608
+  },
+  "workerReuseObserved": {
+    "firstSuccessfulInvocationUtc": "2026-10-15T03:53:44.004000Z",
+    "lastSuccessfulInvocationBeforeFailureUtc": "2026-10-15T03:54:32.290000Z",
+    "sameExecutionId": true
+  },
+  "conclusion": {
+    "causeConfirmed": "cpu_resource_limit",
+    "memoryLimitFailureObserved": false,
+    "cumulativePriorRequestContributionProven": false,
+    "cpuMetricAttribution": "Shutdown metric. The captured events do not isolate finalize-only CPU from worker accounting."
+  },
+  "officialDocumentationReview": {
+    "currentLimitsPageCpuScope": "2 seconds active CPU per request; asynchronous I/O excluded",
+    "workerLifecycle": "A worker can serve multiple requests; supervisor applies soft retirement and hard termination.",
+    "isolateIsolation": "A function isolate is bound to one function; a separate validation function avoids sharing the upload/status function isolate.",
+    "separateFunctionIsNotLimitRemoval": true,
+    "waitUntilIsNotLimitRemoval": true
+  },
+  "safety": {
+    "remoteReadOnly": true,
+    "remoteMutationCount": 0,
+    "orderSubmissions": 0,
+    "deployments": 0,
+    "rawLogMessagesRecorded": false,
+    "credentialsRecorded": false,
+    "personalInformationRecorded": false,
+    "urlsRecorded": false
+  },
+  "retryAttempts": [
+    {
+      "attempt": 2,
+      "queryWindowUtc": {
+        "start": "2026-10-15T04:16:50Z",
+        "end": "2026-10-15T04:17:45Z"
+      },
+      "executionId": "37f40812-a1e3-447b-a106-ef46bbd9f5b1",
+      "bootAtUtc": "2026-10-15T04:17:13.397000Z",
+      "priorSuccessfulInvocationsRecordedForThisExecution": 0,
+      "precedingRecoveryInvocationsUsedDifferentExecution": true,
+      "shutdown": {
+        "timestampUtc": "2026-10-15T04:17:35.634000Z",
+        "eventType": "Shutdown",
+        "reason": "CPUTime",
+        "cpuTimeUsedMs": 2018,
+        "memoryBytes": {
+          "total": 50657020,
+          "heap": 10498504,
+          "external": 40158516
+        }
+      },
+      "invocation": {
+        "timestampUtc": "2026-10-15T04:17:35.639000Z",
+        "httpStatus": 546,
+        "executionTimeMs": 22453
+      },
+      "conclusion": "A freshly booted worker failed its whole-PDF finalization at the CPU limit; sharing earlier successful upload/status requests is not required to reproduce this failure."
+    }
+  ],
+  "updatedConclusion": {
+    "causeConfirmed": "cpu_resource_limit",
+    "freshWorkerWholeFinalizeExceededCpu": true,
+    "memoryLimitFailureObserved": false,
+    "separateFunctionAloneNotProvenSufficient": true,
+    "boundedCacheRetryPassed": true,
+    "originalPdfBytesPreserved": true,
+    "paymentApprovalProven": false
+  },
+  "cacheExpansionReview": {
+    "proposedCacheBytes": 112000000,
+    "chunkBytes": 16000000,
+    "maximumFullCachedParts": 7,
+    "actualInteriorBytes": 100423393,
+    "maximumLiveCacheAndIncomingChunkBytesWithEvictionBeforeFetch": 112000000,
+    "conservativeAdditionalIncomingFetchChunkBytes": 16000000,
+    "approximatePreviouslyObservedNonCacheHeapBytes": 11500000,
+    "conservativeOneStalePartAwaitingCollectionBytes": 16000000,
+    "illustrativeAccountedSubtotalBytes": 155500000,
+    "limitAmbiguityConservativeDecimalBytes": 256000000,
+    "subtotalIsNotAnRssBound": true,
+    "reason": "Runtime, network buffering, garbage collection lag and retained buffers are not fully bounded by cache.size. Eviction must precede allocation; returned parser ranges must be copied and requests must not share this cache.",
+    "largerFileBehavior": "Files above the cache cap remain LRU-streamed and may re-download parts; the cache does not retain a whole 150 MB cover or 500 MB interior.",
+    "cpuConclusion": "One download per part for this seven-part PDF may reduce CPU and network overhead, but a hosted retry must establish actual CPU margin."
+  },
+  "updatedAtUtc": "2026-10-15T04:24:13.202273+00:00",
+  "successAfterOptimization": {
+    "recordedAtUtc": "2026-10-15T04:24:13.200928+00:00",
+    "queryWindowUtc": {
+      "start": "2026-10-15T04:21:30Z",
+      "end": "2026-10-15T04:23:30Z"
+    },
+    "functionName": "print-dev-checkout",
+    "functionId": "f51927b9-c820-4d43-96cc-d902eb97241d",
+    "rootObservedState": {
+      "packageState": "READY",
+      "interiorBytes": 100423393,
+      "originalSha256Matches": true,
+      "sdkIssuedAtUtc": "2026-10-15T04:21:58.393314Z",
+      "paymentStatus": "PREPARED",
+      "paymentApprovalNotProven": true
+    },
+    "optimization": "bounded_per_request_cache_112000000_bytes_with_eviction_before_fetch",
+    "logObservations": [
+      {
+        "timestampUtc": "2026-10-15T04:21:44.805000Z",
+        "executionId": "84754fb3-67b4-4927-bc99-99b8cb84ae49",
+        "httpStatus": 200,
+        "durationMs": 3398
+      },
+      {
+        "timestampUtc": "2026-10-15T04:21:45.563000Z",
+        "executionId": "fd996612-a7c9-4cc6-a243-9fe70fd356bc",
+        "httpStatus": 200,
+        "durationMs": 510
+      },
+      {
+        "timestampUtc": "2026-10-15T04:21:57.866000Z",
+        "executionId": "fd996612-a7c9-4cc6-a243-9fe70fd356bc",
+        "cpuTimeUsedMs": 1286,
+        "memoryExternalBytes": 104092916,
+        "memoryHeapBytes": 14489472,
+        "memoryTotalBytes": 118582388
+      },
+      {
+        "timestampUtc": "2026-10-15T04:21:57.870000Z",
+        "executionId": "fd996612-a7c9-4cc6-a243-9fe70fd356bc",
+        "httpStatus": 200,
+        "durationMs": 12271
+      },
+      {
+        "timestampUtc": "2026-10-15T04:21:57.981000Z",
+        "executionId": "2dd600cf-23f6-4660-9a8d-1953107abdfd",
+        "httpStatus": 200,
+        "durationMs": 76
+      },
+      {
+        "timestampUtc": "2026-10-15T04:21:58.493000Z",
+        "executionId": "2dd600cf-23f6-4660-9a8d-1953107abdfd",
+        "httpStatus": 200,
+        "durationMs": 494
+      },
+      {
+        "timestampUtc": "2026-10-15T04:22:58.541000Z",
+        "executionId": "84754fb3-67b4-4927-bc99-99b8cb84ae49",
+        "cpuTimeUsedMs": 72,
+        "memoryExternalBytes": 3031807,
+        "memoryHeapBytes": 8955816,
+        "memoryTotalBytes": 11987623
+      },
+      {
+        "timestampUtc": "2026-10-15T04:23:12.965000Z",
+        "executionId": "2dd600cf-23f6-4660-9a8d-1953107abdfd",
+        "cpuTimeUsedMs": 57,
+        "memoryExternalBytes": 3031807,
+        "memoryHeapBytes": 8906688,
+        "memoryTotalBytes": 11938495
+      }
+    ],
+    "cpuMemoryMetricsAvailable": true,
+    "note": "READY and original-hash equality are the root-observed database evidence. Log HTTP responses have no retained request body or URL; phase attribution uses the root-observed timeline."
+  }
+}

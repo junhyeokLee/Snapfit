@@ -12,11 +12,41 @@ import 'keepsake_stationery.dart';
 import 'atelier_composition_paper.dart';
 import 'life_concept_paper.dart';
 
+Widget? photoCoverShadeForStyle(String? style) {
+  if (!photoCoverShadeStyles.contains(style)) return null;
+  const colors = [
+    Color(0x00101B20),
+    Color(0x10101B20),
+    Color(0x40101B20),
+    Color(0x90101B20),
+    Color(0xFF101B20),
+  ];
+  return DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: style == 'photoCoverShadeTop'
+            ? colors.reversed.toList()
+            : colors,
+      ),
+    ),
+    child: const SizedBox.expand(),
+  );
+}
+
 /// The picker, editor and template renderer share the same material artwork.
 class StudioDecoration extends StatelessWidget {
-  const StudioDecoration({super.key, required this.spec, this.printImage});
+  const StudioDecoration({
+    super.key,
+    required this.spec,
+    this.printImage,
+    this.imageDecodeWidth,
+  });
   final StudioDecorationSpec spec;
   final ui.Image? printImage;
+  // Catalog thumbnails opt in; editor/export artwork retains its original resolution.
+  final int? imageDecodeWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +60,7 @@ class StudioDecoration extends StatelessWidget {
       }
       return Image.asset(
         path,
+        cacheWidth: imageDecodeWidth,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.medium,
       );
@@ -62,6 +93,7 @@ class StudioDecoration extends StatelessWidget {
                       )
                     : Image.asset(
                         'assets/sticker/studio/pressed_cosmos.png',
+                        cacheWidth: imageDecodeWidth,
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.medium,
                       ),

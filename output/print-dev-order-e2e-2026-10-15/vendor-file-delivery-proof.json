@@ -1,0 +1,88 @@
+{
+  "recordedAtUtc": "2026-10-15T04:54:39.913754+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "functionName": "print-dev-file-delivery",
+  "functionId": "2ad08e4d-769d-4e9a-b143-bc8ad67bf316",
+  "windowStartUtc": "2026-10-15T04:51:50Z",
+  "windowEndUtc": "2026-10-15T04:54:30Z",
+  "appClosedAtUtc": "2026-10-15T04:47:08.367Z",
+  "requests": [
+    {
+      "atUtc": "2026-10-15T04:52:13.652Z",
+      "kindInferredFromDeclaredContentLength": "cover",
+      "method": "GET",
+      "httpStatus": 200,
+      "durationMs": 1499,
+      "declaredContentLength": 1800318
+    },
+    {
+      "atUtc": "2026-10-15T04:52:14.334Z",
+      "kindInferredFromDeclaredContentLength": "cover",
+      "method": "HEAD",
+      "httpStatus": 200,
+      "durationMs": 586,
+      "declaredContentLength": 1800318
+    },
+    {
+      "atUtc": "2026-10-15T04:52:16.829Z",
+      "kindInferredFromDeclaredContentLength": "cover",
+      "method": "GET",
+      "httpStatus": 200,
+      "durationMs": 2460,
+      "declaredContentLength": 1800318
+    },
+    {
+      "atUtc": "2026-10-15T04:52:25.721Z",
+      "kindInferredFromDeclaredContentLength": "interior",
+      "method": "GET",
+      "httpStatus": 200,
+      "durationMs": 5737,
+      "declaredContentLength": 100423393
+    },
+    {
+      "atUtc": "2026-10-15T04:52:39.951Z",
+      "kindInferredFromDeclaredContentLength": "interior",
+      "method": "HEAD",
+      "httpStatus": 200,
+      "durationMs": 903,
+      "declaredContentLength": 100423393
+    },
+    {
+      "atUtc": "2026-10-15T04:52:41.786Z",
+      "kindInferredFromDeclaredContentLength": "interior",
+      "method": "GET",
+      "httpStatus": 200,
+      "durationMs": 1804,
+      "declaredContentLength": 100423393
+    }
+  ],
+  "interiorExecutionShutdownMetrics": [
+    {
+      "executionId": "c20d576a-7e95-4deb-8936-a4333bb28755",
+      "shutdownAtUtc": "2026-10-15T04:53:34.234Z",
+      "reason": "EarlyDrop",
+      "cpuTimeUsedMs": 964,
+      "memoryTotalBytesAtShutdown": 12209881
+    },
+    {
+      "executionId": "0818eec4-f9ff-474e-a1ac-56ebb536d4dc",
+      "shutdownAtUtc": "2026-10-15T04:53:55.203Z",
+      "reason": "EarlyDrop",
+      "cpuTimeUsedMs": 765,
+      "memoryTotalBytesAtShutdown": 12062135
+    }
+  ],
+  "limits": {
+    "cpuOrMemoryTerminationObserved": false,
+    "shutdownMemoryIsNotPeakMemory": true,
+    "contentLengthIsNotAnIndependentlyMeasuredBodyChecksum": true,
+    "supplierOrderAcceptanceProvenByTheseLogs": false
+  },
+  "safety": {
+    "managementApiReadOnly": true,
+    "manualPaymentVerification": false,
+    "manualSchedulerInvocation": false,
+    "manualOrderSubmission": false,
+    "credentialsOrUrlsOrPersonalInformationRecorded": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "cronActive": true,
+  "liveIntents": 0,
+  "liveSales": {
+    "businessReady": false,
+    "enabled": false,
+    "portoneLiveReady": false,
+    "redprintingLiveReady": false,
+    "schedulerFresh": true
+  },
+  "observedAt": "2026-10-15T05:26:37.297559+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "realCheckoutOrders": 0
+}

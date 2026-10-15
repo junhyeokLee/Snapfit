@@ -18,6 +18,7 @@ class SnapfitImage extends StatelessWidget {
   final int? memCacheHeight;
   final int? maxWidthDiskCache;
   final int? maxHeightDiskCache;
+  final Widget Function(BuildContext, ImageProvider)? imageBuilder;
 
   const SnapfitImage({
     super.key,
@@ -31,6 +32,7 @@ class SnapfitImage extends StatelessWidget {
     this.memCacheHeight,
     this.maxWidthDiskCache,
     this.maxHeightDiskCache,
+    this.imageBuilder,
   });
 
   /// gs:// → https:// 변환 Future 캐시
@@ -90,6 +92,7 @@ class SnapfitImage extends StatelessWidget {
       memCacheHeight: memCacheHeight,
       maxWidthDiskCache: maxWidthDiskCache,
       maxHeightDiskCache: maxHeightDiskCache,
+      imageBuilder: imageBuilder,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,
       placeholder: (_, __) =>

@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-10-15T05:06:38.768575+00:00",
+  "state": "PASSED",
+  "tests": 79,
+  "failures": 0,
+  "files": [
+    "test/widget/print_order_checkout_test.dart",
+    "test/widget/print_order_complete_test.dart",
+    "test/unit/print_payment_service_test.dart",
+    "test/unit/print_prepayment_package_service_test.dart",
+    "test/unit/print_checkout_contract_test.dart"
+  ],
+  "command": "flutter test --no-pub --concurrency=1 --reporter expanded",
+  "staticAnalysis": {
+    "files": 10,
+    "issues": 0,
+    "state": "PASSED"
+  },
+  "verified": [
+    "closed customer checkout never launches SDK or fabricates a paid order",
+    "same-order recovery and fresh consent after interrupted original-PDF preparation",
+    "frozen invoice delivery stays unchanged; change requires preparation cancellation",
+    "original verified UPLOADING/FILES_VERIFIED reports finalize without new PDF render or upload",
+    "incomplete immutable upload cannot be overwritten by regenerated PDF bytes",
+    "SDK callback never substitutes for owned production payment receipt",
+    "TEST invoices cannot be accepted as a production paid receipt",
+    "payment uncertainty preserves original references and blocks duplicate SDK launch",
+    "vendor acceptance, file check, production and shipment require independent evidence"
+  ],
+  "livePaymentOpened": false,
+  "newPaidOrderCreated": false,
+  "sourceSha256": {
+    "lib/features/album/presentation/views/print_order_checkout_screen.dart": "e83d752c907ba1a6b34bb77520a9f0013f47d8066ca32a3ee34e36bd9fe6dd91",
+    "lib/features/album/presentation/views/print_order_complete_screen.dart": "f94b3c2e589e61602b6558bd22ef4709af161755e5778d2e8e76d3c63ea80a7f",
+    "lib/features/profile/data/print_payment_service.dart": "11dcb4d8da3eea16753e248b3db63473e5911f34d627bb86076159f801f6a78e",
+    "lib/features/profile/data/print_prepayment_package_service.dart": "8d1639c173f61eb49cbbc698cf68538f31e8dbd1160e9909c6430bfb118753f9",
+    "lib/features/profile/domain/print_checkout.dart": "96f7e58c4be314f781c7f20fc8007f7dafb273fdecbbb4936b7814703bec150a"
+  }
+}

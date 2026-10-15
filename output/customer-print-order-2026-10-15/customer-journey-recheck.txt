@@ -1,0 +1,42 @@
+00:00 +0: loading /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart
+00:00 +0: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: legacy UTC dates and explicit UTC dates represent the same instant
+00:00 +1: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: unpaid order never displays automatic acceptance or file success
+00:00 +2: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: paid stages distinguish automatic submission from file acceptance
+00:00 +3: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation list and summary exclude TEST while retaining legacy null environment
+00:00 +4: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation pending/canceled filters cannot overwrite the TEST exclusion
+00:00 +5: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation another device can query only the saved invoice by order identity
+00:00 +6: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation direct saved order lookup also refuses a TEST row
+00:00 +7: /Users/devsheep/SnapFit/SnapFit/test/unit/customer_order_history_test.dart: customer order query isolation account switch cannot publish the previous account order list
+00:00 +8: loading /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart
+00:01 +8: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: saved paid order follows automatic submission while detail stays open
+00:02 +9: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: failed refresh keeps last confirmed state without inventing completion
+00:02 +10: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: background pauses polling and resume reads same saved order
+00:02 +11: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: refresh button does not create concurrent detail requests
+00:02 +12: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: automatic list refresh preserves scroll position
+00:02 +13: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: account change hides the previous customer order immediately
+00:02 +14: /Users/devsheep/SnapFit/SnapFit/test/widget/customer_order_history_flow_test.dart: SDK session switch hides shipping data before cached profile refreshes
+00:03 +15: loading /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart
+00:04 +15: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (setUpAll)
+00:04 +15: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(648.0, 320.0)
+00:05 +16: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(740.0, 360.0)
+00:05 +17: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout delivery and consent stay safe in short landscape Size(844.0, 390.0)
+00:05 +18: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: oversized PDF can cancel its unissued preparation and return directly to album editing without payment
+00:06 +19: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an interrupted PDF preparation restores the frozen order on the same visit and permits explicit same-order retry
+00:06 +20: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: default checkout launches once and recovers a started invoice after restart without a fresh PDF gate
+00:06 +21: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: checkout becoming READY can prepare files through the durable payment service
+00:07 +22: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: closed checkout reviews delivery and price without payment or a fabricated order
+00:07 +23: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: an unstarted recovered invoice restores server delivery and requires fresh consent before same-UUID resume
+00:07 +24: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed frozen unstarted order offers cancellation and explicit checks without endless polling or a new charge
+00:07 +25: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a never-issued placeholder after owned not-found can review the current form for the same UUID without claiming canceled
+00:07 +26: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a server customer-request hold prevents restoring payment consent and offers existing request review
+00:07 +27: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: invalid recipient phone and postal code cannot reach final review
+00:07 +28: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: revised album blocks the old review and leaves delivery details intact
+00:07 +29: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a new price resets consent while preserving delivery
+00:08 +30: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a changed approved print geometry requires a new visual review even at the same price
+00:08 +31: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: a payment callback cannot display completion until the server order is paid
+00:08 +32: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: only a paid order read back from the server opens completion
+00:08 +33: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: keyboard in a small phone keeps manual address entry scrollable
+00:08 +34: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: failed readiness can retry without discarding the delivery form
+00:09 +35: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: address-search failure permits direct entry and never sends entered delivery data
+00:09 +36: /Users/devsheep/SnapFit/SnapFit/test/widget/print_order_checkout_test.dart: (tearDownAll)
+00:09 +36: All tests passed!

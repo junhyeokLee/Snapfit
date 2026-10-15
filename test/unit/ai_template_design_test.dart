@@ -8,6 +8,104 @@ import 'package:snap_fit/features/album/domain/entities/layer.dart';
 import '../fixtures/ai_template_design_fixture.dart';
 
 void main() {
+  for (final pageCount in [20, 22, 52, 80]) {
+    test(
+      'expanded$pageCount interiors parse and remain independently editable',
+      () {
+        final draft = templateDesignDraft(
+          brief: AiTemplateBrief(prompt: '여행', pageCount: pageCount),
+        );
+        final design = draft.design!;
+        expect(design.layoutExpansion!.sourcePageCount, 16);
+        expect(design.layoutExpansion!.finalPageCount, pageCount);
+        final pages = const AiAlbumDraftTemplateBuilder().build(draft);
+        expect(pages, hasLength(pageCount + 1));
+        final ids = pages
+            .expand((page) => page)
+            .map((layer) => layer.id)
+            .toList();
+        expect(ids.toSet(), hasLength(ids.length));
+        expect(
+          const AiAlbumDraftTemplateBuilder().isEditorReady(draft),
+          isTrue,
+        );
+      },
+    );
+  }
+
+  test('large documents reject missing or inconsistent expansion metadata', () {
+    final json = templateDesignJson(pageCount: 80);
+    json.remove('layoutExpansion');
+    expect(() => AiTemplateDesign.fromJson(json, 80), throwsFormatException);
+    for (final expansion in [
+      {
+        'strategy': 'repeat_inner_layouts_v1',
+        'sourcePageCount': 18,
+        'finalPageCount': 80,
+      },
+      {
+        'strategy': 'repeat_inner_layouts_v1',
+        'sourcePageCount': 16,
+        'finalPageCount': 20,
+      },
+      {'strategy': 'invented', 'sourcePageCount': 16, 'finalPageCount': 80},
+    ]) {
+      json['layoutExpansion'] = expansion;
+      expect(() => AiTemplateDesign.fromJson(json, 80), throwsFormatException);
+    }
+    for (final pageCount in [18, 21, 82]) {
+      expect(
+        () => AiTemplateDesign.fromJson(
+          templateDesignJson(pageCount: pageCount),
+          pageCount,
+        ),
+        throwsFormatException,
+      );
+    }
+  });
+
+  test(
+    'provider accepts full80 response but refuses a truncated16 response',
+    () async {
+      const brief = AiTemplateBrief(prompt: '여행', pageCount: 80);
+      var returnedCount = 80;
+      final provider = SupabaseAiAlbumDraftProvider(
+        invokeFunction: (_, body) async {
+          expect((body['designBrief'] as Map)['pageCount'], 80);
+          return {
+            'draftId': 'expanded-80',
+            'title': '여행',
+            'pageCount': returnedCount,
+            'recommendedPhotos': [],
+            'templateSlots': [
+              {
+                'slotId': 'photo-0',
+                'pageIndex': 0,
+                'role': 'cover',
+                'hint': '표지',
+              },
+            ],
+            'design': templateDesignJson(pageCount: returnedCount),
+          };
+        },
+      );
+      final result = await provider.createTemplate(brief);
+      expect(result.pageCount, 80);
+      expect(result.design!.pages, hasLength(81));
+      returnedCount = 16;
+      await expectLater(
+        provider.createTemplate(brief),
+        throwsA(
+          isA<SupabaseAiAlbumDraftProviderException>().having(
+            (error) => error.code,
+            'code',
+            'template_page_count_mismatch',
+          ),
+        ),
+      );
+    },
+  );
+
   for (final size in coverSizes.expand(
     (size) => PrintCoverType.values.map(size.withCoverType),
   )) {

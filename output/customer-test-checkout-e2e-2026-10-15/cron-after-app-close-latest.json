@@ -1,0 +1,413 @@
+{
+  "appClosedAt": "2026-10-15T06:39:09.542+00:00",
+  "customerOrders": 0,
+  "exactHttpToRunAuditLink": false,
+  "liveIntents": 0,
+  "liveSales": {
+    "businessReady": false,
+    "enabled": false,
+    "portoneLiveReady": false,
+    "redprintingLiveReady": false,
+    "schedulerFresh": true
+  },
+  "observedAt": "2026-10-15T06:44:27.006623+00:00",
+  "proofScope": "scheduled_execution_timestamps_and_whitelisted_test_run_state",
+  "run": {
+    "environment": "test",
+    "fileAnalysisComplete": true,
+    "found": true,
+    "job": {
+      "attempts": 7,
+      "availableAt": "2026-10-15T06:46:02.687+00:00",
+      "eventType": "SUBMIT",
+      "lastErrorCode": null,
+      "queryOnly": true,
+      "state": "DONE",
+      "updatedAt": "2026-10-15T06:44:02.749858+00:00"
+    },
+    "lastStatusAt": "2026-10-15T06:44:02.749858+00:00",
+    "paymentVerifiedAt": "2026-10-15T06:38:01.938147+00:00",
+    "paymentVerifiedTest": true,
+    "runId": "85e8ce97-1d30-41ee-892b-4c43ee5546f3",
+    "sdkIssuedAt": "2026-10-15T06:20:55.211867+00:00",
+    "stage": "FILE_CHECKED",
+    "submissionAfterAppClose": true,
+    "submittedAt": "2026-10-15T06:40:04.853365+00:00",
+    "vendorStatusCode": "PGS_06",
+    "vendorStatusCodeOrg": "PGS_05"
+  },
+  "scheduler": {
+    "active": true,
+    "consumedAuthentications": [
+      {
+        "afterAppClose": false,
+        "consumedAt": "2026-10-15T06:30:01.31017+00:00",
+        "scheduledAt": "2026-10-15T06:30:00+00:00"
+      },
+      {
+        "afterAppClose": false,
+        "consumedAt": "2026-10-15T06:32:00.800787+00:00",
+        "scheduledAt": "2026-10-15T06:32:00+00:00"
+      },
+      {
+        "afterAppClose": false,
+        "consumedAt": "2026-10-15T06:34:02.710537+00:00",
+        "scheduledAt": "2026-10-15T06:34:00+00:00"
+      },
+      {
+        "afterAppClose": false,
+        "consumedAt": "2026-10-15T06:36:01.316959+00:00",
+        "scheduledAt": "2026-10-15T06:36:00+00:00"
+      },
+      {
+        "afterAppClose": false,
+        "consumedAt": "2026-10-15T06:38:01.115164+00:00",
+        "scheduledAt": "2026-10-15T06:38:00+00:00"
+      },
+      {
+        "afterAppClose": true,
+        "consumedAt": "2026-10-15T06:40:01.041055+00:00",
+        "scheduledAt": "2026-10-15T06:40:00+00:00"
+      },
+      {
+        "afterAppClose": true,
+        "consumedAt": "2026-10-15T06:42:01.385322+00:00",
+        "scheduledAt": "2026-10-15T06:42:00+00:00"
+      },
+      {
+        "afterAppClose": true,
+        "consumedAt": "2026-10-15T06:44:01.264357+00:00",
+        "scheduledAt": "2026-10-15T06:44:00+00:00"
+      }
+    ],
+    "developmentResponses": [
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:08:00.588901+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:10:00.344845+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:12:02.301898+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:14:00.782728+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:16:00.435654+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:18:00.429086+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:20:00.302508+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 1,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:22:00.436195+00:00",
+        "stage": "PAYMENT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:24:00.410984+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 1,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:26:01.605194+00:00",
+        "stage": "PAYMENT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:28:00.497243+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 1,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:30:00.480958+00:00",
+        "stage": "PAYMENT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:32:00.37774+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 1,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:34:02.270019+00:00",
+        "stage": "PAYMENT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": false,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:36:00.902104+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 1,
+        "afterAppClose": false,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:38:00.634762+00:00",
+        "stage": "PAYMENT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": true,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 1,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:40:00.554571+00:00",
+        "stage": "SUBMIT",
+        "timedOut": false
+      },
+      {
+        "advanced": 0,
+        "afterAppClose": true,
+        "checked": 0,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:42:00.9465+00:00",
+        "stage": null,
+        "timedOut": false
+      },
+      {
+        "advanced": 1,
+        "afterAppClose": true,
+        "checked": 1,
+        "developmentEnabled": true,
+        "errors": 0,
+        "httpStatus": 200,
+        "responseRecordCreatedAt": "2026-10-15T06:44:00.843663+00:00",
+        "stage": "SUBMIT",
+        "timedOut": false
+      }
+    ],
+    "lastHeartbeatAt": "2026-10-15T06:44:01.334029+00:00",
+    "runs": [
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:08:00.146479+00:00",
+        "startedAt": "2026-10-15T06:08:00.030625+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:10:00.174391+00:00",
+        "startedAt": "2026-10-15T06:10:00.027428+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:12:02.304354+00:00",
+        "startedAt": "2026-10-15T06:12:00.036567+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:14:00.101795+00:00",
+        "startedAt": "2026-10-15T06:14:00.020496+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:16:00.159825+00:00",
+        "startedAt": "2026-10-15T06:16:00.025436+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:18:00.112033+00:00",
+        "startedAt": "2026-10-15T06:18:00.020687+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:20:00.200246+00:00",
+        "startedAt": "2026-10-15T06:20:00.042521+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:22:00.158849+00:00",
+        "startedAt": "2026-10-15T06:22:00.022057+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:24:00.147879+00:00",
+        "startedAt": "2026-10-15T06:24:00.023839+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:26:01.607933+00:00",
+        "startedAt": "2026-10-15T06:26:00.027842+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:28:00.104982+00:00",
+        "startedAt": "2026-10-15T06:28:00.027224+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:30:00.091127+00:00",
+        "startedAt": "2026-10-15T06:30:00.037694+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:32:00.145174+00:00",
+        "startedAt": "2026-10-15T06:32:00.024989+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:34:02.272541+00:00",
+        "startedAt": "2026-10-15T06:34:00.12572+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:36:00.121527+00:00",
+        "startedAt": "2026-10-15T06:36:00.022571+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": false,
+        "endedAt": "2026-10-15T06:38:00.156686+00:00",
+        "startedAt": "2026-10-15T06:38:00.029254+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": true,
+        "endedAt": "2026-10-15T06:40:00.153693+00:00",
+        "startedAt": "2026-10-15T06:40:00.034859+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": true,
+        "endedAt": "2026-10-15T06:42:00.950899+00:00",
+        "startedAt": "2026-10-15T06:42:00.040112+00:00",
+        "status": "succeeded"
+      },
+      {
+        "afterAppClose": true,
+        "endedAt": "2026-10-15T06:44:00.148129+00:00",
+        "startedAt": "2026-10-15T06:44:00.022985+00:00",
+        "status": "succeeded"
+      }
+    ],
+    "schedule": "*/2 * * * *"
+  }
+}

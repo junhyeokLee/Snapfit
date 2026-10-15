@@ -1,0 +1,21 @@
+{
+  "decision": "defer_paid_always_on_host_until_launch",
+  "userConstraint": "no_additional_host_cost_during_development",
+  "paidHostCreated": false,
+  "railwayAccountConnected": false,
+  "paidSubscriptionSelected": false,
+  "backgroundWorkerStarted": false,
+  "existingSupabaseWorkerAccountPrepared": true,
+  "currentAuthRoleVerified": "print_worker",
+  "closedSalesCycle": {
+    "enabled": false,
+    "processed": 0,
+    "refundsProcessed": 0
+  },
+  "productionFlagsChanged": false,
+  "actualPaymentOrSupplierProduction": false,
+  "localTestsPassed": 34,
+  "actualLinuxDockerBuildVerified": false,
+  "actualAlwaysOnDeploymentVerified": false,
+  "supabaseOnlyArchitectureChanged": false
+}

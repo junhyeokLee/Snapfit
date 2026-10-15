@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../constants/snapfit_colors.dart';
 import 'snapfit_design_tokens.dart';
@@ -8,6 +9,28 @@ import 'snapfit_design_tokens.dart';
 /// - 디자인 가이드 기준 (Primary Gradient, DeepCharcoal, PureWhite)
 /// - 라이트/다크 모드 모두 지원
 class SnapFitTheme {
+  static SystemUiOverlayStyle systemOverlayStyle(
+    BuildContext context, {
+    Color? background,
+  }) => _overlayFor(background ?? SnapFitColors.backgroundOf(context));
+
+  static SystemUiOverlayStyle _overlayFor(Color background) {
+    final dark =
+        ThemeData.estimateBrightnessForColor(background) == Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: background,
+      systemNavigationBarIconBrightness: dark
+          ? Brightness.light
+          : Brightness.dark,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: false,
+      systemStatusBarContrastEnforced: false,
+    );
+  }
+
   static ThemeData light() {
     final base = ThemeData.light(useMaterial3: true);
 
@@ -23,10 +46,11 @@ class SnapFitTheme {
     return base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: SnapFitColors.pureWhite,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: SnapFitColors.deepCharcoal,
         elevation: 0,
+        systemOverlayStyle: _overlayFor(SnapFitColors.pureWhite),
       ),
       cardTheme: CardThemeData(
         color: SnapFitColors.surfaceLight,
@@ -58,10 +82,11 @@ class SnapFitTheme {
     return base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: SnapFitColors.deepCharcoal,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: SnapFitColors.pureWhite,
         elevation: 0,
+        systemOverlayStyle: _overlayFor(SnapFitColors.deepCharcoal),
       ),
       cardTheme: CardThemeData(
         color: SnapFitColors.surfaceDark,

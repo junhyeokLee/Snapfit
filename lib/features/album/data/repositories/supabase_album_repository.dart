@@ -58,29 +58,52 @@ class SupabaseAlbumRepository implements AlbumRepository {
           'target_pages': request.targetPages,
         })
         .eq('id', albumId)
-        .eq('owner_id', userId)
         .select()
         .single();
-    return _fromRow(Map<String, dynamic>.from(row));
+    final role = row['owner_id'] == userId
+        ? 'OWNER'
+        : await _memberRole(albumId, userId);
+    return _fromRow(Map<String, dynamic>.from(row), role: role);
   }
 
   @override
   Future<Album> fetchAlbum(String albumId) async {
+    final userId = await _userId();
     final row = await client.from('albums').select().eq('id', albumId).single();
-    return _fromRow(Map<String, dynamic>.from(row));
+    final role = row['owner_id'] == userId
+        ? 'OWNER'
+        : await _memberRole(albumId, userId);
+    return _fromRow(Map<String, dynamic>.from(row), role: role);
   }
 
   @override
   Future<List<Album>> fetchMyAlbums() async {
     final userId = await _userId();
-    final rows = await client
-        .from('albums')
-        .select()
-        .eq('owner_id', userId)
-        .order('sort_order')
+    final memberships = await client
+        .from('album_members')
+        .select('album_id,role')
+        .eq('user_id', userId)
+        .eq('status', 'ACCEPTED');
+    final roles = <int, String>{
+      for (final member in memberships)
+        if (member['album_id'] is num)
+          (member['album_id'] as num).toInt():
+              member['role']?.toString() ?? 'VIEWER',
+    };
+    final query = client.from('albums').select();
+    final visible = roles.isEmpty
+        ? query.eq('owner_id', userId)
+        : query.or('owner_id.eq.$userId,id.in.(${roles.keys.join(',')})');
+    final rows = await visible
+        .order('sort_order', ascending: true)
         .order('updated_at', ascending: false);
     return rows
-        .map<Album>((row) => _fromRow(Map<String, dynamic>.from(row)))
+        .map<Album>(
+          (row) => _fromRow(
+            Map<String, dynamic>.from(row),
+            role: roles[(row['id'] as num).toInt()],
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -125,7 +148,20 @@ class SupabaseAlbumRepository implements AlbumRepository {
         .eq('locked_by_id', userId);
   }
 
-  Album _fromRow(Map<String, dynamic> row) => Album.fromJson({
+  Future<String> _memberRole(Object albumId, String userId) async {
+    final member = await client
+        .from('album_members')
+        .select('role,status')
+        .eq('album_id', albumId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    return member?['status'] == 'ACCEPTED' &&
+            ['OWNER', 'EDITOR'].contains(member?['role'])
+        ? member!['role'] as String
+        : 'VIEWER';
+  }
+
+  Album _fromRow(Map<String, dynamic> row, {String? role}) => Album.fromJson({
     'albumId': row['id'],
     'coverLayersJson': row['cover_layers_json']?.toString() ?? '',
     'ratio': row['ratio']?.toString() ?? '',
@@ -141,6 +177,9 @@ class SupabaseAlbumRepository implements AlbumRepository {
     'lockedBy': row['locked_by'],
     'lockedById': row['locked_by_id']?.toString(),
     'userId': row['owner_id']?.toString() ?? '',
+    'memberRole': row['owner_id'] == client.auth.currentUser?.id
+        ? 'OWNER'
+        : role ?? 'VIEWER',
     'createdAt': row['created_at']?.toString() ?? '',
     'updatedAt': row['updated_at']?.toString() ?? '',
   });

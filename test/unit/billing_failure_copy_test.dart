@@ -7,14 +7,14 @@ void main() {
     expect(billingStoreUnavailableMessage(), contains('App Store'));
   });
 
-  test('missing product copy names sandbox setup without exposing secrets', () {
+  test('missing product copy does not expose internal store identifiers', () {
     final message = billingMissingProductsMessage([
       'snapfit_points_2500',
       'snapfit_points_8000',
     ]);
 
-    expect(message, contains('sandbox'));
-    expect(message, contains('snapfit_points_2500'));
+    expect(message, isNot(contains('sandbox')));
+    expect(message, isNot(contains('snapfit_points_2500')));
     expect(message, isNot(contains('secret')));
     expect(message, isNot(contains('token')));
   });
@@ -25,8 +25,8 @@ void main() {
       message: 'StoreKit service unavailable',
     );
 
-    expect(message, contains('스토어 결제 환경'));
-    expect(message, contains('sandbox'));
+    expect(message, contains('스토어 로그인'));
+    expect(message, isNot(contains('sandbox')));
   });
 
   test(

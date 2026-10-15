@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_fit/shared/widgets/catalog_favorite_widgets.dart';
+import 'package:snap_fit/shared/widgets/editor_material_filter_bar.dart';
 import 'package:snap_fit/shared/widgets/image_frame_style_picker.dart';
 import 'package:snap_fit/shared/widgets/studio_phrase_picker.dart';
 import 'package:snap_fit/shared/widgets/font_picker_list.dart';
@@ -171,7 +172,11 @@ void main() {
         expect(CatalogFavorites.instance.contains(key), true);
         expect(tester.takeException(), isNull);
         if (kind != 'font') {
-          await tester.tap(find.byType(CatalogFavoriteFilter).first);
+          await tester.tap(
+            ['frame', 'decoration', 'phrase'].contains(kind)
+                ? find.byTooltip('즐겨찾기만 보기')
+                : find.byType(CatalogFavoriteFilter).first,
+          );
           await tester.pumpAndSettle();
           expect(find.byType(CatalogFavoriteButton), findsOneWidget);
           expect(tester.takeException(), isNull);
@@ -196,12 +201,12 @@ void main() {
           .itemKey,
       CatalogFavoriteKeys.phrase(phrase.id),
     );
-    await tester.tap(find.byType(CatalogFavoriteFilter));
+    await tester.tap(find.byTooltip('즐겨찾기만 보기'));
     await tester.pumpAndSettle();
     expect(find.byType(CatalogFavoriteTile), findsOneWidget);
     await tester.tap(find.text('웨딩'));
     await tester.pumpAndSettle();
-    expect(find.byType(CatalogFavoritesEmpty), findsOneWidget);
+    expect(find.byType(EditorMaterialEmpty), findsOneWidget);
   });
 
   testWidgets(
@@ -224,11 +229,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.byType(CatalogFavoriteFilter),
+        find.byTooltip('즐겨찾기만 보기'),
         250,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.byType(CatalogFavoriteFilter));
+      await tester.tap(find.byTooltip('즐겨찾기만 보기'));
       await tester.pumpAndSettle();
       final star = find.byType(CatalogFavoriteButton).first;
       await tester.ensureVisible(star);

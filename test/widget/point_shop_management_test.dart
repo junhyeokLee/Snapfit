@@ -45,6 +45,37 @@ Widget admin(FakeShop repository, {bool allowed = true}) => ProviderScope(
 );
 
 void main() {
+  for (final key in ['frame:studioGallery', 'template:our-vows']) {
+    testWidgets('free publication cannot be repriced as paid: $key', (
+      tester,
+    ) async {
+      final repository = FakeShop();
+      await tester.pumpWidget(admin(repository));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, '상품 찾기'),
+        key.split(':').last,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('point-shop-admin-$key')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('point-shop-price')),
+        '100',
+      );
+      await tester.tap(find.text('저장'));
+      await tester.pumpAndSettle();
+      expect(repository.saved, isEmpty);
+      expect(find.text('무료 템플릿과 포함된 기본 소재는 0P로 유지해야 합니다.'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('point-shop-price')),
+        '0',
+      );
+      await tester.tap(find.text('저장'));
+      await tester.pumpAndSettle();
+      expect(repository.saved.single.pointPrice, 0);
+    });
+  }
   for (final size in [const Size(390, 844), const Size(844, 390)]) {
     testWidgets('launch price dialog stays reachable at $size', (tester) async {
       tester.view.physicalSize = size;
@@ -180,7 +211,7 @@ void main() {
     },
   );
 
-  testWidgets('premium draft can save a price but cannot start sales', (
+  testWidgets('delivered premium can activate at the launch price', (
     tester,
   ) async {
     final repository = FakeShop();
@@ -200,10 +231,11 @@ void main() {
     expect(find.text('현재 무료로 제공 중이며 저장된 가격이 없습니다.'), findsNothing);
     expect(
       tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
-      isNull,
+      isNotNull,
     );
     expect(repository.saved, isEmpty);
     await tester.tap(find.byKey(const ValueKey('point-shop-use-launch-price')));
+    await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
     expect(repository.saved, isEmpty);
     await tester.tap(find.widgetWithText(FilledButton, '저장'));
@@ -211,13 +243,11 @@ void main() {
     expect(repository.saved, hasLength(1));
     expect(repository.saved.single.productKey, 'template:vow-keepsake');
     expect(repository.saved.single.pointPrice, 2500);
-    expect(repository.saved.single.isActive, false);
-    expect(find.textContaining('2500P · 출시 대기'), findsOneWidget);
+    expect(repository.saved.single.isActive, true);
+    expect(find.textContaining('2500P'), findsWidgets);
   });
 
-  testWidgets('concept draft saves 1800P without enabling sales', (
-    tester,
-  ) async {
+  testWidgets('delivered concept can activate at 1800P', (tester) async {
     final repository = FakeShop();
     await tester.pumpWidget(admin(repository));
     await tester.pumpAndSettle();
@@ -233,16 +263,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
-      isNull,
+      isNotNull,
     );
     await tester.tap(find.byKey(const ValueKey('point-shop-use-launch-price')));
+    await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
     expect(repository.saved, isEmpty);
     await tester.tap(find.widgetWithText(FilledButton, '저장'));
     await tester.pumpAndSettle();
     expect(repository.saved.single.pointPrice, 1800);
-    expect(repository.saved.single.isActive, false);
-    expect(find.textContaining('1800P · 출시 대기'), findsOneWidget);
+    expect(repository.saved.single.isActive, true);
+    expect(find.textContaining('1800P'), findsWidgets);
   });
 
   testWidgets('non-admin cannot load or edit the price catalog', (
@@ -276,16 +307,16 @@ void main() {
       expect(find.text('판매할 가격을 0 이상의 정수 포인트로 입력해 주세요.'), findsOneWidget);
       await tester.enterText(
         find.byKey(const ValueKey('point-shop-price')),
-        '650',
+        '0',
       );
       await tester.tap(find.widgetWithText(FilledButton, '저장'));
       await tester.pumpAndSettle();
       expect(repository.saved, hasLength(1));
       expect(repository.saved.single.productKey, 'template:lightbound');
       expect(repository.saved.single.assetId, 'lightbound');
-      expect(repository.saved.single.pointPrice, 650);
+      expect(repository.saved.single.pointPrice, 0);
       expect(repository.saved.single.isActive, isTrue);
-      expect(find.textContaining('템플릿 · 650P · 판매 중'), findsOneWidget);
+      expect(find.textContaining('템플릿 · 0P · 판매 중'), findsOneWidget);
       expect(find.textContaining('출시 책정가 0P'), findsWidgets);
     },
   );
@@ -300,10 +331,7 @@ void main() {
       find.byKey(const ValueKey('point-shop-admin-template:lightbound')),
     );
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey('point-shop-price')),
-      '300',
-    );
+    await tester.enterText(find.byKey(const ValueKey('point-shop-price')), '0');
     await tester.tap(find.byType(SwitchListTile));
     await tester.tap(find.widgetWithText(FilledButton, '저장'));
     await tester.pumpAndSettle();
@@ -314,12 +342,12 @@ void main() {
           .widget<TextField>(find.byKey(const ValueKey('point-shop-price')))
           .controller!
           .text,
-      '300',
+      '0',
     );
     repository.failSave = false;
     await tester.tap(find.widgetWithText(FilledButton, '저장'));
     await tester.pumpAndSettle();
-    expect(repository.saved.single.pointPrice, 300);
+    expect(repository.saved.single.pointPrice, 0);
   });
 
   testWidgets(
@@ -335,7 +363,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('2750P'), findsOneWidget);
+      expect(find.text('2,750 P'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('my-point-charge')));
       expect(charges, 1);
     },
@@ -359,10 +387,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('0P'), findsNothing);
-      await tester.tap(find.text('잔액 다시 확인'));
+      expect(find.text('0 P'), findsNothing);
+      await tester.tap(find.text('다시 확인'));
       await tester.pumpAndSettle();
-      expect(find.text('-200P'), findsOneWidget);
+      expect(find.text('-200 P'), findsOneWidget);
     },
   );
 }

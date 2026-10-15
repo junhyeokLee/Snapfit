@@ -1,0 +1,11 @@
+[
+  {
+    "business_ready": false,
+    "customer_sales_enabled": false,
+    "portone_live_ready": false,
+    "real_checkout_intents": 0,
+    "real_customer_orders": 0,
+    "redprinting_live_ready": false,
+    "verified_at": "2026-10-15 07:26:22.244225+00"
+  }
+]

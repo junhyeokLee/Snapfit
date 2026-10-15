@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SnapFit B형 곡면 책등 · 홈과 리더 검증</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5f4;color:#222a27;font:14px/1.6 system-ui,sans-serif;letter-spacing:0}header{padding:24px;border-bottom:1px solid #dce2de;background:#fff}h1{margin:0 0 8px;font-size:22px}p{margin:0;color:#58635e}nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}label{display:flex;gap:8px;align-items:center}select{padding:8px;background:#fff;border:1px solid #c9d2cd;border-radius:6px;font:inherit}main{padding:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;align-items:start}figure{margin:0}figcaption{font-size:14px;font-weight:600;margin-bottom:10px}img{display:block;max-width:100%;height:auto;background:#edf0ee;border:1px solid #dce2de}main.landscape{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr))}footer{padding:0 24px 24px;color:#58635e}
+.binding-section{padding:24px;border-bottom:1px solid #dce2de}.binding-section[hidden]{display:none}.binding-section h2{margin:0 0 8px;font-size:18px}.binding-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px;max-width:780px}.binding-crop{position:relative;width:min(100%,140px);height:360px;overflow:hidden}.binding-crop img{position:absolute;max-width:none;border:0;background:transparent}.binding-row figcaption{min-height:44px}@media(max-width:480px){.binding-row{gap:10px}.binding-section{padding:20px 12px}.binding-row figcaption{font-size:12px;min-height:54px}.binding-crop{height:280px}}
+</style>
+<header>
+<h1>B형 곡면 책등 · 홈과 리더</h1>
+<p>승인 시안과 실제 Flutter 구현 비교. 구현 캡처는 테스트 앨범과 로컬 사진을 사용했으며, 실기기 촬영 화면은 아닙니다.</p>
+<nav>
+<label>앨범 <select id="shape"><option value="portrait">세로형</option><option value="square" selected>정사각형</option><option value="landscape">가로형</option></select></label>
+<label>화면 <select id="width"><option value="320">작은 세로 화면</option><option value="390" selected>세로 화면</option><option value="844">가로 화면</option></select></label>
+<label>테마 <select id="theme"><option value="light">라이트</option><option value="dark">다크</option></select></label>
+</nav>
+</header>
+<section class="binding-section" id="binding-section">
+<h2>책등 직접 비교</h2>
+<p>같은 책 너비를 기준으로 확대한 비교입니다. 시안과 실제 앨범의 사진 구도·비율은 바꾸지 않았습니다.</p>
+<div class="binding-row" id="binding-row"></div>
+</section>
+<main id="screens"></main>
+<footer>B형에서 측정한 명암 분포 / 더 얇아진 책등 옆면과 둥근 곡면 / 사진 왼쪽 4.9%만 곡면 표현 / 홈·리더 공통 표현 / 앞표지 구도·원본·편집·인쇄 데이터 유지 / 크기·비율·부유 움직임 유지</footer>
+<script>
+const shape=document.querySelector('#shape'),width=document.querySelector('#width'),theme=document.querySelector('#theme'),screens=document.querySelector('#screens');
+const bindingSection=document.querySelector('#binding-section'),bindingRow=document.querySelector('#binding-row');
+const revision='b-reference-light-profile';
+function render(){
+  const suffix=`${shape.value}-${width.value}-${theme.value}`;
+  const items=[];
+  const showBinding=width.value==='390'&&shape.value==='square';
+  bindingSection.hidden=!showBinding;
+  bindingRow.replaceChildren();
+  if(showBinding){
+    const bindings=[
+      ['승인한 B형 책등','reference-spine-detail.png',408,10,11,372],
+      ['이번 수정 전 · 두꺼운 옆면',`before-b-spine-refinement-390-${theme.value}-book-detail.png`,659,19,25,608],
+      ['현재 · B형 명암과 얇은 옆면',`home-collection-390-${theme.value}-book-detail.png`,659,22,25,608]
+    ];
+    for(const [label,file,imageWidth,left,top,bookWidth] of bindings){
+      const figure=document.createElement('figure'),caption=document.createElement('figcaption'),crop=document.createElement('div'),img=document.createElement('img');
+      const scale=1000/bookWidth;
+      caption.textContent=label;crop.className='binding-crop';img.src=`${file}?layout=${revision}`;img.alt=label;
+      img.style.width=`${imageWidth*scale}px`;img.style.left=`${-left*scale}px`;img.style.top=`${-top*scale}px`;
+      crop.append(img);figure.append(caption,crop);bindingRow.append(figure);
+    }
+  }
+  if(showBinding&&theme.value==='light')items.push(['승인한 B형 시안','reference-bookshelf.png'],['요청한 제본 홈 기준','reference-spine-detail.png'],['이번 수정 전 표지','before-b-spine-refinement-390-light-book-detail.png'],['현재 · B형의 명암 패턴을 적용한 책등','home-collection-390-light-book-detail.png']);
+  if(shape.value==='square'&&((width.value==='390')||(width.value==='844'&&theme.value==='light')))items.push(['B형 · 여러 앨범',`home-collection-${width.value}-${theme.value}.png`]);
+  items.push(['B형 · 선택한 앨범',`home-${suffix}.png`],['부유 중',`home-float-${suffix}.png`]);
+  if(width.value!=='320'&&theme.value==='light')items.push(['홈에서 출발',`opening-start-${suffix}.png`],['이동 중',`opening-middle-${suffix}.png`],['리더 표지에 도착',`opening-landing-${suffix}.png`],['리더',`reader-${suffix}.png`]);
+  screens.classList.toggle('landscape',width.value==='844');
+  screens.replaceChildren(...items.map(([label,file])=>{const figure=document.createElement('figure'),caption=document.createElement('figcaption'),img=document.createElement('img');caption.textContent=label;img.src=`${file}?layout=${revision}`;img.alt=label;img.loading='lazy';figure.append(caption,img);return figure;}));
+}
+for(const select of [shape,width,theme])select.addEventListener('change',render);
+render();
+</script>
+</html>

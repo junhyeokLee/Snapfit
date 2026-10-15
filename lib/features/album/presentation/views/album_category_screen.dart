@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../../core/utils/platform_ui.dart';
-import '../../../../shared/snapfit_image.dart';
+import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/experience_form_style.dart';
+import '../../../../shared/web/web_design.dart';
+import '../../../../core/navigation/web_app_location.dart';
 import '../../domain/entities/album.dart';
 import '../../data/api/album_provider.dart';
 import '../widgets/home/home_album_actions.dart';
-import '../widgets/home/home_album_cover_thumbnail.dart';
 import '../widgets/home/home_album_helpers.dart';
+import '../widgets/web/web_saved_album_artwork.dart';
 import 'album_create_flow_screen.dart';
+import '../../../profile/presentation/widgets/personal_collection_shelf.dart';
 
 enum AlbumCategory { recent, shared }
 
@@ -102,6 +106,12 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
       setState(() {
         _albums = latest;
       });
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('앨범을 새로 불러오지 못했어요. 다시 시도해주세요.')),
+        );
+      }
     } finally {
       _isRefreshing = false;
     }
@@ -152,15 +162,7 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     return owner != current;
   }
 
-  Color get _screenBackground {
-    if (SnapFitColors.isDark(context)) {
-      return SnapFitColors.backgroundOf(context);
-    }
-    if (widget.category == AlbumCategory.recent) {
-      return const Color(0xFFF3F6FA);
-    }
-    return SnapFitColors.backgroundOf(context);
-  }
+  Color get _screenBackground => SnapFitColors.backgroundOf(context);
 
   List<Album> _applyFilter(List<Album> source) {
     final base = widget.category == AlbumCategory.shared
@@ -186,19 +188,6 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     }
   }
 
-  String _relativeTime(Album album) {
-    final raw = album.createdAt;
-    final dt = DateTime.tryParse(raw);
-    if (dt == null) return '';
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return '방금 전';
-    if (diff.inHours < 1) return '${diff.inMinutes}분 전';
-    if (diff.inDays < 1) return '${diff.inHours}시간 전';
-    if (diff.inDays < 8) return '${diff.inDays}일 전';
-    return formatAlbumDate(raw);
-  }
-
   String _ownerLabel(Album album) {
     final owner = album.userId.trim();
     if (owner.isEmpty) return '공유 앨범';
@@ -211,171 +200,256 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
         DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  Widget _coverImage(Album album, {double? width, double? height}) {
-    final url =
-        album.coverThumbnailUrl ?? album.coverPreviewUrl ?? album.coverImageUrl;
-    final bg = SnapFitColors.surfaceOf(context);
-    if (url == null || url.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        color: bg,
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.photo_outlined,
-          color: SnapFitColors.textMutedOf(context),
-          size: 22.sp,
+  @override
+  Widget build(BuildContext context) {
+    final albums = _applyFilter(_albums);
+    if (kIsWeb) return _buildWeb(albums);
+    return Scaffold(
+      backgroundColor: _screenBackground,
+      appBar: ExperienceHeader(
+        title: _title,
+        themeAware: true,
+        actions: [
+          IconButton(
+            tooltip: _isSearching ? '검색 닫기' : '앨범 검색',
+            onPressed: () => setState(() {
+              _isSearching = !_isSearching;
+              if (!_isSearching) {
+                _searchQuery = '';
+                _searchController.clear();
+              }
+            }),
+            icon: Icon(_isSearching ? Icons.close : Icons.search, size: 21),
+          ),
+          IconButton(
+            tooltip: '새 앨범 만들기',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AlbumCreateFlowScreen()),
+            ),
+            icon: const Icon(Icons.add, size: 23),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: _handlePullToRefresh,
+          child: CustomScrollView(
+            key: const PageStorageKey('personal-album-scroll'),
+            physics: platformScrollPhysics(alwaysScrollable: true),
+            cacheExtent: 260,
+            slivers: [
+              if (_isSearching)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      style: ExperienceFormStyle.text(context, 14),
+                      decoration: ExperienceFormStyle.input(
+                        context,
+                        hint: '앨범 검색',
+                      ),
+                      onChanged: (value) =>
+                          setState(() => _searchQuery = value),
+                    ),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: _TopTabBar(
+                  tabs: _tabs,
+                  selectedIndex: _selectedTab,
+                  accentColor: _tabAccent,
+                  onChanged: (index) => setState(() => _selectedTab = index),
+                ),
+              ),
+              if (albums.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        _searchQuery.isNotEmpty
+                            ? '검색 결과가 없습니다.'
+                            : '표시할 앨범이 없습니다.',
+                        style: ExperienceFormStyle.text(
+                          context,
+                          14,
+                          secondary: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                _buildCollection(albums),
+            ],
+          ),
         ),
-      );
-    }
-    return SizedBox(
-      width: width,
-      height: height,
-      child: SnapfitImage(urlOrGs: url, fit: BoxFit.cover),
+      ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final themedBg = _screenBackground;
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
-    final all = _applyFilter(_albums);
-
-    return Scaffold(
-      backgroundColor: themedBg,
-      appBar: AppBar(
-        backgroundColor: themedBg,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: widget.category != AlbumCategory.shared,
-        leading: IconButton(
-          icon: Icon(platformBackIcon(), color: textPrimary, size: 20.w),
-          onPressed: () => Navigator.pop(context),
+  Widget _buildWeb(List<Album> filtered) {
+    final albums = [...filtered]..sort((a, b) => _dateOf(b).compareTo(_dateOf(a)));
+    final shared = widget.category == AlbumCategory.shared;
+    return SnapFitWebShell(
+      title: shared ? '공유 앨범' : '앨범 모음',
+      actions: [
+        TextButton.icon(
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(Icons.arrow_back, size: 17),
+          label: const Text('내 앨범'),
         ),
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: TextStyle(color: textPrimary, fontSize: 16.sp),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: '앨범 검색',
-                  hintStyle: TextStyle(color: textSecondary, fontSize: 15.sp),
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
-              )
-            : Text(
-                _title,
-                style: TextStyle(
-                  color: textPrimary,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSearching ? Icons.close : Icons.search,
-              color: textPrimary,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchQuery = '';
-                  _searchController.clear();
-                }
-              });
-            },
-          ),
-          if (widget.category == AlbumCategory.shared)
-            Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AlbumCreateFlowScreen(),
-                  ),
-                ),
-                child: Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: SnapFitColors.accent,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: SnapFitColors.accent.withOpacity(0.35),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              ),
-            ),
-        ],
-      ),
-      body: Column(
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TopTabBar(
-            tabs: _tabs,
-            selectedIndex: _selectedTab,
-            accentColor: _tabAccent,
-            onChanged: (index) => setState(() => _selectedTab = index),
+          WebPageHeading(
+            title: shared ? '함께 만드는 앨범' : '나의 앨범 모음',
+            eyebrow: shared ? 'SHARED ALBUMS' : 'MY COLLECTION',
+            description: shared
+                ? '참여한 앨범을 확인하고 부여된 권한으로 함께 작업하세요.'
+                : '앨범의 진행 상황과 즐겨찾기를 한곳에서 관리하세요.',
+            trailing: FilledButton.icon(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(
+                settings: const WebAppRouteSettings(WebAppLocation.create),
+                builder: (_) => const AlbumCreateFlowScreen(),
+              )),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('앨범 만들기'),
+            ),
           ),
+          const SizedBox(height: 26),
+          LayoutBuilder(builder: (context, box) {
+            final tabs = Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (var index = 0; index < _tabs.length; index++)
+                  ChoiceChip(
+                    label: Text(_tabs[index]),
+                    selected: _selectedTab == index,
+                    onSelected: (_) => setState(() => _selectedTab = index),
+                    showCheckmark: false,
+                    selectedColor: WebPalette.of(context).softBrand,
+                    backgroundColor: WebPalette.of(context).surface,
+                    labelStyle: TextStyle(color: _selectedTab == index
+                        ? WebPalette.of(context).brandInk : WebPalette.of(context).muted),
+                    side: BorderSide(color: WebPalette.of(context).line),
+                  ),
+              ],
+            );
+            final search = TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
+              decoration: const InputDecoration(
+                hintText: '앨범 이름 또는 테마 검색',
+                prefixIcon: Icon(Icons.search, size: 20),
+                isDense: true,
+              ),
+            );
+            final refresh = IconButton(
+              tooltip: '목록 새로고침',
+              onPressed: _isRefreshing ? null : _handlePullToRefresh,
+              icon: const Icon(Icons.refresh, size: 21),
+            );
+            if (box.maxWidth < 760) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [tabs, const SizedBox(height: 16), Row(children: [
+                  Expanded(child: search), const SizedBox(width: 8), refresh,
+                ])],
+              );
+            }
+            return Row(children: [
+              tabs, const Spacer(),
+              SizedBox(width: 320, child: search),
+              const SizedBox(width: 8), refresh,
+            ]);
+          }),
+          const SizedBox(height: 22),
+          Text('${albums.length}개의 앨범', style: TextStyle(
+            color: WebPalette.of(context).muted, fontSize: 12,
+          )),
+          const SizedBox(height: 14),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _handlePullToRefresh,
-              child: all.isEmpty
-                  ? ListView(
-                      physics: platformScrollPhysics(alwaysScrollable: true),
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.42,
-                          child: Center(
-                            child: Text(
-                              _searchQuery.isNotEmpty
-                                  ? '검색 결과가 없습니다.'
-                                  : '표시할 앨범이 없습니다.',
-                              style: TextStyle(
-                                color: textSecondary,
-                                fontSize: 14.sp,
+            child: albums.isEmpty
+                ? Center(child: WebSurface(
+                    child: Text(_searchQuery.isNotEmpty
+                        ? '검색 결과가 없습니다.' : '표시할 앨범이 없습니다.'),
+                  ))
+                : LayoutBuilder(builder: (context, box) {
+                    final columns = (box.maxWidth / 280).floor().clamp(1, 4);
+                    return GridView.builder(
+                      key: const PageStorageKey('web-album-category-grid'),
+                      padding: const EdgeInsets.only(bottom: 24),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        mainAxisExtent: 348,
+                      ),
+                      itemCount: albums.length,
+                      itemBuilder: (context, index) {
+                        final album = albums[index];
+                        return Material(
+                          color: WebPalette.of(context).surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: WebPalette.of(context).line),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              _openAlbumAndSync(album);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: Center(child:
+                                    WebSavedAlbumArtwork(album: album),
+                                  )),
+                                  const SizedBox(height: 18),
+                                  Row(children: [
+                                    Expanded(child: Text(
+                                      album.title.isEmpty ? '제목 없음' : album.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 15, fontWeight: FontWeight.w700,
+                                        color: WebPalette.of(context).ink,
+                                      ),
+                                    )),
+                                    _favoriteButton(album),
+                                  ]),
+                                  Text(_albumSubtitle(album), style: TextStyle(
+                                    color: WebPalette.of(context).muted, fontSize: 12,
+                                  )),
+                                  const SizedBox(height: 6),
+                                  Text(shared ? _ownerLabel(album)
+                                      : formatAlbumDate(album.createdAt),
+                                    style: TextStyle(
+                                      color: WebPalette.of(context).muted, fontSize: 11,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    )
-                  : Builder(
-                      builder: (context) {
-                        switch (widget.category) {
-                          case AlbumCategory.recent:
-                            return _buildRecentTimeline(all);
-                          case AlbumCategory.shared:
-                            return _buildSharedGrid(all);
-                        }
+                        );
                       },
-                    ),
-            ),
+                    );
+                  }),
           ),
         ],
       ),
-      floatingActionButton: widget.category == AlbumCategory.recent
-          ? FloatingActionButton(
-              backgroundColor: _tabAccent,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AlbumCreateFlowScreen(),
-                ),
-              ),
-              child: const Icon(Icons.add, color: Colors.white, size: 32),
-            )
-          : null,
     );
   }
 
@@ -390,343 +464,118 @@ class _AlbumCategoryScreenState extends ConsumerState<AlbumCategoryScreen> {
     return progress.pageProgressLabel;
   }
 
-  Widget _buildRecentTimeline(List<Album> albums) {
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
+  Widget _buildCollection(List<Album> albums) {
     final sorted = [...albums]
       ..sort((a, b) => _dateOf(b).compareTo(_dateOf(a)));
-
-    return ListView(
-      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 26.h),
-      children: [
-        for (int index = 0; index < sorted.length; index++) ...[
-          if (index == 0 ||
-              !_isSameDay(_dateOf(sorted[index - 1]), _dateOf(sorted[index])))
-            Padding(
-              padding: EdgeInsets.fromLTRB(8.w, 2.h, 8.w, 8.h),
-              child: _buildRecentDateHeader(
-                _dateOf(sorted[index]),
-                textSecondary,
-              ),
+    final shared = widget.category == AlbumCategory.shared;
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+      sliver: SliverLayoutBuilder(
+        builder: (context, box) {
+          final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+          final columns = (box.crossAxisExtent / (scale > 1.5 ? 220 : 162))
+              .floor()
+              .clamp(1, 5);
+          final width = (box.crossAxisExtent - 20 * (columns - 1)) / columns;
+          final wide =
+              MediaQuery.orientationOf(context) == Orientation.landscape;
+          final stage = wide
+              ? (width * .85).clamp(142.0, 230.0)
+              : (width * 1.12).clamp(180.0, 300.0);
+          return SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 24,
+              mainAxisExtent: stage + 28 + scale * (shared ? 112 : 94),
             ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 14.h),
-            child: _buildRecentCard(sorted[index], textPrimary, textSecondary),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildRecentDateHeader(DateTime dt, Color textSecondary) {
-    final month = _monthAbbr(dt.month);
-    final dateLabel = dt.day.toString().padLeft(2, '0');
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          color: textSecondary,
-          fontWeight: FontWeight.w700,
-          fontSize: 12.sp,
-        ),
-        children: [
-          TextSpan(text: '${dt.year}'),
-          const TextSpan(text: '  /  '),
-          TextSpan(text: month),
-          TextSpan(
-            text: '  $dateLabel',
-            style: TextStyle(
-              color: SnapFitColors.accent,
-              fontWeight: FontWeight.w800,
-              fontSize: 20.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentCard(Album album, Color textPrimary, Color textSecondary) {
-    return GestureDetector(
-      onTap: () => _openAlbumAndSync(album),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: SnapFitColors.surfaceOf(context),
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(
-                SnapFitColors.isDark(context) ? 0.18 : 0.04,
-              ),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 92.w,
-              height: 92.w,
-              child: Center(
-                child: HomeAlbumCoverThumbnail(
-                  album: album,
-                  height: 92.w,
-                  maxWidth: 92.w,
-                  showShadow: true,
-                ),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    album.title.isEmpty ? '제목 없음' : album.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
-                      height: 1.25,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    _albumSubtitle(album),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _toggleFavorite(album),
-              child: SizedBox(
-                width: 28.w,
-                height: 28.w,
-                child: Icon(
-                  _isFavorite(album)
-                      ? Icons.star_rounded
-                      : Icons.star_outline_rounded,
-                  color: _isFavorite(album)
-                      ? SnapFitColors.accent
-                      : SnapFitColors.overlayStrongOf(context),
-                  size: 23.sp,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  Widget _buildSharedGrid(List<Album> albums) {
-    final textPrimary = SnapFitColors.textPrimaryOf(context);
-    final textSecondary = SnapFitColors.textSecondaryOf(context);
-
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 26.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16.w,
-        mainAxisSpacing: 18.h,
-        childAspectRatio: 0.6,
-      ),
-      itemCount: albums.length,
-      itemBuilder: (context, index) {
-        final album = albums[index];
-        final progress = calculateAlbumProgress(album);
-        final isEditing = progress.ratio < 1.0;
-        final isFavorite = _isFavorite(album);
-
-        return GestureDetector(
-          onTap: () => _openAlbumAndSync(album),
-          child: Container(
-            decoration: BoxDecoration(
-              color: SnapFitColors.surfaceOf(context),
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(color: SnapFitColors.overlayLightOf(context)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(
-                    SnapFitColors.isDark(context) ? 0.14 : 0.03,
-                  ),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(18.r),
-                          ),
-                          child: _coverImage(album),
-                        ),
-                      ),
-                      if (isEditing)
-                        Positioned(
-                          top: 9.h,
-                          right: 9.w,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 9.w,
-                              vertical: 4.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: SnapFitColors.accent,
-                              borderRadius: BorderRadius.circular(999.r),
-                            ),
-                            child: Text(
-                              '진행중',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      Positioned(
-                        right: 9.w,
-                        bottom: 9.h,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => _toggleFavorite(album),
-                          child: Container(
-                            width: 30.w,
-                            height: 30.w,
-                            decoration: BoxDecoration(
-                              color: SnapFitColors.surfaceOf(
-                                context,
-                              ).withOpacity(0.92),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: SnapFitColors.overlayLightOf(context),
-                              ),
-                            ),
-                            child: Icon(
-                              isFavorite
-                                  ? Icons.star_rounded
-                                  : Icons.star_outline_rounded,
-                              color: isFavorite
-                                  ? SnapFitColors.accent
-                                  : SnapFitColors.textSecondaryOf(context),
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final album = sorted[index];
+                return InkWell(
+                  key: ValueKey('personal-record-${album.id}'),
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    _openAlbumAndSync(album);
+                  },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        album.title.isEmpty ? '제목 없음' : album.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w800,
-                          color: textPrimary,
+                      SizedBox(
+                        height: stage,
+                        width: double.infinity,
+                        child: SavedAlbumArtwork(
+                          key: shared
+                              ? ValueKey('shared-cover-${album.id}')
+                              : null,
+                          album: album,
                         ),
                       ),
-                      SizedBox(height: 3.h),
-                      Text(
-                        _relativeTime(album),
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        _ownerLabel(album),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: textSecondary.withOpacity(0.95),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: 9.h),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Container(
-                            margin: EdgeInsets.only(left: 0.w),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8.w,
-                              vertical: 4.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: SnapFitColors.accent.withOpacity(0.14),
-                              borderRadius: BorderRadius.circular(999.r),
-                            ),
+                          Expanded(
                             child: Text(
-                              '공유중',
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                color: SnapFitColors.accent,
-                                fontWeight: FontWeight.w700,
+                              album.title.isEmpty ? '제목 없음' : album.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: ExperienceFormStyle.text(
+                                context,
+                                14,
+                                weight: FontWeight.w600,
                               ),
                             ),
                           ),
+                          _favoriteButton(album),
                         ],
+                      ),
+                      Text(
+                        _albumSubtitle(album),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          12,
+                          secondary: true,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        shared
+                            ? _ownerLabel(album)
+                            : formatAlbumDate(album.createdAt),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: ExperienceFormStyle.text(
+                          context,
+                          11,
+                          secondary: true,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                );
+              },
+              childCount: sorted.length,
+              addAutomaticKeepAlives: false,
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  String _monthAbbr(int month) {
-    const m = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
-    return m[(month - 1).clamp(0, 11)];
-  }
+  Widget _favoriteButton(Album album) => IconButton(
+    tooltip: _isFavorite(album) ? '즐겨찾기 해제' : '즐겨찾기',
+    onPressed: () => _toggleFavorite(album),
+    color: _isFavorite(album)
+        ? ExperienceFormStyle.selectionInk(context)
+        : ExperienceFormStyle.muted(context),
+    icon: Icon(
+      _isFavorite(album) ? Icons.star_rounded : Icons.star_outline_rounded,
+      size: 22,
+    ),
+  );
 }
 
 class _TopTabBar extends StatelessWidget {
@@ -734,56 +583,59 @@ class _TopTabBar extends StatelessWidget {
   final int selectedIndex;
   final Color accentColor;
   final ValueChanged<int> onChanged;
-
   const _TopTabBar({
     required this.tabs,
     required this.selectedIndex,
     required this.accentColor,
     required this.onChanged,
   });
-
   @override
-  Widget build(BuildContext context) {
-    final secondary = SnapFitColors.textSecondaryOf(context);
-    return Container(
-      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 0),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: SnapFitColors.overlayLightOf(context)),
-        ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    decoration: BoxDecoration(
+      border: Border(
+        bottom: BorderSide(color: ExperienceFormStyle.line(context)),
       ),
-      child: Row(
-        children: List.generate(tabs.length, (index) {
-          final selected = selectedIndex == index;
-          return Expanded(
-            child: GestureDetector(
+    ),
+    child: Row(
+      children: List.generate(tabs.length, (index) {
+        final selected = selectedIndex == index;
+        return Expanded(
+          child: Semantics(
+            selected: selected,
+            child: InkWell(
               onTap: () => onChanged(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: EdgeInsets.only(top: 8.h, bottom: 10.h),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 48),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 4,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: selected ? accentColor : Colors.transparent,
-                      width: 3,
+                      color: selected
+                          ? ExperienceFormStyle.ink(context)
+                          : Colors.transparent,
+                      width: 2,
                     ),
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    tabs[index],
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                      color: selected ? accentColor : secondary,
-                    ),
+                alignment: Alignment.center,
+                child: Text(
+                  tabs[index],
+                  style: ExperienceFormStyle.text(
+                    context,
+                    14,
+                    weight: selected ? FontWeight.w600 : FontWeight.w400,
+                    secondary: !selected,
                   ),
                 ),
               ),
             ),
-          );
-        }),
-      ),
-    );
-  }
+          ),
+        );
+      }),
+    ),
+  );
 }

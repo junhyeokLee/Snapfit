@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SnapFit 설정 및 템플릿 검토</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f5;color:#222a2b;font:14px/1.6 system-ui,sans-serif;letter-spacing:0}main{max-width:1280px;margin:auto;padding:28px 20px}h1{font-size:24px;margin:0 0 8px}h2{font-size:19px;margin:36px 0 12px}nav{display:flex;gap:20px;flex-wrap:wrap;border-bottom:1px solid #d9e1df;padding:16px 0}a{color:#007e90}p{color:#63706e}section{scroll-margin-top:20px}figure{margin:0;min-width:0}figcaption{margin:8px 0 20px;font-size:13px;color:#63706e}img{display:block;max-width:100%;height:auto;background:white}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}.phone{max-height:640px;margin:auto}.wide{width:100%}.strip{margin:24px 0}details{margin:20px 0}summary{cursor:pointer;font-weight:600}@media(max-width:700px){.grid,.pair{grid-template-columns:1fr}main{padding:20px 16px}}
+</style>
+<main>
+<h1>SnapFit 템플릿 · 디자인 품질 보강</h1>
+<p>실제 Flutter 화면 렌더링. 테스트 계정과 샘플 사진이며 운영 권한·결제 검증은 포함하지 않습니다.</p>
+<nav><a href="#refined-covers">기본 표지 개편</a><a href="#cover-diversity">표지 51종</a><a href="#quality-free">무료 내지</a><a href="#quality-premium">유료 7종</a><a href="#free-photo">사진형 무료 표지</a><a href="#free-policy">무료·유료 규칙</a><a href="#settings">알림·테마</a><a href="#print">인쇄 안내</a><a href="#free">무료 표지 비교</a></nav>
+<section id="refined-covers"><h2>기존 무료 표지 5종 · 사진과 활자의 존재감</h2><p>웨딩은 빛이 들어오는 정원과 버건디 저녁 무도로, 여행은 항구 사진과 우편형 프레임으로 나눴습니다. 일상 표지는 작은 타원 대신 라일락 색과 큰 사진으로 정리했습니다. 무료 가격과 기존 저장 앨범은 유지합니다.</p>
+<figure><a href="refined-free-covers.png"><img loading="lazy" class="wide" src="refined-free-covers.png" alt="기존 무료 표지 5종 개편"><figcaption>빛으로 엮은 우리 · 여행의 결 · 작은 날의 기록 · 영화 같던 하루 · 여행의 우편함</figcaption></a></figure>
+<details><summary>이전과 비교</summary><div class="pair">
+<figure><img loading="lazy" src="cover-before/template_-9301-square.png" alt="빛으로 엮은 우리 이전 표지"><figcaption>이전 · 빛으로 엮은 우리</figcaption></figure><figure><img loading="lazy" src="covers/template_-9301-square.png" alt="빛으로 엮은 우리 개편 표지"><figcaption>개편 · 사진형 웨딩</figcaption></figure>
+<figure><img loading="lazy" src="cover-before/template_-9302-square.png" alt="여행의 결 이전 표지"><figcaption>이전 · 여행의 결</figcaption></figure><figure><img loading="lazy" src="covers/template_-9302-square.png" alt="여행의 결 개편 표지"><figcaption>개편 · 항구와 기록</figcaption></figure>
+<figure><img loading="lazy" src="cover-before/template_-9303-square.png" alt="작은 날의 기록 이전 표지"><figcaption>이전 · 작은 날의 기록</figcaption></figure><figure><img loading="lazy" src="covers/template_-9303-square.png" alt="작은 날의 기록 개편 표지"><figcaption>개편 · 라일락과 꽃다발</figcaption></figure>
+<figure><img loading="lazy" src="cover-before/template_-9403-square.png" alt="영화 같던 하루 이전 표지"><figcaption>이전 · 영화 같던 하루</figcaption></figure><figure><img loading="lazy" src="covers/template_-9403-square.png" alt="영화 같던 하루 개편 표지"><figcaption>개편 · 저녁 무도</figcaption></figure>
+<figure><img loading="lazy" src="cover-before/template_-9414-square.png" alt="여행의 우편함 이전 표지"><figcaption>이전 · 여행의 우편함</figcaption></figure><figure><img loading="lazy" src="covers/template_-9414-square.png" alt="여행의 우편함 개편 표지"><figcaption>개편 · 큰 우편형 프레임</figcaption></figure>
+</div></details></section>
+<section id="cover-diversity"><h2>표지마다 다른 장면 · 무료 37종 / 유료 14종</h2><p>표지의 주인공 사진과 작은 보조 사진까지 총 57장을 중복 없이 배정했습니다. 새 사진 8장으로 낮·밤, 실내·야외, 인물·사물, 흑백·색채를 넓히고 유료 14종의 문구 배치를 각각 다듬었습니다. 내지와 가격은 유지합니다.</p>
+<figure><a href="cover-diversity-square.png"><img loading="lazy" class="wide" src="cover-diversity-square.png" alt="무료 유료 전체 51종 정사각형 표지"><figcaption>정사각형 · 51종 전체 비교</figcaption></a></figure>
+<details><summary>세로형 · 51종</summary><a href="cover-diversity-portrait.png"><img loading="lazy" class="wide" src="cover-diversity-portrait.png" alt="전체 51종 세로 표지"></a></details>
+<details><summary>가로형 · 51종</summary><a href="cover-diversity-landscape.png"><img loading="lazy" class="wide" src="cover-diversity-landscape.png" alt="전체 51종 가로 표지"></a></details>
+<details><summary>앱 목록용 미리보기 · 51종</summary><p>실제 앱에서 스크롤 중 사용하는 미리보기입니다. 최신 표지를 직접 렌더링한 결과와 51종 모두 대조했습니다.</p><a href="catalog-list-covers.png"><img loading="lazy" class="wide" src="catalog-list-covers.png" alt="앱 목록에 표시하는 표지 미리보기 51종"></a><p><a href="catalog-cover-audit.json">표지별 원본·미리보기 대조 결과</a></p></details>
+<details><summary>유료 표지 · 개별 보기</summary><div class="grid">
+<figure><img loading="lazy" src="covers/template_-9501-square.png" alt="약속을 묶은 책"><figcaption>약속을 묶은 책 · 흑백 웨딩</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9502-square.png" alt="둘만의 여행"><figcaption>둘만의 여행 · 산과 호수</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9503-square.png" alt="하루의 수집함"><figcaption>하루의 수집함 · 창가의 붉은 꽃</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9504-square.png" alt="너의 첫 계절"><figcaption>너의 첫 계절 · 작은 물건들</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9505-square.png" alt="우리 집 식탁"><figcaption>우리 집 식탁 · 가족의 저녁</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9506-square.png" alt="둘이 모은 장면"><figcaption>둘이 모은 장면 · 맞잡은 손</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9507-square.png" alt="산책하고 낮잠"><figcaption>산책하고 낮잠 · 장밋빛 반려견 사진</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9511-square.png" alt="서약의 결"><figcaption>서약의 결 · 예식의 디테일</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9512-square.png" alt="해변에서 보낸 날"><figcaption>해변에서 보낸 날 · 해안선</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9513-square.png" alt="문장을 모으는 생활"><figcaption>문장을 모으는 생활 · 줄무늬 천과 책</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9514-square.png" alt="너의 작은 옷장"><figcaption>너의 작은 옷장 · 코튼과 니트</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9515-square.png" alt="일요일의 피크닉"><figcaption>일요일의 피크닉 · 과일의 색</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9516-square.png" alt="같이 사는 계절"><figcaption>같이 사는 계절 · 비 오는 집</figcaption></figure>
+<figure><img loading="lazy" src="covers/template_-9517-square.png" alt="작은 동거인"><figcaption>작은 동거인 · 코발트와 고양이</figcaption></figure>
+</div></details><p><a href="../../docs/template_cover_art_direction.md">사진 제작 기록과 표지 품질 규칙</a></p></section>
+<section id="quality-free"><h2>무료 · 사진과 기록의 균형</h2><p>무료 확장 32종의 10가지 펼침면 구성을 보강했습니다. 큰 사진은 시원하게, 작은 사진은 기록용으로 분리하고 아치형 프레임의 반복을 줄였습니다. 포함 소재는 모두 무료입니다. 기본 표지 3종과 확장 표지 2종도 별도로 보강했습니다.</p>
+<details open><summary>웨딩 · 정원에서의 약속</summary><a href="../template-preview/free-expansion/garden-promise-square.png"><img loading="lazy" class="wide" src="../template-preview/free-expansion/garden-promise-square.png" alt="보강한 정원 웨딩 무료 템플릿 전체 내지"></a></details>
+<details><summary>여행 · 도시의 수집가</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/city-collector-square.png" alt="도시 여행 무료 내지"></details>
+<details><summary>일상 · 주말의 온도</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/weekend-temperature-square.png" alt="주말 일상 무료 내지"></details>
+<details><summary>성장·육아 · 너의 첫해</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/your-first-year-square.png" alt="성장 기록 무료 내지"></details>
+<details><summary>가족·친구 · 함께 떠난 소풍</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/a-picnic-together-square.png" alt="가족 소풍 무료 내지"></details>
+<details><summary>커플·기념일 · 사랑이 머문 계절</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/seasons-of-love-square.png" alt="두 사람의 계절 무료 내지"></details>
+<details><summary>반려동물 · 가장 다정한 얼굴</summary><img loading="lazy" class="wide" src="../template-preview/free-expansion/the-kindest-face-square.png" alt="반려동물 기록 무료 내지"></details>
+</section>
+<section id="quality-premium"><h2>유료 · 컨셉별 조판과 꾸밈</h2><p>7종의 사진형 표지와 첫 펼침면을 보강했습니다. 웨딩·여행·독서는 1~6쪽을 새로 구성했고, 생활 주제 4종은 1~2쪽을 보강했습니다. 나머지 내지는 구성을 유지하면서 타원 사진 뒤의 흰 사각 받침을 정리했습니다. 페이지 수·가격·구매 키는 유지하며 새 디자인의 판매 검수 승인을 대신하지 않습니다.</p>
+<div class="grid">
+<figure><img loading="lazy" src="../template-preview/concept-wave/silk-vows/square/cover.png" alt="서약의 결 표지"><figcaption>서약의 결 · 웨딩</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/shore-days/square/cover.png" alt="해변에서 보낸 날 표지"><figcaption>해변에서 보낸 날 · 여행</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/reading-room/square/cover.png" alt="문장을 모으는 생활 표지"><figcaption>문장을 모으는 생활 · 일상</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/first-wardrobe/square/cover.png" alt="너의 작은 옷장 표지"><figcaption>너의 작은 옷장 · 성장·육아</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/sunday-picnic/square/cover.png" alt="일요일의 피크닉 표지"><figcaption>일요일의 피크닉 · 가족·친구</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/shared-seasons/square/cover.png" alt="같이 사는 계절 표지"><figcaption>같이 사는 계절 · 커플·기념일</figcaption></figure>
+<figure><img loading="lazy" src="../template-preview/concept-wave/little-companion/square/cover.png" alt="작은 동거인 표지"><figcaption>작은 동거인 · 반려동물</figcaption></figure>
+</div>
+<details open><summary>서약의 결 · 실크와 레이스, 1~6쪽</summary><img loading="lazy" src="../template-preview/concept-wave/silk-vows/square/review-1.png" alt="서약의 결 첫 세 펼침면"></details>
+<details><summary>해변에서 보낸 날 · 지도와 수집물, 1~6쪽</summary><img loading="lazy" src="../template-preview/concept-wave/shore-days/square/review-1.png" alt="해변 여행 첫 세 펼침면"></details>
+<details><summary>문장을 모으는 생활 · 노트와 책갈피, 1~6쪽</summary><img loading="lazy" src="../template-preview/concept-wave/reading-room/square/review-1.png" alt="독서 기록 첫 세 펼침면"></details>
+<details><summary>너의 작은 옷장 · 코튼과 성장 기록</summary><img loading="lazy" src="../template-preview/concept-wave/first-wardrobe/square/review-1.png" alt="작은 옷장 첫 세 펼침면"></details>
+<details><summary>일요일의 피크닉 · 체크 천과 바구니</summary><img loading="lazy" src="../template-preview/concept-wave/sunday-picnic/square/review-1.png" alt="피크닉 첫 세 펼침면"></details>
+<details><summary>같이 사는 계절 · 종이와 두 사람의 일상</summary><img loading="lazy" src="../template-preview/concept-wave/shared-seasons/square/review-1.png" alt="같이 사는 계절 첫 세 펼침면"></details>
+<details><summary>작은 동거인 · 직조 장난감과 관찰 기록</summary><img loading="lazy" src="../template-preview/concept-wave/little-companion/square/review-1.png" alt="작은 동거인 첫 세 펼침면"></details>
+<details><summary>세로·가로 규격 확인 · 웨딩</summary><div class="pair"><img loading="lazy" src="../template-preview/concept-wave/silk-vows/portrait/review-1.png" alt="세로형 웨딩 펼침면"><img loading="lazy" src="../template-preview/concept-wave/silk-vows/landscape/review-1.png" alt="가로형 웨딩 펼침면"></div></details>
+</section>
+<section id="free-photo"><h2>확장 컬렉션의 사진형 무료 표지 · 9종</h2><p>기본 컬렉션의 ‘빛으로 엮은 우리’와 별도로, 무료 확장 32종 중 사진형 표지 9종입니다. 사진과 문구는 각각 편집할 수 있고 내지 24쪽은 유지합니다.</p>
+<figure><a href="free-photo-square.png"><img class="wide" src="free-photo-square.png" alt="7개 주제의 정사각형 무료 사진형 표지 9종"><figcaption>정사각형 · 서로 다른 사진과 문구 배치</figcaption></a></figure>
+<details><summary>세로형·가로형 표지</summary><figure class="strip"><a href="free-photo-portrait.png"><img class="wide" src="free-photo-portrait.png" alt="세로형 무료 사진 표지"><figcaption>세로형</figcaption></a></figure><figure class="strip"><a href="free-photo-landscape.png"><img class="wide" src="free-photo-landscape.png" alt="가로형 무료 사진 표지"><figcaption>가로형</figcaption></a></figure></details></section>
+<section id="free-policy"><h2>무료는 무료 소재만</h2><p>무료 템플릿 37종·세 가지 규격을 검사했습니다. 무료 승인 소재 40종 중 28종을 사용하며, 유료 또는 미분류 소재가 들어오면 제작 검증에서 차단합니다. 기본 소재의 유료 가격 변경도 관리 화면에서 막습니다.</p><p>기존 유료 템플릿과 유료 소재 가격은 유지합니다. 운영 DB 적용은 아직 실행하지 않았습니다.</p><p><a href="../../docs/free_premium_template_policy.md">전체 규칙</a> · <a href="../pricing/free-policy-2026-10-07/manifest.json">무료 소재 검증 결과</a></p></section>
+<section id="settings"><h2>알림과 테마</h2>
+<div class="grid">
+<figure><img class="phone" src="notifications-390-light.png" alt="세로 알림 설정"><figcaption>390px · 라이트</figcaption></figure>
+<figure><img class="phone" src="notifications-320-dark.png" alt="작은 화면 다크 알림 설정"><figcaption>320px · 글자 130% · 다크</figcaption></figure>
+<figure><img src="theme-390-light.png" alt="화면 테마 선택"><figcaption>라이트·다크 선택</figcaption><img src="theme-844-dark.png" alt="가로 다크 테마 선택"></figure>
+</div>
+<figure class="strip"><img class="wide" src="notifications-844-light.png" alt="가로 알림 설정"><figcaption>844px · 오른쪽 시스템 여백 반영</figcaption></figure>
+<details><summary>전체 알림 OFF 및 야간 설정</summary><div class="pair"><img src="notifications-bottom-390-light.png" alt="전체 알림을 끄면 하위 값 보관"><img src="notifications-bottom-844-dark.png" alt="가로 야간 설정"></div></details>
+</section>
+<section id="print"><h2>인쇄 주문 안내</h2><div class="pair">
+<figure><img class="phone" src="print-390-light.png" alt="인쇄 주문 준비 안내"><figcaption>결제는 비활성화. 미리보기와 PDF는 이용 가능.</figcaption></figure>
+<figure><img src="print-844-light.png" alt="가로 인쇄 주문 안내"><figcaption>가로에서도 글자와 정보 크기 유지</figcaption><img src="print-bottom-844-dark.png" alt="인쇄 안내 하단"></figure>
+</div></section>
+<section id="free"><h2>무료 표지 비교</h2><div class="pair">
+<figure><a href="../template-preview/free-expansion/catalog-before-full-photo.png"><img src="../template-preview/free-expansion/catalog-before-full-photo.png" alt="사진형 표지 추가 전 무료 표지"><figcaption>사진형 표지 추가 전</figcaption></a></figure>
+<figure><a href="../template-preview/free-expansion/catalog.png"><img src="../template-preview/free-expansion/catalog.png" alt="사진형 표지를 포함한 무료 템플릿 37종"><figcaption>변경 후 · 무료 37종 유지</figcaption></a></figure>
+</div><details><summary>무료 내지 예시</summary><div class="pair"><img src="../template-preview/free-expansion/city-collector-square.png" alt="도시의 수집가 내지"><img src="../template-preview/free-expansion/our-vows-square.png" alt="우리의 서약 내지"></div></details></section>
+<section id="premium"><h2>유료 · 같이 사는 계절</h2><p>내지 3·4·5·6·12·14쪽 보강. 기존 표지·목차·가격은 유지했습니다.</p><div class="pair">
+<figure><img src="../template-preview/concept-wave/shared-seasons/square/review-1.png" alt="정사각형 유료 스프레드"><figcaption>정사각형 · 1~6쪽</figcaption></figure>
+<figure><img src="../template-preview/concept-wave/shared-seasons/portrait/review-1.png" alt="세로형 유료 스프레드"><figcaption>세로형 · 1~6쪽</figcaption></figure>
+</div><figure class="strip"><img class="wide" src="../template-preview/concept-wave/shared-seasons/landscape/review-2.png" alt="가로형 유료 스프레드"><figcaption>가로형 · 7~12쪽</figcaption></figure></section>
+</main>
+</html>

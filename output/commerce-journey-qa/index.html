@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SnapFit 구매·소재 사용 개편</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#222a2b;font-family:system-ui,sans-serif;letter-spacing:0}
+header,main{max-width:1080px;margin:auto;padding:24px}header{border-bottom:1px solid #e6ebea}
+h1{font-size:26px;margin:0 0 12px}h2{font-size:20px;margin:0 0 18px}p{font-size:14px;color:#667271;line-height:1.7}
+nav{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px}a{color:#007e90}
+section{padding:32px 0;border-bottom:1px solid #e6ebea}.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+figure{margin:0;min-width:0}figcaption{font-size:13px;margin-bottom:12px;color:#667271}
+img{display:block;max-width:100%;height:auto;border:1px solid #e6ebea}
+.phone img{width:290px;margin:auto}.wide img{width:100%}.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:640px){header,main{padding:20px}.pair,.strip{grid-template-columns:1fr}.phone img{max-width:280px}h1{font-size:22px}}
+</style>
+<header>
+<h1>구매와 소재 사용</h1>
+<p>실제 Flutter 화면을 캡처한 개편 결과입니다. 예시 잔액·가격을 사용했으며 실제 결제는 진행하지 않았습니다.</p>
+<nav><a href="#purchase">구매 확인</a><a href="#material">소재 적용</a><a href="#points">포인트</a><a href="#splash">스플래시</a></nav>
+</header>
+<main>
+<section id="purchase"><h2>구매 전 확인</h2>
+<div class="pair phone">
+<figure><figcaption>이전 · 텍스트 팝업</figcaption><a href="../design-followup-qa/purchase-390-light.png"><img src="../design-followup-qa/purchase-390-light.png" alt="이전 구매 확인"></a></figure>
+<figure><figcaption>개편 · 상품 이미지, 구매 후 잔액, 사용 권한</figcaption><a href="../design-followup-qa/after/purchase-390-light.png"><img src="../design-followup-qa/after/purchase-390-light.png" alt="개편 구매 확인"></a></figure>
+</div>
+<h2 style="margin-top:28px">가로 화면과 구매 완료</h2>
+<div class="wide"><figure><figcaption>가로 · 가격과 잔액을 상품 옆에 배치</figcaption><a href="../design-followup-qa/after/purchase-844-light.png"><img src="../design-followup-qa/after/purchase-844-light.png" alt="가로 구매 확인"></a></figure></div>
+<div class="pair phone" style="margin-top:24px">
+<figure><figcaption>구매 완료 · 사용한 포인트와 잔액</figcaption><a href="receipt-390-light.png"><img src="receipt-390-light.png" alt="구매 완료 밝은 화면"></a></figure>
+<figure><figcaption>다크 · 구매 후 바로 소재 사용</figcaption><a href="receipt-390-dark.png"><img src="receipt-390-dark.png" alt="구매 완료 어두운 화면"></a></figure>
+</div></section>
+<section id="material"><h2>앨범 선택 → 페이지 선택 → 편집</h2>
+<p>선택한 소재를 기억해 표지나 내지에 넣습니다. 프레임은 사진 선택으로 이어지고, 문구·종이·스티커는 편집 가능한 요소로 추가됩니다. 추가한 소재는 되돌리기가 가능합니다.</p>
+<div class="pair phone">
+<figure><figcaption>실제 앨범 페이지 미리보기</figcaption><a href="pages-390-light.png"><img src="pages-390-light.png" alt="페이지 선택 밝은 화면"></a></figure>
+<figure><figcaption>다크 모드</figcaption><a href="pages-390-dark.png"><img src="pages-390-dark.png" alt="페이지 선택 어두운 화면"></a></figure>
+</div>
+<div class="wide" style="margin-top:24px"><figure><figcaption>가로 · 페이지를 나란히 비교</figcaption><a href="pages-844-light.png"><img src="pages-844-light.png" alt="가로 페이지 선택"></a></figure></div>
+</section>
+<section id="points"><h2>포인트 충전</h2>
+<div class="pair phone">
+<figure><figcaption>이전 · 다크에서도 흰 배경과 개발용 안내</figcaption><a href="../design-followup-qa/points-390-dark.png"><img src="../design-followup-qa/points-390-dark.png" alt="이전 포인트"></a></figure>
+<figure><figcaption>개편 · 테마와 고객용 안내</figcaption><a href="../design-followup-qa/after/points-390-dark.png"><img src="../design-followup-qa/after/points-390-dark.png" alt="개편 포인트"></a></figure>
+</div>
+<div class="wide" style="margin-top:24px"><figure><figcaption>가로 · 충전과 이용 내역을 나란히</figcaption><a href="../design-followup-qa/after/points-844-dark.png"><img src="../design-followup-qa/after/points-844-dark.png" alt="가로 포인트"></a></figure></div>
+</section>
+<section id="splash"><h2>가로 스플래시</h2>
+<div class="wide">
+<figure><figcaption>이전 · 세로 이미지를 잘라 표시</figcaption><a href="../design-followup-qa/splash-844-light.png"><img src="../design-followup-qa/splash-844-light.png" alt="이전 가로 스플래시"></a></figure>
+<figure style="margin-top:24px"><figcaption>개편 · 기존 가로 전용 이미지로 풍경과 인물 유지</figcaption><a href="../design-followup-qa/after/splash-844-light.png"><img src="../design-followup-qa/after/splash-844-light.png" alt="개편 가로 스플래시"></a></figure>
+</div></section>
+</main>
+</html>
+

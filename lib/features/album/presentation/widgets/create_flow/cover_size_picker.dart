@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/cover_size.dart';
-import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 
 /// 새 앨범에서 선택할 수 있는 다섯 가지 실물 책 규격.
 class CoverSizePicker extends StatelessWidget {
@@ -39,7 +40,7 @@ class CoverSizePicker extends StatelessWidget {
         availableCovers!.any(
           (size) => size.sizeProductId == cover.sizeProductId,
         );
-    final ink = SnapFitColors.textPrimaryOf(context);
+    final ink = ExperienceFormStyle.ink(context);
     final color = enabled ? ink : ink.withValues(alpha: .28);
     return Semantics(
       button: true,
@@ -48,16 +49,14 @@ class CoverSizePicker extends StatelessWidget {
       label: cover.displayName,
       child: Material(
         color: selected
-            ? (SnapFitColors.isDark(context)
-                  ? const Color(0xFF153D3D)
-                  : const Color(0xFFE5F1EF))
+            ? ExperienceFormStyle.selection(context)
             : Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           side: BorderSide(
             color: selected
-                ? const Color(0xFF43877E)
-                : ink.withValues(alpha: .13),
+                ? ExperienceFormStyle.selectionInk(context)
+                : ExperienceFormStyle.line(context),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -70,17 +69,18 @@ class CoverSizePicker extends StatelessWidget {
                   ),
                 )
               : null,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-            child: Column(
+            padding: EdgeInsets.symmetric(vertical: kIsWeb ? 18 : 14, horizontal: kIsWeb ? 14 : 10),
+            child: Row(
               children: [
                 SizedBox(
+                  width: 32,
                   height: 40,
                   child: Center(
                     child: Container(
-                      width: cover.realSize.width * 4 / 3,
-                      height: cover.realSize.height * 4 / 3,
+                      width: cover.realSize.width,
+                      height: cover.realSize.height,
                       decoration: BoxDecoration(
                         border: Border.all(color: color, width: 1.2),
                         color: selected
@@ -90,20 +90,26 @@ class CoverSizePicker extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  cover.name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: color,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cover.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${cover.realSize.width.toInt()} × ${cover.realSize.height.toInt()}cm',
+                        style: TextStyle(fontSize: 11, color: color),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${cover.realSize.width.toInt()} × ${cover.realSize.height.toInt()}cm',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: color),
                 ),
               ],
             ),

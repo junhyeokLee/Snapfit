@@ -82,6 +82,8 @@
 | aspectRatio | string | "free", "1:1", "4:3", "3:4", "16:9" 등 (선택) |
 | style.borderColor | string | 테두리 색 (#ffffff 등) |
 | style.borderWidth | number | 테두리 두께 |
+| payload.imageZoom | number | 사진만 확대하는 배율(1~4, 기본 1). 프레임과 레이어 크기는 유지 |
+| payload.imageOffsetRatio | object | 프레임 안의 구도 위치 `{x, y}`. 레이어 너비·높이에 대한 비율 |
 
 - **결혼**: 2개 이미지 레이어, frame: "polaroid", rotation으로 기울기
 - **스크랩북**: 10개 이상 이미지, style.borderColor/borderWidth, 서로 다른 rotation·zIndex

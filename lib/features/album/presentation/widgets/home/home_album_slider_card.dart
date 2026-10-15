@@ -2,24 +2,29 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../domain/entities/album.dart';
-import 'home_focus_wrap.dart';
 import 'home_album_cover_thumbnail.dart';
 import 'home_album_actions.dart';
+import 'album_open_origin.dart';
 
 /// 슬라이더용 앨범 커버 카드
 class HomeAlbumSliderCard extends ConsumerStatefulWidget {
   final Album album;
   final int index;
   final double currentPage;
+  final ValueListenable<double>? pagePosition;
+  final GlobalKey? coverOriginKey;
 
   const HomeAlbumSliderCard({
     super.key,
     required this.album,
     required this.index,
     required this.currentPage,
+    this.pagePosition,
+    this.coverOriginKey,
   });
 
   @override
@@ -33,6 +38,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
   late final AnimationController _floatController;
   late final Animation<double> _tapScale;
   Timer? _pendingUnpress;
+  final GlobalKey _coverOriginKey = GlobalKey();
 
   @override
   void initState() {
@@ -66,7 +72,9 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   /// 0..1, 포커스일수록 1 (중앙에 가까울수록 1)
   double _focusFactor() {
-    final diff = (widget.currentPage - widget.index).abs();
+    final diff =
+        ((widget.pagePosition?.value ?? widget.currentPage) - widget.index)
+            .abs();
     if (diff >= 1) return 0;
     return 1 - diff;
   }
@@ -74,7 +82,6 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
   @override
   Widget build(BuildContext context) {
     final coverSize = widget.album.physicalCoverSize;
-    final focus = _focusFactor();
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
@@ -93,13 +100,24 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
               ? 'assets/snapfit_home_landscape.jpg'
               : 'assets/snapfit_home_square.jpg';
           final stageMaxHeight = math.max(h, 1.0);
-          final squareReferenceSide = isScreenLandscape
-              ? (stageMaxHeight * 0.76)
-                    .clamp(190.0, math.min(292.0, w * 0.30))
-                    .toDouble()
-              : (314.w)
-                    .clamp(258.0, math.min(328.w, stageMaxHeight * 0.78))
-                    .toDouble();
+          final maxReferenceSide = math.max(
+            1.0,
+            isScreenLandscape
+                ? math.min(stageMaxHeight - 40, math.min(292.0, w * .84))
+                : math.min(318.w, math.min(w * .84, stageMaxHeight - 48.h)),
+          );
+          // During rotation or on short screens, the available maximum can
+          // fall below the preferred minimum. Keep the clamp bounds ordered.
+          final squareReferenceSide =
+              (isScreenLandscape ? stageMaxHeight * .76 : 306.w)
+                  .clamp(
+                    math.min(
+                      isScreenLandscape ? 190.0 : 258.0,
+                      maxReferenceSide,
+                    ),
+                    maxReferenceSide,
+                  )
+                  .toDouble();
           final previewCm = math.max(
             20.0,
             math.max(coverSize.realSize.width, coverSize.realSize.height),
@@ -108,14 +126,6 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
               squareReferenceSide * coverSize.realSize.width / previewCm;
           final contentHeight =
               squareReferenceSide * coverSize.realSize.height / previewCm;
-          final pageDelta = (widget.index - widget.currentPage).clamp(
-            -1.0,
-            1.0,
-          );
-          final gapPush =
-              pageDelta *
-              (isScreenLandscape ? math.min(206.0, w * 0.24) : 214.w);
-          final sideLift = (1 - focus) * (isScreenLandscape ? 18.0 : 38.h);
           final coverContent = OverflowBox(
             minWidth: 0,
             minHeight: 0,
@@ -123,6 +133,7 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
             maxHeight: double.infinity,
             alignment: Alignment.center,
             child: SizedBox(
+              key: widget.coverOriginKey ?? _coverOriginKey,
               width: contentWidth,
               height: contentHeight,
               child: HomeAlbumCoverThumbnail(
@@ -130,45 +141,38 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
                 height: contentHeight,
                 maxWidth: contentWidth,
                 showShadow: true,
-                shadowScaleMultiplier: 6.8 + (2.4 * focus),
+                showBookDepth: true,
+                bookMotion: _floatController,
+                shadowScaleMultiplier: 9.2,
                 fallbackAsset: fallbackAsset,
               ),
             ),
           );
 
           final closedCover = AnimatedBuilder(
-            animation: _floatController,
+            animation: Listenable.merge([
+              _floatController,
+              widget.pagePosition,
+            ]),
             builder: (context, child) {
+              final focus = _focusFactor();
+              final pageDelta =
+                  widget.index -
+                  (widget.pagePosition?.value ?? widget.currentPage);
+              final gapPush = pageDelta * (w + 24);
               final phase = math.sin(_floatController.value * math.pi * 2);
               final floating = ((phase + 1) / 2) * focus;
               final floatOffset = -(isScreenLandscape ? 16.0 : 24.h) * floating;
-              final focusedRotateY = -0.16 + (0.11 * floating);
-              final focusedRotateZ = -0.024 + (0.052 * floating);
-              final sideRotateY = pageDelta == 0 ? 0.0 : -0.244 * pageDelta;
-              final sideRotateZ = pageDelta == 0 ? 0.0 : 0.122 * pageDelta;
-
-              return HomeFocusWrap(
-                focus: focus,
-                applyShadow: false,
-                child: Opacity(
-                  opacity: 0.45 + (0.55 * focus),
-                  child: Transform.translate(
-                    offset: Offset(gapPush, sideLift + floatOffset),
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.0015)
-                        ..rotateY(
-                          (focusedRotateY * focus) +
-                              (sideRotateY * (1 - focus)),
-                        )
-                        ..rotateZ(
-                          (focusedRotateZ * focus) +
-                              (sideRotateZ * (1 - focus)),
-                        ),
-                      child: child,
-                    ),
-                  ),
+              final focusedRotateY = -0.10 + (0.02 * floating);
+              return Transform.translate(
+                offset: Offset(gapPush, floatOffset),
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, .00024)
+                    ..rotateX(-.04 - .004 * floating)
+                    ..rotateY(focusedRotateY),
+                  child: child,
                 ),
               );
             },
@@ -231,7 +235,13 @@ class _HomeAlbumSliderCardState extends ConsumerState<HomeAlbumSliderCard>
 
   Future<void> _handleTap(BuildContext context) async {
     try {
-      await HomeAlbumActions.openAlbum(context, ref, widget.album);
+      await HomeAlbumActions.openAlbum(
+        context,
+        ref,
+        widget.album,
+        coverOrigin: () =>
+            AlbumOpenOrigin.capture(widget.coverOriginKey ?? _coverOriginKey),
+      );
     } catch (e) {
       if (mounted) _tapController.reverse();
       if (context.mounted) {

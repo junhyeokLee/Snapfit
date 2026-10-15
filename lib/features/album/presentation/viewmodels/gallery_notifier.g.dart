@@ -10,11 +10,11 @@ part of 'gallery_notifier.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(GalleryNotifier)
-const galleryProvider = GalleryNotifierProvider._();
+final galleryProvider = GalleryNotifierProvider._();
 
 final class GalleryNotifierProvider
     extends $NotifierProvider<GalleryNotifier, GalleryState> {
-  const GalleryNotifierProvider._()
+  GalleryNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -41,14 +41,13 @@ final class GalleryNotifierProvider
   }
 }
 
-String _$galleryNotifierHash() => r'c113778471269c1ed96adfa4faaf4bef734df617';
+String _$galleryNotifierHash() => r'e5c5e40ed3c028a25214b2b61a03b80211cb09dc';
 
 abstract class _$GalleryNotifier extends $Notifier<GalleryState> {
   GalleryState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
     final ref = this.ref as $Ref<GalleryState, GalleryState>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$GalleryNotifier extends $Notifier<GalleryState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    element.handleCreate(ref, build);
   }
 }

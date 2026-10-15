@@ -50,6 +50,12 @@ class SupabaseAiAlbumDraftProvider extends AiAlbumDraftProvider {
     if (json['error'] != null) {
       throw SupabaseAiAlbumDraftProviderException(json['error'].toString());
     }
+    if (json['pageCount'] != brief.pageCount) {
+      throw const SupabaseAiAlbumDraftProviderException(
+        'template_page_count_mismatch',
+        '선택한 내지 수와 AI 디자인의 페이지 수가 다릅니다. 다시 생성해 주세요.',
+      );
+    }
     return _mapper.map(
       theme: AlbumTheme.custom,
       candidates: const [],

@@ -11,7 +11,10 @@ import '../../data/api/album_provider.dart';
 import '../../data/api/storage_service.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/entities/album_page.dart';
+import '../../domain/entities/album_creation_draft.dart';
+import '../../domain/entities/album_save_progress.dart';
 import '../../../../core/constants/cover_size.dart';
+import '../../../../core/constants/album_page_policy.dart';
 import '../../../../core/templates/studio_decoration_catalog.dart';
 import '../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../core/constants/design_templates.dart';
@@ -58,8 +61,38 @@ abstract class AlbumEditorState with _$AlbumEditorState {
   }) = _AlbumEditorState;
 }
 
+class AlbumEditCheckpoint {
+  const AlbumEditCheckpoint._({
+    required this.albumId,
+    required this.pages,
+    required this.undo,
+    required this.redo,
+    required this.pageIndex,
+    required this.cover,
+    required this.theme,
+    required this.hasChanges,
+    required this.coverCanvas,
+    required this.innerCanvas,
+    required this.editorState,
+  });
+
+  final int? albumId;
+  final List<AlbumPage> pages;
+  final Map<int, List<AlbumPage>> undo;
+  final Map<int, List<AlbumPage>> redo;
+  final int pageIndex;
+  final CoverSize cover;
+  final CoverTheme theme;
+  final bool hasChanges;
+  final Size coverCanvas;
+  final Size innerCanvas;
+  final AlbumEditorState? editorState;
+}
+
 @Riverpod(keepAlive: true)
 class AlbumEditorViewModel extends _$AlbumEditorViewModel {
+  static const pageLimitMessage =
+      '앨범 내지는 최대 80쪽까지 사용할 수 있어요. 페이지를 줄인 뒤 다시 적용해주세요.';
   late final AlbumEditorService _service;
   late final AlbumPersistenceService _persistence;
   late final StorageService _storage;
@@ -88,7 +121,68 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   final Map<int, List<AlbumPage>> _redoByPage = {};
   bool _historyLocked = false; // undo/redo 적용 중 기록 방지
   bool _hasUnsavedChanges = false;
+  Object? _lastSaveError;
+  bool _isSaving = false;
   static const int _saveNetworkRetryCount = 3;
+
+  bool get hasUnsavedChanges => _hasUnsavedChanges;
+  Object? get lastSaveError => _lastSaveError;
+
+  AlbumEditCheckpoint captureEditCheckpoint() => AlbumEditCheckpoint._(
+    albumId: _editingAlbumId,
+    pages: _pages.map(_clonePage).toList(),
+    undo: _copyHistory(_undoByPage),
+    redo: _copyHistory(_redoByPage),
+    pageIndex: _currentPageIndex,
+    cover: _cover,
+    theme: _selectedTheme,
+    hasChanges: _hasUnsavedChanges,
+    coverCanvas: _lastCoverCanvasSize,
+    innerCanvas: _lastInnerCanvasSize,
+    editorState: state.value,
+  );
+
+  AlbumCreationEditorCheckpoint captureCreationEditorCheckpoint() =>
+      AlbumCreationEditorCheckpoint(
+        pages: _pages,
+        pageIndex: _currentPageIndex,
+        coverCanvas: _lastCoverCanvasSize == Size.zero
+            ? _coverReferenceSize
+            : _lastCoverCanvasSize,
+        innerCanvas: _lastInnerCanvasSize == Size.zero
+            ? _innerPageCanvasSize
+            : _lastInnerCanvasSize,
+        theme: _selectedTheme,
+      );
+
+  Map<int, List<AlbumPage>> _copyHistory(Map<int, List<AlbumPage>> history) => {
+    for (final entry in history.entries)
+      entry.key: entry.value.map(_clonePage).toList(),
+  };
+
+  void restoreEditCheckpoint(AlbumEditCheckpoint checkpoint) {
+    if (_isSaving || checkpoint.albumId != _editingAlbumId) return;
+    _pages
+      ..clear()
+      ..addAll(checkpoint.pages.map(_clonePage));
+    _undoByPage
+      ..clear()
+      ..addAll(_copyHistory(checkpoint.undo));
+    _redoByPage
+      ..clear()
+      ..addAll(_copyHistory(checkpoint.redo));
+    _currentPageIndex = checkpoint.pageIndex;
+    _cover = checkpoint.cover;
+    _selectedTheme = checkpoint.theme;
+    _hasUnsavedChanges = checkpoint.hasChanges;
+    _lastCoverCanvasSize = checkpoint.coverCanvas;
+    _lastInnerCanvasSize = checkpoint.innerCanvas;
+    _targetPagesHint = innerPageCount;
+    state = AsyncData(checkpoint.editorState ?? const AlbumEditorState());
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
+    ref.read(coverViewModelProvider.notifier).updateTheme(_selectedTheme);
+    _emit();
+  }
 
   // ===== Selected getters =====
   CoverSize get selectedCover => _cover;
@@ -130,7 +224,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   void resetForCreate({
     CoverSize? initialCover,
     CoverTheme? initialTheme,
-    int targetPages = 1,
+    int targetPages = AlbumPagePolicy.minInnerPages,
   }) {
     _clearAllHistory();
     _pages.clear();
@@ -139,7 +233,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _pages.add(_service.createPage(index: 0, isCover: true));
 
     // Step1에서 선택한 페이지 수(targetPages)만큼 빈 내지 페이지 미리 생성
-    final targetPageCount = targetPages > 0 ? targetPages : 1;
+    final targetPageCount = AlbumPagePolicy.normalize(targetPages);
     for (int i = 1; i <= targetPageCount; i++) {
       _pages.add(_service.createPage(index: i));
     }
@@ -173,6 +267,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     CoverSize? initialCover,
     Size? templateCanvasSize,
   }) {
+    _checkTemplatePageLimit(pages.length - 1);
     final chosenCover = newAlbumCoverSize(initialCover);
 
     _clearAllHistory();
@@ -207,6 +302,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       }
     }
 
+    _padInnerPages(AlbumPagePolicy.minimumForContent(innerPageCount));
     _currentPageIndex = 0;
     _editingAlbumId = null;
     _pendingCoverLayersJson = null;
@@ -450,6 +546,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     bool keepCurrentCover = true,
   }) {
     if (templatePages.isEmpty || _pages.isEmpty) return;
+    final requiredPages = AlbumPagePolicy.minimumForContent(
+      math.max(innerPageCount, templatePages.length - 1),
+    );
+    _checkTemplatePageLimit(requiredPages);
 
     final start = keepCurrentCover ? 1 : 0;
     final srcStart = keepCurrentCover ? 1 : 0;
@@ -479,6 +579,10 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       dstIndex++;
     }
 
+    _padInnerPages(requiredPages);
+    _targetPagesHint = innerPageCount;
+    _clearAllHistory();
+    _hasUnsavedChanges = true;
     _currentPageIndex = _currentPageIndex.clamp(0, _pages.length - 1);
     _emit();
   }
@@ -573,6 +677,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   /// 생성 직후 서버 로드가 끝나면 템플릿 페이지를 자동 적용하기 위한 큐
   void queueTemplatePagesForNextLoad(List<List<LayerModel>> pages) {
     if (pages.isEmpty) return;
+    _checkTemplatePageLimit(pages.length - 1);
     _pendingTemplatePagesAfterLoad = pages;
   }
 
@@ -590,7 +695,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _initialAlbumTitle = albumTitle;
     if (_pages.isEmpty) {
       _pages.add(_service.createPage(index: 0, isCover: true));
-      final targetPageCount = _targetPagesHint > 0 ? _targetPagesHint : 1;
+      final targetPageCount = AlbumPagePolicy.normalize(_targetPagesHint);
       for (int i = 1; i <= targetPageCount; i++) {
         _pages.add(_service.createPage(index: i));
       }
@@ -624,6 +729,43 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     _editingAlbumId = albumId;
     final prev = state.value ?? const AlbumEditorState();
     state = AsyncData(prev.copyWith(isCreatingInBackground: false));
+    _emit();
+  }
+
+  /// Restore an unfinished created album without remapping edited coordinates.
+  void restoreCreatedEditorDraft({
+    required int albumId,
+    required String albumTitle,
+    required CoverSize cover,
+    required AlbumCreationEditorCheckpoint checkpoint,
+  }) {
+    if (albumId <= 0 || checkpoint.pages.isEmpty) return;
+    _checkTemplatePageLimit(checkpoint.pages.length - 1);
+    _clearAllHistory();
+    _pages
+      ..clear()
+      ..addAll(checkpoint.pages.map(_clonePage));
+    _editingAlbumId = albumId;
+    _initialAlbumTitle = albumTitle;
+    _initialCoverImageUrl = null;
+    _initialCoverThumbnailUrl = null;
+    _pendingCoverLayersJson = null;
+    _pendingTemplatePagesAfterLoad = null;
+    _cover = cover;
+    _selectedTheme = checkpoint.theme;
+    _lastCoverCanvasSize = checkpoint.coverCanvas;
+    _lastInnerCanvasSize = checkpoint.innerCanvas;
+    _targetPagesHint = _pages.length - 1;
+    _currentPageIndex = checkpoint.pageIndex.clamp(0, _pages.length - 1);
+    _hasUnsavedChanges = true;
+    ref.read(coverViewModelProvider.notifier).selectCover(_cover);
+    ref.read(coverViewModelProvider.notifier).updateTheme(_selectedTheme);
+    state = AsyncData(
+      AlbumEditorState(
+        coverCanvasSize: _lastCoverCanvasSize,
+        innerCanvasSize: _lastInnerCanvasSize,
+      ),
+    );
     _emit();
   }
 
@@ -856,11 +998,15 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       _pages.where((p) => !p.isCover).length,
     );
     final resolvedTargetPages = (() {
-      if (targetPages != null && targetPages > 0) return targetPages;
       if (_editingAlbumId != null) return currentInnerPageCount;
-      if (_targetPagesHint > 0) return _targetPagesHint;
-      return currentInnerPageCount;
+      final requested = targetPages ?? _targetPagesHint;
+      final count = AlbumPagePolicy.minimumForContent(
+        math.max(currentInnerPageCount, requested),
+      );
+      _checkTemplatePageLimit(count);
+      return count;
     })();
+    if (_editingAlbumId == null) _padInnerPages(resolvedTargetPages);
     _targetPagesHint = resolvedTargetPages;
     final albumVm = ref.read(albumViewModelProvider.notifier);
     final themeLabel = _selectedTheme.label;
@@ -948,6 +1094,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     AssetEntity asset,
     Size canvasSize, {
     String? templateKey,
+    String? imageFrameKey,
   }) async {
     _recordUndo();
     final currentPage = _pages[_currentPageIndex];
@@ -957,6 +1104,18 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       canvasSize: canvasSize,
       templateKey: templateKey,
     );
+    if (imageFrameKey != null) {
+      final added = currentPage.layers
+          .where((layer) => layer.id == asset.id)
+          .firstOrNull;
+      if (added != null) {
+        _service.updateImageFrame(
+          page: currentPage,
+          id: added.id,
+          frameKey: imageFrameKey,
+        );
+      }
+    }
     _emit();
   }
 
@@ -1229,6 +1388,7 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
   /// 커버 선택
   void selectCover(CoverSize cover) {
+    if (_cover != cover) _hasUnsavedChanges = true;
     _cover = cover;
     _emit();
   }
@@ -1274,34 +1434,111 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
     }
   }
 
-  /// 페이지 추가
-  void addPage() {
+  int get innerPageCount => _pages.where((page) => !page.isCover).length;
+
+  bool get canAddPage => innerPageCount < AlbumPagePolicy.maxInnerPages;
+
+  int get pagesToAdd => canAddPage
+      ? AlbumPagePolicy.minimumForContent(innerPageCount + 1) - innerPageCount
+      : 0;
+
+  String get addPageDescription => canAddPage
+      ? '빈 내지 $pagesToAdd쪽 추가 · 표지 별도, 최대 80쪽'
+      : '내지는 최대 80쪽까지 추가할 수 있어요';
+
+  void _checkTemplatePageLimit(int count) {
+    if (count > AlbumPagePolicy.maxInnerPages) {
+      throw StateError(pageLimitMessage);
+    }
+  }
+
+  void _padInnerPages(int count) {
+    while (innerPageCount < count) {
+      _pages.add(_service.createPage(index: _pages.length));
+    }
+  }
+
+  /// 짝수 내지를 유지한다. 기존 홀수 앨범은 한 쪽을 보충한다.
+  bool addPage() {
+    if (!canAddPage) return false;
     final nextIndex = _pages.length;
-    _pages.add(_service.createPage(index: nextIndex));
-    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
+    _padInnerPages(innerPageCount + pagesToAdd);
+    _targetPagesHint = innerPageCount;
     _currentPageIndex = nextIndex;
+    _hasUnsavedChanges = true;
     _emit();
+    return true;
   }
 
   bool get canDeleteCurrentPage {
-    if (_pages.length <= 2) return false;
+    if (innerPageCount <= AlbumPagePolicy.minInnerPages) return false;
     if (_currentPageIndex <= 0 || _currentPageIndex >= _pages.length) {
       return false;
     }
     return !_pages[_currentPageIndex].isCover;
   }
 
-  void deleteCurrentPage() {
-    if (!canDeleteCurrentPage) return;
-    _recordUndo();
-    _pages.removeAt(_currentPageIndex);
+  // A styled background is authored content even when it contains no layers.
+  int? _blankPartnerForDeletion(int index) {
+    if (innerPageCount.isOdd) return null;
+    final facing = index.isOdd ? index + 1 : index - 1;
+    bool isBlank(int i) =>
+        i > 0 &&
+        i < _pages.length &&
+        i != index &&
+        !_pages[i].isCover &&
+        _pages[i].layers.isEmpty &&
+        _pages[i].backgroundColor == null;
+    if (isBlank(facing)) return facing;
+    for (var i = _pages.length - 1; i > 0; i--) {
+      if (isBlank(i)) return i;
+    }
+    return null;
+  }
+
+  String get deleteCurrentPageDescription {
+    if (!canDeleteCurrentPage) return '내지는 최소 20쪽을 유지해야 해요.';
+    final partner = _blankPartnerForDeletion(_currentPageIndex);
+    if (innerPageCount.isOdd) {
+      return '$_currentPageIndex쪽을 삭제하면 내지 ${innerPageCount - 1}쪽이 됩니다. 다른 페이지의 내용은 유지돼요.';
+    }
+    if (partner != null) {
+      return '$_currentPageIndex쪽과 내용이 없는 $partner쪽을 함께 삭제하면 내지 ${innerPageCount - 2}쪽이 됩니다.';
+    }
+    return '$_currentPageIndex쪽을 삭제하고 맨 뒤에 빈 쪽을 보충해 내지 $innerPageCount쪽을 유지합니다. 다른 페이지의 사진과 글은 삭제하지 않아요.';
+  }
+
+  bool deleteCurrentPage() {
+    if (!canDeleteCurrentPage) return false;
+    return _deleteInnerPage(_currentPageIndex);
+  }
+
+  bool _deleteInnerPage(int index) {
+    final wasEven = innerPageCount.isEven;
+    final partner = _blankPartnerForDeletion(index);
+    final selectedPageId = currentPage?.id;
+    final removedIndices = [index, if (partner != null) partner]
+      ..sort((a, b) => b.compareTo(a));
+    for (final removedIndex in removedIndices) {
+      _pages.removeAt(removedIndex);
+    }
+    if (wasEven && partner == null) {
+      _pages.add(_service.createPage(index: _pages.length));
+    }
     for (var i = 0; i < _pages.length; i++) {
       final page = _pages[i];
       _pages[i] = page.copyWith(pageIndex: i, isCover: i == 0);
     }
-    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
-    _currentPageIndex = (_currentPageIndex - 1).clamp(0, _pages.length - 1);
+    _targetPagesHint = innerPageCount;
+    final preservedSelection = _pages.indexWhere((p) => p.id == selectedPageId);
+    _currentPageIndex = preservedSelection >= 0
+        ? preservedSelection
+        : (index - 1).clamp(1, _pages.length - 1);
+    // Histories use page indices, which changed after removal.
+    _clearAllHistory();
+    _hasUnsavedChanges = true;
     _emit();
+    return true;
   }
 
   /// 현재 페이지에 템플릿 적용 (기존 레이어를 템플릿 레이아웃으로 교체)
@@ -1553,7 +1790,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 템플릿으로 새 페이지 추가 후 해당 페이지로 이동
-  void addPageFromTemplate(PageTemplate template, Size canvasSize) {
+  bool addPageFromTemplate(PageTemplate template, Size canvasSize) {
+    if (!canAddPage) return false;
+    final targetCount = innerPageCount + pagesToAdd;
     final nextIndex = _pages.length;
     _pages.add(
       _service.createPageFromTemplate(
@@ -1563,54 +1802,93 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
         isCover: false,
       ),
     );
-    _targetPagesHint = math.max(1, _pages.where((p) => !p.isCover).length);
+    _padInnerPages(targetCount);
+    _targetPagesHint = innerPageCount;
     _currentPageIndex = nextIndex;
+    _hasUnsavedChanges = true;
     _emit();
+    return true;
   }
 
   /// 앨범 전체(모든 페이지)를 서버에 저장
-  Future<bool> saveFullAlbum({Uint8List? coverImageBytes}) async {
-    state = const AsyncLoading(); // 로딩 상태 시작
+  Future<bool> saveFullAlbum({
+    Uint8List? coverImageBytes,
+    ValueChanged<AlbumSaveProgress>? onProgress,
+  }) async {
+    if (_isSaving) return false;
+    _isSaving = true;
+    _lastSaveError = null;
 
     try {
-      // 1. 모든 페이지를 병렬로 순회하며 이미지 레이어 업로드 및 로컬 상태 반영
-      // [PERFORMANCE] 순차 처리(for문) -> 병렬 처리(Future.wait)로 변경하여 속도 개선
-      await Future.wait(
-        _pages.map((page) async {
-          final updatedLayers = await Future.wait(
-            page.layers.map((layer) async {
-              if (layer.type == LayerType.image &&
-                  (layer.previewUrl == null && layer.imageUrl == null) &&
-                  layer.asset != null) {
-                final uploaded = await _storage.uploadImageVariants(
-                  layer.asset!,
-                );
-                final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
-                final original =
-                    uploaded.originalGsPath ?? uploaded.originalUrl;
-                if (preview == null && original == null) {
-                  throw StateError('이미지 업로드에 실패했습니다. (layerId=${layer.id})');
-                }
-                return layer.copyWith(
-                  previewUrl: preview,
-                  originalUrl: original,
-                  imageUrl: preview, // 하위 호환 미러링
-                );
-              }
-              return layer;
-            }),
-          );
-          page.layers
-            ..clear()
-            ..addAll(updatedLayers);
-        }),
+      if (_editingAlbumId == null) {
+        throw StateError('앨범 정보가 없어 저장할 수 없어요. 앨범을 먼저 만들어주세요.');
+      }
+      final pending = [
+        for (final page in _pages)
+          for (final layer in page.layers)
+            if (layer.type == LayerType.image &&
+                layer.previewUrl == null &&
+                layer.imageUrl == null &&
+                layer.originalUrl == null &&
+                layer.asset != null)
+              (page: page, layer: layer),
+      ];
+      final uploadCount = pending.length + (coverImageBytes == null ? 0 : 1);
+      var uploadedCount = 0;
+      void reportUpload() => onProgress?.call(
+        AlbumSaveProgress(
+          AlbumSavePhase.uploading,
+          completed: uploadedCount,
+          total: uploadCount,
+        ),
       );
+      if (uploadCount > 0) reportUpload();
+
+      // Bound upload concurrency; retain successful URLs for a failed-save retry.
+      for (var start = 0; start < pending.length; start += 4) {
+        final batch = pending.skip(start).take(4);
+        await Future.wait(
+          batch.map((job) async {
+            final uploaded = await _storage.uploadImageVariants(
+              job.layer.asset!,
+            );
+            final preview = uploaded.previewGsPath ?? uploaded.previewUrl;
+            final original = uploaded.originalGsPath ?? uploaded.originalUrl;
+            if (preview == null && original == null) {
+              throw StateError('이미지 업로드에 실패했습니다.');
+            }
+            final index = job.page.layers.indexWhere(
+              (l) => l.id == job.layer.id,
+            );
+            if (index >= 0) {
+              job.page.layers[index] = job.layer.copyWith(
+                previewUrl: preview,
+                originalUrl: original,
+                imageUrl: preview,
+              );
+            }
+            uploadedCount++;
+            reportUpload();
+          }),
+        );
+      }
 
       // 1.1 커버 이미지 업로드 (전달된 경우)
       UploadedUrls? coverUploaded;
       if (coverImageBytes != null) {
         coverUploaded = await _storage.uploadCoverVariants(coverImageBytes);
+        if ((coverUploaded.previewGsPath ??
+                coverUploaded.previewUrl ??
+                coverUploaded.originalGsPath ??
+                coverUploaded.originalUrl) ==
+            null) {
+          throw StateError('표지 이미지 업로드에 실패했습니다.');
+        }
+        uploadedCount++;
+        reportUpload();
       }
+
+      onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.saving));
 
       // 2. 전체 앨범 JSON 생성 후 서버에 저장 (편집 중인 앨범인 경우)
       final albumVm = ref.read(albumViewModelProvider.notifier);
@@ -1682,6 +1960,8 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
             coverOriginalUrl: null,
             coverTheme: themeLabel,
           );
+          final error = ref.read(albumViewModelProvider).error;
+          if (error != null) throw error;
         }, maxAttempts: _saveNetworkRetryCount);
         if (coverImg.isNotEmpty) {
           _initialCoverImageUrl = coverImg;
@@ -1698,10 +1978,14 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
 
       _hasUnsavedChanges = false;
       _emit();
+      onProgress?.call(const AlbumSaveProgress(AlbumSavePhase.complete));
       return true;
-    } catch (e, st) {
-      state = AsyncError(e, st);
+    } catch (e) {
+      _lastSaveError = e;
+      _emit();
       return false; // 실패 반환
+    } finally {
+      _isSaving = false;
     }
   }
 
@@ -1794,63 +2078,47 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
   }
 
   /// 마지막 페이지 제거 (커버 페이지는 제외)
-  void removeLastPage() {
-    if (_pages.length > 1) {
-      _pages.removeLast();
-      if (_currentPageIndex >= _pages.length) {
-        _currentPageIndex = _pages.length - 1;
-      }
-      _emit();
+  bool removeLastPage() {
+    if (innerPageCount <= AlbumPagePolicy.minInnerPages ||
+        _pages.isEmpty ||
+        _pages.last.isCover) {
+      return false;
     }
+    return _deleteInnerPage(_pages.length - 1);
   }
 
   /// 커버 테마 변경
   void updateTheme(CoverTheme theme) {
     if (_selectedTheme == theme) return;
     _selectedTheme = theme;
+    _hasUnsavedChanges = true;
     _emit();
   }
 
   /// 슬롯 레이어에 이미지 적용
-  Future<void> updateSlotImage(String layerId, AssetEntity asset) async {
-    final page = _pages[_currentPageIndex];
+  Future<void> updateSlotImage(
+    String layerId,
+    AssetEntity asset, {
+    String? expectedPageId,
+    LayerModel? expectedLayer,
+    double imageZoom = 1,
+    Offset? imageOffset,
+  }) async {
+    final page = currentPage;
+    if (page == null ||
+        _isSaving ||
+        (expectedPageId != null && page.id != expectedPageId))
+      return;
     final idx = page.layers.indexWhere((l) => l.id == layerId);
-    if (idx == -1) return;
+    if (idx == -1 || page.layers[idx].type != LayerType.image) return;
+    final old = page.layers[idx];
+    if (expectedLayer != null && !identical(old, expectedLayer)) return;
 
     _recordUndo();
-    final old = page.layers[idx];
-    // 템플릿 등 기존 URL이 있는 슬롯에 새 사진을 교체할 때
-    // 이전 URL을 반드시 비워야 저장 시 새 업로드 결과로 치환된다.
-    // (LayerModel.copyWith는 nullable 필드를 null로 명시 설정할 수 없어 새 객체로 교체)
-    final updated = LayerModel(
-      id: old.id,
-      type: old.type,
-      position: old.position,
-      asset: asset,
-      text: old.text,
-      textStyle: old.textStyle,
-      textStyleType: old.textStyleType,
-      bubbleColor: old.bubbleColor,
-      scale: old.scale,
-      rotation: old.rotation,
-      textAlign: old.textAlign,
-      width: old.width,
-      height: old.height,
-      textBackground: old.textBackground,
-      imageBackground: old.imageBackground,
-      imageTemplate: old.imageTemplate,
-      frameBaseWidth: old.frameBaseWidth,
-      frameBaseHeight: old.frameBaseHeight,
-      frameBasePosition: old.frameBasePosition,
-      imageOffset: old.imageOffset,
-      previewUrl: null,
-      imageUrl: null,
-      originalUrl: null,
-      opacity: old.opacity,
-      zIndex: old.zIndex,
-    );
-
-    page.layers[idx] = updated;
+    // Commit the new source and crop together, retaining the frame and layout.
+    page.layers[idx] = old
+        .copyWith(clearImage: true)
+        .copyWith(asset: asset, imageZoom: imageZoom, imageOffset: imageOffset);
     _emit();
   }
 
@@ -1943,6 +2211,9 @@ class AlbumEditorViewModel extends _$AlbumEditorViewModel {
       if (la.imageUrl != lb.imageUrl) return false;
       if (la.textBackground != lb.textBackground) return false;
       if (la.imageBackground != lb.imageBackground) return false;
+      if (la.imageOffset != lb.imageOffset || la.imageZoom != lb.imageZoom)
+        return false;
+      if (la.width != lb.width || la.height != lb.height) return false;
     }
     return true;
   }

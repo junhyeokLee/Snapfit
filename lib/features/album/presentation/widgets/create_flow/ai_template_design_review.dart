@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/constants/cover_size.dart';
@@ -55,16 +57,24 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
     return '${number(size.width)} × ${number(size.height)} cm$coverLabel · 내지 ${widget.design.pages.length - 1}쪽';
   }
 
-  Future<void> _showDirection() => showModalBottomSheet<void>(
+  Future<void> _showDirection() => kIsWeb ? showWebAwareDialog<void>(
+    context: context,
+    maxWidth: 760,
+    maxHeight: 700,
+    builder: _directionContent,
+  ) : showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: SnapFitColors.backgroundOf(context),
     constraints: const BoxConstraints(maxWidth: 560),
-    builder: (context) {
+    builder: _directionContent,
+  );
+
+  Widget _directionContent(BuildContext context) {
       final plan = widget.design.artDirection;
-      final ink = SnapFitColors.textPrimaryOf(context);
-      final muted = SnapFitColors.textSecondaryOf(context);
+      final ink = kIsWeb ? WebPalette.of(context).ink : SnapFitColors.textPrimaryOf(context);
+      final muted = kIsWeb ? WebPalette.of(context).muted : SnapFitColors.textSecondaryOf(context);
       return SafeArea(
         top: false,
         child: ConstrainedBox(
@@ -181,14 +191,13 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
           ),
         ),
       );
-    },
-  );
+  }
 
   Widget _accept({required bool compact}) => FilledButton(
     onPressed: widget.isAccepting ? null : widget.onAccept,
     style: FilledButton.styleFrom(
-      backgroundColor: SnapFitColors.textPrimaryOf(context),
-      foregroundColor: SnapFitColors.backgroundOf(context),
+      backgroundColor: kIsWeb ? WebPalette.of(context).brand : SnapFitColors.textPrimaryOf(context),
+      foregroundColor: kIsWeb ? WebPalette.of(context).onBrand : SnapFitColors.backgroundOf(context),
       minimumSize: Size(compact ? 144 : double.infinity, 48),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       textStyle: const TextStyle(
@@ -196,7 +205,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kIsWeb ? 12 : 8)),
     ),
     child: widget.isAccepting
         ? const SizedBox.square(
@@ -208,14 +217,13 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: SnapFitColors.backgroundOf(context),
+    color: kIsWeb ? WebPalette.of(context).surface : SnapFitColors.backgroundOf(context),
     child: SafeArea(
       top: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final wide =
-              constraints.maxWidth >= 640 &&
-              constraints.maxWidth > constraints.maxHeight;
+          final wide = constraints.maxWidth >= (kIsWeb ? 720 : 520) &&
+              (kIsWeb || constraints.maxWidth > constraints.maxHeight);
           return Column(
             children: [
               Padding(
@@ -272,6 +280,7 @@ class _AiTemplateDesignReviewState extends State<AiTemplateDesignReview> {
                   pages: _layers,
                   canvas: _canvas,
                   preserveTypography: widget.design.artDirection != null,
+                  showBookMaterial: true,
                   pageKeyPrefix: 'ai_design_page_',
                 ),
               ),

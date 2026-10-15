@@ -1,0 +1,195 @@
+checkout-and-original-80-page-pdf
+(node:31669) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31669) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+✔ authenticated owner receives the actual public quotation and a closed preparation state (36.563042ms)
+✔ collaborator access follows the existing quotation permission, unrelated user is denied (0.742125ms)
+✔ nonexistent and inaccessible albums share a safe denial response (0.555083ms)
+✔ anonymous and malformed bearer callers cannot reach Auth or quotation data (0.668083ms)
+✔ Auth rejects stale, missing, malformed, or forged sessions before any RPC (0.476958ms)
+✔ authentication precedes parsing so malformed anonymous bodies cannot inspect the contract (0.114917ms)
+✔ preflight and wrong methods perform no authentication or database actions (0.200166ms)
+✔ invalid album identifiers, odd page counts, and client identity or payment flags never reach the RPC (4.517625ms)
+✔ malformed and excessive bodies are rejected without querying (0.227584ms)
+✔ omitted or null page selection asks the server to choose the album-supported count (0.307125ms)
+✔ unverified price combinations can be reviewed but cannot enable payment (0.179917ms)
+✔ a final retail quotation remains reviewable while the separate sales and payment gates stay closed (0.138292ms)
+✔ public quotation preserves exact print rectangles and removes nested private supplier material (0.398916ms)
+✔ a planned price or supplier completion flags never certify commercial readiness (0.152459ms)
+✔ invalid or stale quotation contracts fail closed without returning malformed prices (3.278833ms)
+✔ RPC and configuration failures expose safe errors without leaking database details (0.444875ms)
+✔ deployed wrapper creates only a user-scoped client and uses Auth server verification (2.298209ms)
+✔ gateway validation stays enabled and legacy paid checkout entrypoints stay disabled (0.721208ms)
+(node:31670) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ anonymous/stale owner and malformed refs do not gain source/storage URLs or read secrets (29.040916ms)
+✔ frozen unpaid snapshot is signed without fabricated PAID fields, and disallows paid/held/expired mutation (2.881709ms)
+✔ uploads are exact owner/server paths, no upsert, immutable manifest and Free per-file cap (3.051084ms)
+✔ large files use immutable 16MB parts; every true hash receipt is required and a caller cannot skip PDF inspection (189.540208ms)
+✔ existing direct packages retain their immutable 50MB cap and remain readable (1.245791ms)
+✔ one file at a time: hashes, geometry, and canonical manifest seal are all required before READY (1.783834ms)
+✔ malformed/stale package refs, altered file or manifest cannot finalize (1.218583ms)
+✔ bounded download refuses redirect/origin, oversized content length/chunks, and truncation (0.908792ms)
+✔ storage manifest publication failure is retryable; both parsed immutable files are not re-downloaded (2.311ms)
+✔ concurrent file finalization in one Edge isolate never holds two full PDF buffers (1.08875ms)
+✔ portable real JPEG/ICC PDF fixture forbids active dictionaries, foreign profile, fake image dimensions and malformed stream/xref (3.358083ms)
+✔ actual Flutter JPEG/ICC raster PDFs pass the bounded strict grammar; hidden action/xref/stream tampering fails (16.274ms)
+✔ actual 80-page owner package seals only after every part and the full original SHA pass; wrong aggregate SHA never becomes READY (873.224125ms)
+(node:31671) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Dart/JS reviewed source has the same stable IEEE754 SHA256; numeric types normalize without losing precision (4.425458ms)
+✔ unauthorized, malformed or forged callbacks cannot read private configuration or advance a payment (14.617542ms)
+✔ ready public quotation requires FINAL exact geometry, profitable costs, supported source and LIVE server config (9.716083ms)
+✔ public spec keeps exact geometry while removing private nested approval/cost/source notes (0.912708ms)
+✔ prepare persists authoritative expectations, recovers the same UUID after response loss, rejects address/amount/revision changes (4.432084ms)
+✔ source revision/page count/quote mismatches prevent a charge before an invoice is stored (2.280209ms)
+✔ order-history recovery on another device reads the owned frozen invoice without SDK, provider or mutation (1.771167ms)
+✔ provider LIVE PAID readback commits once and survives duplicate confirmations without SDK callback proof (1.305958ms)
+✔ stopping new sales preserves GET-only recovery of an already charged frozen LIVE invoice (0.875167ms)
+✔ TEST receipt, unknown response, timeout and 404 do not create paid/unpaid completion or release the original payment ID (4.585042ms)
+✔ authoritative FAILED/full CANCELLED terminal observations allow a fresh checkout; closure/expiry alone never does (1.52125ms)
+✔ PortOne terminal observer requires exact route and proven zero/full-refund amounts (6.029167ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1686.082209
+
+purchaser-status-database
+✔ a verified client PDF waits for automatic submission without implying supplier acceptance (917.797417ms)
+✔ verified supplier receipt, analysis, manufacture and tracking progress keep distinct evidence (401.275792ms)
+✔ cancellation hold, reviewed exceptions and proven preparation abort are visible without hiding physical tracking (412.482584ms)
+✔ the progress function keeps RLS and ownership checks and never grants anonymous access (407.344709ms)
+✔ service-only order-history recovery checks the purchaser before delegating to the existing frozen-invoice read (349.554666ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2579.76325
+
+automatic-payment-and-fulfillment-regression
+(node:31677) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ signed full GET is byte-identical to the original and never stores a combined Storage object (80.9195ms)
+✔ modified, expired, overlong-lifetime, extra/duplicate query, wrong file and missing capability never access database (3.284958ms)
+✔ only GET and HEAD are permitted; HEAD checks paid immutable DB facts without reading artwork (0.816166ms)
+✔ private RPC missing, held/unpaid, changed references, wrong hash or malformed paths fail closed (1.123542ms)
+✔ single byte ranges across part boundaries and suffix/open ranges preserve exact original bytes (17.769125ms)
+✔ a corrupted/missing/truncated part aborts before that part is emitted (26.658208ms)
+✔ backpressure does not prefetch the next part; cancel aborts ongoing work and no later objects are read (9.753959ms)
+✔ worker uses paid RPC capabilities only for large chunks, preserving direct PDF checks and immutable manifest equality (40.873208ms)
+✔ actual 300dpi 80-page hardcover interior is delivered unchanged beyond the 50MB object cap (271.378459ms)
+(node:31678) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ fee reserves match exact decimal PostgreSQL ceil, including binary rounding and scientific rates (2.124041ms)
+✔ frozen approved spec is used exactly; missing approval never falls back to inferred geometry (0.823833ms)
+✔ source policy allows only frozen owners in current project storage or bundled artwork (1.084958ms)
+✔ revoked exact supplier/file/sample approval holds new rendering and manufacture without swapping specifications (1.456709ms)
+✔ disabled runtime cannot publish readiness or claim a paid order (0.322167ms)
+✔ active lease is required for all purchased snapshots and cannot be borrowed by another runner (0.220792ms)
+✔ HTTP 200 with an unmatched per-item response stays unknown and recovery never reposts (1.066042ms)
+✔ official success/message summary acknowledges the request but only matching status proves receipt (0.4315ms)
+✔ acknowledged summary followed by status 404 remains query-only without a second POST (0.56575ms)
+✔ submission timeout stores stable identity and repeated 404 polling never creates a second order (0.650375ms)
+✔ production-blocking org06 or unknown API06 holds even when error detail is blank (0.424584ms)
+✔ org05 warning with Y and no explicit detail allows confirmation but never fabricates production or sample approval (0.775458ms)
+✔ org05 explicit errors remain blocked and PGS07 N waits without confirmation (1.554958ms)
+✔ an internal warning cannot restore revoked sample/spec approval or confirm an N file (0.332083ms)
+✔ fresh canceled or partially canceled payment prevents any supplier POST or deposit (0.341833ms)
+✔ uncertain deposit is durably recorded BEFORE POST and never charged again across poll cycles (0.58325ms)
+✔ supplier balance requires explicit success and exact nonnegative KRW; missing or private failures never become zero (0.195916ms)
+✔ low or unknown supplier balance holds BEFORE durable deposit and resumes the same order after funding (1.160625ms)
+✔ HTTP 200 success false from supplier confirmation is uncertain, never production or another financial POST (0.475916ms)
+✔ production balance lookup shares rate slots, uses GET without payload and never exposes deposit history (11.006458ms)
+✔ supplier already processing or confirming deposit cannot trigger an additional financial call (0.566417ms)
+✔ missing or malformed lock timestamps cannot satisfy an active render lease (0.181291ms)
+✔ positive price, frozen shipping/packaging evidence and margin are checked before submitting (0.198125ms)
+✔ supplier dispatch is SHIPPING only; file Y and production are distinct milestones (0.0565ms)
+✔ a request or later payment review cannot hide supplier tracking after independently recorded manufacture (0.257208ms)
+✔ verified worker auth occurs before privileged configuration and unknown request fields cannot assert paid data (1.567791ms)
+✔ admin exact-order overview passes a private filter and is independent of the recent-50 list (1.00425ms)
+✔ renderer subprocess environment contains no worker, payment, database or provider secrets (0.097708ms)
+✔ runner reconciles app-closed paid intents first and never renders while server gate is closed (0.176542ms)
+✔ worker upload cannot send credentials to external URL or overwrite a published object (0.26125ms)
+✔ disabled production supplier client performs no HTTP request even for read/confirmation attempts (0.116ms)
+✔ runner can restart with server-only account credentials and keeps rotated sessions in memory (0.292542ms)
+(node:31679) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ request endpoint authenticates before privileged database; customer metadata cannot invoke resolver (13.279583ms)
+✔ owned create/status supports lost-prepare selector and projects only public request fields (1.800292ms)
+✔ TEST or disabled refund runtime makes no database or provider call (0.328042ms)
+✔ pending READY/404 and production start never claim refund or replacement (0.380834ms)
+✔ unattempted supplier + fresh LIVE PAID commits full refund only after actual GET evidence (0.721416ms)
+✔ unknown refund response persists attempt and a retry only observes GET, never re-POST (0.218167ms)
+✔ supplier cancellation is confirmed via exact status before refund; uncertain response never re-POSTs (0.392333ms)
+✔ full cancellation POST omits amount, uses promotion-aware consistency and stable quoted idempotency key (2.652042ms)
+✔ refund GET requires same LIVE transaction and full succeeded cancellations, rejecting partial/forged totals (0.843042ms)
+✔ unsettled provider READY without selected channel stays UNKNOWN, preserving late-paid recovery (0.433917ms)
+✔ trusted tick observes pending requests; overview is admin-only and keeps internal receipt/cost fields private (1.090834ms)
+✔ late LIVE PAID on a held prepared invoice is recorded then fully refunded without ever submitting to supplier (0.162167ms)
+✔ supplier production observed after held CONFIRM is sent to proof-backed tracking recovery without cancellation or refund POST (0.133042ms)
+(node:31680) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ anonymous, ordinary signed customer/admin sessions and malformed secrets cannot inspect configuration or queues (18.167541ms)
+✔ missing runtime secret closes the private endpoint and never emits credentials (0.842ms)
+✔ HMAC rejects stale/future/tampered headers and a raw secret; valid signatures consume private nonce before any business work (1.822209ms)
+✔ unsupported methods do no authentication/configuration/queue work (0.18825ms)
+✔ authenticated callers cannot supply owner, paid status, amount, credential, environment, job or batch size (1.792ms)
+✔ closed development configuration records heartbeat but performs no payment/supplier/queue claim (0.339584ms)
+✔ enabled TEST/disabled financial runtime is a heartbeat-only no-op (0.282125ms)
+✔ separate enabled TEST queue keeps running with LIVE sales closed and performs only one bounded development phase (0.780333ms)
+✔ development phase failures are counted without exposing private provider errors or attempting LIVE work (0.460542ms)
+✔ Cron uses only due database references then an attached-PDF claim, never a renderer or client receipt (1.199959ms)
+✔ pending customer cancellation/refund takes precedence and defers supplier mutation to another invocation (0.426208ms)
+✔ closing new financial runtime still observes issued LIVE invoices without submitting new supplier jobs (0.381209ms)
+✔ invalid claimed references fail closed before calling a provider or supplier (0.5615ms)
+✔ unexpected RENDER stage, wrong lease, expired or malformed jobs never call advance (1.137916ms)
+✔ slow payment lookup stops before any cancellation or supplier financial phase (0.283917ms)
+✔ lookup failures and ambiguous results remain pending and do not invent paid/unpaid proof (0.624417ms)
+(node:31680) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+✔ financial/provider failures are counted without returning private error details or automatic second POST (0.520375ms)
+✔ deployed wrapper defaults all production work off and exposes only the dedicated secret gate (2.515959ms)
+✔ actual Cron wrapper ignores a leftover TEST feature flag after switching PG to LIVE and continues LIVE payment reconciliation (2.757875ms)
+✔ provider deadline retains the original shorter/aborted signal in RequestInit and Request input (0.427042ms)
+✔ provider deadline aborts a long call without leaving an unbounded background task (5.056667ms)
+✔ request budget has a fresh deadline for each invocation and blocks all later database/provider/Storage calls (6.167667ms)
+✔ request budget forwards shorter caller cancellation and incoming request cancellation without starting new I/O (0.219584ms)
+✔ idle scheduler removes only one server-claimed abandoned package with exact paths and commits cleanup result (0.546417ms)
+✔ abandoned large PDFs clean up only bounded server-generated chunk paths in the same package (0.500125ms)
+✔ disabled/TEST runtime and invocations doing financial work never claim cleanup or remove files (0.883042ms)
+✔ cleanup rejects unsafe paths, borrowed order/package folders, duplicate filenames and oversized batches before remove (2.686708ms)
+✔ storage failure resets safe abandoned cleanup for later retry without pretending files are removed (0.450584ms)
+(node:31681) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ uploaded real Flutter PDF survives app closure: Cron verifies money then submits/confirms/tracks, without a renderer process (148.167917ms)
+(node:31682) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31682) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+✔ authenticated worker reconciles only server-claimed references without exposing their owner or secrets (17.777042ms)
+✔ admin can operate the same reconciliation path (0.389791ms)
+✔ anonymous and malformed bearer requests never reach authentication or privileged configuration (0.836291ms)
+✔ unverified users and user-editable roles cannot inspect payment queues (0.614583ms)
+✔ caller cannot choose a payment, owner, amount, verification result, or oversized batch (1.075416ms)
+✔ malformed and excessive request bodies cannot claim queue rows (0.208917ms)
+✔ disabled environment or TEST configuration never queries privileged payment data or invokes the provider (0.389834ms)
+✔ closing new sales still reconciles an existing LIVE invoice without creating a new payment (0.137833ms)
+✔ empty due queue is a successful no-op and failed claims stay unavailable (0.771625ms)
+✔ malformed claimed references fail the entire batch before any provider lookup (0.293333ms)
+✔ one lookup failure does not stop recovery of other paid or definitively unpaid checkouts (0.190583ms)
+✔ pending or contradictory observations never declare either a paid or unpaid result (0.162667ms)
+✔ preflight and unsupported methods perform no authenticated or privileged work (0.139666ms)
+✔ deployed wrapper turns private intent results into flags and defaults production off (2.179583ms)
+ℹ tests 97
+ℹ suites 0
+ℹ pass 97
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1539.820083

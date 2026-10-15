@@ -1,0 +1,58 @@
+{
+  "abortLedgerRls": true,
+  "appRpcAccess": false,
+  "appTableAccess": false,
+  "automaticCustomerOrders": 0,
+  "businessReady": false,
+  "consumedNonces": 3,
+  "cron": [
+    {
+      "active": true,
+      "name": "snapfit-print-order-scheduler",
+      "schedule": "*/2 * * * *",
+      "secretLiteralAbsent": true,
+      "serviceRoleAbsent": true,
+      "timeout125s": true
+    }
+  ],
+  "cronRuns": [
+    {
+      "finishedAt": "2026-10-14T17:22:00.833624+00:00",
+      "startedAt": "2026-10-14T17:22:00.246907+00:00",
+      "status": "succeeded"
+    },
+    {
+      "finishedAt": "2026-10-14T17:20:03.714442+00:00",
+      "startedAt": "2026-10-14T17:20:00.041987+00:00",
+      "status": "succeeded"
+    }
+  ],
+  "mode": "APP_PDF_SUPABASE",
+  "nonceRls": true,
+  "packageRls": true,
+  "portoneLiveReady": false,
+  "preSdkAbortRecords": 0,
+  "prepaymentPackages": 0,
+  "proofFilesRemaining": 0,
+  "redprintingLiveReady": false,
+  "salesEnabled": false,
+  "schedulerHeartbeatFresh": true,
+  "schedulerLastSeenAt": "2026-10-14T17:22:02.012689+00:00",
+  "schedulerResponses": [
+    {
+      "closed": true,
+      "createdAt": "2026-10-14T17:22:01.468102+00:00",
+      "status": 200,
+      "timedOut": false,
+      "workCountsZero": true
+    },
+    {
+      "closed": true,
+      "createdAt": "2026-10-14T17:20:03.709567+00:00",
+      "status": 200,
+      "timedOut": false,
+      "workCountsZero": true
+    }
+  ],
+  "storageBytes": 218971604
+}

@@ -3,9 +3,9 @@ import { assertPrintOrder, getPrintSpec, PRINT_BUCKET, PRINT_MAX_PDF_BYTES, prin
 
 type SupabaseAdmin = any
 
-// Payment callbacks only queue work. The administrator renders the immutable
-// document with the same Flutter canvas used by the editor. Never substitute a
-// text summary PDF, a thumbnail ZIP, or missing-image placeholders for a book.
+// Historical paid orders keep their existing renderer path. New app-generated
+// orders seal their exact PDF package before payment through the owner endpoint.
+// Never substitute a text summary, thumbnail ZIP or missing-image placeholder.
 export async function buildPrintPackage(_supabase: SupabaseAdmin, order: OrderRow) {
   printSnapshot(order)
   return { patch: { print_fulfillment_status: 'AWAITING_RENDER' } }
@@ -31,12 +31,32 @@ export function resolvePrintAssetPath(source: string, supabaseUrl: string, allow
   return path
 }
 
-export async function getPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, supabaseUrl: string) {
+export async function getPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, supabaseUrl: string,
+  options: { allowedAssetOwners?: string[] } = {}) {
   assertPrintOrder(order)
+  return signPrintSnapshot(supabase, order, supabaseUrl, options)
+}
+
+// Only the owner endpoint may pass this server-loaded PREPARED intent. Existing
+// paid rendering continues to require assertPrintOrder; no fabricated receipt
+// is used to read or render a document before the customer's payment.
+export async function getPrepaymentPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, intent: Record<string, any>,
+  actor: string, supabaseUrl: string) {
+  if (intent.user_id !== actor || order.user_id !== actor || intent.order_id !== order.order_id ||
+      intent.status !== 'PREPARED' || order.status !== 'PAYMENT_PENDING' || order.checkout_flow !== 'PORTONE_V2_V1' ||
+      order.payment_reversed_at || intent.request_hold === true || Date.parse(intent.expires_at) <= Date.now() ||
+      !Array.isArray(intent.source_asset_owners) || JSON.stringify(intent.snapshot) !== JSON.stringify(order.print_content_snapshot)) {
+    throw new OrderPaymentError('print_prepayment_state_changed', 409)
+  }
+  return signPrintSnapshot(supabase, order, supabaseUrl, { allowedAssetOwners: intent.source_asset_owners })
+}
+
+async function signPrintSnapshot(supabase: SupabaseAdmin, order: OrderRow, supabaseUrl: string,
+  options: { allowedAssetOwners?: string[] } = {}) {
   const spec = getPrintSpec(order)
   const snapshot = printSnapshot(order)
-  const allowedOwners = new Set([String(snapshot.album.owner_id ?? ''), String(order.user_id ?? '')].filter(Boolean))
-  if (order.album_id != null) {
+  const allowedOwners = new Set(options.allowedAssetOwners ?? [String(snapshot.album.owner_id ?? ''), String(order.user_id ?? '')].filter(Boolean))
+  if (!options.allowedAssetOwners && order.album_id != null) {
     const { data, error } = await supabase.from('album_members').select('user_id').eq('album_id', order.album_id).in('role', ['OWNER','EDITOR'])
     if (error) throw error
     for (const member of data ?? []) allowedOwners.add(member.user_id)
@@ -69,12 +89,16 @@ async function ensureBucket(supabase: SupabaseAdmin) {
   }
   if (readError && !['404', '400'].includes(String(readError.statusCode)) && !/not found/i.test(readError.message ?? '')) throw readError
   const { error } = await supabase.storage.createBucket(PRINT_BUCKET, {
-    public: false, fileSizeLimit: PRINT_MAX_PDF_BYTES, allowedMimeTypes: ['application/pdf', 'application/json'],
+    public: false, fileSizeLimit: PRINT_MAX_PDF_BYTES, allowedMimeTypes: ['application/pdf', 'application/json', 'application/octet-stream'],
   })
   if (error && !/already exists|duplicate/i.test(error.message ?? '')) throw error
 }
 
-export async function createPrintUploads(supabase: SupabaseAdmin, order: OrderRow) {
+export type PrintPackageLease = { owner: string }
+const withLease = (query: any, lease?: PrintPackageLease) => lease ?
+  query.eq('print_package_lock_token', lease.owner).gt('print_package_lock_until', new Date().toISOString()) : query
+
+export async function createPrintUploads(supabase: SupabaseAdmin, order: OrderRow, lease?: PrintPackageLease) {
   assertPrintOrder(order)
   const spec = getPrintSpec(order)
   if (['SUBMITTED', 'ACCEPTED'].includes(String(order.print_fulfillment_status))) throw new OrderPaymentError('print_already_submitted', 409)
@@ -82,11 +106,11 @@ export async function createPrintUploads(supabase: SupabaseAdmin, order: OrderRo
   const uploadId = crypto.randomUUID()
   const base = `${order.order_id}/${uploadId}`
   const fingerprint = await sourceFingerprint(order)
-  const { data, error } = await supabase.from('orders').update({
+  const { data, error } = await withLease(supabase.from('orders').update({
     print_upload_id: uploadId, print_upload_fingerprint: fingerprint, print_fulfillment_status: 'RENDERING',
     print_spec_confirmed_at: null,
   }).eq('order_id', order.order_id).eq('status', 'PAYMENT_COMPLETED').is('payment_reversed_at', null)
-    .eq('print_fulfillment_status', order.print_fulfillment_status ?? 'AWAITING_RENDER').select().maybeSingle()
+    .eq('print_fulfillment_status', order.print_fulfillment_status ?? 'AWAITING_RENDER'), lease).select().maybeSingle()
   if (error) throw error
   if (!data) throw new OrderPaymentError('print_state_changed', 409)
   const [cover, interior] = await Promise.all(['cover.pdf', 'interior.pdf'].map(async file => {
@@ -123,9 +147,14 @@ export function createPdfInspector(pdfLib: any): PdfInspector {
         // ICC signature and data color space are binary profile-header facts.
         if (icc.length < 128 || new TextDecoder().decode(icc.subarray(36,40)) !== 'acsp' ||
             new TextDecoder().decode(icc.subarray(16,20)) !== 'RGB ') throw new OrderPaymentError('invalid_print_icc_profile', 409)
-        // The renderer's checked-in LittleCMS sRGB profile; a different RGB
-        // monitor/press profile cannot be passed off as the declared sRGB output.
-        if (await sha256(icc) !== 'b9c099b4d89b06f6105a70c8f925ea16d3eb9b1b4301ad1986fd52aa669504d3') throw new OrderPaymentError('print_srgb_profile_mismatch', 409)
+        // Only the renderer's known sRGB profiles are accepted. Retain the
+        // historical v4 profile for existing files; new rendering uses v2.1
+        // for compatibility with PDF 1.4 and older print consumers.
+        const profileHash = await sha256(icc)
+        if (!['8ada55c9a812761b03ecada49d9b30672746359a516190b8ae08b9ca5c8cb473',
+          'b9c099b4d89b06f6105a70c8f925ea16d3eb9b1b4301ad1986fd52aa669504d3'].includes(profileHash)) {
+          throw new OrderPaymentError('print_srgb_profile_mismatch', 409)
+        }
         rgbProfileFound = true
       }
     }
@@ -174,7 +203,8 @@ export async function validatePrintPdf(bytes: Uint8Array, pageCount: number, wid
   return { pageCount, widthMm, heightMm, byteLength: bytes.length, sha256: await sha256(bytes) }
 }
 
-export async function finalizePrintPackage(supabase: SupabaseAdmin, order: OrderRow, body: Record<string, any>, inspect: PdfInspector = inspectPdf) {
+export async function finalizePrintPackage(supabase: SupabaseAdmin, order: OrderRow, body: Record<string, any>, inspect: PdfInspector = inspectPdf,
+  lease?: PrintPackageLease) {
   assertPrintOrder(order)
   if (order.print_upload_id === body.uploadId && ['REVIEW_REQUIRED','READY'].includes(String(order.print_fulfillment_status)) &&
       (order.print_manifest as any)?.sourceFingerprint === body.manifest?.sourceFingerprint) return order
@@ -216,17 +246,17 @@ export async function finalizePrintPackage(supabase: SupabaseAdmin, order: Order
         stored.interior?.sha256 !== interior.sha256 || stored.spec?.specVersion !== spec.specVersion) throw new OrderPaymentError('print_manifest_conflict', 409)
     savedManifest = stored
   }
-  const { data, error } = await supabase.from('orders').update({
+  const { data, error } = await withLease(supabase.from('orders').update({
     print_cover_pdf_path: coverPath, print_interior_pdf_path: interiorPath, print_manifest_path: manifestPath,
     print_manifest: savedManifest, print_fulfillment_status: 'REVIEW_REQUIRED', print_package_generated_at: generatedAt,
     print_asset_count: Number(order.page_count) + 1, print_vendor: 'REDPRINTING',
     print_file_pdf_url: null, print_file_zip_url: null, print_package_json_url: null,
   }).eq('order_id', order.order_id).eq('status', 'PAYMENT_COMPLETED').is('payment_reversed_at', null)
-    .eq('print_upload_id', body.uploadId).eq('print_fulfillment_status', 'RENDERING').select().maybeSingle()
+    .eq('print_upload_id', body.uploadId).eq('print_fulfillment_status', 'RENDERING'), lease).select().maybeSingle()
   if (error) throw error
   if (!data) {
     const { data: current, error: currentError } = await supabase.from('orders').select('*').eq('order_id', order.order_id).maybeSingle()
-    if (!currentError && !current?.payment_reversed_at && current?.print_upload_id === body.uploadId &&
+    if (!lease && !currentError && !current?.payment_reversed_at && current?.print_upload_id === body.uploadId &&
         ['REVIEW_REQUIRED','READY'].includes(String(current?.print_fulfillment_status))) return current
     throw new OrderPaymentError('print_state_changed', 409)
   }

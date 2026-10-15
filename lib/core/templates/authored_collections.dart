@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../constants/cover_size.dart';
 import 'studio_decoration_catalog.dart';
+import 'free_template_material_policy.dart';
 import 'template_catalog_categories.dart';
 
 part 'authored_petal.dart';
@@ -13,6 +14,9 @@ part 'authored_journey.dart';
 part 'authored_small_days.dart';
 part 'authored_free_expansion.dart';
 part 'authored_free_layouts.dart';
+part 'authored_free_photo_direction.dart';
+part 'authored_free_photo_covers.dart';
+part 'authored_free_quality_spreads.dart';
 part 'authored_life_collections.dart';
 part 'authored_life_layouts.dart';
 part 'authored_wind_atlas.dart';
@@ -29,10 +33,13 @@ part 'authored_volume_family_couple.dart';
 part 'authored_volume_travel_baby.dart';
 part 'authored_volume_wedding.dart';
 part 'authored_concept_wave.dart';
+part 'authored_concept_quality.dart';
+part 'authored_catalog_covers.dart';
 part 'authored_concept_wedding.dart';
 part 'authored_concept_coast.dart';
 part 'authored_concept_reading.dart';
 part 'authored_concept_life.dart';
+part 'authored_garden_letters.dart';
 part 'authored_concept_baby.dart';
 part 'authored_concept_family.dart';
 part 'authored_concept_couple.dart';
@@ -86,7 +93,14 @@ class AuthoredCollection {
       proseStudyId => buildProseAlbum(aspect),
       _ => FreeCollectionVolume.byId(id)?.document(aspect),
     };
-    if (current != null) return current;
+    if (current != null) {
+      final published = _refineBaselineCatalogCover(id, aspect, current);
+      validateFreeTemplateMaterials(published);
+      return {
+        ...published,
+        'materialPolicyRevision': freeTemplateMaterialPolicyRevision,
+      };
+    }
     final pages = switch (id) {
       'petal_archive' => _petal(aspect),
       'lost_and_found' => _wander(aspect),

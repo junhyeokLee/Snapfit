@@ -191,7 +191,7 @@ void main() {
                       children: [
                         Positioned(
                           left: 20,
-                          right: 20,
+                          right: 190,
                           bottom: coverLayerActionPanelBottom(
                             isCreateFlow: true,
                             scaleBaseOffset: (value) => value.h,
@@ -319,9 +319,9 @@ void main() {
       expect(find.text('레이아웃'), findsOneWidget);
       expect(find.text('템플릿'), findsOneWidget);
       expect(find.text('레이어'), findsOneWidget);
-      expect(find.text('스티커'), findsOneWidget);
+      expect(find.text('꾸미기'), findsOneWidget);
       expect(find.text('배경'), findsOneWidget);
-      expect(find.text('표지 완성'), findsOneWidget);
+      expect(find.text('편집 시작'), findsOneWidget);
       expect(find.textContaining('함께 볼 사람'), findsNothing);
       expect(find.textContaining('초대'), findsNothing);
       expect(find.byType(EditorBottomMenu), findsOneWidget);

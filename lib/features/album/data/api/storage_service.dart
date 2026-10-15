@@ -1,10 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:uuid/uuid.dart';
 import '../../../billing/data/billing_repository.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../gallery/browser_photo_asset.dart';
 
 class UploadedUrls {
   final String? originalUrl;
@@ -162,6 +164,7 @@ class StorageService {
     AssetEntity asset, {
     int previewMaxDimension = 1600,
   }) async {
+    if (asset is BrowserPhotoAsset) return _uploadBrowserPhotoVariants(asset);
     String? originalUrl;
     String? previewUrl;
     String? originalGsPath;
@@ -230,6 +233,81 @@ class StorageService {
     );
   }
 
+  Future<UploadedUrls> _uploadBrowserPhotoVariants(
+    BrowserPhotoAsset asset,
+  ) async {
+    final client = _requireSupabase();
+    final owner = client.auth.currentUser?.id;
+    void sameOwner() {
+      if (owner == null ||
+          owner != asset.ownerId ||
+          client.auth.currentUser?.id != owner) {
+        throw StateError('browser_photo_owner_changed');
+      }
+    }
+
+    sameOwner();
+    await _ensureStorageQuota(
+      asset.originalBytes.length + asset.previewBytes.length,
+    );
+    sameOwner();
+    final stamp = const Uuid().v4();
+    final originalPath = userScopedAlbumAssetPath(
+      userId: owner!,
+      relativePath:
+          'albums/images/${stamp}_${asset.id}_orig.${asset.extension}',
+    );
+    final previewPath = userScopedAlbumAssetPath(
+      userId: owner,
+      relativePath: 'albums/images/${stamp}_${asset.id}_preview.jpg',
+    );
+    final uploaded = <String>[];
+    try {
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            originalPath,
+            asset.originalBytes,
+            fileOptions: FileOptions(
+              contentType: asset.mimeType,
+              upsert: false,
+            ),
+          );
+      uploaded.add(originalPath);
+      sameOwner();
+      await client.storage
+          .from('album-assets')
+          .uploadBinary(
+            previewPath,
+            asset.previewBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      uploaded.add(previewPath);
+      sameOwner();
+      return UploadedUrls(
+        originalUrl: client.storage
+            .from('album-assets')
+            .getPublicUrl(originalPath),
+        previewUrl: client.storage
+            .from('album-assets')
+            .getPublicUrl(previewPath),
+        originalGsPath: 'supabase://album-assets/$originalPath',
+        previewGsPath: 'supabase://album-assets/$previewPath',
+      );
+    } catch (_) {
+      // A partial pair must not be attached to an album as a successful save.
+      if (client.auth.currentUser?.id == owner && uploaded.isNotEmpty) {
+        try {
+          await client.storage.from('album-assets').remove(uploaded);
+        } catch (_) {}
+      }
+      rethrow;
+    }
+  }
+
   Future<List<AiAlbumPreviewUpload>> uploadAiAlbumPreviews({
     required String draftId,
     required List<AssetEntity> assets,
@@ -244,12 +322,17 @@ class StorageService {
 
     final uploads = <AiAlbumPreviewUpload>[];
     for (final asset in assets) {
+      if (asset is BrowserPhotoAsset && asset.ownerId != userId) {
+        throw StateError('browser_photo_owner_changed');
+      }
       final bytes = await asset.thumbnailDataWithSize(
         ThumbnailSize.square(maxDimension),
         format: ThumbnailFormat.jpeg,
         quality: 72,
       );
       if (bytes == null || bytes.isEmpty) continue;
+      if (supabase.auth.currentUser?.id != userId)
+        throw StateError('browser_photo_owner_changed');
       final path = userScopedAiAlbumPreviewPath(
         userId: userId,
         draftId: draftId,
@@ -266,6 +349,8 @@ class StorageService {
               upsert: false,
             ),
           );
+      if (supabase.auth.currentUser?.id != userId)
+        throw StateError('browser_photo_owner_changed');
       uploads.add(
         AiAlbumPreviewUpload(
           assetId: asset.id,
@@ -306,18 +391,30 @@ class StorageService {
       // 인쇄 품질(95%)을 유지하면서 업로드 속도를 획기적으로 개선
       final originalName = '${ts}_orig.jpg';
       final previewName = '${ts}_preview.jpg';
-      final originalBytes = await FlutterImageCompress.compressWithList(
-        pngBytes,
-        quality: 85,
-        format: CompressFormat.jpeg,
-      );
-      final previewBytes = await FlutterImageCompress.compressWithList(
-        pngBytes,
-        minWidth: previewMaxDimension,
-        minHeight: previewMaxDimension,
-        quality: 80,
-        format: CompressFormat.jpeg,
-      );
+      final originalBytes = kIsWeb
+          ? await browserPhotoJpegPreview(
+              pngBytes,
+              maxDimension: originalMaxDimension,
+              quality: 95,
+            )
+          : await FlutterImageCompress.compressWithList(
+              pngBytes,
+              quality: 85,
+              format: CompressFormat.jpeg,
+            );
+      final previewBytes = kIsWeb
+          ? await browserPhotoJpegPreview(
+              pngBytes,
+              maxDimension: previewMaxDimension,
+              quality: 80,
+            )
+          : await FlutterImageCompress.compressWithList(
+              pngBytes,
+              minWidth: previewMaxDimension,
+              minHeight: previewMaxDimension,
+              quality: 80,
+              format: CompressFormat.jpeg,
+            );
       await _ensureStorageQuota(originalBytes.length + previewBytes.length);
 
       Future<void> uploadOriginal() async {
@@ -391,6 +488,12 @@ class StorageService {
     required int maxDimension,
     int quality = 80,
   }) async {
+    if (kIsWeb)
+      return browserPhotoJpegPreview(
+        bytes,
+        maxDimension: maxDimension,
+        quality: quality,
+      );
     try {
       final compressed = await FlutterImageCompress.compressWithList(
         bytes,

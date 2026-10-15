@@ -9,6 +9,9 @@ import '../../../../../core/templates/studio_word_art_catalog.dart';
 import '../../../../../shared/widgets/studio_word_art_preview.dart';
 import '../../../../../shared/widgets/studio_decoration.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
+import '../../../../../shared/widgets/editor_material_filter_bar.dart';
+import '../../../../point_shop/data/point_shop_provider.dart';
+import '../../../../point_shop/domain/point_shop_product.dart';
 
 class DecorateStickerTab extends ConsumerStatefulWidget {
   final Color surfaceColor;
@@ -29,6 +32,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
   bool _isApplying = false;
   bool _favoritesOnly = false;
   String? _collection;
+  String _price = '전체', _query = '';
 
   static const List<_StickerItem> _stickersAll = [
     _StickerItem.deco("stickerBlueStar", scale: 1.0),
@@ -169,15 +173,14 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
         length: 6,
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CatalogFavoriteFilter(
-                  selected: _favoritesOnly,
-                  onChanged: (value) => setState(() => _favoritesOnly = value),
-                ),
-              ),
+            EditorMaterialFilterBar(
+              query: _query,
+              price: _price,
+              onPriceChanged: (value) => setState(() => _price = value),
+              onQueryChanged: (value) => setState(() => _query = value),
+              favoritesOnly: _favoritesOnly,
+              onFavoritesChanged: () =>
+                  setState(() => _favoritesOnly = !_favoritesOnly),
             ),
             if (!_favoritesOnly)
               TabBar(
@@ -198,7 +201,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                 ],
               ),
             Expanded(
-              child: _favoritesOnly
+              child: _favoritesOnly || _query.trim().isNotEmpty
                   ? _grid(
                       [
                         ..._studioEntries(studioDecorations),
@@ -206,7 +209,7 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
                         ..._legacyEntries(),
                       ],
                       favorites,
-                      onlyFavorites: true,
+                      onlyFavorites: _favoritesOnly,
                     )
                   : TabBarView(
                       children: [
@@ -353,14 +356,36 @@ class _DecorateStickerTabState extends ConsumerState<DecorateStickerTab> {
     CatalogFavorites favorites, {
     bool onlyFavorites = false,
   }) {
+    final products = {
+      for (final p
+          in ref.watch(pointShopCatalogProvider).asData?.value ??
+              <PointShopProduct>[])
+        p.productKey: p,
+    };
+    final owned =
+        ref.watch(ownedPointShopKeysProvider).asData?.value ?? <String>{};
     final items = favorites.arrange(
-      source,
+      source.where(
+        (item) => matchesEditorMaterial(
+          query: _query,
+          price: _price,
+          label: item.label,
+          productKey: item.productKey,
+          products: products,
+          owned: owned,
+        ),
+      ),
       (s) => CatalogFavoriteKeys.decoration(s.value),
       onlyFavorites: onlyFavorites,
     );
     if (items.isEmpty)
-      return CatalogFavoritesEmpty(
-        onShowAll: () => setState(() => _favoritesOnly = false),
+      return EditorMaterialEmpty(
+        onReset: () => setState(() {
+          _favoritesOnly = false;
+          _price = '전체';
+          _query = '';
+          _collection = null;
+        }),
       );
     final colors = Theme.of(context).colorScheme;
     final scale = MediaQuery.textScalerOf(context).scale(12) / 12;

@@ -6,6 +6,9 @@ part 'keepsake_material_catalog.dart';
 part 'atelier_composition_catalog.dart';
 part 'concept_wave_material_catalog.dart';
 
+/// Basic photo legibility effects, not independently purchasable materials.
+const photoCoverShadeStyles = {'photoCoverShadeTop', 'photoCoverShadeBottom'};
+
 enum StudioDecorationCategory {
   paper('종이'),
   sticker('스티커'),

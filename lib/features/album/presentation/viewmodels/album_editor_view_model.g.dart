@@ -10,11 +10,11 @@ part of 'album_editor_view_model.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AlbumEditorViewModel)
-const albumEditorViewModelProvider = AlbumEditorViewModelProvider._();
+final albumEditorViewModelProvider = AlbumEditorViewModelProvider._();
 
 final class AlbumEditorViewModelProvider
     extends $AsyncNotifierProvider<AlbumEditorViewModel, AlbumEditorState> {
-  const AlbumEditorViewModelProvider._()
+  AlbumEditorViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -34,14 +34,13 @@ final class AlbumEditorViewModelProvider
 }
 
 String _$albumEditorViewModelHash() =>
-    r'd66017c35d04c9bf3b5d624673e7551e34c4bacf';
+    r'17eeec5a61e235229cafdbd3006d4298c10ed347';
 
 abstract class _$AlbumEditorViewModel extends $AsyncNotifier<AlbumEditorState> {
   FutureOr<AlbumEditorState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
     final ref =
         this.ref as $Ref<AsyncValue<AlbumEditorState>, AlbumEditorState>;
     final element =
@@ -52,6 +51,6 @@ abstract class _$AlbumEditorViewModel extends $AsyncNotifier<AlbumEditorState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    element.handleCreate(ref, build);
   }
 }

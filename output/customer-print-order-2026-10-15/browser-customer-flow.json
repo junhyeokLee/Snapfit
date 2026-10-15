@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-15T05:25:37.551Z",
+  "albumId": 69,
+  "normalCustomerRouteUsed": true,
+  "adminDevTestNotSelected": true,
+  "existingSignedInAdminAccountUsedForNormalRoute": true,
+  "syntheticRecipientOnly": true,
+  "deliveryFormValidationConfirmed": true,
+  "orderReviewVisible": true,
+  "paymentPreparingVisible": true,
+  "paymentButtonDisabled": true,
+  "orderOrPaymentConfirmationNotDisplayed": true,
+  "newSdkLaunch": false,
+  "realPaymentOrVendorOrder": false,
+  "screenshot": "customer-order-review-closed.png",
+  "historyObservedAt": "2026-10-15T05:26:10.204Z",
+  "historyReachedFromMyPage": true,
+  "customerHistoryEmptyAsExpected": true,
+  "adminTestOrderNotShownInCustomerHistory": true,
+  "historyScreenshot": "customer-order-history-empty.png"
+}

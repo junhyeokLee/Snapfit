@@ -1,0 +1,15 @@
+{
+  "uiTestsPassed": 99,
+  "backendTestsPassed": 26,
+  "analysisIssues": 0,
+  "postDisplayChangeHistoryTestsPassed": 14,
+  "postDisplayChangeHistoryTestsFailed": 0,
+  "postDisplayChangeTestElapsedSeconds": 5,
+  "sourceDisplayDifferenceDocumented": "source-display-drift.json",
+  "servedBuildUnchanged": true,
+  "webFilePreparationApproxMinutes": 13,
+  "testPaymentFrameManuallyReloadedOnce": true,
+  "newInvoiceOrChannelNotChangedForReload": true,
+  "liveOpened": false,
+  "finalEvidence": "finalresult.json"
+}

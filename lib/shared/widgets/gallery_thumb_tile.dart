@@ -27,9 +27,10 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
     with AutomaticKeepAliveClientMixin {
   Uint8List? _thumbData;
   bool _loading = false;
+  int _request = 0;
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => !widget.simpleMode;
 
   @override
   void initState() {
@@ -40,12 +41,31 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
   Future<void> _loadThumb() async {
     if (_loading) return;
     _loading = true;
-    final data = await widget.asset.thumbnailDataWithSize(
-      const ThumbnailSize.square(150),
-    );
-    if (!mounted) return;
-    setState(() => _thumbData = data);
-    _loading = false;
+    final request = ++_request;
+    Uint8List? data;
+    try {
+      data = await widget.asset.thumbnailDataWithSize(
+        const ThumbnailSize.square(150),
+      );
+    } catch (_) {
+      // Deleted or unavailable photos must not leave the picker loading forever.
+    }
+    if (!mounted || request != _request) return;
+    setState(() {
+      _thumbData = data;
+      _loading = false;
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant GalleryThumbTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.asset.id != widget.asset.id) {
+      _thumbData = null;
+      _loading = false;
+      _loadThumb();
+    }
+    if (oldWidget.simpleMode != widget.simpleMode) updateKeepAlive();
   }
 
   bool _interacting = false;
@@ -103,16 +123,23 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                         child: SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: SnapFitColors.textMutedOf(context),
-                          ),
+                          child: _loading
+                              ? CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: SnapFitColors.textMutedOf(context),
+                                )
+                              : Icon(
+                                  Icons.photo_outlined,
+                                  color: SnapFitColors.textMutedOf(context),
+                                  size: 22,
+                                ),
                         ),
                       ),
                     )
                   : Image.memory(
                       _thumbData!,
                       fit: BoxFit.cover,
+                      cacheWidth: 300,
                       gaplessPlayback: true,
                     ),
               if (widget.isSelected)
@@ -151,6 +178,7 @@ class GalleryThumbTileState extends State<GalleryThumbTile>
                     : Image.memory(
                         _thumbData!,
                         fit: BoxFit.cover,
+                        cacheWidth: 600,
                         gaplessPlayback: true,
                       ),
               ),

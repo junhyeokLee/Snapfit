@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/experience_style.dart';
+import '../../../../shared/widgets/album_stage_style.dart';
+import '../../../store/presentation/views/material_catalog_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/screen_logger.dart';
+import '../../../../core/navigation/web_app_location.dart';
 import '../../../../core/constants/snapfit_colors.dart';
 import '../../../auth/presentation/viewmodels/auth_view_model.dart';
 import '../../../profile/presentation/views/my_page_screen.dart';
@@ -18,9 +22,12 @@ import '../widgets/home/home_error_state.dart';
 import 'album_create_flow_screen.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../notification/presentation/views/notification_screen.dart';
-import '../../../store/presentation/views/store_screen.dart';
+import '../../../store/presentation/views/store_hub_screen.dart';
 import '../providers/home_ui_state_provider.dart';
 import '../utils/home_album_section_builder.dart';
+import '../../data/album_creation_draft_store.dart';
+import '../../domain/entities/album_creation_draft.dart';
+import '../web/web_album_library_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -33,11 +40,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const String _favoriteKey = 'album_favorite_ids_v1';
   Set<int> _favoriteAlbumIds = <int>{};
   final List<int> _bottomNavHistory = <int>[0];
+  final _destinationBodyKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    ScreenLogger.enter('HomeScreen', '홈 · 중앙 앨범 캐러셀');
+    ScreenLogger.enter('HomeScreen', kIsWeb ? '웹 · 앨범 보관함' : '홈 · 중앙 앨범 캐러셀');
     _loadFavoriteAlbumIds();
   }
 
@@ -69,6 +77,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(homeViewModelProvider.notifier).refresh();
   }
 
+  Future<void> _resumeDraft(AlbumCreationDraft draft) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        settings: const WebAppRouteSettings(WebAppLocation.create),
+        builder: (_) => AlbumCreateFlowScreen(initialDraft: draft),
+      ),
+    );
+    if (mounted) ref.invalidate(albumCreationDraftProvider);
+  }
+
   void _handleBottomNavTap(int index) {
     final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
     final currentIndex = ref.read(homeUiStateProvider).bottomNavIndex;
@@ -97,8 +116,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return const WebAlbumLibraryScreen();
     final albumsAsync = ref.watch(homeViewModelProvider);
     final authAsync = ref.watch(authViewModelProvider);
+    final draft = ref.watch(albumCreationDraftProvider).asData?.value;
     final unreadNotificationCount = ref.watch(notificationUnreadCountProvider);
     final uiState = ref.watch(homeUiStateProvider);
     final uiStateNotifier = ref.read(homeUiStateProvider.notifier);
@@ -108,9 +129,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       orElse: () => false,
     );
     Future<void> handleCreateAlbum() async {
+      if (draft != null) {
+        final resume = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('만들던 앨범이 있어요'),
+            content: Text(
+              '${draft.title.trim().isEmpty ? '제목 없는 앨범' : draft.title}\n새 앨범을 임시 저장하면 기존 임시 저장을 대체해요.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('새 앨범'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('이어 만들기'),
+              ),
+            ],
+          ),
+        );
+        if (!context.mounted || resume == null) return;
+        if (resume) return _resumeDraft(draft);
+      }
       final created = await Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const AlbumCreateFlowScreen()),
+        MaterialPageRoute(
+          settings: const WebAppRouteSettings(WebAppLocation.create),
+          builder: (_) => const AlbumCreateFlowScreen(),
+        ),
       );
       if (created == true && context.mounted) {
         await ref.read(homeViewModelProvider.notifier).refresh();
@@ -118,19 +165,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final baseBackground = SnapFitColors.backgroundOf(context);
-    const paperTop = Color(0xFFEFE2D0);
-    const paperBottom = Color(0xFFF8EFE2);
     final homeBackground = uiState.bottomNavIndex == 0
-        ? paperTop
+        ? AlbumStageStyle.top(context)
         : baseBackground;
-    const homeOverlayStyle = SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    );
-    SystemChrome.setSystemUIOverlayStyle(homeOverlayStyle);
+    final homeOverlayStyle = AlbumStageStyle.overlay(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: homeOverlayStyle,
@@ -142,21 +180,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isLandscape = constraints.maxWidth > constraints.maxHeight;
-            final body = _buildBottomNavBody(
+            final isLandscape =
+                constraints.maxWidth >= 600 &&
+                constraints.maxWidth > constraints.maxHeight;
+            final destination = _buildBottomNavBody(
               context,
               currentBottomNavIndex: uiState.bottomNavIndex,
               homeBody: DecoratedBox(
                 decoration: BoxDecoration(
                   color: uiState.bottomNavIndex == 0
-                      ? paperTop
+                      ? AlbumStageStyle.top(context)
                       : baseBackground,
                   gradient: uiState.bottomNavIndex == 0
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [paperTop, paperBottom],
-                        )
+                      ? AlbumStageStyle.gradient(context)
                       : null,
                 ),
                 child: SafeArea(
@@ -177,9 +213,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ? HomeAlbumSlider(
                               albums: sortedBaseAlbums,
                               onCreateAlbum: handleCreateAlbum,
+                              onResumeDraft: draft == null
+                                  ? null
+                                  : () => _resumeDraft(draft),
                               onOpenAlbumTab: () => _handleBottomNavTap(1),
                             )
-                          : HomeEmptyState(onCreate: handleCreateAlbum);
+                          : HomeEmptyState(
+                              onCreate: handleCreateAlbum,
+                              onResumeDraft: draft == null
+                                  ? null
+                                  : () => _resumeDraft(draft),
+                            );
 
                       final albumTabContent = HomeAlbumTabScreen(
                         allAlbums: prepared.myRecordsAlbums,
@@ -197,13 +241,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                     loading: () => const Center(
                       child: CircularProgressIndicator(
-                        color: SnapFitColors.accentLight,
+                        color: SnapFitColors.accent,
                       ),
                     ),
-                    error: (err, stack) => HomeErrorState(error: err),
+                    error: (err, stack) {
+                      final state = HomeErrorState(
+                        error: err,
+                        onRetry: _handlePullToRefresh,
+                      );
+                      return state;
+                    },
                   ),
                 ),
               ),
+            );
+            // Keep carousel selection and catalog filters when navigation moves to a rail.
+            final body = KeyedSubtree(
+              key: _destinationBodyKey,
+              child: destination,
             );
 
             return Scaffold(
@@ -217,34 +272,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       hasUnreadNotification: hasUnreadNotification,
                       onTap: _handleBottomNavTap,
                     ),
-              floatingActionButton:
-                  uiState.bottomNavIndex == 0 || uiState.bottomNavIndex == 1
-                  ? FloatingActionButton(
-                      key: const Key('homeCreateAlbumFab'),
-                      heroTag: 'homeCreateAlbumFab',
-                      tooltip: '새 앨범',
-                      elevation: 7,
-                      highlightElevation: 3,
-                      backgroundColor: SnapFitColors.accent,
-                      foregroundColor: Colors.white,
-                      shape: const CircleBorder(),
-                      onPressed: handleCreateAlbum,
-                      child: const Icon(Icons.add_rounded, size: 30),
-                    )
-                  : null,
-              body: isLandscape
-                  ? Row(
-                      children: [
-                        HomeBottomNavigationBar(
-                          currentIndex: uiState.bottomNavIndex,
-                          hasUnreadNotification: hasUnreadNotification,
-                          onTap: _handleBottomNavTap,
-                          rail: true,
-                        ),
-                        Expanded(child: body),
-                      ],
-                    )
-                  : body,
+              body: ExperienceNavigationScope(
+                onNavigate: _handleBottomNavTap,
+                onBack: _handleSystemBack,
+                child: isLandscape
+                    ? Row(
+                        children: [
+                          HomeBottomNavigationBar(
+                            currentIndex: uiState.bottomNavIndex,
+                            hasUnreadNotification: hasUnreadNotification,
+                            onTap: _handleBottomNavTap,
+                            rail: true,
+                          ),
+                          Expanded(child: body),
+                        ],
+                      )
+                    : body,
+              ),
             );
           },
         ),
@@ -262,11 +306,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 1:
         return homeBody;
       case 2:
-        return const StoreScreen();
+        return const StoreHubScreen(key: ValueKey('store-hub'));
       case 3:
         return const NotificationScreen();
       case 4:
         return const MyPageScreen();
+      case 5:
+        return const StoreHubScreen(
+          key: ValueKey('store-materials-entry'),
+          initialMaterials: true,
+        );
+      case 6:
+        return const MaterialCatalogScreen(library: true);
       default:
         return homeBody;
     }

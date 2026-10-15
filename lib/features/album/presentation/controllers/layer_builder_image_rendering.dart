@@ -13,6 +13,7 @@ Widget _buildImageImpl(
   LayerBuilder builder,
   LayerModel layer, {
   bool isCover = false,
+  bool wrapSpine = false,
 }) {
   // 편집 중인 레이어면 숨김
   if (builder._isEditing(layer)) return const SizedBox.shrink();
@@ -32,6 +33,28 @@ Widget _buildImageImpl(
 
   final fit = _imageFitForLayerImpl(layer);
   final alignment = _imageAlignmentForLayerImpl(layer);
+  final curveSpine =
+      wrapSpine &&
+      isCover &&
+      builder.interaction.isPreviewMode &&
+      builder.printImages == null;
+
+  Widget framePhoto(Widget photo) => curveSpine
+      ? _buildFramedImageImpl(builder, layer, photo)
+      : builder._buildFramedImage(layer, photo);
+
+  Widget previewPhoto(ImageProvider provider) => curveSpine
+      ? AlbumSpineImage(
+          image: provider,
+          alignment: alignment,
+          zoom: layer.imageZoom,
+        )
+      : Image(
+          image: provider,
+          fit: fit,
+          alignment: alignment,
+          filterQuality: FilterQuality.medium,
+        );
 
   if (builder.printImages != null) {
     final url = layer.originalUrl ?? layer.imageUrl ?? layer.previewUrl;
@@ -71,20 +94,16 @@ Widget _buildImageImpl(
       isCover: isCover,
       child: Opacity(
         opacity: layer.opacity,
-        child: builder._buildFramedImage(
-          layer,
-          Image(
-            image: AssetEntityImageProvider(layer.asset!),
-            fit: fit,
-            alignment: alignment,
-            filterQuality: FilterQuality.medium,
-          ),
-        ),
+        child: framePhoto(previewPhoto(photoAssetImageProvider(layer.asset!))),
       ),
     );
   }
 
-  final url = layer.previewUrl ?? layer.imageUrl ?? layer.originalUrl;
+  final url = [
+    layer.previewUrl,
+    layer.imageUrl,
+    layer.originalUrl,
+  ].whereType<String>().where((url) => url.isNotEmpty).firstOrNull;
   if (url == null || url.isEmpty) {
     return builder.interaction.buildInteractiveLayer(
       layer: layer,
@@ -112,14 +131,15 @@ Widget _buildImageImpl(
       isCover: isCover,
       child: Opacity(
         opacity: layer.opacity,
-        child: builder._buildFramedImage(
-          layer,
-          Image.asset(
-            assetPath,
-            fit: shouldContainAsset ? BoxFit.contain : fit,
-            alignment: alignment,
-            filterQuality: FilterQuality.medium,
-          ),
+        child: framePhoto(
+          curveSpine
+              ? previewPhoto(AssetImage(assetPath))
+              : Image.asset(
+                  assetPath,
+                  fit: shouldContainAsset ? BoxFit.contain : fit,
+                  alignment: alignment,
+                  filterQuality: FilterQuality.medium,
+                ),
         ),
       ),
     );
@@ -132,13 +152,15 @@ Widget _buildImageImpl(
     isCover: isCover,
     child: Opacity(
       opacity: layer.opacity,
-      child: builder._buildFramedImage(
-        layer,
+      child: framePhoto(
         SnapfitImage(
           key: ValueKey(layer.id), // Stable key to prevent reloading
           urlOrGs: url,
           fit: fit,
           alignment: alignment,
+          imageBuilder: curveSpine
+              ? (context, provider) => previewPhoto(provider)
+              : null,
         ),
       ),
     ),

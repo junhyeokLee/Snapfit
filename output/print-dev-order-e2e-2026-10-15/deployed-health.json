@@ -1,0 +1,102 @@
+{
+  "anonDenied": true,
+  "authenticatedDenied": true,
+  "customerOrders": 0,
+  "liveIntents": 0,
+  "migrationApplied": true,
+  "privateTables": {
+    "print_dev_checkouts": true,
+    "print_dev_fulfillment_outbox": true,
+    "print_dev_packages": true
+  },
+  "recentDevCron": [
+    {
+      "createdAt": "2026-10-15T03:28:00.581457+00:00",
+      "response": {
+        "budgetDeferred": false,
+        "cleanup": {
+          "checked": 0,
+          "errors": 0,
+          "removed": 0
+        },
+        "development": {
+          "advanced": 0,
+          "checked": 0,
+          "enabled": true,
+          "errors": 0,
+          "stage": null
+        },
+        "enabled": true,
+        "fulfillment": {
+          "advanced": 0,
+          "checked": 0,
+          "errors": 0
+        },
+        "payments": {
+          "checked": 0,
+          "errors": 0,
+          "pending": 0,
+          "verifiedPaid": 0,
+          "verifiedUnpaid": 0
+        },
+        "requests": {
+          "completed": 0,
+          "errors": 0,
+          "pending": 0,
+          "processed": 0
+        },
+        "runtimeReady": false
+      },
+      "statusCode": 200
+    },
+    {
+      "createdAt": "2026-10-15T03:26:01.884987+00:00",
+      "response": {
+        "budgetDeferred": false,
+        "cleanup": {
+          "checked": 0,
+          "errors": 0,
+          "removed": 0
+        },
+        "development": {
+          "advanced": 0,
+          "checked": 0,
+          "enabled": true,
+          "errors": 0,
+          "stage": null
+        },
+        "enabled": true,
+        "fulfillment": {
+          "advanced": 0,
+          "checked": 0,
+          "errors": 0
+        },
+        "payments": {
+          "checked": 0,
+          "errors": 0,
+          "pending": 0,
+          "verifiedPaid": 0,
+          "verifiedUnpaid": 0
+        },
+        "requests": {
+          "completed": 0,
+          "errors": 0,
+          "pending": 0,
+          "processed": 0
+        },
+        "runtimeReady": false
+      },
+      "statusCode": 200
+    }
+  ],
+  "sales": {
+    "businessReady": false,
+    "enabled": false,
+    "pgLiveReady": false,
+    "schedulerFresh": true,
+    "vendorLiveReady": false
+  },
+  "serviceAllowed": true,
+  "testJobs": 0,
+  "testRows": 0
+}

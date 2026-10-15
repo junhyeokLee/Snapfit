@@ -10,14 +10,16 @@ function token() {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return jsonResponse({ error: 'method_not_allowed' }, 405)
-  const supabase = adminClient()
   try {
     const body = await req.json().catch(() => ({}))
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return jsonResponse({ error: 'invalid_request' }, 400)
     const action = String(body.action ?? '').trim()
+    if (!['info', 'create', 'accept'].includes(action)) return jsonResponse({ error: 'unknown_action' }, 400)
+    const rawToken = typeof body.token === 'string' ? body.token : ''
+    if (action !== 'create' && !/^[A-Za-z0-9_-]{1,256}$/.test(rawToken)) return jsonResponse({ error: 'token_required' }, 400)
+    const supabase = adminClient()
 
     if (action === 'info') {
-      const rawToken = String(body.token ?? '').trim()
-      if (!rawToken) return jsonResponse({ error: 'token_required' }, 400)
       const { data: invite, error } = await supabase
         .from('album_invites')
         .select('token,album_id,role,created_by,expires_at,accepted_at')
@@ -25,17 +27,21 @@ Deno.serve(async (req) => {
         .maybeSingle()
       if (error) throw error
       if (!invite) return jsonResponse({ error: 'invite_not_found' }, 404)
-      if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+      if (invite.accepted_at) return jsonResponse({ error: 'invite_used' }, 409)
+      if (invite.expires_at && new Date(invite.expires_at).getTime() <= Date.now()) {
         return jsonResponse({ error: 'invite_expired' }, 410)
       }
-      const { data: album } = await supabase
+      const { data: album, error: albumError } = await supabase
         .from('albums')
         .select('title')
         .eq('id', invite.album_id)
         .maybeSingle()
-      const { data: inviter } = invite.created_by
+      if (albumError) throw albumError
+      if (!album) return jsonResponse({ error: 'invite_not_found' }, 404)
+      const { data: inviter, error: inviterError } = invite.created_by
         ? await supabase.from('profiles').select('name').eq('id', invite.created_by).maybeSingle()
-        : { data: null }
+        : { data: null, error: null }
+      if (inviterError) throw inviterError
       return jsonResponse({
         albumId: invite.album_id,
         albumTitle: album?.title ?? '앨범',
@@ -49,7 +55,7 @@ Deno.serve(async (req) => {
     if (action === 'create') {
       const albumId = Number(body.albumId)
       const role = String(body.role ?? 'EDITOR').toUpperCase()
-      if (!albumId || !['EDITOR', 'VIEWER'].includes(role)) return jsonResponse({ error: 'invalid_album_or_role' }, 400)
+      if (!Number.isSafeInteger(albumId) || albumId <= 0 || !['EDITOR', 'VIEWER'].includes(role)) return jsonResponse({ error: 'invalid_album_or_role' }, 400)
       const { data: album, error: albumError } = await supabase
         .from('albums')
         .select('id,owner_id')
@@ -71,31 +77,19 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'accept') {
-      const rawToken = String(body.token ?? '').trim()
-      if (!rawToken) return jsonResponse({ error: 'token_required' }, 400)
-      const { data: invite, error } = await supabase
-        .from('album_invites')
-        .select('token,album_id,role,expires_at,accepted_at')
-        .eq('token', rawToken)
-        .maybeSingle()
-      if (error) throw error
-      if (!invite) return jsonResponse({ error: 'invite_not_found' }, 404)
-      if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) return jsonResponse({ error: 'invite_expired' }, 410)
-      await supabase.from('album_members').upsert({
-        album_id: invite.album_id,
-        user_id: user.id,
-        role: invite.role ?? 'EDITOR',
-        status: 'ACCEPTED',
-        invited_by: null,
-        invite_token: rawToken,
+      const { data, error } = await supabase.rpc('accept_album_invite', {
+        p_token: rawToken,
+        p_user_id: user.id,
       })
-      await supabase.from('album_invites').update({ accepted_by: user.id, accepted_at: new Date().toISOString() }).eq('token', rawToken)
-      return jsonResponse({ albumId: invite.album_id, role: invite.role ?? 'EDITOR', success: true })
+      if (error) throw error
+      if (data?.error) return jsonResponse({ error: data.error }, data.status ?? 500)
+      if (!data?.success || !data?.albumId) throw new Error('Invalid acceptance result')
+      return jsonResponse(data)
     }
 
     return jsonResponse({ error: 'unknown_action' }, 400)
   } catch (e) {
-    console.error(e)
-    return jsonResponse({ error: String(e?.message ?? e) }, String(e?.message ?? '').includes('Unauthorized') ? 401 : 500)
+    const unauthorized = e instanceof Error && e.message === 'Unauthorized'
+    return jsonResponse({ error: unauthorized ? 'unauthorized' : 'invite_unavailable' }, unauthorized ? 401 : 500)
   }
 })

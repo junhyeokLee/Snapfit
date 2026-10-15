@@ -1,0 +1,16 @@
+{
+  "completed": true,
+  "totalExistingWarnings": 26,
+  "affectedFunctionWarnings": 0,
+  "affectedFunctionsChecked": [
+    "claim_print_package_cleanup",
+    "guard_print_prepayment_package",
+    "load_owned_print_checkout_context",
+    "print_package_parts_verified",
+    "print_prepayment_package",
+    "print_prepayment_ready",
+    "read_print_file_delivery",
+    "read_print_sales_readiness"
+  ],
+  "allAdvisorsClean": false
+}

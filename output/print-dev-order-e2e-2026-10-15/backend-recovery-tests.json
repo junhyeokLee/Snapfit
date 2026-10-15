@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-15",
+  "scope": "snapshot-only immutable TEST package recovery",
+  "files": 1,
+  "tests": 2,
+  "pass": 2,
+  "fail": 0,
+  "skipped": 0,
+  "durationMs": 6427.728167,
+  "fixtureInteriorBytes": 102193868,
+  "fixtureParts": 7,
+  "checks": [
+    "no recovery before every required part proof",
+    "no recovery with final part proof missing",
+    "original renderer report returned without declaredFiles or fileTransport",
+    "recovery packageId matches frozen owner package",
+    "other owner receives 404",
+    "READY packages do not expose recovery",
+    "original finalize validation and production gates unchanged"
+  ],
+  "strictTypeScriptPassed": true,
+  "environment": "local isolated SQL and storage/provider adapters",
+  "remoteActions": false,
+  "realPayments": 0,
+  "realVendorOrders": 0
+}

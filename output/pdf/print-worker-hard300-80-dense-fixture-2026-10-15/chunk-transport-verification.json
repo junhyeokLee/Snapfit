@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-15",
+  "fixtureOnly": true,
+  "realCustomerArtwork": false,
+  "pageCount": 80,
+  "sourceInteriorPages": 80,
+  "blankPagesAdded": 0,
+  "dpi": 300,
+  "imageEncoding": "JPEG quality 95",
+  "colorSpace": "sRGB",
+  "ICCEmbedded": true,
+  "lossyReencodingForTransport": false,
+  "maximumCoverBytes": 150000000,
+  "maximumInteriorBytes": 500000000,
+  "maximumStorageObjectBytes": 50000000,
+  "storagePartBytes": 16000000,
+  "productionApproved": false,
+  "physicalSampleValidated": false,
+  "visualChecks": [
+    "cover-review.png",
+    "interior-01-review.png",
+    "interior-41-review.png",
+    "interior-80-review.png"
+  ],
+  "cover": {
+    "bytes": 1805094,
+    "sha256": "3b104a7929719faa63586d6528b39dd7a0be89e4e278021338bee8aabd1e3001",
+    "streamedPartsSha256": "3b104a7929719faa63586d6528b39dd7a0be89e4e278021338bee8aabd1e3001",
+    "allBytesRetained": true,
+    "parts": [
+      {
+        "index": 0,
+        "bytes": 1805094,
+        "sha256": "3b104a7929719faa63586d6528b39dd7a0be89e4e278021338bee8aabd1e3001"
+      }
+    ]
+  },
+  "interior": {
+    "bytes": 102193868,
+    "sha256": "442b96d851167d70298d9e3f995bdee6e34f4fcf1cb17c3f4825d7658fb82c9a",
+    "streamedPartsSha256": "442b96d851167d70298d9e3f995bdee6e34f4fcf1cb17c3f4825d7658fb82c9a",
+    "allBytesRetained": true,
+    "parts": [
+      {
+        "index": 0,
+        "bytes": 16000000,
+        "sha256": "d19076625cc5dbe743eebafa13dd989a1e9f168ee27ae687ca1f25431d43ad03"
+      },
+      {
+        "index": 1,
+        "bytes": 16000000,
+        "sha256": "a5e23abf8a0260acb0fc03d7a3fe3fa8401a8b15f5f492a706666cd2594ce6b4"
+      },
+      {
+        "index": 2,
+        "bytes": 16000000,
+        "sha256": "8c6d62267a713ae0ad30f20029478eb3f2f6442887b01d85739f00371d336fb3"
+      },
+      {
+        "index": 3,
+        "bytes": 16000000,
+        "sha256": "25fb69b610867355c8b7620eb98b6d1dc70af44a95bf50cd7f848e21c7da1de1"
+      },
+      {
+        "index": 4,
+        "bytes": 16000000,
+        "sha256": "a2db9586c5f0a8acbf7c52151f8862ac0fff647e674a1d2f66f931caa793f4eb"
+      },
+      {
+        "index": 5,
+        "bytes": 16000000,
+        "sha256": "507b2981dba7993dc49acf992c8a82d2cd8c9030ba2ac415b41b961b8fed9ff2"
+      },
+      {
+        "index": 6,
+        "bytes": 6193868,
+        "sha256": "048e0622413bd08934f9a70602d3954ea2a57a3fca9ec2df961472ad1c8a64e2"
+      }
+    ]
+  }
+}

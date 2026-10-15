@@ -1,0 +1,57 @@
+{
+  "recordedAtUTC": "2026-10-14T15:43:04.464286+00:00",
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "preparedSoftware": {
+    "customerOrderAndPaymentRecovery": true,
+    "supplierSubmissionAndDepositPreflight": true,
+    "customerCancellationAndRefundRequests": true,
+    "adminPdfDownloadsAndRequests": true,
+    "adminDraftPricesStored": true
+  },
+  "observedServer": {
+    "customerSalesEnabled": false,
+    "environment": "disabled",
+    "automaticCustomerOrders": 0,
+    "customerRequests": 0,
+    "paymentReversals": 0,
+    "newFunctionsRequireJWT": true,
+    "newPrivateRpcAccessServiceOnly": true
+  },
+  "priceDrafts": [
+    {
+      "productId": "REDP_200X150_SOFT",
+      "pageCount": 20,
+      "amount": 49900,
+      "estimatedContribution": 17180,
+      "allApprovalsClosed": true
+    },
+    {
+      "productId": "REDP_300_HARD",
+      "pageCount": 80,
+      "amount": 159900,
+      "estimatedContribution": 34050,
+      "allApprovalsClosed": true
+    }
+  ],
+  "builds": {
+    "customerWebSeconds": 56.6,
+    "androidArm64DebugSeconds": 67.9,
+    "adminWebSeconds": 39.2,
+    "adminLocalHttp": 200
+  },
+  "physicalSample": {
+    "soft20BeforePaymentPrepared": true,
+    "soft20BeforePaymentTotal": 24730,
+    "actuallyPaid": false,
+    "hard80PdfPrepared": true,
+    "hard80RetailUploadComplete": false
+  },
+  "stillRequired": [
+    "business registration and operational contracts/keys",
+    "confirmed final specification/cost/shipping/packaging/sample approval",
+    "prepaid manufacturing funds",
+    "actual always-on host and worker account/runtime verification",
+    "actual device card approval/cancellation/return verification"
+  ],
+  "evidenceScope": "Flutter/PDF/server unit and local stub tests do not prove an actual customer payment, supplier production or physical shipment."
+}

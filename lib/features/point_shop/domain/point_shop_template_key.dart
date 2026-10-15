@@ -1,4 +1,5 @@
 import '../../../core/templates/authored_collections.dart';
+import '../../../core/templates/published_premium_templates.dart';
 import '../../store/domain/entities/premium_template.dart';
 
 /// Authored designs keep one product identity across the store, creation flow,
@@ -7,6 +8,8 @@ String pointShopAuthoredTemplateKey(AuthoredCollection collection) =>
     'template:${collection.id}';
 
 String pointShopTemplateKey(PremiumTemplate template) {
+  final premiumKey = publishedPremiumProductKey(template.id);
+  if (premiumKey != null) return premiumKey;
   for (final collection in [
     ...authoredCollections,
     ...retiredAuthoredCollections,

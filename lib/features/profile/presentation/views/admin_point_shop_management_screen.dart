@@ -261,6 +261,12 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
       setState(() => _error = '판매할 가격을 0 이상의 정수 포인트로 입력해 주세요.');
       return;
     }
+    if (value != null &&
+        value > 0 &&
+        pointShopRequiresFreePrice(widget.product.productKey)) {
+      setState(() => _error = '무료 템플릿과 포함된 기본 소재는 0P로 유지해야 합니다.');
+      return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -301,7 +307,7 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
               const Text('출시 대기 · 스토어 연결 및 결제 검증 전'),
               const SizedBox(height: 16),
             ] else if (!widget.configured) ...[
-              const Text('현재 무료로 제공 중이며 저장된 가격이 없습니다.'),
+              const Text('저장된 가격이 없습니다. 가격과 판매 상태를 설정해 주세요.'),
               const SizedBox(height: 16),
             ],
             if (pointShopLaunchPrices[widget.product.productKey]
@@ -333,6 +339,10 @@ class _PointPriceEditorState extends State<_PointPriceEditor> {
                 helperText: '0P는 무료입니다. 유료 가격은 직접 입력하세요.',
               ),
             ),
+            if (pointShopRequiresFreePrice(widget.product.productKey)) ...[
+              const SizedBox(height: 8),
+              const Text('무료 전용 · 포함 소재의 별도 구매가 필요하지 않아야 합니다.'),
+            ],
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('판매 활성화'),

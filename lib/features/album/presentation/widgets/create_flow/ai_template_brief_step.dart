@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-
-import '../../../../../core/constants/snapfit_colors.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../../../core/constants/cover_size.dart';
+import '../../../../../core/constants/album_page_policy.dart';
 import 'cover_size_picker.dart';
 import 'print_cover_type_picker.dart';
+import 'creation_workspace.dart';
 import '../../../ai_album/domain/ai_album_models.dart';
 
 class AiTemplateBriefStep extends StatefulWidget {
@@ -18,7 +19,6 @@ class AiTemplateBriefStep extends StatefulWidget {
   final CoverSize? initialCoverSize;
   final ValueChanged<AiTemplateBrief> onContinue;
   final VoidCallback onBack;
-
   @override
   State<AiTemplateBriefStep> createState() => _AiTemplateBriefStepState();
 }
@@ -32,7 +32,6 @@ class _AiTemplateBriefStepState extends State<AiTemplateBriefStep> {
     '기념일': '우리의 기념일을 위한 앨범. 차분한 회색과 버건디 포인트, 영화의 장면처럼 넓은 사진과 절제된 타이포그래피.',
     '일상': '산책과 일상을 담을 작은 사진집. 밝고 정갈한 여백, 선명한 파랑 포인트, 크기가 다른 사진이 자연스럽게 이어지게.',
   };
-
   @override
   void initState() {
     super.initState();
@@ -40,7 +39,9 @@ class _AiTemplateBriefStepState extends State<AiTemplateBriefStep> {
     _cover = newAlbumCoverSize(
       widget.initialCoverSize ?? widget.initialBrief?.coverSize,
     );
-    _pageCount = widget.initialBrief?.pageCount ?? 8;
+    _pageCount = AlbumPagePolicy.normalize(
+      widget.initialBrief?.pageCount ?? AlbumPagePolicy.minInnerPages,
+    );
   }
 
   @override
@@ -49,182 +50,147 @@ class _AiTemplateBriefStepState extends State<AiTemplateBriefStep> {
     super.dispose();
   }
 
+  Widget _label(BuildContext context, String value) => Text(
+    value,
+    style: ExperienceFormStyle.text(context, 14, weight: FontWeight.w600),
+  );
   @override
-  Widget build(BuildContext context) {
-    final foreground = SnapFitColors.textPrimaryOf(context);
-    return ColoredBox(
-      color: SnapFitColors.isDark(context)
-          ? const Color(0xFF111111)
-          : const Color(0xFFF5F6F4),
-      child: SafeArea(
-        top: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 680),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: widget.onBack,
-                        tooltip: '이전',
-                        icon: const Icon(Icons.arrow_back_rounded),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        '어떤 앨범을 만들까요?',
-                        style: TextStyle(
-                          fontSize: 26,
-                          height: 1.25,
-                          fontWeight: FontWeight.w700,
-                          color: foreground,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      TextField(
-                        key: const Key('ai_template_brief'),
-                        controller: _prompt,
-                        minLines: 4,
-                        maxLines: 7,
-                        maxLength: 1000,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.6,
-                          color: foreground,
-                        ),
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          labelText: '원하는 분위기',
-                          hintText: '제주 바다의 짙은 초록, 넓은 여백, 풍경은 크게. 글은 짧게.',
-                          alignLabelWithHint: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        children: _prompts.entries
-                            .map(
-                              (entry) => ActionChip(
-                                label: Text(entry.key),
-                                onPressed: () => setState(() {
-                                  _prompt.text = entry.value;
-                                }),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        '책 크기',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: foreground,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      CoverSizePicker(
-                        selectedCover: _cover,
-                        onSelected: (cover) => setState(() => _cover = cover),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        '표지 종류',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: foreground,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      PrintCoverTypePicker(
-                        selected: _cover.coverType,
-                        onSelected: (type) =>
-                            setState(() => _cover = _cover.withCoverType(type)),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '내지',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: foreground,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: '2쪽 줄이기',
-                            onPressed: _pageCount > 4
-                                ? () => setState(() => _pageCount -= 2)
-                                : null,
-                            icon: const Icon(Icons.remove_rounded),
-                          ),
-                          SizedBox(
-                            width: 48,
-                            child: Text(
-                              '$_pageCount쪽',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: '2쪽 늘리기',
-                            onPressed: _pageCount < 16
-                                ? () => setState(() => _pageCount += 2)
-                                : null,
-                            icon: const Icon(Icons.add_rounded),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 28),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: FilledButton(
-                          key: const Key('ai_template_brief_continue'),
-                          onPressed: _prompt.text.trim().isEmpty
-                              ? null
-                              : () => widget.onContinue(
-                                  AiTemplateBrief(
-                                    prompt: _prompt.text.trim(),
-                                    pageCount: _pageCount,
-                                    aspect: _cover.ratio > 1
-                                        ? AiTemplateAspect.landscape
-                                        : AiTemplateAspect.square,
-                                    printProductId: _cover.productId,
-                                  ),
-                                ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF203D35),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            '디자인 요청하기',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+  Widget build(BuildContext context) => CreationWorkspace(
+    keyboardOpen: creationKeyboardIsOpen(context),
+    stage: CreationPaperStage(
+      title: '디자인 생성 전',
+      detail:
+          '${_cover.displayName} · ${_cover.coverType.label} · 내지 $_pageCount쪽',
+      child: CreationBlankBook(cover: _cover, title: '새로운 이야기'),
+    ),
+    fields: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'AI 템플릿',
+          style: ExperienceFormStyle.text(context, 20, weight: FontWeight.w600),
+        ),
+        const SizedBox(height: 20),
+        TextField(
+          key: const Key('ai_template_brief'),
+          controller: _prompt,
+          minLines: creationKeyboardIsOpen(context) ? 1 : 4,
+          maxLines: creationKeyboardIsOpen(context) ? 2 : 7,
+          maxLength: 1000,
+          style: ExperienceFormStyle.text(context, 15),
+          decoration: ExperienceFormStyle.input(
+            context,
+            hint: '제주 바다의 짙은 초록, 넓은 여백, 풍경은 크게. 글은 짧게.',
+          ).copyWith(labelText: '원하는 분위기', alignLabelWithHint: true),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final entry in _prompts.entries)
+              ActionChip(
+                label: Text(entry.key),
+                labelStyle: ExperienceFormStyle.text(context, 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                side: BorderSide(color: ExperienceFormStyle.line(context)),
+                onPressed: () => _prompt.text = entry.value,
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _label(context, '책 크기'),
+        const SizedBox(height: 12),
+        CoverSizePicker(
+          selectedCover: _cover,
+          onSelected: (cover) => setState(() => _cover = cover),
+        ),
+        const SizedBox(height: 24),
+        _label(context, '표지 종류'),
+        const SizedBox(height: 12),
+        PrintCoverTypePicker(
+          selected: _cover.coverType,
+          onSelected: (type) =>
+              setState(() => _cover = _cover.withCoverType(type)),
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(child: _label(context, '내지')),
+            IconButton(
+              tooltip: '2쪽 줄이기',
+              onPressed: _pageCount > AlbumPagePolicy.minInnerPages
+                  ? () => setState(() => _pageCount -= AlbumPagePolicy.pageStep)
+                  : null,
+              icon: const Icon(Icons.remove, size: 20),
+            ),
+            SizedBox(
+              width: 64,
+              child: Text(
+                '$_pageCount쪽',
+                textAlign: TextAlign.center,
+                style: ExperienceFormStyle.text(
+                  context,
+                  15,
+                  weight: FontWeight.w600,
                 ),
               ),
-            );
-          },
+            ),
+            IconButton(
+              tooltip: '2쪽 늘리기',
+              onPressed: _pageCount < AlbumPagePolicy.maxInnerPages
+                  ? () => setState(() => _pageCount += AlbumPagePolicy.pageStep)
+                  : null,
+              icon: const Icon(Icons.add, size: 20),
+            ),
+          ],
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 8),
+        Text(
+          '내지는 20~80쪽, 2쪽 단위로 선택할 수 있어요.\n'
+          'AI가 최대 16쪽의 디자인을 만들고, 선택한 쪽수에 맞춰 '
+          '중간 페이지의 디자인을 재사용해요. 사진과 글은 페이지마다 편집할 수 있어요.',
+          style: ExperienceFormStyle.text(context, 12, secondary: true),
+        ),
+      ],
+    ),
+    actions: Row(
+      children: [
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            tooltip: '이전',
+            onPressed: widget.onBack,
+            icon: const Icon(Icons.arrow_back, size: 21),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _prompt,
+            builder: (context, value, _) => FilledButton(
+              key: const Key('ai_template_brief_continue'),
+              onPressed: value.text.trim().isEmpty
+                  ? null
+                  : () => widget.onContinue(
+                      AiTemplateBrief(
+                        prompt: _prompt.text.trim(),
+                        pageCount: _pageCount,
+                        aspect: _cover.ratio > 1
+                            ? AiTemplateAspect.landscape
+                            : AiTemplateAspect.square,
+                        printProductId: _cover.productId,
+                      ),
+                    ),
+              style: ExperienceFormStyle.primary(context),
+              child: const Text('디자인 요청하기'),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

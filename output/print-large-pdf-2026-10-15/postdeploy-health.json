@@ -1,0 +1,38 @@
+{
+  "bucket": {
+    "allowedMimeTypes": [
+      "application/pdf",
+      "application/json",
+      "application/octet-stream"
+    ],
+    "fileSizeLimit": 104857600,
+    "private": true
+  },
+  "cron": {
+    "active": true,
+    "count": 1,
+    "schedule": "*/2 * * * *"
+  },
+  "deliveryRPC": {
+    "anonDenied": true,
+    "authenticatedDenied": true,
+    "serviceAllowed": true
+  },
+  "migrationApplied": true,
+  "packageRls": true,
+  "realFinancialRows": 0,
+  "sales": {
+    "businessReady": false,
+    "enabled": false,
+    "mode": "APP_PDF_SUPABASE",
+    "portoneLiveReady": false,
+    "redprintingLiveReady": false,
+    "schedulerFresh": true,
+    "schedulerLastSeenAt": "2026-10-15T02:36:04.521009+00:00"
+  },
+  "storage": {
+    "bytes": 198074328,
+    "largestObjectBytes": 43374781,
+    "objects": 16
+  }
+}

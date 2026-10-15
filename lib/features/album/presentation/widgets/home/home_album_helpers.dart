@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../../../../core/constants/cover_theme.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../domain/entities/album.dart';
@@ -9,6 +8,7 @@ import '../../../domain/entities/layer.dart';
 import '../../../domain/entities/layer_export_mapper.dart';
 import '../../../../../shared/snapfit_image.dart';
 import '../../../../../core/cache/snapfit_cache_manager.dart';
+import '../../../data/gallery/photo_asset_image_provider.dart';
 
 /// 날짜 포맷 (yyyy.MM.dd)
 String formatAlbumDate(String raw) {
@@ -163,7 +163,10 @@ Widget buildStaticImage(LayerModel layer) {
   final assetPath = hasAssetUrl ? url.substring('asset:'.length) : null;
   final imageChild = url.isEmpty
       ? (layer.asset != null
-            ? AssetEntityImage(layer.asset!, fit: BoxFit.cover)
+            ? Image(
+                image: photoAssetImageProvider(layer.asset!),
+                fit: BoxFit.cover,
+              )
             : Container(
                 width: layer.width,
                 height: layer.height,

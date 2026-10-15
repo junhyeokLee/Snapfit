@@ -145,7 +145,12 @@ enum FreeCollectionVolume {
         place: category == '웨딩'
             ? '초여름의 작은 정원'
             : category == '여행'
-            ? '바다 곁의 작은 마을'
+            ? switch (this) {
+                FreeCollectionVolume.city => '도시를 걷던 날',
+                FreeCollectionVolume.walking => '걸음마다 남긴 풍경',
+                FreeCollectionVolume.postcards => '낯선 도시에서 보낸 안부',
+                _ => '바다 곁의 작은 마을',
+              }
             : '봄에서 여름으로',
         period: category == '웨딩'
             ? '2026. 05. 24'

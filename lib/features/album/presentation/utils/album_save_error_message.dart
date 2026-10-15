@@ -35,5 +35,6 @@ String albumSaveErrorMessage(Object error) {
     return '앨범을 저장하지 못했어요. 잠시 후 다시 시도해주세요.';
   }
 
-  return raw;
+  if (raw == '앨범 정보가 없어 저장할 수 없어요. 앨범을 먼저 만들어주세요.') return raw;
+  return '앨범을 저장하지 못했어요. 편집 내용은 유지돼요. 잠시 후 다시 저장해주세요.';
 }

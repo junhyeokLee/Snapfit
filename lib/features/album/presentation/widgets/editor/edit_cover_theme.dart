@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../../shared/web/web_design.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -84,7 +86,50 @@ class _EditCoverThemeState extends ConsumerState<EditCoverTheme> {
     debugPrint(
       '[CoverThemeSize] aspect=$aspect cover=${editorSt.selectedCover.name} width=$previewBaseWidth height=$previewBaseHeight',
     );
-    _scrollToSelected(selectedIndex, previewBaseWidth);
+    if (!kIsWeb) _scrollToSelected(selectedIndex, previewBaseWidth);
+
+    if (kIsWeb) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        ListTile(
+          contentPadding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+          title: const Text('표지 테마', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+          subtitle: const Text('테마를 선택하면 표지에 바로 적용됩니다. 사진과 글의 배치는 유지됩니다.'),
+          trailing: IconButton(onPressed: () => Navigator.pop(context), tooltip: '표지 테마 닫기', icon: const Icon(Icons.close, size: 20)),
+        ),
+        Divider(height: 1, color: WebPalette.of(context).line),
+        Expanded(child: GridView.builder(
+          padding: const EdgeInsets.all(28),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 240, mainAxisExtent: 230, mainAxisSpacing: 20, crossAxisSpacing: 20),
+          itemCount: themes.length,
+          itemBuilder: (context, index) {
+            final theme = themes[index];
+            final selected = theme == selectedTheme;
+            void select() {
+              if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+              vm.updateTheme(theme);
+              editorVm.updateTheme(theme);
+            }
+            return Semantics(
+              button: true,
+              selected: selected,
+              label: theme.label,
+              child: Material(
+                color: selected ? WebPalette.of(context).softBrand : WebPalette.of(context).surface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: selected ? WebPalette.of(context).brandInk : WebPalette.of(context).line)),
+                child: InkWell(onTap: select, borderRadius: BorderRadius.circular(12), child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(children: [
+                    Expanded(child: EditCoverThemeItem(theme: theme, isSelected: false, width: previewBaseWidth, height: previewBaseHeight, onTap: select)),
+                    const SizedBox(height: 12),
+                    Row(children: [Expanded(child: Text(theme.label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))), if (selected) Icon(Icons.check_circle_outline, size: 18, color: WebPalette.of(context).brandInk)]),
+                  ]),
+                )),
+              ),
+            );
+          },
+        )),
+      ]);
+    }
 
     return Material(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/theme/snapfit_design_tokens.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import 'creation_document_preview.dart';
 import '../../../../../shared/widgets/catalog_favorite_widgets.dart';
@@ -61,6 +62,12 @@ class CreationTemplatePreview extends StatelessWidget {
     return Scaffold(
       backgroundColor: SnapFitColors.backgroundOf(context),
       appBar: AppBar(
+        toolbarHeight: wide
+            ? (MediaQuery.textScalerOf(context).scale(14) * 1.6 + 24).clamp(
+                56.0,
+                96.0,
+              )
+            : 56,
         backgroundColor: SnapFitColors.backgroundOf(context),
         surfaceTintColor: Colors.transparent,
         title: Text(
@@ -76,6 +83,11 @@ class CreationTemplatePreview extends StatelessWidget {
         actions: [
           if (favoriteKey != null)
             CatalogFavoriteButton(itemKey: favoriteKey!, label: title),
+          if (wide && accessBadge != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Center(child: accessBadge),
+            ),
           if (wide)
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -83,8 +95,43 @@ class CreationTemplatePreview extends StatelessWidget {
             ),
         ],
       ),
+      bottomNavigationBar: wide
+          ? null
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                color: SnapFitColors.backgroundOf(context),
+                border: Border(
+                  top: BorderSide(color: ExperienceFormStyle.line(context)),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, wide ? 8 : 12),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child:
+                            accessBadge ??
+                            Text(
+                              '템플릿',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: ink,
+                              ),
+                            ),
+                      ),
+                      const SizedBox(width: 16),
+                      if (!wide) Expanded(flex: 3, child: _use(context)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
       body: SafeArea(
         top: false,
+        bottom: wide,
         child: Column(
           children: [
             Expanded(
@@ -109,25 +156,8 @@ class CreationTemplatePreview extends StatelessWidget {
                       pages: pages,
                       canvas: canvas,
                       preserveTypography: preserveTypography,
+                      showBookMaterial: true,
                     ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20, 4, 20, wide ? 8 : 12),
-              child: Row(
-                children: [
-                  accessBadge ??
-                      Text(
-                        '템플릿',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: ink,
-                        ),
-                      ),
-                  const SizedBox(width: 16),
-                  if (!wide) Expanded(child: _use(context)),
-                ],
-              ),
             ),
           ],
         ),

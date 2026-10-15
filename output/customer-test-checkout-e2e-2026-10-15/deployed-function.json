@@ -1,0 +1,12 @@
+{
+  "observedAtUtc": "2026-10-15T06:01:25.601156+00:00",
+  "function": {
+    "name": "print-dev-checkout",
+    "slug": "print-dev-checkout",
+    "status": "ACTIVE",
+    "version": 5,
+    "verify_jwt": true,
+    "updated_at": 1792043942367
+  },
+  "projectVerified": true
+}

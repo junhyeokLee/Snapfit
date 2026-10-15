@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
+import '../../../../../shared/widgets/experience_form_style.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:ui';
 import '../../../../../core/constants/snapfit_colors.dart';
@@ -25,6 +27,7 @@ class EditorBottomMenu extends StatelessWidget {
   final bool canRedo;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
+  final bool useCreationStyle;
 
   const EditorBottomMenu({
     super.key,
@@ -38,6 +41,7 @@ class EditorBottomMenu extends StatelessWidget {
     this.canRedo = false,
     this.onUndo,
     this.onRedo,
+    this.useCreationStyle = false,
   });
 
   @override
@@ -113,6 +117,71 @@ class EditorBottomMenu extends StatelessWidget {
               EditorMode.backgroundColor,
             ),
           ];
+
+    if (useCreationStyle) {
+      final labelSize = MediaQuery.textScalerOf(context).scale(11);
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Semantics(
+                  button: true,
+                  selected: !item.isAction && currentMode == item.mode,
+                  child: Tooltip(
+                    message: item.label,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(6),
+                      onTap: () {
+                        if (item.isAction) {
+                          item.onAction?.call();
+                        } else {
+                          onModeChanged(
+                            currentMode == item.mode
+                                ? EditorMode.none
+                                : item.mode,
+                          );
+                        }
+                      },
+                      child: Container(
+                        width: math.max(64, labelSize * 4 + 16),
+                        height: 38 + labelSize * 1.5,
+                        decoration: BoxDecoration(
+                          color: !item.isAction && currentMode == item.mode
+                              ? ExperienceFormStyle.selection(context)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              item.icon,
+                              size: 22,
+                              color: ExperienceFormStyle.ink(context),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              item.label,
+                              style: ExperienceFormStyle.text(
+                                context,
+                                11,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -212,101 +281,105 @@ class EditorBottomMenu extends StatelessWidget {
         : SnapFitColors.deepCharcoal.withOpacity(0.70);
     final isFeatured = isSelected;
 
-    return SnapFitPressable(
-      pressedScale: 0.94,
-      borderRadius: BorderRadius.circular(22.r),
-      onTap: () {
-        if (item.isAction) {
-          item.onAction?.call();
-        } else {
-          onModeChanged(isSelected ? EditorMode.none : item.mode);
-        }
-      },
-      child: AnimatedContainer(
-        duration: SnapFitMotion.fast,
-        curve: SnapFitMotion.settle,
-        width: compact ? 54 : 58,
-        height: compact ? 44 : 66,
-        padding: compact
-            ? EdgeInsets.zero
-            : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22.r),
-          gradient: isSelected
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF2A2520), Color(0xFF6E5942)],
-                )
-              : null,
-          color: isSelected
-              ? null
-              : isFeatured
-              ? const Color(0xFFF1E1CB).withOpacity(isDark ? 0.16 : 0.80)
-              : Colors.white.withOpacity(isDark ? 0.05 : 0.42),
-          border: Border.all(
+    return Tooltip(
+      message: item.label,
+      child: SnapFitPressable(
+        pressedScale: 0.94,
+        borderRadius: BorderRadius.circular(22.r),
+        onTap: () {
+          if (item.isAction) {
+            item.onAction?.call();
+          } else {
+            onModeChanged(isSelected ? EditorMode.none : item.mode);
+          }
+        },
+        child: AnimatedContainer(
+          duration: SnapFitMotion.fast,
+          curve: SnapFitMotion.settle,
+          width: compact ? 54 : 58,
+          height: compact ? 44 : 66,
+          padding: compact
+              ? EdgeInsets.zero
+              : const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22.r),
+            gradient: isSelected
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2A2520), Color(0xFF6E5942)],
+                  )
+                : null,
             color: isSelected
-                ? Colors.white.withOpacity(0.20)
+                ? null
                 : isFeatured
-                ? const Color(0xFFB98B62).withOpacity(0.26)
-                : SnapFitColors.overlayLightOf(context),
+                ? const Color(0xFFF1E1CB).withOpacity(isDark ? 0.16 : 0.80)
+                : Colors.white.withOpacity(isDark ? 0.05 : 0.42),
+            border: Border.all(
+              color: isSelected
+                  ? Colors.white.withOpacity(0.20)
+                  : isFeatured
+                  ? const Color(0xFFB98B62).withOpacity(0.26)
+                  : SnapFitColors.overlayLightOf(context),
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF6C5740).withOpacity(0.22),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF6C5740).withOpacity(0.22),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedScale(
+                    scale: isSelected ? 1.08 : 1.0,
+                    duration: SnapFitMotion.fast,
+                    curve: SnapFitMotion.settle,
+                    child: Icon(
+                      item.icon,
+                      color: isSelected
+                          ? Colors.white
+                          : isFeatured
+                          ? const Color(0xFF8F6846)
+                          : baseColor,
+                      size: compact ? 21 : 22,
+                    ),
                   ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedScale(
-                  scale: isSelected ? 1.08 : 1.0,
-                  duration: SnapFitMotion.fast,
-                  curve: SnapFitMotion.settle,
-                  child: Icon(
-                    item.icon,
-                    color: isSelected
-                        ? Colors.white
-                        : isFeatured
-                        ? const Color(0xFF8F6846)
-                        : baseColor,
-                    size: compact ? 21 : 22,
-                  ),
+                ],
+              ),
+              if (!compact) ...[
+                const SizedBox(height: 6),
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      (Theme.of(context).textTheme.bodySmall ??
+                              const TextStyle())
+                          .copyWith(
+                            fontSize: 10,
+                            height: 1.0,
+                            color: isSelected
+                                ? Colors.white
+                                : isFeatured
+                                ? const Color(0xFF8F6846)
+                                : baseColor,
+                            fontWeight: isSelected || isFeatured
+                                ? FontWeight.w900
+                                : FontWeight.w800,
+                            letterSpacing: -0.12,
+                          ),
                 ),
               ],
-            ),
-            if (!compact) ...[
-              const SizedBox(height: 6),
-              Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    (Theme.of(context).textTheme.bodySmall ?? const TextStyle())
-                        .copyWith(
-                          fontSize: 10,
-                          height: 1.0,
-                          color: isSelected
-                              ? Colors.white
-                              : isFeatured
-                              ? const Color(0xFF8F6846)
-                              : baseColor,
-                          fontWeight: isSelected || isFeatured
-                              ? FontWeight.w900
-                              : FontWeight.w800,
-                          letterSpacing: -0.12,
-                        ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );

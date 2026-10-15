@@ -1,0 +1,109 @@
+{
+  "projectRef": "rrbhxdtriummqpztpjrk",
+  "syntheticFixtureOnly": true,
+  "status": "PASSED",
+  "runAtUtc": "2026-10-15T02:38:42.519668+00:00",
+  "planChangesMade": false,
+  "paidInfrastructureCreated": false,
+  "realFinancialCalls": 0,
+  "cleanup": {
+    "attemptedCount": 4,
+    "removedCount": 4,
+    "verifiedAbsent": true
+  },
+  "before": {
+    "bucket_public": false,
+    "business_ready": false,
+    "checkout_intents": 0,
+    "chunk_mime_allowed": true,
+    "customer_orders": 0,
+    "customer_sales_enabled": false,
+    "portone_live_ready": false,
+    "prepayment_packages": 0,
+    "redprinting_live_ready": false,
+    "storage_bytes": "218971604",
+    "synthetic_objects": 0
+  },
+  "fixture": {
+    "pageCount": 80,
+    "dpi": 300,
+    "imageEncoding": "JPEG quality 95",
+    "colorSpace": "sRGB",
+    "originalBytes": 60200362,
+    "sha256": "27479e91ced25d8933de8d60878517cdcce2464b5bbae47fe1b2161b849d6df5",
+    "chunkBytes": [
+      16000000,
+      16000000,
+      16000000,
+      12200362
+    ]
+  },
+  "actualEdgeValidation": {
+    "status": 200,
+    "result": {
+      "pageCount": 80,
+      "widthMm": 310,
+      "heightMm": 310,
+      "byteLength": 60200362,
+      "sha256": "27479e91ced25d8933de8d60878517cdcce2464b5bbae47fe1b2161b849d6df5"
+    },
+    "counts": {
+      "storageSignedUrls": 8,
+      "storageGets": 8,
+      "syntheticRecordReads": 0
+    },
+    "elapsedMs": 14567,
+    "memoryBefore": {
+      "rss": 0,
+      "heapTotal": 12251136,
+      "heapUsed": 8650168,
+      "external": 3097603
+    },
+    "memoryAfter": {
+      "rss": 0,
+      "heapTotal": 13299712,
+      "heapUsed": 10276784,
+      "external": 47447317
+    }
+  },
+  "head": {
+    "status": 200,
+    "contentLength": 60200362,
+    "syntheticRecordOnly": true
+  },
+  "stream": {
+    "status": 200,
+    "byteLength": 60200362,
+    "sha256": "27479e91ced25d8933de8d60878517cdcce2464b5bbae47fe1b2161b849d6df5",
+    "matchesOriginalBytes": true,
+    "elapsedMs": 9260
+  },
+  "range": {
+    "status": 206,
+    "crossesChunkBoundary": true,
+    "byteLength": 14,
+    "matchesOriginalBytes": true
+  },
+  "badAuthentication": {
+    "streamStatus": 401,
+    "validationStatus": 401,
+    "syntheticRecordReads": 0
+  },
+  "after": {
+    "bucket_public": false,
+    "business_ready": false,
+    "checkout_intents": 0,
+    "chunk_mime_allowed": true,
+    "customer_orders": 0,
+    "customer_sales_enabled": false,
+    "portone_live_ready": false,
+    "prepayment_packages": 0,
+    "redprinting_live_ready": false,
+    "storage_bytes": "218971604",
+    "synthetic_objects": 0
+  },
+  "financialDatabaseUnchanged": true,
+  "temporaryProbeDeleted": true,
+  "productionUnsignedGetStatus": 401,
+  "finalizedAtUtc": "2026-10-15T02:41:31.221408+00:00"
+}

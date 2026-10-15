@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SnapFit 전체 화면 디자인 점검</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f3f6f5;color:#222a2b;font:14px/1.6 -apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;letter-spacing:0}
+    header{padding:24px;background:white;border-bottom:1px solid #dbe2e0}h1{font-size:24px;margin:0 0 6px}p{margin:6px 0;color:#63706e}a{color:#007e90}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;padding:16px 24px;background:white;border-bottom:1px solid #dbe2e0;position:sticky;top:0;z-index:2}
+    label{display:flex;align-items:center;gap:8px}select{min-height:44px;max-width:100%;padding:8px;border:1px solid #bdc9c6;border-radius:6px;font:inherit;background:white;color:#222a2b}
+    main{padding:24px;max-width:1280px;margin:auto}.status{padding:12px 16px;border-left:3px solid #08b8d0;background:white;margin-bottom:24px}.status strong{display:block;font-size:16px}.status[data-priority="urgent"]{border-color:#bd3434}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}figure{margin:0}figcaption{font-weight:600;padding-bottom:10px}img{display:block;max-width:100%;height:auto;background:white;border:1px solid #dbe2e0}img.portrait{width:390px;margin:auto}img.landscape{width:844px;margin:auto}
+    .evidence{display:flex;gap:18px;flex-wrap:wrap;margin:24px 0}.wide{grid-template-columns:minmax(0,1fr)}details{margin:24px 0;background:white;padding:16px}summary{cursor:pointer;font-weight:600}li{margin:6px 0}
+    @media(max-width:680px){header,.toolbar,main{padding:16px}.grid{grid-template-columns:minmax(0,1fr)}label{width:100%}select{flex:1;min-width:0}.toolbar{position:static}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SnapFit 가로 · 세로 UI 검증</h1>
+    <p>2026.10.15 · 마이 → 보관함·내 앨범 → 주문 확인을 실제 앨범과 구매한 디자인 중심으로 연결했습니다. 제작·스토어 개편 자료도 같은 곳에 보존하며 홈·리더의 승인된 디자인과 책 넘김은 그대로 유지합니다.</p>
+    <p>실제 등록된 표지와 내지를 사용한 Flutter 캡처입니다. 세로 2종·가로 3종·라이트·다크, 1.3배 글자를 비교할 수 있습니다. 별도 테스트는 1.8배 글자·키보드·회전 후 초안/포커스/현재 페이지 유지와 시스템 안전 영역을 확인합니다.</p>
+  </header>
+  <div class="toolbar">
+    <label>화면 <select id="screen"></select></label>
+    <label>크기 <select id="width"><option value="390">세로 390 × 844</option><option value="320">작은 세로 320 × 568</option><option value="648">작은 가로 648 × 320</option><option value="740">가로 740 × 360</option><option value="844" selected>가로 844 × 390</option></select></label>
+    <label>테마 <select id="theme"><option value="compare">라이트 / 다크 비교</option><option value="light">라이트</option><option value="dark">다크</option></select></label>
+    <label>검토 <select id="revision"><option value="current">현재 가로·세로 보정</option><option value="after">이전 개편 후</option><option value="compare">최초 개편 전 / 후 비교</option><option value="before">최초 개편 전</option></select></label>
+  </div>
+  <main>
+    <div class="status" id="status"><strong id="decision"></strong><span id="reason"></span></div>
+    <div class="grid" id="shots"></div>
+    <div class="evidence">
+      <a href="../creation-journey-qa/index.html">홈·로그인·가입·앨범 생성</a>
+      <a href="../store-hub-qa/index.html">스토어·꾸밈 소재</a>
+      <a href="../settings-template-qa/index.html">설정·테마·템플릿 표지</a>
+      <a href="../template-book-detail-qa/index.html">템플릿 상세·규격·소재</a>
+      <a href="../account-library-qa/index.html">계정·보관함</a>
+      <a href="../editor-flow-qa/index.html">편집·사진·레이어</a>
+      <a href="../../docs/all_screen_design_audit.md">전체 화면별 점검표</a>
+    </div>
+    <details open>
+      <summary>검토 범위와 유의사항</summary>
+      <ul>
+        <li>변경 후 이미지는 실제 앱 코드로 다시 렌더링한 화면입니다. 변경 전 캡처도 그대로 보존했습니다.</li>
+        <li>새 마이·보관함·앨범·주문 화면은 실제 앱 위젯입니다. 표지와 소재는 등록 문서/로컬 자산이며 내 앨범·구매 권한·주문·배송 정보는 검토용 fake 자료입니다. 운영 저장·구매·차감·배송 조회·설치·커밋/푸시는 실행하지 않았습니다.</li>
+        <li>주문 표지는 같은 ID의 현재 저장된 앨범에서만 가져옵니다. 주문 당시 인쇄 표지의 스냅샷으로 안내하지 않으며 표지를 찾을 수 없으면 중립 표시와 별도 안내를 사용합니다. 주문 규격·금액·상태는 기존 주문 정보를 그대로 표시합니다.</li>
+        <li>새 스토어의 표지·내지·소재는 실제 등록된 문서와 앱 소재입니다. 가격·잔액·보유 상태는 가짜 저장소로 검증했습니다. 템플릿에 배치된 소재와 다른 앨범에 개별 재사용할 권한은 별개이며 실제 가격·이용권 정책을 바꾸지 않았습니다. 포인트 차감·운영 구매·앨범 저장·기기 설치는 실행하지 않았습니다.</li>
+        <li>스토어·소재 목록의 필터·즐겨찾기와 12개 단위 지연 생성은 유지합니다. 서버 카탈로그 조회를 원격 페이지네이션으로 바꾼 것은 아닙니다. 새 구매 캡처는 같은 템플릿·소재의 실제 등록 기준 가격을 일관되게 사용한 로컬 자료입니다.</li>
+        <li>새 제작 화면의 표지·내지는 실제 등록된 템플릿 문서입니다. 채워진 사진 화면은 레이아웃 검토용 샘플이며 사용자 앨범에 샘플 사진을 넣지 않습니다. 실제 제작 연결 캡처는 샘플 사진을 비운 상태로 규격·진행 표시·사진 채우기·뒤로가기를 검증합니다.</li>
+        <li>AI 요청 전과 생성 대기 중에는 실제 선택 규격의 빈 책을 보여 줍니다. 결과 화면은 AI 문서 응답을 재현한 fixture이며 운영 AI 요청·크레딧 사용은 하지 않았습니다. 전체 확인 뒤 기존 표지·내지 편집으로 이어지며, 편집 저장 전 전체 앨범이 서버에 완성 저장됐다고 안내하지 않습니다.</li>
+        <li>앨범·사진·가격·주문·주소·초대 링크는 로컬 검토 자료입니다. 실제 저장·공유·결제·AI·배송 요청은 하지 않았습니다.</li>
+        <li>포인트 잔액·상품 가격·이용 내역도 mock 자료입니다. 앱은 네이티브 스토어에서 받은 가격을 표시합니다. 구매 동작 테스트는 가짜 스토어로 실행했으며 실제 결제나 포인트 차감은 하지 않았습니다.</li>
+        <li>계정과 알림 캡처도 mock 자료입니다. 실제 탈퇴·로그아웃·재설정 메일·기기 권한 요청·알림 전송은 실행하지 않았습니다. 확인 시트는 고정 버튼과 스크롤 본문을 구분하며 닫힌 시트의 늦은 입력을 차단합니다.</li>
+        <li>초대 링크·초대 수락·미읽음 상태도 mock 자료입니다. 실제 초대 발급·카카오 공유·회원 참여·운영 알림 읽음 처리는 하지 않았습니다. 약관은 현재 원문을 렌더링했으며 내용·버전·시행일은 수정하지 않았습니다.</li>
+        <li>문구 편집과 사진 자르기는 실제 앱 모달과 편집 모델로 검증했습니다. 사진·앨범 저장과 문구 구매 권한은 가짜 서비스입니다. 완료 전에는 초안을 앨범에 반영하지 않으며, 회전·키보드 닫기는 취소로 처리하지 않습니다.</li>
+        <li>사진 비율·프레임·문구 장식은 실제 선택창입니다. 프레임 가격·보유 상태와 구매 권한은 테스트용 자료이며 운영 판매 가격을 바꾸지 않았습니다. 문구 장식은 밝은 확인 표면에서 원래 색과 모양을 보여 주고, 레이어 목록도 밝은 글자가 보이도록 썸네일 대비만 조정했습니다.</li>
+        <li>로그인·가입·복구·동의 화면은 실제 앱 위젯이며 계정·메일 요청·인증 응답은 fake 서비스입니다. 실제 계정 생성·재설정 메일·소셜 SDK 로그인은 실행하지 않았습니다. 필수/선택 동의와 기존 약관 버전·원문·인증 서비스는 유지했습니다.</li>
+        <li>문의 입력·전송 중·실패는 실제 앱 화면과 fake 문의 저장소로 검증했습니다. 운영 문의를 등록하거나 서버 값을 바꾸지 않았습니다. 테마는 기존 라이트/다크와 로컬 저장 계약을 유지하며 새 시스템 자동 전환 기능을 추가한 것은 아닙니다.</li>
+        <li>키보드 캡처는 실제 화면의 키보드 점유 높이를 시뮬레이션합니다. OS 키보드 자체를 그린 이미지는 아니며 실기기 키보드 검증을 대신하지 않습니다. 새 편집 상태에는 과거 캡처가 있는 것처럼 전후 비교를 제공하지 않습니다.</li>
+        <li>공유 목록은 URL 없이도 저장된 앨범 레이어로 실제 표지를 보여 줍니다. 원래 앨범 비율은 유지합니다.</li>
+        <li>인쇄 사진과 나의 앨범 사진은 배치 점검을 위한 같은 샘플입니다. 카탈로그 표지 중복 검사와는 별개의 자료입니다.</li>
+        <li>홈·리더·편집의 승인된 그래픽과 책 넘김은 유지 대상으로 코드 점검했습니다. 이번 검토가 실기기 제스처·회전·외부 결제 검증을 대신하지는 않습니다.</li>
+        <li>관리자 화면은 코드와 권한 경계를 확인했습니다. 운영 데이터를 불러오거나 상품·주문 상태를 변경하지 않았습니다.</li>
+      </ul>
+    </details>
+  </main>
+  <script>
+    const screens=[
+      ['personal-atelier-profile','마이 · 내 앨범 중심','통합 개편','프로필·포인트 다음에 실제 내 앨범 표지를 보여 줍니다. 가로는 계정 요약과 작품 목록을 나누고 세로는 같은 읽기 순서로 이어집니다. 승인된 책등과 원래 앨범 비율을 유지합니다.','refine'],
+      ['personal-atelier-profile-designs','마이 · 구매한 디자인 / 주문 진입','연결 검증','실제로 구매 권한이 확인된 템플릿·소재만 보여 줍니다. 항목에서 해당 분류의 보관함으로, 주문 메뉴에서 기존 주문 확인으로 이어집니다. 스크롤해 보관함 영역을 확인한 캡처입니다.','refine'],
+      ['personal-atelier-library','내 보관함 · 구매한 작품','통합 개편','표지와 소재 원본을 중심으로 구성합니다. 가로는 분류와 작품을 나누고 세로는 구매한 디자인 조합 다음 목록을 보여 줍니다. 즐겨찾기·이름 정렬·보유 조건·지연 생성은 그대로입니다.','refine'],
+      ['personal-atelier-templates','내 보관함 · 구매한 템플릿','연결 검증','실제 표지를 같은 책 재질로 확인하고 동일 템플릿 상세·분량·사용으로 연결합니다. 구매한 항목과 즐겨찾기는 별개이며 무료나 포함 소재를 임의로 구매 처리하지 않습니다.','refine'],
+      ['personal-atelier-materials','내 보관함 · 구매한 소재','연결 검증','소재의 원래 형태와 보유 상태를 확인합니다. 해당 소재 상세에서 원본/적용 예시와 앨범·페이지 선택으로 연결하며 개별 이용권과 가격 정책은 유지합니다.','refine'],
+      ['personal-atelier-favorites','내 보관함 · 즐겨찾기','연결 검증','최근 즐겨찾기와 구매한 디자인을 구분합니다. 즐겨찾기만으로 구매 완료를 안내하지 않으며 기존 저장 키·정렬·필터는 그대로입니다.','refine'],
+      ['personal-atelier-library-search','내 보관함 · 검색 / 키보드','회전 검증','가로·세로에서 검색어·입력 위젯·포커스·분류·정렬을 유지합니다. 낮은 화면에서는 각 목록을 스크롤할 수 있고 키보드 점유 높이만 재현했습니다.','refine'],
+      ['personal-atelier-albums','내 앨범 · 진행 중인 기록','통합 개편','큰 실제 표지와 규격별 비율을 보존하는 컬렉션입니다. 일반 세로는 두 권씩 비교하고 작은 화면·큰 글자는 열 수를 줄입니다. 원래 완료 판단·검색·즐겨찾기·새로고침·리더 진입은 유지합니다.','refine'],
+      ['personal-atelier-albums-completed','내 앨범 · 완료한 기록','연결 검증','기존 완성도 계산으로 완료된 앨범만 보여 줍니다. 제목·실제 완성 페이지·날짜와 책 표지를 함께 확인하며 앱 디자인을 위한 가짜 완료 상태를 만들지 않습니다.','refine'],
+      ['personal-atelier-albums-favorites','내 앨범 · 즐겨찾기','연결 검증','원래 앨범 즐겨찾기 저장 키와 선택을 유지합니다. 버튼은 앨범 열기와 별도로 동작하며 회전 후 선택한 분류를 보존합니다.','refine'],
+      ['personal-atelier-albums-search','내 앨범 · 검색 / 빈 결과','가로·세로 검증','검색과 분류도 목록과 함께 스크롤해 키보드가 열린 작은 가로에서 잘리지 않습니다. 검색어와 입력을 유지하며 없는 앨범을 가짜 표지로 채우지 않습니다.','refine'],
+      ['personal-atelier-orders','주문 내역 · 실제 앨범 / 진행 상태','통합 개편','주문과 연결되는 현재 앨범 표지·금액·날짜·제작/배송 상태를 보여 줍니다. 가로는 상태 분류를 왼쪽에 두고 목록을 넓게 사용합니다. 원래 20개 단위 주문 API 조회를 유지합니다.','refine'],
+      ['personal-atelier-order-detail','주문 상세 · 표지 / 주문 정보','통합 개편','가로는 앨범과 주문 정보를 나누고 세로는 표지부터 확인합니다. 현재 저장 표지와 주문 당시 인쇄본은 다를 수 있음을 구분하고 실제 주문 규격과 금액을 그대로 표시합니다.','refine'],
+      ['personal-atelier-order-tracking','주문 상세 · 배송 / 문의','연결 검증','상세를 스크롤해 제작·배송·송장·문의/취소·배송 조회까지 확인합니다. 서버에서 확인된 상태만 표시하며 외부 배송 조회와 실제 주문 요청은 실행하지 않았습니다.','refine'],
+      ['personal-atelier-library-empty','내 보관함 · 구매 내역 없음','상태 검증','보유 조회가 성공했으나 항목이 없는 상태입니다. 보유 조회 실패·로딩과 구분하고 즐겨찾기와 구매 내역의 빈 상태 안내도 별도로 유지합니다.','refine'],
+      ['personal-atelier-library-error','내 보관함 · 조회 실패 / 재시도','상태 검증','구매한 항목이 없다고 오해하지 않도록 조회 오류와 다시 불러오기를 표시합니다. 가격·소유권을 임의로 추정하거나 무료 항목으로 대체하지 않습니다.','refine'],
+      ['personal-atelier-orders-empty','주문 내역 · 주문 없음','상태 검증','실제 빈 응답을 주문 조회 실패와 구분합니다. 기존 상태 분류와 새로고침을 유지하며 보기용 가짜 주문이나 제작 진행률을 넣지 않습니다.','refine'],
+      ['personal-atelier-orders-error','주문 내역 · 실패 / 재시도','상태 검증','작은 가로·큰 글자에서도 오류와 재시도를 스크롤해 접근할 수 있습니다. 기존 주문 저장소와 조회 계약을 유지하며 오류가 성공 상태로 표시되지 않습니다.','refine'],
+      ['shop-atelier-templates','스토어 · 실제 표지 / 첫 펼침면','통합 개편','대표 앨범의 실제 표지와 내지를 함께 보여 주고 목록의 책등 재질을 맞췄습니다. 검색·주제·가격·즐겨찾기 필터 중에는 대표 작품을 숨기며 기존 목록 정렬과 지연 생성을 유지합니다.','refine'],
+      ['shop-atelier-materials','스토어 · 컨셉 소재 컬렉션','통합 개편','실제 프레임·종이·리본·문구를 하나의 컨셉으로 보여 줍니다. 각 소재에서 원본·적용 예시·가격 확인으로 연결하며 무료·유료·보유 필터는 그대로입니다.','refine'],
+      ['shop-atelier-search','스토어 · 검색 / 키보드','가로·세로 검증','낮은 가로에서도 활성 검색과 목록에 접근할 수 있습니다. 회전 후 검색어와 동일 입력·포커스를 유지합니다. 키보드 점유 높이를 재현한 화면으로 OS 키보드 자체는 아닙니다.','refine'],
+      ['shop-atelier-template-cover','템플릿 상세 · 실제 표지','통합 개편','승인된 홈의 책등·곡면 사진·제본 재질을 공통 표지 컴포넌트로 재사용합니다. 가로는 작품과 정보를 나누고 세로는 작품부터 이어집니다. 가격·시작 버튼은 안전 영역에 고정합니다.','refine'],
+      ['shop-atelier-template-spread','템플릿 상세 · 펼친 내지','통합 개편','실제 좌우 내지를 펼침면으로 연결하고 옆 목록·이전/다음·확대로 확인합니다. 규격별 실제 비율과 회전 후 보고 있던 펼침면을 유지합니다.','refine'],
+      ['shop-atelier-template-usage','템플릿 상세 · 가격 / 이용 범위','구매 안내','표지·내지 디자인 사용, 샘플 사진 미포함, 배치 소재 사용과 개별 재사용 권한을 구분합니다. 실제 정보 영역을 스크롤한 캡처이며 가격과 소유권 정책을 바꾸지 않습니다.','refine'],
+      ['shop-atelier-included-materials','템플릿 · 사용한 소재 / 개별 권한','구매 안내','원본 소재·가격·보유 여부와 다른 앨범 재사용 가능 여부를 확인합니다. 목록의 해당 소재를 누르면 동일 소재 상세로 연결합니다. 포함됐다는 이유로 개별 이용권을 자동 지급하지 않습니다.','refine'],
+      ['shop-atelier-edition','템플릿 사용 · 분량 선택','연결 검증','실제 등록된 분량의 표지·내지와 가격 확인 경로를 유지합니다. 선택한 문서와 규격은 확인 뒤 제작 설정으로 연결하며 취소하면 상세에 남습니다.','refine'],
+      ['shop-atelier-creation','템플릿 사용 · 앨범 제작 연결','연결 검증','상세에서 고른 디자인으로 기존 제작 설정에 진입합니다. 샘플 사진은 비워 사용자 사진을 받으며 실제 규격·쪽수·진행 표시와 뒤로가기 계약을 유지합니다.','refine'],
+      ['shop-atelier-template-purchase','템플릿 구매 · 작품 / 포인트 확인','통합 개편','실제 표지와 가격·보유 포인트·구매 후 잔액을 함께 확인합니다. 가로는 작품과 정보를 나누고 세로는 작품 다음 금액을 표시하며 확인·취소는 안전 영역에 고정합니다. 실제 차감은 없습니다.','refine'],
+      ['shop-atelier-template-receipt','템플릿 구매 완료 · 바로 사용','연결 검증','구매한 동일 표지와 확인된 결과를 보여 주고 바로 사용 또는 나중에 사용을 선택합니다. 재충전 뒤 가격 재확인·중복 구매 차단·계정 확인 등 기존 구매 계약을 유지합니다.','refine'],
+      ['shop-atelier-material-original','소재 상세 · 실제 원본','통합 개편','원본 소재를 크게 보여 주고 확대·즐겨찾기·가격·이용 범위를 연결합니다. 가로는 소재와 정보를 나누며 구매·사용 버튼을 고정합니다.','refine'],
+      ['shop-atelier-material-application','소재 상세 · 앨범 적용 예시','통합 개편','같은 소재의 실제 적용 예시와 원본을 비교합니다. 원래 예시 사진 변경·확대·비율을 유지하며 회전 후 선택한 보기 모드가 초기화되지 않습니다.','refine'],
+      ['shop-atelier-album-picker','소재 사용 · 앨범 선택','연결 검증','실제 앨범 표지의 책등과 원래 비율을 유지합니다. 가로는 선택할 소재를 옆에 두고 목록을 따로 스크롤하며 기존 소유자·잠금·편집 계약을 보존합니다.','refine'],
+      ['shop-atelier-page-picker','소재 사용 · 적용할 페이지','연결 검증','실제 표지와 내지 목록에서 적용할 정확한 페이지를 고릅니다. 표지는 동일 책 재질로 보여 주고 내부 페이지는 실제 레이어와 캔버스 비율을 유지합니다.','refine'],
+      ['shop-atelier-material-purchase','소재 구매 · 원본 / 가격 확인','통합 개편','구매할 실제 소재 원본과 가격·잔액을 표시합니다. 큰 글자와 작은 가로에서도 금액을 생략하지 않으며 기존 구매 확인 경로로 연결합니다.','refine'],
+      ['shop-atelier-material-receipt','소재 구매 완료 · 앨범에 사용','연결 검증','같은 소재의 구매 결과에서 앨범·페이지 선택으로 이어집니다. 나중에 사용도 유지하며 검토는 가짜 저장소로 실제 이용권이나 포인트를 변경하지 않습니다.','refine'],
+      ['shop-atelier-insufficient','구매 · 포인트 부족 / 충전','연결 검증','가격과 부족한 포인트를 확인한 뒤 기존 충전 화면으로 연결합니다. 충전 복귀 시 실제 가격·잔액·보유 상태를 다시 확인하며 현재 화면을 떠나면 늦은 응답이 구매창을 열지 않습니다.','refine'],
+      ['creation-atelier-start','앨범 제작 · 디자인 선택','통합 개편','등록된 실제 표지와 첫 펼침면을 함께 보여 주고 직접 만들기·AI 템플릿·기존 템플릿 선택을 연결합니다. 검색·주제·가격·즐겨찾기 필터는 그대로 유지합니다.','refine'],
+      ['creation-atelier-manual','직접 만들기 · 새 책 설정','통합 개편','선택한 실제 규격의 빈 책을 보면서 제목·표지 종류·쪽수를 정합니다. 가로는 책과 설정을 나누고 세로는 작업 순서로 이어집니다.','refine'],
+      ['creation-atelier-preview','템플릿 선택 · 표지','통합 개편','실제 표지 레이어에 승인된 책등과 제본 재질을 사용합니다. 기존 가격·보유 확인과 디자인 선택 동작은 유지합니다.','refine'],
+      ['creation-atelier-spread','템플릿 선택 · 펼친 내지','통합 개편','가로는 실제 좌우 페이지를 이어 펼치고 세로는 한 쪽을 크게 확인합니다. 페이지 이동·확대와 현재 선택을 유지하며 실제 종횡비를 바꾸지 않습니다.','refine'],
+      ['creation-atelier-settings','앨범 설정 · 선택한 표지','통합 개편','선택한 문서의 실제 표지와 규격·제본 종류를 보며 설정합니다. 낮은 가로에서는 중복 안내보다 책 공간을 우선합니다. 제목·규격·쪽수 검증과 디자인 변경 확인은 그대로입니다.','refine'],
+      ['creation-atelier-settings-spread','앨범 설정 · 내지 확인','통합 개편','설정에서도 표지부터 내지까지 확인할 수 있습니다. 가로·세로 전환과 키보드 변화 후 보고 있던 페이지와 입력 상태를 유지합니다.','refine'],
+      ['creation-atelier-ai-brief','AI 템플릿 · 디자인 요청','통합 개편','요청 전에는 결과 사진 대신 선택 규격의 빈 책을 표시합니다. 원하는 분위기와 규격·쪽수 선택은 기존 생성 요청으로 연결합니다.','refine'],
+      ['creation-atelier-ai-confirm','AI 템플릿 · 요청 / 포인트 확인','통합 개편','작성한 요청·규격·쪽수와 기존 포인트 조건을 같은 책 공간에서 확인합니다. 비용과 잔액은 검토용 mock이며 과금 정책은 바꾸지 않았습니다.','refine'],
+      ['creation-atelier-ai-generating','AI 템플릿 · 생성 대기','통합 개편','요청한 규격과 분량의 빈 책을 유지합니다. 실제 진행률을 알 수 없어 가짜 퍼센트를 표시하지 않습니다. 운영 AI 요청은 실행하지 않았습니다.','refine'],
+      ['creation-atelier-ai-result','AI 템플릿 · 결과 확인','통합 개편','응답 문서 fixture를 실제 레이어와 책 재질로 렌더링했습니다. 운영에서 생성한 결과라고 주장하지 않으며 승인·수정·설정 연결과 비용 확인 조건은 그대로입니다.','refine'],
+      ['creation-atelier-photos','사진 채우기 · 표지','통합 개편','실제 표지 레이어와 사진 자리 중심으로 작업합니다. 원래 사진 선택·자르기·교체·실행 취소와 임시 저장을 유지합니다. 채워진 사진은 검토용 샘플입니다.','refine'],
+      ['creation-atelier-photos-spread','사진 채우기 · 펼친 내지','통합 개편','가로는 실제 펼침면과 옆 페이지 목록, 세로는 크게 보는 한 쪽과 아래 목록입니다. 작은 가로의 안전 너비를 기준으로 배치해 책이 사라지지 않도록 했습니다.','refine'],
+      ['creation-atelier-review','앨범 제작 · 전체 확인','통합 개편','가로는 표지와 페이지 목록을 나누고 빈 사진 필터는 목록 옆에 둡니다. 수정할 실제 쪽 번호를 반환하고 편집 시작·기존 저장 흐름을 유지합니다.','refine'],
+      ['creation-atelier-shell-settings','실제 제작 연결 · 설정 / 진행 표시','연결 검증','기존 제작 화면의 진행 표시·임시 저장·뒤로가기를 포함한 캡처입니다. 등록 템플릿의 샘플 사진을 비워 실제 사진 채우기 전 상태를 보여 줍니다.','refine'],
+      ['creation-atelier-shell-photos','실제 제작 연결 · 사진 채우기','연결 검증','설정에서 사진 채우기로 이동하고 뒤로가기로 제목·규격을 유지하는 실제 제작 경로입니다. 운영 생성·저장 요청 없이 검증하며 사용자 사진이 들어갈 자리는 비어 있습니다.','refine'],
+      ['completion','앨범 완성 확인','우선 수정','가로에서 내용이 608px 넘쳐 안내와 버튼이 잘립니다. 실제 앨범 대신 고정 세로형 모형을 보여 주고 FREEZE 배지가 다른 화면과 어울리지 않습니다.','urgent'],
+      ['inbox','알림 목록','우선 수정','다크 모드에서 제목과 알림명이 어두운 색으로 남고 헤더는 흰색입니다. 실패 상태에 재시도도 없습니다.','urgent'],
+      ['invite','멤버 초대','전면 정돈','실제 앨범 제목·표지보다 큰 일러스트와 설명이 중심입니다. 가로에서 글자와 원형 일러스트가 과도하게 확대됩니다.','revise'],
+      ['invite-bottom','멤버 초대 · 링크·권한·완료','전면 정돈','링크 준비/실패/편집 권한을 명확히 구분하고 공유 액션과 완료 버튼을 안전 영역 안에 배치해야 합니다.','revise'],
+      ['print-preview','인쇄 미리보기 · 제작 정보','전면 정돈','안내·가격이 앞에 길게 쌓여 실제 책 미리보기가 첫 화면 밖으로 밀립니다. 가로에서는 책과 정보를 나눠야 합니다.','revise'],
+      ['print-preview-middle','인쇄 미리보기 · 앨범 배치','전면 정돈','너비로 페이지 높이를 정해 가로에서 사진이 화면보다 크게 이어집니다. 미리보기 높이를 제한하고 실제 종횡비를 보존해야 합니다.','revise'],
+      ['orders','주문 목록','부분 개선','목록 구조는 유지할 수 있습니다. 가로 탭 글자와 다크 색상, 긴 상태명 배치를 정돈해야 합니다.','refine'],
+      ['order-detail','주문 상세 · 상단','전면 정돈','시트가 짧고 가로 글자가 커 실제 상세 정보는 대부분 아래로 밀립니다. 제한 너비·충분한 높이·정보 그룹이 필요합니다.','revise'],
+      ['order-detail-bottom','주문 상세 · 배송·제작 정보','우선 수정','샘플 주문은 250×200mm인데 상세에서는 200×200mm로 표시합니다. 저장된 상품 규격을 보여 주고 배송·결제·제작 정보를 분리해야 합니다.','urgent'],
+      ['album-list','나의 기록 목록','전면 정돈','큰 라운드 카드와 그림자, 오래된 날짜 제목이 남아 있습니다. 승인된 앨범 그래픽을 사용한 더 가벼운 목록으로 정돈할 수 있습니다.','revise'],
+      ['shared-list','공유 앨범 목록','전면 정돈','고정 카드 비율로 서로 다른 실제 앨범 비율을 표현하지 못합니다. 사진은 URL 없는 샘플 상태입니다.','revise'],
+      ['policies','이용 안내 목록','유지 + 테마 보완','평면 목록은 유지할 수 있습니다. 흰색 고정 배경과 다크 글자의 조합, 시스템 안전 영역을 함께 확인해야 합니다.','refine'],
+      ['policy-detail','약관·개인정보 본문','부분 개선','본문이 세로에서는 작고 가로에서는 과하게 커집니다. 고정 글자 크기와 읽기 좋은 줄 길이, 테마가 맞는 헤더가 필요합니다.','refine'],
+      ['support','문의 작성','부분 개선','형태는 유지하되 시스템 안전 영역·키보드·다크 모드와 입력 조건을 더 일관되게 처리해야 합니다.','refine'],
+      ['profile','마이 · 포인트 요약','우선 보완','마이의 기본 행과 프로필은 유지합니다. 다크에서 닉네임과 포인트가 어두운 글자로 남아 거의 안 보입니다. 접힌 저장 공간·주문 현황의 가로 글자도 정돈해야 합니다.','urgent'],
+      ['template-fullscreen','템플릿 전체 보기','부분 개선','사진 중심 전체 화면은 유지합니다. 닫기·쪽수의 시스템 안전 영역과 44px 터치 영역을 보완해야 합니다.','refine']
+    ];
+    screens.push(
+      ['help-compose','문의 · 유형 / 제목 / 내용','가로·세로 보정','가로는 문의 유형·제목과 본문을 나누고 각각 스크롤합니다. 작은 가로에서는 안내보다 입력칸을 우선하며 세로는 기존 읽기 순서를 유지합니다.','refine'],
+      ['help-draft','문의 · 작성 중 / 문의 유형','동작 검증','원래 문의 유형과 제목 80자·본문 1,000자 제한을 유지합니다. 회전 후 유형·초안·선택 범위·같은 입력 위젯과 포커스를 보존하며 운영 문의를 등록하지 않습니다.','refine'],
+      ['help-keyboard','문의 · 키보드 / 활성 입력','가로·세로 보정','키보드 위로 활성 입력을 스크롤합니다. 남은 높이가 짧으면 본문·전송을 함께 스크롤하고, 충분하면 전송 버튼을 본문 아래에 고정합니다. OS 키보드 자체는 아닌 점유 공간 시뮬레이션입니다.','refine'],
+      ['help-validation','문의 · 필수 입력 / 오류','동작 검증','비어 있는 제목·본문을 개별적으로 표시하고 첫 누락 입력으로 이동합니다. 큰 글자에서도 오류가 겹치지 않으며 입력을 수정하면 해당 오류가 갱신됩니다.','refine'],
+      ['help-sending','문의 · 접수 중 / 중복 방지','동작 검증','접수 중에는 수정·전송·뒤로가기를 잠그고 상태를 표시합니다. 오래된 실행 콜백이나 연속 입력이 중복 문의를 만들지 않는지 fake 서비스로 확인했습니다.','refine'],
+      ['help-error','문의 · 전송 실패 / 다시 보내기','가로·세로 보정','작성 내용은 유지하고 오류와 다시 보내기를 본문 가까이에 표시합니다. 다른 화면이 열린 뒤 완료된 요청은 그 화면을 닫지 않으며, 돌아온 뒤 완료 상태에서 재전송하지 않습니다.','refine'],
+      ['help-theme','화면 테마 · 라이트 / 다크','가로·세로 보정','가로는 라이트와 다크를 나란히, 세로는 기존 순서로 배치합니다. 색상 표본·라디오 표시·선택 테두리로 현재 값을 구분하며 닫기는 변경 없이 취소합니다. 저장은 기존 로컬 설정을 사용합니다.','refine'],
+      ['help-theme-keyboard','화면 테마 · 작은 가로 / 키보드','가로·세로 보정','키보드가 남아 있는 좁은 가로에서는 색상 표본을 접고 선택 행을 간결하게 만들어 닫기와 선택을 키보드 위에 둡니다. 모달의 중복 선택/닫기는 뒤쪽 화면을 닫지 않으며 인라인 연속 선택도 유지합니다.','refine'],
+      ['access-welcome','로그인 · 앨범 / 소셜 / 이메일','가로·세로 보정','가로는 실제 사진 표지와 로그인 방법을 나누고 세로는 원래 읽기 순서를 유지합니다. 같은 책등 컴포넌트를 재사용하되 홈·리더 코드는 변경하지 않습니다. 소셜 SDK 인증은 테스트용 서비스입니다.','refine'],
+      ['access-email','이메일 로그인 · 입력 / 복구','가로·세로 보정','가로는 이메일·비밀번호와 복구·가입·로그인 버튼을 나눕니다. 글자와 터치 영역은 논리 단위로 유지하며 세로에서는 기존 순서로 스크롤합니다.','refine'],
+      ['access-signup','가입 · 닉네임 / 비밀번호 / 동의','가로·세로 보정','가로는 가입 입력과 필수/선택 동의를 나누고 세로는 원래 순서를 유지합니다. 마케팅 동의는 선택 사항이며 기존 비밀번호 조건과 확인 입력을 유지합니다.','refine'],
+      ['access-signup-keyboard','가입 · 키보드 / 회전 후 초안','동작 검증','키보드 위에 활성 입력칸이 보이도록 스크롤하고 낮은 가로에서는 제목도 입력 영역 안에 넣습니다. 회전 후 닉네임·이메일·비밀번호·동의·입력 포커스를 보존합니다. OS 키보드 자체는 아닌 점유 공간 시뮬레이션입니다.','refine'],
+      ['access-verify','가입 메일 확인 · 수신 주소 / 재전송','가로·세로 보정','실제 입력한 수신 주소를 생략하지 않고 확인·복사할 수 있습니다. 인증 후 로그인과 이메일 수정 경로를 유지하며 재전송 대기 시간·중복 요청 차단은 기존 계약대로입니다. 검토 중 메일은 발송하지 않습니다.','refine'],
+      ['access-recovery','비밀번호 복구 · 수신 이메일','가로·세로 보정','가로는 이메일 입력과 안내·요청을 나눕니다. 로그인에 입력한 주소를 이어받고 큰 글자와 키보드에서도 전송·로그인 복귀에 접근할 수 있습니다.','refine'],
+      ['access-recovery-sent','비밀번호 복구 · 메일 요청 후','동작 검증','메일 요청 결과와 재전송 대기 상태를 보여 줍니다. 화면 회전이 요청을 재실행하지 않으며 인증 서비스와 복구 링크 처리는 변경하지 않습니다. 응답은 테스트용입니다.','refine'],
+      ['access-password','새 비밀번호 · 조건 / 확인 입력','가로·세로 보정','새 비밀번호와 확인 입력·마스킹·기존 검증 조건을 유지합니다. 작은 가로와 키보드에서도 변경 버튼에 접근하고 뒤쪽으로 가려지거나 닫힌 화면의 늦은 실행을 차단합니다.','refine'],
+      ['access-consent','서비스 이용 동의 · 필수 / 선택','가로·세로 보정','내용에 맞는 시트 높이와 제한 너비를 사용하고 본문만 스크롤합니다. 회전·약관 보기 후 체크를 유지하며 취소는 로그인하지 않습니다. 매우 낮은 키보드 공간에서는 확인 버튼도 본문 안에서 접근합니다.','refine'],
+      ['access-email-error','이메일 로그인 · 오류 / 다시 시도','동작 검증','기존 오류 안내를 입력 주변에 유지하고 다시 시도할 수 있습니다. 소셜 동의 확인부터 단일 실행을 보장해 여러 제공자를 동시에 눌러도 중복 동의 시트나 인증이 시작되지 않습니다.','refine'],
+      ['atelier-ratios','사진 비율 · 원본 / 인화','가로·세로 보정','원래 비율 선택값은 그대로 유지합니다. 글자 크기와 실제 안전 너비에 따라 열 수를 조정하고 마지막 비율까지 스크롤해 선택할 수 있습니다. 닫기와 반복 선택이 뒤쪽 편집 화면을 닫지 않습니다.','refine'],
+      ['atelier-styles','문구 장식 · 종류 / 미리보기','가로·세로 보정','가로는 종류와 즐겨찾기를 왼쪽, 해당 종류의 장식을 오른쪽에 배치합니다. 세로는 기존 종류 순서를 유지합니다. 회전해도 펼친 그룹과 선택값을 보존하며 미리보기 모양이 가로로 늘어나지 않습니다.','refine'],
+      ['atelier-style-colors','문구 장식 · 색상 선택','가로·세로 보정','선택창은 앱 테마를 유지하고 실제 장식은 밝은 종이 표면에서 확인합니다. 원래 색상·저장 키를 바꾸지 않으며 즐겨찾기와 적용을 분리합니다. 실제 색상 행까지 스크롤한 캡처입니다.','refine'],
+      ['atelier-styles-full','문구 장식 · 전체 보기','가로·세로 보정','전체 목록에서도 색상 말풍선의 꼬리 방향과 형태가 유지됩니다. 큰 글자에 맞춰 행 높이를 늘리고, 선택하면 전체 보기와 선택창만 닫혀 원래 편집 화면으로 돌아옵니다.','refine'],
+      ['atelier-frames','사진 프레임 · 분류 / 가격 / 보유','가로·세로 보정','가로는 검색·가격·분류와 프레임 목록을 나눕니다. 실제 프레임·사진 미리보기와 기존 무료/유료/보유 확인은 유지합니다. 목록은 필요한 항목만 생성하고 큰 글자에서는 한 열도 지원합니다. 가격은 검토용 mock 자료입니다.','refine'],
+      ['atelier-frame-search','사진 프레임 · 키보드 검색 / 빈 결과','가로·세로 보정','키보드가 열린 작은 가로에서도 검색창·닫기와 빈 결과 안내를 유지합니다. 회전 후 검색어와 포커스를 보존하며 닫힌 시트의 늦은 구매 권한 결과는 적용하지 않습니다. OS 키보드 점유 높이를 시뮬레이션했습니다.','refine'],
+      ['atelier-layers','레이어 목록 · 순서 / 선택','가로·세로 보정','밝은 문구도 썸네일에서 알아볼 수 있도록 대비를 맞췄습니다. 원래 글자색과 레이어 순서는 유지하며 회전 후 목록 위치를 보존합니다. 순서 이동의 실행 취소·다시 실행도 확인했습니다.','refine'],
+      ['atelier-layers-empty','레이어 목록 · 빈 상태','검증','작은 가로와 큰 글자에서도 빈 상태를 스크롤할 수 있습니다. 닫기·레이어 선택·순서 이동은 이미 닫힌 시트나 편집 화면에 늦게 적용되지 않습니다.','refine'],
+      ['tools-text-font','문구 편집 · 글꼴 / 크기','가로·세로 보정','가로는 입력을 왼쪽, 글꼴·크기·도구를 오른쪽에 배치합니다. 세로는 입력 아래에 도구를 둡니다. 글꼴·색상·정렬·꾸밈·즐겨찾기를 유지하고 실제 글자 크기는 화면 방향에 따라 변하지 않습니다.','refine'],
+      ['tools-text-keyboard','문구 편집 · 키보드 / 초안','동작 검증','키보드가 닫혀도 편집을 자동으로 종료하지 않습니다. 작은 가로에서도 입력과 완료·취소 버튼을 키보드 위에 유지하며 회전 후 문구와 스타일을 보존합니다. 키보드의 점유 공간만 시뮬레이션한 캡처입니다.','refine'],
+      ['tools-text-color','문구 편집 · 색상 / 대비','가로·세로 보정','선택한 색상은 체크 표시로 구분하고 충분한 터치 영역을 둡니다. 밝은 글자는 어두운 미리보기 표면에서 확인하되 저장하는 글자색은 바꾸지 않습니다.','refine'],
+      ['tools-text-outline','문구 편집 · 정렬 / 꾸밈','동작 검증','기존 정렬·테두리/그림자 스타일을 유지합니다. 완료해야 앨범에 한 번 반영되며 실행 취소·다시 실행으로 이전 문구와 스타일을 복원할 수 있습니다.','refine'],
+      ['tools-text-phrases','문구 선택 · 카테고리 / 즐겨찾기','가로·세로 보정','작은 가로에서는 검색·분류와 실제 문구 목록을 나눕니다. 큰 글자에서도 스타일 이름과 가격 배지가 겹치지 않으며 무료·유료·보유 여부 확인 경로는 그대로 유지합니다.','refine'],
+      ['tools-phrase-search','문구 선택 · 키보드 검색 / 빈 결과','가로·세로 보정','키보드가 열린 작은 가로에서 검색창 가림과 빈 결과 넘침을 수정했습니다. 회전 후 검색어와 포커스를 유지하며 늦은 구매 권한 확인이 닫힌 시트에 문구를 적용하지 않습니다.','refine'],
+      ['tools-photo-crop','사진 구도 · 자르기 / 확대','가로·세로 보정','실제 사진·프레임·비율을 유지합니다. 가로는 미리보기와 확대·작업 버튼을 나누고 적용·취소는 하단 안전 영역에 고정합니다. 드래그 위치와 확대값은 회전해도 보존합니다.','refine'],
+      ['tools-photo-error','사진 구도 · 사진 없음 / 취소','동작 검증','사진이 준비되지 않으면 적용을 비활성화하고 취소는 유지합니다. 중복 적용과 취소 뒤 들어온 늦은 적용은 실행하지 않으며 원래 레이어를 변경하지 않습니다.','refine'],
+      ['communication-invite','초대 · 표지 / 링크 / 권한','가로·세로 보정','작은 가로와 큰 글자에서도 실제 앨범 표지와 링크/권한을 좌우로 나눕니다. 가로는 링크를 먼저 보여 주고 세로는 기존 순서를 유지합니다. 복사·공유 버튼은 하단 안전 영역에 고정합니다.','refine'],
+      ['communication-invite-error','초대 · 링크 실패 / 재시도','가로·세로 보정','권한을 바꾸면 새 링크를 만들며 실패 시 복사와 공유를 차단합니다. 실제로 재시도 버튼까지 스크롤한 화면이며 이전 권한의 링크를 재사용하지 않습니다.','refine'],
+      ['communication-accept','초대 수락 · 앨범 / 참여 권한','가로·세로 보정','가로는 앨범 이름·초대한 사람과 참여 권한·계정을 나눕니다. 수락/닫기 버튼은 나란히 두며 로그인과 명시적 수락 조건을 유지합니다.','refine'],
+      ['communication-joined','초대 수락 · 참여 후','가로·세로 보정','참여 완료 뒤에도 실제 수락된 역할을 표시하며 회전 후 참여 상태를 유지합니다. 감상 권한에 편집 권한이 있는 것처럼 안내하지 않습니다. 검토 자료로 실제 참여는 하지 않습니다.','refine'],
+      ['communication-expired','초대 수락 · 만료','가로·세로 보정','만료·잘못된 링크는 참여 버튼 대신 닫기를 표시합니다. 기존 만료/계정 확인/권한 계약을 유지하며 좁은 가로에서도 안내는 스크롤할 수 있습니다.','refine'],
+      ['communication-inbox','알림 목록 · 날짜 / 미읽음','가로·세로 보정','가로는 제목·일괄 읽음·보관 안내를 왼쪽, 알림 목록을 오른쪽에 배치합니다. 날짜 묶음 전체가 아니라 화면에 필요한 알림 행만 생성하며 서버의 순서를 유지합니다.','refine'],
+      ['communication-inbox-bottom','알림 목록 · 마지막 항목','동작 검증','실제로 마지막 알림까지 스크롤한 화면입니다. 회전 후 목록 위치를 유지하고 개별 읽음 처리·알림 진입 경로와 시스템 안전 영역을 보존합니다.','refine'],
+      ['communication-inbox-error','알림 목록 · 실패 / 재시도','가로·세로 보정','실패 안내와 재시도는 작은 화면에서도 스크롤로 접근할 수 있습니다. 오류/로딩 중 일괄 읽음은 잠그고 원래 불러오기 경로를 유지합니다.','refine'],
+      ['communication-inbox-empty','알림 목록 · 빈 목록','검증','실제 빈 목록 상태를 별도로 보여 줍니다. 읽을 항목이 없으면 일괄 읽음은 비활성화하며 운영 알림을 생성하거나 읽음 처리하지 않습니다.','refine'],
+      ['communication-policy','개인정보 본문 · 현행 유지','검증','본문과 시행일·버전은 그대로입니다. 큰 글자와 작은 가로에서 본문 마지막 항목까지 실제로 스크롤해 접근할 수 있는지 확인했습니다.','refine'],
+      ['settings-account','계정 · 프로필 / 보안','가로·세로 보정','가로는 프로필과 계정 관리 영역을 나누고 각각 스크롤합니다. 사진 변경 버튼과 이름은 별도 줄에 배치하고 세로는 기존 읽기 순서를 유지합니다.','refine'],
+      ['settings-account-reset','계정 · 비밀번호 재설정 확인','가로·세로 보정','실제 수신 주소를 확인한 뒤 전송합니다. 본문만 스크롤하고 닫기·취소·전송 버튼은 안전 영역에 유지하며 계정이 바뀌면 전송을 차단합니다.','refine'],
+      ['settings-account-delete','계정 · 탈퇴 확인','가로·세로 보정','삭제의 영향과 대상 계정을 먼저 확인합니다. 회전해도 동의를 유지하며 동의 해제 후 들어온 늦은 확인 입력과 중복 실행을 차단합니다. 검토 중 실제 탈퇴는 하지 않습니다.','refine'],
+      ['settings-account-logout','계정 · 로그아웃 확인','가로·세로 보정','기존 계정 보관 안내와 실제 로그아웃 계약을 유지합니다. 좁은 가로에서도 닫기·취소·확인 버튼은 시스템 영역에 가리지 않습니다.','refine'],
+      ['settings-notifications','알림 설정 · 기기 권한 / 유형','가로·세로 보정','가로는 전체 수신·기기 권한과 알림 유형을 나누고 각각 스크롤합니다. 선택된 소식과 기기 권한은 별개로 안내하며 저장·권한 요청 방식은 유지합니다.','refine'],
+      ['settings-notifications-off','알림 설정 · 전체 수신 끄기','가로·세로 보정','전체 수신을 꺼도 개별 선택은 보관됩니다. 개별 스위치는 비활성화하고 다시 전체 수신을 켜면 기존 선택을 그대로 사용할 수 있습니다.','refine'],
+      ['settings-notifications-bottom','알림 설정 · 마케팅 / 야간','가로·세로 보정','실제로 목록을 스크롤해 마지막 야간 설정까지 터치한 화면입니다. 시스템 하단 버튼과 카메라 여백을 피하며 회전 후 선택 값도 유지합니다.','refine'],
+      ['points-charge','포인트 · 충전 상품 선택','가로·세로 보정','충전·이용 내역 탭은 고정하고, 가로에서는 잔액과 상품을 나눕니다. 실제 스토어에서 받은 상품 가격을 표시하며 항목 선택만으로 결제를 시작하지 않습니다.','refine'],
+      ['points-charge-selected','포인트 · 선택 / 충전 버튼','가로·세로 보정','선택한 상품의 가격과 지급 포인트를 고정 하단 버튼에 표시합니다. 로딩·구매 확인 중·상품 제거·스토어 사용 불가 상태에서는 충전할 수 없습니다.','refine'],
+      ['points-history','포인트 · 최근 이용','가로·세로 보정','실제 서버 내역의 순서와 금액을 유지하며 필요한 행만 그립니다. 가로는 거래명·금액·날짜 중심으로, 세로는 상태 설명까지 표시합니다.','refine'],
+      ['points-history-spent','포인트 · 적립 / 차감 분류','가로·세로 보정','적립은 양수, 차감은 음수 내역만 표시합니다. 무료 사용 등 0P 내역은 전체에 남기며 회전해도 선택한 분류를 유지합니다.','refine'],
+      ['points-ai-return','포인트 · AI 템플릿 복귀','가로·세로 보정','원래 AI 복귀 경로를 유지합니다. 좁은 가로에서는 짧은 버튼 문구를 사용하고, 구매 확인 중에는 복귀와 추가 구매를 잠급니다.','refine'],
+      ['checkout-delivery','주문 · 배송지 입력','가로·세로 보정','가로에서는 앨범·규격·가격을 왼쪽, 배송지 입력을 오른쪽에 배치합니다. 양쪽은 독립적으로 스크롤하며 세로는 기존 입력 순서를 유지합니다.','refine'],
+      ['checkout-review','주문 · 최종 확인','가로·세로 보정','가격·배송지·동의 내용을 나누고 결제/편집 버튼은 하단 안전 영역에 고정합니다. 동의·서버 주문 상태·인쇄 파일 조건을 확인해야 결제가 활성화됩니다.','refine'],
+      ['print-paid-progress','주문 · 결제 후 제작 준비','가로·세로 보정','결제 영수증과 실제 제작 단계를 구분합니다. 확인된 단계만 표시하며 가로에서는 주문 요약과 타임라인을 나눕니다.','refine'],
+      ['print-shipping-progress','주문 · 배송 진행','가로·세로 보정','택배사·송장·출고 시각이 모두 확인된 경우만 출고 완료로 표시합니다. 배송 완료는 별도의 상태이며 검토 자료로 실제 주문을 만들지 않습니다.','refine'],
+      ['print-shipping-detail','주문 · 출고 / 배송 완료 구분','동작 검증','실제 타임라인을 스크롤한 캡처입니다. 출고는 확인 완료지만 배송 완료는 대기 상태로 구분되며 택배사·송장은 로컬 검토 자료입니다.','refine'],
+      ['material-detail','소재 상세 · 원본 / 적용 예시','가로·세로 보정','가로에서 미리보기 선택을 정보 쪽으로 옮겨 소재를 더 크게 보여 줍니다. 가격·즐겨찾기·구매 경로는 유지합니다.','refine'],
+      ['material-zoom','소재 크게 보기','가로·세로 보정','카메라·시스템 여백을 피하면서 원래 소재 비율과 확대 동작을 유지합니다.','refine'],
+      ['responsive-creation-preview','제작 · 템플릿 미리보기','가로·세로 보정','같은 표지와 펼침면, 1.5배 글자로 렌더링한 제작 미리보기입니다.','refine'],
+      ['responsive-creation-settings','제작 · 규격과 쪽수','검증','원래 규격과 제목 입력, 쪽수 선택 흐름을 유지합니다.','refine'],
+      ['responsive-photo-fill','제작 · 사진 채우기','검증','쪽과 사진 슬롯, 원래 캔버스 비율을 유지합니다.','refine'],
+      ['responsive-creation-start','제작 · 시작 방법','검증','직접 제작·AI·템플릿 시작 경로를 유지합니다.','refine'],
+      ['responsive-ai-review','AI 디자인 검토','가로·세로 보정','작은 가로에서도 쪽 목록을 옆으로 배치해 책과 작업 버튼의 넘침을 제거합니다.','refine'],
+      ['responsive-ai-brief','AI 디자인 요청','검증','요청과 제작 규격을 화면 공간에 맞게 배치합니다.','refine'],
+      ['responsive-ai-confirm','AI 요청 확인','검증','요청 내용과 실제 사용 안내를 유지합니다. 검토 자료이며 AI 요청이나 포인트 차감은 없습니다.','refine']
+    );
+    const updates={
+      completion:'실제 완성한 표지와 원래 비율을 사용합니다. 세로는 스크롤, 가로는 표지·완료 정보를 나눠 버튼을 안전하게 배치했습니다.',
+      inbox:'헤더·제목·알림명·구분선을 테마에 맞췄고 불러오기 실패에 다시 불러오기를 추가했습니다.',
+      invite:'공유할 앨범 표지·제목을 먼저 보여 줍니다. 링크와 편집 권한, 카카오 공유만 남기고 큰 일러스트를 제거했습니다.',
+      'invite-bottom':'링크 생성 중 권한 변경과 복사를 잠그고, 실패하면 재시도할 수 있습니다. 가로에서도 글자 크기를 안정적으로 유지합니다.',
+      'print-preview':'책 미리보기가 먼저 보입니다. 가로에서는 실제 비율의 책과 제작 정보를 분리하고 양쪽 높이에 맞게 배치했습니다.',
+      'print-preview-middle':'책은 종횡비를 보존하며 화면 안에 들어옵니다. 가격·구성·검수·PDF·결제 준비 안내는 별도 정보 흐름으로 정돈했습니다.',
+      orders:'고정 글자 크기·테마 색상·안전 영역을 적용했습니다. 기존 주문 필터·새로고침·페이지별 불러오기는 유지합니다.',
+      'order-detail':'충분한 높이와 제한 너비, 고정 헤더, 스크롤 본문을 적용했습니다. 복사 버튼은 좁으면 줄바꿈합니다.',
+      'order-detail-bottom':'실제 저장된 제작 규격을 표시합니다. 결제·수령 정보·제작과 배송을 나눴고 배송 조회 동작은 유지했습니다.',
+      'album-list':'실제 앨범 표지와 가벼운 행 목록, 한글 날짜를 사용합니다. 검색·즐겨찾기·완료 필터·새로고침은 유지합니다.',
+      'shared-list':'앨범 레이어로 표지를 그리며 정사각형·세로·가로 비율을 보존합니다. 화면 폭에 따라 열 수가 바뀌고 항목은 필요한 만큼 생성됩니다.',
+      policies:'앱과 같은 테마·헤더·안전 영역을 적용하고 평면 목록을 유지했습니다. 약관 내용과 시행일은 바꾸지 않았습니다.',
+      'policy-detail':'본문 글자 크기와 읽기 폭을 안정적으로 맞추고 선택 가능한 텍스트를 사용합니다. 가로에서도 글자가 과도하게 확대되지 않습니다.',
+      support:'다크 모드와 키보드·안전 영역에 대응합니다. 필수 항목을 바로 표시하고 기존 문의 제출 방식은 유지합니다.',
+      profile:'닉네임·잔액·구분선·섹션 제목을 다크 모드에 맞췄습니다. 펼친 저장 공간과 주문 요약의 가로 글자·간격도 정돈했습니다.',
+      'template-fullscreen':'닫기 버튼을 44px 터치 영역과 시스템 안전 영역에 맞췄습니다. 쪽수도 하단 시스템 영역을 피하고 전체 사진 보기는 유지합니다.'
+    };
+    Object.assign(updates, {
+      profile:'가로에서 프로필·포인트와 메뉴를 나눴습니다. 각 영역은 안전 여백 안에서 스크롤하며 회전 후 펼친 메뉴 상태를 유지합니다.',
+      support:'가로에서 제목·분류와 문의 내용을 나눴습니다. 키보드가 열리면 입력 높이를 줄이고 회전 후 초안과 포커스를 유지합니다.',
+      'print-preview':'작은 가로에서도 책과 제작 정보를 나누며, 실제 비율·가격 검증·인쇄 계약을 유지합니다.',
+      'print-preview-middle':'책의 크기는 남은 높이와 실제 비율에 맞춥니다. 원본 검증과 주문 가능 여부를 바꾸지 않습니다.',
+      completion:'작은 가로에서도 실제 완성한 표지와 정보를 나눕니다. 주문 준비와 완료 액션은 그대로 유지합니다.'
+    });
+    for (const item of screens.filter(item => item[0].startsWith('creation-atelier-')||item[0].startsWith('help-')||item[0].startsWith('access-')||item[0].startsWith('atelier-')||item[0].startsWith('tools-')||item[0].startsWith('responsive-')||item[0].startsWith('material-')||item[0].startsWith('checkout-')||item[0].startsWith('points-')||item[0].startsWith('settings-')||item[0].startsWith('communication-')||item[0].endsWith('-progress')||item[0]==='print-shipping-detail')) updates[item[0]]=item[3];
+    const screen=document.getElementById('screen'),width=document.getElementById('width'),theme=document.getElementById('theme'),revision=document.getElementById('revision');
+    for(const [id,label] of screens){const o=document.createElement('option');o.value=id;o.textContent=label;screen.append(o)}
+    function render(){
+      const item=screens.find(s=>s[0]===screen.value)||screens[0];
+      const responsive=item[0].startsWith('responsive-');
+      const material=item[0]==='material-detail'||item[0]==='material-zoom';
+      const printJourney=item[0].startsWith('checkout-')||item[0].endsWith('-progress')||item[0]==='print-shipping-detail';
+      const points=item[0].startsWith('points-');
+      const settings=item[0].startsWith('settings-');
+      const communication=item[0].startsWith('communication-');
+      const tools=item[0].startsWith('tools-');
+      const atelier=item[0].startsWith('atelier-');
+      const access=item[0].startsWith('access-');
+      const help=item[0].startsWith('help-');
+      const creation=item[0].startsWith('creation-atelier-');
+      const shop=item[0].startsWith('shop-atelier-');
+      const personal=item[0].startsWith('personal-atelier-');
+      const currentOnly=responsive||material||printJourney||points||settings||communication||tools||atelier||access||help||creation||shop||personal||width.value==='648'||width.value==='740';
+      revision.disabled=currentOnly;
+      if(currentOnly) revision.value='current';
+      const beforeOnly=revision.value==='before';
+      document.getElementById('decision').textContent=beforeOnly?item[2]:revision.value==='current'?'현재 가로·세로 검증':'이전 개편 후';
+      document.getElementById('reason').textContent=beforeOnly||shop||personal?item[3]:updates[item[0]];
+      document.getElementById('status').dataset.priority=beforeOnly?item[4]:'refine';
+      const grid=document.getElementById('shots');grid.replaceChildren();
+      const modes=theme.value==='compare'?['light','dark']:[theme.value];grid.className='grid'+(Number(width.value)>=600||modes.length===1?' wide':'');
+      const revisions=revision.value==='compare'?['before','after']:[revision.value];
+      for(const rev of revisions)for(const mode of modes){const f=document.createElement('figure'),c=document.createElement('figcaption'),im=document.createElement('img');c.textContent=(rev==='current'?'현재 보정 · ':rev==='after'?'이전 개편 후 · ':'최초 개편 전 · ')+(mode==='light'?'라이트':'다크');im.src=material?`../theme-store-home-qa/${item[0]}-${width.value}-${mode}.png`:`${item[0]}-${width.value}-${mode}${responsive||printJourney||points||settings||communication||tools||atelier||access||help||creation||shop||personal?'':rev==='current'?'-landscape-current':rev==='after'?'-after':''}.png`;im.alt=`${item[1]} ${c.textContent}`;im.className=Number(width.value)>=600?'landscape':'portrait';f.append(c,im);grid.append(f)}
+      history.replaceState(null,'','#'+item[0]);
+    }
+    const hash=location.hash.slice(1);screen.value=screens.some(s=>s[0]===hash)?hash:'personal-atelier-profile';
+    screen.onchange=width.onchange=theme.onchange=revision.onchange=render;render();
+  </script>
+</body>
+</html>

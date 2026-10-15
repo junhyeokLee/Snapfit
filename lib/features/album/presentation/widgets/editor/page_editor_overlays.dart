@@ -5,24 +5,28 @@ import '../../../../../shared/widgets/snapfit_motion.dart';
 
 /// 앨범 저장 중 진행률 오버레이
 class PageEditorSaveOverlay extends StatelessWidget {
-  final double progress;
+  final double? progress;
+  final String? status;
 
-  const PageEditorSaveOverlay({super.key, required this.progress});
+  const PageEditorSaveOverlay({super.key, required this.progress, this.status});
 
   @override
   Widget build(BuildContext context) {
     return SnapFitFadeIn(
       duration: const Duration(milliseconds: 220),
-      child: Container(
-        color: Colors.black.withOpacity(0.42),
-        child: Center(
-          child: _EditorProgressCard(
-            title: '포토북을 저장하고 있어요',
-            subcopy: '사진과 페이지를 안전하게 정리 중입니다.',
-            progress: progress,
-            showPercent: true,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ModalBarrier(dismissible: false, color: Colors.black54),
+          Center(
+            child: _EditorProgressCard(
+              title: '포토북을 저장하고 있어요',
+              subcopy: status ?? '사진과 페이지를 안전하게 정리 중입니다.',
+              progress: progress,
+              showPercent: progress != null,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -105,7 +109,7 @@ class _EditorProgressCard extends StatelessWidget {
               color: SnapFitColors.textPrimaryOf(context),
               fontSize: 16.sp,
               fontWeight: FontWeight.w900,
-              letterSpacing: -0.25,
+              letterSpacing: 0,
               decoration: TextDecoration.none,
             ),
           ),

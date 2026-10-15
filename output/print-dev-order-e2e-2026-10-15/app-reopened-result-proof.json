@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-10-15T04:58:55.084Z",
+  "tabId": "1603677275",
+  "albumId": 69,
+  "samePaymentRestored": true,
+  "testReceiptConfirmedVisible": true,
+  "pdfValidatedVisible": true,
+  "vendorFileCheckedVisible": true,
+  "vendorOrderNum": "SFD0c3edc06ce464decb430979c82516fe0",
+  "newPaymentButtonAbsent": true,
+  "screenshot": "app-test-order-complete.png",
+  "statusPageReadOnly": true
+}

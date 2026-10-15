@@ -27,6 +27,7 @@ enum PremiumVolume {
     int? innerPages,
     EditorialCopy? copy,
     LuminousCopy travelCopy = const LuminousCopy(),
+    bool refineCover = true,
   }) {
     final count = innerPages ?? extendedPages;
     if (!pageCounts.contains(count)) {
@@ -117,7 +118,7 @@ enum PremiumVolume {
     }
     if (pages.length != count)
       throw StateError('$id: ${pages.length} != $count');
-    return {
+    final document = <String, dynamic>{
       ...base,
       'version': 3,
       'editionId': '$id-$count',
@@ -152,6 +153,22 @@ enum PremiumVolume {
         'commerceIntegration': 'not-published',
       },
     };
+    return refineCover
+        ? _refinePremiumCatalogCover(
+            this,
+            aspect,
+            copy ??
+                study?.defaultCopy ??
+                EditorialCopy(
+                  place:
+                      '${travelCopy.first} ${travelCopy.second}${travelCopy.third}',
+                  byline: travelCopy.names,
+                  period: travelCopy.date,
+                  note: '',
+                ),
+            document,
+          )
+        : document;
   }
 }
 

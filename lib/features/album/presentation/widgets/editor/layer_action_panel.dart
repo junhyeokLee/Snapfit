@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/constants/snapfit_colors.dart';
 import '../../../../../core/utils/platform_ui.dart';
+import '../../../../../shared/widgets/experience_form_style.dart';
 import '../../../domain/entities/layer.dart';
 import '../../viewmodels/album_editor_view_model.dart';
 import '../../controllers/layer_interaction_manager.dart';
@@ -16,6 +17,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
   final TextEditorManager textEditor;
   final VoidCallback onRefresh;
   final Future<void> Function(LayerModel)? onOpenGallery;
+  final Future<void> Function(LayerModel)? onOpenPhotoCrop;
 
   /// 레이어 선택 후 "꾸미기" 탭 시 호출. 제공 시 바텀시트(프레임/텍스트 스타일)를 띄우고, 미제공 시 인라인 서브메뉴 표시.
   final void Function(LayerModel layer)? onOpenDecorateSheet;
@@ -27,6 +29,7 @@ class LayerActionPanel extends ConsumerStatefulWidget {
     required this.textEditor,
     required this.onRefresh,
     this.onOpenGallery,
+    this.onOpenPhotoCrop,
     this.onOpenDecorateSheet,
   });
 
@@ -90,22 +93,16 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     final layer = widget.layers[layerIndex];
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       decoration: BoxDecoration(
-        color: SnapFitColors.isDark(context)
-            ? const Color(0xFF1D1A16).withOpacity(0.96)
-            : const Color(0xFFFFFCF7).withOpacity(0.96),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(
-          color: SnapFitColors.isDark(context)
-              ? Colors.white.withOpacity(0.10)
-              : const Color(0xFFDCCDBB),
-        ),
+        color: SnapFitColors.surfaceOf(context).withValues(alpha: .98),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: ExperienceFormStyle.line(context)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5740).withOpacity(0.13),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: .12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -173,6 +170,17 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
                 () => widget.textEditor.openForExisting(layer),
               ),
             if (layer.type == LayerType.image)
+              if (widget.onOpenPhotoCrop != null &&
+                  (layer.asset != null ||
+                      [layer.previewUrl, layer.imageUrl, layer.originalUrl]
+                          .whereType<String>()
+                          .any((url) => url.trim().isNotEmpty)))
+                _buildActionButton(
+                  Icons.crop_rounded,
+                  '사진 구도',
+                  () => widget.onOpenPhotoCrop!(layer),
+                ),
+            if (layer.type == LayerType.image)
               _buildActionButton(
                 Icons.image_outlined,
                 "사진변경",
@@ -205,7 +213,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
             _buildActionButton(Icons.delete_outline, "삭제", () {
               widget.interaction.deleteSelected();
               widget.onRefresh();
-            }, color: Colors.black),
+            }, color: Theme.of(context).colorScheme.error),
           ],
         ),
       ),
@@ -227,13 +235,12 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
         child: GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            alignment: Alignment.center,
             child: Icon(
               icon,
-              size: 20.sp,
-              // 편집 툴바 아이콘은 라이트/다크 모드 모두 흰 배경 위에서
-              // 동일하게 보이도록 항상 검은색으로 통일한다.
-              color: color ?? Colors.black,
+              size: 21,
+              color: color ?? ExperienceFormStyle.ink(context),
             ),
           ),
         ),
@@ -245,7 +252,12 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
     return Row(
       children: [
         IconButton(
-          icon: Icon(platformBackIcon(), color: Colors.black, size: 16),
+          tooltip: '편집 도구로 돌아가기',
+          icon: Icon(
+            platformBackIcon(),
+            color: ExperienceFormStyle.ink(context),
+            size: 20,
+          ),
           onPressed: () => setState(() => _panelMode = EditPanelMode.none),
         ),
         Expanded(
@@ -268,7 +280,7 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
             "${(layer.opacity * 100).toInt()}%",
             style: TextStyle(
               color: SnapFitColors.textPrimaryOf(context),
-              fontSize: 13.sp,
+              fontSize: 13,
             ),
           ),
         ),
@@ -282,7 +294,12 @@ class _LayerActionPanelState extends ConsumerState<LayerActionPanel> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(platformBackIcon(), color: Colors.black, size: 16),
+            tooltip: '편집 도구로 돌아가기',
+            icon: Icon(
+              platformBackIcon(),
+              color: ExperienceFormStyle.ink(context),
+              size: 20,
+            ),
             onPressed: () => setState(() => _panelMode = EditPanelMode.none),
           ),
           if (layer.type == LayerType.text) ...[
